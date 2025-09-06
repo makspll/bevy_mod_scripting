@@ -11,7 +11,7 @@ pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_ca
 #[script_bindings(
     remote,
     name = "{{ item.ident | convert_case(case="snake") }}_functions",
-    bms_core_path="bevy_mod_scripting_core",
+    bms_bindings_path="bevy_mod_scripting_bindings",
     generated
 )]
 impl {{item.import_path}} {

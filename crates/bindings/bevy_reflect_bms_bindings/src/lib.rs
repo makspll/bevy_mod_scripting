@@ -1,19 +1,22 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+
+
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyReflectScriptingPlugin;
 pub(crate) fn register_atomic_bool_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicBool,
     >::new(world)
         .register_documented(
@@ -55,11 +58,11 @@ pub(crate) fn register_atomic_bool_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicBool,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_i_16_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicI16,
     >::new(world)
         .register_documented(
@@ -101,11 +104,11 @@ pub(crate) fn register_atomic_i_16_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicI16,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_i_32_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicI32,
     >::new(world)
         .register_documented(
@@ -147,11 +150,11 @@ pub(crate) fn register_atomic_i_32_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicI32,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_i_64_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicI64,
     >::new(world)
         .register_documented(
@@ -193,11 +196,11 @@ pub(crate) fn register_atomic_i_64_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicI64,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicI8,
     >::new(world)
         .register_documented(
@@ -239,11 +242,11 @@ pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicI8,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_isize_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicIsize,
     >::new(world)
         .register_documented(
@@ -285,11 +288,11 @@ pub(crate) fn register_atomic_isize_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicIsize,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_u_16_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicU16,
     >::new(world)
         .register_documented(
@@ -331,11 +334,11 @@ pub(crate) fn register_atomic_u_16_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicU16,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_u_32_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicU32,
     >::new(world)
         .register_documented(
@@ -377,11 +380,11 @@ pub(crate) fn register_atomic_u_32_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicU32,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_u_64_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicU64,
     >::new(world)
         .register_documented(
@@ -423,11 +426,11 @@ pub(crate) fn register_atomic_u_64_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicU64,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicU8,
     >::new(world)
         .register_documented(
@@ -469,11 +472,11 @@ pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicU8,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_usize_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::sync::atomic::AtomicUsize,
     >::new(world)
         .register_documented(
@@ -515,11 +518,11 @@ pub(crate) fn register_atomic_usize_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::sync::atomic::AtomicUsize,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_duration_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::time::Duration,
     >::new(world)
         .register_documented(
@@ -1095,11 +1098,11 @@ pub(crate) fn register_duration_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::time::Duration,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_instant_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::std::time::Instant,
     >::new(world)
         .register_documented(
@@ -1277,11 +1280,11 @@ pub(crate) fn register_instant_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::std::time::Instant,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_range_full_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::ops::RangeFull,
     >::new(world)
         .register_documented(
@@ -1340,11 +1343,11 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::ops::RangeFull,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_type_id_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::any::TypeId,
     >::new(world)
         .register_documented(
@@ -1403,11 +1406,11 @@ pub(crate) fn register_type_id_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::any::TypeId,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_quat_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Quat,
     >::new(world)
         .register_documented(
@@ -2266,10 +2269,13 @@ pub(crate) fn register_quat_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Quat, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Quat,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Vec3,
     >::new(world)
         .register_documented(
@@ -3958,10 +3964,13 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Vec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_socket_addr_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::net::SocketAddr,
     >::new(world)
         .register_documented(
@@ -4082,11 +4091,11 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::core::net::SocketAddr,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_i_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::IVec2,
     >::new(world)
         .register_documented(
@@ -5352,10 +5361,13 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::IVec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::IVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::IVec3,
     >::new(world)
         .register_documented(
@@ -6637,10 +6649,13 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::IVec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::IVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::IVec4,
     >::new(world)
         .register_documented(
@@ -7889,10 +7904,13 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::IVec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::IVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I8Vec2,
     >::new(world)
         .register_documented(
@@ -9158,10 +9176,13 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I8Vec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::I8Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I8Vec3,
     >::new(world)
         .register_documented(
@@ -10442,10 +10463,13 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I8Vec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::I8Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I8Vec4,
     >::new(world)
         .register_documented(
@@ -11693,10 +11717,13 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I8Vec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::I8Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I16Vec2,
     >::new(world)
         .register_documented(
@@ -12974,11 +13001,13 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I16Vec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::I16Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I16Vec3,
     >::new(world)
         .register_documented(
@@ -14273,11 +14302,13 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I16Vec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::I16Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I16Vec4,
     >::new(world)
         .register_documented(
@@ -15542,11 +15573,13 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I16Vec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::I16Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I64Vec2,
     >::new(world)
         .register_documented(
@@ -16824,11 +16857,13 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I64Vec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::I64Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I64Vec3,
     >::new(world)
         .register_documented(
@@ -18123,11 +18158,13 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I64Vec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::I64Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::I64Vec4,
     >::new(world)
         .register_documented(
@@ -19392,11 +19429,13 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::I64Vec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::I64Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::UVec2,
     >::new(world)
         .register_documented(
@@ -20451,10 +20490,13 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::UVec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::UVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::UVec3,
     >::new(world)
         .register_documented(
@@ -21578,10 +21620,13 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::UVec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::UVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::UVec4,
     >::new(world)
         .register_documented(
@@ -22672,10 +22717,13 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::UVec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::UVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U8Vec2,
     >::new(world)
         .register_documented(
@@ -23730,10 +23778,13 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U8Vec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::U8Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U8Vec3,
     >::new(world)
         .register_documented(
@@ -24856,10 +24907,13 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U8Vec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::U8Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U8Vec4,
     >::new(world)
         .register_documented(
@@ -25949,10 +26003,13 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U8Vec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::U8Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U16Vec2,
     >::new(world)
         .register_documented(
@@ -27019,11 +27076,13 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U16Vec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::U16Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U16Vec3,
     >::new(world)
         .register_documented(
@@ -28160,11 +28219,13 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U16Vec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::U16Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U16Vec4,
     >::new(world)
         .register_documented(
@@ -29271,11 +29332,13 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U16Vec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::U16Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U64Vec2,
     >::new(world)
         .register_documented(
@@ -30342,11 +30405,13 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U64Vec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::U64Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U64Vec3,
     >::new(world)
         .register_documented(
@@ -31483,11 +31548,13 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U64Vec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::U64Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::U64Vec4,
     >::new(world)
         .register_documented(
@@ -32594,11 +32661,13 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::U64Vec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::U64Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Vec2,
     >::new(world)
         .register_documented(
@@ -34319,10 +34388,13 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Vec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_3_a_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Vec3A,
     >::new(world)
         .register_documented(
@@ -36036,10 +36108,13 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Vec3A, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Vec3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Vec4,
     >::new(world)
         .register_documented(
@@ -37658,10 +37733,13 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Vec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::BVec2,
     >::new(world)
         .register_documented(
@@ -37833,10 +37911,13 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::BVec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::BVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::BVec3,
     >::new(world)
         .register_documented(
@@ -38009,10 +38090,13 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::BVec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::BVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::BVec4,
     >::new(world)
         .register_documented(
@@ -38185,10 +38269,13 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::BVec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::BVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DVec2,
     >::new(world)
         .register_documented(
@@ -39917,10 +40004,13 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DVec2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::DVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DVec3,
     >::new(world)
         .register_documented(
@@ -41632,10 +41722,13 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DVec3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::DVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DVec4,
     >::new(world)
         .register_documented(
@@ -43262,10 +43355,13 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DVec4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::DVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Mat2,
     >::new(world)
         .register_documented(
@@ -43854,10 +43950,13 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Mat2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Mat2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Mat3,
     >::new(world)
         .register_documented(
@@ -44679,10 +44778,13 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Mat3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Mat3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_3_a_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Mat3A,
     >::new(world)
         .register_documented(
@@ -45511,10 +45613,13 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Mat3A, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Mat3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Mat4,
     >::new(world)
         .register_documented(
@@ -46641,10 +46746,13 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Mat4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::Mat4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DMat2,
     >::new(world)
         .register_documented(
@@ -47204,10 +47312,13 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DMat2, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::DMat2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DMat3,
     >::new(world)
         .register_documented(
@@ -48001,10 +48112,13 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DMat3, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::DMat3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_4_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DMat4,
     >::new(world)
         .register_documented(
@@ -49075,10 +49189,13 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DMat4, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::DMat4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Affine2,
     >::new(world)
         .register_documented(
@@ -49481,11 +49598,13 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Affine2, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::Affine2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_3_a_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::Affine3A,
     >::new(world)
         .register_documented(
@@ -50045,11 +50164,13 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::Affine3A, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::Affine3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_affine_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DAffine2,
     >::new(world)
         .register_documented(
@@ -50422,11 +50543,13 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DAffine2, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::DAffine2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_affine_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DAffine3,
     >::new(world)
         .register_documented(
@@ -50958,11 +51081,13 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DAffine3, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::DAffine3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_quat_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::DQuat,
     >::new(world)
         .register_documented(
@@ -51771,10 +51896,13 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::DQuat, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::DQuat,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_euler_rot_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::EulerRot,
     >::new(world)
         .register_documented(
@@ -51831,11 +51959,13 @@ pub(crate) fn register_euler_rot_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::EulerRot, bevy_mod_scripting_core::bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::glam::EulerRot,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::BVec3A,
     >::new(world)
         .register_documented(
@@ -51994,10 +52124,13 @@ pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::BVec3A, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::BVec3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::BVec4A,
     >::new(world)
         .register_documented(
@@ -52156,10 +52289,13 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::glam::BVec4A, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::glam::BVec4A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_smol_str_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::smol_str::SmolStr,
     >::new(world)
         .register_documented(
@@ -52261,11 +52397,11 @@ pub(crate) fn register_smol_str_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::smol_str::SmolStr,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_uuid_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::uuid::Uuid,
     >::new(world)
         .register_documented(
@@ -52590,7 +52726,10 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::uuid::Uuid, bevy_mod_scripting_core::bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::uuid::Uuid,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 impl Plugin for BevyReflectScriptingPlugin {
     fn build(&self, app: &mut App) {

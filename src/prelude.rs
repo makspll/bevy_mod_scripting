@@ -1,15 +1,15 @@
 pub use bevy_mod_scripting_core::{
-    ConfigureScriptPlugin, IntoScriptPluginParams,
-    bindings::{
-        CoreScriptGlobalsPlugin,
-        function::namespace::{GlobalNamespace, NamespaceBuilder},
-        script_value::ScriptValue,
-    },
-    callback_labels,
+    ConfigureScriptPlugin, IntoScriptPluginParams, callback_labels,
     commands::{AddStaticScript, DeleteScript},
     event::ScriptCallbackEvent,
     handler::event_handler,
     script::{ScriptComponent, ScriptId},
+};
+
+pub use bevy_mod_scripting_bindings::{
+    CoreScriptGlobalsPlugin,
+    function::namespace::{GlobalNamespace, NamespaceBuilder},
+    script_value::ScriptValue,
 };
 
 pub use bevy_mod_scripting_asset::*;

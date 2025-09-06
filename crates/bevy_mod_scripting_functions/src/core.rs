@@ -7,34 +7,27 @@ use std::ops::Deref;
 use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
-use bevy_mod_scripting_core::{
-    bindings::{
-        function::{
-            from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
-        },
-        script_system::ScriptSystemBuilder,
-    },
-    docgen::info::FunctionInfo,
-    script::ScriptAttachment,
-    *,
-};
-use bevy_mod_scripting_derive::script_bindings;
-use bevy_reflect::PartialReflect;
-use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
-use bindings::{
+use bevy_mod_scripting_bindings::{
+    DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt,
     ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer, WorldContainer,
+    ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer, Union,
+    WorldContainer,
     function::{
         from::{Ref, Val},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
-    pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
 };
-use error::InteropError;
-use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
+use bevy_mod_scripting_core::{
+    script::ScriptAttachment,
+    script_system::{ManageScriptSystems, ScriptSystemBuilder},
+};
+use bevy_mod_scripting_derive::script_bindings;
+use bevy_mod_scripting_display::OrFakeId;
+use bevy_reflect::PartialReflect;
+use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 
 #[allow(unused_variables, reason = "feature flags")]
 pub fn register_bevy_bindings(app: &mut App) {
@@ -86,7 +79,7 @@ pub fn register_bevy_bindings(app: &mut App) {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "world_functions",
     unregistered
 )]
@@ -144,7 +137,9 @@ impl World {
         };
 
         // do two things, check it actually exists
-        world.scope_schedule(&schedule, |world, schedule| schedule.initialize(world))??;
+        world
+            .scope_schedule(&schedule, |world, schedule| schedule.initialize(world))?
+            .map_err(InteropError::external)?;
 
         Ok(Some(schedule.into()))
     }
@@ -521,7 +516,7 @@ impl World {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "reflect_reference_functions",
     core
 )]
@@ -552,12 +547,11 @@ impl ReflectReference {
     /// Returns:
     /// * `display`: The display string.
     fn display_ref(
-        ctxt: FunctionCallContext,
+        _ctxt: FunctionCallContext,
         reference: ReflectReference,
     ) -> Result<String, InteropError> {
         profiling::function_scope!("display_ref");
-        let world = ctxt.world()?;
-        Ok(reference.display_with_world(world))
+        Ok(format!("{reference:#?}"))
     }
 
     /// Displays the "value" of this reference
@@ -570,12 +564,11 @@ impl ReflectReference {
     /// Returns:
     /// * `display`: The display string.
     fn display_value(
-        ctxt: FunctionCallContext,
+        _ctxt: FunctionCallContext,
         reference: ReflectReference,
     ) -> Result<String, InteropError> {
         profiling::function_scope!("display_value");
-        let world = ctxt.world()?;
-        Ok(reference.display_value_with_world(world))
+        Ok(format!("{reference:#?}"))
     }
 
     /// Gets and clones the value under the specified key if the underlying type is a map type.
@@ -849,7 +842,7 @@ impl ReflectReference {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_type_registration_functions",
     core
 )]
@@ -879,7 +872,7 @@ impl ScriptTypeRegistration {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_component_registration_functions",
     core
 )]
@@ -909,7 +902,7 @@ impl ScriptComponentRegistration {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_resource_registration_functions",
     core
 )]
@@ -939,7 +932,7 @@ impl ScriptResourceRegistration {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_builder_functions",
     core
 )]
@@ -1017,7 +1010,7 @@ impl ScriptQueryBuilder {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_result_functions",
     core
 )]
@@ -1049,7 +1042,7 @@ impl ScriptQueryResult {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "reflect_schedule_functions",
     core
 )]
@@ -1121,7 +1114,7 @@ impl ReflectSchedule {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "reflect_system_functions",
     core
 )]
@@ -1149,7 +1142,7 @@ impl ReflectSystem {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_system_builder_functions",
     core
 )]
@@ -1241,7 +1234,7 @@ impl ScriptSystemBuilder {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_attachment_functions",
     core
 )]
@@ -1280,7 +1273,7 @@ impl ScriptAttachment {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_handle_functions",
     core
 )]
@@ -1308,7 +1301,7 @@ impl Handle<ScriptAsset> {
 
 #[script_bindings(
     remote,
-    bms_core_path = "bevy_mod_scripting_core",
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "global_namespace_functions",
     unregistered
 )]

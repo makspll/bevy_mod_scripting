@@ -3,7 +3,6 @@
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
 use crate::{
-    bindings::MarkAsCore,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
@@ -19,10 +18,11 @@ use bevy_ecs::{
 };
 use bevy_log::error;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, ScriptAssetLoader};
-use bindings::{
-    AppReflectAllocator, DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference,
-    ScriptTypeRegistration, function::script_function::AppScriptFunctionRegistry,
-    garbage_collector, schedule::AppScheduleRegistry, script_value::ScriptValue,
+
+use bevy_mod_scripting_bindings::{
+    AppReflectAllocator, AppScheduleRegistry, AppScriptFunctionRegistry,
+    DynamicScriptComponentPlugin, MarkAsCore, ReflectReference, ScriptTypeRegistration,
+    ScriptValue, ThreadWorldContainer, garbage_collector,
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
@@ -32,20 +32,16 @@ use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContext};
 
 pub mod asset;
-pub mod bindings;
 pub mod commands;
 pub mod config;
 pub mod context;
-pub mod docgen;
 pub mod error;
 pub mod event;
 pub mod extractors;
 pub mod handler;
-pub mod reflection_extensions;
 pub mod runtime;
 pub mod script;
-
-pub(crate) mod private;
+pub mod script_system;
 
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
@@ -331,6 +327,9 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         );
 
         app.add_plugins(configure_asset_systems);
+
+        let _ = bevy_mod_scripting_display::GLOBAL_TYPE_INFO_PROVIDER
+            .set(|| Some(&ThreadWorldContainer));
 
         DynamicScriptComponentPlugin.build(app);
     }

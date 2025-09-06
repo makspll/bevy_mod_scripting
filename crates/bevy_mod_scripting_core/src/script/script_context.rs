@@ -437,6 +437,7 @@ mod tests {
     use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
     use bevy_app::{App, Plugin};
     use bevy_asset::AssetIndex;
+    use bevy_mod_scripting_bindings::ScriptValue;
     use test_utils::make_test_plugin;
 
     use super::*;

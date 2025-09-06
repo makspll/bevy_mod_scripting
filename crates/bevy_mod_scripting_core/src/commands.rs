@@ -4,9 +4,8 @@ use std::{marker::PhantomData, sync::Arc};
 
 use crate::{
     IntoScriptPluginParams, ScriptContext,
-    bindings::{ScriptValue, WorldGuard},
     context::ScriptingLoader,
-    error::{InteropError, ScriptError},
+    error::ScriptError,
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent, ScriptEvent,
@@ -18,6 +17,7 @@ use crate::{
 use bevy_ecs::{system::Command, world::World};
 use bevy_log::{error, info, trace};
 use bevy_mod_scripting_asset::ScriptAsset;
+use bevy_mod_scripting_bindings::{ScriptValue, WorldGuard};
 use parking_lot::Mutex;
 use {
     bevy_asset::{Assets, Handle},
@@ -230,7 +230,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         script_context
             .insert_arc(attachment, ctxt.clone())
             .map_err(|_| {
-                ScriptError::new(String::from("No context policy applied"))
+                ScriptError::new_boxed(String::from("No context policy applied").into())
                     .with_context("creating new script and context")
             })?;
 
@@ -263,9 +263,9 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         let mut script_context = script_context.write();
 
         script_context.insert_resident(attachment.clone()).map_err(|err| {
-            ScriptError::new(InteropError::invariant(format!(
+            ScriptError::new_boxed(format!(
                 "expected context to be present, could not mark attachment as resident in context, {err:?}"
-            )))
+            ).into())
         })?;
 
         Self::after_load(
@@ -507,9 +507,10 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         let ctxt = match ctxt {
             Some(ctxt) => ctxt,
             None => {
-                let err = ScriptError::new(InteropError::missing_context(self.attachment.clone()))
-                    .with_script(self.attachment.script().display())
-                    .with_context(P::LANGUAGE);
+                let err =
+                    ScriptError::new_boxed(String::from("No context found for script").into())
+                        .with_script(self.attachment.script().display())
+                        .with_context(P::LANGUAGE);
                 handle_script_errors(guard, vec![err.clone()].into_iter());
                 return Err(err);
             }

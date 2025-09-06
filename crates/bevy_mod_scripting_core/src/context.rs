@@ -1,13 +1,10 @@
 //! Traits and types for managing script contexts.
 
 use bevy_ecs::world::WorldId;
+use bevy_mod_scripting_bindings::{ThreadWorldContainer, WorldContainer, WorldGuard};
 
 use crate::{
-    IntoScriptPluginParams,
-    bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
-    error::ScriptError,
-    extractors::GetPluginFor,
-    script::ScriptAttachment,
+    IntoScriptPluginParams, error::ScriptError, extractors::GetPluginFor, script::ScriptAttachment,
 };
 
 /// A trait that all script contexts must implement.

@@ -22,9 +22,9 @@ use bevy_app::{DynEq, FixedUpdate, Last, PostUpdate, Startup, Update};
 use bevy_asset::{AssetServer, Assets};
 use bevy_log::info;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
+use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_core::{
     ConfigureScriptPlugin,
-    bindings::{DisplayWithWorld, ScriptValue, WorldGuard},
     commands::{AddStaticScript, RemoveStaticScript},
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
@@ -641,23 +641,21 @@ impl ScenarioStep {
                                 if ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
                                 {
                                     return Err(anyhow!(
-                                        "Callback '{}' for attachment: '{}' expected: {}, but got: {}",
+                                        "Callback '{}' for attachment: '{}' expected: {}, but got: {:#?}",
                                         label,
                                         script.to_string(),
                                         expected_string,
-                                        val.display_with_world(WorldGuard::new_exclusive(
-                                            app.world_mut()
-                                        ))
+                                        val
                                     ));
                                 }
                             }
                         }
                         Err(e) => {
                             return Err(anyhow!(
-                                "Callback '{}' for attachment: '{}' failed with error: {}",
+                                "Callback '{}' for attachment: '{}' failed with error: {:#?}",
                                 label,
                                 script.to_string(),
-                                e.display_with_world(WorldGuard::new_exclusive(app.world_mut()))
+                                e
                             ));
                         }
                     }

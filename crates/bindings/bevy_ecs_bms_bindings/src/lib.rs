@@ -1,19 +1,22 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+
+
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyEcsScriptingPlugin;
 pub(crate) fn register_entity_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity::Entity,
     >::new(world)
         .register_documented(
@@ -143,11 +146,11 @@ pub(crate) fn register_entity_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::entity::Entity,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_child_of_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::hierarchy::ChildOf,
     >::new(world)
         .register_documented(
@@ -243,11 +246,11 @@ pub(crate) fn register_child_of_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::hierarchy::ChildOf,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_children_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::hierarchy::Children,
     >::new(world)
         .register_documented(
@@ -315,55 +318,57 @@ pub(crate) fn register_children_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::hierarchy::Children,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_name_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::name::Name,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_ecs::name::Name>| {
-            let output: Val<::bevy_ecs::name::Name> = {
-                {
-                    let output: Val<::bevy_ecs::name::Name> =
-                        <::bevy_ecs::name::Name as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_ecs::name::Name>, other: Ref<::bevy_ecs::name::Name>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_ecs::name::Name as ::core::cmp::PartialEq<
-                        ::bevy_ecs::name::Name,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ecs::name::Name>| {
+                let output: Val<::bevy_ecs::name::Name> = {
+                    {
+                        let output: Val<::bevy_ecs::name::Name> = <::bevy_ecs::name::Name as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_ecs::name::Name>, other: Ref<::bevy_ecs::name::Name>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ecs::name::Name as ::core::cmp::PartialEq<
+                            ::bevy_ecs::name::Name,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_ecs::name::Name,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_on_add_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::world::OnAdd,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -371,11 +376,11 @@ pub(crate) fn register_on_add_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::world::OnAdd,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_on_insert_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::world::OnInsert,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -383,11 +388,11 @@ pub(crate) fn register_on_insert_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::world::OnInsert,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_on_remove_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::world::OnRemove,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -395,11 +400,11 @@ pub(crate) fn register_on_remove_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::world::OnRemove,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_on_replace_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::world::OnReplace,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -407,11 +412,11 @@ pub(crate) fn register_on_replace_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::world::OnReplace,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_component_id_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::component::ComponentId,
     >::new(world)
         .register_documented(
@@ -507,11 +512,11 @@ pub(crate) fn register_component_id_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::component::ComponentId,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_default_query_filters_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity_disabling::DefaultQueryFilters,
     >::new(world)
         .register_documented(
@@ -557,11 +562,11 @@ pub(crate) fn register_default_query_filters_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::entity_disabling::DefaultQueryFilters,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_tick_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::component::Tick,
     >::new(world)
         .register_documented(
@@ -698,11 +703,11 @@ pub(crate) fn register_tick_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::component::Tick,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_component_ticks_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::component::ComponentTicks,
     >::new(world)
         .register_documented(
@@ -811,11 +816,11 @@ pub(crate) fn register_component_ticks_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::component::ComponentTicks,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_entity_hash_set_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity::hash_set::EntityHashSet,
     >::new(world)
         .register_documented(
@@ -943,11 +948,11 @@ pub(crate) fn register_entity_hash_set_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::entity::hash_set::EntityHashSet,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_identifier_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::identifier::Identifier,
     >::new(world)
         .register_documented(
@@ -1060,69 +1065,69 @@ pub(crate) fn register_identifier_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::identifier::Identifier,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_entity_hash_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity::EntityHash,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_ecs::entity::EntityHash>| {
-            let output: Val<::bevy_ecs::entity::EntityHash> = {
-                {
-                    let output: Val<::bevy_ecs::entity::EntityHash> =
-                        <::bevy_ecs::entity::EntityHash as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ecs::entity::EntityHash>| {
+                let output: Val<::bevy_ecs::entity::EntityHash> = {
+                    {
+                        let output: Val<::bevy_ecs::entity::EntityHash> = <::bevy_ecs::entity::EntityHash as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_ecs::entity::EntityHash,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_disabled_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity_disabling::Disabled,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_ecs::entity_disabling::Disabled>| {
-            let output: Val<::bevy_ecs::entity_disabling::Disabled> = {
-                {
-                    let output: Val<::bevy_ecs::entity_disabling::Disabled> =
-                        <::bevy_ecs::entity_disabling::Disabled as ::core::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ecs::entity_disabling::Disabled>| {
+                let output: Val<::bevy_ecs::entity_disabling::Disabled> = {
+                    {
+                        let output: Val<::bevy_ecs::entity_disabling::Disabled> = <::bevy_ecs::entity_disabling::Disabled as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_ecs::entity_disabling::Disabled,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_removed_component_entity_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::removal_detection::RemovedComponentEntity,
     >::new(world)
         .register_documented(
@@ -1149,11 +1154,11 @@ pub(crate) fn register_removed_component_entity_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::removal_detection::RemovedComponentEntity,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_system_id_marker_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::system::SystemIdMarker,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -1161,11 +1166,11 @@ pub(crate) fn register_system_id_marker_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::system::SystemIdMarker,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_on_despawn_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::world::OnDespawn,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -1173,7 +1178,7 @@ pub(crate) fn register_on_despawn_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::world::OnDespawn,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyEcsScriptingPlugin {

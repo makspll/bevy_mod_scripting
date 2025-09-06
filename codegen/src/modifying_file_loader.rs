@@ -29,7 +29,7 @@ impl FileLoader for ModifyingFileLoader {
                 // we make it pub so in case we are re-exporting this crate we won't run into private re-export issues
                 for (crate_, excluded_files) in &[
                     ("bevy_reflect", vec!["crates/bevy_reflect/src/lib.rs"]),
-                    ("bevy_mod_scripting_core", vec![]),
+                    ("bevy_mod_scripting_bindings", vec![]),
                 ] {
                     if !f.contains(&format!("extern crate {crate_}"))
                         && !excluded_files

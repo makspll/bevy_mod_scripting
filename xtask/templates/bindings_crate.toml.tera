@@ -20,6 +20,7 @@ bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 bevy_app = { workspace = true, features = ["std"] }
 {%- endif %}
 bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 {{ crate_name }} = { version = "{{ generated_from_version }}", features = [
 {%- for feature in features -%}

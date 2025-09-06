@@ -11,20 +11,16 @@ use std::{
 
 use bevy_ecs::world::World;
 use bevy_log::warn;
-use bevy_mod_scripting_core::{
-    bindings::{
-        MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
-        function::{
-            namespace::Namespace,
-            script_function::{
-                DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
-            },
-        },
-    },
+use bevy_mod_scripting_bindings::{
+    MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
     docgen::{
         TypedThrough,
         info::FunctionInfo,
         typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+    },
+    function::{
+        namespace::Namespace,
+        script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     },
     match_by_type,
 };
@@ -775,10 +771,8 @@ impl<'t> LadFileBuilder<'t> {
 
     fn lad_function_id_from_info(&mut self, function_info: &FunctionInfo) -> LadFunctionId {
         let namespace_string = match function_info.namespace {
-            bevy_mod_scripting_core::bindings::function::namespace::Namespace::Global => {
-                "".to_string()
-            }
-            bevy_mod_scripting_core::bindings::function::namespace::Namespace::OnType(type_id) => {
+            bevy_mod_scripting_bindings::function::namespace::Namespace::Global => "".to_string(),
+            bevy_mod_scripting_bindings::function::namespace::Namespace::OnType(type_id) => {
                 self.lad_id_from_type_id(type_id).to_string()
             }
         };
@@ -854,15 +848,13 @@ impl<'t> LadFileBuilder<'t> {
 mod test {
     use std::collections::HashMap;
 
-    use bevy_mod_scripting_core::{
-        bindings::{
-            Union, Val,
-            function::{
-                from::Ref,
-                namespace::{GlobalNamespace, IntoNamespace},
-            },
-        },
+    use bevy_mod_scripting_bindings::{
+        Union, Val,
         docgen::info::GetFunctionInfo,
+        function::{
+            from::Ref,
+            namespace::{GlobalNamespace, IntoNamespace},
+        },
     };
     use bevy_reflect::Reflect;
 

@@ -1265,8 +1265,8 @@ impl Xtasks {
         };
 
         let template_args = serde_json::to_string(&template_args)?;
-        let bms_core_path = Self::workspace_dir(&main_workspace_app_settings)?
-            .join("crates/bevy_mod_scripting_core")
+        let bms_bindings_path = Self::workspace_dir(&main_workspace_app_settings)?
+            .join("crates/bevy_mod_scripting_bindings")
             .to_path_buf();
 
         Self::run_workspace_command(
@@ -1275,8 +1275,8 @@ impl Xtasks {
             "Failed to run bms-codegen generate",
             vec![
                 "generate",
-                "--bms-core-path",
-                bms_core_path.to_str().unwrap(),
+                "--bms-bindings-path",
+                bms_bindings_path.to_str().unwrap(),
                 "--output",
                 output_dir.to_str().unwrap(),
                 "--template-args",
@@ -1296,8 +1296,8 @@ impl Xtasks {
             "Failed to run bms-codegen generate",
             vec![
                 "collect",
-                "--bms-core-path",
-                bms_core_path.to_str().unwrap(),
+                "--bms-bindings-path",
+                bms_bindings_path.to_str().unwrap(),
                 "--output",
                 output_dir.to_str().unwrap(),
                 "--template-args",

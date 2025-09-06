@@ -1,19 +1,22 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+
+
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyMeshScriptingPlugin;
 pub(crate) fn register_indices_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::Indices,
     >::new(world)
         .register_documented(
@@ -81,11 +84,11 @@ pub(crate) fn register_indices_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::Indices,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mesh_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::Mesh,
     >::new(world)
         .register_documented(
@@ -585,148 +588,151 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::Mesh,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_morph_weights_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::morph::MorphWeights,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::morph::MorphWeights>| {
-            let output: Val<::bevy_mesh::morph::MorphWeights> = {
-                {
-                    let output: Val<::bevy_mesh::morph::MorphWeights> =
-                        <::bevy_mesh::morph::MorphWeights as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::morph::MorphWeights>| {
+                let output: Val<::bevy_mesh::morph::MorphWeights> = {
+                    {
+                        let output: Val<::bevy_mesh::morph::MorphWeights> = <::bevy_mesh::morph::MorphWeights as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::morph::MorphWeights,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mesh_morph_weights_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::morph::MeshMorphWeights,
     >::new(world)
-    .register_documented(
-        "clear_weights",
-        |mut _self: Mut<::bevy_mesh::morph::MeshMorphWeights>| {
-            let output: () = {
-                {
-                    let output: () =
-                        ::bevy_mesh::morph::MeshMorphWeights::clear_weights(&mut _self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::morph::MeshMorphWeights>| {
-            let output: Val<::bevy_mesh::morph::MeshMorphWeights> = {
-                {
-                    let output: Val<::bevy_mesh::morph::MeshMorphWeights> =
-                        <::bevy_mesh::morph::MeshMorphWeights as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clear_weights",
+            |mut _self: Mut<::bevy_mesh::morph::MeshMorphWeights>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::morph::MeshMorphWeights::clear_weights(
+                                &mut _self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::morph::MeshMorphWeights>| {
+                let output: Val<::bevy_mesh::morph::MeshMorphWeights> = {
+                    {
+                        let output: Val<::bevy_mesh::morph::MeshMorphWeights> = <::bevy_mesh::morph::MeshMorphWeights as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::morph::MeshMorphWeights,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_circle_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CircleMeshBuilder,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::primitives::CircleMeshBuilder>| {
-            let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> =
-                        <::bevy_mesh::primitives::CircleMeshBuilder as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "new",
-        |radius: f32, resolution: u32| {
-            let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> =
-                        ::bevy_mesh::primitives::CircleMeshBuilder::new(radius, resolution).into();
-                    output
-                }
-            };
-            output
-        },
-        " Creates a new [`CircleMeshBuilder`] from a given radius and vertex count.",
-        &["radius", "resolution"],
-    )
-    .register_documented(
-        "resolution",
-        |_self: Val<::bevy_mesh::primitives::CircleMeshBuilder>, resolution: u32| {
-            let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> =
-                        ::bevy_mesh::primitives::CircleMeshBuilder::resolution(
-                            _self.into_inner(),
-                            resolution,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Sets the number of vertices used for the circle mesh.",
-        &["_self", "resolution"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::CircleMeshBuilder>| {
+                let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = <::bevy_mesh::primitives::CircleMeshBuilder as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |radius: f32, resolution: u32| {
+                let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = ::bevy_mesh::primitives::CircleMeshBuilder::new(
+                                radius,
+                                resolution,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`CircleMeshBuilder`] from a given radius and vertex count.",
+            &["radius", "resolution"],
+        )
+        .register_documented(
+            "resolution",
+            |_self: Val<::bevy_mesh::primitives::CircleMeshBuilder>, resolution: u32| {
+                let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> = ::bevy_mesh::primitives::CircleMeshBuilder::resolution(
+                                _self.into_inner(),
+                                resolution,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the number of vertices used for the circle mesh.",
+            &["_self", "resolution"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CircleMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_circular_mesh_uv_mode_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CircularMeshUvMode,
     >::new(world)
         .register_documented(
@@ -771,11 +777,11 @@ pub(crate) fn register_circular_mesh_uv_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CircularMeshUvMode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_circular_sector_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CircularSectorMeshBuilder,
     >::new(world)
         .register_documented(
@@ -867,11 +873,11 @@ pub(crate) fn register_circular_sector_mesh_builder_functions(world: &mut World)
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CircularSectorMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_circular_segment_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CircularSegmentMeshBuilder,
     >::new(world)
         .register_documented(
@@ -963,11 +969,11 @@ pub(crate) fn register_circular_segment_mesh_builder_functions(world: &mut World
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CircularSegmentMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_regular_polygon_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::RegularPolygonMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1014,11 +1020,11 @@ pub(crate) fn register_regular_polygon_mesh_builder_functions(world: &mut World)
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::RegularPolygonMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ellipse_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::EllipseMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1080,11 +1086,11 @@ pub(crate) fn register_ellipse_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::EllipseMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_annulus_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::AnnulusMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1146,11 +1152,11 @@ pub(crate) fn register_annulus_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::AnnulusMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_rhombus_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::RhombusMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1193,11 +1199,11 @@ pub(crate) fn register_rhombus_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::RhombusMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_triangle_2_d_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::Triangle2dMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1249,11 +1255,11 @@ pub(crate) fn register_triangle_2_d_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::Triangle2dMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_rectangle_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::RectangleMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1296,11 +1302,11 @@ pub(crate) fn register_rectangle_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::RectangleMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_capsule_2_d_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::Capsule2dMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1362,41 +1368,40 @@ pub(crate) fn register_capsule_2_d_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::Capsule2dMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_capsule_uv_profile_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CapsuleUvProfile,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::primitives::CapsuleUvProfile>| {
-            let output: Val<::bevy_mesh::primitives::CapsuleUvProfile> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::CapsuleUvProfile> =
-                        <::bevy_mesh::primitives::CapsuleUvProfile as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::CapsuleUvProfile>| {
+                let output: Val<::bevy_mesh::primitives::CapsuleUvProfile> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::CapsuleUvProfile> = <::bevy_mesh::primitives::CapsuleUvProfile as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CapsuleUvProfile,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_capsule_3_d_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::Capsule3dMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1516,39 +1521,40 @@ pub(crate) fn register_capsule_3_d_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::Capsule3dMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cone_anchor_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::ConeAnchor,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::primitives::ConeAnchor>| {
-            let output: Val<::bevy_mesh::primitives::ConeAnchor> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::ConeAnchor> =
-                        <::bevy_mesh::primitives::ConeAnchor as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::ConeAnchor>| {
+                let output: Val<::bevy_mesh::primitives::ConeAnchor> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::ConeAnchor> = <::bevy_mesh::primitives::ConeAnchor as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::ConeAnchor,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cone_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::ConeMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1631,11 +1637,11 @@ pub(crate) fn register_cone_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::ConeMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_conical_frustum_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::ConicalFrustumMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1730,71 +1736,69 @@ pub(crate) fn register_conical_frustum_mesh_builder_functions(world: &mut World)
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::ConicalFrustumMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cuboid_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CuboidMeshBuilder,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::primitives::CuboidMeshBuilder>| {
-            let output: Val<::bevy_mesh::primitives::CuboidMeshBuilder> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::CuboidMeshBuilder> =
-                        <::bevy_mesh::primitives::CuboidMeshBuilder as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::CuboidMeshBuilder>| {
+                let output: Val<::bevy_mesh::primitives::CuboidMeshBuilder> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::CuboidMeshBuilder> = <::bevy_mesh::primitives::CuboidMeshBuilder as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CuboidMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cylinder_anchor_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CylinderAnchor,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::primitives::CylinderAnchor>| {
-            let output: Val<::bevy_mesh::primitives::CylinderAnchor> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::CylinderAnchor> =
-                        <::bevy_mesh::primitives::CylinderAnchor as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::CylinderAnchor>| {
+                let output: Val<::bevy_mesh::primitives::CylinderAnchor> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::CylinderAnchor> = <::bevy_mesh::primitives::CylinderAnchor as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CylinderAnchor,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cylinder_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::CylinderMeshBuilder,
     >::new(world)
         .register_documented(
@@ -1912,11 +1916,11 @@ pub(crate) fn register_cylinder_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::CylinderMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::PlaneMeshBuilder,
     >::new(world)
         .register_documented(
@@ -2055,39 +2059,40 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::PlaneMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sphere_kind_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::SphereKind,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::primitives::SphereKind>| {
-            let output: Val<::bevy_mesh::primitives::SphereKind> = {
-                {
-                    let output: Val<::bevy_mesh::primitives::SphereKind> =
-                        <::bevy_mesh::primitives::SphereKind as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::SphereKind>| {
+                let output: Val<::bevy_mesh::primitives::SphereKind> = {
+                    {
+                        let output: Val<::bevy_mesh::primitives::SphereKind> = <::bevy_mesh::primitives::SphereKind as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::SphereKind,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sphere_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::SphereMeshBuilder,
     >::new(world)
         .register_documented(
@@ -2174,11 +2179,11 @@ pub(crate) fn register_sphere_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::SphereMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_tetrahedron_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::TetrahedronMeshBuilder,
     >::new(world)
         .register_documented(
@@ -2205,11 +2210,11 @@ pub(crate) fn register_tetrahedron_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::TetrahedronMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_torus_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::TorusMeshBuilder,
     >::new(world)
         .register_documented(
@@ -2288,11 +2293,11 @@ pub(crate) fn register_torus_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::TorusMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_triangle_3_d_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::Triangle3dMeshBuilder,
     >::new(world)
         .register_documented(
@@ -2319,35 +2324,36 @@ pub(crate) fn register_triangle_3_d_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::Triangle3dMeshBuilder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_skinned_mesh_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::skinning::SkinnedMesh,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::skinning::SkinnedMesh>| {
-            let output: Val<::bevy_mesh::skinning::SkinnedMesh> = {
-                {
-                    let output: Val<::bevy_mesh::skinning::SkinnedMesh> =
-                        <::bevy_mesh::skinning::SkinnedMesh as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::skinning::SkinnedMesh>| {
+                let output: Val<::bevy_mesh::skinning::SkinnedMesh> = {
+                    {
+                        let output: Val<::bevy_mesh::skinning::SkinnedMesh> = <::bevy_mesh::skinning::SkinnedMesh as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_mesh::skinning::SkinnedMesh,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyMeshScriptingPlugin {

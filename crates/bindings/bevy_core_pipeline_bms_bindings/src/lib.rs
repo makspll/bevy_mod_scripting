@@ -1,106 +1,109 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+
+
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyCorePipelineScriptingPlugin;
 pub(crate) fn register_skybox_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::Skybox,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::Skybox>| {
-            let output: Val<::bevy_core_pipeline::Skybox> = {
-                {
-                    let output: Val<::bevy_core_pipeline::Skybox> =
-                        <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::Skybox>| {
+                let output: Val<::bevy_core_pipeline::Skybox> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::Skybox> = <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_core_pipeline::Skybox,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_camera_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::core_2d::Camera2d,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::core_2d::Camera2d>| {
-            let output: Val<::bevy_core_pipeline::core_2d::Camera2d> = {
-                {
-                    let output: Val<::bevy_core_pipeline::core_2d::Camera2d> =
-                        <::bevy_core_pipeline::core_2d::Camera2d as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::core_2d::Camera2d>| {
+                let output: Val<::bevy_core_pipeline::core_2d::Camera2d> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::core_2d::Camera2d> = <::bevy_core_pipeline::core_2d::Camera2d as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_core_pipeline::core_2d::Camera2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_camera_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::core_3d::Camera3d,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::core_3d::Camera3d>| {
-            let output: Val<::bevy_core_pipeline::core_3d::Camera3d> = {
-                {
-                    let output: Val<::bevy_core_pipeline::core_3d::Camera3d> =
-                        <::bevy_core_pipeline::core_3d::Camera3d as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::core_3d::Camera3d>| {
+                let output: Val<::bevy_core_pipeline::core_3d::Camera3d> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::core_3d::Camera3d> = <::bevy_core_pipeline::core_3d::Camera3d as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_core_pipeline::core_3d::Camera3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_deferred_prepass_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::prepass::DeferredPrepass,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -108,11 +111,11 @@ pub(crate) fn register_deferred_prepass_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::prepass::DeferredPrepass,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_depth_prepass_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::prepass::DepthPrepass,
     >::new(world)
         .register_documented(
@@ -137,11 +140,11 @@ pub(crate) fn register_depth_prepass_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::prepass::DepthPrepass,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_motion_vector_prepass_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::prepass::MotionVectorPrepass,
     >::new(world)
         .register_documented(
@@ -168,11 +171,11 @@ pub(crate) fn register_motion_vector_prepass_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::prepass::MotionVectorPrepass,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_normal_prepass_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::prepass::NormalPrepass,
     >::new(world)
         .register_documented(
@@ -197,11 +200,11 @@ pub(crate) fn register_normal_prepass_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::prepass::NormalPrepass,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_auto_exposure_compensation_curve_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::auto_exposure::AutoExposureCompensationCurve,
     >::new(world)
         .register_documented(
@@ -234,11 +237,11 @@ pub(crate) fn register_auto_exposure_compensation_curve_functions(world: &mut Wo
     registry
         .register_type_data::<
             ::bevy_core_pipeline::auto_exposure::AutoExposureCompensationCurve,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_auto_exposure_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::auto_exposure::AutoExposure,
     >::new(world)
         .register_documented(
@@ -265,11 +268,11 @@ pub(crate) fn register_auto_exposure_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::auto_exposure::AutoExposure,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_tonemapping_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::tonemapping::Tonemapping,
     >::new(world)
         .register_documented(
@@ -350,39 +353,40 @@ pub(crate) fn register_tonemapping_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::tonemapping::Tonemapping,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_bloom_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::bloom::Bloom,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::bloom::Bloom>| {
-            let output: Val<::bevy_core_pipeline::bloom::Bloom> = {
-                {
-                    let output: Val<::bevy_core_pipeline::bloom::Bloom> =
-                        <::bevy_core_pipeline::bloom::Bloom as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::bloom::Bloom>| {
+                let output: Val<::bevy_core_pipeline::bloom::Bloom> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::bloom::Bloom> = <::bevy_core_pipeline::bloom::Bloom as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_core_pipeline::bloom::Bloom,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_bloom_composite_mode_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::bloom::BloomCompositeMode,
     >::new(world)
         .register_documented(
@@ -446,11 +450,11 @@ pub(crate) fn register_bloom_composite_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::bloom::BloomCompositeMode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_bloom_prefilter_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::bloom::BloomPrefilter,
     >::new(world)
         .register_documented(
@@ -475,11 +479,11 @@ pub(crate) fn register_bloom_prefilter_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::bloom::BloomPrefilter,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_contrast_adaptive_sharpening_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening,
     >::new(world)
         .register_documented(
@@ -512,11 +516,11 @@ pub(crate) fn register_contrast_adaptive_sharpening_functions(world: &mut World)
     registry
         .register_type_data::<
             ::bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_denoise_cas_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCas,
     >::new(world)
         .register_documented(
@@ -545,67 +549,69 @@ pub(crate) fn register_denoise_cas_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCas,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_fxaa_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::fxaa::Fxaa,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::fxaa::Fxaa>| {
-            let output: Val<::bevy_core_pipeline::fxaa::Fxaa> = {
-                {
-                    let output: Val<::bevy_core_pipeline::fxaa::Fxaa> =
-                        <::bevy_core_pipeline::fxaa::Fxaa as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::fxaa::Fxaa>| {
+                let output: Val<::bevy_core_pipeline::fxaa::Fxaa> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::fxaa::Fxaa> = <::bevy_core_pipeline::fxaa::Fxaa as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_core_pipeline::fxaa::Fxaa,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_smaa_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::smaa::Smaa,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::smaa::Smaa>| {
-            let output: Val<::bevy_core_pipeline::smaa::Smaa> = {
-                {
-                    let output: Val<::bevy_core_pipeline::smaa::Smaa> =
-                        <::bevy_core_pipeline::smaa::Smaa as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::smaa::Smaa>| {
+                let output: Val<::bevy_core_pipeline::smaa::Smaa> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::smaa::Smaa> = <::bevy_core_pipeline::smaa::Smaa as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_core_pipeline::smaa::Smaa,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_deband_dither_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::tonemapping::DebandDither,
     >::new(world)
         .register_documented(
@@ -669,11 +675,11 @@ pub(crate) fn register_deband_dither_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::tonemapping::DebandDither,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_motion_blur_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::motion_blur::MotionBlur,
     >::new(world)
         .register_documented(
@@ -698,41 +704,40 @@ pub(crate) fn register_motion_blur_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::motion_blur::MotionBlur,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_depth_of_field_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::dof::DepthOfField,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::dof::DepthOfField>| {
-            let output: Val<::bevy_core_pipeline::dof::DepthOfField> = {
-                {
-                    let output: Val<::bevy_core_pipeline::dof::DepthOfField> =
-                        <::bevy_core_pipeline::dof::DepthOfField as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::dof::DepthOfField>| {
+                let output: Val<::bevy_core_pipeline::dof::DepthOfField> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::dof::DepthOfField> = <::bevy_core_pipeline::dof::DepthOfField as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_core_pipeline::dof::DepthOfField,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_screen_space_transmission_quality_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality,
     >::new(world)
         .register_documented(
@@ -785,11 +790,11 @@ pub(crate) fn register_screen_space_transmission_quality_functions(world: &mut W
     registry
         .register_type_data::<
             ::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_camera_3_d_depth_load_op_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::core_3d::Camera3dDepthLoadOp,
     >::new(world)
         .register_documented(
@@ -816,11 +821,11 @@ pub(crate) fn register_camera_3_d_depth_load_op_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::core_3d::Camera3dDepthLoadOp,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_camera_3_d_depth_texture_usage_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage,
     >::new(world)
         .register_documented(
@@ -849,11 +854,11 @@ pub(crate) fn register_camera_3_d_depth_texture_usage_functions(world: &mut Worl
     registry
         .register_type_data::<
             ::bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_depth_of_field_mode_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::dof::DepthOfFieldMode,
     >::new(world)
         .register_documented(
@@ -898,11 +903,11 @@ pub(crate) fn register_depth_of_field_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::dof::DepthOfFieldMode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_temporal_anti_aliasing_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::experimental::taa::TemporalAntiAliasing,
     >::new(world)
         .register_documented(
@@ -931,11 +936,11 @@ pub(crate) fn register_temporal_anti_aliasing_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::experimental::taa::TemporalAntiAliasing,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sensitivity_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::fxaa::Sensitivity,
     >::new(world)
         .register_documented(
@@ -997,11 +1002,13 @@ pub(crate) fn register_sensitivity_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::fxaa::Sensitivity,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_order_independent_transparency_settings_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+pub(crate) fn register_order_independent_transparency_settings_functions(
+    world: &mut World,
+) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
     >::new(world)
         .register_documented(
@@ -1034,11 +1041,11 @@ pub(crate) fn register_order_independent_transparency_settings_functions(world: 
     registry
         .register_type_data::<
             ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_chromatic_aberration_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::post_process::ChromaticAberration,
     >::new(world)
         .register_documented(
@@ -1067,11 +1074,11 @@ pub(crate) fn register_chromatic_aberration_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::post_process::ChromaticAberration,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_smaa_preset_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::smaa::SmaaPreset,
     >::new(world)
         .register_documented(
@@ -1133,7 +1140,7 @@ pub(crate) fn register_smaa_preset_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::smaa::SmaaPreset,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyCorePipelineScriptingPlugin {

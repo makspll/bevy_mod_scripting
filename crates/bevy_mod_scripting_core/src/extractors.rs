@@ -2,6 +2,14 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 
+use crate::{
+    IntoScriptPluginParams,
+    context::Context,
+    error::ScriptError,
+    event::{CallbackLabel, IntoCallbackLabel},
+    handler::ScriptingHandler,
+    script::ScriptAttachment,
+};
 use bevy_ecs::{
     archetype::Archetype,
     component::{ComponentId, Tick},
@@ -10,20 +18,11 @@ use bevy_ecs::{
     system::{SystemMeta, SystemParam, SystemParamValidationError},
     world::{DeferredWorld, World, unsafe_world_cell::UnsafeWorldCell},
 };
-use fixedbitset::FixedBitSet;
-
-use crate::{
-    IntoScriptPluginParams,
-    bindings::{
-        WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, pretty_print::DisplayWithWorld,
-        script_value::ScriptValue,
-    },
-    context::Context,
-    error::ScriptError,
-    event::{CallbackLabel, IntoCallbackLabel},
-    handler::ScriptingHandler,
-    script::ScriptAttachment,
+use bevy_mod_scripting_bindings::{
+    WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, script_value::ScriptValue,
 };
+
+use fixedbitset::FixedBitSet;
 
 /// A reverse mapping from plugin context types to their plugin types.
 /// Useful in implementing generic traits on context types.
@@ -135,14 +134,12 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
             if *is_write {
                 if !guard.claim_write_access(*raid) {
                     panic!(
-                        "System tried to access set of system params which break rust aliasing rules. Aliasing access: {}",
-                        (*raid).display_with_world(guard.clone())
+                        "System tried to access set of system params which break rust aliasing rules. Aliasing access: {raid:#?}",
                     );
                 }
             } else if !guard.claim_read_access(*raid) {
                 panic!(
-                    "System tried to access set of system params which break rust aliasing rules. Aliasing access: {}",
-                    (*raid).display_with_world(guard.clone())
+                    "System tried to access set of system params which break rust aliasing rules. Aliasing access: {raid:#?}",
                 );
             }
         }

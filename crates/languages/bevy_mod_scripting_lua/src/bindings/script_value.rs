@@ -4,12 +4,13 @@ use std::{
 };
 
 use bevy_mod_scripting_asset::Language;
-use bevy_mod_scripting_core::{
-    bindings::{function::script_function::FunctionCallContext, script_value::ScriptValue},
-    error::InteropError,
+use bevy_mod_scripting_bindings::{
+    error::InteropError, function::script_function::FunctionCallContext, script_value::ScriptValue,
 };
 use bevy_platform::collections::HashMap;
 use mlua::{FromLua, IntoLua, Value, Variadic};
+
+use crate::IntoMluaError;
 
 use super::reference::LuaReflectReference;
 
@@ -64,7 +65,7 @@ impl FromLua for LuaScriptValue {
                             .collect::<Variadic<_>>(),
                     ) {
                         Ok(v) => v.0,
-                        Err(e) => ScriptValue::Error(InteropError::external_error(Box::new(e))),
+                        Err(e) => ScriptValue::Error(InteropError::external(Box::new(e))),
                     }
                 })
                 .into(),
@@ -140,16 +141,18 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => lua
                 .create_function(move |_lua, args: Variadic<LuaScriptValue>| {
-                    let out =
-                        function.call(args.into_iter().map(Into::into), LUA_CALLER_CONTEXT)?;
+                    let out = function
+                        .call(args.into_iter().map(Into::into), LUA_CALLER_CONTEXT)
+                        .map_err(IntoMluaError::to_lua_error)?;
 
                     Ok(LuaScriptValue::from(out))
                 })?
                 .into_lua(lua)?,
             ScriptValue::FunctionMut(function) => lua
                 .create_function(move |_lua, args: Variadic<LuaScriptValue>| {
-                    let out =
-                        function.call(args.into_iter().map(Into::into), LUA_CALLER_CONTEXT)?;
+                    let out = function
+                        .call(args.into_iter().map(Into::into), LUA_CALLER_CONTEXT)
+                        .map_err(IntoMluaError::to_lua_error)?;
 
                     Ok(LuaScriptValue::from(out))
                 })?

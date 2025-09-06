@@ -20,18 +20,13 @@ default = []
 # if enabled enables documentation updating in optimized builds
 doc_always = []
 
-# if enabled enables some common mlua trait implementations 
-mlua_impls = ["mlua"]
-rhai_impls = ["rhai"]
 
 [dependencies]
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
 bevy_system_reflection = { workspace = true }
-
-
-mlua = { workspace = true, optional = true }
-rhai = { workspace = true, features = ["sync"], optional = true }
+bevy_mod_scripting_display = { workspace = true }
 
 bevy_reflect = { workspace = true, default-features = false, features = [] }
 bevy_ecs = { workspace = true, default-features = false, features = [] }

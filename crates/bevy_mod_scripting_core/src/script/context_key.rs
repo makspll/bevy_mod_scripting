@@ -121,7 +121,7 @@ impl fmt::Display for ContextKey {
 impl ContextKey {
     /// Creates an invalid context key, which should never exist.
     pub const INVALID: Self = Self {
-        entity: Some(Entity::from_raw(0)),
+        entity: Some(Entity::PLACEHOLDER),
         script: Some(Handle::Weak(AssetId::invalid())),
     };
 

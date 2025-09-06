@@ -42,7 +42,9 @@ bevy_ecs = { workspace = true, default-features = false, features = [] }
 bevy_asset = { workspace = true, default-features = false, features = [] }
 bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_platform = { workspace = true, default-features = false, features = [] }
-bevy_mod_scripting_core = { workspace = true, features = ["mlua_impls"] }
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
 mlua = { workspace = true, features = ["vendored", "send", "macros"] }
 profiling = { workspace = true }

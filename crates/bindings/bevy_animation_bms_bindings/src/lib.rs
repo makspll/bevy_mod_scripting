@@ -1,49 +1,51 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+
+
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAnimationScriptingPlugin;
 pub(crate) fn register_animation_node_type_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::AnimationNodeType,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_animation::graph::AnimationNodeType>| {
-            let output: Val<::bevy_animation::graph::AnimationNodeType> = {
-                {
-                    let output: Val<::bevy_animation::graph::AnimationNodeType> =
-                        <::bevy_animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::graph::AnimationNodeType>| {
+                let output: Val<::bevy_animation::graph::AnimationNodeType> = {
+                    {
+                        let output: Val<::bevy_animation::graph::AnimationNodeType> = <::bevy_animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_animation::graph::AnimationNodeType,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_graph_handle_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::AnimationGraphHandle,
     >::new(world)
         .register_documented(
@@ -105,11 +107,11 @@ pub(crate) fn register_animation_graph_handle_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::graph::AnimationGraphHandle,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_threaded_animation_graphs_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::ThreadedAnimationGraphs,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -117,74 +119,78 @@ pub(crate) fn register_threaded_animation_graphs_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::graph::ThreadedAnimationGraphs,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_clip_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::prelude::AnimationClip,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_animation::prelude::AnimationClip>| {
-            let output: Val<::bevy_animation::prelude::AnimationClip> = {
-                {
-                    let output: Val<::bevy_animation::prelude::AnimationClip> =
-                        <::bevy_animation::prelude::AnimationClip as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "duration",
-        |_self: Ref<::bevy_animation::prelude::AnimationClip>| {
-            let output: f32 = {
-                {
-                    let output: f32 =
-                        ::bevy_animation::prelude::AnimationClip::duration(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Duration of the clip, represented in seconds.",
-        &["_self"],
-    )
-    .register_documented(
-        "set_duration",
-        |mut _self: Mut<::bevy_animation::prelude::AnimationClip>, duration_sec: f32| {
-            let output: () = {
-                {
-                    let output: () = ::bevy_animation::prelude::AnimationClip::set_duration(
-                        &mut _self,
-                        duration_sec,
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        " Set the duration of the clip in seconds.",
-        &["_self", "duration_sec"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::prelude::AnimationClip>| {
+                let output: Val<::bevy_animation::prelude::AnimationClip> = {
+                    {
+                        let output: Val<::bevy_animation::prelude::AnimationClip> = <::bevy_animation::prelude::AnimationClip as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "duration",
+            |_self: Ref<::bevy_animation::prelude::AnimationClip>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_animation::prelude::AnimationClip::duration(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Duration of the clip, represented in seconds.",
+            &["_self"],
+        )
+        .register_documented(
+            "set_duration",
+            |
+                mut _self: Mut<::bevy_animation::prelude::AnimationClip>,
+                duration_sec: f32|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_animation::prelude::AnimationClip::set_duration(
+                                &mut _self,
+                                duration_sec,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Set the duration of the clip in seconds.",
+            &["_self", "duration_sec"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_animation::prelude::AnimationClip,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_player_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::prelude::AnimationPlayer,
     >::new(world)
         .register_documented(
@@ -264,11 +270,11 @@ pub(crate) fn register_animation_player_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::prelude::AnimationPlayer,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_graph_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::AnimationGraph,
     >::new(world)
         .register_documented(
@@ -331,11 +337,11 @@ pub(crate) fn register_animation_graph_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::graph::AnimationGraph,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_transitions_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::transition::AnimationTransitions,
     >::new(world)
         .register_documented(
@@ -400,11 +406,11 @@ pub(crate) fn register_animation_transitions_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::transition::AnimationTransitions,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_target_id_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::AnimationTargetId,
     >::new(world)
         .register_documented(
@@ -483,39 +489,40 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::AnimationTargetId,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_target_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::AnimationTarget,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_animation::AnimationTarget>| {
-            let output: Val<::bevy_animation::AnimationTarget> = {
-                {
-                    let output: Val<::bevy_animation::AnimationTarget> =
-                        <::bevy_animation::AnimationTarget as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::AnimationTarget>| {
+                let output: Val<::bevy_animation::AnimationTarget> = {
+                    {
+                        let output: Val<::bevy_animation::AnimationTarget> = <::bevy_animation::AnimationTarget as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_animation::AnimationTarget,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_repeat_animation_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::RepeatAnimation,
     >::new(world)
         .register_documented(
@@ -577,11 +584,11 @@ pub(crate) fn register_repeat_animation_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::RepeatAnimation,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_active_animation_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::ActiveAnimation,
     >::new(world)
         .register_documented(
@@ -776,11 +783,11 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::ActiveAnimation,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_weights_curve_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::gltf_curves::WeightsCurve,
     >::new(world)
         .register_documented(
@@ -805,11 +812,11 @@ pub(crate) fn register_weights_curve_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::gltf_curves::WeightsCurve,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cubic_rotation_curve_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::gltf_curves::CubicRotationCurve,
     >::new(world)
         .register_documented(
@@ -836,11 +843,11 @@ pub(crate) fn register_cubic_rotation_curve_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::gltf_curves::CubicRotationCurve,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_graph_node_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::AnimationGraphNode,
     >::new(world)
         .register_documented(
@@ -865,11 +872,11 @@ pub(crate) fn register_animation_graph_node_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::graph::AnimationGraphNode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_threaded_animation_graph_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::ThreadedAnimationGraph,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -877,11 +884,11 @@ pub(crate) fn register_threaded_animation_graph_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::graph::ThreadedAnimationGraph,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_animation_transition_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::transition::AnimationTransition,
     >::new(world)
         .register_documented(
@@ -908,7 +915,7 @@ pub(crate) fn register_animation_transition_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_animation::transition::AnimationTransition,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyAnimationScriptingPlugin {
