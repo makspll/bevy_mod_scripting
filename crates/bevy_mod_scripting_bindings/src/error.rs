@@ -211,6 +211,17 @@ pub enum InteropError {
 }
 
 impl InteropError {
+    /// Strips outer context layers from the error, returning all contexts and the base error
+    pub fn unwrap_context(self) -> (Vec<Cow<'static, str>>, InteropError) {
+        let mut contexts = Vec::new();
+        let mut current = self;
+        while let InteropError::WithContext(context, err) = current {
+            contexts.push(*context);
+            current = *err;
+        }
+        (contexts, current)
+    }
+
     /// Adds context to an existing error
     pub fn with_context(self, context: impl Into<Cow<'static, str>>) -> Self {
         Self::WithContext(Box::new(context.into()), Box::new(self))

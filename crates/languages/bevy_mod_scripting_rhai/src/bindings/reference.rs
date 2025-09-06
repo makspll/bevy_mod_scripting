@@ -539,13 +539,13 @@ impl CustomType for RhaiReflectReference {
                     out.into_dynamic()
                 },
             )
-            .on_print(|self_| {
+            .on_debug(|self_| {
                 let result: Result<_, InteropError> = (|| {
                     let world = ThreadWorldContainer.try_get_world()?;
                     let reflect_reference = self_.0.clone();
 
                     let func = world
-                        .lookup_function([TypeId::of::<ReflectReference>()], "display_ref")
+                        .lookup_function([TypeId::of::<ReflectReference>()], "debug")
                         .map_err(|f| {
                             InteropError::missing_function(
                                 f,
@@ -560,9 +560,37 @@ impl CustomType for RhaiReflectReference {
 
                     match out {
                         ScriptValue::String(s) => Ok(s),
-                        _ => Err(InteropError::invariant(
-                            "display_ref failed to return a string",
-                        )),
+                        _ => Err(InteropError::invariant("debug failed to return a string")),
+                    }
+                })();
+
+                match result {
+                    Ok(str_) => str_.into(),
+                    Err(error) => error.to_string(),
+                }
+            })
+            .on_print(|self_| {
+                let result: Result<_, InteropError> = (|| {
+                    let world = ThreadWorldContainer.try_get_world()?;
+                    let reflect_reference = self_.0.clone();
+
+                    let func = world
+                        .lookup_function([TypeId::of::<ReflectReference>()], "display")
+                        .map_err(|f| {
+                            InteropError::missing_function(
+                                f,
+                                TypeId::of::<ReflectReference>().into(),
+                            )
+                        })?;
+
+                    let out = func.call(
+                        vec![ScriptValue::Reference(reflect_reference)],
+                        RHAI_CALLER_CONTEXT,
+                    )?;
+
+                    match out {
+                        ScriptValue::String(s) => Ok(s),
+                        _ => Err(InteropError::invariant("display failed to return a string")),
                     }
                 })();
 

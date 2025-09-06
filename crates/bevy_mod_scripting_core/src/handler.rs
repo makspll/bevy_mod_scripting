@@ -113,7 +113,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let events = match events {
         Ok(events) => events,
         Err(err) => {
-            error!("Failed to read script callback events: {err:#?}",);
+            error!("Failed to read script callback events: {err}",);
             return;
         }
     };
@@ -170,7 +170,7 @@ pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackRespons
     });
 
     if let Err(err) = err {
-        error!("Failed to send script callback response: {err:#?}",);
+        error!("Failed to send script callback response: {err}",);
     }
 }
 
@@ -183,10 +183,10 @@ pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: Worl
     });
 
     if let Err(err) = err {
-        error!("Failed to send script error events: {err:#?}",);
+        error!("Failed to send script error events: {err}",);
     }
 
     for error in errors {
-        error!("{error:#?}");
+        error!("{error}");
     }
 }

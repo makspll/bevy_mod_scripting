@@ -1,5 +1,6 @@
-// perfect application of AI
-// helps proompting LLMs to do good for this project
+---
+applyTo: **/.rhai
+---
 
 # Convert lua to rhai script
 Convert the current test to a rhai test. below are examples and instructions on the conversions necessary:

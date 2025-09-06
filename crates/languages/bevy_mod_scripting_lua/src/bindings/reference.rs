@@ -332,7 +332,7 @@ impl UserData for LuaReflectReference {
             let reflect_reference: ReflectReference = self_.into();
 
             let func = world
-                .lookup_function([TypeId::of::<ReflectReference>()], "display_ref")
+                .lookup_function([TypeId::of::<ReflectReference>()], "display")
                 .map_err(|f| {
                     InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
                 })

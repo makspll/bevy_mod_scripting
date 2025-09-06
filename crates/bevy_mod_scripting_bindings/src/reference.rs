@@ -6,8 +6,9 @@
 //! we need wrapper types which have owned and ref variants.
 use super::{WorldGuard, access_map::ReflectAccessId};
 use crate::{
-    ReflectAllocationId, ReflectAllocator, error::InteropError,
-    reflection_extensions::PartialReflectExt, with_access_read, with_access_write,
+    ReflectAllocationId, ReflectAllocator, ThreadWorldContainer, WorldContainer,
+    error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
+    with_access_write,
 };
 use ::{
     bevy_ecs::{
@@ -20,7 +21,9 @@ use ::{
 };
 use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{DisplayWithTypeInfo, OrFakeId, WithTypeInfo};
+use bevy_mod_scripting_display::{
+    DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
+};
 use bevy_reflect::{Access, OffsetAccess, ReflectRef};
 use std::{any::TypeId, fmt::Debug};
 
@@ -52,12 +55,22 @@ impl DisplayWithTypeInfo for ReflectReference {
         f: &mut std::fmt::Formatter<'_>,
         type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
     ) -> std::fmt::Result {
+        // try to display the most information we can
+        if let Ok(world) = ThreadWorldContainer.try_get_world() {
+            if let Ok(r) = self.with_reflect(world, |s| {
+                PrintReflectAsDebug(s).to_string_with_type_info(f, type_info_provider)
+            }) {
+                return r;
+            }
+        }
+
         self.base.display_with_type_info(f, type_info_provider)?;
         if !self.reflect_path.is_empty() {
             f.write_str(" at path ")?;
             self.reflect_path
                 .display_with_type_info(f, type_info_provider)?;
         }
+
         Ok(())
     }
 }

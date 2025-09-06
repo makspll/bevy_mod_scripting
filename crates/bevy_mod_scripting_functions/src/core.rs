@@ -25,7 +25,7 @@ use bevy_mod_scripting_core::{
     script_system::{ManageScriptSystems, ScriptSystemBuilder},
 };
 use bevy_mod_scripting_derive::script_bindings;
-use bevy_mod_scripting_display::OrFakeId;
+use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
 use bevy_reflect::PartialReflect;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 
@@ -537,7 +537,7 @@ impl ReflectReference {
         reference.variant_name(world)
     }
 
-    /// Displays this reference without printing the exact contents.
+    /// Displays this reference and its contents if possible.
     ///
     /// This is useful for debugging and logging.
     ///
@@ -546,15 +546,15 @@ impl ReflectReference {
     /// * `reference`: The reference to display.
     /// Returns:
     /// * `display`: The display string.
-    fn display_ref(
+    fn display(
         _ctxt: FunctionCallContext,
         reference: ReflectReference,
     ) -> Result<String, InteropError> {
-        profiling::function_scope!("display_ref");
-        Ok(format!("{reference:#?}"))
+        profiling::function_scope!("display");
+        Ok(format!("{}", WithTypeInfo::new(&reference)))
     }
 
-    /// Displays the "value" of this reference
+    /// Displays a debug representation of this reference.
     ///
     /// This is useful for debugging and logging.
     ///
@@ -563,11 +563,11 @@ impl ReflectReference {
     /// * `reference`: The reference to display.
     /// Returns:
     /// * `display`: The display string.
-    fn display_value(
+    fn debug(
         _ctxt: FunctionCallContext,
         reference: ReflectReference,
     ) -> Result<String, InteropError> {
-        profiling::function_scope!("display_value");
+        profiling::function_scope!("debug");
         Ok(format!("{reference:#?}"))
     }
 

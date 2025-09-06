@@ -62,45 +62,6 @@ impl Display for ScriptErrorInner {
 }
 
 impl ScriptError {
-    // #[cfg(feature = "mlua_impls")]
-    // /// Destructures mlua error into a script error, taking care to preserve as much information as possible
-    // pub fn from_mlua_error(error: mlua::Error) -> Self {
-    //     match error {
-    //         mlua::Error::CallbackError { traceback, cause }
-    //             if matches!(cause.as_ref(), mlua::Error::ExternalError(_)) =>
-    //         {
-    //             let inner = cause.deref().clone();
-    //             Self::from_mlua_error(inner).with_context(traceback)
-    //         }
-    //         e => {
-    //             if let Some(inner) = e.downcast_ref::<InteropError>() {
-    //                 Self::new(inner.clone())
-    //             } else if let Some(inner) = e.downcast_ref::<ScriptError>() {
-    //                 inner.clone()
-    //             } else {
-    //                 Self::new_external(e)
-    //             }
-    //         }
-    //     }
-    // }
-
-    // #[cfg(feature = "rhai_impls")]
-    // /// destructures a rhai error into a script error, taking care to preserve as much information as possible
-    // pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
-    //     match error {
-    //         rhai::EvalAltResult::ErrorSystem(message, error) => {
-    //             if let Some(inner) = error.downcast_ref::<InteropError>() {
-    //                 Self::new(inner.clone())
-    //             } else if let Some(inner) = error.downcast_ref::<ScriptError>() {
-    //                 inner.clone()
-    //             } else {
-    //                 Self::new_external_boxed(error).with_context(message)
-    //             }
-    //         }
-    //         _ => Self::new_external(error),
-    //     }
-    // }
-
     /// Creates a new script error with an external error
     pub fn new(reason: impl std::error::Error + Send + Sync + 'static) -> Self {
         Self::new_boxed(Box::new(reason))
@@ -134,61 +95,6 @@ impl ScriptError {
     }
 }
 
-// #[cfg(feature = "mlua_impls")]
-// impl From<ScriptError> for mlua::Error {
-//     fn from(value: ScriptError) -> Self {
-//         mlua::Error::external(value)
-//     }
-// }
-
-// #[cfg(feature = "mlua_impls")]
-// impl From<InteropError> for mlua::Error {
-//     fn from(value: InteropError) -> Self {
-//         mlua::Error::external(value)
-//     }
-// }
-
-// #[cfg(feature = "mlua_impls")]
-// impl From<mlua::Error> for ScriptError {
-//     fn from(value: mlua::Error) -> Self {
-//         ScriptError::from_mlua_error(value)
-//     }
-// }
-
-// #[cfg(feature = "rhai_impls")]
-// impl From<rhai::ParseError> for ScriptError {
-//     fn from(value: rhai::ParseError) -> Self {
-//         ScriptError::new_external(value)
-//     }
-// }
-
-// #[cfg(feature = "rhai_impls")]
-// impl From<Box<rhai::EvalAltResult>> for ScriptError {
-//     fn from(value: Box<rhai::EvalAltResult>) -> Self {
-//         ScriptError::from_rhai_error(*value)
-//     }
-// }
-
-// #[cfg(feature = "rhai_impls")]
-// impl From<ScriptError> for Box<rhai::EvalAltResult> {
-//     fn from(value: ScriptError) -> Self {
-//         Box::new(rhai::EvalAltResult::ErrorSystem(
-//             "ScriptError".to_owned(),
-//             Box::new(value),
-//         ))
-//     }
-// }
-
-// #[cfg(feature = "rhai_impls")]
-// impl From<InteropError> for Box<rhai::EvalAltResult> {
-//     fn from(value: InteropError) -> Self {
-//         Box::new(rhai::EvalAltResult::ErrorSystem(
-//             "InteropError".to_owned(),
-//             Box::new(value),
-//         ))
-//     }
-// }
-
 #[derive(Clone, Debug, PartialEq)]
 /// An error thrown when a resource is missing
 pub struct MissingResourceError(&'static str);
@@ -214,7 +120,12 @@ impl std::error::Error for MissingResourceError {}
 
 impl From<InteropError> for ScriptError {
     fn from(val: InteropError) -> Self {
-        ScriptError::new(val)
+        let (ctxt, err) = val.unwrap_context();
+        let mut err = ScriptError::new(err);
+        for ctxt in ctxt {
+            err = err.with_context(ctxt);
+        }
+        err
     }
 }
 
