@@ -9,17 +9,14 @@ use ::{
     bevy_reflect::{Reflect, TypeRegistration},
 };
 use bevy_mod_scripting_asset::Language;
-use bevy_mod_scripting_core::{
-    bindings::{
-        DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
-        ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue,
-        function::{
-            namespace::{GlobalNamespace, NamespaceBuilder},
-            script_function::{DynamicScriptFunctionMut, FunctionCallContext},
-        },
-        pretty_print::DisplayWithWorld,
-    },
+use bevy_mod_scripting_bindings::{
+    DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
+    ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue,
     error::InteropError,
+    function::{
+        namespace::{GlobalNamespace, NamespaceBuilder},
+        script_function::{DynamicScriptFunctionMut, FunctionCallContext},
+    },
 };
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha12Rng;
@@ -89,31 +86,26 @@ pub fn register_test_functions(world: &mut App) {
         )
         .register(
             "_assert_throws",
-            |s: FunctionCallContext, f: DynamicScriptFunctionMut, reg: String| {
-                let world = s.world().unwrap();
-
+            |_s: FunctionCallContext, f: DynamicScriptFunctionMut, reg: String| {
                 let result = f.call(vec![], FunctionCallContext::new(Language::Unknown));
                 let err = match result {
                     Ok(_) => {
-                        return Err(InteropError::external_error(
-                            "Expected function to throw error, but it did not.".into(),
+                        return Err(InteropError::str(
+                            "Expected function to throw error, but it did not.",
                         ));
                     }
-                    Err(e) => e.display_with_world(world.clone()),
+                    Err(e) => format!("{e:#?}"),
                 };
 
                 let regex = regex::Regex::new(&reg).unwrap();
                 if regex.is_match(&err) {
                     Ok(())
                 } else {
-                    Err(InteropError::external_error(
-                        format!(
-                            "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
-                            regex.as_str(),
-                            err
-                        )
-                        .into(),
-                    ))
+                    Err(InteropError::string(format!(
+                        "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                        regex.as_str(),
+                        err
+                    )))
                 }
             },
         );

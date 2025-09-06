@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyImageScriptingPlugin;
 pub(crate) fn register_texture_atlas_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_image::prelude::TextureAtlas,
     >::new(world)
         .register_documented(
@@ -75,11 +75,11 @@ pub(crate) fn register_texture_atlas_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_image::prelude::TextureAtlas,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_image::prelude::TextureAtlasLayout,
     >::new(world)
         .register_documented(
@@ -213,11 +213,11 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_image::prelude::TextureAtlasLayout,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_image_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_image::prelude::Image,
     >::new(world)
         .register_documented(
@@ -406,7 +406,7 @@ pub(crate) fn register_image_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_image::prelude::Image,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyImageScriptingPlugin {

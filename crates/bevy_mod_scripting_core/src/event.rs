@@ -5,11 +5,11 @@ use std::sync::Arc;
 use ::{bevy_asset::Handle, bevy_ecs::entity::Entity, bevy_reflect::Reflect};
 use bevy_ecs::event::Event;
 use bevy_mod_scripting_asset::Language;
+use bevy_mod_scripting_bindings::ScriptValue;
 use parking_lot::Mutex;
 
 use crate::{
     IntoScriptPluginParams,
-    bindings::script_value::ScriptValue,
     error::ScriptError,
     script::{ScriptAttachment, ScriptContext, ScriptId},
 };
@@ -409,6 +409,7 @@ static FORBIDDEN_KEYWORDS: [&str; 82] = [
 
 #[cfg(test)]
 mod test {
+    use super::*;
     use std::sync::Arc;
 
     use ::{
@@ -421,7 +422,6 @@ mod test {
 
     use super::FORBIDDEN_KEYWORDS;
     use crate::{
-        bindings::ScriptValue,
         config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
         event::Recipients,
         script::{ContextPolicy, ScriptAttachment, ScriptContext},

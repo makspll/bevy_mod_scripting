@@ -9,40 +9,42 @@ repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "rhai"]
 categories = ["game-development"]
-readme = "README.md"
+readme = "readme.md"
 
 
 [dependencies]
 
 bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_mesh = { version = "0.16.1", features = [], default-features = true }
+bevy_mesh = { version = "0.16.1", features = [], default-features = true}
 
 
-bevy_asset = { version = "^0.16.1", features = [], default-features = true }
+bevy_asset = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_derive = { version = "^0.16.1", features = [], default-features = true }
+bevy_derive = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_ecs = { version = "^0.16.1", features = [], default-features = true }
+bevy_ecs = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_image = { version = "^0.16.1", features = [], default-features = true }
+bevy_image = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_math = { version = "^0.16.1", features = [], default-features = true }
+bevy_math = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_mikktspace = { version = "^0.16.1", features = [
-], default-features = true }
+bevy_mikktspace = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_reflect = { version = "^0.16.1", features = [], default-features = true }
+bevy_reflect = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_transform = { version = "^0.16.1", features = [], default-features = true }
+bevy_transform = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_utils = { version = "^0.16.1", features = [], default-features = true }
+bevy_utils = { version = "^0.16.1", features = [], default-features = true}
 
-bitflags = { version = "^2.3", features = [], default-features = true }
+bitflags = { version = "^2.3", features = [], default-features = true}
 
-bytemuck = { version = "^1.5", features = [], default-features = true }
+bytemuck = { version = "^1.5", features = [], default-features = true}
 
-hexasphere = { version = "^15.0", features = [], default-features = true }
+hexasphere = { version = "^15.0", features = [], default-features = true}
 
-serde = { version = "^1", features = [], default-features = true }
+serde = { version = "^1", features = [], default-features = true}
+
+

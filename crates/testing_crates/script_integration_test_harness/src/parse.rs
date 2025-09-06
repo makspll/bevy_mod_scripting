@@ -2,8 +2,8 @@ use std::path::PathBuf;
 
 use anyhow::Error;
 use bevy_mod_scripting_asset::Language;
+use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_core::{
-    bindings::ScriptValue,
     callback_labels,
     event::{
         CallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded, Recipients,

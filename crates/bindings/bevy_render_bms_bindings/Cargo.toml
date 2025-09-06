@@ -9,104 +9,92 @@ repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "rhai"]
 categories = ["game-development"]
-readme = "README.md"
+readme = "readme.md"
 
 
 [dependencies]
 
 
 bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_render = { version = "0.16.1", features = [
-    "hdr",
-    "ktx2",
-    "multi_threaded",
-    "webgl",
-], default-features = true }
+bevy_render = { version = "0.16.1", features = ["hdr", "ktx2", "multi_threaded", "webgl"], default-features = true}
 
 
-async-channel = { version = "^2.3.0", features = [], default-features = true }
+async-channel = { version = "^2.3.0", features = [], default-features = true}
 
-bevy_app = { version = "^0.16.1", features = [], default-features = true }
+bevy_app = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_asset = { version = "^0.16.1", features = [], default-features = true }
+bevy_asset = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_color = { version = "^0.16.2", features = [], default-features = true }
+bevy_color = { version = "^0.16.2", features = [], default-features = true}
 
-bevy_derive = { version = "^0.16.1", features = [], default-features = true }
+bevy_derive = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_diagnostic = { version = "^0.16.1", features = [
-], default-features = true }
+bevy_diagnostic = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_ecs = { version = "^0.16.1", features = [], default-features = true }
+bevy_ecs = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_encase_derive = { version = "^0.16.1", features = [
-], default-features = true }
+bevy_encase_derive = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_image = { version = "^0.16.1", features = [
-    "hdr",
-    "ktx2",
-], default-features = false }
+bevy_image = { version = "^0.16.1", features = ["hdr", "ktx2"], default-features = false}
 
-bevy_math = { version = "^0.16.1", features = [], default-features = true }
+bevy_math = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_mesh = { version = "^0.16.1", features = [], default-features = true }
+bevy_mesh = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_reflect = { version = "^0.16.1", features = [], default-features = true }
+bevy_reflect = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_render_macros = { version = "^0.16.1", features = [
-], default-features = true }
+bevy_render_macros = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_tasks = { version = "^0.16.1", features = [
-    "multi_threaded",
-    "multi_threaded",
-], default-features = false }
+bevy_tasks = { version = "^0.16.1", features = ["multi_threaded", "multi_threaded"], default-features = false}
 
-bevy_time = { version = "^0.16.1", features = [], default-features = true }
+bevy_time = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_transform = { version = "^0.16.1", features = [], default-features = true }
+bevy_transform = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_utils = { version = "^0.16.1", features = [], default-features = true }
+bevy_utils = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_window = { version = "^0.16.1", features = [], default-features = true }
+bevy_window = { version = "^0.16.1", features = [], default-features = true}
 
-bitflags = { version = "^2", features = [], default-features = true }
+bitflags = { version = "^2", features = [], default-features = true}
 
-bytemuck = { version = "^1.5", features = [], default-features = true }
+bytemuck = { version = "^1.5", features = [], default-features = true}
 
-codespan-reporting = { version = "^0.11.0", features = [
-], default-features = true }
+codespan-reporting = { version = "^0.11.0", features = [], default-features = true}
 
-encase = { version = "^0.10", features = [], default-features = true }
+encase = { version = "^0.10", features = [], default-features = true}
 
-fixedbitset = { version = "^0.5", features = [], default-features = true }
+fixedbitset = { version = "^0.5", features = [], default-features = true}
 
-futures-lite = { version = "^2.0.1", features = [], default-features = true }
+futures-lite = { version = "^2.0.1", features = [], default-features = true}
 
-indexmap = { version = "^2", features = [], default-features = true }
+indexmap = { version = "^2", features = [], default-features = true}
 
-js-sys = { version = "^0.3", features = [], default-features = true }
+js-sys = { version = "^0.3", features = [], default-features = true}
 
-ktx2 = { version = "^0.3.0", features = [], default-features = true }
+ktx2 = { version = "^0.3.0", features = [], default-features = true}
 
-naga = { version = "^24", features = [], default-features = true }
+naga = { version = "^24", features = [], default-features = true}
 
-naga_oil = { version = "^0.17", features = [], default-features = true }
+naga_oil = { version = "^0.17", features = [], default-features = true}
 
-nonmax = { version = "^0.5", features = [], default-features = true }
+nonmax = { version = "^0.5", features = [], default-features = true}
 
-offset-allocator = { version = "^0.2", features = [], default-features = true }
+offset-allocator = { version = "^0.2", features = [], default-features = true}
 
-send_wrapper = { version = "^0.6.0", features = [], default-features = true }
+send_wrapper = { version = "^0.6.0", features = [], default-features = true}
 
-serde = { version = "^1", features = [], default-features = true }
+serde = { version = "^1", features = [], default-features = true}
 
-smallvec = { version = "^1.11", features = [], default-features = true }
+smallvec = { version = "^1.11", features = [], default-features = true}
 
-variadics_please = { version = "^1.1", features = [], default-features = true }
+variadics_please = { version = "^1.1", features = [], default-features = true}
 
-wasm-bindgen = { version = "^0.2", features = [], default-features = true }
+wasm-bindgen = { version = "^0.2", features = [], default-features = true}
 
-web-sys = { version = "^0.3.67", features = [], default-features = true }
+web-sys = { version = "^0.3.67", features = [], default-features = true}
 
-wgpu = { version = "^24", features = ["webgl"], default-features = false }
+wgpu = { version = "^24", features = ["webgl"], default-features = false}
+
+

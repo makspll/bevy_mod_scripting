@@ -42,7 +42,7 @@ pub fn script_bindings(
         },
     };
 
-    let bms_core_path = &args.bms_core_path;
+    let bms_bindings_path = &args.bms_bindings_path;
 
     let function_name = format_ident!("register_{}", args.name);
     let builder_function_name = if args.unregistered {
@@ -56,17 +56,17 @@ pub fn script_bindings(
 
             let registry = world.get_resource_or_init::<AppTypeRegistry>();
             let mut registry = registry.write();
-            registry.register_type_data::<#type_ident_with_generics, #bms_core_path::bindings::MarkAsGenerated>();
+            registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsGenerated>();
         }
     } else {
         Default::default()
     };
 
-    let mark_as_core = if bms_core_path.is_ident("crate") || args.core {
+    let mark_as_core = if bms_bindings_path.is_ident("crate") || args.core {
         quote_spanned! {impl_span=>
             let registry = world.get_resource_or_init::<AppTypeRegistry>();
             let mut registry = registry.write();
-            registry.register_type_data::<#type_ident_with_generics, #bms_core_path::bindings::MarkAsCore>();
+            registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsCore>();
         }
     } else {
         Default::default()
@@ -76,7 +76,7 @@ pub fn script_bindings(
         quote_spanned! {impl_span=>
             let registry = world.get_resource_or_init::<AppTypeRegistry>();
             let mut registry = registry.write();
-            registry.register_type_data::<#type_ident_with_generics, #bms_core_path::bindings::MarkAsSignificant>();
+            registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsSignificant>();
         }
     } else {
         Default::default()
@@ -84,7 +84,7 @@ pub fn script_bindings(
 
     let out = quote_spanned! {impl_span=>
         #visibility fn #function_name(world: &mut World) {
-            #bms_core_path::bindings::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
+            #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
                 #(#function_registrations)*;
 
             #mark_as_generated
@@ -104,7 +104,7 @@ struct Args {
     /// If true the original impl block will be ignored, and only the function registrations will be generated
     pub remote: bool,
     /// If set the path to override bms imports
-    pub bms_core_path: syn::Path,
+    pub bms_bindings_path: syn::Path,
     /// If true will use `new_unregistered` instead of `new` for the namespace builder
     pub unregistered: bool,
     /// If true registers a marker type against the type registry to state that the type is generated (if unregistered is not set)
@@ -127,10 +127,10 @@ impl syn::parse::Parse for Args {
         let mut generated = false;
         let mut core = false;
         let mut significant = false;
-        let mut bms_core_path =
+        let mut bms_bindings_path =
             syn::Path::from(syn::Ident::new("bevy_mod_scripting", Span::call_site()));
-        bms_core_path.segments.push(syn::PathSegment {
-            ident: syn::Ident::new("core", Span::call_site()),
+        bms_bindings_path.segments.push(syn::PathSegment {
+            ident: syn::Ident::new("bindings", Span::call_site()),
             arguments: syn::PathArguments::None,
         });
         let mut unknown_spans = Vec::default();
@@ -155,11 +155,11 @@ impl syn::parse::Parse for Args {
                     }
                 }
                 syn::Meta::NameValue(name_value) => {
-                    if name_value.path.is_ident("bms_core_path")
+                    if name_value.path.is_ident("bms_bindings_path")
                         && let syn::Expr::Lit(path) = &name_value.value
                         && let syn::Lit::Str(lit_str) = &path.lit
                     {
-                        bms_core_path = syn::parse_str(&lit_str.value())?;
+                        bms_bindings_path = syn::parse_str(&lit_str.value())?;
                         continue;
                     } else if name_value.path.is_ident("name")
                         && let syn::Expr::Lit(path) = &name_value.value
@@ -184,7 +184,7 @@ impl syn::parse::Parse for Args {
 
         Ok(Self {
             remote,
-            bms_core_path,
+            bms_bindings_path,
             name,
             unregistered,
             generated,

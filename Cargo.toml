@@ -99,6 +99,8 @@ bevy_mod_scripting_rhai = { workspace = true, optional = true }
 bevy_mod_scripting_functions = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
 
 [workspace.dependencies]
 # local crates
@@ -112,7 +114,8 @@ ladfile_builder = { path = "crates/ladfile_builder", version = "0.5.1" }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.15.1", default-features = false }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.15.1", default-features = false }
 bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.15.1", default-features = false }
-
+bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.15.1", default-features = false }
+bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.15.1", default-features = false }
 # bevy
 
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.15.1" }
@@ -190,7 +193,7 @@ itertools = { version = "0.14", default-features = false }
 fixedbitset = { version = "0.5", default-features = false }
 variadics_please = { version = "1.1.0", default-features = false }
 anyhow = { version = "1.0", default-features = false }
-
+indent_write = { version = "2", default-features = false, features = ["std"] }
 
 # development and testing
 
@@ -245,6 +248,8 @@ members = [
     "crates/bevy_system_reflection",
     "crates/bindings/*",
     "crates/bevy_mod_scripting_asset",
+    "crates/bevy_mod_scripting_bindings",
+    "crates/bevy_mod_scripting_display",
 ]
 resolver = "2"
 exclude = ["codegen", "crates/macro_tests", "xtask"]

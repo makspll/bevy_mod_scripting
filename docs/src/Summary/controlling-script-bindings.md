@@ -153,8 +153,8 @@ There are a few reserved functions that you can override by registering them on 
 | eq | an equality function, used for checking if two values are equal | ✅ | ❌ |
 | lt | a less than function, used for checking if a value is less than another | ✅ | ❌ |
 | iter | an iterator function, used for iterating over a value | ❌ | ✅ |
-| display_ref | a display function, used for displaying a reference to a value | ❌ | ✅ |
-| display_value | a display function, used for displaying a mutable reference to a value | ❌ | ✅ |
+| display | a display function, used for displaying a reference to a value | ❌ | ✅ |
+| debug | a display function, used for displaying a mutable reference to a value | ❌ | ✅ |
 
 In this context `overridable` indicates whether language implementations will look for a specific function on your type before looking at the generic `ReflectReference` namespace. You can still remove the existing registration for these functions on the `ReflectReference` namespace if you want to replace them with your own implementation.
 

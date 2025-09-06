@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAssetScriptingPlugin;
 pub(crate) fn register_asset_index_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_asset::AssetIndex,
     >::new(world)
         .register_documented(
@@ -106,11 +106,11 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_asset::AssetIndex,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_asset::RenderAssetUsages,
     >::new(world)
         .register_documented(
@@ -534,7 +534,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_asset::RenderAssetUsages,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyAssetScriptingPlugin {

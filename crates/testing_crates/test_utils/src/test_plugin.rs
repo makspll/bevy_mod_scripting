@@ -44,7 +44,7 @@ macro_rules! make_test_plugin {
                         .invocations
                         .lock()
                         .push((context_key.entity(), Some(context_key.script().id())));
-                    Ok($ident::bindings::script_value::ScriptValue::Unit)
+                    Ok(ScriptValue::Unit)
                 }) as $ident::HandlerFn<Self>
             }
 
@@ -72,7 +72,7 @@ macro_rules! make_test_plugin {
 
         #[derive(Default, std::fmt::Debug, Clone)]
         struct TestContext {
-            pub invocations: Vec<$ident::bindings::script_value::ScriptValue>,
+            pub invocations: Vec<ScriptValue>,
         }
     };
 }

@@ -1,13 +1,12 @@
 //! Contains the logic for handling script callback events
 use bevy_ecs::world::WorldId;
+use bevy_mod_scripting_bindings::{
+    ScriptValue, ThreadWorldContainer, WorldAccessGuard, WorldContainer, WorldGuard,
+};
 
 use crate::extractors::CallContext;
 use crate::{
     IntoScriptPluginParams, Language,
-    bindings::{
-        ThreadWorldContainer, WorldAccessGuard, WorldContainer, WorldGuard,
-        pretty_print::DisplayWithWorld, script_value::ScriptValue,
-    },
     error::ScriptError,
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
@@ -114,10 +113,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let events = match events {
         Ok(events) => events,
         Err(err) => {
-            error!(
-                "Failed to read script callback events: {}",
-                err.display_with_world(guard)
-            );
+            error!("Failed to read script callback events: {err}",);
             return;
         }
     };
@@ -174,10 +170,7 @@ pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackRespons
     });
 
     if let Err(err) = err {
-        error!(
-            "Failed to send script callback response: {}",
-            err.display_with_world(world.clone())
-        );
+        error!("Failed to send script callback response: {err}",);
     }
 }
 
@@ -190,13 +183,10 @@ pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: Worl
     });
 
     if let Err(err) = err {
-        error!(
-            "Failed to send script error events: {}",
-            err.display_with_world(world.clone())
-        );
+        error!("Failed to send script error events: {err}",);
     }
 
     for error in errors {
-        error!("{}", error.display_with_world(world.clone()));
+        error!("{error}");
     }
 }

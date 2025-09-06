@@ -10,7 +10,7 @@ use bevy::{
     },
     reflect::Reflect,
 };
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
 };
 use criterion::{

@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyColorScriptingPlugin;
 pub(crate) fn register_color_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Color,
     >::new(world)
         .register_documented(
@@ -538,11 +538,11 @@ pub(crate) fn register_color_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Color,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_srgba_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Srgba,
     >::new(world)
         .register_documented(
@@ -861,11 +861,11 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Srgba,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_linear_rgba_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::LinearRgba,
     >::new(world)
         .register_documented(
@@ -1111,11 +1111,11 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::LinearRgba,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_hsla_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Hsla,
     >::new(world)
         .register_documented(
@@ -1252,11 +1252,11 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Hsla,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_hsva_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Hsva,
     >::new(world)
         .register_documented(
@@ -1376,11 +1376,11 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Hsva,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_hwba_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Hwba,
     >::new(world)
         .register_documented(
@@ -1500,11 +1500,11 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Hwba,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_laba_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Laba,
     >::new(world)
         .register_documented(
@@ -1697,11 +1697,11 @@ pub(crate) fn register_laba_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Laba,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_lcha_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Lcha,
     >::new(world)
         .register_documented(
@@ -1838,11 +1838,11 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Lcha,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_oklaba_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Oklaba,
     >::new(world)
         .register_documented(
@@ -2071,11 +2071,11 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Oklaba,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_oklcha_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Oklcha,
     >::new(world)
         .register_documented(
@@ -2212,11 +2212,11 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Oklcha,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_xyza_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::prelude::Xyza,
     >::new(world)
         .register_documented(
@@ -2445,7 +2445,7 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_color::prelude::Xyza,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyColorScriptingPlugin {

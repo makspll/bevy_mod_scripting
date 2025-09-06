@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTransformScriptingPlugin;
 pub(crate) fn register_global_transform_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_transform::components::GlobalTransform,
     >::new(world)
         .register_documented(
@@ -527,11 +527,11 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_transform::components::GlobalTransform,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_transform_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_transform::components::Transform,
     >::new(world)
         .register_documented(
@@ -1308,11 +1308,11 @@ pub(crate) fn register_transform_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_transform::components::Transform,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_transform_tree_changed_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_transform::components::TransformTreeChanged,
     >::new(world)
         .register_documented(
@@ -1359,7 +1359,7 @@ pub(crate) fn register_transform_tree_changed_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_transform::components::TransformTreeChanged,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyTransformScriptingPlugin {

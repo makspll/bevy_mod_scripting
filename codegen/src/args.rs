@@ -60,9 +60,9 @@ pub struct Args {
     #[arg(global = true, long)]
     pub template_args: Option<String>,
 
-    /// The path to the bevy_mod_scripting_core crate, used to bootstrap necessary traits
+    /// The path to the bevy_mod_scripting_bindings crate, used to bootstrap necessary traits
     #[arg(global = true, long, default_value = ".")]
-    pub bms_core_path: Utf8PathBuf,
+    pub bms_bindings_path: Utf8PathBuf,
 
     /// Crates to exclude from code generation
     #[arg(

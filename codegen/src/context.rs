@@ -86,14 +86,10 @@ impl ReflectType<'_> {
     }
 }
 
-pub(crate) const DEF_PATHS_BMS_FROM_SCRIPT: [&str; 2] = [
-    "bevy_mod_scripting_core::bindings::FromScript",
-    "bindings::FromScript",
-];
-pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] = [
-    "bevy_mod_scripting_core::bindings::IntoScript",
-    "bindings::IntoScript",
-];
+pub(crate) const DEF_PATHS_BMS_FROM_SCRIPT: [&str; 2] =
+    ["bevy_mod_scripting_bindings::FromScript", "FromScript"];
+pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] =
+    ["bevy_mod_scripting_bindings::IntoScript", "IntoScript"];
 
 pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
     ["bevy_reflect::PartialReflect", "reflect::PartialReflect"];

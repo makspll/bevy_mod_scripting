@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,122 +13,129 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyMathScriptingPlugin;
 pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::AspectRatio,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::AspectRatio>| {
-            let output: Val<::bevy_math::AspectRatio> = {
-                {
-                    let output: Val<::bevy_math::AspectRatio> =
-                        <::bevy_math::AspectRatio as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::AspectRatio>, other: Ref<::bevy_math::AspectRatio>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_math::AspectRatio as ::core::cmp::PartialEq<
-                        ::bevy_math::AspectRatio,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "inverse",
-        |_self: Ref<::bevy_math::AspectRatio>| {
-            let output: Val<::bevy_math::AspectRatio> = {
-                {
-                    let output: Val<::bevy_math::AspectRatio> =
-                        ::bevy_math::AspectRatio::inverse(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns the inverse of this aspect ratio (height/width).",
-        &["_self"],
-    )
-    .register_documented(
-        "is_landscape",
-        |_self: Ref<::bevy_math::AspectRatio>| {
-            let output: bool = {
-                {
-                    let output: bool = ::bevy_math::AspectRatio::is_landscape(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns true if the aspect ratio represents a landscape orientation.",
-        &["_self"],
-    )
-    .register_documented(
-        "is_portrait",
-        |_self: Ref<::bevy_math::AspectRatio>| {
-            let output: bool = {
-                {
-                    let output: bool = ::bevy_math::AspectRatio::is_portrait(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns true if the aspect ratio represents a portrait orientation.",
-        &["_self"],
-    )
-    .register_documented(
-        "is_square",
-        |_self: Ref<::bevy_math::AspectRatio>| {
-            let output: bool = {
-                {
-                    let output: bool = ::bevy_math::AspectRatio::is_square(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns true if the aspect ratio is exactly square.",
-        &["_self"],
-    )
-    .register_documented(
-        "ratio",
-        |_self: Ref<::bevy_math::AspectRatio>| {
-            let output: f32 = {
-                {
-                    let output: f32 = ::bevy_math::AspectRatio::ratio(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns the aspect ratio as a f32 value.",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::AspectRatio>| {
+                let output: Val<::bevy_math::AspectRatio> = {
+                    {
+                        let output: Val<::bevy_math::AspectRatio> = <::bevy_math::AspectRatio as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_math::AspectRatio>, other: Ref<::bevy_math::AspectRatio>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::AspectRatio as ::core::cmp::PartialEq<
+                            ::bevy_math::AspectRatio,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "inverse",
+            |_self: Ref<::bevy_math::AspectRatio>| {
+                let output: Val<::bevy_math::AspectRatio> = {
+                    {
+                        let output: Val<::bevy_math::AspectRatio> = ::bevy_math::AspectRatio::inverse(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of this aspect ratio (height/width).",
+            &["_self"],
+        )
+        .register_documented(
+            "is_landscape",
+            |_self: Ref<::bevy_math::AspectRatio>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::AspectRatio::is_landscape(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the aspect ratio represents a landscape orientation.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_portrait",
+            |_self: Ref<::bevy_math::AspectRatio>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::AspectRatio::is_portrait(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the aspect ratio represents a portrait orientation.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_square",
+            |_self: Ref<::bevy_math::AspectRatio>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::AspectRatio::is_square(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the aspect ratio is exactly square.",
+            &["_self"],
+        )
+        .register_documented(
+            "ratio",
+            |_self: Ref<::bevy_math::AspectRatio>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::AspectRatio::ratio(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the aspect ratio as a f32 value.",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_math::AspectRatio,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_compass_octant_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::CompassOctant,
     >::new(world)
         .register_documented(
@@ -241,11 +248,11 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::CompassOctant,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::CompassQuadrant,
     >::new(world)
         .register_documented(
@@ -358,11 +365,11 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::CompassQuadrant,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::Isometry2d,
     >::new(world)
         .register_documented(
@@ -605,11 +612,11 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::Isometry2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::Isometry3d,
     >::new(world)
         .register_documented(
@@ -790,227 +797,195 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::Isometry3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ray_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_math::Ray2d,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_math::Ray2d>| {
-                let output: Val<::bevy_math::Ray2d> = {
-                    {
-                        let output: Val<::bevy_math::Ray2d> = <::bevy_math::Ray2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::bevy_math::Ray2d>, other: Ref<::bevy_math::Ray2d>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_math::Ray2d as ::core::cmp::PartialEq<
-                            ::bevy_math::Ray2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "get_point",
-            |_self: Ref<::bevy_math::Ray2d>, distance: f32| {
-                let output: Val<::bevy_math::prelude::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::prelude::Vec2> = ::bevy_math::Ray2d::get_point(
-                                &_self,
-                                distance,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get a point at a given distance along the ray",
-            &["_self", "distance"],
-        )
-        .register_documented(
-            "intersect_plane",
-            |
-                _self: Ref<::bevy_math::Ray2d>,
-                plane_origin: Val<::bevy_math::prelude::Vec2>,
-                plane: Val<::bevy_math::primitives::Plane2d>|
-            {
-                let output: ::core::option::Option<f32> = {
-                    {
-                        let output: ::core::option::Option<f32> = ::bevy_math::Ray2d::intersect_plane(
-                                &_self,
-                                plane_origin.into_inner(),
-                                plane.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get the distance to a plane if the ray intersects it",
-            &["_self", "plane_origin", "plane"],
-        )
-        .register_documented(
-            "new",
-            |
-                origin: Val<::bevy_math::prelude::Vec2>,
-                direction: Val<::bevy_math::prelude::Dir2>|
-            {
-                let output: Val<::bevy_math::Ray2d> = {
-                    {
-                        let output: Val<::bevy_math::Ray2d> = ::bevy_math::Ray2d::new(
-                                origin.into_inner(),
-                                direction.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new `Ray2d` from a given origin and direction",
-            &["origin", "direction"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Ray2d>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_math::Ray2d>| {
+            let output: Val<::bevy_math::Ray2d> = {
+                {
+                    let output: Val<::bevy_math::Ray2d> =
+                        <::bevy_math::Ray2d as ::core::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_math::Ray2d>, other: Ref<::bevy_math::Ray2d>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_math::Ray2d as ::core::cmp::PartialEq<
+                        ::bevy_math::Ray2d,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "get_point",
+        |_self: Ref<::bevy_math::Ray2d>, distance: f32| {
+            let output: Val<::bevy_math::prelude::Vec2> = {
+                {
+                    let output: Val<::bevy_math::prelude::Vec2> =
+                        ::bevy_math::Ray2d::get_point(&_self, distance).into();
+                    output
+                }
+            };
+            output
+        },
+        " Get a point at a given distance along the ray",
+        &["_self", "distance"],
+    )
+    .register_documented(
+        "intersect_plane",
+        |_self: Ref<::bevy_math::Ray2d>,
+         plane_origin: Val<::bevy_math::prelude::Vec2>,
+         plane: Val<::bevy_math::primitives::Plane2d>| {
+            let output: ::core::option::Option<f32> = {
+                {
+                    let output: ::core::option::Option<f32> = ::bevy_math::Ray2d::intersect_plane(
+                        &_self,
+                        plane_origin.into_inner(),
+                        plane.into_inner(),
+                    )
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        " Get the distance to a plane if the ray intersects it",
+        &["_self", "plane_origin", "plane"],
+    )
+    .register_documented(
+        "new",
+        |origin: Val<::bevy_math::prelude::Vec2>, direction: Val<::bevy_math::prelude::Dir2>| {
+            let output: Val<::bevy_math::Ray2d> = {
+                {
+                    let output: Val<::bevy_math::Ray2d> =
+                        ::bevy_math::Ray2d::new(origin.into_inner(), direction.into_inner()).into();
+                    output
+                }
+            };
+            output
+        },
+        " Create a new `Ray2d` from a given origin and direction",
+        &["origin", "direction"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Ray2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Ray2d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_ray_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_math::Ray3d,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_math::Ray3d>| {
-                let output: Val<::bevy_math::Ray3d> = {
-                    {
-                        let output: Val<::bevy_math::Ray3d> = <::bevy_math::Ray3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::bevy_math::Ray3d>, other: Ref<::bevy_math::Ray3d>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_math::Ray3d as ::core::cmp::PartialEq<
-                            ::bevy_math::Ray3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "get_point",
-            |_self: Ref<::bevy_math::Ray3d>, distance: f32| {
-                let output: Val<::bevy_math::prelude::Vec3> = {
-                    {
-                        let output: Val<::bevy_math::prelude::Vec3> = ::bevy_math::Ray3d::get_point(
-                                &_self,
-                                distance,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get a point at a given distance along the ray",
-            &["_self", "distance"],
-        )
-        .register_documented(
-            "intersect_plane",
-            |
-                _self: Ref<::bevy_math::Ray3d>,
-                plane_origin: Val<::bevy_math::prelude::Vec3>,
-                plane: Val<::bevy_math::primitives::InfinitePlane3d>|
-            {
-                let output: ::core::option::Option<f32> = {
-                    {
-                        let output: ::core::option::Option<f32> = ::bevy_math::Ray3d::intersect_plane(
-                                &_self,
-                                plane_origin.into_inner(),
-                                plane.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get the distance to a plane if the ray intersects it",
-            &["_self", "plane_origin", "plane"],
-        )
-        .register_documented(
-            "new",
-            |
-                origin: Val<::bevy_math::prelude::Vec3>,
-                direction: Val<::bevy_math::prelude::Dir3>|
-            {
-                let output: Val<::bevy_math::Ray3d> = {
-                    {
-                        let output: Val<::bevy_math::Ray3d> = ::bevy_math::Ray3d::new(
-                                origin.into_inner(),
-                                direction.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new `Ray3d` from a given origin and direction",
-            &["origin", "direction"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Ray3d>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_math::Ray3d>| {
+            let output: Val<::bevy_math::Ray3d> = {
+                {
+                    let output: Val<::bevy_math::Ray3d> =
+                        <::bevy_math::Ray3d as ::core::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_math::Ray3d>, other: Ref<::bevy_math::Ray3d>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_math::Ray3d as ::core::cmp::PartialEq<
+                        ::bevy_math::Ray3d,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "get_point",
+        |_self: Ref<::bevy_math::Ray3d>, distance: f32| {
+            let output: Val<::bevy_math::prelude::Vec3> = {
+                {
+                    let output: Val<::bevy_math::prelude::Vec3> =
+                        ::bevy_math::Ray3d::get_point(&_self, distance).into();
+                    output
+                }
+            };
+            output
+        },
+        " Get a point at a given distance along the ray",
+        &["_self", "distance"],
+    )
+    .register_documented(
+        "intersect_plane",
+        |_self: Ref<::bevy_math::Ray3d>,
+         plane_origin: Val<::bevy_math::prelude::Vec3>,
+         plane: Val<::bevy_math::primitives::InfinitePlane3d>| {
+            let output: ::core::option::Option<f32> = {
+                {
+                    let output: ::core::option::Option<f32> = ::bevy_math::Ray3d::intersect_plane(
+                        &_self,
+                        plane_origin.into_inner(),
+                        plane.into_inner(),
+                    )
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        " Get the distance to a plane if the ray intersects it",
+        &["_self", "plane_origin", "plane"],
+    )
+    .register_documented(
+        "new",
+        |origin: Val<::bevy_math::prelude::Vec3>, direction: Val<::bevy_math::prelude::Dir3>| {
+            let output: Val<::bevy_math::Ray3d> = {
+                {
+                    let output: Val<::bevy_math::Ray3d> =
+                        ::bevy_math::Ray3d::new(origin.into_inner(), direction.into_inner()).into();
+                    output
+                }
+            };
+            output
+        },
+        " Create a new `Ray3d` from a given origin and direction",
+        &["origin", "direction"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Ray3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Ray3d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_rot_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::Rot2,
     >::new(world)
         .register_documented(
@@ -1460,13 +1435,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Rot2,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Rot2, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_dir_2_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::prelude::Dir2,
     >::new(world)
         .register_documented(
@@ -1747,11 +1719,11 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::prelude::Dir2,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_dir_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::prelude::Dir3,
     >::new(world)
         .register_documented(
@@ -1923,11 +1895,11 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::prelude::Dir3,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_dir_3_a_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::prelude::Dir3A,
     >::new(world)
         .register_documented(
@@ -2099,11 +2071,11 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::prelude::Dir3A,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_i_rect_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::prelude::IRect,
     >::new(world)
         .register_documented(
@@ -2477,11 +2449,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::prelude::IRect,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_rect_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::prelude::Rect,
     >::new(world)
         .register_documented(
@@ -2859,11 +2831,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::prelude::Rect,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_u_rect_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::prelude::URect,
     >::new(world)
         .register_documented(
@@ -3237,23 +3209,20 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::prelude::URect,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_affine_3_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_math::Affine3,
-    >::new(world);
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Affine3>::new(
+        world,
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Affine3,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Affine3, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::Aabb2d,
     >::new(world)
         .register_documented(
@@ -3357,11 +3326,11 @@ pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::Aabb2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_bounding_circle_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::BoundingCircle,
     >::new(world)
         .register_documented(
@@ -3479,11 +3448,11 @@ pub(crate) fn register_bounding_circle_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::BoundingCircle,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_circle_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Circle,
     >::new(world)
         .register_documented(
@@ -3583,11 +3552,11 @@ pub(crate) fn register_circle_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Circle,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_annulus_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Annulus,
     >::new(world)
         .register_documented(
@@ -3705,11 +3674,11 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Annulus,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_arc_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Arc2d,
     >::new(world)
         .register_documented(
@@ -4022,11 +3991,11 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Arc2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_capsule_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Capsule2d,
     >::new(world)
     .register_documented(
@@ -4099,11 +4068,11 @@ pub(crate) fn register_capsule_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Capsule2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_circular_sector_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::CircularSector,
     >::new(world)
         .register_documented(
@@ -4373,11 +4342,11 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::CircularSector,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_circular_segment_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::CircularSegment,
     >::new(world)
         .register_documented(
@@ -4647,11 +4616,11 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::CircularSegment,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ellipse_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Ellipse,
     >::new(world)
         .register_documented(
@@ -4799,11 +4768,11 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Ellipse,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_line_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Line2d,
     >::new(world)
     .register_documented(
@@ -4846,11 +4815,11 @@ pub(crate) fn register_line_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Line2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_plane_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Plane2d,
     >::new(world)
         .register_documented(
@@ -4912,11 +4881,11 @@ pub(crate) fn register_plane_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Plane2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_rectangle_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Rectangle,
     >::new(world)
         .register_documented(
@@ -5072,11 +5041,11 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Rectangle,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_regular_polygon_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::RegularPolygon,
     >::new(world)
         .register_documented(
@@ -5258,11 +5227,11 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::RegularPolygon,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_rhombus_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Rhombus,
     >::new(world)
         .register_documented(
@@ -5429,11 +5398,11 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Rhombus,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_segment_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Segment2d,
     >::new(world)
         .register_documented(
@@ -5894,11 +5863,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Segment2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Triangle2d,
     >::new(world)
         .register_documented(
@@ -6051,11 +6020,11 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Triangle2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::Aabb3d,
     >::new(world)
     .register_documented(
@@ -6111,11 +6080,11 @@ pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::Aabb3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::BoundingSphere,
     >::new(world)
     .register_documented(
@@ -6189,11 +6158,11 @@ pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::BoundingSphere,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sphere_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Sphere,
     >::new(world)
         .register_documented(
@@ -6293,11 +6262,11 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Sphere,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cuboid_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Cuboid,
     >::new(world)
         .register_documented(
@@ -6454,11 +6423,11 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Cuboid,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cylinder_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Cylinder,
     >::new(world)
     .register_documented(
@@ -6560,11 +6529,11 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Cylinder,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Capsule3d,
     >::new(world)
     .register_documented(
@@ -6637,11 +6606,11 @@ pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Capsule3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cone_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Cone,
     >::new(world)
         .register_documented(
@@ -6772,11 +6741,11 @@ pub(crate) fn register_cone_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Cone,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_conical_frustum_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::ConicalFrustum,
     >::new(world)
     .register_documented(
@@ -6821,11 +6790,11 @@ pub(crate) fn register_conical_frustum_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::ConicalFrustum,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_infinite_plane_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::InfinitePlane3d,
     >::new(world)
         .register_documented(
@@ -6912,11 +6881,11 @@ pub(crate) fn register_infinite_plane_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::InfinitePlane3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_line_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Line3d,
     >::new(world)
     .register_documented(
@@ -6959,11 +6928,11 @@ pub(crate) fn register_line_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Line3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_segment_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Segment3d,
     >::new(world)
         .register_documented(
@@ -7356,11 +7325,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Segment3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_torus_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Torus,
     >::new(world)
         .register_documented(
@@ -7457,11 +7426,11 @@ pub(crate) fn register_torus_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Torus,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Triangle3d,
     >::new(world)
         .register_documented(
@@ -7648,11 +7617,11 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Triangle3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::RayCast2d,
     >::new(world)
     .register_documented(
@@ -7761,11 +7730,11 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::RayCast2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::AabbCast2d,
     >::new(world)
     .register_documented(
@@ -7853,11 +7822,11 @@ pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::AabbCast2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_bounding_circle_cast_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::BoundingCircleCast,
     >::new(world)
         .register_documented(
@@ -7951,11 +7920,11 @@ pub(crate) fn register_bounding_circle_cast_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::BoundingCircleCast,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::RayCast3d,
     >::new(world)
     .register_documented(
@@ -8042,11 +8011,11 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::RayCast3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_aabb_cast_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::AabbCast3d,
     >::new(world)
     .register_documented(
@@ -8110,11 +8079,11 @@ pub(crate) fn register_aabb_cast_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::AabbCast3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_bounding_sphere_cast_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::BoundingSphereCast,
     >::new(world)
         .register_documented(
@@ -8183,11 +8152,11 @@ pub(crate) fn register_bounding_sphere_cast_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::bounding::BoundingSphereCast,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_interval_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::curve::interval::Interval,
     >::new(world)
         .register_documented(
@@ -8391,11 +8360,11 @@ pub(crate) fn register_interval_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::curve::interval::Interval,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_float_ord_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::FloatOrd,
     >::new(world)
         .register_documented(
@@ -8520,13 +8489,11 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::FloatOrd,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::FloatOrd, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_plane_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Plane3d,
     >::new(world)
         .register_documented(
@@ -8592,11 +8559,11 @@ pub(crate) fn register_plane_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Plane3d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_tetrahedron_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Tetrahedron,
     >::new(world)
         .register_documented(
@@ -8700,11 +8667,11 @@ pub(crate) fn register_tetrahedron_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Tetrahedron,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ease_function_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::curve::easing::EaseFunction,
     >::new(world)
     .register_documented(
@@ -8749,11 +8716,11 @@ pub(crate) fn register_ease_function_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::curve::easing::EaseFunction,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_jump_at_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::curve::easing::JumpAt,
     >::new(world)
         .register_documented(
@@ -8815,7 +8782,7 @@ pub(crate) fn register_jump_at_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::curve::easing::JumpAt,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyMathScriptingPlugin {

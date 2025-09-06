@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyInputScriptingPlugin;
 pub(crate) fn register_gamepad_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::Gamepad,
     >::new(world)
         .register_documented(
@@ -169,11 +169,11 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::Gamepad,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_axis_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadAxis,
     >::new(world)
         .register_documented(
@@ -235,11 +235,11 @@ pub(crate) fn register_gamepad_axis_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadAxis,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_button_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadButton,
     >::new(world)
         .register_documented(
@@ -301,11 +301,11 @@ pub(crate) fn register_gamepad_button_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadButton,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_settings_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadSettings,
     >::new(world)
     .register_documented(
@@ -331,11 +331,11 @@ pub(crate) fn register_gamepad_settings_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadSettings,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_key_code_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::KeyCode,
     >::new(world)
         .register_documented(
@@ -397,11 +397,11 @@ pub(crate) fn register_key_code_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::keyboard::KeyCode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mouse_button_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseButton,
     >::new(world)
         .register_documented(
@@ -463,11 +463,11 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::MouseButton,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_touch_input_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::touch::TouchInput,
     >::new(world)
     .register_documented(
@@ -510,11 +510,11 @@ pub(crate) fn register_touch_input_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::touch::TouchInput,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_keyboard_focus_lost_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::KeyboardFocusLost,
     >::new(world)
         .register_documented(
@@ -576,11 +576,11 @@ pub(crate) fn register_keyboard_focus_lost_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::keyboard::KeyboardFocusLost,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_keyboard_input_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::KeyboardInput,
     >::new(world)
         .register_documented(
@@ -642,11 +642,11 @@ pub(crate) fn register_keyboard_input_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::keyboard::KeyboardInput,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_accumulated_mouse_motion_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::AccumulatedMouseMotion,
     >::new(world)
         .register_documented(
@@ -691,11 +691,11 @@ pub(crate) fn register_accumulated_mouse_motion_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::AccumulatedMouseMotion,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_accumulated_mouse_scroll_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::AccumulatedMouseScroll,
     >::new(world)
         .register_documented(
@@ -740,11 +740,11 @@ pub(crate) fn register_accumulated_mouse_scroll_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::AccumulatedMouseScroll,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseButtonInput,
     >::new(world)
         .register_documented(
@@ -806,11 +806,11 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::MouseButtonInput,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mouse_motion_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseMotion,
     >::new(world)
     .register_documented(
@@ -853,11 +853,11 @@ pub(crate) fn register_mouse_motion_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::MouseMotion,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mouse_wheel_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseWheel,
     >::new(world)
     .register_documented(
@@ -900,11 +900,11 @@ pub(crate) fn register_mouse_wheel_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::MouseWheel,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_axis_changed_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadAxisChangedEvent,
     >::new(world)
         .register_documented(
@@ -976,11 +976,11 @@ pub(crate) fn register_gamepad_axis_changed_event_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadAxisChangedEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_button_changed_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadButtonChangedEvent,
     >::new(world)
         .register_documented(
@@ -1054,11 +1054,11 @@ pub(crate) fn register_gamepad_button_changed_event_functions(world: &mut World)
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadButtonChangedEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadButtonStateChangedEvent,
     >::new(world)
         .register_documented(
@@ -1147,11 +1147,11 @@ pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut 
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadButtonStateChangedEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_connection_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadConnection,
     >::new(world)
     .register_documented(
@@ -1196,11 +1196,11 @@ pub(crate) fn register_gamepad_connection_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadConnection,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_connection_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadConnectionEvent,
     >::new(world)
         .register_documented(
@@ -1300,11 +1300,11 @@ pub(crate) fn register_gamepad_connection_event_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadConnectionEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadEvent,
     >::new(world)
     .register_documented(
@@ -1349,11 +1349,11 @@ pub(crate) fn register_gamepad_event_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_input_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadInput,
     >::new(world)
         .register_documented(
@@ -1415,11 +1415,11 @@ pub(crate) fn register_gamepad_input_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadInput,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_rumble_request_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadRumbleRequest,
     >::new(world)
         .register_documented(
@@ -1461,11 +1461,11 @@ pub(crate) fn register_gamepad_rumble_request_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadRumbleRequest,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_raw_gamepad_axis_changed_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::RawGamepadAxisChangedEvent,
     >::new(world)
         .register_documented(
@@ -1537,11 +1537,11 @@ pub(crate) fn register_raw_gamepad_axis_changed_event_functions(world: &mut Worl
     registry
         .register_type_data::<
             ::bevy_input::gamepad::RawGamepadAxisChangedEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_raw_gamepad_button_changed_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::RawGamepadButtonChangedEvent,
     >::new(world)
         .register_documented(
@@ -1613,11 +1613,11 @@ pub(crate) fn register_raw_gamepad_button_changed_event_functions(world: &mut Wo
     registry
         .register_type_data::<
             ::bevy_input::gamepad::RawGamepadButtonChangedEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_raw_gamepad_event_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::RawGamepadEvent,
     >::new(world)
     .register_documented(
@@ -1662,11 +1662,11 @@ pub(crate) fn register_raw_gamepad_event_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::RawGamepadEvent,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pinch_gesture_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gestures::PinchGesture,
     >::new(world)
     .register_documented(
@@ -1711,11 +1711,11 @@ pub(crate) fn register_pinch_gesture_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gestures::PinchGesture,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_rotation_gesture_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gestures::RotationGesture,
     >::new(world)
     .register_documented(
@@ -1760,11 +1760,11 @@ pub(crate) fn register_rotation_gesture_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gestures::RotationGesture,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_double_tap_gesture_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gestures::DoubleTapGesture,
     >::new(world)
     .register_documented(
@@ -1809,11 +1809,11 @@ pub(crate) fn register_double_tap_gesture_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gestures::DoubleTapGesture,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pan_gesture_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gestures::PanGesture,
     >::new(world)
     .register_documented(
@@ -1856,11 +1856,11 @@ pub(crate) fn register_pan_gesture_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gestures::PanGesture,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_button_state_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::ButtonState,
     >::new(world)
         .register_documented(
@@ -1937,11 +1937,11 @@ pub(crate) fn register_button_state_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::ButtonState,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_button_settings_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::ButtonSettings,
     >::new(world)
         .register_documented(
@@ -2092,11 +2092,11 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::ButtonSettings,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_axis_settings_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::AxisSettings,
     >::new(world)
         .register_documented(
@@ -2334,11 +2334,11 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::AxisSettings,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_button_axis_settings_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::ButtonAxisSettings,
     >::new(world)
     .register_documented(
@@ -2364,11 +2364,11 @@ pub(crate) fn register_button_axis_settings_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::ButtonAxisSettings,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gamepad_rumble_intensity_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadRumbleIntensity,
     >::new(world)
         .register_documented(
@@ -2447,11 +2447,11 @@ pub(crate) fn register_gamepad_rumble_intensity_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::gamepad::GamepadRumbleIntensity,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_key_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::Key,
     >::new(world)
         .register_documented(
@@ -2513,11 +2513,11 @@ pub(crate) fn register_key_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::keyboard::Key,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_native_key_code_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::NativeKeyCode,
     >::new(world)
         .register_documented(
@@ -2579,11 +2579,11 @@ pub(crate) fn register_native_key_code_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::keyboard::NativeKeyCode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_native_key_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::NativeKey,
     >::new(world)
         .register_documented(
@@ -2645,11 +2645,11 @@ pub(crate) fn register_native_key_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::keyboard::NativeKey,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseScrollUnit,
     >::new(world)
         .register_documented(
@@ -2711,11 +2711,11 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::MouseScrollUnit,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_touch_phase_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::touch::TouchPhase,
     >::new(world)
         .register_documented(
@@ -2777,11 +2777,11 @@ pub(crate) fn register_touch_phase_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::touch::TouchPhase,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_force_touch_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::touch::ForceTouch,
     >::new(world)
     .register_documented(
@@ -2824,7 +2824,7 @@ pub(crate) fn register_force_touch_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::touch::ForceTouch,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyInputScriptingPlugin {

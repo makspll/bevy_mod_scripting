@@ -2,6 +2,8 @@
 
 use std::ops::Deref;
 
+use crate::bindings::script_value::{FromDynamic, IntoDynamic};
+
 use ::{
     bevy_app::Plugin,
     bevy_asset::Handle,
@@ -11,28 +13,24 @@ use bevy_app::App;
 use bevy_ecs::world::WorldId;
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
+use bevy_mod_scripting_bindings::{
+    AppScriptGlobalsRegistry, InteropError, Namespace, PartialReflectExt, ScriptValue,
+    ThreadWorldContainer, WorldContainer,
+};
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
-    bindings::{
-        ThreadWorldContainer, WorldContainer, function::namespace::Namespace,
-        globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
-    },
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     error::ScriptError,
     event::CallbackLabel,
     extractors::GetPluginFor,
     make_plugin_config_static,
-    reflection_extensions::PartialReflectExt,
     script::{ContextPolicy, DisplayProxy, ScriptAttachment},
 };
-use bindings::{
-    reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference},
-    script_value::{FromDynamic, IntoDynamic},
-};
+use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference};
 use parking_lot::RwLock;
 pub use rhai;
 
-use rhai::{AST, CallFnOptions, Dynamic, Engine, EvalAltResult, Scope};
+use rhai::{AST, CallFnOptions, Dynamic, Engine, EvalAltResult, ParseError, Scope};
 /// Bindings for rhai.
 pub mod bindings;
 
@@ -76,6 +74,47 @@ impl IntoScriptPluginParams for RhaiScriptingPlugin {
     }
 }
 
+/// A trait for converting types into an [`EvalAltResult`]
+pub trait IntoRhaiError {
+    /// Converts the error into an [`InteropError`]
+    fn into_rhai_error(self) -> Box<EvalAltResult>;
+}
+
+impl IntoRhaiError for InteropError {
+    fn into_rhai_error(self) -> Box<EvalAltResult> {
+        Box::new(rhai::EvalAltResult::ErrorSystem(
+            "ScriptError".to_owned(),
+            Box::new(self),
+        ))
+    }
+}
+
+/// A trait for converting types into an [`InteropError`]
+pub trait IntoInteropError {
+    /// Converts the error into an [`InteropError`]
+    fn into_bms_error(self) -> InteropError;
+}
+
+impl IntoInteropError for Box<EvalAltResult> {
+    fn into_bms_error(self) -> InteropError {
+        match *self {
+            rhai::EvalAltResult::ErrorSystem(message, error) => {
+                if let Some(inner) = error.downcast_ref::<InteropError>() {
+                    inner.clone()
+                } else {
+                    InteropError::external_boxed(error).with_context(message)
+                }
+            }
+            _ => InteropError::external(self),
+        }
+    }
+}
+
+impl IntoInteropError for ParseError {
+    fn into_bms_error(self) -> InteropError {
+        InteropError::external(self)
+    }
+}
 /// The rhai scripting plugin. Used to add rhai scripting to a bevy app within the context of the BMS framework.
 pub struct RhaiScriptingPlugin {
     /// The internal scripting plugin
@@ -120,9 +159,12 @@ impl Default for RhaiScriptingPlugin {
                             match &global.maker {
                                 Some(maker) => {
                                     let global = (maker)(world.clone())?;
-                                    context
-                                        .scope
-                                        .set_or_push(key.to_string(), global.into_dynamic()?);
+                                    context.scope.set_or_push(
+                                        key.to_string(),
+                                        global
+                                            .into_dynamic()
+                                            .map_err(IntoInteropError::into_bms_error)?,
+                                    );
                                 }
                                 None => {
                                     let ref_ = RhaiStaticReflectReference(global.type_id);
@@ -159,7 +201,9 @@ impl Default for RhaiScriptingPlugin {
                         {
                             context.scope.set_or_push(
                                 key.name.clone(),
-                                ScriptValue::Function(function.clone()).into_dynamic()?,
+                                ScriptValue::Function(function.clone())
+                                    .into_dynamic()
+                                    .map_err(IntoInteropError::into_bms_error)?,
                             );
                         }
 
@@ -219,7 +263,9 @@ fn load_rhai_content_into_context(
     let pre_handling_initializers = config.pre_handling_callbacks;
     let runtime = config.runtime.read();
 
-    context.ast = runtime.compile(std::str::from_utf8(content)?)?;
+    context.ast = runtime
+        .compile(std::str::from_utf8(content)?)
+        .map_err(IntoInteropError::into_bms_error)?;
     context
         .ast
         .set_source(context_key.script().display().to_string());
@@ -230,7 +276,9 @@ fn load_rhai_content_into_context(
     pre_handling_initializers
         .iter()
         .try_for_each(|init| init(context_key, context))?;
-    runtime.eval_ast_with_scope::<()>(&mut context.scope, &context.ast)?;
+    runtime
+        .eval_ast_with_scope::<()>(&mut context.scope, &context.ast)
+        .map_err(IntoInteropError::into_bms_error)?;
 
     context.ast.clear_statements();
     Ok(())
@@ -282,7 +330,8 @@ pub fn rhai_callback_handler(
     let args = args
         .into_iter()
         .map(|v| v.into_dynamic())
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(IntoInteropError::into_bms_error)?;
 
     trace!(
         "Calling callback {} in context {} with args: {:?}",
@@ -297,7 +346,7 @@ pub fn rhai_callback_handler(
         callback.as_ref(),
         args,
     ) {
-        Ok(v) => Ok(ScriptValue::from_dynamic(v)?),
+        Ok(v) => Ok(ScriptValue::from_dynamic(v).map_err(IntoInteropError::into_bms_error)?),
         Err(e) => {
             if let EvalAltResult::ErrorFunctionNotFound(_, _) = e.unwrap_inner() {
                 trace!(
@@ -306,7 +355,7 @@ pub fn rhai_callback_handler(
                 );
                 Ok(ScriptValue::Unit)
             } else {
-                Err(ScriptError::from(e))
+                Err(ScriptError::from(e.into_bms_error()))
             }
         }
     }

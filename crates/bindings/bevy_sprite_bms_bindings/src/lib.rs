@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevySpriteScriptingPlugin;
 pub(crate) fn register_sprite_picking_camera_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::SpritePickingCamera,
     >::new(world)
         .register_documented(
@@ -38,11 +38,11 @@ pub(crate) fn register_sprite_picking_camera_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::SpritePickingCamera,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sprite_picking_mode_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::SpritePickingMode,
     >::new(world)
     .register_documented(
@@ -68,11 +68,11 @@ pub(crate) fn register_sprite_picking_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::SpritePickingMode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sprite_picking_settings_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::SpritePickingSettings,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -80,11 +80,11 @@ pub(crate) fn register_sprite_picking_settings_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::SpritePickingSettings,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sprite_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::Sprite,
     >::new(world)
     .register_documented(
@@ -123,11 +123,11 @@ pub(crate) fn register_sprite_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::Sprite,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::SpriteImageMode,
     >::new(world)
         .register_documented(
@@ -189,11 +189,11 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::SpriteImageMode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_border_rect_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::BorderRect,
     >::new(world)
         .register_documented(
@@ -273,11 +273,11 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::BorderRect,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_slice_scale_mode_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::SliceScaleMode,
     >::new(world)
     .register_documented(
@@ -322,11 +322,11 @@ pub(crate) fn register_slice_scale_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::SliceScaleMode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_texture_slicer_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::TextureSlicer,
     >::new(world)
     .register_documented(
@@ -371,11 +371,11 @@ pub(crate) fn register_texture_slicer_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::TextureSlicer,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_color_material_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::ColorMaterial,
     >::new(world)
     .register_documented(
@@ -401,11 +401,11 @@ pub(crate) fn register_color_material_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::ColorMaterial,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_scaling_mode_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::ScalingMode,
     >::new(world)
     .register_documented(
@@ -448,11 +448,11 @@ pub(crate) fn register_scaling_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::ScalingMode,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_anchor_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Anchor,
     >::new(world)
         .register_documented(
@@ -509,57 +509,60 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_sprite::Anchor,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_sprite::Anchor, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_alpha_mode_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::AlphaMode2d,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_sprite::AlphaMode2d>| {
-            let output: Val<::bevy_sprite::AlphaMode2d> = {
-                {
-                    let output: Val<::bevy_sprite::AlphaMode2d> =
-                        <::bevy_sprite::AlphaMode2d as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_sprite::AlphaMode2d>, other: Ref<::bevy_sprite::AlphaMode2d>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_sprite::AlphaMode2d as ::std::cmp::PartialEq<
-                        ::bevy_sprite::AlphaMode2d,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_sprite::AlphaMode2d>| {
+                let output: Val<::bevy_sprite::AlphaMode2d> = {
+                    {
+                        let output: Val<::bevy_sprite::AlphaMode2d> = <::bevy_sprite::AlphaMode2d as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_sprite::AlphaMode2d>,
+                other: Ref<::bevy_sprite::AlphaMode2d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_sprite::AlphaMode2d as ::std::cmp::PartialEq<
+                            ::bevy_sprite::AlphaMode2d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_sprite::AlphaMode2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_wireframe_2_d_material_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Wireframe2dMaterial,
     >::new(world)
     .register_documented(
@@ -583,11 +586,11 @@ pub(crate) fn register_wireframe_2_d_material_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::Wireframe2dMaterial,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_no_wireframe_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::NoWireframe2d,
     >::new(world)
         .register_documented(
@@ -649,11 +652,11 @@ pub(crate) fn register_no_wireframe_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::NoWireframe2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_wireframe_2_d_config_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Wireframe2dConfig,
     >::new(world)
     .register_documented(
@@ -677,11 +680,11 @@ pub(crate) fn register_wireframe_2_d_config_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::Wireframe2dConfig,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_wireframe_2_d_color_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Wireframe2dColor,
     >::new(world)
     .register_documented(
@@ -705,11 +708,11 @@ pub(crate) fn register_wireframe_2_d_color_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::Wireframe2dColor,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_wireframe_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Wireframe2d,
     >::new(world)
         .register_documented(
@@ -771,11 +774,11 @@ pub(crate) fn register_wireframe_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::Wireframe2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Mesh2dWireframe,
     >::new(world)
         .register_documented(
@@ -837,7 +840,7 @@ pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::Mesh2dWireframe,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevySpriteScriptingPlugin {

@@ -25,9 +25,6 @@ pub static TEMPLATE_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/templates");
     Deserialize,
 )]
 pub enum TemplateKind {
-    // Note: order here matters, macros need to be loaded first as they are used in other templates
-    #[strum(to_string = "macros.tera")]
-    Macros,
     #[strum(to_string = "mod.tera")]
     SharedModule,
     #[strum(to_string = "crate.tera")]

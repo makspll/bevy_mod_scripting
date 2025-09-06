@@ -1,14 +1,14 @@
 use std::str::FromStr;
 
 use bevy_mod_scripting_asset::Language;
-use bevy_mod_scripting_core::{
-    bindings::{
-        function::script_function::{DynamicScriptFunction, FunctionCallContext},
-        script_value::ScriptValue,
-    },
+use bevy_mod_scripting_bindings::{
     error::InteropError,
+    function::script_function::{DynamicScriptFunction, FunctionCallContext},
+    script_value::ScriptValue,
 };
 use rhai::{Dynamic, EvalAltResult, FnPtr, Map, NativeCallContext};
+
+use crate::IntoRhaiError;
 
 use super::reference::RhaiReflectReference;
 
@@ -41,10 +41,13 @@ impl IntoDynamic for FunctionWithReceiver {
                     .map(|arg| ScriptValue::from_dynamic(arg.clone()))
                     .collect::<Result<Vec<_>, _>>()?;
 
-                let out = self.function.call(
-                    std::iter::once(self.receiver.clone()).chain(convert_args),
-                    RHAI_CALLER_CONTEXT,
-                )?;
+                let out = self
+                    .function
+                    .call(
+                        std::iter::once(self.receiver.clone()).chain(convert_args),
+                        RHAI_CALLER_CONTEXT,
+                    )
+                    .map_err(IntoRhaiError::into_rhai_error)?;
 
                 out.into_dynamic()
             },
@@ -101,7 +104,9 @@ impl IntoDynamic for ScriptValue {
                         .map(|arg| ScriptValue::from_dynamic(arg.clone()))
                         .collect::<Result<Vec<_>, _>>()?;
 
-                    let out = func.call(convert_args, RHAI_CALLER_CONTEXT)?;
+                    let out = func
+                        .call(convert_args, RHAI_CALLER_CONTEXT)
+                        .map_err(IntoRhaiError::into_rhai_error)?;
 
                     out.into_dynamic()
                 },
@@ -115,7 +120,9 @@ impl IntoDynamic for ScriptValue {
                         .map(|arg| ScriptValue::from_dynamic(arg.clone()))
                         .collect::<Result<Vec<_>, _>>()?;
 
-                    let out = func.call(convert_args, RHAI_CALLER_CONTEXT)?;
+                    let out = func
+                        .call(convert_args, RHAI_CALLER_CONTEXT)
+                        .map_err(IntoRhaiError::into_rhai_error)?;
 
                     out.into_dynamic()
                 },
@@ -162,20 +169,21 @@ impl FromDynamic for ScriptValue {
             )),
             d if d.is_array() => Ok(ScriptValue::List(
                 d.into_array()
-                    .map_err(|_| InteropError::invariant("d is proved to be an array"))?
+                    .map_err(|_| InteropError::invariant("d is proved to be an array"))
+                    .map_err(IntoRhaiError::into_rhai_error)?
                     .into_iter()
                     .map(ScriptValue::from_dynamic)
                     .collect::<Result<Vec<_>, _>>()?,
             )),
             d => {
+                let type_name = d.type_name();
                 if let Some(v) = d.try_cast::<RhaiReflectReference>() {
                     Ok(ScriptValue::Reference(v.0))
                 } else {
                     Err(Box::new(EvalAltResult::ErrorSystem(
                         "FromDynamic".to_string(),
-                        Box::new(InteropError::impossible_conversion(std::any::TypeId::of::<
-                            ScriptValue,
-                        >(
+                        Box::new(InteropError::string(format!(
+                            "unsupported dynamic type for conversion to ScriptValue from dynamic type: {type_name:?}",
                         ))),
                     )))
                 }

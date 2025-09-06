@@ -9,32 +9,24 @@ repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "rhai"]
 categories = ["game-development"]
-readme = "README.md"
+readme = "readme.md"
 
 
 [dependencies]
 bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_color = { version = "0.16.2", features = [
-    "wgpu-types",
-    "alloc",
-    "std",
-    "bevy_reflect",
-    "encase",
-], default-features = true }
+bevy_color = { version = "0.16.2", features = ["std", "bevy_reflect", "encase", "alloc", "wgpu-types"], default-features = true}
 
 
-bevy_math = { version = "^0.16.1", features = [
-    "alloc",
-    "std",
-], default-features = false }
+bevy_math = { version = "^0.16.1", features = ["std", "alloc"], default-features = false}
 
-bevy_reflect = { version = "^0.16.1", features = [
-    "std",
-], default-features = false }
+bevy_reflect = { version = "^0.16.1", features = ["std"], default-features = false}
 
-bytemuck = { version = "^1", features = [], default-features = true }
+bytemuck = { version = "^1", features = [], default-features = true}
 
-wgpu-types = { version = "^24", features = ["std"], default-features = false }
+wgpu-types = { version = "^24", features = ["std"], default-features = false}
+
+

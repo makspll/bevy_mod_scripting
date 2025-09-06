@@ -1,3 +1,4 @@
+mod debug_with_type_info;
 mod get_type_dependencies;
 mod into_script;
 mod script_bindings;
@@ -9,8 +10,9 @@ use quote::{ToTokens, quote_spanned};
 use syn::{Ident, ImplItemFn, ItemImpl};
 
 pub use self::{
-    get_type_dependencies::get_type_dependencies, into_script::into_script,
-    script_bindings::script_bindings, script_globals::script_globals, typed_through::typed_through,
+    debug_with_type_info::debug_with_type_info, get_type_dependencies::get_type_dependencies,
+    into_script::into_script, script_bindings::script_bindings, script_globals::script_globals,
+    typed_through::typed_through,
 };
 
 pub(crate) fn impl_fn_to_namespace_builder_registration(fun: &ImplItemFn) -> TokenStream {

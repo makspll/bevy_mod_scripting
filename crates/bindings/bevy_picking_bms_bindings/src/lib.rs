@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyPickingScriptingPlugin;
 pub(crate) fn register_ray_cast_backfaces_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces,
     >::new(world)
         .register_documented(
@@ -42,11 +42,11 @@ pub(crate) fn register_ray_cast_backfaces_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ray_cast_visibility_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::mesh_picking::ray_cast::RayCastVisibility,
     >::new(world)
         .register_documented(
@@ -75,11 +75,11 @@ pub(crate) fn register_ray_cast_visibility_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::mesh_picking::ray_cast::RayCastVisibility,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mesh_picking_camera_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::mesh_picking::MeshPickingCamera,
     >::new(world)
         .register_documented(
@@ -106,11 +106,11 @@ pub(crate) fn register_mesh_picking_camera_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::mesh_picking::MeshPickingCamera,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_mesh_picking_settings_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::mesh_picking::MeshPickingSettings,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -118,11 +118,11 @@ pub(crate) fn register_mesh_picking_settings_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::mesh_picking::MeshPickingSettings,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_input_plugin_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::input::prelude::PointerInputPlugin,
     >::new(world)
         .register_documented(
@@ -149,11 +149,11 @@ pub(crate) fn register_pointer_input_plugin_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::input::prelude::PointerInputPlugin,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_button_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerButton,
     >::new(world)
         .register_documented(
@@ -215,11 +215,11 @@ pub(crate) fn register_pointer_button_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::pointer::PointerButton,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pickable_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::prelude::Pickable,
     >::new(world)
         .register_documented(
@@ -281,11 +281,11 @@ pub(crate) fn register_pickable_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::backend::prelude::Pickable,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_picking_plugin_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::prelude::PickingPlugin,
     >::new(world)
     .register_documented(
@@ -311,11 +311,11 @@ pub(crate) fn register_picking_plugin_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::prelude::PickingPlugin,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_input_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerInput,
     >::new(world)
         .register_documented(
@@ -405,11 +405,11 @@ pub(crate) fn register_pointer_input_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::pointer::PointerInput,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_hits_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::prelude::PointerHits,
     >::new(world)
         .register_documented(
@@ -434,11 +434,11 @@ pub(crate) fn register_pointer_hits_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::backend::prelude::PointerHits,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_picking_interaction_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::hover::PickingInteraction,
     >::new(world)
         .register_documented(
@@ -500,11 +500,11 @@ pub(crate) fn register_picking_interaction_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::hover::PickingInteraction,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_id_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::prelude::PointerId,
     >::new(world)
         .register_documented(
@@ -634,11 +634,11 @@ pub(crate) fn register_pointer_id_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::backend::prelude::PointerId,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_location_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::prelude::PointerLocation,
     >::new(world)
         .register_documented(
@@ -704,11 +704,11 @@ pub(crate) fn register_pointer_location_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::backend::prelude::PointerLocation,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_press_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerPress,
     >::new(world)
         .register_documented(
@@ -838,11 +838,11 @@ pub(crate) fn register_pointer_press_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::pointer::PointerPress,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_interaction_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerInteraction,
     >::new(world)
         .register_documented(
@@ -867,11 +867,11 @@ pub(crate) fn register_pointer_interaction_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::pointer::PointerInteraction,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ray_id_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::ray::RayId,
     >::new(world)
         .register_documented(
@@ -954,11 +954,11 @@ pub(crate) fn register_ray_id_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::backend::ray::RayId,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_cancel_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Cancel,
     >::new(world)
     .register_documented(
@@ -999,11 +999,11 @@ pub(crate) fn register_cancel_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Cancel,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_click_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Click,
     >::new(world)
     .register_documented(
@@ -1044,11 +1044,11 @@ pub(crate) fn register_click_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Click,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pressed_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Pressed,
     >::new(world)
     .register_documented(
@@ -1090,11 +1090,11 @@ pub(crate) fn register_pressed_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Pressed,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_drop_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragDrop,
     >::new(world)
     .register_documented(
@@ -1137,11 +1137,11 @@ pub(crate) fn register_drag_drop_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::DragDrop,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_end_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragEnd,
     >::new(world)
     .register_documented(
@@ -1183,11 +1183,11 @@ pub(crate) fn register_drag_end_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::DragEnd,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_enter_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragEnter,
     >::new(world)
     .register_documented(
@@ -1230,11 +1230,11 @@ pub(crate) fn register_drag_enter_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::DragEnter,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Drag,
     >::new(world)
     .register_documented(
@@ -1274,11 +1274,11 @@ pub(crate) fn register_drag_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Drag,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_leave_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragLeave,
     >::new(world)
     .register_documented(
@@ -1321,11 +1321,11 @@ pub(crate) fn register_drag_leave_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::DragLeave,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_over_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragOver,
     >::new(world)
     .register_documented(
@@ -1368,11 +1368,11 @@ pub(crate) fn register_drag_over_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::DragOver,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_start_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragStart,
     >::new(world)
     .register_documented(
@@ -1415,11 +1415,11 @@ pub(crate) fn register_drag_start_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::DragStart,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_move_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Move,
     >::new(world)
     .register_documented(
@@ -1459,55 +1459,60 @@ pub(crate) fn register_move_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Move,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_out_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Out,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Out>| {
-            let output: Val<::bevy_picking::events::Out> = {
-                {
-                    let output: Val<::bevy_picking::events::Out> =
-                        <::bevy_picking::events::Out as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Out>, other: Ref<::bevy_picking::events::Out>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Out as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Out,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Out>| {
+                let output: Val<::bevy_picking::events::Out> = {
+                    {
+                        let output: Val<::bevy_picking::events::Out> = <::bevy_picking::events::Out as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Out>,
+                other: Ref<::bevy_picking::events::Out>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Out as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Out,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_picking::events::Out,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_over_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Over,
     >::new(world)
     .register_documented(
@@ -1547,11 +1552,11 @@ pub(crate) fn register_over_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Over,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_released_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Released,
     >::new(world)
     .register_documented(
@@ -1594,11 +1599,11 @@ pub(crate) fn register_released_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Released,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_scroll_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Scroll,
     >::new(world)
     .register_documented(
@@ -1639,11 +1644,11 @@ pub(crate) fn register_scroll_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::Scroll,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_hit_data_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::prelude::HitData,
     >::new(world)
     .register_documented(
@@ -1688,11 +1693,11 @@ pub(crate) fn register_hit_data_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::backend::prelude::HitData,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_location_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::Location,
     >::new(world)
     .register_documented(
@@ -1735,11 +1740,11 @@ pub(crate) fn register_location_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::pointer::Location,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_pointer_action_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerAction,
     >::new(world)
     .register_documented(
@@ -1765,11 +1770,11 @@ pub(crate) fn register_pointer_action_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::pointer::PointerAction,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_drag_entry_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragEntry,
     >::new(world)
     .register_documented(
@@ -1812,11 +1817,11 @@ pub(crate) fn register_drag_entry_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::events::DragEntry,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_simplified_mesh_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh,
     >::new(world)
         .register_documented(
@@ -1845,11 +1850,11 @@ pub(crate) fn register_simplified_mesh_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ray_mesh_hit_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::mesh_picking::ray_cast::RayMeshHit,
     >::new(world)
         .register_documented(
@@ -1876,11 +1881,11 @@ pub(crate) fn register_ray_mesh_hit_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::mesh_picking::ray_cast::RayMeshHit,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_backfaces_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::mesh_picking::ray_cast::Backfaces,
     >::new(world)
         .register_documented(
@@ -1907,11 +1912,11 @@ pub(crate) fn register_backfaces_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::mesh_picking::ray_cast::Backfaces,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_press_direction_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PressDirection,
     >::new(world)
         .register_documented(
@@ -1973,7 +1978,7 @@ pub(crate) fn register_press_direction_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_picking::pointer::PressDirection,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyPickingScriptingPlugin {

@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyGizmosScriptingPlugin;
 pub(crate) fn register_aabb_gizmo_config_group_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::aabb::AabbGizmoConfigGroup,
     >::new(world)
     .register_documented(
@@ -39,11 +39,11 @@ pub(crate) fn register_aabb_gizmo_config_group_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::aabb::AabbGizmoConfigGroup,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_show_aabb_gizmo_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::aabb::ShowAabbGizmo,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -51,11 +51,11 @@ pub(crate) fn register_show_aabb_gizmo_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::aabb::ShowAabbGizmo,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_default_gizmo_config_group_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::config::DefaultGizmoConfigGroup,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -63,11 +63,11 @@ pub(crate) fn register_default_gizmo_config_group_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::config::DefaultGizmoConfigGroup,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gizmo_config_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::config::GizmoConfig,
     >::new(world)
     .register_documented(
@@ -91,11 +91,11 @@ pub(crate) fn register_gizmo_config_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::config::GizmoConfig,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gizmo_config_store_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::config::GizmoConfigStore,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -103,11 +103,11 @@ pub(crate) fn register_gizmo_config_store_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::config::GizmoConfigStore,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gizmo_line_config_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::config::GizmoLineConfig,
     >::new(world)
     .register_documented(
@@ -133,11 +133,11 @@ pub(crate) fn register_gizmo_line_config_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::config::GizmoLineConfig,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gizmo_line_joint_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::config::GizmoLineJoint,
     >::new(world)
         .register_documented(
@@ -199,11 +199,11 @@ pub(crate) fn register_gizmo_line_joint_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::config::GizmoLineJoint,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gizmo_line_style_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::config::GizmoLineStyle,
     >::new(world)
     .register_documented(
@@ -248,11 +248,11 @@ pub(crate) fn register_gizmo_line_style_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::config::GizmoLineStyle,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gizmo_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::retained::Gizmo,
     >::new(world)
     .register_documented(
@@ -276,11 +276,11 @@ pub(crate) fn register_gizmo_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::retained::Gizmo,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_light_gizmo_color_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::light::LightGizmoColor,
     >::new(world)
     .register_documented(
@@ -306,11 +306,11 @@ pub(crate) fn register_light_gizmo_color_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::light::LightGizmoColor,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_light_gizmo_config_group_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::light::LightGizmoConfigGroup,
     >::new(world)
         .register_documented(
@@ -335,11 +335,11 @@ pub(crate) fn register_light_gizmo_config_group_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::light::LightGizmoConfigGroup,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_show_light_gizmo_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::light::ShowLightGizmo,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -347,11 +347,11 @@ pub(crate) fn register_show_light_gizmo_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::light::ShowLightGizmo,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_erased_gizmo_config_group_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::config::ErasedGizmoConfigGroup,
     >::new(world)
         .register_documented(
@@ -376,7 +376,7 @@ pub(crate) fn register_erased_gizmo_config_group_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gizmos::config::ErasedGizmoConfigGroup,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyGizmosScriptingPlugin {

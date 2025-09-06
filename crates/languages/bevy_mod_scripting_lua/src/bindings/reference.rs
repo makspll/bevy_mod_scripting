@@ -1,14 +1,13 @@
 use std::any::TypeId;
 
-use bevy_mod_scripting_core::{
-    bindings::{
-        ReflectReference, ThreadWorldContainer, WorldContainer, pretty_print::DisplayWithWorld,
-        script_value::ScriptValue,
-    },
-    error::InteropError,
-    reflection_extensions::TypeIdExtensions,
+use bevy_mod_scripting_bindings::{
+    ReflectReference, ThreadWorldContainer, WorldContainer, error::InteropError,
+    script_value::ScriptValue,
 };
-use mlua::{MetaMethod, UserData, UserDataMethods};
+use bevy_mod_scripting_display::OrFakeId;
+use mlua::{ExternalError, MetaMethod, UserData, UserDataMethods};
+
+use crate::IntoMluaError;
 
 use super::script_value::{LUA_CALLER_CONTEXT, LuaScriptValue};
 
@@ -41,9 +40,14 @@ impl UserData for LuaReflectReference {
             MetaMethod::Index,
             |_, (self_, key): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Index");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
-                let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
 
                 let key: ScriptValue = key.into();
                 let key = match key.as_string() {
@@ -65,7 +69,8 @@ impl UserData for LuaReflectReference {
 
                 let out = registry
                     .magic_functions
-                    .get(LUA_CALLER_CONTEXT, self_, key)?;
+                    .get(LUA_CALLER_CONTEXT, self_, key)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -74,7 +79,9 @@ impl UserData for LuaReflectReference {
             MetaMethod::NewIndex,
             |_, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::NewIndex");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
@@ -84,7 +91,8 @@ impl UserData for LuaReflectReference {
 
                 registry
                     .magic_functions
-                    .set(LUA_CALLER_CONTEXT, self_, key, value)?;
+                    .set(LUA_CALLER_CONTEXT, self_, key, value)
+                    .map_err(IntoMluaError::to_lua_error)?;
 
                 Ok(())
             },
@@ -94,13 +102,19 @@ impl UserData for LuaReflectReference {
             MetaMethod::Sub,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Sub");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "sub", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "sub", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -109,13 +123,19 @@ impl UserData for LuaReflectReference {
             MetaMethod::Add,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Add");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "add", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "add", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -124,13 +144,19 @@ impl UserData for LuaReflectReference {
             MetaMethod::Mul,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Mul");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "mul", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "mul", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -139,13 +165,19 @@ impl UserData for LuaReflectReference {
             MetaMethod::Div,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Div");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "div", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "div", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -154,24 +186,37 @@ impl UserData for LuaReflectReference {
             MetaMethod::Mod,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Mod");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "rem", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "rem", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(MetaMethod::Unm, |_, self_: LuaReflectReference| {
             profiling::function_scope!("MetaMethod::Unm");
-            let world = ThreadWorldContainer.try_get_world()?;
+            let world = ThreadWorldContainer
+                .try_get_world()
+                .map_err(IntoMluaError::to_lua_error)?;
             let self_: ReflectReference = self_.into();
-            let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+            let target_type_id = self_
+                .tail_type_id(world.clone())
+                .map_err(IntoMluaError::to_lua_error)?
+                .or_fake_id();
             let args = vec![ScriptValue::Reference(self_)];
-            let out = world.try_call_overloads(target_type_id, "neg", args, LUA_CALLER_CONTEXT)?;
+            let out = world
+                .try_call_overloads(target_type_id, "neg", args, LUA_CALLER_CONTEXT)
+                .map_err(IntoMluaError::to_lua_error)?;
             Ok(LuaScriptValue(out))
         });
 
@@ -179,13 +224,19 @@ impl UserData for LuaReflectReference {
             MetaMethod::Pow,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Pow");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "pow", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "pow", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -194,13 +245,19 @@ impl UserData for LuaReflectReference {
             MetaMethod::Eq,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Eq");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "eq", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "eq", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -209,23 +266,31 @@ impl UserData for LuaReflectReference {
             MetaMethod::Lt,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Lt");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_
+                    .tail_type_id(world.clone())
+                    .map_err(IntoMluaError::to_lua_error)?
+                    .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                let out =
-                    world.try_call_overloads(target_type_id, "lt", args, LUA_CALLER_CONTEXT)?;
+                let out = world
+                    .try_call_overloads(target_type_id, "lt", args, LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(MetaMethod::Len, |_lua, self_: LuaScriptValue| {
             profiling::function_scope!("MetaMethod::Len");
-            let world = ThreadWorldContainer.try_get_world()?;
+            let world = ThreadWorldContainer
+                .try_get_world()
+                .map_err(IntoMluaError::to_lua_error)?;
             let script_value: ScriptValue = self_.into();
             Ok(match script_value {
-                ScriptValue::Reference(r) => r.len(world)?,
+                ScriptValue::Reference(r) => r.len(world).map_err(IntoMluaError::to_lua_error)?,
                 ScriptValue::List(l) => Some(l.len()),
                 _ => None,
             })
@@ -241,30 +306,43 @@ impl UserData for LuaReflectReference {
             profiling::function_scope!("MetaMethod::Pairs");
             // let mut iter_func = lookup_dynamic_function_typed::<ReflectReference>(l, "iter")
             //     .expect("No iter function registered");
-            let world = ThreadWorldContainer.try_get_world()?;
+            let world = ThreadWorldContainer
+                .try_get_world()
+                .map_err(IntoMluaError::to_lua_error)?;
 
             let iter_func = world
                 .lookup_function([TypeId::of::<ReflectReference>()], "iter")
-                .map_err(|f| InteropError::missing_function(TypeId::of::<ReflectReference>(), f))?;
+                .map_err(|f| {
+                    InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                })
+                .map_err(IntoMluaError::to_lua_error)?;
 
-            Ok(LuaScriptValue::from(iter_func.call(
-                vec![ScriptValue::Reference(s.into())],
-                LUA_CALLER_CONTEXT,
-            )?))
+            Ok(LuaScriptValue::from(
+                iter_func
+                    .call(vec![ScriptValue::Reference(s.into())], LUA_CALLER_CONTEXT)
+                    .map_err(IntoMluaError::to_lua_error)?,
+            ))
         });
 
         m.add_meta_function(MetaMethod::ToString, |_, self_: LuaReflectReference| {
             profiling::function_scope!("MetaMethod::ToString");
-            let world = ThreadWorldContainer.try_get_world()?;
+            let world = ThreadWorldContainer
+                .try_get_world()
+                .map_err(IntoMluaError::to_lua_error)?;
             let reflect_reference: ReflectReference = self_.into();
 
             let func = world
-                .lookup_function([TypeId::of::<ReflectReference>()], "display_ref")
-                .map_err(|f| InteropError::missing_function(TypeId::of::<ReflectReference>(), f))?;
-            let out = func.call(
-                vec![ScriptValue::Reference(reflect_reference)],
-                LUA_CALLER_CONTEXT,
-            )?;
+                .lookup_function([TypeId::of::<ReflectReference>()], "display")
+                .map_err(|f| {
+                    InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                })
+                .map_err(IntoMluaError::to_lua_error)?;
+            let out = func
+                .call(
+                    vec![ScriptValue::Reference(reflect_reference)],
+                    LUA_CALLER_CONTEXT,
+                )
+                .map_err(IntoMluaError::to_lua_error)?;
             Ok(LuaScriptValue(out))
         });
     }
@@ -283,7 +361,9 @@ impl UserData for LuaStaticReflectReference {
             MetaMethod::Index,
             |_, (self_, key): (LuaStaticReflectReference, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Index");
-                let world = ThreadWorldContainer.try_get_world()?;
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoMluaError::to_lua_error)?;
                 let type_id = self_.0;
 
                 let key: ScriptValue = key.into();
@@ -295,11 +375,9 @@ impl UserData for LuaStaticReflectReference {
                     },
                     Err(key) => key,
                 };
-
-                let world = ThreadWorldContainer.try_get_world()?;
                 Err(
-                    InteropError::missing_function(type_id, key.display_with_world(world.clone()))
-                        .into(),
+                    InteropError::missing_function(format!("{key:#?}"), type_id.into())
+                        .into_lua_err(),
                 )
             },
         );

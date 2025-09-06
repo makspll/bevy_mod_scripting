@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyA11YScriptingPlugin;
 pub(crate) fn register_accessibility_requested_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_a11y::AccessibilityRequested,
     >::new(world)
         .register_documented(
@@ -73,11 +73,11 @@ pub(crate) fn register_accessibility_requested_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_a11y::AccessibilityRequested,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_a11y::ManageAccessibilityUpdates,
     >::new(world)
     .register_documented(
@@ -132,11 +132,11 @@ pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World)
     registry
         .register_type_data::<
             ::bevy_a11y::ManageAccessibilityUpdates,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_accessibility_system_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_a11y::AccessibilitySystem,
     >::new(world)
         .register_documented(
@@ -198,7 +198,7 @@ pub(crate) fn register_accessibility_system_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_a11y::AccessibilitySystem,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyA11YScriptingPlugin {

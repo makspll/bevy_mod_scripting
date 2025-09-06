@@ -10,18 +10,17 @@ use bevy_app::App;
 use bevy_ecs::world::WorldId;
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
+use bevy_mod_scripting_bindings::{
+    InteropError, PartialReflectExt, ThreadWorldContainer, WorldContainer,
+    function::namespace::Namespace, globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
+};
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
-    bindings::{
-        ThreadWorldContainer, WorldContainer, function::namespace::Namespace,
-        globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
-    },
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     error::ScriptError,
     event::CallbackLabel,
     extractors::GetPluginFor,
     make_plugin_config_static,
-    reflection_extensions::PartialReflectExt,
     script::{ContextPolicy, ScriptAttachment},
 };
 use bindings::{
@@ -106,7 +105,7 @@ impl Default for LuaScriptingPlugin {
                                 "world",
                                 LuaStaticReflectReference(std::any::TypeId::of::<World>()),
                             )
-                            .map_err(ScriptError::from_mlua_error)?;
+                            .map_err(IntoInteropError::to_bms_error)?;
 
                         Ok(())
                     },
@@ -124,11 +123,15 @@ impl Default for LuaScriptingPlugin {
                                     let global = (maker)(world.clone())?;
                                     context
                                         .globals()
-                                        .set(key.to_string(), LuaScriptValue::from(global))?
+                                        .set(key.to_string(), LuaScriptValue::from(global))
+                                        .map_err(IntoInteropError::to_bms_error)?
                                 }
                                 None => {
                                     let ref_ = LuaStaticReflectReference(global.type_id);
-                                    context.globals().set(key.to_string(), ref_)?
+                                    context
+                                        .globals()
+                                        .set(key.to_string(), ref_)
+                                        .map_err(IntoInteropError::to_bms_error)?
                                 }
                             }
                         }
@@ -147,7 +150,7 @@ impl Default for LuaScriptingPlugin {
                                     key.name.to_string(),
                                     LuaScriptValue::from(ScriptValue::Function(function.clone())),
                                 )
-                                .map_err(ScriptError::from_mlua_error)?;
+                                .map_err(IntoInteropError::to_bms_error)?;
                         }
 
                         Ok(())
@@ -166,7 +169,7 @@ impl Default for LuaScriptingPlugin {
                                     world.clone(),
                                 )),
                             )
-                            .map_err(ScriptError::from_mlua_error)?;
+                            .map_err(IntoInteropError::to_bms_error)?;
                     }
                     context
                         .globals()
@@ -177,7 +180,7 @@ impl Default for LuaScriptingPlugin {
                                 world,
                             )),
                         )
-                        .map_err(ScriptError::from_mlua_error)?;
+                        .map_err(IntoInteropError::to_bms_error)?;
 
                     Ok(())
                 }],
@@ -219,7 +222,7 @@ fn load_lua_content_into_context(
     context
         .load(content)
         .exec()
-        .map_err(ScriptError::from_mlua_error)?;
+        .map_err(IntoInteropError::to_bms_error)?;
 
     Ok(())
 }
@@ -285,13 +288,53 @@ pub fn lua_handler(
     let input = MultiValue::from_vec(
         args.into_iter()
             .map(|arg| LuaScriptValue::from(arg).into_lua(context))
-            .collect::<Result<_, _>>()?,
+            .collect::<Result<_, _>>()
+            .map_err(IntoInteropError::to_bms_error)?,
     );
 
-    let out = handler.call::<LuaScriptValue>(input)?;
+    let out = handler
+        .call::<LuaScriptValue>(input)
+        .map_err(IntoInteropError::to_bms_error)?;
     Ok(out.into())
 }
 
+/// A trait to convert between mlua::Error and InteropError
+pub trait IntoInteropError {
+    /// Convert into InteropError
+    fn to_bms_error(self) -> InteropError;
+}
+
+impl IntoInteropError for mlua::Error {
+    fn to_bms_error(self) -> InteropError {
+        match self {
+            mlua::Error::CallbackError { traceback, cause }
+                if matches!(cause.as_ref(), mlua::Error::ExternalError(_)) =>
+            {
+                let inner = cause.deref().clone();
+                inner.to_bms_error().with_context(traceback)
+            }
+            e => {
+                if let Some(inner) = e.downcast_ref::<InteropError>() {
+                    inner.clone()
+                } else {
+                    InteropError::external(e)
+                }
+            }
+        }
+    }
+}
+
+/// A trait to convert between InteropError and mlua::Error
+pub trait IntoMluaError {
+    /// Convert into mlua::Error
+    fn to_lua_error(self) -> mlua::Error;
+}
+
+impl IntoMluaError for InteropError {
+    fn to_lua_error(self) -> mlua::Error {
+        mlua::Error::external(self)
+    }
+}
 #[cfg(test)]
 mod test {
     use ::bevy_asset::{AssetId, AssetIndex, Handle};

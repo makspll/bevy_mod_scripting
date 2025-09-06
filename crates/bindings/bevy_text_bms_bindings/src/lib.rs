@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTextScriptingPlugin;
 pub(crate) fn register_justify_text_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::JustifyText,
     >::new(world)
         .register_documented(
@@ -75,11 +75,11 @@ pub(crate) fn register_justify_text_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::JustifyText,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_line_break_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::LineBreak,
     >::new(world)
         .register_documented(
@@ -141,11 +141,11 @@ pub(crate) fn register_line_break_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::LineBreak,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::Text2d,
     >::new(world)
     .register_documented(
@@ -168,11 +168,11 @@ pub(crate) fn register_text_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::Text2d,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_color_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextColor,
     >::new(world)
     .register_documented(
@@ -214,11 +214,11 @@ pub(crate) fn register_text_color_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::TextColor,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_font_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextFont,
     >::new(world)
     .register_documented(
@@ -315,11 +315,11 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::TextFont,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_layout_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextLayout,
     >::new(world)
         .register_documented(
@@ -473,11 +473,11 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::TextLayout,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_span_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextSpan,
     >::new(world)
     .register_documented(
@@ -501,38 +501,40 @@ pub(crate) fn register_text_span_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::TextSpan,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_line_height_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::LineHeight,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_text::LineHeight>| {
-            let output: Val<::bevy_text::LineHeight> = {
-                {
-                    let output: Val<::bevy_text::LineHeight> =
-                        <::bevy_text::LineHeight as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_text::LineHeight>| {
+                let output: Val<::bevy_text::LineHeight> = {
+                    {
+                        let output: Val<::bevy_text::LineHeight> = <::bevy_text::LineHeight as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_text::LineHeight,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_bounds_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::TextBounds,
     >::new(world)
         .register_documented(
@@ -609,11 +611,11 @@ pub(crate) fn register_text_bounds_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::TextBounds,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_computed_text_block_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::ComputedTextBlock,
     >::new(world)
         .register_documented(
@@ -655,38 +657,40 @@ pub(crate) fn register_computed_text_block_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::ComputedTextBlock,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_entity_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::TextEntity,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_text::TextEntity>| {
-            let output: Val<::bevy_text::TextEntity> = {
-                {
-                    let output: Val<::bevy_text::TextEntity> =
-                        <::bevy_text::TextEntity as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_text::TextEntity>| {
+                let output: Val<::bevy_text::TextEntity> = {
+                    {
+                        let output: Val<::bevy_text::TextEntity> = <::bevy_text::TextEntity as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_text::TextEntity,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_font_smoothing_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::FontSmoothing,
     >::new(world)
         .register_documented(
@@ -748,11 +752,11 @@ pub(crate) fn register_font_smoothing_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::FontSmoothing,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_glyph_atlas_location_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::GlyphAtlasLocation,
     >::new(world)
     .register_documented(
@@ -776,38 +780,40 @@ pub(crate) fn register_glyph_atlas_location_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::GlyphAtlasLocation,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_glyph_atlas_info_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::GlyphAtlasInfo,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_text::GlyphAtlasInfo>| {
-            let output: Val<::bevy_text::GlyphAtlasInfo> = {
-                {
-                    let output: Val<::bevy_text::GlyphAtlasInfo> =
-                        <::bevy_text::GlyphAtlasInfo as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_text::GlyphAtlasInfo>| {
+                let output: Val<::bevy_text::GlyphAtlasInfo> = {
+                    {
+                        let output: Val<::bevy_text::GlyphAtlasInfo> = <::bevy_text::GlyphAtlasInfo as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_text::GlyphAtlasInfo,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_positioned_glyph_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::PositionedGlyph,
     >::new(world)
     .register_documented(
@@ -830,34 +836,36 @@ pub(crate) fn register_positioned_glyph_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::PositionedGlyph,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_text_layout_info_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::TextLayoutInfo,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_text::TextLayoutInfo>| {
-            let output: Val<::bevy_text::TextLayoutInfo> = {
-                {
-                    let output: Val<::bevy_text::TextLayoutInfo> =
-                        <::bevy_text::TextLayoutInfo as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_text::TextLayoutInfo>| {
+                let output: Val<::bevy_text::TextLayoutInfo> = {
+                    {
+                        let output: Val<::bevy_text::TextLayoutInfo> = <::bevy_text::TextLayoutInfo as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_text::TextLayoutInfo,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyTextScriptingPlugin {

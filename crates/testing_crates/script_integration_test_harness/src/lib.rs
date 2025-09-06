@@ -20,12 +20,12 @@ use ::{
     },
     bevy_reflect::Reflect,
 };
+use bevy_mod_scripting_bindings::{
+    CoreScriptGlobalsPlugin, ReflectAccessId, ThreadWorldContainer, WorldAccessGuard,
+    WorldContainer, WorldGuard,
+};
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
-    bindings::{
-        CoreScriptGlobalsPlugin, ReflectAccessId, WorldAccessGuard, WorldGuard,
-        pretty_print::DisplayWithWorld,
-    },
     commands::CreateOrUpdateScript,
     error::ScriptError,
     script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptContext, ScriptId},
@@ -64,39 +64,47 @@ pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
 
 #[cfg(feature = "lua")]
 pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
-    use bevy_mod_scripting_core::{ConfigureScriptPlugin, bindings::WorldContainer};
+    use bevy_mod_scripting_core::ConfigureScriptPlugin;
     use bevy_mod_scripting_lua::{LuaScriptingPlugin, mlua};
 
     LuaScriptingPlugin::default().add_context_initializer(
         |_, ctxt: &mut bevy_mod_scripting_lua::LuaContext| {
-            let globals = ctxt.globals();
-            globals.set(
-                "assert_throws",
-                ctxt.create_function(|_lua, (f, reg): (mlua::Function, String)| {
-                    let world =
-                        bevy_mod_scripting_core::bindings::ThreadWorldContainer.try_get_world()?;
-                    let result = f.call::<()>(mlua::MultiValue::new());
-                    let err = match result {
-                        Ok(_) => {
-                            return Err(mlua::Error::external(
-                                "Expected function to throw error, but it did not.",
-                            ));
-                        }
-                        Err(e) => ScriptError::from_mlua_error(e).display_with_world(world),
-                    };
+            use bevy_mod_scripting_lua::IntoInteropError;
 
-                    let regex = regex::Regex::new(&reg).unwrap();
-                    if regex.is_match(&err) {
-                        Ok(())
-                    } else {
-                        Err(mlua::Error::external(format!(
-                            "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
-                            regex.as_str(),
-                            err
-                        )))
-                    }
-                })?,
-            )?;
+            let globals = ctxt.globals();
+            globals
+                .set(
+                    "assert_throws",
+                    ctxt.create_function(|_lua, (f, reg): (mlua::Function, String)| {
+                        let result = f.call::<()>(mlua::MultiValue::new());
+                        let err = match result {
+                            Ok(_) => {
+                                return Err(mlua::Error::external(
+                                    "Expected function to throw error, but it did not.",
+                                ));
+                            }
+                            Err(e) => format!(
+                                "{}",
+                                ScriptError::from(
+                                    bevy_mod_scripting_lua::IntoInteropError::to_bms_error(e),
+                                )
+                            ),
+                        };
+
+                        let regex = regex::Regex::new(&reg).unwrap();
+                        if regex.is_match(&err) {
+                            Ok(())
+                        } else {
+                            Err(mlua::Error::external(format!(
+                                "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                                regex.as_str(),
+                                err
+                            )))
+                        }
+                    })
+                    .map_err(IntoInteropError::to_bms_error)?,
+                )
+                .map_err(IntoInteropError::to_bms_error)?;
             Ok(())
         },
     )
@@ -104,10 +112,7 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
 
 #[cfg(feature = "rhai")]
 pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
-    use bevy_mod_scripting_core::{
-        ConfigureScriptPlugin,
-        bindings::{ThreadWorldContainer, WorldContainer},
-    };
+    use bevy_mod_scripting_core::ConfigureScriptPlugin;
     use bevy_mod_scripting_rhai::{
         RhaiScriptingPlugin,
         rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext},
@@ -136,14 +141,15 @@ pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
         runtime.register_fn(
             "assert_throws",
             |ctxt: NativeCallContext, fn_: FnPtr, regex: String| {
-                let world = ThreadWorldContainer.try_get_world()?;
                 let args: [Dynamic; 0] = [];
                 let result = fn_.call_within_context::<()>(&ctxt, args);
                 match result {
                     Ok(_) => panic!("Expected function to throw error, but it did not."),
                     Err(e) => {
-                        let e = ScriptError::from_rhai_error(*e);
-                        let err = e.display_with_world(world);
+                        use bevy_mod_scripting_rhai::IntoInteropError;
+
+                        let e = ScriptError::from(e.into_bms_error());
+                        let err = format!("{e}");
                         let regex = regex::Regex::new(&regex).unwrap();
                         if regex.is_match(&err) {
                             Ok::<(), Box<EvalAltResult>>(())
@@ -262,10 +268,6 @@ where
     P: IntoScriptPluginParams + Plugin,
     F: Fn(&mut P::C, &P::R, &str, &mut criterion::BenchmarkGroup<M>) -> Result<(), String>,
 {
-    use bevy_mod_scripting_core::bindings::{
-        ThreadWorldContainer, WorldAccessGuard, WorldContainer,
-    };
-
     let mut app = setup_integration_test(|_, _| {});
 
     install_test_plugin(&mut app, true);
@@ -324,7 +326,7 @@ where
         // Ensure the world is available via ThreadWorldContainer
         ThreadWorldContainer
             .set_world(guard.clone())
-            .map_err(|e| e.display_with_world(guard))?;
+            .map_err(|e| format!("{e:#?}"))?;
         // Pass the locked context to the closure for benchmarking its Lua (or generic) part
         bench_fn(&mut ctxt_locked, runtime, label, criterion)
     });

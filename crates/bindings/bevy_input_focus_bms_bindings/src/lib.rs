@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyInputFocusScriptingPlugin;
 pub(crate) fn register_input_focus_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::InputFocus,
     >::new(world)
         .register_documented(
@@ -93,11 +93,11 @@ pub(crate) fn register_input_focus_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input_focus::InputFocus,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_input_focus_visible_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::InputFocusVisible,
     >::new(world)
     .register_documented(
@@ -123,11 +123,11 @@ pub(crate) fn register_input_focus_visible_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input_focus::InputFocusVisible,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_auto_focus_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::AutoFocus,
     >::new(world)
     .register_documented(
@@ -151,11 +151,11 @@ pub(crate) fn register_auto_focus_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input_focus::AutoFocus,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
     >::new(world)
         .register_documented(
@@ -333,11 +333,11 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_nav_neighbors_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::directional_navigation::NavNeighbors,
     >::new(world)
         .register_documented(
@@ -409,11 +409,11 @@ pub(crate) fn register_nav_neighbors_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input_focus::directional_navigation::NavNeighbors,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_tab_index_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::tab_navigation::TabIndex,
     >::new(world)
         .register_documented(
@@ -475,11 +475,11 @@ pub(crate) fn register_tab_index_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input_focus::tab_navigation::TabIndex,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_tab_group_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::tab_navigation::TabGroup,
     >::new(world)
         .register_documented(
@@ -536,7 +536,7 @@ pub(crate) fn register_tab_group_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input_focus::tab_navigation::TabGroup,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyInputFocusScriptingPlugin {

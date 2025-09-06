@@ -43,6 +43,8 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 [dependencies]
 profiling = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.15.1" }

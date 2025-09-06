@@ -16,7 +16,7 @@ use log::{debug, error, info};
 use strum::VariantNames;
 use tera::Context;
 
-const BOOTSTRAP_DEPS: [&str; 2] = ["bevy_reflect", "bevy_mod_scripting_core"];
+const BOOTSTRAP_DEPS: [&str; 2] = ["bevy_reflect", "bevy_mod_scripting_bindings"];
 
 fn main() {
     // parse this here to early exit on wrong args
@@ -176,7 +176,7 @@ fn main() {
 
     debug!("Bootstrap directory: {}", &temp_dir.as_path().display());
 
-    write_bootstrap_files(args.bms_core_path, temp_dir.as_path());
+    write_bootstrap_files(args.bms_bindings_path, temp_dir.as_path());
 
     let bootstrap_rlibs = build_bootstrap(temp_dir.as_path(), &plugin_target_dir.join("bootstrap"));
 
@@ -200,7 +200,7 @@ fn main() {
             )
         };
     } else {
-        panic!("Could not find 'libmlua' artifact among bootstrap crate artifacts, stopping.");
+        panic!("Could not find all bootstrap rlibs, found: {bootstrap_rlibs:?}");
     }
 
     debug!("Running bevy_api_gen main cargo command");
@@ -355,15 +355,16 @@ fn find_bootstrap_dir() -> PathBuf {
 }
 
 /// Generate bootstrapping crate files
-fn write_bootstrap_files(bms_core_path: Utf8PathBuf, path: &Path) {
-    const BMS_CORE_PATH_PLACEHOLDER: &str = "{{BMS_CORE_PATH}}";
+fn write_bootstrap_files(bms_bindings_path: Utf8PathBuf, path: &Path) {
+    const BMS_BINDINGS_PATH_PLACEHOLDER: &str = "{{BMS_BINDINGS_PATH}}";
 
     // write manifest file 'Cargo.toml'
     let mut manifest_content =
         String::from_utf8(include_bytes!("../../Cargo.bootstrap.toml").to_vec())
             .expect("Could not read manifest template as utf8");
 
-    manifest_content = manifest_content.replace(BMS_CORE_PATH_PLACEHOLDER, bms_core_path.as_str());
+    manifest_content =
+        manifest_content.replace(BMS_BINDINGS_PATH_PLACEHOLDER, bms_bindings_path.as_str());
 
     let manifest_path = path.join("Cargo.toml");
 

@@ -7,7 +7,7 @@ use ::{
     bevy_ecs::{prelude::Resource, reflect::AppTypeRegistry, system::Res, world::World},
 };
 use bevy_log::{error, info};
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     IntoNamespace,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,

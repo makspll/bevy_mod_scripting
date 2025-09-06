@@ -3,7 +3,7 @@
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_mod_scripting_core::bindings::{
+use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Mut, Ref, Val},
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyGltfScriptingPlugin;
 pub(crate) fn register_gltf_extras_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gltf::prelude::GltfExtras,
     >::new(world)
     .register_documented(
@@ -37,11 +37,11 @@ pub(crate) fn register_gltf_extras_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gltf::prelude::GltfExtras,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gltf_scene_extras_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gltf::GltfSceneExtras,
     >::new(world)
     .register_documented(
@@ -64,38 +64,40 @@ pub(crate) fn register_gltf_scene_extras_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gltf::GltfSceneExtras,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gltf_mesh_extras_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gltf::GltfMeshExtras,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_gltf::GltfMeshExtras>| {
-            let output: Val<::bevy_gltf::GltfMeshExtras> = {
-                {
-                    let output: Val<::bevy_gltf::GltfMeshExtras> =
-                        <::bevy_gltf::GltfMeshExtras as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_gltf::GltfMeshExtras>| {
+                let output: Val<::bevy_gltf::GltfMeshExtras> = {
+                    {
+                        let output: Val<::bevy_gltf::GltfMeshExtras> = <::bevy_gltf::GltfMeshExtras as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_gltf::GltfMeshExtras,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gltf_material_extras_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gltf::GltfMaterialExtras,
     >::new(world)
     .register_documented(
@@ -119,11 +121,11 @@ pub(crate) fn register_gltf_material_extras_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gltf::GltfMaterialExtras,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_gltf_material_name_functions(world: &mut World) {
-    bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gltf::GltfMaterialName,
     >::new(world)
     .register_documented(
@@ -147,7 +149,7 @@ pub(crate) fn register_gltf_material_name_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gltf::GltfMaterialName,
-            bevy_mod_scripting_core::bindings::MarkAsGenerated,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 impl Plugin for BevyGltfScriptingPlugin {

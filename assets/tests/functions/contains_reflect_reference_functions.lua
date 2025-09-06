@@ -19,4 +19,5 @@ for _, function_ref in pairs(functions) do
     table.insert(available_names, function_ref.name)
 end
 
-assert(contains(available_names, "display_ref"), "functions should contain display_ref, but got: " .. table.concat(available_names, ", "))
+assert(contains(available_names, "display"),
+    "functions should contain display, but got: " .. table.concat(available_names, ", "))
