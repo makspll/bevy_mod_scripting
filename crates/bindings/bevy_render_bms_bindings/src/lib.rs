@@ -1,61 +1,55 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyRenderScriptingPlugin;
 pub(crate) fn register_alpha_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::alpha::AlphaMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::alpha::AlphaMode>| {
-                let output: Val<::bevy_render::alpha::AlphaMode> = {
-                    {
-                        let output: Val<::bevy_render::alpha::AlphaMode> = <::bevy_render::alpha::AlphaMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::alpha::AlphaMode>| {
+            let output: Val<::bevy_render::alpha::AlphaMode> = {
+                {
+                    let output: Val<::bevy_render::alpha::AlphaMode> =
+                        <::bevy_render::alpha::AlphaMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_render::alpha::AlphaMode>,
-                other: Ref<::bevy_render::alpha::AlphaMode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_render::alpha::AlphaMode as ::std::cmp::PartialEq<
-                            ::bevy_render::alpha::AlphaMode,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_render::alpha::AlphaMode>,
+         other: Ref<::bevy_render::alpha::AlphaMode>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_render::alpha::AlphaMode as ::std::cmp::PartialEq<
+                        ::bevy_render::alpha::AlphaMode,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -167,23 +161,22 @@ pub(crate) fn register_clear_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::ClearColor,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::ClearColor>| {
-                let output: Val<::bevy_render::camera::ClearColor> = {
-                    {
-                        let output: Val<::bevy_render::camera::ClearColor> = <::bevy_render::camera::ClearColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::ClearColor>| {
+            let output: Val<::bevy_render::camera::ClearColor> = {
+                {
+                    let output: Val<::bevy_render::camera::ClearColor> =
+                        <::bevy_render::camera::ClearColor as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -196,23 +189,24 @@ pub(crate) fn register_clear_color_config_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::ClearColorConfig,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::ClearColorConfig>| {
-                let output: Val<::bevy_render::camera::ClearColorConfig> = {
-                    {
-                        let output: Val<::bevy_render::camera::ClearColorConfig> = <::bevy_render::camera::ClearColorConfig as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::ClearColorConfig>| {
+            let output: Val<::bevy_render::camera::ClearColorConfig> = {
+                {
+                    let output: Val<::bevy_render::camera::ClearColorConfig> =
+                        <::bevy_render::camera::ClearColorConfig as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -313,23 +307,22 @@ pub(crate) fn register_projection_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::Projection,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::Projection>| {
-                let output: Val<::bevy_render::camera::Projection> = {
-                    {
-                        let output: Val<::bevy_render::camera::Projection> = <::bevy_render::camera::Projection as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::Projection>| {
+            let output: Val<::bevy_render::camera::Projection> = {
+                {
+                    let output: Val<::bevy_render::camera::Projection> =
+                        <::bevy_render::camera::Projection as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -905,118 +898,110 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::primitives::Aabb,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::primitives::Aabb>| {
-                let output: Val<::bevy_render::primitives::Aabb> = {
-                    {
-                        let output: Val<::bevy_render::primitives::Aabb> = <::bevy_render::primitives::Aabb as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::primitives::Aabb>| {
+            let output: Val<::bevy_render::primitives::Aabb> = {
+                {
+                    let output: Val<::bevy_render::primitives::Aabb> =
+                        <::bevy_render::primitives::Aabb as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_render::primitives::Aabb>,
-                other: Ref<::bevy_render::primitives::Aabb>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_render::primitives::Aabb as ::std::cmp::PartialEq<
-                            ::bevy_render::primitives::Aabb,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "from_min_max",
-            |minimum: Val<::bevy_math::Vec3>, maximum: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_render::primitives::Aabb> = {
-                    {
-                        let output: Val<::bevy_render::primitives::Aabb> = ::bevy_render::primitives::Aabb::from_min_max(
-                                minimum.into_inner(),
-                                maximum.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["minimum", "maximum"],
-        )
-        .register_documented(
-            "max",
-            |_self: Ref<::bevy_render::primitives::Aabb>| {
-                let output: Val<::bevy_math::Vec3A> = {
-                    {
-                        let output: Val<::bevy_math::Vec3A> = ::bevy_render::primitives::Aabb::max(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "min",
-            |_self: Ref<::bevy_render::primitives::Aabb>| {
-                let output: Val<::bevy_math::Vec3A> = {
-                    {
-                        let output: Val<::bevy_math::Vec3A> = ::bevy_render::primitives::Aabb::min(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "relative_radius",
-            |
-                _self: Ref<::bevy_render::primitives::Aabb>,
-                p_normal: Ref<::bevy_math::Vec3A>,
-                world_from_local: Ref<::bevy_math::Mat3A>|
-            {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_render::primitives::Aabb::relative_radius(
-                                &_self,
-                                &p_normal,
-                                &world_from_local,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Calculate the relative radius of the AABB with respect to a plane",
-            &["_self", "p_normal", "world_from_local"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_render::primitives::Aabb>,
+         other: Ref<::bevy_render::primitives::Aabb>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_render::primitives::Aabb as ::std::cmp::PartialEq<
+                        ::bevy_render::primitives::Aabb,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "from_min_max",
+        |minimum: Val<::bevy_math::Vec3>, maximum: Val<::bevy_math::Vec3>| {
+            let output: Val<::bevy_render::primitives::Aabb> = {
+                {
+                    let output: Val<::bevy_render::primitives::Aabb> =
+                        ::bevy_render::primitives::Aabb::from_min_max(
+                            minimum.into_inner(),
+                            maximum.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["minimum", "maximum"],
+    )
+    .register_documented(
+        "max",
+        |_self: Ref<::bevy_render::primitives::Aabb>| {
+            let output: Val<::bevy_math::Vec3A> = {
+                {
+                    let output: Val<::bevy_math::Vec3A> =
+                        ::bevy_render::primitives::Aabb::max(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "min",
+        |_self: Ref<::bevy_render::primitives::Aabb>| {
+            let output: Val<::bevy_math::Vec3A> = {
+                {
+                    let output: Val<::bevy_math::Vec3A> =
+                        ::bevy_render::primitives::Aabb::min(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "relative_radius",
+        |_self: Ref<::bevy_render::primitives::Aabb>,
+         p_normal: Ref<::bevy_math::Vec3A>,
+         world_from_local: Ref<::bevy_math::Mat3A>| {
+            let output: f32 = {
+                {
+                    let output: f32 = ::bevy_render::primitives::Aabb::relative_radius(
+                        &_self,
+                        &p_normal,
+                        &world_from_local,
+                    )
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        " Calculate the relative radius of the AABB with respect to a plane",
+        &["_self", "p_normal", "world_from_local"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1029,23 +1014,24 @@ pub(crate) fn register_cascades_frusta_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::primitives::CascadesFrusta,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::primitives::CascadesFrusta>| {
-                let output: Val<::bevy_render::primitives::CascadesFrusta> = {
-                    {
-                        let output: Val<::bevy_render::primitives::CascadesFrusta> = <::bevy_render::primitives::CascadesFrusta as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::primitives::CascadesFrusta>| {
+            let output: Val<::bevy_render::primitives::CascadesFrusta> = {
+                {
+                    let output: Val<::bevy_render::primitives::CascadesFrusta> =
+                        <::bevy_render::primitives::CascadesFrusta as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1058,23 +1044,24 @@ pub(crate) fn register_cubemap_frusta_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::primitives::CubemapFrusta,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::primitives::CubemapFrusta>| {
-                let output: Val<::bevy_render::primitives::CubemapFrusta> = {
-                    {
-                        let output: Val<::bevy_render::primitives::CubemapFrusta> = <::bevy_render::primitives::CubemapFrusta as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::primitives::CubemapFrusta>| {
+            let output: Val<::bevy_render::primitives::CubemapFrusta> = {
+                {
+                    let output: Val<::bevy_render::primitives::CubemapFrusta> =
+                        <::bevy_render::primitives::CubemapFrusta as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1245,23 +1232,24 @@ pub(crate) fn register_camera_render_graph_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::CameraRenderGraph,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::CameraRenderGraph>| {
-                let output: Val<::bevy_render::camera::CameraRenderGraph> = {
-                    {
-                        let output: Val<::bevy_render::camera::CameraRenderGraph> = <::bevy_render::camera::CameraRenderGraph as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::CameraRenderGraph>| {
+            let output: Val<::bevy_render::camera::CameraRenderGraph> = {
+                {
+                    let output: Val<::bevy_render::camera::CameraRenderGraph> =
+                        <::bevy_render::camera::CameraRenderGraph as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1351,46 +1339,45 @@ pub(crate) fn register_temporal_jitter_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::TemporalJitter,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::TemporalJitter>| {
-                let output: Val<::bevy_render::camera::TemporalJitter> = {
-                    {
-                        let output: Val<::bevy_render::camera::TemporalJitter> = <::bevy_render::camera::TemporalJitter as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "jitter_projection",
-            |
-                _self: Ref<::bevy_render::camera::TemporalJitter>,
-                mut clip_from_view: Mut<::bevy_math::Mat4>,
-                view_size: Val<::bevy_math::Vec2>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_render::camera::TemporalJitter::jitter_projection(
-                                &_self,
-                                &mut clip_from_view,
-                                view_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "clip_from_view", "view_size"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::TemporalJitter>| {
+            let output: Val<::bevy_render::camera::TemporalJitter> = {
+                {
+                    let output: Val<::bevy_render::camera::TemporalJitter> =
+                        <::bevy_render::camera::TemporalJitter as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "jitter_projection",
+        |_self: Ref<::bevy_render::camera::TemporalJitter>,
+         mut clip_from_view: Mut<::bevy_math::Mat4>,
+         view_size: Val<::bevy_math::Vec2>| {
+            let output: () = {
+                {
+                    let output: () = ::bevy_render::camera::TemporalJitter::jitter_projection(
+                        &_self,
+                        &mut clip_from_view,
+                        view_size.into_inner(),
+                    )
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "clip_from_view", "view_size"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1968,43 +1955,43 @@ pub(crate) fn register_sub_camera_view_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::SubCameraView,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::SubCameraView>| {
-                let output: Val<::bevy_render::camera::SubCameraView> = {
-                    {
-                        let output: Val<::bevy_render::camera::SubCameraView> = <::bevy_render::camera::SubCameraView as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_render::camera::SubCameraView>,
-                other: Ref<::bevy_render::camera::SubCameraView>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_render::camera::SubCameraView as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::SubCameraView>| {
+            let output: Val<::bevy_render::camera::SubCameraView> = {
+                {
+                    let output: Val<::bevy_render::camera::SubCameraView> =
+                        <::bevy_render::camera::SubCameraView as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_render::camera::SubCameraView>,
+         other: Ref<::bevy_render::camera::SubCameraView>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_render::camera::SubCameraView as ::std::cmp::PartialEq<
                             ::bevy_render::camera::SubCameraView,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2017,23 +2004,22 @@ pub(crate) fn register_render_target_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::RenderTarget,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::RenderTarget>| {
-                let output: Val<::bevy_render::camera::RenderTarget> = {
-                    {
-                        let output: Val<::bevy_render::camera::RenderTarget> = <::bevy_render::camera::RenderTarget as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::RenderTarget>| {
+            let output: Val<::bevy_render::camera::RenderTarget> = {
+                {
+                    let output: Val<::bevy_render::camera::RenderTarget> =
+                        <::bevy_render::camera::RenderTarget as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2178,23 +2164,24 @@ pub(crate) fn register_custom_projection_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::CustomProjection,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::CustomProjection>| {
-                let output: Val<::bevy_render::camera::CustomProjection> = {
-                    {
-                        let output: Val<::bevy_render::camera::CustomProjection> = <::bevy_render::camera::CustomProjection as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::CustomProjection>| {
+            let output: Val<::bevy_render::camera::CustomProjection> = {
+                {
+                    let output: Val<::bevy_render::camera::CustomProjection> =
+                        <::bevy_render::camera::CustomProjection as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2207,23 +2194,22 @@ pub(crate) fn register_scaling_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::camera::ScalingMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::camera::ScalingMode>| {
-                let output: Val<::bevy_render::camera::ScalingMode> = {
-                    {
-                        let output: Val<::bevy_render::camera::ScalingMode> = <::bevy_render::camera::ScalingMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::camera::ScalingMode>| {
+            let output: Val<::bevy_render::camera::ScalingMode> = {
+                {
+                    let output: Val<::bevy_render::camera::ScalingMode> =
+                        <::bevy_render::camera::ScalingMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2236,23 +2222,24 @@ pub(crate) fn register_globals_uniform_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::globals::GlobalsUniform,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::globals::GlobalsUniform>| {
-                let output: Val<::bevy_render::globals::GlobalsUniform> = {
-                    {
-                        let output: Val<::bevy_render::globals::GlobalsUniform> = <::bevy_render::globals::GlobalsUniform as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::globals::GlobalsUniform>| {
+            let output: Val<::bevy_render::globals::GlobalsUniform> = {
+                {
+                    let output: Val<::bevy_render::globals::GlobalsUniform> =
+                        <::bevy_render::globals::GlobalsUniform as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2467,23 +2454,24 @@ pub(crate) fn register_color_grading_global_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::view::ColorGradingGlobal,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::view::ColorGradingGlobal>| {
-                let output: Val<::bevy_render::view::ColorGradingGlobal> = {
-                    {
-                        let output: Val<::bevy_render::view::ColorGradingGlobal> = <::bevy_render::view::ColorGradingGlobal as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::view::ColorGradingGlobal>| {
+            let output: Val<::bevy_render::view::ColorGradingGlobal> = {
+                {
+                    let output: Val<::bevy_render::view::ColorGradingGlobal> =
+                        <::bevy_render::view::ColorGradingGlobal as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2496,43 +2484,43 @@ pub(crate) fn register_color_grading_section_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::view::ColorGradingSection,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_render::view::ColorGradingSection>| {
-                let output: Val<::bevy_render::view::ColorGradingSection> = {
-                    {
-                        let output: Val<::bevy_render::view::ColorGradingSection> = <::bevy_render::view::ColorGradingSection as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_render::view::ColorGradingSection>,
-                other: Ref<::bevy_render::view::ColorGradingSection>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_render::view::ColorGradingSection as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_render::view::ColorGradingSection>| {
+            let output: Val<::bevy_render::view::ColorGradingSection> = {
+                {
+                    let output: Val<::bevy_render::view::ColorGradingSection> =
+                        <::bevy_render::view::ColorGradingSection as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_render::view::ColorGradingSection>,
+         other: Ref<::bevy_render::view::ColorGradingSection>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_render::view::ColorGradingSection as ::std::cmp::PartialEq<
                             ::bevy_render::view::ColorGradingSection,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2687,61 +2675,58 @@ pub(crate) fn register_screenshot_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::view::window::screenshot::Screenshot,
     >::new(world)
-        .register_documented(
-            "primary_window",
-            || {
-                let output: Val<::bevy_render::view::window::screenshot::Screenshot> = {
-                    {
-                        let output: Val<
-                            ::bevy_render::view::window::screenshot::Screenshot,
-                        > = ::bevy_render::view::window::screenshot::Screenshot::primary_window()
+    .register_documented(
+        "primary_window",
+        || {
+            let output: Val<::bevy_render::view::window::screenshot::Screenshot> = {
+                {
+                    let output: Val<::bevy_render::view::window::screenshot::Screenshot> =
+                        ::bevy_render::view::window::screenshot::Screenshot::primary_window()
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Capture a screenshot of the primary window, if one exists.",
-            &[],
-        )
-        .register_documented(
-            "texture_view",
-            |texture_view: Val<::bevy_render::camera::ManualTextureViewHandle>| {
-                let output: Val<::bevy_render::view::window::screenshot::Screenshot> = {
-                    {
-                        let output: Val<
-                            ::bevy_render::view::window::screenshot::Screenshot,
-                        > = ::bevy_render::view::window::screenshot::Screenshot::texture_view(
-                                texture_view.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Capture a screenshot of the provided manual texture view.",
-            &["texture_view"],
-        )
-        .register_documented(
-            "window",
-            |window: Val<::bevy_ecs::entity::Entity>| {
-                let output: Val<::bevy_render::view::window::screenshot::Screenshot> = {
-                    {
-                        let output: Val<
-                            ::bevy_render::view::window::screenshot::Screenshot,
-                        > = ::bevy_render::view::window::screenshot::Screenshot::window(
-                                window.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Capture a screenshot of the provided window entity.",
-            &["window"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        " Capture a screenshot of the primary window, if one exists.",
+        &[],
+    )
+    .register_documented(
+        "texture_view",
+        |texture_view: Val<::bevy_render::camera::ManualTextureViewHandle>| {
+            let output: Val<::bevy_render::view::window::screenshot::Screenshot> = {
+                {
+                    let output: Val<::bevy_render::view::window::screenshot::Screenshot> =
+                        ::bevy_render::view::window::screenshot::Screenshot::texture_view(
+                            texture_view.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Capture a screenshot of the provided manual texture view.",
+        &["texture_view"],
+    )
+    .register_documented(
+        "window",
+        |window: Val<::bevy_ecs::entity::Entity>| {
+            let output: Val<::bevy_render::view::window::screenshot::Screenshot> = {
+                {
+                    let output: Val<::bevy_render::view::window::screenshot::Screenshot> =
+                        ::bevy_render::view::window::screenshot::Screenshot::window(
+                            window.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Capture a screenshot of the provided window entity.",
+        &["window"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

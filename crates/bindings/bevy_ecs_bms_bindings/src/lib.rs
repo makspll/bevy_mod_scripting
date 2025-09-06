@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyEcsScriptingPlugin;
 pub(crate) fn register_entity_functions(world: &mut World) {
@@ -362,10 +359,8 @@ pub(crate) fn register_name_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ecs::name::Name,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ecs::name::Name, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_on_add_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1072,23 +1067,22 @@ pub(crate) fn register_entity_hash_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity::EntityHash,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ecs::entity::EntityHash>| {
-                let output: Val<::bevy_ecs::entity::EntityHash> = {
-                    {
-                        let output: Val<::bevy_ecs::entity::EntityHash> = <::bevy_ecs::entity::EntityHash as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::entity::EntityHash>| {
+            let output: Val<::bevy_ecs::entity::EntityHash> = {
+                {
+                    let output: Val<::bevy_ecs::entity::EntityHash> =
+                        <::bevy_ecs::entity::EntityHash as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1101,23 +1095,24 @@ pub(crate) fn register_disabled_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity_disabling::Disabled,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ecs::entity_disabling::Disabled>| {
-                let output: Val<::bevy_ecs::entity_disabling::Disabled> = {
-                    {
-                        let output: Val<::bevy_ecs::entity_disabling::Disabled> = <::bevy_ecs::entity_disabling::Disabled as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::entity_disabling::Disabled>| {
+            let output: Val<::bevy_ecs::entity_disabling::Disabled> = {
+                {
+                    let output: Val<::bevy_ecs::entity_disabling::Disabled> =
+                        <::bevy_ecs::entity_disabling::Disabled as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

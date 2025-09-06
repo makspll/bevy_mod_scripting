@@ -1,41 +1,36 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyCorePipelineScriptingPlugin;
 pub(crate) fn register_skybox_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::Skybox,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_core_pipeline::Skybox>| {
-                let output: Val<::bevy_core_pipeline::Skybox> = {
-                    {
-                        let output: Val<::bevy_core_pipeline::Skybox> = <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_core_pipeline::Skybox>| {
+            let output: Val<::bevy_core_pipeline::Skybox> = {
+                {
+                    let output: Val<::bevy_core_pipeline::Skybox> =
+                        <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -48,23 +43,24 @@ pub(crate) fn register_camera_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::core_2d::Camera2d,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_core_pipeline::core_2d::Camera2d>| {
-                let output: Val<::bevy_core_pipeline::core_2d::Camera2d> = {
-                    {
-                        let output: Val<::bevy_core_pipeline::core_2d::Camera2d> = <::bevy_core_pipeline::core_2d::Camera2d as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_core_pipeline::core_2d::Camera2d>| {
+            let output: Val<::bevy_core_pipeline::core_2d::Camera2d> = {
+                {
+                    let output: Val<::bevy_core_pipeline::core_2d::Camera2d> =
+                        <::bevy_core_pipeline::core_2d::Camera2d as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -77,23 +73,24 @@ pub(crate) fn register_camera_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::core_3d::Camera3d,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_core_pipeline::core_3d::Camera3d>| {
-                let output: Val<::bevy_core_pipeline::core_3d::Camera3d> = {
-                    {
-                        let output: Val<::bevy_core_pipeline::core_3d::Camera3d> = <::bevy_core_pipeline::core_3d::Camera3d as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_core_pipeline::core_3d::Camera3d>| {
+            let output: Val<::bevy_core_pipeline::core_3d::Camera3d> = {
+                {
+                    let output: Val<::bevy_core_pipeline::core_3d::Camera3d> =
+                        <::bevy_core_pipeline::core_3d::Camera3d as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -360,23 +357,22 @@ pub(crate) fn register_bloom_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::bloom::Bloom,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_core_pipeline::bloom::Bloom>| {
-                let output: Val<::bevy_core_pipeline::bloom::Bloom> = {
-                    {
-                        let output: Val<::bevy_core_pipeline::bloom::Bloom> = <::bevy_core_pipeline::bloom::Bloom as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_core_pipeline::bloom::Bloom>| {
+            let output: Val<::bevy_core_pipeline::bloom::Bloom> = {
+                {
+                    let output: Val<::bevy_core_pipeline::bloom::Bloom> =
+                        <::bevy_core_pipeline::bloom::Bloom as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -556,23 +552,22 @@ pub(crate) fn register_fxaa_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::fxaa::Fxaa,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_core_pipeline::fxaa::Fxaa>| {
-                let output: Val<::bevy_core_pipeline::fxaa::Fxaa> = {
-                    {
-                        let output: Val<::bevy_core_pipeline::fxaa::Fxaa> = <::bevy_core_pipeline::fxaa::Fxaa as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_core_pipeline::fxaa::Fxaa>| {
+            let output: Val<::bevy_core_pipeline::fxaa::Fxaa> = {
+                {
+                    let output: Val<::bevy_core_pipeline::fxaa::Fxaa> =
+                        <::bevy_core_pipeline::fxaa::Fxaa as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -585,23 +580,22 @@ pub(crate) fn register_smaa_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::smaa::Smaa,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_core_pipeline::smaa::Smaa>| {
-                let output: Val<::bevy_core_pipeline::smaa::Smaa> = {
-                    {
-                        let output: Val<::bevy_core_pipeline::smaa::Smaa> = <::bevy_core_pipeline::smaa::Smaa as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_core_pipeline::smaa::Smaa>| {
+            let output: Val<::bevy_core_pipeline::smaa::Smaa> = {
+                {
+                    let output: Val<::bevy_core_pipeline::smaa::Smaa> =
+                        <::bevy_core_pipeline::smaa::Smaa as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -711,23 +705,24 @@ pub(crate) fn register_depth_of_field_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::dof::DepthOfField,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_core_pipeline::dof::DepthOfField>| {
-                let output: Val<::bevy_core_pipeline::dof::DepthOfField> = {
-                    {
-                        let output: Val<::bevy_core_pipeline::dof::DepthOfField> = <::bevy_core_pipeline::dof::DepthOfField as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_core_pipeline::dof::DepthOfField>| {
+            let output: Val<::bevy_core_pipeline::dof::DepthOfField> = {
+                {
+                    let output: Val<::bevy_core_pipeline::dof::DepthOfField> =
+                        <::bevy_core_pipeline::dof::DepthOfField as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1005,9 +1000,7 @@ pub(crate) fn register_sensitivity_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_order_independent_transparency_settings_functions(
-    world: &mut World,
-) {
+pub(crate) fn register_order_independent_transparency_settings_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
     >::new(world)

@@ -1,9 +1,7 @@
 //! Contains the [`FromScriptRef`] trait and its implementations.
 
 use crate::{
-    ScriptValue,
-    FromScript, WorldGuard, match_by_type,
-    error::InteropError,
+    FromScript, ScriptValue, WorldGuard, error::InteropError, match_by_type,
     reflection_extensions::TypeInfoExtensions,
 };
 use bevy_reflect::{

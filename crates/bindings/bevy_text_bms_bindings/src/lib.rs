@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTextScriptingPlugin;
 pub(crate) fn register_justify_text_functions(world: &mut World) {
@@ -151,23 +148,21 @@ pub(crate) fn register_text_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::Text2d,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::prelude::Text2d>| {
-                let output: Val<::bevy_text::prelude::Text2d> = {
-                    {
-                        let output: Val<::bevy_text::prelude::Text2d> = <::bevy_text::prelude::Text2d as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_text::prelude::Text2d>| {
+            let output: Val<::bevy_text::prelude::Text2d> = {
+                {
+                    let output: Val<::bevy_text::prelude::Text2d> =
+                        <::bevy_text::prelude::Text2d as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -180,43 +175,40 @@ pub(crate) fn register_text_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextColor,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::prelude::TextColor>| {
-                let output: Val<::bevy_text::prelude::TextColor> = {
-                    {
-                        let output: Val<::bevy_text::prelude::TextColor> = <::bevy_text::prelude::TextColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_text::prelude::TextColor>| {
+            let output: Val<::bevy_text::prelude::TextColor> = {
+                {
+                    let output: Val<::bevy_text::prelude::TextColor> =
+                        <::bevy_text::prelude::TextColor as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_text::prelude::TextColor>,
-                other: Ref<::bevy_text::prelude::TextColor>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_text::prelude::TextColor as ::std::cmp::PartialEq<
-                            ::bevy_text::prelude::TextColor,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_text::prelude::TextColor>,
+         other: Ref<::bevy_text::prelude::TextColor>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_text::prelude::TextColor as ::std::cmp::PartialEq<
+                        ::bevy_text::prelude::TextColor,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -229,100 +221,95 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextFont,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::prelude::TextFont>| {
-                let output: Val<::bevy_text::prelude::TextFont> = {
-                    {
-                        let output: Val<::bevy_text::prelude::TextFont> = <::bevy_text::prelude::TextFont as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_text::prelude::TextFont>| {
+            let output: Val<::bevy_text::prelude::TextFont> = {
+                {
+                    let output: Val<::bevy_text::prelude::TextFont> =
+                        <::bevy_text::prelude::TextFont as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "from_font_size",
-            |font_size: f32| {
-                let output: Val<::bevy_text::prelude::TextFont> = {
-                    {
-                        let output: Val<::bevy_text::prelude::TextFont> = ::bevy_text::prelude::TextFont::from_font_size(
-                                font_size,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns a new [`TextFont`] with the specified font size.",
-            &["font_size"],
-        )
-        .register_documented(
-            "with_font_size",
-            |_self: Val<::bevy_text::prelude::TextFont>, font_size: f32| {
-                let output: Val<::bevy_text::prelude::TextFont> = {
-                    {
-                        let output: Val<::bevy_text::prelude::TextFont> = ::bevy_text::prelude::TextFont::with_font_size(
-                                _self.into_inner(),
-                                font_size,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns this [`TextFont`] with the specified font size.",
-            &["_self", "font_size"],
-        )
-        .register_documented(
-            "with_font_smoothing",
-            |
-                _self: Val<::bevy_text::prelude::TextFont>,
-                font_smoothing: Val<::bevy_text::FontSmoothing>|
-            {
-                let output: Val<::bevy_text::prelude::TextFont> = {
-                    {
-                        let output: Val<::bevy_text::prelude::TextFont> = ::bevy_text::prelude::TextFont::with_font_smoothing(
-                                _self.into_inner(),
-                                font_smoothing.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns this [`TextFont`] with the specified [`FontSmoothing`].",
-            &["_self", "font_smoothing"],
-        )
-        .register_documented(
-            "with_line_height",
-            |
-                _self: Val<::bevy_text::prelude::TextFont>,
-                line_height: Val<::bevy_text::LineHeight>|
-            {
-                let output: Val<::bevy_text::prelude::TextFont> = {
-                    {
-                        let output: Val<::bevy_text::prelude::TextFont> = ::bevy_text::prelude::TextFont::with_line_height(
-                                _self.into_inner(),
-                                line_height.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns this [`TextFont`] with the specified [`LineHeight`].",
-            &["_self", "line_height"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "from_font_size",
+        |font_size: f32| {
+            let output: Val<::bevy_text::prelude::TextFont> = {
+                {
+                    let output: Val<::bevy_text::prelude::TextFont> =
+                        ::bevy_text::prelude::TextFont::from_font_size(font_size).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns a new [`TextFont`] with the specified font size.",
+        &["font_size"],
+    )
+    .register_documented(
+        "with_font_size",
+        |_self: Val<::bevy_text::prelude::TextFont>, font_size: f32| {
+            let output: Val<::bevy_text::prelude::TextFont> = {
+                {
+                    let output: Val<::bevy_text::prelude::TextFont> =
+                        ::bevy_text::prelude::TextFont::with_font_size(
+                            _self.into_inner(),
+                            font_size,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns this [`TextFont`] with the specified font size.",
+        &["_self", "font_size"],
+    )
+    .register_documented(
+        "with_font_smoothing",
+        |_self: Val<::bevy_text::prelude::TextFont>,
+         font_smoothing: Val<::bevy_text::FontSmoothing>| {
+            let output: Val<::bevy_text::prelude::TextFont> = {
+                {
+                    let output: Val<::bevy_text::prelude::TextFont> =
+                        ::bevy_text::prelude::TextFont::with_font_smoothing(
+                            _self.into_inner(),
+                            font_smoothing.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns this [`TextFont`] with the specified [`FontSmoothing`].",
+        &["_self", "font_smoothing"],
+    )
+    .register_documented(
+        "with_line_height",
+        |_self: Val<::bevy_text::prelude::TextFont>, line_height: Val<::bevy_text::LineHeight>| {
+            let output: Val<::bevy_text::prelude::TextFont> = {
+                {
+                    let output: Val<::bevy_text::prelude::TextFont> =
+                        ::bevy_text::prelude::TextFont::with_line_height(
+                            _self.into_inner(),
+                            line_height.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns this [`TextFont`] with the specified [`LineHeight`].",
+        &["_self", "line_height"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -493,23 +480,22 @@ pub(crate) fn register_text_span_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextSpan,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::prelude::TextSpan>| {
-                let output: Val<::bevy_text::prelude::TextSpan> = {
-                    {
-                        let output: Val<::bevy_text::prelude::TextSpan> = <::bevy_text::prelude::TextSpan as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_text::prelude::TextSpan>| {
+            let output: Val<::bevy_text::prelude::TextSpan> = {
+                {
+                    let output: Val<::bevy_text::prelude::TextSpan> =
+                        <::bevy_text::prelude::TextSpan as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -773,23 +759,22 @@ pub(crate) fn register_glyph_atlas_location_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::GlyphAtlasLocation,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::GlyphAtlasLocation>| {
-                let output: Val<::bevy_text::GlyphAtlasLocation> = {
-                    {
-                        let output: Val<::bevy_text::GlyphAtlasLocation> = <::bevy_text::GlyphAtlasLocation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_text::GlyphAtlasLocation>| {
+            let output: Val<::bevy_text::GlyphAtlasLocation> = {
+                {
+                    let output: Val<::bevy_text::GlyphAtlasLocation> =
+                        <::bevy_text::GlyphAtlasLocation as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -831,23 +816,21 @@ pub(crate) fn register_positioned_glyph_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::PositionedGlyph,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::PositionedGlyph>| {
-                let output: Val<::bevy_text::PositionedGlyph> = {
-                    {
-                        let output: Val<::bevy_text::PositionedGlyph> = <::bevy_text::PositionedGlyph as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_text::PositionedGlyph>| {
+            let output: Val<::bevy_text::PositionedGlyph> = {
+                {
+                    let output: Val<::bevy_text::PositionedGlyph> =
+                        <::bevy_text::PositionedGlyph as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTimeScriptingPlugin;
 pub(crate) fn register_fixed_functions(world: &mut World) {
@@ -571,23 +568,22 @@ pub(crate) fn register_virtual_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_time::prelude::Virtual,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_time::prelude::Virtual>| {
-                let output: Val<::bevy_time::prelude::Virtual> = {
-                    {
-                        let output: Val<::bevy_time::prelude::Virtual> = <::bevy_time::prelude::Virtual as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_time::prelude::Virtual>| {
+            let output: Val<::bevy_time::prelude::Virtual> = {
+                {
+                    let output: Val<::bevy_time::prelude::Virtual> =
+                        <::bevy_time::prelude::Virtual as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -796,10 +792,8 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_time::Stopwatch,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_time::Stopwatch, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 impl Plugin for BevyTimeScriptingPlugin {
     fn build(&self, app: &mut App) {
