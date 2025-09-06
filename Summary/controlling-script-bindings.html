@@ -293,8 +293,8 @@ You can opt-in to receive this argument in your own function definitions by addi
 <tr><td>eq</td><td>an equality function, used for checking if two values are equal</td><td>✅</td><td>❌</td></tr>
 <tr><td>lt</td><td>a less than function, used for checking if a value is less than another</td><td>✅</td><td>❌</td></tr>
 <tr><td>iter</td><td>an iterator function, used for iterating over a value</td><td>❌</td><td>✅</td></tr>
-<tr><td>display_ref</td><td>a display function, used for displaying a reference to a value</td><td>❌</td><td>✅</td></tr>
-<tr><td>display_value</td><td>a display function, used for displaying a mutable reference to a value</td><td>❌</td><td>✅</td></tr>
+<tr><td>display</td><td>a display function, used for displaying a reference to a value</td><td>❌</td><td>✅</td></tr>
+<tr><td>debug</td><td>a display function, used for displaying a mutable reference to a value</td><td>❌</td><td>✅</td></tr>
 </tbody></table>
 </div>
 <p>In this context <code>overridable</code> indicates whether language implementations will look for a specific function on your type before looking at the generic <code>ReflectReference</code> namespace. You can still remove the existing registration for these functions on the <code>ReflectReference</code> namespace if you want to replace them with your own implementation.</p>

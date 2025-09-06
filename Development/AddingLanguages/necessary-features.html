@@ -222,7 +222,8 @@ print(my_reference.my_field)
 <li>Less than: dispatches to the <code>lt</code> binary function on the type</li>
 <li>Length: calls the <code>len</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
 <li>Iteration: dispatches to the <code>iter</code> method on <code>ReflectReference</code> which returns an iterator function, this can be repeatedly called until it returns <code>ScriptValue::Unit</code> to signal the end of the iteration.</li>
-<li>Print: calls the <code>display_ref</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
+<li>Print: calls the <code>display</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
+<li>Debug print: calls the <code>debug</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
 </ul>
 </li>
 </ul>
