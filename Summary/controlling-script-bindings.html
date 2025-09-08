@@ -293,10 +293,11 @@ You can opt-in to receive this argument in your own function definitions by addi
 <tr><td>eq</td><td>an equality function, used for checking if two values are equal</td><td>✅</td><td>❌</td></tr>
 <tr><td>lt</td><td>a less than function, used for checking if a value is less than another</td><td>✅</td><td>❌</td></tr>
 <tr><td>iter</td><td>an iterator function, used for iterating over a value</td><td>❌</td><td>✅</td></tr>
-<tr><td>display</td><td>a display function, used for displaying a reference to a value</td><td>❌</td><td>✅</td></tr>
-<tr><td>debug</td><td>a display function, used for displaying a mutable reference to a value</td><td>❌</td><td>✅</td></tr>
+<tr><td>display</td><td>a display function, used for pretty printing values</td><td>❌*</td><td>✅</td></tr>
+<tr><td>debug</td><td>a display function, used for displaying the internals of a value</td><td>❌*</td><td>✅</td></tr>
 </tbody></table>
 </div>
+<p>* - You can register an instance of <code>ReflectDisplayWithTypeInfo</code> type data on <code>Reflect</code> implementing types to override their printing behavior</p>
 <p>In this context <code>overridable</code> indicates whether language implementations will look for a specific function on your type before looking at the generic <code>ReflectReference</code> namespace. You can still remove the existing registration for these functions on the <code>ReflectReference</code> namespace if you want to replace them with your own implementation.</p>
 <p>Note the <code>ReflectReference</code> namespace is special, in that functions defined on it, act like a fallback and hence apply to ALL references.</p>
 <h2 id="globals"><a class="header" href="#globals">Globals</a></h2>
