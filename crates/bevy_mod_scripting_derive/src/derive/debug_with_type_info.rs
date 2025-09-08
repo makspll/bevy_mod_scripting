@@ -144,7 +144,7 @@ pub fn debug_with_type_info(input: proc_macro::TokenStream) -> proc_macro::Token
         }
         impl #impl_generics std::fmt::Debug for #name #ty_generics #where_clause {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                std::fmt::Debug::fmt(&#bms_display_path::WithTypeInfo(self), f)
+                std::fmt::Debug::fmt(&#bms_display_path::WithTypeInfo::new(self), f)
             }
         }
     }
@@ -224,7 +224,7 @@ fn build_from_fields(
     );
 
     quote::quote! {
-        #bms_display_path::DebugWithTypeInfoBuilder::#builder_method(f, #variant_name)
+        #bms_display_path::DebugWithTypeInfoBuilder::#builder_method(f, #variant_name, type_info_provider)
             #(#members)*
             .finish()
     }

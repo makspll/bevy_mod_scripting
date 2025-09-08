@@ -119,9 +119,9 @@ impl DebugWithTypeInfo for ReflectAllocation {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
     ) -> std::fmt::Result {
-        f.debug_tuple_with_type_info("ReflectAllocation")
+        f.debug_tuple_with_type_info("ReflectAllocation", type_info_provider)
             .field(&((self.0.get() as *mut ()) as usize))
             .finish()
     }

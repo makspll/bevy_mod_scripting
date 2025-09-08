@@ -21,12 +21,18 @@ pub enum Language {
 
 impl std::fmt::Display for Language {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Language::Rhai => "Rhai".fmt(f),
-            Language::Lua => "Lua".fmt(f),
-            Language::Rune => "Rune".fmt(f),
-            Language::External(cow) => cow.fmt(f),
-            Language::Unknown => "Unknown".fmt(f),
+        Cow::<'static, str>::from(self).fmt(f)
+    }
+}
+
+impl From<&Language> for Cow<'static, str> {
+    fn from(val: &Language) -> Self {
+        match val {
+            Language::Rhai => Cow::Borrowed("Rhai"),
+            Language::Lua => Cow::Borrowed("Lua"),
+            Language::Rune => Cow::Borrowed("Rune"),
+            Language::External(cow) => cow.clone(),
+            Language::Unknown => Cow::Borrowed("Unknown"),
         }
     }
 }

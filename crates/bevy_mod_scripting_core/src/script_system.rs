@@ -15,7 +15,7 @@ use ::{
         query::{Access, FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
         schedule::SystemSet,
-        system::{IntoSystem, System, SystemParamValidationError},
+        system::{System, SystemParamValidationError},
         world::{World, unsafe_world_cell::UnsafeWorldCell},
     },
     bevy_reflect::Reflect,
@@ -155,7 +155,7 @@ impl ScriptSystemBuilder {
             // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
             // all script systems would be the same
 
-            let system: DynamicScriptSystem<P> = IntoSystem::into_system(self);
+            let system: DynamicScriptSystem<P> = bevy_ecs::system::IntoSystem::into_system(self);
             let mut system_config = system.into_configs();
             // let mut system_config = <ScriptSystemBuilder as IntoScheduleConfigs<Box<(dyn System<In = (), Out = Result<(), BevyError>> + 'static)>, (Infallible, IsDynamicScriptSystem<P>)>>::into_configs(self);            // apply ordering
             for (other, is_before) in before_systems
@@ -255,7 +255,7 @@ pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
 pub struct IsDynamicScriptSystem<P>(PhantomData<fn() -> P>);
 
 #[profiling::all_functions]
-impl<P: IntoScriptPluginParams> IntoSystem<(), (), IsDynamicScriptSystem<P>>
+impl<P: IntoScriptPluginParams> bevy_ecs::system::IntoSystem<(), (), IsDynamicScriptSystem<P>>
     for ScriptSystemBuilder
 {
     type System = DynamicScriptSystem<P>;
@@ -694,7 +694,7 @@ mod test {
             AssetPlugin::default(),
             DiagnosticsPlugin,
             TestPlugin::default(),
-            BMSScriptingInfrastructurePlugin,
+            BMSScriptingInfrastructurePlugin::default(),
         ));
         app.init_schedule(TestSchedule);
         let mut main_schedule_order = app.world_mut().resource_mut::<MainScheduleOrder>();

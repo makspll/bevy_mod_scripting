@@ -45,7 +45,7 @@ ReflectReference {
         ),
         base_id: Resource(
             ComponentId(
-                "test_utils::test_data::TestResource",
+                test_utils::test_data::TestResource,
             ),
         ),
     },

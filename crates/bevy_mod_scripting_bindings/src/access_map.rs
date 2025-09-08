@@ -109,20 +109,26 @@ impl DisplayWithTypeInfo for ReflectAccessId {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
         match self.kind {
             ReflectAccessKind::ComponentOrResource => {
                 write!(
                     f,
                     "Component or resource: {}",
-                    WithTypeInfo(&ComponentId::new(self.id as usize))
+                    WithTypeInfo::new_with_opt_info(
+                        &ComponentId::new(self.id as usize),
+                        type_info_provider
+                    )
                 )
             }
             ReflectAccessKind::Allocation => write!(
                 f,
                 "Allocation to: {}",
-                WithTypeInfo(&ReflectAllocationId::new(self.id))
+                WithTypeInfo::new_with_opt_info(
+                    &ReflectAllocationId::new(self.id),
+                    type_info_provider
+                )
             ),
             ReflectAccessKind::Global => write!(f, "World(Global)"),
         }
@@ -221,23 +227,15 @@ impl ReflectAccessId {
     }
 }
 
-#[profiling::all_functions]
 impl From<ComponentId> for ReflectAccessId {
-    fn from(value: ComponentId) -> Self {
-        Self {
-            kind: ReflectAccessKind::ComponentOrResource,
-            id: value.index() as u64,
-        }
+    fn from(id: ComponentId) -> Self {
+        ReflectAccessId::for_component_id(id)
     }
 }
 
-#[profiling::all_functions]
 impl From<ReflectAllocationId> for ReflectAccessId {
-    fn from(value: ReflectAllocationId) -> Self {
-        Self {
-            kind: ReflectAccessKind::Allocation,
-            id: value.id(),
-        }
+    fn from(id: ReflectAllocationId) -> Self {
+        ReflectAccessId::for_allocation(id)
     }
 }
 

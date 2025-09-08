@@ -1,11 +1,9 @@
 //! Traits and types for managing script contexts.
 
 use bevy_ecs::world::WorldId;
-use bevy_mod_scripting_bindings::{ThreadWorldContainer, WorldContainer, WorldGuard};
+use bevy_mod_scripting_bindings::{InteropError, ThreadWorldContainer, WorldContainer, WorldGuard};
 
-use crate::{
-    IntoScriptPluginParams, error::ScriptError, extractors::GetPluginFor, script::ScriptAttachment,
-};
+use crate::{IntoScriptPluginParams, extractors::GetPluginFor, script::ScriptAttachment};
 
 /// A trait that all script contexts must implement.
 ///
@@ -16,18 +14,18 @@ impl<T: 'static + Send + GetPluginFor> Context for T {}
 
 /// Initializer run once after creating a context but before executing it for the first time as well as after re-loading the script
 pub type ContextInitializer<P> =
-    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), InteropError>;
 
 /// Initializer run every time before executing or loading/re-loading a script
 pub type ContextPreHandlingInitializer<P> =
-    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), InteropError>;
 
 /// A strategy for loading contexts
 pub type ContextLoadFn<P> = fn(
     attachment: &ScriptAttachment,
     content: &[u8],
     world_id: WorldId,
-) -> Result<<P as IntoScriptPluginParams>::C, ScriptError>;
+) -> Result<<P as IntoScriptPluginParams>::C, InteropError>;
 
 /// A strategy for reloading contexts
 pub type ContextReloadFn<P> = fn(
@@ -35,7 +33,7 @@ pub type ContextReloadFn<P> = fn(
     content: &[u8],
     previous_context: &mut <P as IntoScriptPluginParams>::C,
     world_id: WorldId,
-) -> Result<(), ScriptError>;
+) -> Result<(), InteropError>;
 
 /// A utility trait for types implementing `IntoScriptPluginParams`.
 ///
@@ -46,7 +44,7 @@ pub trait ScriptingLoader<P: IntoScriptPluginParams> {
         attachment: &ScriptAttachment,
         content: &[u8],
         world: WorldGuard,
-    ) -> Result<P::C, ScriptError>;
+    ) -> Result<P::C, InteropError>;
 
     /// Reloads a script context using the provided reloader function
     fn reload(
@@ -54,7 +52,7 @@ pub trait ScriptingLoader<P: IntoScriptPluginParams> {
         content: &[u8],
         previous_context: &mut P::C,
         world: WorldGuard,
-    ) -> Result<(), ScriptError>;
+    ) -> Result<(), InteropError>;
 }
 
 impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
@@ -62,7 +60,7 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         attachment: &ScriptAttachment,
         content: &[u8],
         world: WorldGuard,
-    ) -> Result<P::C, ScriptError> {
+    ) -> Result<P::C, InteropError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             let world_id = world.id();
             ThreadWorldContainer.set_world(world)?;
@@ -75,7 +73,7 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         content: &[u8],
         previous_context: &mut P::C,
         world: WorldGuard,
-    ) -> Result<(), ScriptError> {
+    ) -> Result<(), InteropError> {
         WorldGuard::with_existing_static_guard(world, |world| {
             let world_id = world.id();
             ThreadWorldContainer.set_world(world)?;

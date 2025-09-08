@@ -11,13 +11,13 @@ use crate::{
         ScriptCallbackResponseEvent, ScriptEvent,
     },
     extractors::CallContext,
-    handler::{handle_script_errors, send_callback_response},
+    handler::{send_callback_response, send_script_errors},
     script::{DisplayProxy, ScriptAttachment},
 };
 use bevy_ecs::{system::Command, world::World};
 use bevy_log::{error, info, trace};
 use bevy_mod_scripting_asset::ScriptAsset;
-use bevy_mod_scripting_bindings::{ScriptValue, WorldGuard};
+use bevy_mod_scripting_bindings::{InteropError, ScriptValue, WorldGuard};
 use parking_lot::Mutex;
 use {
     bevy_asset::{Assets, Handle},
@@ -147,7 +147,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         content: &[u8],
         context: &mut P::C,
         guard: WorldGuard,
-    ) -> Result<(), ScriptError> {
+    ) -> Result<(), InteropError> {
         debug!("{}: reloading context {}", P::LANGUAGE, attachment);
         // reload context
         P::reload(attachment, content, context, guard.clone())
@@ -157,7 +157,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         attachment: &ScriptAttachment,
         content: &[u8],
         guard: WorldGuard,
-    ) -> Result<P::C, ScriptError> {
+    ) -> Result<P::C, InteropError> {
         debug!("{}: loading context {}", P::LANGUAGE, attachment);
         let context = P::load(attachment, content, guard.clone())?;
         Ok(context)
@@ -177,7 +177,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             vec![],
             emit_responses,
         )
-        .with_context(P::LANGUAGE)
         .with_context("saving reload state")
         .run_with_context(world, ctxt)
         .ok()
@@ -197,8 +196,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             vec![],
             emit_responses,
         )
-        .with_context(P::LANGUAGE)
-        .with_context("on loaded callback")
         .run_with_context(world.clone(), script_context.clone());
 
         if is_reload {
@@ -208,8 +205,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                 vec![script_state.unwrap_or(ScriptValue::Unit)],
                 emit_responses,
             )
-            .with_context(P::LANGUAGE)
-            .with_context("on reloaded callback")
             .run_with_context(world, script_context);
         }
     }
@@ -230,8 +225,10 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         script_context
             .insert_arc(attachment, ctxt.clone())
             .map_err(|_| {
-                ScriptError::new_boxed(String::from("No context policy applied").into())
-                    .with_context("creating new script and context")
+                ScriptError::new_boxed_without_type_info(
+                    String::from("No context policy applied").into(),
+                )
+                .with_context("creating new script and context")
             })?;
 
         Self::after_load(
@@ -263,7 +260,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         let mut script_context = script_context.write();
 
         script_context.insert_resident(attachment.clone()).map_err(|err| {
-            ScriptError::new_boxed(format!(
+            ScriptError::new_boxed_without_type_info(format!(
                 "expected context to be present, could not mark attachment as resident in context, {err:?}"
             ).into())
         })?;
@@ -366,7 +363,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         res.map_err(|err| {
             err.with_script(attachment.script().display())
-                .with_context(P::LANGUAGE)
+                .with_language(P::LANGUAGE)
         })
     }
 }
@@ -403,7 +400,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
         );
 
         if let Err(err) = res {
-            handle_script_errors(WorldGuard::new_exclusive(world), vec![err].into_iter());
+            send_script_errors(WorldGuard::new_exclusive(world), [&err]);
         }
     }
 }
@@ -463,6 +460,14 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
             self.args,
             guard.clone(),
         );
+        let result = result.map_err(|e| {
+            let mut err = ScriptError::from(e).with_script(self.attachment.script().display());
+            for ctxt in self.context {
+                err = err.with_context(ctxt)
+            }
+            err.with_context(format!("in callback: {}", self.callback))
+                .with_language(P::LANGUAGE)
+        });
 
         if self.trigger_response {
             trace!(
@@ -483,15 +488,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         }
 
         if let Err(ref err) = result {
-            let mut error_with_context = err
-                .clone()
-                .with_script(self.attachment.script().display())
-                .with_context(P::LANGUAGE);
-            for ctxt in self.context {
-                error_with_context = error_with_context.with_context(ctxt);
-            }
-
-            handle_script_errors(guard, vec![error_with_context].into_iter());
+            send_script_errors(guard, [err]);
         }
         result
     }
@@ -507,11 +504,12 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         let ctxt = match ctxt {
             Some(ctxt) => ctxt,
             None => {
-                let err =
-                    ScriptError::new_boxed(String::from("No context found for script").into())
-                        .with_script(self.attachment.script().display())
-                        .with_context(P::LANGUAGE);
-                handle_script_errors(guard, vec![err.clone()].into_iter());
+                let err = ScriptError::new_boxed_without_type_info(
+                    String::from("No context found for script").into(),
+                )
+                .with_script(self.attachment.script().display())
+                .with_language(P::LANGUAGE);
+                send_script_errors(guard, [&err]);
                 return Err(err);
             }
         };

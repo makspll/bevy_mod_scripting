@@ -1,12 +1,14 @@
 //! Contains the logic for handling script callback events
 use bevy_ecs::world::WorldId;
 use bevy_mod_scripting_bindings::{
-    ScriptValue, ThreadWorldContainer, WorldAccessGuard, WorldContainer, WorldGuard,
+    InteropError, ScriptValue, ThreadWorldContainer, WorldAccessGuard, WorldContainer, WorldGuard,
 };
+use bevy_mod_scripting_display::WithTypeInfo;
 
 use crate::extractors::CallContext;
+use crate::script::DisplayProxy;
 use crate::{
-    IntoScriptPluginParams, Language,
+    IntoScriptPluginParams,
     error::ScriptError,
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
@@ -32,7 +34,7 @@ pub type HandlerFn<P> = fn(
     callback: &CallbackLabel,
     context: &mut <P as IntoScriptPluginParams>::C,
     world_id: WorldId,
-) -> Result<ScriptValue, ScriptError>;
+) -> Result<ScriptValue, InteropError>;
 
 /// A utility trait, implemented for all types implementing `IntoScriptPluginParams`.
 ///
@@ -46,7 +48,7 @@ pub trait ScriptingHandler<P: IntoScriptPluginParams> {
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
         world: WorldGuard,
-    ) -> Result<ScriptValue, ScriptError>;
+    ) -> Result<ScriptValue, InteropError>;
 }
 
 impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
@@ -57,7 +59,7 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
         world: WorldGuard,
-    ) -> Result<ScriptValue, ScriptError> {
+    ) -> Result<ScriptValue, InteropError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             let world_id = world.id();
             ThreadWorldContainer.set_world(world)?;
@@ -113,7 +115,10 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let events = match events {
         Ok(events) => events,
         Err(err) => {
-            error!("Failed to read script callback events: {err}",);
+            error!(
+                "Failed to read script callback events: {}",
+                WithTypeInfo::new_with_info(&err, &guard)
+            );
             return;
         }
     };
@@ -131,6 +136,13 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 event.args.clone(),
                 guard.clone(),
             );
+            let call_result = call_result.map_err(|e| {
+                ScriptError::from(e)
+                    .with_script(attachment.script().display())
+                    .with_context(format!("callback: {}", event.label))
+                    .with_type_info_context(Some("args: "), event.args.clone())
+                    .with_language(P::LANGUAGE)
+            });
             drop(ctxt);
 
             if event.trigger_response {
@@ -144,21 +156,17 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     ),
                 );
             }
-            collect_errors(call_result, P::LANGUAGE, &mut errors);
+            collect_errors(call_result, &mut errors);
         }
     }
-    handle_script_errors(guard, errors.into_iter());
+    send_script_errors(guard, errors.iter());
 }
 
-fn collect_errors(
-    call_result: Result<ScriptValue, ScriptError>,
-    language: Language,
-    errors: &mut Vec<ScriptError>,
-) {
+fn collect_errors(call_result: Result<ScriptValue, ScriptError>, errors: &mut Vec<ScriptError>) {
     match call_result {
         Ok(_) => {}
         Err(e) => {
-            errors.push(e.with_context(format!("Event handling for language {language}")));
+            errors.push(e);
         }
     }
 }
@@ -170,23 +178,59 @@ pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackRespons
     });
 
     if let Err(err) = err {
-        error!("Failed to send script callback response: {err}",);
+        error!(
+            "Failed to send script callback response: {}",
+            WithTypeInfo::new_with_info(&err, &world)
+        );
     }
 }
 
-/// Handles errors caused by script execution and sends them to the error event channel
-pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: WorldGuard, errors: I) {
+/// sends the given errors to the error event channel
+pub fn send_script_errors<'e>(
+    world: WorldGuard,
+    errors: impl IntoIterator<Item = &'e ScriptError>,
+) {
+    let iter = errors.into_iter();
     let err = world.with_resource_mut(|mut error_events: Mut<Events<ScriptErrorEvent>>| {
-        for error in errors.clone() {
-            error_events.send(ScriptErrorEvent { error });
+        for error in iter {
+            error_events.send(ScriptErrorEvent {
+                error: error.clone(),
+            });
         }
     });
 
     if let Err(err) = err {
-        error!("Failed to send script error events: {err}",);
+        error!(
+            "Failed to send script error events: {}",
+            WithTypeInfo::new_with_info(&err, &world)
+        );
     }
+}
 
-    for error in errors {
-        error!("{error}");
+/// A system which receives all script errors and logs them to console
+pub fn script_error_logger(
+    world: &mut World,
+    mut errors_cursor: Local<EventCursor<ScriptErrorEvent>>,
+) {
+    let guard = WorldGuard::new_exclusive(world);
+    let errors = guard.with_resource(|events: &Events<ScriptErrorEvent>| {
+        errors_cursor
+            .read(events)
+            .map(|e| e.error.clone())
+            .collect::<Vec<_>>()
+    });
+
+    match errors {
+        Ok(errors) => {
+            for error in errors {
+                error!("{}", &WithTypeInfo::new_with_info(&error, &guard))
+            }
+        }
+        Err(err) => {
+            error!(
+                "Script errors occured but could not be accessed:\n{}",
+                WithTypeInfo::new_with_info(&err, &guard)
+            );
+        }
     }
 }

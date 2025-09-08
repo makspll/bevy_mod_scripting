@@ -5,7 +5,6 @@
 use crate::{
     IntoScriptPluginParams,
     context::Context,
-    error::ScriptError,
     event::{CallbackLabel, IntoCallbackLabel},
     handler::ScriptingHandler,
     script::ScriptAttachment,
@@ -19,7 +18,8 @@ use bevy_ecs::{
     world::{DeferredWorld, World, unsafe_world_cell::UnsafeWorldCell},
 };
 use bevy_mod_scripting_bindings::{
-    WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, script_value::ScriptValue,
+    InteropError, WorldAccessGuard, WorldGuard, access_map::ReflectAccessId,
+    script_value::ScriptValue,
 };
 
 use fixedbitset::FixedBitSet;
@@ -41,7 +41,7 @@ pub trait CallContext {
         label: &CallbackLabel,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, ScriptError>;
+    ) -> Result<ScriptValue, InteropError>;
 
     /// Invoke a callback on this context
     fn call_context<C: IntoCallbackLabel>(
@@ -49,7 +49,7 @@ pub trait CallContext {
         context_key: &ScriptAttachment,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, ScriptError> {
+    ) -> Result<ScriptValue, InteropError> {
         self.call_context_dynamic(context_key, &C::into_callback_label(), payload, guard)
     }
 }
@@ -61,7 +61,7 @@ impl<C: Context> CallContext for C {
         label: &CallbackLabel,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, ScriptError> {
+    ) -> Result<ScriptValue, InteropError> {
         C::P::handle(payload, context_key, label, self, guard)
     }
 }

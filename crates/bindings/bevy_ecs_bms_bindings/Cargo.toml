@@ -1,16 +1,15 @@
 [package]
 name = "bevy_ecs_bms_bindings"
-version = "0.15.1"
-edition = "2024"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-license = "MIT OR Apache-2.0"
 description = "Automatically generated bindings for bevy_ecs crate"
-repository = "https://github.com/makspll/bevy_mod_scripting"
-homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "rhai"]
-categories = ["game-development"]
 readme = "readme.md"
-
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
 
@@ -18,7 +17,7 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_ecs = { version = "0.16.1", features = ["std", "bevy_reflect", "async_executor", "backtrace", "multi_threaded", "serialize"], default-features = true}
+bevy_ecs = { version = "0.16.1", features = ["std", "async_executor", "multi_threaded", "bevy_reflect", "backtrace", "serialize"], default-features = true}
 
 
 arrayvec = { version = "^0.7.4", features = ["std"], default-features = false}

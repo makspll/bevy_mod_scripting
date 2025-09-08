@@ -6,6 +6,7 @@ use crate::{
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
+    handler::script_error_logger,
 };
 use asset::{configure_asset_systems, configure_asset_systems_for_plugin};
 use bevy_app::{App, Plugin, PostUpdate};
@@ -304,7 +305,14 @@ fn pre_register_components(app: &mut App) {
 /// A plugin defining shared settings between various scripting plugins
 /// It is necessary to register this plugin for any of them to work
 #[derive(Default)]
-pub struct BMSScriptingInfrastructurePlugin;
+pub struct BMSScriptingInfrastructurePlugin {
+    /// If set to true will log all ScriptErrorEvents using bevy_log::error.
+    ///
+    /// you can opt out of this behavior if you want to log the errors in a different way.
+    ///
+    /// see the [`crate::handler::script_error_logger`] system.
+    dont_log_script_event_errors: bool,
+}
 
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
@@ -325,6 +333,10 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             PostUpdate,
             ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
         );
+
+        if !self.dont_log_script_event_errors {
+            app.add_systems(PostUpdate, script_error_logger);
+        }
 
         app.add_plugins(configure_asset_systems);
 
@@ -401,7 +413,7 @@ mod test {
 
         assert!(app.world_mut().component_id::<Comp>().is_none());
 
-        BMSScriptingInfrastructurePlugin.finish(&mut app);
+        BMSScriptingInfrastructurePlugin::default().finish(&mut app);
 
         assert!(app.world_mut().component_id::<Comp>().is_some());
     }

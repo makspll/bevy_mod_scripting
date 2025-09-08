@@ -22,7 +22,8 @@ impl bevy_mod_scripting_display::DebugWithTypeInfo for ReflectWrapper {
         f: &mut std::fmt::Formatter,
         type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        PrintReflectAsDebug(&*self.0).to_string_with_type_info(f, type_info_provider)
+        PrintReflectAsDebug::new_with_opt_info(&*self.0, type_info_provider)
+            .to_string_with_type_info(f, type_info_provider)
     }
 }
 
@@ -33,7 +34,8 @@ impl DisplayWithTypeInfo for ReflectWrapper {
         type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
         // TODO: different display?
-        PrintReflectAsDebug(&*self.0).to_string_with_type_info(f, type_info_provider)
+        PrintReflectAsDebug::new_with_opt_info(&*self.0, type_info_provider)
+            .to_string_with_type_info(f, type_info_provider)
     }
 }
 
@@ -435,7 +437,7 @@ impl InteropError {
 
 impl std::fmt::Display for InteropError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", WithTypeInfo(self))
+        std::fmt::Display::fmt(&WithTypeInfo::new(self), f)
     }
 }
 
@@ -445,7 +447,7 @@ impl DisplayWithTypeInfo for InteropError {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
         match self {
             InteropError::NotImplemented => {
@@ -455,8 +457,8 @@ impl DisplayWithTypeInfo for InteropError {
                 write!(
                     f,
                     "Value type mismatch: expected {}, got {}",
-                    WithTypeInfo(expected),
-                    WithTypeInfo(value)
+                    WithTypeInfo::new_with_opt_info(expected, type_info_provider),
+                    WithTypeInfo::new_with_opt_info(value, type_info_provider)
                 )
             }
             InteropError::LengthMismatch { expected, got } => {
@@ -466,7 +468,10 @@ impl DisplayWithTypeInfo for InteropError {
                 write!(
                     f,
                     "Failed to convert from reflect {}: {}",
-                    WithTypeInfo(&type_id.as_ref().or_fake_id()),
+                    WithTypeInfo::new_with_opt_info(
+                        &type_id.as_ref().or_fake_id(),
+                        type_info_provider
+                    ),
                     reason
                 )
             }
@@ -474,8 +479,8 @@ impl DisplayWithTypeInfo for InteropError {
                 write!(
                     f,
                     "Type mismatch: expected {}, got {}",
-                    WithTypeInfo(expected),
-                    WithTypeInfo(&got.as_ref().or_fake_id())
+                    WithTypeInfo::new_with_opt_info(expected, type_info_provider),
+                    WithTypeInfo::new_with_opt_info(&got.as_ref().or_fake_id(), type_info_provider)
                 )
             }
             InteropError::StringTypeMismatch { expected, got } => {
@@ -483,7 +488,7 @@ impl DisplayWithTypeInfo for InteropError {
                     f,
                     "Type mismatch: expected {}, got {}",
                     expected,
-                    WithTypeInfo(&got.as_ref().or_fake_id())
+                    WithTypeInfo::new_with_opt_info(&got.as_ref().or_fake_id(), type_info_provider)
                 )
             }
             InteropError::CannotClaimAccess {
@@ -495,7 +500,7 @@ impl DisplayWithTypeInfo for InteropError {
                     write!(
                         f,
                         "Cannot claim access to {} at {}:{}:{}: {}",
-                        WithTypeInfo(base),
+                        WithTypeInfo::new_with_opt_info(base, type_info_provider),
                         location.file(),
                         location.line(),
                         location.column(),
@@ -505,7 +510,7 @@ impl DisplayWithTypeInfo for InteropError {
                     write!(
                         f,
                         "Cannot claim access to {}: {}",
-                        WithTypeInfo(base),
+                        WithTypeInfo::new_with_opt_info(base, type_info_provider),
                         context
                     )
                 }
@@ -524,9 +529,15 @@ impl DisplayWithTypeInfo for InteropError {
                 write!(
                     f,
                     "Unsupported operation on {}{}: {}",
-                    WithTypeInfo(&base.as_ref().or_fake_id()),
+                    WithTypeInfo::new_with_opt_info(
+                        &base.as_ref().or_fake_id(),
+                        type_info_provider
+                    ),
                     if let Some(value) = value.as_ref() {
-                        format!(" with value {}", WithTypeInfo(value))
+                        format!(
+                            " with value {}",
+                            WithTypeInfo::new_with_opt_info(value, type_info_provider)
+                        )
                     } else {
                         "".to_string()
                     },
@@ -538,7 +549,7 @@ impl DisplayWithTypeInfo for InteropError {
                     f,
                     "Missing type data {} for type: {}",
                     type_data,
-                    WithTypeInfo(type_id)
+                    WithTypeInfo::new_with_opt_info(type_id, type_info_provider)
                 )
             }
             InteropError::MissingEntity(entity) => {
@@ -560,7 +571,7 @@ impl DisplayWithTypeInfo for InteropError {
                     f,
                     "Error in function {} on {}: {}",
                     function_name,
-                    WithTypeInfo(on),
+                    WithTypeInfo::new_with_opt_info(on, type_info_provider),
                     error
                 )
             }
@@ -569,7 +580,7 @@ impl DisplayWithTypeInfo for InteropError {
                     f,
                     "Error converting argument {}: {}",
                     argument,
-                    WithTypeInfo(error)
+                    WithTypeInfo::new_with_opt_info(error, type_info_provider)
                 )
             }
             InteropError::ArgumentCountMismatch { expected, got } => {
@@ -579,11 +590,15 @@ impl DisplayWithTypeInfo for InteropError {
                 write!(
                     f,
                     "Garbage collected allocation used: {}",
-                    WithTypeInfo(reference)
+                    WithTypeInfo::new_with_opt_info(reference, type_info_provider)
                 )
             }
             InteropError::UnregisteredReflectBase { base } => {
-                write!(f, "Unregistered reflect base: {}", WithTypeInfo(base))
+                write!(
+                    f,
+                    "Unregistered reflect base: {}",
+                    WithTypeInfo::new_with_opt_info(base, type_info_provider)
+                )
             }
             InteropError::ReflectionPathError { error, reflected } => {
                 write!(
@@ -591,7 +606,10 @@ impl DisplayWithTypeInfo for InteropError {
                     "Reflection path error: {}{}",
                     error,
                     if let Some(reflected) = reflected.as_ref() {
-                        format!(", on value {}", WithTypeInfo(reflected))
+                        format!(
+                            "\nOn value: {}",
+                            WithTypeInfo::new_with_opt_info(reflected, type_info_provider)
+                        )
                     } else {
                         "".to_string()
                     }
@@ -601,25 +619,59 @@ impl DisplayWithTypeInfo for InteropError {
                 write!(
                     f,
                     "Could not downcast reference {} to type {}",
-                    WithTypeInfo(reference),
-                    WithTypeInfo(to)
+                    WithTypeInfo::new_with_opt_info(reference, type_info_provider),
+                    WithTypeInfo::new_with_opt_info(to, type_info_provider)
                 )
             }
             InteropError::MissingSchedule { schedule_name } => {
                 write!(f, "Missing schedule: {schedule_name}")
             }
             InteropError::InvalidIndex { index, reason } => {
-                write!(f, "Invalid index {}: {}", WithTypeInfo(index), reason)
+                write!(
+                    f,
+                    "Invalid index {}: {}",
+                    WithTypeInfo::new_with_opt_info(index, type_info_provider),
+                    reason
+                )
             }
             InteropError::MissingWorld => {
                 write!(f, "Missing world")
             }
             InteropError::External(external_error) => {
-                write!(f, "External error: {}", WithTypeInfo(external_error))
+                write!(
+                    f,
+                    "External error: {}",
+                    WithTypeInfo::new_with_opt_info(external_error, type_info_provider)
+                )
             }
             InteropError::WithContext(cow, interop_error) => {
-                write!(f, "{}: {}", cow, WithTypeInfo(interop_error))
+                write!(
+                    f,
+                    "{}: {}",
+                    cow,
+                    WithTypeInfo::new_with_opt_info(interop_error, type_info_provider)
+                )
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bevy_reflect::TypeRegistry;
+
+    use super::*;
+    #[test]
+    fn test_script_value_prints_using_type_data() {
+        // check script values print fine
+        let mut registry = TypeRegistry::empty();
+        registry.register::<ScriptValue>();
+        pretty_assertions::assert_str_eq!(
+            format!(
+                "{:?}",
+                PrintReflectAsDebug::new_with_opt_info(&ScriptValue::Integer(1), Some(&registry))
+            ),
+            "1",
+        );
     }
 }
