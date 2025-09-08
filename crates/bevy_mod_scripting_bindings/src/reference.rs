@@ -6,8 +6,9 @@
 //! we need wrapper types which have owned and ref variants.
 use super::{WorldGuard, access_map::ReflectAccessId};
 use crate::{
-    ReflectAllocationId, ReflectAllocator, error::InteropError,
-    reflection_extensions::PartialReflectExt, with_access_read, with_access_write,
+    ReflectAllocationId, ReflectAllocator, ThreadWorldContainer, WorldContainer,
+    error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
+    with_access_write,
 };
 use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
@@ -64,7 +65,12 @@ impl DisplayWithTypeInfo for ReflectReference {
             // Safety: should be safe as the guard is invalidated when world is released per iteration
             let any: &dyn Any = unsafe { type_info_provider.as_any_static() };
 
-            if let Some(guard) = any.downcast_ref::<WorldGuard>() {
+            let guard = any.downcast_ref::<WorldGuard>().cloned().or_else(|| {
+                any.downcast_ref::<ThreadWorldContainer>()
+                    .and_then(|t| t.try_get_world().ok())
+            });
+
+            if let Some(guard) = guard {
                 if let Ok(r) = self.with_reflect(guard.clone(), |s| {
                     PrintReflectAsDebug::new_with_opt_info(s, Some(type_info_provider))
                         .to_string_with_type_info(f, Some(type_info_provider))
@@ -621,7 +627,12 @@ impl DisplayWithTypeInfo for ReflectBase {
                     // Safety: should generally be safe, as the world guard is invalidated once the world is out of scope for the iteration
                     let any: &dyn Any = unsafe { type_info_provider.as_any_static() };
 
-                    if let Some(guard) = any.downcast_ref::<WorldGuard>() {
+                    let guard = any.downcast_ref::<WorldGuard>().cloned().or_else(|| {
+                        any.downcast_ref::<ThreadWorldContainer>()
+                            .and_then(|t| t.try_get_world().ok())
+                    });
+
+                    if let Some(guard) = guard {
                         let allocator = guard.allocator();
                         let allocator = allocator.read();
                         if let Some(allocation) = allocator.get(id) {
