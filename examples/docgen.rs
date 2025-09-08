@@ -19,7 +19,7 @@ fn main() -> std::io::Result<()> {
         // the definitions by themselves
         CoreScriptGlobalsPlugin::default(),
         ScriptFunctionsPlugin,
-        BMSScriptingInfrastructurePlugin,
+        BMSScriptingInfrastructurePlugin::default(),
     ));
 
     // there are two ways to generate the ladfile
