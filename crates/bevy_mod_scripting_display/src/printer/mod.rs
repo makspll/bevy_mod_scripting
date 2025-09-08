@@ -24,6 +24,16 @@ impl<'f, 'b: 'f, 't> ReflectPrinter<'f, 'b, 't> {
 
     /// Prints a `Reflect` value as if it was its native `Debug` implementation.
     pub fn debug(&mut self, value: &dyn PartialReflect) -> std::fmt::Result {
+        if let Some(type_info_provider) = &self.type_info {
+            if let Some(reflect_type) = value.try_as_reflect()
+                && let Some(display_type_data) = type_info_provider
+                    .get_type_data::<ReflectDisplayWithTypeInfo>(reflect_type.type_id())
+                && let Some(as_dyn_trait) = display_type_data.get(reflect_type)
+            {
+                return as_dyn_trait.display_with_type_info(self.formatter, self.type_info);
+            }
+        }
+
         // try to print the value as if it was its native Debug implementation
         match value.reflect_ref() {
             ReflectRef::Struct(s) => self
@@ -154,20 +164,7 @@ impl<'f, 'b: 'f, 't> ReflectPrinter<'f, 'b, 't> {
                         .finish()
                 }
             }
-            ReflectRef::Opaque(o) => {
-                if let Some(type_info_provider) = &self.type_info {
-                    if let Some(reflect_type) = o.try_as_reflect()
-                        && let Some(display_type_data) =
-                            type_info_provider
-                                .get_type_data::<ReflectDisplayWithTypeInfo>(reflect_type.type_id())
-                        && let Some(as_dyn_trait) = display_type_data.get(reflect_type)
-                    {
-                        return as_dyn_trait.display_with_type_info(self.formatter, self.type_info);
-                    }
-                }
-
-                o.debug(self.formatter)
-            }
+            ReflectRef::Opaque(o) => o.debug(self.formatter),
         }
     }
 
