@@ -1,6 +1,6 @@
 //! Rhai scripting language support for Bevy.
 
-use std::ops::Deref;
+use std::{ops::Deref, str::Utf8Error};
 
 use crate::bindings::script_value::{FromDynamic, IntoDynamic};
 
@@ -20,7 +20,6 @@ use bevy_mod_scripting_bindings::{
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
-    error::ScriptError,
     event::CallbackLabel,
     extractors::GetPluginFor,
     make_plugin_config_static,
@@ -111,6 +110,12 @@ impl IntoInteropError for Box<EvalAltResult> {
 }
 
 impl IntoInteropError for ParseError {
+    fn into_bms_error(self) -> InteropError {
+        InteropError::external(self)
+    }
+}
+
+impl IntoInteropError for Utf8Error {
     fn into_bms_error(self) -> InteropError {
         InteropError::external(self)
     }
@@ -257,15 +262,19 @@ fn load_rhai_content_into_context(
     context_key: &ScriptAttachment,
     content: &[u8],
     world_id: WorldId,
-) -> Result<(), ScriptError> {
+) -> Result<(), InteropError> {
     let config = RhaiScriptingPlugin::readonly_configuration(world_id);
     let initializers = config.context_initialization_callbacks;
     let pre_handling_initializers = config.pre_handling_callbacks;
     let runtime = config.runtime.read();
 
-    context.ast = runtime
-        .compile(std::str::from_utf8(content)?)
-        .map_err(IntoInteropError::into_bms_error)?;
+    context.ast = std::str::from_utf8(content)
+        .map_err(IntoInteropError::into_bms_error)
+        .and_then(|content| {
+            runtime
+                .compile(content)
+                .map_err(IntoInteropError::into_bms_error)
+        })?;
     context
         .ast
         .set_source(context_key.script().display().to_string());
@@ -289,7 +298,7 @@ pub fn rhai_context_load(
     context_key: &ScriptAttachment,
     content: &[u8],
     world_id: WorldId,
-) -> Result<RhaiScriptContext, ScriptError> {
+) -> Result<RhaiScriptContext, InteropError> {
     let mut context = RhaiScriptContext {
         // Using an empty AST as a placeholder.
         ast: AST::empty(),
@@ -305,7 +314,7 @@ pub fn rhai_context_reload(
     content: &[u8],
     context: &mut RhaiScriptContext,
     world_id: WorldId,
-) -> Result<(), ScriptError> {
+) -> Result<(), InteropError> {
     load_rhai_content_into_context(context, context_key, content, world_id)
 }
 
@@ -317,7 +326,7 @@ pub fn rhai_callback_handler(
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,
     world_id: WorldId,
-) -> Result<ScriptValue, ScriptError> {
+) -> Result<ScriptValue, InteropError> {
     let config = RhaiScriptingPlugin::readonly_configuration(world_id);
     let pre_handling_initializers = config.pre_handling_callbacks;
 
@@ -355,7 +364,7 @@ pub fn rhai_callback_handler(
                 );
                 Ok(ScriptValue::Unit)
             } else {
-                Err(ScriptError::from(e.into_bms_error()))
+                Err(e.into_bms_error())
             }
         }
     }

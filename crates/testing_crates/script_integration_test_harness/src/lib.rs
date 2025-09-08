@@ -47,7 +47,7 @@ pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
     app.add_plugins((
         ScriptFunctionsPlugin,
         CoreScriptGlobalsPlugin::default(),
-        BMSScriptingInfrastructurePlugin,
+        BMSScriptingInfrastructurePlugin::default(),
     ));
     if include_test_functions {
         register_test_functions(app);

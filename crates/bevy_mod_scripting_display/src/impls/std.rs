@@ -59,14 +59,16 @@ impl<T: DebugWithTypeInfo> DebugWithTypeInfo for Option<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
         match self {
             Some(value) => f
-                .debug_tuple_with_type_info("Some")
+                .debug_tuple_with_type_info("Some", type_info_provider)
                 .field(value as &dyn DebugWithTypeInfo)
                 .finish(),
-            None => f.debug_tuple_with_type_info("None").finish(),
+            None => f
+                .debug_tuple_with_type_info("None", type_info_provider)
+                .finish(),
         }
     }
 }
@@ -75,15 +77,15 @@ impl<T: DebugWithTypeInfo, E: DebugWithTypeInfo> DebugWithTypeInfo for Result<T,
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
         match self {
             Ok(v) => f
-                .debug_tuple_with_type_info("Ok")
+                .debug_tuple_with_type_info("Ok", type_info_provider)
                 .field(v as &dyn DebugWithTypeInfo)
                 .finish(),
             Err(v) => f
-                .debug_tuple_with_type_info("Err")
+                .debug_tuple_with_type_info("Err", type_info_provider)
                 .field(v as &dyn DebugWithTypeInfo)
                 .finish(),
         }
@@ -94,9 +96,9 @@ impl<T: DebugWithTypeInfo> DebugWithTypeInfo for Vec<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        f.debug_list_with_type_info()
+        f.debug_list_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
             .finish()
     }
@@ -108,9 +110,9 @@ impl<K: DebugWithTypeInfo, V: DebugWithTypeInfo, S> DebugWithTypeInfo
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        f.debug_map_with_type_info()
+        f.debug_map_with_type_info(type_info_provider)
             .entries(
                 self.iter()
                     .map(|(k, v)| (k as &dyn DebugWithTypeInfo, v as &dyn DebugWithTypeInfo)),
@@ -123,9 +125,9 @@ impl<K: DebugWithTypeInfo, S> DebugWithTypeInfo for std::collections::HashSet<K,
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        f.debug_set_with_type_info()
+        f.debug_set_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
             .finish()
     }
@@ -135,9 +137,9 @@ impl<K: DebugWithTypeInfo> DebugWithTypeInfo for std::collections::BTreeSet<K> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        f.debug_set_with_type_info()
+        f.debug_set_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
             .finish()
     }
@@ -149,9 +151,9 @@ impl<K: DebugWithTypeInfo, V: DebugWithTypeInfo> DebugWithTypeInfo
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        f.debug_map_with_type_info()
+        f.debug_map_with_type_info(type_info_provider)
             .entries(
                 self.iter()
                     .map(|(k, v)| (k as &dyn DebugWithTypeInfo, v as &dyn DebugWithTypeInfo)),
@@ -235,7 +237,27 @@ impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for Arc<T> {
     }
 }
 
+impl DisplayWithTypeInfo for Arc<dyn DisplayWithTypeInfo> {
+    fn display_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
+    ) -> std::fmt::Result {
+        (**self).display_with_type_info(f, type_info_provider)
+    }
+}
+
 impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for Box<T> {
+    fn display_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
+    ) -> std::fmt::Result {
+        (**self).display_with_type_info(f, type_info_provider)
+    }
+}
+
+impl DisplayWithTypeInfo for Box<dyn DisplayWithTypeInfo> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
@@ -253,5 +275,24 @@ impl DisplayWithTypeInfo for Location<'_> {
     ) -> std::fmt::Result {
         // prettier display: file:line:column
         write!(f, "{}:{}:{}", self.file(), self.line(), self.column())
+    }
+}
+
+impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for Vec<T> {
+    fn display_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
+    ) -> std::fmt::Result {
+        f.write_str("[")?;
+        let mut first = true;
+        for var in self {
+            if !first {
+                f.write_str(", ")?;
+            }
+            first = false;
+            var.display_with_type_info(f, type_info_provider)?;
+        }
+        f.write_str("]")
     }
 }

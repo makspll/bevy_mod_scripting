@@ -11,15 +11,18 @@ impl DebugWithTypeInfo for ComponentId {
         f: &mut std::fmt::Formatter<'_>,
         type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        let name = type_info_provider
-            .and_then(|type_info_provider| {
-                type_info_provider
-                    .get_component_info(*self)
-                    .map(|info| info.name().to_string())
-            })
-            .unwrap_or_else(|| format!("Unregistered ComponentId - {self:?}"));
-
-        f.debug_tuple("ComponentId").field(&name).finish()
+        let mut builder = f.debug_tuple_with_type_info("ComponentId", type_info_provider);
+        match type_info_provider {
+            Some(type_info_provider) => match type_info_provider
+                .get_component_info(*self)
+                .map(|info| info.name().to_string())
+            {
+                Some(type_info) => builder.field(&type_info),
+                None => builder.field(&format!("Unregistered ComponentId - {self:?}")),
+            },
+            None => builder.field(&format!("Unregistered ComponentId - {self:?}")),
+        };
+        builder.finish()
     }
 }
 
@@ -29,14 +32,21 @@ impl DisplayWithTypeInfo for ComponentId {
         f: &mut std::fmt::Formatter<'_>,
         type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
-        let name = type_info_provider
-            .and_then(|type_info_provider| {
-                type_info_provider
-                    .get_component_info(*self)
-                    .map(|info| info.name().to_string())
-            })
-            .unwrap_or_else(|| format!("Unregistered ComponentId - {self:?}"));
-
-        f.write_str(&name)
+        match type_info_provider {
+            Some(type_info_provider) => match type_info_provider
+                .get_component_info(*self)
+                .map(|info| info.name().to_string())
+            {
+                Some(type_info) => f.write_str(&type_info),
+                None => {
+                    f.write_str("Unregistered ComponentId - ")?;
+                    std::fmt::Debug::fmt(self, f)
+                }
+            },
+            None => {
+                f.write_str("component: ")?;
+                std::fmt::Debug::fmt(self, f)
+            }
+        }
     }
 }

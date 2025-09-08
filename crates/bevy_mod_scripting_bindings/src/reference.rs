@@ -6,11 +6,21 @@
 //! we need wrapper types which have owned and ref variants.
 use super::{WorldGuard, access_map::ReflectAccessId};
 use crate::{
-    ReflectAllocationId, ReflectAllocator, ThreadWorldContainer, WorldContainer,
-    error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
-    with_access_write,
+    ReflectAllocationId, ReflectAllocator, error::InteropError,
+    reflection_extensions::PartialReflectExt, with_access_read, with_access_write,
 };
-use ::{
+use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
+use bevy_mod_scripting_derive::DebugWithTypeInfo;
+use bevy_mod_scripting_display::{
+    DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
+};
+use bevy_reflect::{Access, OffsetAccess, ReflectRef};
+use core::alloc;
+use std::{
+    any::{Any, TypeId},
+    fmt::Debug,
+};
+use {
     bevy_ecs::{
         change_detection::MutUntyped, component::ComponentId, entity::Entity,
         world::unsafe_world_cell::UnsafeWorldCell,
@@ -19,13 +29,6 @@ use ::{
         ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, prelude::ReflectDefault,
     },
 };
-use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
-use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{
-    DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
-};
-use bevy_reflect::{Access, OffsetAccess, ReflectRef};
-use std::{any::TypeId, fmt::Debug};
 
 /// A reference to an arbitrary reflected instance.
 ///
@@ -55,15 +58,23 @@ impl DisplayWithTypeInfo for ReflectReference {
         f: &mut std::fmt::Formatter<'_>,
         type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
     ) -> std::fmt::Result {
-        // try to display the most information we can
-        if let Ok(world) = ThreadWorldContainer.try_get_world() {
-            if let Ok(r) = self.with_reflect(world, |s| {
-                PrintReflectAsDebug(s).to_string_with_type_info(f, type_info_provider)
-            }) {
-                return r;
+        // try to display the most information we can, the type info provider happens to be the world guard, we can
+        // actually display the reference
+        if let Some(type_info_provider) = type_info_provider {
+            // Safety: should be safe as the guard is invalidated when world is released per iteration
+            let any: &dyn Any = unsafe { type_info_provider.as_any_static() };
+
+            if let Some(guard) = any.downcast_ref::<WorldGuard>() {
+                if let Ok(r) = self.with_reflect(guard.clone(), |s| {
+                    PrintReflectAsDebug::new_with_opt_info(s, Some(type_info_provider))
+                        .to_string_with_type_info(f, Some(type_info_provider))
+                }) {
+                    return r;
+                }
             }
         }
 
+        f.write_str("(cannot access value, showing reference) ")?;
         self.base.display_with_type_info(f, type_info_provider)?;
         if !self.reflect_path.is_empty() {
             f.write_str(" at path ")?;
@@ -142,6 +153,18 @@ impl ReflectReference {
     ) -> ReflectReference {
         let type_id = std::any::TypeId::of::<T>();
         let id = allocator.allocate(value);
+        ReflectReference {
+            base: ReflectBaseType {
+                type_id,
+                base_id: ReflectBase::Owned(id),
+            },
+            reflect_path: ParsedPath(Vec::default()),
+        }
+    }
+
+    /// Creates a raw reference to an existing allocation without checking the type ID.
+    /// If the type id does not match you will get runtime errors
+    pub fn new_allocated_raw(type_id: TypeId, id: ReflectAllocationId) -> ReflectReference {
         ReflectReference {
             base: ReflectBaseType {
                 type_id,
@@ -493,9 +516,10 @@ impl DisplayWithTypeInfo for ReflectBaseType {
         f: &mut std::fmt::Formatter<'_>,
         type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
     ) -> std::fmt::Result {
-        f.write_str("base type ")?;
-        WithTypeInfo(&self.type_id).display_with_type_info(f, type_info_provider)?;
-        f.write_str(" of kind ")?;
+        f.write_str("base type: ")?;
+        WithTypeInfo::new_with_opt_info(&self.type_id, type_info_provider)
+            .display_with_type_info(f, type_info_provider)?;
+        f.write_str(", of kind: ")?;
         self.base_id.display_with_type_info(f, type_info_provider)?;
         Ok(())
     }
@@ -531,7 +555,7 @@ impl ReflectBaseType {
 
     /// Create a new reflection base pointing to a value which will be allocated in the allocator
     pub fn new_allocated_base(value: Box<dyn Reflect>, allocator: &mut ReflectAllocator) -> Self {
-        let type_id = value.type_id();
+        let type_id = (*value).type_id();
         let id = allocator.allocate_boxed(value.into_partial_reflect());
         Self {
             type_id,
@@ -581,18 +605,44 @@ impl DisplayWithTypeInfo for ReflectBase {
     ) -> std::fmt::Result {
         match self {
             ReflectBase::Component(entity, component_id) => {
-                f.write_str("component ")?;
-                WithTypeInfo(component_id).display_with_type_info(f, type_info_provider)?;
-                f.write_str(" on entity ")?;
+                f.write_str("component: ")?;
+                WithTypeInfo::new_with_opt_info(component_id, type_info_provider)
+                    .display_with_type_info(f, type_info_provider)?;
+                f.write_str(", on entity: ")?;
                 entity.fmt(f)
             }
             ReflectBase::Resource(component_id) => {
-                f.write_str("resource ")?;
-                WithTypeInfo(component_id).display_with_type_info(f, type_info_provider)
+                f.write_str("resource: ")?;
+                WithTypeInfo::new_with_opt_info(component_id, type_info_provider)
+                    .display_with_type_info(f, type_info_provider)
             }
             ReflectBase::Owned(id) => {
-                f.write_str("allocated value with id ")?;
-                WithTypeInfo(id).display_with_type_info(f, type_info_provider)
+                if let Some(type_info_provider) = type_info_provider {
+                    // Safety: should generally be safe, as the world guard is invalidated once the world is out of scope for the iteration
+                    let any: &dyn Any = unsafe { type_info_provider.as_any_static() };
+
+                    if let Some(guard) = any.downcast_ref::<WorldGuard>() {
+                        let allocator = guard.allocator();
+                        let allocator = allocator.read();
+                        if let Some(allocation) = allocator.get(id) {
+                            let ptr = allocation.get_ptr();
+                            if let Ok(v) = guard.with_read_access(id.clone(), |_| {
+                                // Safety:: have access to this id
+                                PrintReflectAsDebug::new_with_opt_info(
+                                    unsafe { &*ptr },
+                                    Some(type_info_provider),
+                                )
+                                .to_string_with_type_info(f, Some(type_info_provider))
+                            }) {
+                                return v;
+                            }
+                        }
+                    }
+                }
+
+                f.write_str("allocated value with id: ")?;
+                WithTypeInfo::new_with_opt_info(id, type_info_provider)
+                    .display_with_type_info(f, type_info_provider)
             }
         }
     }

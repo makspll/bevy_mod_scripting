@@ -1,15 +1,15 @@
 [package]
 name = "bevy_mod_scripting_derive"
-version = "0.15.1"
-edition = "2024"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-license = "MIT OR Apache-2.0"
 description = "Necessary functionality for Lua support with bevy_mod_scripting"
-repository = "https://github.com/makspll/bevy_mod_scripting"
-homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "rhai"]
-categories = ["game-development"]
-readme = "readme.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
 
 [dependencies]
 syn = { workspace = true, features = ["full"] }

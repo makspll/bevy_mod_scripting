@@ -55,7 +55,7 @@ use bevy_platform::collections::HashMap;
 use bevy_reflect::{TypeInfo, VariantInfo};
 use bevy_system_reflection::ReflectSchedule;
 use std::{
-    any::TypeId,
+    any::{Any, TypeId},
     borrow::Cow,
     cell::RefCell,
     fmt::Debug,
@@ -310,6 +310,40 @@ impl<'w> WorldAccessGuard<'w> {
             .as_unsafe_world_cell_readonly()?
             .components()
             .get_resource_id(id))
+    }
+
+    /// A utility for running a closure with scoped read access to the given id
+    pub fn with_read_access<T: Into<ReflectAccessId>, O, F: FnOnce(&Self) -> O>(
+        &self,
+        id: T,
+        closure: F,
+    ) -> Result<O, ()> {
+        let id = id.into();
+        if self.claim_read_access(id) {
+            let out = Ok(closure(self));
+            // Safety: just claimed this access
+            unsafe { self.release_access(id) };
+            out
+        } else {
+            Err(())
+        }
+    }
+
+    /// A utility for running a closure with scoped write access to the given id
+    pub fn with_write_access<T: Into<ReflectAccessId>, O, F: FnOnce(&Self) -> O>(
+        &self,
+        id: T,
+        closure: F,
+    ) -> Result<O, ()> {
+        let id = id.into();
+        if self.claim_write_access(id) {
+            let out = Ok(closure(self));
+            // Safety: just claimed this access
+            unsafe { self.release_access(id) };
+            out
+        } else {
+            Err(())
+        }
     }
 
     /// Get the location of the given access
@@ -1346,6 +1380,19 @@ impl GetTypeInfo for ThreadWorldContainer {
         registry.get(type_id).map(|r| r.type_info())
     }
 
+    fn query_type_registration(
+        &self,
+        type_id: TypeId,
+        type_data_id: TypeId,
+    ) -> Option<Box<dyn bevy_reflect::TypeData>> {
+        let world = self.try_get_world().ok()?;
+        let registry = world.type_registry();
+        let registry = registry.read();
+        registry
+            .get(type_id)
+            .and_then(|r| r.data_by_id(type_data_id).map(|t| t.clone_type_data()))
+    }
+
     fn get_component_info(
         &self,
         component_id: ComponentId,
@@ -1353,6 +1400,45 @@ impl GetTypeInfo for ThreadWorldContainer {
         let world = self.try_get_world().ok()?;
         let cell = world.as_unsafe_world_cell().ok()?;
         cell.components().get_info(component_id)
+    }
+
+    unsafe fn as_any_static(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl GetTypeInfo for WorldGuard<'_> {
+    fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo> {
+        let registry = self.type_registry();
+        let registry = registry.read();
+        registry.get(type_id).map(|r| r.type_info())
+    }
+
+    fn query_type_registration(
+        &self,
+        type_id: TypeId,
+        type_data_id: TypeId,
+    ) -> Option<Box<dyn bevy_reflect::TypeData>> {
+        let registry = self.type_registry();
+        let registry = registry.read();
+        registry
+            .get(type_id)
+            .and_then(|r| r.data_by_id(type_data_id).map(|t| t.clone_type_data()))
+    }
+
+    fn get_component_info(
+        &self,
+        component_id: ComponentId,
+    ) -> Option<&bevy_ecs::component::ComponentInfo> {
+        let cell = self.as_unsafe_world_cell().ok()?;
+        cell.components().get_info(component_id)
+    }
+
+    /// # Safety
+    /// - TODO: should generaly be safe as the guard is invalidated once the world is out of scope
+    unsafe fn as_any_static(&self) -> &dyn Any {
+        let static_self: &WorldGuard<'static> = unsafe { std::mem::transmute(self) };
+        static_self as &dyn Any
     }
 }
 

@@ -1,16 +1,27 @@
 [package]
 name = "bevy_mod_scripting"
-version = "0.15.1"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-edition = "2024"
-license = "MIT OR Apache-2.0"
 description = "Multi language scripting in Bevy"
-repository = "https://github.com/makspll/bevy_mod_scripting"
+include = ["readme.md", "/src", "/examples", "/assets", "LICENSE", "/badges"]
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[workspace.package]
+version = "0.15.1"
+edition = "2024"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "readme.md"
-include = ["readme.md", "/src", "/examples", "/assets", "LICENSE", "/badges"]
 
 [lib]
 name = "bevy_mod_scripting"
@@ -291,6 +302,10 @@ required-features = ["lua54", "rhai"]
 name = "docgen"
 path = "examples/docgen.rs"
 required-features = []
+
+[[example]]
+name = "runscript"
+path = "examples/run-script.rs"
 
 [workspace.lints.clippy]
 panic = "deny"

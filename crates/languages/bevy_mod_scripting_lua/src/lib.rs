@@ -17,7 +17,6 @@ use bevy_mod_scripting_bindings::{
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
-    error::ScriptError,
     event::CallbackLabel,
     extractors::GetPluginFor,
     make_plugin_config_static,
@@ -207,7 +206,7 @@ fn load_lua_content_into_context(
     context_key: &ScriptAttachment,
     content: &[u8],
     world_id: WorldId,
-) -> Result<(), ScriptError> {
+) -> Result<(), InteropError> {
     let config = LuaScriptingPlugin::readonly_configuration(world_id);
     let initializers = config.context_initialization_callbacks;
     let pre_handling_initializers = config.pre_handling_callbacks;
@@ -233,7 +232,7 @@ pub fn lua_context_load(
     context_key: &ScriptAttachment,
     content: &[u8],
     world_id: WorldId,
-) -> Result<LuaContext, ScriptError> {
+) -> Result<LuaContext, InteropError> {
     #[cfg(feature = "unsafe_lua_modules")]
     let mut context = LuaContext(unsafe { Lua::unsafe_new() });
     #[cfg(not(feature = "unsafe_lua_modules"))]
@@ -250,7 +249,7 @@ pub fn lua_context_reload(
     content: &[u8],
     old_ctxt: &mut LuaContext,
     world_id: WorldId,
-) -> Result<(), ScriptError> {
+) -> Result<(), InteropError> {
     load_lua_content_into_context(old_ctxt, context_key, content, world_id)?;
     Ok(())
 }
@@ -264,7 +263,7 @@ pub fn lua_handler(
     callback_label: &CallbackLabel,
     context: &mut LuaContext,
     world_id: WorldId,
-) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
+) -> Result<ScriptValue, bevy_mod_scripting_bindings::InteropError> {
     let config = LuaScriptingPlugin::readonly_configuration(world_id);
 
     config

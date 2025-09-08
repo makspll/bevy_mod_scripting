@@ -168,12 +168,16 @@ impl DisplayWithTypeInfo for Namespace {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
         match self {
             Namespace::Global => f.write_str("Global Namespace"),
             Namespace::OnType(type_id) => {
-                write!(f, "Namespace for type {}", WithTypeInfo(type_id))
+                write!(
+                    f,
+                    "Namespace for type {}",
+                    WithTypeInfo::new_with_opt_info(type_id, type_info_provider)
+                )
             }
         }
     }

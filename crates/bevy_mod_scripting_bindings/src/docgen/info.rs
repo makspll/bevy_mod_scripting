@@ -135,7 +135,8 @@ impl DisplayWithTypeInfo for FunctionArgInfo {
             write!(f, "{name}: ")?;
         }
         let type_id = self.type_id;
-        WithTypeInfo(&type_id).display_with_type_info(f, type_info_provider)?;
+        WithTypeInfo::new_with_opt_info(&type_id, type_info_provider)
+            .display_with_type_info(f, type_info_provider)?;
         Ok(())
     }
 }
@@ -186,7 +187,8 @@ impl DisplayWithTypeInfo for FunctionReturnInfo {
         type_info_provider: Option<&dyn GetTypeInfo>,
     ) -> std::fmt::Result {
         let type_id = self.type_id;
-        WithTypeInfo(&type_id).display_with_type_info(f, type_info_provider)?;
+        WithTypeInfo::new_with_opt_info(&type_id, type_info_provider)
+            .display_with_type_info(f, type_info_provider)?;
         Ok(())
     }
 }

@@ -1,12 +1,13 @@
 //! This module contains the `ScriptValue` enum which is used to pass values between scripting languages and Rust.
 
+use crate::error::InteropError;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo, WithTypeInfo};
+use bevy_mod_scripting_display::{
+    DisplayWithTypeInfo, GetTypeInfo, ReflectDisplayWithTypeInfo, WithTypeInfo,
+};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{Access, OffsetAccess, ParsedPath, Reflect};
 use std::borrow::Cow;
-
-use crate::error::InteropError;
 
 use super::{
     ReflectReference,
@@ -16,7 +17,7 @@ use super::{
 /// An abstraction of values that can be passed to and from scripts.
 /// This allows us to re-use logic between scripting languages.
 #[derive(Clone, Reflect, Default, DebugWithTypeInfo)]
-#[reflect(opaque)]
+#[reflect(opaque, DisplayWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub enum ScriptValue {
     /// Represents the absence of a value.
@@ -64,7 +65,8 @@ impl DisplayWithTypeInfo for ScriptValue {
                         f.write_str(", ")?;
                     }
                     first = false;
-                    WithTypeInfo(item).display_with_type_info(f, type_info_provider)?;
+                    WithTypeInfo::new_with_opt_info(item, type_info_provider)
+                        .display_with_type_info(f, type_info_provider)?;
                 }
                 f.write_str("]")
             }
@@ -77,7 +79,8 @@ impl DisplayWithTypeInfo for ScriptValue {
                     }
                     first = false;
                     write!(f, "{key}: ")?;
-                    WithTypeInfo(value).display_with_type_info(f, type_info_provider)?;
+                    WithTypeInfo::new_with_opt_info(value, type_info_provider)
+                        .display_with_type_info(f, type_info_provider)?;
                 }
                 f.write_str("}")
             }
