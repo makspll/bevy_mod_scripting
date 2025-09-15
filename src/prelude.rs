@@ -1,6 +1,5 @@
 pub use bevy_mod_scripting_core::{
     ConfigureScriptPlugin, IntoScriptPluginParams, callback_labels,
-    commands::{AddStaticScript, DeleteScript},
     event::ScriptCallbackEvent,
     handler::event_handler,
     script::{ScriptComponent, ScriptId},
