@@ -17,7 +17,7 @@ categories.workspace = true
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_transform = { version = "0.16.1", features = ["std", "async_executor", "alloc", "bevy_log", "bevy-support", "bevy_reflect"], default-features = true}
+bevy_transform = { version = "0.16.1", features = ["std", "bevy-support", "bevy_reflect", "async_executor", "alloc", "bevy_log"], default-features = true}
 
 
 bevy_app = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
