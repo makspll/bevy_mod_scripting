@@ -1,9 +1,9 @@
 //! Everything to do with the script lifetime management pipeline
 
-use std::{any::Any, marker::PhantomData, sync::Arc};
+use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc};
 
 use bevy_app::{App, Plugin, PostUpdate};
-use bevy_asset::{Assets, Handle};
+use bevy_asset::{AssetServer, Assets, Handle, LoadState};
 use bevy_ecs::{
     event::{Event, EventCursor, EventReader, EventWriter, Events},
     resource::Resource,
@@ -106,6 +106,59 @@ impl<P: IntoScriptPluginParams> ScriptLoadingPipeline<P> {
     fn add_state<E: Event>(&self, app: &mut App) -> &Self {
         app.add_event::<ForPlugin<E, P>>();
         self
+    }
+}
+
+/// A trait describing things containing script handles
+pub trait GetScriptHandle {
+    /// Retrieve the contained script handle
+    fn get_script_handle(&self) -> Handle<ScriptAsset>;
+}
+
+#[derive(SystemParam)]
+/// A system param which operates over types implementing [`GetScriptHandle`].
+/// Captures incoming "handle" like types, and waits until their asset is in a final state before proceeding, if that final state
+/// is loaded, will also guarantee a strong handle, otherwise the whole thing is skipped.
+///
+/// Think of this as a proxy for "baby'ing" asset handles
+pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Event + Clone> {
+    assets: ResMut<'w, Assets<ScriptAsset>>,
+    asset_server: Res<'w, AssetServer>,
+    fresh_events: EventReader<'w, 's, T>,
+    loaded_with_handles: Local<'s, VecDeque<(T, StrongScriptHandle)>>,
+    loading: Local<'s, VecDeque<T>>,
+}
+
+impl<T: GetScriptHandle + Event + Clone> LoadedWithHandles<'_, '_, T> {
+    /// Retrieves all of the events of type `T`, which have finished loading and have a strong handle,
+    /// the rest will be discarded.
+    ///
+    /// This uses a [`EventReader<T>`] underneath, meaning if you don't call this method once every frame (or every other frame).
+    /// You may miss events.
+    pub fn get_loaded(&mut self) -> impl Iterator<Item = (T, StrongScriptHandle)> {
+        // first get all of the fresh_events
+        self.loading.extend(self.fresh_events.read().cloned());
+        // now process the loading queue
+        self.loading.retain(|e| {
+            let handle = e.get_script_handle();
+            match self.asset_server.get_load_state(&handle) {
+                Some(LoadState::Loaded) => {
+                    let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
+                    if let Some(strong) = strong {
+                        self.loaded_with_handles.push_front((e.clone(), strong));
+                        true
+                    } else {
+                        false
+                    }
+                }
+                Some(LoadState::Loading) => true,
+                Some(_) => false,
+                None => false,
+            }
+        });
+
+        // now return loaded with handles elements by draining
+        self.loaded_with_handles.drain(..)
     }
 }
 

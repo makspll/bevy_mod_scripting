@@ -18,6 +18,24 @@ pub struct ScriptAssetModifiedEvent(pub ScriptId);
 #[derive(Clone, Debug)]
 pub struct StrongScriptHandle(Handle<ScriptAsset>);
 
+impl GetScriptHandle for ScriptAssetModifiedEvent {
+    fn get_script_handle(&self) -> Handle<ScriptAsset> {
+        Handle::Weak(self.0)
+    }
+}
+
+impl GetScriptHandle for ScriptAttachedEvent {
+    fn get_script_handle(&self) -> Handle<ScriptAsset> {
+        self.0.script()
+    }
+}
+
+impl GetScriptHandle for ScriptDetachedEvent {
+    fn get_script_handle(&self) -> Handle<ScriptAsset> {
+        self.0.script()
+    }
+}
+
 impl StrongScriptHandle {
     /// Creates a new strong script handle, only if the given handle is strong itself.
     pub fn new(handle: Handle<ScriptAsset>) -> Option<Self> {
@@ -26,6 +44,14 @@ impl StrongScriptHandle {
         } else {
             None
         }
+    }
+
+    /// create a strong script handle using the assets resource and the possibly weak handle.
+    pub fn from_assets(
+        handle: Handle<ScriptAsset>,
+        assets: &mut Assets<ScriptAsset>,
+    ) -> Option<Self> {
+        assets.get_strong_handle(handle.id()).map(Self)
     }
 
     /// Upgrades an asset Id pointing to a script to a strong handle if the asset hasn't been dropped
@@ -70,20 +96,14 @@ pub fn filter_script_modifications<P: IntoScriptPluginParams>(
 
 /// Filters incoming [`ScriptAttachedEvent`]'s leaving only those which match the plugin's language
 pub fn filter_script_attachments<P: IntoScriptPluginParams>(
-    mut events: EventReader<ScriptAttachedEvent>,
+    mut events: LoadedWithHandles<ScriptAttachedEvent>,
     mut filtered: EventWriter<ForPlugin<ScriptAttachedEvent, P>>,
-    assets: Res<Assets<ScriptAsset>>,
     mut requests: ResMut<RequestProcessingPipelineRun<P>>,
 ) {
-    let mut batch = events
-        .read()
-        .filter(|e| {
-            assets
-                .get(&e.0.script())
-                .is_some_and(|asset| asset.language == P::LANGUAGE)
-        })
-        .cloned()
-        .map(ForPlugin::new);
+    let mut batch = events.get_loaded().map(|(mut a, b)| {
+        *a.0.script_mut() = b.0;
+        ForPlugin::new(a)
+    });
 
     if let Some(next) = batch.next() {
         requests.request_run();
@@ -91,20 +111,17 @@ pub fn filter_script_attachments<P: IntoScriptPluginParams>(
     }
 }
 
-/// Filters incoming [`ScriptDetachedEvent`]'s leaving only those which match the plugin's language
+/// Filters incoming [`ScriptDetachedEvent`]'s leaving only those which are currently attached
 pub fn filter_script_detachments<P: IntoScriptPluginParams>(
     mut events: EventReader<ScriptDetachedEvent>,
     mut filtered: EventWriter<ForPlugin<ScriptDetachedEvent, P>>,
-    assets: Res<Assets<ScriptAsset>>,
+    contexts: Res<ScriptContext<P>>,
     mut requests: ResMut<RequestProcessingPipelineRun<P>>,
 ) {
+    let contexts_guard = contexts.read();
     let mut batch = events
         .read()
-        .filter(|e| {
-            assets
-                .get(&e.0.script())
-                .is_some_and(|asset| asset.language == P::LANGUAGE)
-        })
+        .filter(|e| contexts_guard.contains(&e.0))
         .cloned()
         .map(ForPlugin::new);
 
