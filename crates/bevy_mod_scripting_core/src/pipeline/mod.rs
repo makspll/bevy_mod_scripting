@@ -146,14 +146,11 @@ impl<T: GetScriptHandle + Event + Clone> LoadedWithHandles<'_, '_, T> {
                     let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
                     if let Some(strong) = strong {
                         self.loaded_with_handles.push_front((e.clone(), strong));
-                        true
-                    } else {
-                        false
                     }
+                    false
                 }
                 Some(LoadState::Loading) => true,
-                Some(_) => false,
-                None => false,
+                _ => false,
             }
         });
 
@@ -380,5 +377,61 @@ impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
     fn apply(self, world: &mut World) {
         world.send_event(self.0);
         RunProcessingPipelineOnce::<P>::new().apply(world)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bevy_asset::{AssetApp, AssetId, AssetPlugin};
+    use bevy_ecs::world::FromWorld;
+    use bevy_mod_scripting_asset::Language;
+
+    use super::*;
+    #[test]
+    fn test_system_params() {
+        let mut app = App::default();
+        app.add_event::<ScriptAttachedEvent>();
+        app.add_plugins(AssetPlugin::default());
+        app.init_asset::<ScriptAsset>();
+        app.finish();
+
+        let world = app.world_mut();
+        let mut system_state =
+            SystemState::<LoadedWithHandles<ScriptAttachedEvent>>::from_world(world);
+        // start empty
+        {
+            let mut state = system_state.get_mut(world);
+            let loaded = state.get_loaded().collect::<Vec<_>>();
+            assert!(loaded.is_empty())
+        }
+
+        // send event with loading asset
+        // let assets = world.get_resource_mut::<Assets<ScriptAsset>>().unwrap();
+        let asset_server = world.get_resource_mut::<AssetServer>().unwrap();
+        let asset = ScriptAsset {
+            content: "asd".to_string().into_boxed_str().into_boxed_bytes(),
+            language: Language::Lua,
+        };
+        let handle = asset_server.add(asset);
+        let handle_invalid = Handle::Weak(AssetId::invalid());
+        world.send_event(ScriptAttachedEvent(ScriptAttachment::StaticScript(handle)));
+        world.send_event(ScriptAttachedEvent(ScriptAttachment::StaticScript(
+            handle_invalid,
+        )));
+
+        // expect one loading, one invalid
+        {
+            let mut state = system_state.get_mut(world);
+            let loaded = state.get_loaded().collect::<Vec<_>>();
+            assert!(loaded.is_empty());
+            assert_eq!(state.loading.len(), 1);
+        }
+
+        // now on next call the old ones don't persist
+        {
+            let mut state = system_state.get_mut(world);
+            let loaded = state.get_loaded().collect::<Vec<_>>();
+            assert!(loaded.is_empty())
+        }
     }
 }
