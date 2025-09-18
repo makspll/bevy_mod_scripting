@@ -292,19 +292,43 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
     ///
     /// If the context cannot be inserted, it is returned as an `Err`.
     ///
+    /// If a context already exists at this key, it will be replaced, and a resident added
+    ///
     /// The attachment is also inserted as resident into the context.
-    pub fn insert(&mut self, context_key: &ScriptAttachment, context: P::C) -> Result<(), P::C> {
-        match self.policy.select(context_key) {
+    pub fn insert(
+        &mut self,
+        context_key: ScriptAttachment,
+        context: Arc<Mutex<P::C>>,
+    ) -> Result<(), (ScriptAttachment, Arc<Mutex<P::C>>)> {
+        match self.policy.select(&context_key) {
             Some(key) => {
-                let entry = ContextEntry {
-                    context: Arc::new(Mutex::new(context)),
-                    residents: HashSet::from_iter([context_key.clone()]), // context with a residency of one
-                };
-                self.map.insert(key.into_weak(), entry);
+                let entry = self
+                    .map
+                    .entry(key.into_weak())
+                    .or_insert_with(|| ContextEntry {
+                        context: context.clone(),
+                        residents: HashSet::from_iter([context_key.clone()]),
+                    });
+                entry.context = context;
+                entry.residents.insert(context_key.clone());
+
                 Ok(())
             }
-            None => Err(context),
+            None => Err((context_key, context)),
         }
+    }
+
+    /// Inserts an iterator of attachments and contexts.
+    ///
+    /// Returns an iterator of results.
+    pub fn insert_batch(
+        &mut self,
+        batch: impl IntoIterator<Item = (ScriptAttachment, Arc<Mutex<P::C>>)>,
+    ) -> impl Iterator<Item = Result<(), (ScriptAttachment, Arc<Mutex<P::C>>)>> {
+        // TODO: can we optimize this ?
+        batch
+            .into_iter()
+            .map(|(attachment, context)| self.insert(attachment, context))
     }
 
     /// Insert a context.
@@ -461,7 +485,10 @@ mod tests {
         assert_eq!(policy.select(&context_key), policy.select(&context_key2));
 
         script_context
-            .insert(&context_key, TestContext::default())
+            .insert(
+                context_key.clone(),
+                Arc::new(Mutex::new(TestContext::default())),
+            )
             .unwrap();
 
         assert!(script_context.contains(&context_key));

@@ -24,7 +24,9 @@ LoadScriptAs as_name="script_b", path="lifecycle_b.lua"
 WaitForScriptLoaded name="script_b"
 AttachStaticScript script="script_b"
 RunUpdateOnce
+AssertCallbackSuccess attachment="StaticScript", label="OnScriptUnloaded", script="script_b", expect_string_value="unloaded!"
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptLoaded", script="script_b", expect_string_value="B: loaded!"
+AssertCallbackSuccess attachment="StaticScript", label="OnScriptReloaded", script="script_b", expect_string_value="B: reloaded with: unloaded!"
 AssertNoCallbackResponsesEmitted
 
 // reload script_b, with the same content

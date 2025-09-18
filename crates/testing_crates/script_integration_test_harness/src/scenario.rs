@@ -25,12 +25,9 @@ use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_core::{
     ConfigureScriptPlugin,
-    commands::{AddStaticScript, RemoveStaticScript},
-    event::{
-        CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
-        ScriptEvent,
-    },
+    event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent},
     handler::event_handler,
+    pipeline::{AttachScript, DetachScript, ScriptAttachedEvent, ScriptDetachedEvent},
     script::{ContextPolicy, ScriptAttachment, ScriptComponent, ScriptContext},
 };
 use test_utils::test_data::setup_integration_test;
@@ -157,7 +154,8 @@ pub struct ScenarioContext {
 pub struct InterestingEventWatcher {
     pub events: Vec<(String, usize)>,
     pub asset_event_cursor: EventCursor<AssetEvent<ScriptAsset>>,
-    pub script_events_cursor: EventCursor<ScriptEvent>,
+    pub script_attached_events_cursor: EventCursor<ScriptAttachedEvent>,
+    pub script_detached_events_cursor: EventCursor<ScriptDetachedEvent>,
     pub script_response_cursor: EventCursor<ScriptCallbackResponseEvent>,
     pub script_responses_queue: VecDeque<ScriptCallbackResponseEvent>,
 }
@@ -165,14 +163,24 @@ pub struct InterestingEventWatcher {
 impl InterestingEventWatcher {
     pub fn log_events(&mut self, step_no: usize, world: &World) {
         let asset_events = world.resource::<Events<AssetEvent<ScriptAsset>>>();
-        let script_events = world.resource::<Events<ScriptEvent>>();
+        let script_attached_events = world.resource::<Events<ScriptAttachedEvent>>();
+        let script_detached_events = world.resource::<Events<ScriptDetachedEvent>>();
         let script_responses = world.resource::<Events<ScriptCallbackResponseEvent>>();
         let mut tracked_with_id = Vec::default();
         for (event, id) in self.asset_event_cursor.read_with_id(asset_events) {
             tracked_with_id.push((id.id, format!("AssetEvent : {event:?}")));
         }
-        for (event, id) in self.script_events_cursor.read_with_id(script_events) {
-            tracked_with_id.push((id.id, format!("ScriptEvent: {event:?}")));
+        for (event, id) in self
+            .script_attached_events_cursor
+            .read_with_id(script_attached_events)
+        {
+            tracked_with_id.push((id.id, format!("ScriptAttachedEvent: {event:?}")));
+        }
+        for (event, id) in self
+            .script_detached_events_cursor
+            .read_with_id(script_detached_events)
+        {
+            tracked_with_id.push((id.id, format!("ScriptDetachedEvent: {event:?}")));
         }
         let mut script_responses_by_id = Vec::default();
         for (event, id) in self.script_response_cursor.read_with_id(script_responses) {
@@ -735,11 +743,56 @@ impl ScenarioStep {
                 }
             }
             ScenarioStep::AttachStaticScript { script } => {
-                AddStaticScript::new(script.clone()).apply(app.world_mut());
+                match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => {
+                        AttachScript::<bevy_mod_scripting_lua::LuaScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut());
+                    }
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => {
+                        AttachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut())
+                    }
+                    _ => {
+                        return Err(anyhow!(
+                            "Scenario step AttachStaticScript is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
+                    }
+                }
+
                 info!("Attached static script with handle: {}", script.id());
             }
             ScenarioStep::DetachStaticScript { script } => {
-                RemoveStaticScript::new(script.clone()).apply(app.world_mut());
+                match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => {
+                        DetachScript::<bevy_mod_scripting_lua::LuaScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut());
+                    }
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => {
+                        DetachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut())
+                    }
+                    _ => {
+                        return Err(anyhow!(
+                            "Scenario step DetachStaticScript is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
+                    }
+                }
+
+                info!("Attached static script with handle: {}", script.id());
                 info!("Detached static script with handle: {}", script.id());
             }
             ScenarioStep::AssertContextResidents {

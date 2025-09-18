@@ -7,15 +7,14 @@ use crate::{
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
     handler::script_error_logger,
+    pipeline::ScriptLoadingPipeline,
 };
-use asset::{configure_asset_systems, configure_asset_systems_for_plugin};
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_asset::{AssetApp, Handle};
 use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_ecs::{
     reflect::{AppTypeRegistry, ReflectComponent},
     schedule::SystemSet,
-    system::Command,
 };
 use bevy_log::error;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, ScriptAssetLoader};
@@ -25,14 +24,12 @@ use bevy_mod_scripting_bindings::{
     DynamicScriptComponentPlugin, MarkAsCore, ReflectReference, ScriptTypeRegistration,
     ScriptValue, ThreadWorldContainer, garbage_collector,
 };
-use commands::{AddStaticScript, RemoveStaticScript};
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
-use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
+use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::HandlerFn;
 use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContext};
 
-pub mod asset;
 pub mod commands;
 pub mod config;
 pub mod context;
@@ -40,6 +37,7 @@ pub mod error;
 pub mod event;
 pub mod extractors;
 pub mod handler;
+pub mod pipeline;
 pub mod runtime;
 pub mod script;
 pub mod script_system;
@@ -171,7 +169,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
         app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
-        register_script_plugin_systems::<P>(app);
+        app.add_plugins(ScriptLoadingPipeline::<P>::default());
 
         register_types(app);
     }
@@ -317,7 +315,6 @@ pub struct BMSScriptingInfrastructurePlugin {
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ScriptErrorEvent>()
-            .add_event::<ScriptEvent>()
             .add_event::<ScriptCallbackEvent>()
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
@@ -338,8 +335,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             app.add_systems(PostUpdate, script_error_logger);
         }
 
-        app.add_plugins(configure_asset_systems);
-
         let _ = bevy_mod_scripting_display::GLOBAL_TYPE_INFO_PROVIDER
             .set(|| Some(&ThreadWorldContainer));
 
@@ -353,42 +348,12 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
     }
 }
 
-/// Systems registered per-language
-fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
-    app.add_plugins(configure_asset_systems_for_plugin::<P>);
-}
-
 /// Register all types that need to be accessed via reflection
 fn register_types(app: &mut App) {
     app.register_type::<ScriptValue>();
     app.register_type::<ScriptTypeRegistration>();
     app.register_type::<ReflectReference>();
     app.register_type::<ScriptComponent>();
-}
-
-/// Trait for adding static scripts to an app
-pub trait ManageStaticScripts {
-    /// Registers a script id as a static script.
-    ///
-    /// Event handlers will run these scripts on top of the entity scripts.
-    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
-
-    /// Removes a script id from the list of static scripts.
-    ///
-    /// Does nothing if the script id is not in the list.
-    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
-}
-
-impl ManageStaticScripts for App {
-    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
-        AddStaticScript::new(script_id.into()).apply(self.world_mut());
-        self
-    }
-
-    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
-        RemoveStaticScript::new(script_id.into()).apply(self.world_mut());
-        self
-    }
 }
 
 #[cfg(test)]
