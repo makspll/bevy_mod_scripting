@@ -4,6 +4,7 @@ pub mod test_functions;
 
 use std::{
     path::PathBuf,
+    sync::Mutex,
     time::{Duration, Instant},
 };
 
@@ -20,15 +21,18 @@ use ::{
     },
     bevy_reflect::Reflect,
 };
+use bevy_asset::Assets;
+use bevy_ecs::world::World;
+use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::{
     CoreScriptGlobalsPlugin, ReflectAccessId, ThreadWorldContainer, WorldAccessGuard,
     WorldContainer, WorldGuard,
 };
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
-    commands::CreateOrUpdateScript,
     error::ScriptError,
-    script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptContext, ScriptId},
+    pipeline::AttachScript,
+    script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptContext},
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use criterion::{BatchSize, measurement::Measurement};
@@ -346,24 +350,40 @@ pub fn run_plugin_script_load_benchmark<
     let mut app = setup_integration_test(|_, _| {});
     install_test_plugin(&mut app, false);
     app.add_plugins(plugin);
+    let content_boxed = content.to_string().into_bytes().into_boxed_slice();
     let mut rng_guard = RNG.lock().unwrap();
     *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
     drop(rng_guard);
+
+    let world_ptr = app.world_mut() as *mut World;
+    let world_guard = Mutex::<()>::new(());
+
     criterion.bench_function(benchmark_id, |c| {
         c.iter_batched(
             || {
                 let mut rng = RNG.lock().unwrap();
                 let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
-                let random_id = if is_reload { 0 } else { rng.random::<u128>() };
-                let random_script_id: ScriptId = ScriptId::from(
-                    uuid::Builder::from_random_bytes(random_id.to_le_bytes()).into_uuid(),
-                );
+
+                let guard = world_guard.lock().unwrap();
+                // Safety: we claimed a unique guard, only code accessing this will need to do the same
+                let world = unsafe { &mut *world_ptr };
+                let mut assets = world.get_resource_or_init::<Assets<ScriptAsset>>();
+
+                let id = is_reload
+                    .then(|| assets.ids().next())
+                    .flatten()
+                    .and_then(|id| assets.get_strong_handle(id))
+                    .unwrap_or_else(|| {
+                        assets.add(ScriptAsset {
+                            content: content_boxed.clone(),
+                            language: P::LANGUAGE,
+                        })
+                    });
+                drop(guard);
+
                 // We manually load the script inside a command.
                 (
-                    CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(Handle::Weak(
-                        random_script_id,
-                    )))
-                    .with_content(content),
+                    AttachScript::<P>::new(ScriptAttachment::StaticScript(id)),
                     is_reload,
                 )
             },

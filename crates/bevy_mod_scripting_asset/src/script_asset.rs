@@ -6,7 +6,7 @@ use bevy_reflect::Reflect;
 use crate::Language;
 
 /// Represents a script loaded into memory as an asset
-#[derive(Asset, Clone, Reflect)]
+#[derive(Asset, Clone, Reflect, Default)]
 #[reflect(opaque)]
 pub struct ScriptAsset {
     /// The body of the script
