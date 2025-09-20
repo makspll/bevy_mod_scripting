@@ -106,6 +106,9 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
 
     /// Whether to emit responses from core script callbacks like `on_script_loaded` or `on_script_unloaded`.
     pub emit_responses: bool,
+
+    /// The settings customising the processing (loading, unloading etc.) pipeline for this plugin
+    pub processing_pipeline_plugin: ScriptLoadingPipeline<P>,
 }
 
 impl<P> std::fmt::Debug for ScriptingPlugin<P>
@@ -136,6 +139,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
             emit_responses: false,
+            processing_pipeline_plugin: Default::default(),
         }
     }
 }
@@ -202,6 +206,12 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
         self.runtime_initializers.push(initializer);
         self
     }
+
+    /// Sets the script pipeline settings plugin
+    pub fn set_pipeline_settings(&mut self, pipeline: ScriptLoadingPipeline<P>) -> &mut Self {
+        self.processing_pipeline_plugin = pipeline;
+        self
+    }
 }
 
 /// Utility trait for configuring all scripting plugins.
@@ -239,6 +249,9 @@ pub trait ConfigureScriptPlugin {
 
     /// removes a supported file extension for the plugin's language.
     fn remove_supported_extension(self, extension: &'static str) -> Self;
+
+    /// Sets the script pipeline settings plugin
+    fn set_pipeline_settings(self, pipeline: ScriptLoadingPipeline<Self::P>) -> Self;
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -284,6 +297,11 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
             .retain(|&ext| ext != extension);
         self
     }
+
+    fn set_pipeline_settings(mut self, pipeline: ScriptLoadingPipeline<P>) -> Self {
+        self.as_mut().set_pipeline_settings(pipeline);
+        self
+    }
 }
 
 /// Ensures all types with `ReflectComponent` type data are pre-registered with component ID's
@@ -304,7 +322,7 @@ fn pre_register_components(app: &mut App) {
 /// It is necessary to register this plugin for any of them to work
 #[derive(Default)]
 pub struct BMSScriptingInfrastructurePlugin {
-    /// If set to true will log all ScriptErrorEvents using bevy_log::error.
+    /// If set to true will not log all ScriptErrorEvents using bevy_log::error.
     ///
     /// you can opt out of this behavior if you want to log the errors in a different way.
     ///

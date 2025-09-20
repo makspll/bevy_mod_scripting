@@ -186,6 +186,7 @@ impl Default for LuaScriptingPlugin {
                 language: Language::Lua,
                 context_policy: ContextPolicy::default(),
                 emit_responses: false,
+                processing_pipeline_plugin: Default::default(),
             },
         }
     }

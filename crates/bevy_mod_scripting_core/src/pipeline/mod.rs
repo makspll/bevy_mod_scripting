@@ -50,11 +50,32 @@ pub enum PipelineSet {
 }
 
 /// A pipeline plugin which enables the loading and unloading of scripts in a highly modular way
-pub struct ScriptLoadingPipeline<P: IntoScriptPluginParams>(PhantomData<fn(P)>);
+pub struct ScriptLoadingPipeline<P: IntoScriptPluginParams> {
+    /// by default the plugin will listen to [`ScriptComponent`] attachments/detachments and synchronize scripts accordingly,
+    /// you can opt out of this behavior by disabling this flag.
+    pub script_component_triggers: bool,
+    /// by default the plugin will listen to [`AssetEvent<ScriptAsset>`] events, and trigger the pipeline on asset modifications.
+    pub hot_loading_asset_triggers: bool,
+
+    /// If true the [`OnScriptLoaded`] callback will be triggered when loading scripts
+    pub on_script_loaded_callback: bool,
+    /// If true the [`OnScriptReloaded`] callback will be triggered when loading scripts
+    pub on_script_reloaded_callback: bool,
+    /// If true the [`OnScriptUnloaded`] callback will be triggered when loading scripts
+    pub on_script_unloaded_callback: bool,
+    _ph: PhantomData<fn(P)>,
+}
 
 impl<P: IntoScriptPluginParams> Default for ScriptLoadingPipeline<P> {
     fn default() -> Self {
-        Self(Default::default())
+        Self {
+            _ph: PhantomData,
+            script_component_triggers: true,
+            hot_loading_asset_triggers: true,
+            on_script_loaded_callback: true,
+            on_script_reloaded_callback: true,
+            on_script_unloaded_callback: true,
+        }
     }
 }
 
@@ -159,19 +180,6 @@ impl<T: GetScriptHandle + Event + Clone> LoadedWithHandles<'_, '_, T> {
     }
 }
 
-// struct StateBuilder<'a, P: IntoScriptPluginParams, M, S> {
-//     plugin: &'a ScriptLoadingPipeline<P>,
-//     app: &'a mut App,
-//     ph: PhantomData<fn(M, S)>,
-// }
-
-// impl<P: IntoScriptPluginParams, M, S> StateBuilder<'_, P, M, S> {
-//     fn add_transition<CM, C: IntoScheduleConfigs<ScheduleSystem, CM>>(self, systems: C) -> Self {
-//         self.app.add_systems(systems.run_if());
-//         self
-//     }
-// }
-
 impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
     fn build(&self, app: &mut App) {
         self.add_plugin_event::<ScriptAttachedEvent>(app)
@@ -189,15 +197,24 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
             .add_state::<Machine<Unloading, UnloadingCompleted>>(app);
 
         app.init_resource::<RequestProcessingPipelineRun<P>>();
-        app.add_systems(
-            PostUpdate,
-            (
-                filter_script_attachments::<P>,
-                filter_script_detachments::<P>,
-                filter_script_modifications::<P>,
-            )
-                .before(PipelineSet::StartPhase),
-        );
+
+        if self.script_component_triggers {
+            app.add_systems(
+                PostUpdate,
+                (
+                    filter_script_attachments::<P>,
+                    filter_script_detachments::<P>,
+                )
+                    .before(PipelineSet::StartPhase),
+            );
+        }
+
+        if self.hot_loading_asset_triggers {
+            app.add_systems(
+                PostUpdate,
+                (filter_script_modifications::<P>,).before(PipelineSet::StartPhase),
+            );
+        }
 
         app.add_systems(
             PostUpdate,
@@ -222,11 +239,13 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
         );
 
         // -- on script unloaded (reload + removal)
-        schedule.add_systems(
-            (run_on_script_unloaded_hooks::<P>)
-                .after(PipelineSet::StartPhase)
-                .before(PipelineSet::ContextUpdatePhase),
-        );
+        if self.on_script_unloaded_callback {
+            schedule.add_systems(
+                (run_on_script_unloaded_hooks::<P>)
+                    .after(PipelineSet::StartPhase)
+                    .before(PipelineSet::ContextUpdatePhase),
+            );
+        }
         // --
 
         schedule.add_systems(
@@ -238,19 +257,23 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
         );
 
         // -- on script loaded
-        schedule.add_systems(
-            (run_on_script_loaded_hooks::<P>)
-                .after(PipelineSet::ContextUpdatePhase)
-                .before(PipelineSet::InsertionPhase),
-        );
+        if self.on_script_loaded_callback {
+            schedule.add_systems(
+                (run_on_script_loaded_hooks::<P>)
+                    .after(PipelineSet::ContextUpdatePhase)
+                    .before(PipelineSet::InsertionPhase),
+            );
+        }
         // --
 
         // -- on script reloaded
-        schedule.add_systems(
-            (run_on_script_reloaded_hooks::<P>)
-                .after(run_on_script_loaded_hooks::<P>)
-                .before(PipelineSet::InsertionPhase),
-        );
+        if self.on_script_reloaded_callback {
+            schedule.add_systems(
+                (run_on_script_reloaded_hooks::<P>)
+                    .after(run_on_script_loaded_hooks::<P>)
+                    .before(PipelineSet::InsertionPhase),
+            );
+        }
         // --
 
         schedule.add_systems((insert_residents::<P>).in_set(PipelineSet::InsertionPhase));
