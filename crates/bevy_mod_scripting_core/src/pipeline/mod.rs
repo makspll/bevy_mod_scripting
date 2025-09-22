@@ -267,24 +267,41 @@ pub fn machine_ticker<P: IntoScriptPluginParams>(world: &mut World) {
 }
 /// A command which triggers the script processing pipeline to run once,
 /// causing outstanding attachment events to be processed
-pub struct RunProcessingPipelineOnce<P>(PhantomData<fn(P)>);
+pub struct RunProcessingPipelineOnce<P> {
+    override_budget: Option<Duration>,
+    _ph: PhantomData<fn(P)>,
+}
 
 impl<P> RunProcessingPipelineOnce<P> {
-    /// Creates a new [`RunProcessingPipelineOnce`] command for the given plugin
-    pub fn new() -> Self {
-        Self(Default::default())
+    /// Creates a new [`RunProcessingPipelineOnce`] command for the given plugin.
+    /// The budget override can be used to make sure all scripts in the pipeline get fully processed in one go
+    pub fn new(override_budget: Option<Duration>) -> Self {
+        Self {
+            override_budget,
+            _ph: PhantomData,
+        }
     }
 }
 
 impl<P> Default for RunProcessingPipelineOnce<P> {
     fn default() -> Self {
-        Self::new()
+        Self::new(None)
     }
 }
 
 impl<P: IntoScriptPluginParams> Command for RunProcessingPipelineOnce<P> {
     fn apply(self, world: &mut World) {
+        let mut last_setting = None;
+        if let Some(override_budget) = self.override_budget {
+            let mut machines = world.get_resource_or_init::<ActiveMachines<P>>();
+            last_setting = Some(machines.budget);
+            machines.budget = Some(override_budget)
+        }
         world.run_schedule(ScriptProcessingSchedule::<P>::default());
+        if let Some(last_setting) = last_setting {
+            let mut machines = world.get_resource_or_init::<ActiveMachines<P>>();
+            machines.budget = last_setting;
+        }
     }
 }
 
@@ -326,7 +343,7 @@ pub fn automatic_pipeline_runner<P: IntoScriptPluginParams>(world: &mut World) {
             .get_resource::<ActiveMachines<P>>()
             .is_some_and(|machines| machines.active_machines() > 0)
     {
-        RunProcessingPipelineOnce::<P>::new().apply(world);
+        RunProcessingPipelineOnce::<P>::new(None).apply(world);
     }
 }
 
@@ -353,8 +370,12 @@ impl PipelineRun for App {
 #[cfg(test)]
 mod test {
     use bevy_asset::{AssetApp, AssetId, AssetPlugin};
-    use bevy_ecs::{system::SystemState, world::FromWorld};
+    use bevy_ecs::{entity::Entity, system::SystemState, world::FromWorld};
     use bevy_mod_scripting_asset::Language;
+    use bevy_mod_scripting_bindings::ScriptValue;
+    use test_utils::make_test_plugin;
+
+    use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
 
     use super::*;
     #[test]
@@ -403,5 +424,26 @@ mod test {
             let loaded = state.get_loaded().collect::<Vec<_>>();
             assert!(loaded.is_empty())
         }
+    }
+
+    make_test_plugin!(crate);
+
+    #[test]
+    fn test_run_override_is_undid() {
+        let mut app = App::default();
+        app.add_event::<ScriptAttachedEvent>();
+
+        app.add_plugins((AssetPlugin::default(), TestPlugin::default()));
+        app.init_asset::<ScriptAsset>();
+        let mut machines = ActiveMachines::<TestPlugin>::default();
+        machines.budget = None;
+        app.insert_resource(machines);
+        app.finish();
+
+        let world = app.world_mut();
+        RunProcessingPipelineOnce::<TestPlugin>::new(Some(Duration::from_secs(1))).apply(world);
+
+        let machines = world.get_resource::<ActiveMachines<TestPlugin>>().unwrap();
+        assert_eq!(machines.budget, None);
     }
 }
