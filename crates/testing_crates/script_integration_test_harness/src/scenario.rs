@@ -419,8 +419,7 @@ impl ScenarioStep {
         context.event_log.log_events(context.current_step_no, world);
         if context.scenario_time_started.elapsed().as_secs() > TIMEOUT_SECONDS {
             return Err(anyhow!(
-                "Test scenario timed out after {} seconds",
-                TIMEOUT_SECONDS
+                "Test scenario timed out after {TIMEOUT_SECONDS} seconds",
             ));
         }
         Ok(())
@@ -477,8 +476,7 @@ impl ScenarioStep {
                         Some(language) => language.clone(),
                         None => {
                             return Err(anyhow!(
-                                "Unknown script language for extension: {}",
-                                extension
+                                "Unknown script language for extension: {extension}",
                             ));
                         }
                     }
@@ -568,8 +566,7 @@ impl ScenarioStep {
                     .insert(as_name.to_string(), script_handle);
 
                 info!(
-                    "Script '{}' marked for loading from path '{}'",
-                    as_name,
+                    "Script '{as_name}' marked for loading from path '{}'",
                     path.display()
                 );
             }
@@ -613,8 +610,7 @@ impl ScenarioStep {
                         .add_handler::<CallbackC>(context.current_script_language.clone(), app),
                     _ => {
                         return Err(anyhow!(
-                            "callback label: {} is not allowed, you can only use one of a set of labels",
-                            label
+                            "callback label: {label} is not allowed, you can only use one of a set of labels",
                         ));
                     }
                 }
@@ -629,7 +625,7 @@ impl ScenarioStep {
                     .id();
 
                 context.entities.insert(name.to_string(), entity);
-                info!("Spawned entity '{}' with script '{}'", entity, script.id());
+                info!("Spawned entity '{entity}' with script '{}'", script.id());
             }
             ScenarioStep::EmitScriptCallbackEvent { event } => {
                 app.world_mut().send_event(event.clone());
@@ -646,49 +642,34 @@ impl ScenarioStep {
                     let language_correct = language.is_none_or(|l| l == event.language);
                     if event.label != label || event.context_key != script || !language_correct {
                         return Err(anyhow!(
-                            "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
-                            label,
-                            script.to_string(),
-                            event
+                            "Callback '{label}' for attachment: '{script}' was not the next event, found: {event:?}. Order of events was incorrect."
                         ));
                     }
 
                     match &event.response {
                         Ok(val) => {
                             info!(
-                                "Callback '{}' for attachment: '{}' succeeded, with value: {:?}",
-                                label,
-                                script.to_string(),
-                                &val
+                                "Callback '{label}' for attachment: '{script}' succeeded, with value: {val:?}"
                             );
 
                             if let Some(expected_string) = expect_string_value.as_ref() {
                                 if ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
                                 {
                                     return Err(anyhow!(
-                                        "Callback '{}' for attachment: '{}' expected: {}, but got: {:#?}",
-                                        label,
-                                        script.to_string(),
-                                        expected_string,
-                                        val
+                                        "Callback '{label}' for attachment: '{script}' expected: {expected_string}, but got: {val:#?}",
                                     ));
                                 }
                             }
                         }
                         Err(e) => {
                             return Err(anyhow!(
-                                "Callback '{}' for attachment: '{}' failed with error: {:#?}",
-                                label,
-                                script.to_string(),
-                                e
+                                "Callback '{label}' for attachment: '{script}' failed with error: {e:#?}",
                             ));
                         }
                     }
                 } else {
                     return Err(anyhow!(
-                        "No callback response event found for label: {} and attachment: {}",
-                        label,
-                        script.to_string()
+                        "No callback response event found for label: {label} and attachment: {script}"
                     ));
                 }
             }
@@ -713,7 +694,7 @@ impl ScenarioStep {
                             script.id()
                         )
                     })?;
-                info!("Dropped script asset '{}' from context", name);
+                info!("Dropped script asset '{name}' from context");
             }
             ScenarioStep::ReloadScriptFrom { script, path } => {
                 let mut assets = app.world_mut().resource_mut::<Assets<ScriptAsset>>();
@@ -741,8 +722,7 @@ impl ScenarioStep {
                 let next_event = context.event_log.script_responses_queue.pop_front();
                 if next_event.is_some() {
                     return Err(anyhow!(
-                        "Expected no callback responses to be emitted, but found: {:?}",
-                        next_event
+                        "Expected no callback responses to be emitted, but found: {next_event:?}"
                     ));
                 } else {
                     info!("No callback responses emitted as expected");
@@ -752,11 +732,10 @@ impl ScenarioStep {
                 let success = app.world_mut().despawn(entity);
                 if !success {
                     return Err(anyhow!(
-                        "Failed to despawn entity with name '{}'. It may not exist.",
-                        entity
+                        "Failed to despawn entity with name '{entity}'. It may not exist.",
                     ));
                 } else {
-                    info!("Despawning entity with name '{}'", entity);
+                    info!("Despawning entity with name '{entity}'",);
                 }
             }
             ScenarioStep::AttachStaticScript { script } => {
@@ -846,22 +825,15 @@ impl ScenarioStep {
 
                 if residents != residents_num {
                     return Err(anyhow!(
-                        "Expected {} residents for script attachment: {}, but found {}",
-                        residents_num,
-                        script.to_string(),
-                        residents
+                        "Expected {residents_num} residents for script attachment: {script}, but found {residents}",
                     ));
                 } else {
-                    info!(
-                        "Script attachment: {} has {} residents as expected",
-                        script.to_string(),
-                        residents
-                    );
+                    info!("Script attachment: {script} has {residents} residents as expected",);
                 }
             }
             ScenarioStep::Comment { comment } => {
                 // Comments are ignored, do nothing, log it though for debugging
-                info!("Comment: {}", comment);
+                info!("Comment: {comment}");
             }
         }
         Ok(())

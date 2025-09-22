@@ -383,7 +383,7 @@ impl ScenarioStepSerialized {
         let mut parts = flat_string.split_whitespace();
         let step_name = parts
             .next()
-            .ok_or_else(|| anyhow::anyhow!("Invalid flat string step: `{}`", flat_string))?;
+            .ok_or_else(|| anyhow::anyhow!("Invalid flat string step: `{flat_string}`"))?;
         let mut map = serde_json::Map::new();
         map.insert(
             "step".to_string(),
