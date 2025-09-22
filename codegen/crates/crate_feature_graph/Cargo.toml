@@ -19,12 +19,12 @@ dot_parser = ["petgraph/dot_parser"]
 serde = ["dep:serde", "dep:serde_json"]
 
 [dependencies]
+serde = { workspace = true, features = ["derive", "std"], optional = true }
 petgraph = { workspace = true }
 cargo_metadata = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
-serde = { workspace = true, features = ["derive"], optional = true }
 serde_json = { workspace = true, optional = true, features = ["std"] }
 pretty_env_logger = { workspace = true }
 indexmap = { workspace = true, features = ["serde"] }

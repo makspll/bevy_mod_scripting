@@ -15,6 +15,6 @@ readme.workspace = true
 bevy_reflect = { workspace = true }
 bevy_asset = { workspace = true }
 bevy_log = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "std"] }
 [lints]
 workspace = true

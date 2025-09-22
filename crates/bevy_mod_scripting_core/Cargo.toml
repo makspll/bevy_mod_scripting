@@ -41,7 +41,7 @@ smallvec = { workspace = true }
 itertools = { workspace = true }
 profiling = { workspace = true }
 fixedbitset = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "std"] }
 uuid = { workspace = true }
 variadics_please = { workspace = true }
 
