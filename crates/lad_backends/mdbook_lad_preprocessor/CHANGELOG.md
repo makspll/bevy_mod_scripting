@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.0-mdbook_lad_preprocessor...v0.3.0-mdbook_lad_preprocessor) - 2025-09-22
+
+### Added
+
+- improved dynamic printing, adds `ReflectDisplayWithTypeInfo` for overriding opaque type printing ([#478](https://github.com/makspll/bevy_mod_scripting/pull/478))
+
+### Refactored
+
+- [**breaking**] refactor dependencies, point at bevy subcrates directly ([#463](https://github.com/makspll/bevy_mod_scripting/pull/463))
+
 ## [0.2.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.10-mdbook_lad_preprocessor...v0.2.0-mdbook_lad_preprocessor) - 2025-08-14
 
 ### Added

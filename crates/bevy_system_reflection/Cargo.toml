@@ -1,6 +1,6 @@
 [package]
 name = "bevy_system_reflection"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
