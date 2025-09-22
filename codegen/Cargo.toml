@@ -76,7 +76,7 @@ log = { workspace = true }
 pretty_env_logger = { workspace = true }
 indexmap = { workspace = true }
 cargo_metadata = { workspace = true }
-serde_json = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
 serde = { workspace = true }
 prettyplease = { workspace = true }
 convert_case = { workspace = true }

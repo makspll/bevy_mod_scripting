@@ -25,7 +25,7 @@ itertools = { workspace = true }
 log = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"], optional = true }
-serde_json = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true, features = ["std"] }
 pretty_env_logger = { workspace = true }
 indexmap = { workspace = true, features = ["serde"] }
 

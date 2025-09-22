@@ -36,4 +36,4 @@ rand_chacha = { workspace = true }
 uuid = { workspace = true }
 anyhow = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
