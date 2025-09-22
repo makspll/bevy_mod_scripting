@@ -1,7 +1,7 @@
 [package]
 name = "bevy_input_focus_bms_bindings"
 description = "Automatically generated bindings for bevy_input_focus crate"
-readme = "readme.md"
+readme = "README.md"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -17,19 +17,38 @@ categories.workspace = true
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_input_focus = { version = "0.16.1", features = ["std", "bevy_reflect"], default-features = true}
+bevy_input_focus = { version = "0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = true }
 
 
-bevy_app = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
+bevy_app = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = false }
 
-bevy_ecs = { version = "^0.16.1", features = ["std", "bevy_reflect", "async_executor"], default-features = false}
+bevy_ecs = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+    "async_executor",
+], default-features = false }
 
-bevy_input = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
+bevy_input = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = false }
 
-bevy_math = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
+bevy_math = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = false }
 
-bevy_reflect = { version = "^0.16.1", features = ["std"], default-features = false}
+bevy_reflect = { version = "^0.16.1", features = [
+    "std",
+], default-features = false }
 
-bevy_window = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
-
-
+bevy_window = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = false }

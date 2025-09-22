@@ -1,7 +1,7 @@
 [package]
 name = "{{ crate_name }}_bms_bindings"
 description = "Automatically generated bindings for {{ crate_name }} crate"
-readme = "readme.md"
+readme = "README.md"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

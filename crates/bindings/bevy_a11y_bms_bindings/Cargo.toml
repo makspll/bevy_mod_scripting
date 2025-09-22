@@ -1,7 +1,7 @@
 [package]
 name = "bevy_a11y_bms_bindings"
 description = "Automatically generated bindings for bevy_a11y crate"
-readme = "readme.md"
+readme = "README.md"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -17,15 +17,25 @@ categories.workspace = true
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_a11y = { version = "0.16.1", features = ["std", "bevy_reflect"], default-features = true}
+bevy_a11y = { version = "0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = true }
 
 
-bevy_app = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
+bevy_app = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = false }
 
-bevy_derive = { version = "^0.16.1", features = [], default-features = true}
+bevy_derive = { version = "^0.16.1", features = [], default-features = true }
 
-bevy_ecs = { version = "^0.16.1", features = ["std", "bevy_reflect", "async_executor"], default-features = false}
+bevy_ecs = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+    "async_executor",
+], default-features = false }
 
-bevy_reflect = { version = "^0.16.1", features = ["std"], default-features = false}
-
-
+bevy_reflect = { version = "^0.16.1", features = [
+    "std",
+], default-features = false }
