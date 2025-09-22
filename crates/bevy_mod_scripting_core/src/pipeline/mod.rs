@@ -317,11 +317,36 @@ impl<P> Default for RequestProcessingPipelineRun<P> {
     }
 }
 
-/// A system which runs [`RunProcessingPipelineOnce`] command for the plugin only if [`RequestProcessingPipelineRun`] resource had [`RequestProcessingPipelineRun::request_run`] called on it
+/// A system which runs [`RunProcessingPipelineOnce`] command for the plugin only if [`RequestProcessingPipelineRun`] resource had [`RequestProcessingPipelineRun::request_run`] called on it,
+/// and or if there are active machines
 pub fn automatic_pipeline_runner<P: IntoScriptPluginParams>(world: &mut World) {
     let mut res = world.get_resource_or_init::<RequestProcessingPipelineRun<P>>();
-    if res.get_and_unset() {
+    if res.get_and_unset()
+        || world
+            .get_resource::<ActiveMachines<P>>()
+            .is_some_and(|machines| machines.active_machines() > 0)
+    {
         RunProcessingPipelineOnce::<P>::new().apply(world);
+    }
+}
+
+/// A helper trait for App implementations
+pub trait PipelineRun {
+    /// Runs update's until all scripts are processed and no more machines are running
+    fn update_until_all_scripts_processed<P: IntoScriptPluginParams>(&mut self);
+}
+
+impl PipelineRun for App {
+    fn update_until_all_scripts_processed<P: IntoScriptPluginParams>(&mut self) {
+        loop {
+            let world = self.world_mut();
+            let machines = world.get_resource::<ActiveMachines<P>>();
+            let has_active = machines.is_some_and(|machines| machines.active_machines() > 0);
+            if !has_active {
+                break;
+            }
+            self.update();
+        }
     }
 }
 

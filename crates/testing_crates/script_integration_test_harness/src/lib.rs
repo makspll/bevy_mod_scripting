@@ -32,6 +32,7 @@ use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
     commands::AttachScript,
     error::ScriptError,
+    pipeline::PipelineRun,
     script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptContext},
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -309,7 +310,7 @@ where
         }
     }
 
-    app.update();
+    app.update_until_all_scripts_processed::<P>();
 
     let script_contexts = app
         .world_mut()

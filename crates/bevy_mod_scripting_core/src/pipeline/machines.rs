@@ -178,6 +178,11 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
             internal_state: MachineExecutionState::Initialized(Box::new(state)),
         });
     }
+
+    /// Returns the amount of active machines
+    pub fn active_machines(&self) -> usize {
+        self.machines.len()
+    }
 }
 
 /// A machine, which combines the inputs to its states with the state of the world and generates state transitions,
