@@ -41,7 +41,7 @@ pub enum ScriptValue {
     FunctionMut(DynamicScriptFunctionMut),
     /// A stateless dynamic script function
     Function(DynamicScriptFunction),
-    /// Represents any error, will be thrown when returned to a script
+    /// Represents any error, will be thrown when returned to a script.
     Error(InteropError),
 }
 
