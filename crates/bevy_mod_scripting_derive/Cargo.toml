@@ -12,7 +12,7 @@ categories.workspace = true
 readme.workspace = true
 
 [dependencies]
-syn = { workspace = true, features = ["full"] }
+syn = { workspace = true, features = ["full", "parsing", "derive"] }
 proc-macro2 = { workspace = true }
 quote = { workspace = true }
 
