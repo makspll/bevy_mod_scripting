@@ -1,5 +1,5 @@
 SetCurrentLanguage language="@this_script_language"
-InstallPlugin
+InstallPlugin miliseconds_budget=999999
 SetupHandler OnTest=null, Update=null
 SetupHandler OnTestPostUpdate=null, PostUpdate=null
 SetupHandler Last=null, OnTestLast=null

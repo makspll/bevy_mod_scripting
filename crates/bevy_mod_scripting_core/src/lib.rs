@@ -7,15 +7,14 @@ use crate::{
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
     handler::script_error_logger,
+    pipeline::ScriptLoadingPipeline,
 };
-use asset::{configure_asset_systems, configure_asset_systems_for_plugin};
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_asset::{AssetApp, Handle};
 use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_ecs::{
     reflect::{AppTypeRegistry, ReflectComponent},
     schedule::SystemSet,
-    system::Command,
 };
 use bevy_log::error;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, ScriptAssetLoader};
@@ -25,14 +24,12 @@ use bevy_mod_scripting_bindings::{
     DynamicScriptComponentPlugin, MarkAsCore, ReflectReference, ScriptTypeRegistration,
     ScriptValue, ThreadWorldContainer, garbage_collector,
 };
-use commands::{AddStaticScript, RemoveStaticScript};
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
-use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
+use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::HandlerFn;
 use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContext};
 
-pub mod asset;
 pub mod commands;
 pub mod config;
 pub mod context;
@@ -40,6 +37,7 @@ pub mod error;
 pub mod event;
 pub mod extractors;
 pub mod handler;
+pub mod pipeline;
 pub mod runtime;
 pub mod script;
 pub mod script_system;
@@ -108,6 +106,9 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
 
     /// Whether to emit responses from core script callbacks like `on_script_loaded` or `on_script_unloaded`.
     pub emit_responses: bool,
+
+    /// The settings customising the processing (loading, unloading etc.) pipeline for this plugin
+    pub processing_pipeline_plugin: ScriptLoadingPipeline<P>,
 }
 
 impl<P> std::fmt::Debug for ScriptingPlugin<P>
@@ -138,6 +139,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
             emit_responses: false,
+            processing_pipeline_plugin: Default::default(),
         }
     }
 }
@@ -171,7 +173,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
         app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
-        register_script_plugin_systems::<P>(app);
+        app.add_plugins(self.processing_pipeline_plugin.clone());
 
         register_types(app);
     }
@@ -202,6 +204,12 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
     /// Initializers will be run after the runtime is created, but before any contexts are loaded.
     pub fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<P>) -> &mut Self {
         self.runtime_initializers.push(initializer);
+        self
+    }
+
+    /// Sets the script pipeline settings plugin
+    pub fn set_pipeline_settings(&mut self, pipeline: ScriptLoadingPipeline<P>) -> &mut Self {
+        self.processing_pipeline_plugin = pipeline;
         self
     }
 }
@@ -241,6 +249,9 @@ pub trait ConfigureScriptPlugin {
 
     /// removes a supported file extension for the plugin's language.
     fn remove_supported_extension(self, extension: &'static str) -> Self;
+
+    /// Sets the script pipeline settings plugin
+    fn set_pipeline_settings(self, pipeline: ScriptLoadingPipeline<Self::P>) -> Self;
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -286,6 +297,11 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
             .retain(|&ext| ext != extension);
         self
     }
+
+    fn set_pipeline_settings(mut self, pipeline: ScriptLoadingPipeline<P>) -> Self {
+        self.as_mut().set_pipeline_settings(pipeline);
+        self
+    }
 }
 
 /// Ensures all types with `ReflectComponent` type data are pre-registered with component ID's
@@ -306,7 +322,7 @@ fn pre_register_components(app: &mut App) {
 /// It is necessary to register this plugin for any of them to work
 #[derive(Default)]
 pub struct BMSScriptingInfrastructurePlugin {
-    /// If set to true will log all ScriptErrorEvents using bevy_log::error.
+    /// If set to true will not log all ScriptErrorEvents using bevy_log::error.
     ///
     /// you can opt out of this behavior if you want to log the errors in a different way.
     ///
@@ -317,7 +333,6 @@ pub struct BMSScriptingInfrastructurePlugin {
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ScriptErrorEvent>()
-            .add_event::<ScriptEvent>()
             .add_event::<ScriptCallbackEvent>()
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
@@ -338,8 +353,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             app.add_systems(PostUpdate, script_error_logger);
         }
 
-        app.add_plugins(configure_asset_systems);
-
         let _ = bevy_mod_scripting_display::GLOBAL_TYPE_INFO_PROVIDER
             .set(|| Some(&ThreadWorldContainer));
 
@@ -353,42 +366,12 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
     }
 }
 
-/// Systems registered per-language
-fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
-    app.add_plugins(configure_asset_systems_for_plugin::<P>);
-}
-
 /// Register all types that need to be accessed via reflection
 fn register_types(app: &mut App) {
     app.register_type::<ScriptValue>();
     app.register_type::<ScriptTypeRegistration>();
     app.register_type::<ReflectReference>();
     app.register_type::<ScriptComponent>();
-}
-
-/// Trait for adding static scripts to an app
-pub trait ManageStaticScripts {
-    /// Registers a script id as a static script.
-    ///
-    /// Event handlers will run these scripts on top of the entity scripts.
-    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
-
-    /// Removes a script id from the list of static scripts.
-    ///
-    /// Does nothing if the script id is not in the list.
-    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
-}
-
-impl ManageStaticScripts for App {
-    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
-        AddStaticScript::new(script_id.into()).apply(self.world_mut());
-        self
-    }
-
-    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
-        RemoveStaticScript::new(script_id.into()).apply(self.world_mut());
-        self
-    }
 }
 
 #[cfg(test)]

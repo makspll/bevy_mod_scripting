@@ -668,7 +668,7 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             |_self: Ref<::core::time::Duration>| {
                 let output: Val<::core::time::Duration> = {
                     {
-                        let output: Val<::core::time::Duration> = <::core::time::Duration as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::core::time::Duration> = <::core::time::Duration as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1139,7 +1139,7 @@ pub(crate) fn register_instant_functions(world: &mut World) {
             |_self: Ref<::std::time::Instant>| {
                 let output: Val<::std::time::Instant> = {
                     {
-                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1301,7 +1301,7 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
             |_self: Ref<::core::ops::RangeFull>| {
                 let output: Val<::core::ops::RangeFull> = {
                     {
-                        let output: Val<::core::ops::RangeFull> = <::core::ops::RangeFull as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::core::ops::RangeFull> = <::core::ops::RangeFull as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1337,60 +1337,59 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
         );
 }
 pub(crate) fn register_type_id_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::any::TypeId,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: Ref<::core::any::TypeId>| {
-                let output: () = {
-                    {
-                        let output: () = <::core::any::TypeId as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: Ref<::core::any::TypeId>| {
-                let output: Val<::core::any::TypeId> = {
-                    {
-                        let output: Val<::core::any::TypeId> = <::core::any::TypeId as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::core::any::TypeId>, other: Ref<::core::any::TypeId>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::core::any::TypeId as ::core::cmp::PartialEq<
-                            ::core::any::TypeId,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::core::any::TypeId>::new(
+        world,
+    )
+    .register_documented(
+        "assert_receiver_is_total_eq",
+        |_self: Ref<::core::any::TypeId>| {
+            let output: () = {
+                {
+                    let output: () =
+                        <::core::any::TypeId as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "clone",
+        |_self: Ref<::core::any::TypeId>| {
+            let output: Val<::core::any::TypeId> = {
+                {
+                    let output: Val<::core::any::TypeId> =
+                        <::core::any::TypeId as ::core::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::core::any::TypeId>, other: Ref<::core::any::TypeId>| {
+            let output: bool = {
+                {
+                    let output: bool = <::core::any::TypeId as ::core::cmp::PartialEq<
+                        ::core::any::TypeId,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1476,7 +1475,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Ref<::glam::Quat>| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2639,7 +2638,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3974,7 +3973,7 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
             |_self: Ref<::core::net::SocketAddr>| {
                 let output: Val<::core::net::SocketAddr> = {
                     {
-                        let output: Val<::core::net::SocketAddr> = <::core::net::SocketAddr as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::core::net::SocketAddr> = <::core::net::SocketAddr as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4337,7 +4336,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -5620,7 +5619,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -6889,7 +6888,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -8138,7 +8137,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -9421,7 +9420,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -10689,7 +10688,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -11945,7 +11944,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -13242,7 +13241,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -14522,7 +14521,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -15789,7 +15788,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -17086,7 +17085,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -18366,7 +18365,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -19612,7 +19611,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -20684,7 +20683,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -21795,7 +21794,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -22886,7 +22885,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -23958,7 +23957,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -25068,7 +25067,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -26166,7 +26165,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -27252,7 +27251,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -28374,7 +28373,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -29483,7 +29482,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -30569,7 +30568,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -31691,7 +31690,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -32915,7 +32914,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -34662,7 +34661,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -36318,7 +36317,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -37678,7 +37677,7 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::BVec2>| {
                 let output: Val<::glam::BVec2> = {
                     {
-                        let output: Val<::glam::BVec2> = <::glam::BVec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::BVec2> = <::glam::BVec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -37852,7 +37851,7 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::BVec3>| {
                 let output: Val<::glam::BVec3> = {
                     {
-                        let output: Val<::glam::BVec3> = <::glam::BVec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::BVec3> = <::glam::BVec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -38027,7 +38026,7 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::BVec4>| {
                 let output: Val<::glam::BVec4> = {
                     {
-                        let output: Val<::glam::BVec4> = <::glam::BVec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::BVec4> = <::glam::BVec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -38507,7 +38506,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -40269,7 +40268,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -41916,7 +41915,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -43299,7 +43298,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             |_self: Ref<::glam::Mat2>| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -43890,7 +43889,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Ref<::glam::Mat3>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -44715,7 +44714,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Mat3A>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -45545,7 +45544,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Ref<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -46675,7 +46674,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             |_self: Ref<::glam::DMat2>| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -47237,7 +47236,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Ref<::glam::DMat3>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -48033,7 +48032,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Ref<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -49041,7 +49040,7 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
             |_self: Ref<::glam::Affine2>| {
                 let output: Val<::glam::Affine2> = {
                     {
-                        let output: Val<::glam::Affine2> = <::glam::Affine2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Affine2> = <::glam::Affine2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -49450,7 +49449,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Affine3A>| {
                 let output: Val<::glam::Affine3A> = {
                     {
-                        let output: Val<::glam::Affine3A> = <::glam::Affine3A as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::Affine3A> = <::glam::Affine3A as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -50012,7 +50011,7 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
             |_self: Ref<::glam::DAffine2>| {
                 let output: Val<::glam::DAffine2> = {
                     {
-                        let output: Val<::glam::DAffine2> = <::glam::DAffine2 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DAffine2> = <::glam::DAffine2 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -50387,7 +50386,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
             |_self: Ref<::glam::DAffine3>| {
                 let output: Val<::glam::DAffine3> = {
                     {
-                        let output: Val<::glam::DAffine3> = <::glam::DAffine3 as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DAffine3> = <::glam::DAffine3 as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -50969,7 +50968,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             |_self: Ref<::glam::DQuat>| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -51701,60 +51700,57 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
     registry.register_type_data::<::glam::DQuat, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_euler_rot_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::glam::EulerRot,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: Ref<::glam::EulerRot>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::EulerRot as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::glam::EulerRot>::new(
+        world,
+    )
+    .register_documented(
+        "assert_receiver_is_total_eq",
+        |_self: Ref<::glam::EulerRot>| {
+            let output: () = {
+                {
+                    let output: () =
+                        <::glam::EulerRot as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: Ref<::glam::EulerRot>| {
-                let output: Val<::glam::EulerRot> = {
-                    {
-                        let output: Val<::glam::EulerRot> = <::glam::EulerRot as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::glam::EulerRot>, other: Ref<::glam::EulerRot>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::glam::EulerRot as ::core::cmp::PartialEq<
-                            ::glam::EulerRot,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "clone",
+        |_self: Ref<::glam::EulerRot>| {
+            let output: Val<::glam::EulerRot> = {
+                {
+                    let output: Val<::glam::EulerRot> =
+                        <::glam::EulerRot as ::core::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::glam::EulerRot>, other: Ref<::glam::EulerRot>| {
+            let output: bool = {
+                {
+                    let output: bool = <::glam::EulerRot as ::core::cmp::PartialEq<
+                        ::glam::EulerRot,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry.register_type_data::<::glam::EulerRot, bevy_mod_scripting_bindings::MarkAsGenerated>();
@@ -51813,7 +51809,7 @@ pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::BVec3A>| {
                 let output: Val<::glam::BVec3A> = {
                     {
-                        let output: Val<::glam::BVec3A> = <::glam::BVec3A as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::BVec3A> = <::glam::BVec3A as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -51974,7 +51970,7 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
             |_self: Ref<::glam::BVec4A>| {
                 let output: Val<::glam::BVec4A> = {
                     {
-                        let output: Val<::glam::BVec4A> = <::glam::BVec4A as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::glam::BVec4A> = <::glam::BVec4A as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -52082,103 +52078,98 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
     registry.register_type_data::<::glam::BVec4A, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_smol_str_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::smol_str::SmolStr,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::smol_str::SmolStr>| {
-                let output: Val<::smol_str::SmolStr> = {
-                    {
-                        let output: Val<::smol_str::SmolStr> = <::smol_str::SmolStr as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::smol_str::SmolStr>, other: Ref<::smol_str::SmolStr>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::smol_str::SmolStr as ::core::cmp::PartialEq<
-                            ::smol_str::SmolStr,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "is_empty",
-            |_self: Ref<::smol_str::SmolStr>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "is_heap_allocated",
-            |_self: Ref<::smol_str::SmolStr>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "len",
-            |_self: Ref<::smol_str::SmolStr>| {
-                let output: usize = {
-                    {
-                        let output: usize = ::smol_str::SmolStr::len(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "to_string",
-            |_self: Ref<::smol_str::SmolStr>| {
-                let output: ::std::string::String = {
-                    {
-                        let output: ::std::string::String = ::smol_str::SmolStr::to_string(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::smol_str::SmolStr>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: Ref<::smol_str::SmolStr>| {
+            let output: Val<::smol_str::SmolStr> = {
+                {
+                    let output: Val<::smol_str::SmolStr> =
+                        <::smol_str::SmolStr as ::core::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::smol_str::SmolStr>, other: Ref<::smol_str::SmolStr>| {
+            let output: bool = {
+                {
+                    let output: bool = <::smol_str::SmolStr as ::core::cmp::PartialEq<
+                        ::smol_str::SmolStr,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "is_empty",
+        |_self: Ref<::smol_str::SmolStr>| {
+            let output: bool = {
+                {
+                    let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "is_heap_allocated",
+        |_self: Ref<::smol_str::SmolStr>| {
+            let output: bool = {
+                {
+                    let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "len",
+        |_self: Ref<::smol_str::SmolStr>| {
+            let output: usize = {
+                {
+                    let output: usize = ::smol_str::SmolStr::len(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "to_string",
+        |_self: Ref<::smol_str::SmolStr>| {
+            let output: ::std::string::String = {
+                {
+                    let output: ::std::string::String =
+                        ::smol_str::SmolStr::to_string(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -52239,7 +52230,7 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
             |_self: Ref<::uuid::Uuid>| {
                 let output: Val<::uuid::Uuid> = {
                     {
-                        let output: Val<::uuid::Uuid> = <::uuid::Uuid as ::bevy_reflect::erased_serde::__private::serde::__private::Clone>::clone(
+                        let output: Val<::uuid::Uuid> = <::uuid::Uuid as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -52363,13 +52354,12 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
         .register_documented(
             "get_node_id",
             |_self: Ref<::uuid::Uuid>| {
-                let output: ::bevy_reflect::erased_serde::__private::serde::__private::Option<
-                    [u8; 6],
-                > = {
+                let output: ::core::option::Option<[u8; 6]> = {
                     {
-                        let output: ::bevy_reflect::erased_serde::__private::serde::__private::Option<
-                            [u8; 6],
-                        > = ::uuid::Uuid::get_node_id(&_self).into();
+                        let output: ::core::option::Option<[u8; 6]> = ::uuid::Uuid::get_node_id(
+                                &_self,
+                            )
+                            .into();
                         output
                     }
                 };

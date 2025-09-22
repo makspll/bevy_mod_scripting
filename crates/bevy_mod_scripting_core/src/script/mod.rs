@@ -6,6 +6,8 @@ use std::{
     ops::Deref,
 };
 
+use crate::event::{ScriptAttachedEvent, ScriptDetachedEvent};
+
 use ::{
     bevy_asset::{Asset, AssetId, Handle},
     bevy_ecs::{
@@ -14,8 +16,6 @@ use ::{
     },
     bevy_reflect::Reflect,
 };
-
-use crate::event::ScriptEvent;
 
 mod context_key;
 mod script_context;
@@ -107,22 +107,14 @@ impl ScriptComponent {
     /// the removal of the script.
     pub fn on_remove(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
-        world.send_event_batch(
-            context_keys
-                .into_iter()
-                .map(|key| ScriptEvent::Detached { key }),
-        );
+        world.send_event_batch(context_keys.into_iter().map(ScriptDetachedEvent));
     }
 
     /// the lifecycle hook called when a script component is added to an entity, emits an appropriate event so we can handle
     /// the addition of the script.
     pub fn on_add(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
-        world.send_event_batch(
-            context_keys
-                .into_iter()
-                .map(|key| ScriptEvent::Attached { key }),
-        );
+        world.send_event_batch(context_keys.into_iter().map(ScriptAttachedEvent));
     }
 }
 
@@ -135,19 +127,17 @@ mod tests {
     #[test]
     fn test_component_add() {
         let mut world = World::new();
-        world.init_resource::<Events<ScriptEvent>>();
+        world.init_resource::<Events<ScriptAttachedEvent>>();
         // spawn new script component
         let entity = world
             .spawn(ScriptComponent::new([Handle::Weak(AssetId::invalid())]))
             .id();
 
         // check that the event was sent
-        let mut events = world.resource_mut::<Events<ScriptEvent>>();
+        let mut events = world.resource_mut::<Events<ScriptAttachedEvent>>();
         assert_eq!(
-            Some(ScriptEvent::Attached {
-                key: ScriptAttachment::EntityScript(entity, Handle::Weak(AssetId::invalid()))
-            }),
-            events.drain().next()
+            ScriptAttachment::EntityScript(entity, Handle::Weak(AssetId::invalid())),
+            events.drain().next().unwrap().0
         );
     }
 }
