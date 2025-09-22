@@ -189,32 +189,23 @@
 <p>To enable a shared context, set the corresponding context policy on the scripting plugin:</p>
 <pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
     ContextPolicy::shared(),
-));```
-
-## Per Script Context
-A per script context provides each script with their own context. However, scripts may be attached to multiple entities, in which case a single script context is shared by multiple entities. 
-
-To enable per script contexts, insert the `ContextPolicy::per_script()` resource.
-```rust,ignore
-app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
+));</code></pre>
+<h3 id="per-script-context"><a class="header" href="#per-script-context">Per Script Context</a></h3>
+<p>A per script context provides each script with their own context. However, scripts may be attached to multiple entities, in which case a single script context is shared by multiple entities.</p>
+<p>To enable per script contexts, insert the <code>ContextPolicy::per_script()</code> resource.</p>
+<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
     ContextPolicy::per_script(),
-));```
-
-## Per Entity Context
-A per entity context provides each entity with their own context. The scripts attached to an entity via `ScriptComponent` all run in the same context.
-
-To enable per entity contexts, insert the `ContextPolicy::per_entity()` resource.
-```rust,ignore
-app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
+));</code></pre>
+<h3 id="per-entity-context"><a class="header" href="#per-entity-context">Per Entity Context</a></h3>
+<p>A per entity context provides each entity with their own context. The scripts attached to an entity via <code>ScriptComponent</code> all run in the same context.</p>
+<p>To enable per entity contexts, insert the <code>ContextPolicy::per_entity()</code> resource.</p>
+<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
     ContextPolicy::per_entity(),
-));```
-
-## Per Entity and Script Context
-A per entity-and-script context provides each entity-script pair with their own context. This is a maximally isolated way to run scripts.
-
-To enable per entity-and-script contexts, insert the `ContextPolicy::per_entity_and_script()` resource.
-```rust,ignore
-app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
+));</code></pre>
+<h3 id="per-entity-and-script-context"><a class="header" href="#per-entity-and-script-context">Per Entity and Script Context</a></h3>
+<p>A per entity-and-script context provides each entity-script pair with their own context. This is a maximally isolated way to run scripts.</p>
+<p>To enable per entity-and-script contexts, insert the <code>ContextPolicy::per_entity_and_script()</code> resource.</p>
+<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
     ContextPolicy::per_entity_and_script(),
 ));</code></pre>
 <h2 id="custom-policies"><a class="header" href="#custom-policies">Custom Policies</a></h2>
@@ -286,6 +277,8 @@ assert_eq!(policy_a, policy_b);</code></pre>
 
         <!-- Custom JS scripts -->
         <script src="../multi-code-block.js"></script>
+        <script src="../mermaid.min.js"></script>
+        <script src="../mermaid-init.js"></script>
 
 
 

@@ -190,51 +190,51 @@
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
+<tr><td><a href="./duration/from_nanos.html">from_nanos</a></td><td>Creates a new `Duration` from the specified number of nanoseconds.  Note: Using this on the return ...</td></tr>
+<tr><td><a href="./duration/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./duration/div_f32.html">div_f32</a></td><td>Divides `Duration` by `f32`.  # Panics  This method will panic if result is negative, overflows `Duration`...</td></tr>
+<tr><td><a href="./duration/saturating_add.html">saturating_add</a></td><td>Saturating `Duration` addition. Computes `self + other`, returning [`Duration::MAX`]  if overflow occurred.  # Examples  ```  #![feature(duration_constants)]...</td></tr>
+<tr><td><a href="./duration/sub.html">sub</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./duration/subsec_nanos.html">subsec_nanos</a></td><td>Returns the fractional part of this `Duration`, in nanoseconds.  This method does **not** return th...</td></tr>
 <tr><td><a href="./duration/div_duration_f32.html">div_duration_f32</a></td><td>Divides `Duration` by `Duration` and returns `f32`.  # Examples  ```  use std::time::Duration;  let dur1 = Duration::new(2, 700_000_000);  let dur2 = Duration::new(5, 400_000_000);  assert_eq!(dur1.div_duration_f32(dur2), 0.5);  ```</td></tr>
+<tr><td><a href="./duration/subsec_micros.html">subsec_micros</a></td><td>Returns the fractional part of this `Duration`, in whole microseconds.  This method does **not** re...</td></tr>
+<tr><td><a href="./duration/from_secs_f32.html">from_secs_f32</a></td><td>Creates a new `Duration` from the specified number of seconds represented  as `f32`.  # Panics  Thi...</td></tr>
+<tr><td><a href="./duration/saturating_mul.html">saturating_mul</a></td><td>Saturating `Duration` multiplication. Computes `self * other`, returning  [`Duration::MAX`] if overflow occurred.  # Examples  ```  #![feature(duration_constants)]  use std::time::Duration;  assert_eq!(Duration::new(0, 500_000_001).saturating_mul(2), Duration::new(1, 2));  assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);  ```</td></tr>
+<tr><td><a href="./duration/as_secs_f32.html">as_secs_f32</a></td><td>Returns the number of seconds contained by this `Duration` as `f32`.  The returned value includes t...</td></tr>
+<tr><td><a href="./duration/add.html">add</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./duration/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./duration/saturating_sub.html">saturating_sub</a></td><td>Saturating `Duration` subtraction. Computes `self - other`, returning [`Duration::ZERO`]  if the result would be negative or if overflow occurred.  # Examples  ```  use std::time::Duration;  assert_eq!(Duration::new(0, 1).saturating_sub(Duration::new(0, 0)), Duration::new(0, 1));  assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);  ```</td></tr>
+<tr><td><a href="./duration/from_secs_f64.html">from_secs_f64</a></td><td>Creates a new `Duration` from the specified number of seconds represented  as `f64`.  # Panics  Thi...</td></tr>
+<tr><td><a href="./duration/from_millis.html">from_millis</a></td><td>Creates a new `Duration` from the specified number of milliseconds.  # Examples  ```  use std::time::Duration;  let duration = Duration::from_millis(2_569);  assert_eq!(2, duration.as_secs());  assert_eq!(569_000_000, duration.subsec_nanos());  `...</td></tr>
+<tr><td><a href="./duration/from_secs.html">from_secs</a></td><td>Creates a new `Duration` from the specified number of whole seconds.  # Examples  ```  use std::time::Duration;  let duration = Duration::from_secs(5);  assert_eq!(5, duration.as_secs());  assert_eq!(0, duration.subsec_nanos());  ```</td></tr>
+<tr><td><a href="./duration/div.html">div</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./duration/as_micros.html">as_micros</a></td><td>Returns the total number of whole microseconds contained by this `Duration`.  # Examples  ```  use std::time::Duration;  let duration = Duration::new(5, 730_023_852);  assert_eq!(duration.as_micros(), 5_730_023);  `...</td></tr>
+<tr><td><a href="./duration/as_secs.html">as_secs</a></td><td>Returns the number of _whole_ seconds contained by this `Duration`.  The returned value does not in...</td></tr>
+<tr><td><a href="./duration/as_secs_f64.html">as_secs_f64</a></td><td>Returns the number of seconds contained by this `Duration` as `f64`.  The returned value includes t...</td></tr>
+<tr><td><a href="./duration/subsec_millis.html">subsec_millis</a></td><td>Returns the fractional part of this `Duration`, in whole milliseconds.  This method does **not** re...</td></tr>
+<tr><td><a href="./duration/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./duration/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./duration/from_micros.html">from_micros</a></td><td>Creates a new `Duration` from the specified number of microseconds.  # Examples  ```  use std::time::Duration;  let duration = Duration::from_micros(1_000_002);  assert_eq!(1, duration.as_secs());  assert_eq!(2_000, duration.subsec_nanos());  `...</td></tr>
 <tr><td><a href="./duration/as_nanos.html">as_nanos</a></td><td>Returns the total number of nanoseconds contained by this `Duration`.  # Examples  ```  use std::time::Duration;  let duration = Duration::new(5, 730_023_852);  assert_eq!(duration.as_nanos(), 5_730_023_852);  ```</td></tr>
 <tr><td><a href="./duration/mul_f64.html">mul_f64</a></td><td>Multiplies `Duration` by `f64`.  # Panics  This method will panic if result is negative, overflows `Duration`...</td></tr>
-<tr><td><a href="./duration/add.html">add</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./duration/saturating_mul.html">saturating_mul</a></td><td>Saturating `Duration` multiplication. Computes `self * other`, returning  [`Duration::MAX`] if overflow occurred.  # Examples  ```  #![feature(duration_constants)]  use std::time::Duration;  assert_eq!(Duration::new(0, 500_000_001).saturating_mul(2), Duration::new(1, 2));  assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);  ```</td></tr>
-<tr><td><a href="./duration/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./duration/div.html">div</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./duration/saturating_add.html">saturating_add</a></td><td>Saturating `Duration` addition. Computes `self + other`, returning [`Duration::MAX`]  if overflow occurred.  # Examples  ```  #![feature(duration_constants)]...</td></tr>
-<tr><td><a href="./duration/new.html">new</a></td><td>Creates a new `Duration` from the specified number of whole seconds and  additional nanoseconds.  I...</td></tr>
-<tr><td><a href="./duration/mul_f32.html">mul_f32</a></td><td>Multiplies `Duration` by `f32`.  # Panics  This method will panic if result is negative, overflows `Duration`...</td></tr>
-<tr><td><a href="./duration/from_secs_f64.html">from_secs_f64</a></td><td>Creates a new `Duration` from the specified number of seconds represented  as `f64`.  # Panics  Thi...</td></tr>
-<tr><td><a href="./duration/from_nanos.html">from_nanos</a></td><td>Creates a new `Duration` from the specified number of nanoseconds.  Note: Using this on the return ...</td></tr>
-<tr><td><a href="./duration/abs_diff.html">abs_diff</a></td><td>Computes the absolute difference between `self` and `other`.  # Examples  ```  use std::time::Duration;  assert_eq!(Duration::new(100, 0).abs_diff(Duration::new(80, 0)), Duration::new(20, 0));  assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));  `...</td></tr>
-<tr><td><a href="./duration/saturating_sub.html">saturating_sub</a></td><td>Saturating `Duration` subtraction. Computes `self - other`, returning [`Duration::ZERO`]  if the result would be negative or if overflow occurred.  # Examples  ```  use std::time::Duration;  assert_eq!(Duration::new(0, 1).saturating_sub(Duration::new(0, 0)), Duration::new(0, 1));  assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);  ```</td></tr>
-<tr><td><a href="./duration/from_micros.html">from_micros</a></td><td>Creates a new `Duration` from the specified number of microseconds.  # Examples  ```  use std::time::Duration;  let duration = Duration::from_micros(1_000_002);  assert_eq!(1, duration.as_secs());  assert_eq!(2_000, duration.subsec_nanos());  `...</td></tr>
-<tr><td><a href="./duration/subsec_nanos.html">subsec_nanos</a></td><td>Returns the fractional part of this `Duration`, in nanoseconds.  This method does **not** return th...</td></tr>
-<tr><td><a href="./duration/as_secs_f64.html">as_secs_f64</a></td><td>Returns the number of seconds contained by this `Duration` as `f64`.  The returned value includes t...</td></tr>
-<tr><td><a href="./duration/as_micros.html">as_micros</a></td><td>Returns the total number of whole microseconds contained by this `Duration`.  # Examples  ```  use std::time::Duration;  let duration = Duration::new(5, 730_023_852);  assert_eq!(duration.as_micros(), 5_730_023);  `...</td></tr>
-<tr><td><a href="./duration/from_secs_f32.html">from_secs_f32</a></td><td>Creates a new `Duration` from the specified number of seconds represented  as `f32`.  # Panics  Thi...</td></tr>
-<tr><td><a href="./duration/as_secs.html">as_secs</a></td><td>Returns the number of _whole_ seconds contained by this `Duration`.  The returned value does not in...</td></tr>
-<tr><td><a href="./duration/div_f64.html">div_f64</a></td><td>Divides `Duration` by `f64`.  # Panics  This method will panic if result is negative, overflows `Duration`...</td></tr>
-<tr><td><a href="./duration/as_millis.html">as_millis</a></td><td>Returns the total number of whole milliseconds contained by this `Duration`.  # Examples  ```  use std::time::Duration;  let duration = Duration::new(5, 730_023_852);  assert_eq!(duration.as_millis(), 5_730);  ```</td></tr>
-<tr><td><a href="./duration/div_duration_f64.html">div_duration_f64</a></td><td>Divides `Duration` by `Duration` and returns `f64`.  # Examples  ```  use std::time::Duration;  let dur1 = Duration::new(2, 700_000_000);  let dur2 = Duration::new(5, 400_000_000);  assert_eq!(dur1.div_duration_f64(dur2), 0.5);  ```</td></tr>
 <tr><td><a href="./duration/is_zero.html">is_zero</a></td><td>Returns true if this `Duration` spans no time.  # Examples  ```  use std::time::Duration;  assert!(Duration::ZERO.is_zero());  assert!(Duration::new(0, 0).is_zero());  assert!(Duration::from_nanos(0).is_zero());  assert!(Duration::from_secs(0).is_zero());  assert!(!Duration::new(1, 1).is_zero());  assert!(!Duration::from_nanos(1).is_zero());  assert!(!Duration::from_secs(1).is_zero());  ```</td></tr>
-<tr><td><a href="./duration/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./duration/from_millis.html">from_millis</a></td><td>Creates a new `Duration` from the specified number of milliseconds.  # Examples  ```  use std::time::Duration;  let duration = Duration::from_millis(2_569);  assert_eq!(2, duration.as_secs());  assert_eq!(569_000_000, duration.subsec_nanos());  `...</td></tr>
-<tr><td><a href="./duration/sub.html">sub</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./duration/from_secs.html">from_secs</a></td><td>Creates a new `Duration` from the specified number of whole seconds.  # Examples  ```  use std::time::Duration;  let duration = Duration::from_secs(5);  assert_eq!(5, duration.as_secs());  assert_eq!(0, duration.subsec_nanos());  ```</td></tr>
-<tr><td><a href="./duration/div_f32.html">div_f32</a></td><td>Divides `Duration` by `f32`.  # Panics  This method will panic if result is negative, overflows `Duration`...</td></tr>
-<tr><td><a href="./duration/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./duration/subsec_millis.html">subsec_millis</a></td><td>Returns the fractional part of this `Duration`, in whole milliseconds.  This method does **not** re...</td></tr>
-<tr><td><a href="./duration/as_secs_f32.html">as_secs_f32</a></td><td>Returns the number of seconds contained by this `Duration` as `f32`.  The returned value includes t...</td></tr>
-<tr><td><a href="./duration/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./duration/subsec_micros.html">subsec_micros</a></td><td>Returns the fractional part of this `Duration`, in whole microseconds.  This method does **not** re...</td></tr>
+<tr><td><a href="./duration/as_millis.html">as_millis</a></td><td>Returns the total number of whole milliseconds contained by this `Duration`.  # Examples  ```  use std::time::Duration;  let duration = Duration::new(5, 730_023_852);  assert_eq!(duration.as_millis(), 5_730);  ```</td></tr>
+<tr><td><a href="./duration/mul_f32.html">mul_f32</a></td><td>Multiplies `Duration` by `f32`.  # Panics  This method will panic if result is negative, overflows `Duration`...</td></tr>
+<tr><td><a href="./duration/new.html">new</a></td><td>Creates a new `Duration` from the specified number of whole seconds and  additional nanoseconds.  I...</td></tr>
+<tr><td><a href="./duration/div_f64.html">div_f64</a></td><td>Divides `Duration` by `f64`.  # Panics  This method will panic if result is negative, overflows `Duration`...</td></tr>
+<tr><td><a href="./duration/abs_diff.html">abs_diff</a></td><td>Computes the absolute difference between `self` and `other`.  # Examples  ```  use std::time::Duration;  assert_eq!(Duration::new(100, 0).abs_diff(Duration::new(80, 0)), Duration::new(20, 0));  assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));  `...</td></tr>
+<tr><td><a href="./duration/div_duration_f64.html">div_duration_f64</a></td><td>Divides `Duration` by `Duration` and returns `f64`.  # Examples  ```  use std::time::Duration;  let dur1 = Duration::new(2, 700_000_000);  let dur2 = Duration::new(5, 400_000_000);  assert_eq!(dur1.div_duration_f64(dur2), 0.5);  ```</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/atomicusize/into_inner.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/atomicusize/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/duration/div_duration_f32.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/duration/from_nanos.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -244,11 +244,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/atomicusize/into_inner.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/atomicusize/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/duration/div_duration_f32.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/duration/from_nanos.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
@@ -273,6 +273,8 @@
 
         <!-- Custom JS scripts -->
         <script src="../../multi-code-block.js"></script>
+        <script src="../../mermaid.min.js"></script>
+        <script src="../../mermaid-init.js"></script>
 
 
 

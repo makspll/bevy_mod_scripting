@@ -186,8 +186,17 @@
 <p>Evaluating a script means:</p>
 <ul>
 <li>parsing the script body,</li>
-<li>and creating or updating the resources which store script state.</li>
+<li>and creating or updating the resources which store script state (i.e. context)</li>
 </ul>
+<h2 id="script-attachments"><a class="header" href="#script-attachments">Script attachments</a></h2>
+<p>Script attachments represent both the context in which a script "lives" and is executed, as well as its "residency identifier".</p>
+<p>Scripts can be attached either:</p>
+<ul>
+<li>to an entity via <code>ScriptComponent</code>'s (i.e. <code>ScriptAttachment::EntityScript</code>)</li>
+<li>or by being statically activated against their script assset (i.e. <code>ScriptAttachment::StaticScript</code>)</li>
+</ul>
+<p>When you insert/remove <code>ScriptComponent</code>'s, <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code>'s are sent and processed by the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>.</p>
+<p>Other attachments, like static scripts have to be manually triggered via <code>AttachScript</code> and <code>DetachScript</code> commands.</p>
 <h2 id="loading"><a class="header" href="#loading">Loading</a></h2>
 <p>Scripts can be loaded into memory via the <code>AssetServer</code>.</p>
 <pre><code class="language-rust ignore">let handle = asset_server.load::&lt;ScriptAsset&gt;("my_script.lua");</code></pre>
@@ -198,7 +207,7 @@ let handle = script_assets.add(script);</code></pre>
 <p>This will not evaluate any code yet.</p>
 <h2 id="evaluating"><a class="header" href="#evaluating">Evaluating</a></h2>
 <p>A script does not participate in any callbacks until it is evaluated, to evaluate a script you must first attach it to an entity, or to a static script entry.</p>
-<p>To evaluate a script, add it to a <code>ScriptComponent</code> or to <code>StaticScripts</code>.</p>
+<p>To evaluate a script, add it to a <code>ScriptComponent</code> manually attach it.</p>
 <h3 id="load-file-via-assetserver"><a class="header" href="#load-file-via-assetserver">Load File via <code>AssetServer</code></a></h3>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -228,10 +237,41 @@ fn add_script(mut script_assets: ResMut&lt;Assets&lt;ScriptAsset&gt;&gt;, mut co
     commands.spawn(ScriptComponent(vec![handle]));
 }
 <span class="boring">}</span></code></pre></pre>
+<h2 id="static-scripts"><a class="header" href="#static-scripts">Static Scripts</a></h2>
+<p>You can use attach and detach commands, which will run the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>, repeatedly until the requested script attachments are processed. If you don't want to incur big frametime slowdowns, you can instead send <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code> manually, and let the pipeline pick these up as normal.</p>
+<h3 id="attach-a-static-script"><a class="header" href="#attach-a-static-script">Attach a static script</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">extern crate bevy;
+</span><span class="boring">extern crate bevy_mod_scripting;
+</span><span class="boring">use bevy::{asset::Assets, prelude::*};
+</span><span class="boring">use bevy_mod_scripting::prelude::*;
+</span>
+fn add_static_script(mut asset_server: ResMut&lt;AssetServer&gt;, mut commands: Commands) {
+    let handle = asset_server.load(script_path);
+    commands.queue(AttachScript::&lt;LuaScriptingPlugin&gt;::new(
+        ScriptAttachment::StaticScript(handle)
+    ))
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="detach-a-static-script"><a class="header" href="#detach-a-static-script">Detach a static script</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">extern crate bevy;
+</span><span class="boring">extern crate bevy_mod_scripting;
+</span><span class="boring">use bevy::{asset::Assets, prelude::*};
+</span><span class="boring">use bevy_mod_scripting::prelude::*;
+</span>
+fn remove_static_script(existing_handle: Local&lt;Handle&lt;ScriptAsset&gt;&gt;, mut commands: Commands) {
+    commands.queue(DetachScript::&lt;LuaScriptingPlugin&gt;::new(
+        ScriptAttachment::StaticScript(existing_handle)
+    ))
+}
+<span class="boring">}</span></code></pre></pre>
 <h2 id="unloading"><a class="header" href="#unloading">Unloading</a></h2>
-<p>When you no longer need a script asset you can freely unload it, but the script attachment will persist.
-In order to trigger the <code>on_script_unloaded</code> etc. callbacks, you need to remove the script from the <code>ScriptComponent</code> or <code>StaticScripts</code>.</p>
-<p>When that happens a corresponding <code>ScriptEvent::Detached</code> will be dispatched, and then handled by a <code>DeleteScript</code> command. Once the last script in a context is removed, the context itself will also be removed.</p>
+<p>When you no longer need a script asset you can freely unload it as soon as it has been loaded, but the script attachment will persist.
+In order to trigger the <code>on_script_unloaded</code> etc. callbacks, you need to remove the script from the <code>ScriptComponent</code> or detach it manually via <code>DetachScript</code> if it's static.</p>
+<p>Once the last script in a context is removed, the context itself will also be removed.</p>
 <h2 id="hot-loading-scripts"><a class="header" href="#hot-loading-scripts">Hot-loading scripts</a></h2>
 <p>To enable hot-loading of assets, you need to enable the necessary Bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
 <p>Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.</p>
@@ -241,23 +281,6 @@ In order to trigger the <code>on_script_unloaded</code> etc. callbacks, you need
 <p>Scripts are mapped to the corresponding language plugin based on these and so it is important to use them correctly.</p>
 <p>If you would like to add more extensions, you need to populate them via <code>app.add_supported_script_extensions</code>.</p>
 <pre><code class="language-rust ignore">    app.add_supported_script_extensions(&amp;[".pua"], Language::Lua);</code></pre>
-<h2 id="advanced"><a class="header" href="#advanced">Advanced</a></h2>
-<p>Normally not necessary but knowing these exist could be useful for more advanced use cases.</p>
-<h3 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h3>
-<p>In order to manually re-load or load a script you can issue the <code>CreateOrUpdateScript</code> command:</p>
-<pre><code class="language-rust ignore"><span class="boring">use bevy::prelude::*;
-</span><span class="boring">use bevy_mod_scripting::prelude::*;
-</span>let create_or_update = CreateOrUpdateScript::&lt;LuaScriptingPlugin&gt;::new(script_handle)
-    .with_content("print(\"hello world from new script body\")");
-commands.queue(create_or_update);</code></pre>
-<p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
-<h3 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h3>
-<p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
-<pre><code class="language-rust ignore">commands.queue(DeleteScript::&lt;LuaScriptingPlugin&gt;::new(script_handle));</code></pre>
-<p>Replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
-<h3 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h3>
-<p>Script asset changes are processed together with bevy asset systems, in the <code>Last</code> schedule.
-These are converted to <code>ScriptEvent</code>'s which are handled right after via the <code>ScriptingSystemSet::ScriptingCommandDispatch</code> system set.</p>
 
                     </main>
 
@@ -306,6 +329,8 @@ These are converted to <code>ScriptEvent</code>'s which are handled right after 
 
         <!-- Custom JS scripts -->
         <script src="../multi-code-block.js"></script>
+        <script src="../mermaid.min.js"></script>
+        <script src="../mermaid-init.js"></script>
 
 
 

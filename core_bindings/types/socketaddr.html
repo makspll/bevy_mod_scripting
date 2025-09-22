@@ -190,13 +190,13 @@
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
+<tr><td><a href="./socketaddr/is_ipv4.html">is_ipv4</a></td><td>Returns [`true`] if the [IP address] in this `SocketAddr` is an  [`IPv4` address], and [`false`] ot...</td></tr>
+<tr><td><a href="./socketaddr/set_port.html">set_port</a></td><td>Changes the port number associated with this socket address.  # Examples  ```  use std::net::{IpAddr, Ipv4Addr, SocketAddr};  let mut socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);  socket.set_port(1025);  assert_eq!(socket.port(), 1025);  `...</td></tr>
+<tr><td><a href="./socketaddr/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./socketaddr/port.html">port</a></td><td>Returns the port number associated with this socket address.  # Examples  ```  use std::net::{IpAddr, Ipv4Addr, SocketAddr};  let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);  assert_eq!(socket.port(), 8080);  ```</td></tr>
 <tr><td><a href="./socketaddr/is_ipv6.html">is_ipv6</a></td><td>Returns [`true`] if the [IP address] in this `SocketAddr` is an  [`IPv6` address], and [`false`] ot...</td></tr>
 <tr><td><a href="./socketaddr/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./socketaddr/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./socketaddr/is_ipv4.html">is_ipv4</a></td><td>Returns [`true`] if the [IP address] in this `SocketAddr` is an  [`IPv4` address], and [`false`] ot...</td></tr>
-<tr><td><a href="./socketaddr/port.html">port</a></td><td>Returns the port number associated with this socket address.  # Examples  ```  use std::net::{IpAddr, Ipv4Addr, SocketAddr};  let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);  assert_eq!(socket.port(), 8080);  ```</td></tr>
-<tr><td><a href="./socketaddr/set_port.html">set_port</a></td><td>Changes the port number associated with this socket address.  # Examples  ```  use std::net::{IpAddr, Ipv4Addr, SocketAddr};  let mut socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);  socket.set_port(1025);  assert_eq!(socket.port(), 1025);  `...</td></tr>
-<tr><td><a href="./socketaddr/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -207,7 +207,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/socketaddr/is_ipv6.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/socketaddr/is_ipv4.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -221,7 +221,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/socketaddr/is_ipv6.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/socketaddr/is_ipv4.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
@@ -246,6 +246,8 @@
 
         <!-- Custom JS scripts -->
         <script src="../../multi-code-block.js"></script>
+        <script src="../../mermaid.min.js"></script>
+        <script src="../../mermaid-init.js"></script>
 
 
 

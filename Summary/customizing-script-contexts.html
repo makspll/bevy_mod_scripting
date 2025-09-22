@@ -206,7 +206,7 @@ app.add_plugins(plugin)</code></pre>
 use bevy_mod_scripting::prelude::*;
 fn scripting_plugin(app: &amp;mut App) {
     app.add_plugins(LuaScriptingPlugin::default()
-                       .add_context_pre_handling_initializer(|context_key: &amp;ContextKey, entity: Entity, context: &amp;mut Lua| {
+                       .add_context_pre_handling_initializer(|context_key: &amp;ContextKey, context: &amp;mut Lua| {
         let globals = context.globals();
         if let Some(script_id) = context_key.script_id.as_ref() {
             globals.set("script_name", script_id.to_owned());
@@ -294,6 +294,8 @@ fn scripting_plugin(app: &amp;mut App) {
 
         <!-- Custom JS scripts -->
         <script src="../multi-code-block.js"></script>
+        <script src="../mermaid.min.js"></script>
+        <script src="../mermaid-init.js"></script>
 
 
 
