@@ -1,0 +1,274 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>0.15-to-0.16 - Bevy Scripting</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the Bevy Scripting library">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Bevy Scripting</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/ReleaseNotes/0.15-to-0.16.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="migrating-to-0160"><a class="header" href="#migrating-to-0160">Migrating to 0.16.0</a></h1>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull455"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull455">https://github.com/makspll/bevy_mod_scripting/pull/455</a></h2>
+<p>Replace all usages of <code>CallbackSettings&lt;P&gt;.callback_handler</code> with <code>P::handler()(..)</code> and <code>P::handle(..)</code></p>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull456"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull456">https://github.com/makspll/bevy_mod_scripting/pull/456</a></h2>
+<p>Replace all usages of <code>CallbackBuilder&lt;P&gt;.load</code> and <code>CallbackBuilder&lt;P&gt;.reload</code> with <code>P::load(..)</code> and <code>P::reload(..)</code> or <code>P::context_loader()(..)</code> and <code>P::context_reloader()(..)</code></p>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull463"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull463">https://github.com/makspll/bevy_mod_scripting/pull/463</a></h2>
+<p>If you were relying on BMS enabling some features in Bevy crates, your builds might be pulling in less features than you expect. Ensure you explicitly select all features you need from bevy. BMS will now only pull in strictly necessary features and crates from bevy</p>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull470"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull470">https://github.com/makspll/bevy_mod_scripting/pull/470</a></h2>
+<p>Switch all references of <code>ContextLoadingSettings</code> to <code>P::readonly_config(world.id())</code>.</p>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull471"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull471">https://github.com/makspll/bevy_mod_scripting/pull/471</a></h2>
+<p><code>RuntimeSettings</code> and <code>RuntimeContainer</code> are removed, replace usages with <code>P::readonly_settings(world.id()).runtime)</code> access to initializers is no longer possible outside the plugin setup phase</p>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull472"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull472">https://github.com/makspll/bevy_mod_scripting/pull/472</a></h2>
+<p>if you implemented a scripting plugin you will need to correct your function signatures for the above aliases, and fetch the config yourself to access callbacks via <code>Plugin::readonly_configuration(world_id)</code> using the world id you will now receive.</p>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull473"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull473">https://github.com/makspll/bevy_mod_scripting/pull/473</a></h2>
+<p>references to <code>StaticScripts</code> should be replaced with appropriate resident calls on <code>ScriptContext</code> filtered by the attachment kind</p>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull474"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull474">https://github.com/makspll/bevy_mod_scripting/pull/474</a></h2>
+<ul>
+<li><strong>ScriptContext Access</strong>: Use <code>.read()</code> and <code>.write()</code> to access ScriptContext (now wrapped in <code>Arc&lt;RwLock&lt;&gt;&gt;</code>); replace <code>get()</code> with <code>get_context()</code></li>
+<li><strong>HandlerContext</strong>: Replace with direct ScriptContext access; remove any <code>with_handler_system_state()</code> calls</li>
+<li><strong>Script Callbacks</strong>: Use new <code>call_context_dynamic()</code> or <code>call_context()</code> methods from the CallContext trait</li>
+<li><strong>Custom Context Types</strong>: Implement the new <code>GetPluginFor</code> trait to provide mapping from context to plugin type</li>
+<li><strong>Lua Interaction</strong>: Replace <code>mlua::Lua</code> with <code>LuaContext</code> wrapper type in all Lua code on BMS side</li>
+<li><strong>Script Callback Running</strong>: Replace <code>run_with_handler()</code> calls with <code>run_with_context()</code> or <code>run_with_contexts()</code></li>
+</ul>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull475"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull475">https://github.com/makspll/bevy_mod_scripting/pull/475</a></h2>
+<ul>
+<li>References previously resident in <code>bevy_mod_scripting_core::asset</code>/<code>bevy_mod_scripting::core::asset</code>  will now need to come from <code>bevy_mod_scripting_asset</code> or <code>bevy_mod_scripting::asset</code></li>
+<li>Adding supported extensions will now need to be done via <code>scripting_plugin.add_supported_extension("extension")</code> rather than via the app directly</li>
+<li>Plugin implementors will need to add the new crate as a dependency and should not directly rely on the top workspace crate</li>
+</ul>
+<h2 id="httpsgithubcommakspllbevy_mod_scriptingpull477"><a class="header" href="#httpsgithubcommakspllbevy_mod_scriptingpull477">https://github.com/makspll/bevy_mod_scripting/pull/477</a></h2>
+<ul>
+<li>Update imports to new crates (<code>bevy_mod_scripting_bindings</code>, <code>bevy_mod_scripting_display</code>, <code>bevy_mod_scripting_asset</code>) where appropriate, if you rely on the workspace these will be re-exported under <code>bindings</code>, <code>display</code> and <code>asset</code> respectively</li>
+<li>Replace <code>DisplayWithWorld</code> usage with <code>DisplayWithTypeInfo</code> / <code>DebugWithTypeInfo</code> and use <code>WithTypeInfo::new(value)</code> in format strings. Ensure that the WorldGuard is in scope when printing using these utilities, or you might see raw type id's</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../ReleaseNotes/0.15.0.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../ReleaseNotes/0.16.0.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../ReleaseNotes/0.15.0.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../ReleaseNotes/0.16.0.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../multi-code-block.js"></script>
+        <script src="../mermaid.min.js"></script>
+        <script src="../mermaid-init.js"></script>
+
+
+
+    </div>
+    </body>
+</html>
