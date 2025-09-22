@@ -33,11 +33,19 @@ impl std::fmt::Display for ScriptAttachment {
 }
 
 impl ScriptAttachment {
-    /// Returns the script handle if it exists.
+    /// Returns the script handle.
     pub fn script(&self) -> Handle<ScriptAsset> {
         match self {
             ScriptAttachment::EntityScript(_, script) => script.clone(),
             ScriptAttachment::StaticScript(script) => script.clone(),
+        }
+    }
+
+    /// Returns a mutable reference to the underlying script handle.
+    pub fn script_mut(&mut self) -> &mut Handle<ScriptAsset> {
+        match self {
+            ScriptAttachment::EntityScript(_, script) => script,
+            ScriptAttachment::StaticScript(script) => script,
         }
     }
 

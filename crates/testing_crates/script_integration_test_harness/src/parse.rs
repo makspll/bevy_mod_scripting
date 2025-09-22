@@ -50,6 +50,7 @@ pub enum ScenarioStepSerialized {
     InstallPlugin {
         context_policy: Option<ContextMode>,
         emit_responses: Option<bool>,
+        miliseconds_budget: Option<u64>,
     },
     /// Called after the app config is set up, but before we run anything
     FinalizeApp,
@@ -265,9 +266,11 @@ impl ScenarioStepSerialized {
             Self::InstallPlugin {
                 context_policy,
                 emit_responses,
+                miliseconds_budget,
             } => ScenarioStep::InstallPlugin {
                 context_policy: Self::resolve_context_policy(context_policy),
                 emit_responses: emit_responses.unwrap_or(false),
+                miliseconds_budget,
             },
             Self::DropScriptAsset { script } => ScenarioStep::DropScriptAsset {
                 script: context.get_script_handle(&script)?,
@@ -380,7 +383,7 @@ impl ScenarioStepSerialized {
         let mut parts = flat_string.split_whitespace();
         let step_name = parts
             .next()
-            .ok_or_else(|| anyhow::anyhow!("Invalid flat string step: `{}`", flat_string))?;
+            .ok_or_else(|| anyhow::anyhow!("Invalid flat string step: `{flat_string}`"))?;
         let mut map = serde_json::Map::new();
         map.insert(
             "step".to_string(),

@@ -241,6 +241,7 @@ impl Default for RhaiScriptingPlugin {
                 language: Language::Rhai,
                 context_policy: ContextPolicy::default(),
                 emit_responses: false,
+                processing_pipeline_plugin: Default::default(),
             },
         }
     }

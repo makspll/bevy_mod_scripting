@@ -17,7 +17,10 @@ use bevy::{
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin, make_layer};
 use bevy_mod_scripting::prelude::*;
 use bevy_mod_scripting_bindings::AllocatorDiagnosticPlugin;
-use bevy_mod_scripting_core::commands::RemoveStaticScript;
+use bevy_mod_scripting_core::{
+    commands::{AttachScript, DetachScript},
+    script::ScriptAttachment,
+};
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -62,7 +65,15 @@ fn run_script_cmd(
                     bevy::log::info!("Using static script instead of spawning an entity");
                     let handle = asset_server.load(script_path);
                     static_scripts.push(handle.clone());
-                    commands.queue(AddStaticScript::new(handle))
+                    if language == "lua" {
+                        commands.queue(AttachScript::<LuaScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(handle),
+                        ));
+                    } else {
+                        commands.queue(AttachScript::<RhaiScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(handle),
+                        ))
+                    }
                 }
             }
             GameOfLifeCommand::Stop => {
@@ -75,7 +86,12 @@ fn run_script_cmd(
                 }
 
                 for script in static_scripts.iter() {
-                    commands.queue(RemoveStaticScript::new(script.clone()));
+                    commands.queue(DetachScript::<LuaScriptingPlugin>::new(
+                        ScriptAttachment::StaticScript(script.clone()),
+                    ));
+                    commands.queue(DetachScript::<RhaiScriptingPlugin>::new(
+                        ScriptAttachment::StaticScript(script.clone()),
+                    ));
                 }
             }
         }
