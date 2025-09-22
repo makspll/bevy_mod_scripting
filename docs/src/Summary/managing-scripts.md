@@ -35,7 +35,8 @@ This will not evaluate any code yet.
 ## Evaluating
 A script does not participate in any callbacks until it is evaluated, to evaluate a script you must first attach it to an entity, or to a static script entry.
 
-To evaluate a script, add it to a `ScriptComponent` or to `StaticScripts`.
+To evaluate a script, add it to a `ScriptComponent` manually attach it.
+
 ### Load File via `AssetServer`
 ```rust
 # extern crate bevy;
