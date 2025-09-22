@@ -339,13 +339,6 @@ pub trait MachineState<P>: Send + Sync + 'static + Any {
     }
 }
 
-/// State machine marker type
-#[derive(Clone, Copy, Debug)]
-pub struct Loading;
-/// State machine marker type
-#[derive(Clone, Copy, Debug)]
-pub struct Unloading;
-
 /// A script loading state machine state, describes a script which has completed loading and has its context present within [`ScriptContext`]
 #[derive(Clone, Copy)]
 pub struct LoadingCompleted;
