@@ -33,7 +33,7 @@ use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 fn scripting_plugin(app: &mut App) {
     app.add_plugins(LuaScriptingPlugin::default()
-                       .add_context_pre_handling_initializer(|context_key: &ContextKey, entity: Entity, context: &mut Lua| {
+                       .add_context_pre_handling_initializer(|context_key: &ContextKey, context: &mut Lua| {
         let globals = context.globals();
         if let Some(script_id) = context_key.script_id.as_ref() {
             globals.set("script_name", script_id.to_owned());
