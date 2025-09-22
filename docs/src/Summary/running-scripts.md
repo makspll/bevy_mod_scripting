@@ -25,15 +25,13 @@ Be wary of path separators, by default script ID's are derived from asset paths,
 
 ## Making static scripts runnable
 
-Some scripts do not require attaching to an entity. You can run these scripts by loading them first as you would with any other script, then either adding them at app level via `add_static_script` or by issuing a `AddStaticScript` command like so:
+Some scripts do not require attaching to an entity. You can run these scripts by loading them first as you would with any other script, then either adding them by issuing a `AttachScript` command like so:
 
 ```rust,ignore
-    commands.queue(AddStaticScript::new(my_script_handle));
+    commands.queue(AttachScript::new(script_attachment));
 ```
 
-The script will then be run as any other script but without being attached to any entity. and as such the `entity` global will always represent an invalid entity.
-
-Note: Internally these scripts are attached to a dummy entity and as such you can think of them as being attached to an entity with an id of `0`.
+The script will then be run as any other script but without being attached to any entity.
 
 # Running Scripts
 

@@ -12,6 +12,10 @@
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
 
+# Script Pipeline
+
+- [Script Pipeline](./ScriptPipeline/pipeline.md)
+
 # Release Notes
 
 - [Release Notes](./ReleaseNotes/guides.md)

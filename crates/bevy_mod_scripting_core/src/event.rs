@@ -1,6 +1,6 @@
 //! Event handlers and event types for scripting.
 
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use ::{bevy_asset::Handle, bevy_ecs::entity::Entity, bevy_reflect::Reflect};
 use bevy_ecs::event::Event;
@@ -14,70 +14,74 @@ use crate::{
     script::{ScriptAttachment, ScriptContext, ScriptId},
 };
 
-/// A script event
-#[derive(Event, Debug, Clone, PartialEq, Eq)]
-pub enum ScriptEvent {
-    /// A script asset was added.
-    Added {
-        /// The script
-        script: ScriptId,
-    },
-    /// A script asset was removed.
-    Removed {
-        /// The script
-        script: ScriptId,
-    },
-    /// A script asset was modified.
-    Modified {
-        /// The script
-        script: ScriptId,
-    },
-    /// A script was activated and attached via a [`ScriptAttachment`].
-    Attached {
-        /// The script attachment
-        key: ScriptAttachment,
-    },
-    /// A script was deactivated and detached via a [`ScriptAttachment`].
-    Detached {
-        /// The script attachment which was detached
-        key: ScriptAttachment,
-    },
-    // These were some other events I was considering. I thought Unloaded might
-    // be interesting, but if I implemented it the way things work currently it
-    // could only be a notification. The user wouldn't be able to do anything
-    // between an Unloaded and Loaded event that could affect the Unloaded
-    // value. Maybe that's fine. I'm leaving it here purely to communicate the
-    // idea. It can be removed.
-
-    // /// A script was loaded/evaluated.
-    // Loaded {
-    //     /// The script
-    //     script: ScriptId,
-    //     /// The entity
-    //     entity: Option<Entity>,
-    //     /// The domain
-    //     domain: Option<Domain>,
-    // },
-    // /// A script was unloaded, perhaps producing a value.
-    // Unloaded {
-    //     /// The context key
-    //     context_key: ContextKey,
-    //     // /// The script
-    //     // script: ScriptId,
-    //     // /// The entity
-    //     // entity: Option<Entity>,
-    //     // /// The domain
-    //     // domain: Option<Domain>,
-    //     /// The unloaded value
-    //     value: Option<ScriptValue>
-    // },
-}
-
 /// An error coming from a script
 #[derive(Debug, Event)]
 pub struct ScriptErrorEvent {
     /// The script that caused the error
     pub error: ScriptError,
+}
+
+impl ScriptErrorEvent {
+    /// Creates a new script error event from a script error
+    pub fn new(error: ScriptError) -> Self {
+        Self { error }
+    }
+}
+
+/// Emitted when a script is attached.
+#[derive(Event, Clone, Debug)]
+pub struct ScriptAttachedEvent(pub ScriptAttachment);
+
+/// Emitted when a script is detached.
+#[derive(Event, Clone, Debug)]
+pub struct ScriptDetachedEvent(pub ScriptAttachment);
+
+/// Emitted when a script asset is modified and all its attachments require re-loading
+#[derive(Event, Clone, Debug)]
+pub struct ScriptAssetModifiedEvent(pub ScriptId);
+
+#[derive(Event)]
+/// Wrapper around a script event making it available to read by a specific plugin only
+pub struct ForPlugin<T, P: IntoScriptPluginParams>(T, PhantomData<fn(P)>);
+
+impl<T: std::fmt::Debug, P: IntoScriptPluginParams> std::fmt::Debug for ForPlugin<T, P> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ForPlugin").field(&self.0).finish()
+    }
+}
+
+impl<T, P: IntoScriptPluginParams> From<T> for ForPlugin<T, P> {
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
+
+impl<T: Clone, P: IntoScriptPluginParams> Clone for ForPlugin<T, P> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone(), self.1)
+    }
+}
+
+impl<T, P: IntoScriptPluginParams> ForPlugin<T, P> {
+    /// Creates a new wrapper for the specific plugin
+    pub fn new(event: T) -> Self {
+        Self(event, Default::default())
+    }
+
+    /// Retrieves the inner event
+    pub fn event(&self) -> &T {
+        &self.0
+    }
+
+    /// Retrieves the inner event mutably
+    pub fn event_mut(&mut self) -> &mut T {
+        &mut self.0
+    }
+
+    /// Unpacks the inner event
+    pub fn inner(self) -> T {
+        self.0
+    }
 }
 
 /// A string which disallows common invalid characters in callback labels,
@@ -487,18 +491,18 @@ mod test {
         let policy = ContextPolicy::per_entity();
         let script_context = ScriptContext::<TestPlugin>::new(policy);
         let mut script_context_guard = script_context.write();
-        let context_a = TestContext {
+        let context_a = Arc::new(Mutex::new(TestContext {
             invocations: vec![ScriptValue::String("a".to_string().into())],
-        };
-        let context_b = TestContext {
+        }));
+        let context_b = Arc::new(Mutex::new(TestContext {
             invocations: vec![ScriptValue::String("b".to_string().into())],
-        };
-        let context_c = TestContext {
+        }));
+        let context_c = Arc::new(Mutex::new(TestContext {
             invocations: vec![ScriptValue::String("c".to_string().into())],
-        };
-        let context_d = TestContext {
+        }));
+        let context_d = Arc::new(Mutex::new(TestContext {
             invocations: vec![ScriptValue::String("d".to_string().into())],
-        };
+        }));
 
         let entity_script_a = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
         let entity_script_b = Handle::Weak(AssetId::from(AssetIndex::from_bits(1)));
@@ -510,7 +514,7 @@ mod test {
 
         script_context_guard
             .insert(
-                &ScriptAttachment::EntityScript(Entity::from_raw(0), entity_script_a),
+                ScriptAttachment::EntityScript(Entity::from_raw(0), entity_script_a),
                 context_a,
             )
             .unwrap();
@@ -524,7 +528,7 @@ mod test {
 
         script_context_guard
             .insert(
-                &ScriptAttachment::EntityScript(Entity::from_raw(1), entity_script_c),
+                ScriptAttachment::EntityScript(Entity::from_raw(1), entity_script_c),
                 context_b,
             )
             .unwrap();
@@ -536,11 +540,11 @@ mod test {
             .unwrap();
 
         script_context_guard
-            .insert(&ScriptAttachment::StaticScript(static_script_a), context_c)
+            .insert(ScriptAttachment::StaticScript(static_script_a), context_c)
             .unwrap();
 
         script_context_guard
-            .insert(&ScriptAttachment::StaticScript(static_script_b), context_d)
+            .insert(ScriptAttachment::StaticScript(static_script_b), context_d)
             .unwrap();
 
         drop(script_context_guard);

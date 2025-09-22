@@ -25,10 +25,9 @@ use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_core::{
     ConfigureScriptPlugin,
-    commands::{AddStaticScript, RemoveStaticScript},
     event::{
-        CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
-        ScriptEvent,
+        CallbackLabel, IntoCallbackLabel, ScriptAttachedEvent, ScriptCallbackEvent,
+        ScriptCallbackResponseEvent, ScriptDetachedEvent,
     },
     handler::event_handler,
     script::{ContextPolicy, ScriptAttachment, ScriptComponent, ScriptContext},
@@ -157,7 +156,8 @@ pub struct ScenarioContext {
 pub struct InterestingEventWatcher {
     pub events: Vec<(String, usize)>,
     pub asset_event_cursor: EventCursor<AssetEvent<ScriptAsset>>,
-    pub script_events_cursor: EventCursor<ScriptEvent>,
+    pub script_attached_events_cursor: EventCursor<ScriptAttachedEvent>,
+    pub script_detached_events_cursor: EventCursor<ScriptDetachedEvent>,
     pub script_response_cursor: EventCursor<ScriptCallbackResponseEvent>,
     pub script_responses_queue: VecDeque<ScriptCallbackResponseEvent>,
 }
@@ -165,14 +165,24 @@ pub struct InterestingEventWatcher {
 impl InterestingEventWatcher {
     pub fn log_events(&mut self, step_no: usize, world: &World) {
         let asset_events = world.resource::<Events<AssetEvent<ScriptAsset>>>();
-        let script_events = world.resource::<Events<ScriptEvent>>();
+        let script_attached_events = world.resource::<Events<ScriptAttachedEvent>>();
+        let script_detached_events = world.resource::<Events<ScriptDetachedEvent>>();
         let script_responses = world.resource::<Events<ScriptCallbackResponseEvent>>();
         let mut tracked_with_id = Vec::default();
         for (event, id) in self.asset_event_cursor.read_with_id(asset_events) {
             tracked_with_id.push((id.id, format!("AssetEvent : {event:?}")));
         }
-        for (event, id) in self.script_events_cursor.read_with_id(script_events) {
-            tracked_with_id.push((id.id, format!("ScriptEvent: {event:?}")));
+        for (event, id) in self
+            .script_attached_events_cursor
+            .read_with_id(script_attached_events)
+        {
+            tracked_with_id.push((id.id, format!("ScriptAttachedEvent: {event:?}")));
+        }
+        for (event, id) in self
+            .script_detached_events_cursor
+            .read_with_id(script_detached_events)
+        {
+            tracked_with_id.push((id.id, format!("ScriptDetachedEvent: {event:?}")));
         }
         let mut script_responses_by_id = Vec::default();
         for (event, id) in self.script_response_cursor.read_with_id(script_responses) {
@@ -312,6 +322,7 @@ pub enum ScenarioStep {
     InstallPlugin {
         context_policy: ContextPolicy,
         emit_responses: bool,
+        miliseconds_budget: Option<u64>,
     },
     /// Finalizes the app, cleaning up resources and preparing for the next steps.
     FinalizeApp,
@@ -408,8 +419,7 @@ impl ScenarioStep {
         context.event_log.log_events(context.current_step_no, world);
         if context.scenario_time_started.elapsed().as_secs() > TIMEOUT_SECONDS {
             return Err(anyhow!(
-                "Test scenario timed out after {} seconds",
-                TIMEOUT_SECONDS
+                "Test scenario timed out after {TIMEOUT_SECONDS} seconds",
             ));
         }
         Ok(())
@@ -466,8 +476,7 @@ impl ScenarioStep {
                         Some(language) => language.clone(),
                         None => {
                             return Err(anyhow!(
-                                "Unknown script language for extension: {}",
-                                extension
+                                "Unknown script language for extension: {extension}",
                             ));
                         }
                     }
@@ -489,27 +498,41 @@ impl ScenarioStep {
             ScenarioStep::InstallPlugin {
                 context_policy,
                 emit_responses,
+                miliseconds_budget,
             } => {
                 if !context.initialized_app {
                     *app = setup_integration_test(|_, _| {});
                     install_test_plugin(app, true);
                     context.initialized_app = true;
                 }
-
                 match context.current_script_language {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => {
+                        use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
+                        use std::time::Duration;
+                        let mut pipeline = ScriptLoadingPipeline::default();
+                        if let Some(budget) = miliseconds_budget {
+                            pipeline.time_budget = Some(Duration::from_millis(budget));
+                        }
                         let plugin = crate::make_test_lua_plugin();
                         let plugin = plugin
                             .set_context_policy(context_policy)
+                            .set_pipeline_settings(pipeline)
                             .emit_core_callback_responses(emit_responses);
                         app.add_plugins(plugin);
                     }
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => {
+                        use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
+                        use std::time::Duration;
+                        let mut pipeline = ScriptLoadingPipeline::default();
+                        if let Some(budget) = miliseconds_budget {
+                            pipeline.time_budget = Some(Duration::from_millis(budget));
+                        }
                         let plugin = crate::make_test_rhai_plugin();
                         let plugin = plugin
                             .set_context_policy(context_policy)
+                            .set_pipeline_settings(pipeline)
                             .emit_core_callback_responses(emit_responses);
                         app.add_plugins(plugin);
                     }
@@ -543,8 +566,7 @@ impl ScenarioStep {
                     .insert(as_name.to_string(), script_handle);
 
                 info!(
-                    "Script '{}' marked for loading from path '{}'",
-                    as_name,
+                    "Script '{as_name}' marked for loading from path '{}'",
                     path.display()
                 );
             }
@@ -588,8 +610,7 @@ impl ScenarioStep {
                         .add_handler::<CallbackC>(context.current_script_language.clone(), app),
                     _ => {
                         return Err(anyhow!(
-                            "callback label: {} is not allowed, you can only use one of a set of labels",
-                            label
+                            "callback label: {label} is not allowed, you can only use one of a set of labels",
                         ));
                     }
                 }
@@ -604,7 +625,7 @@ impl ScenarioStep {
                     .id();
 
                 context.entities.insert(name.to_string(), entity);
-                info!("Spawned entity '{}' with script '{}'", entity, script.id());
+                info!("Spawned entity '{entity}' with script '{}'", script.id());
             }
             ScenarioStep::EmitScriptCallbackEvent { event } => {
                 app.world_mut().send_event(event.clone());
@@ -621,49 +642,34 @@ impl ScenarioStep {
                     let language_correct = language.is_none_or(|l| l == event.language);
                     if event.label != label || event.context_key != script || !language_correct {
                         return Err(anyhow!(
-                            "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
-                            label,
-                            script.to_string(),
-                            event
+                            "Callback '{label}' for attachment: '{script}' was not the next event, found: {event:?}. Order of events was incorrect."
                         ));
                     }
 
                     match &event.response {
                         Ok(val) => {
                             info!(
-                                "Callback '{}' for attachment: '{}' succeeded, with value: {:?}",
-                                label,
-                                script.to_string(),
-                                &val
+                                "Callback '{label}' for attachment: '{script}' succeeded, with value: {val:?}"
                             );
 
                             if let Some(expected_string) = expect_string_value.as_ref() {
                                 if ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
                                 {
                                     return Err(anyhow!(
-                                        "Callback '{}' for attachment: '{}' expected: {}, but got: {:#?}",
-                                        label,
-                                        script.to_string(),
-                                        expected_string,
-                                        val
+                                        "Callback '{label}' for attachment: '{script}' expected: {expected_string}, but got: {val:#?}",
                                     ));
                                 }
                             }
                         }
                         Err(e) => {
                             return Err(anyhow!(
-                                "Callback '{}' for attachment: '{}' failed with error: {:#?}",
-                                label,
-                                script.to_string(),
-                                e
+                                "Callback '{label}' for attachment: '{script}' failed with error: {e:#?}",
                             ));
                         }
                     }
                 } else {
                     return Err(anyhow!(
-                        "No callback response event found for label: {} and attachment: {}",
-                        label,
-                        script.to_string()
+                        "No callback response event found for label: {label} and attachment: {script}"
                     ));
                 }
             }
@@ -688,7 +694,7 @@ impl ScenarioStep {
                             script.id()
                         )
                     })?;
-                info!("Dropped script asset '{}' from context", name);
+                info!("Dropped script asset '{name}' from context");
             }
             ScenarioStep::ReloadScriptFrom { script, path } => {
                 let mut assets = app.world_mut().resource_mut::<Assets<ScriptAsset>>();
@@ -716,8 +722,7 @@ impl ScenarioStep {
                 let next_event = context.event_log.script_responses_queue.pop_front();
                 if next_event.is_some() {
                     return Err(anyhow!(
-                        "Expected no callback responses to be emitted, but found: {:?}",
-                        next_event
+                        "Expected no callback responses to be emitted, but found: {next_event:?}"
                     ));
                 } else {
                     info!("No callback responses emitted as expected");
@@ -727,19 +732,71 @@ impl ScenarioStep {
                 let success = app.world_mut().despawn(entity);
                 if !success {
                     return Err(anyhow!(
-                        "Failed to despawn entity with name '{}'. It may not exist.",
-                        entity
+                        "Failed to despawn entity with name '{entity}'. It may not exist.",
                     ));
                 } else {
-                    info!("Despawning entity with name '{}'", entity);
+                    info!("Despawning entity with name '{entity}'",);
                 }
             }
             ScenarioStep::AttachStaticScript { script } => {
-                AddStaticScript::new(script.clone()).apply(app.world_mut());
+                match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => {
+                        use bevy_mod_scripting_core::commands::AttachScript;
+
+                        AttachScript::<bevy_mod_scripting_lua::LuaScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut());
+                    }
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => {
+                        use bevy_mod_scripting_core::commands::AttachScript;
+
+                        AttachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut())
+                    }
+                    _ => {
+                        return Err(anyhow!(
+                            "Scenario step AttachStaticScript is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
+                    }
+                }
+
                 info!("Attached static script with handle: {}", script.id());
             }
             ScenarioStep::DetachStaticScript { script } => {
-                RemoveStaticScript::new(script.clone()).apply(app.world_mut());
+                match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => {
+                        use bevy_mod_scripting_core::commands::DetachScript;
+
+                        DetachScript::<bevy_mod_scripting_lua::LuaScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut());
+                    }
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => {
+                        use bevy_mod_scripting_core::commands::DetachScript;
+
+                        DetachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(script.clone()),
+                        )
+                        .apply(app.world_mut())
+                    }
+                    _ => {
+                        return Err(anyhow!(
+                            "Scenario step DetachStaticScript is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
+                    }
+                }
+
+                info!("Attached static script with handle: {}", script.id());
                 info!("Detached static script with handle: {}", script.id());
             }
             ScenarioStep::AssertContextResidents {
@@ -768,22 +825,15 @@ impl ScenarioStep {
 
                 if residents != residents_num {
                     return Err(anyhow!(
-                        "Expected {} residents for script attachment: {}, but found {}",
-                        residents_num,
-                        script.to_string(),
-                        residents
+                        "Expected {residents_num} residents for script attachment: {script}, but found {residents}",
                     ));
                 } else {
-                    info!(
-                        "Script attachment: {} has {} residents as expected",
-                        script.to_string(),
-                        residents
-                    );
+                    info!("Script attachment: {script} has {residents} residents as expected",);
                 }
             }
             ScenarioStep::Comment { comment } => {
                 // Comments are ignored, do nothing, log it though for debugging
-                info!("Comment: {}", comment);
+                info!("Comment: {comment}");
             }
         }
         Ok(())
