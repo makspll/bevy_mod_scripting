@@ -19,17 +19,20 @@ Script loading is handled by the following state machines:
 ```mermaid
 graph TD;
     A[Loading Initialized]
-    B[Reloading Initialized \n Enter: OnReloaded callback]
+    B[Reloading Initialized 
+Enter: OnReloaded callback]
 
     A --[ new context ]--> C
     B --[ existing context]--> C
-    C[Context Assigned \n Enter: OnReloaded + OnLoaded callbacks]
+    C[Context Assigned
+Enter: OnReloaded + OnLoaded callbacks]
 
     C --> D
 
     D[Loading Completed]
 
-    E[Unloading Initialized \n Enter: OnUnloaded callback]
+    E[Unloading Initialized
+Enter: OnUnloaded callback]
     F[Context Removed]
     G[Resident Removed]
     E --[Last resident]--> F
