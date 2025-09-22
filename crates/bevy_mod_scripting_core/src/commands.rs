@@ -5,9 +5,13 @@ use std::sync::Arc;
 use crate::{
     IntoScriptPluginParams, ScriptContext,
     error::ScriptError,
-    event::{CallbackLabel, ScriptCallbackResponseEvent},
+    event::{
+        CallbackLabel, ForPlugin, ScriptAttachedEvent, ScriptCallbackResponseEvent,
+        ScriptDetachedEvent,
+    },
     extractors::CallContext,
     handler::{send_callback_response, send_script_errors},
+    pipeline::RunProcessingPipelineOnce,
     script::{DisplayProxy, ScriptAttachment},
 };
 use bevy_ecs::{system::Command, world::World};
@@ -138,5 +142,41 @@ impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
     fn apply(self, world: &mut World) {
         // Internals handle this.
         let _ = self.run(world);
+    }
+}
+
+/// Command which emits a [`ScriptAttachedEvent`] and then runs the processing pipeline to immediately process it.
+/// The end result is equivalent to attaching a script component or adding a static script and waiting for the normal pipeline to process it.
+pub struct AttachScript<P: IntoScriptPluginParams>(pub ForPlugin<ScriptAttachedEvent, P>);
+
+impl<P: IntoScriptPluginParams> AttachScript<P> {
+    /// Creates a new [`AttachScript`] command, which will create the given attachment, run expected callbacks, and
+    pub fn new(attachment: ScriptAttachment) -> Self {
+        Self(ForPlugin::new(ScriptAttachedEvent(attachment)))
+    }
+}
+
+/// Command which emits a [`ScriptDetachedEvent`] and then runs the processing pipeline to immediately process it.
+/// The end result is equivalent to detaching a script component or removing a static script and waiting for the normal pipeline to process it.
+pub struct DetachScript<P: IntoScriptPluginParams>(pub ForPlugin<ScriptDetachedEvent, P>);
+
+impl<P: IntoScriptPluginParams> DetachScript<P> {
+    /// Creates a new [`DetachScript`] command, which will create the given attachment, run all expected callbacks, and delete contexts if necessary.
+    pub fn new(attachment: ScriptAttachment) -> Self {
+        Self(ForPlugin::new(ScriptDetachedEvent(attachment)))
+    }
+}
+
+impl<P: IntoScriptPluginParams> Command for AttachScript<P> {
+    fn apply(self, world: &mut World) {
+        world.send_event(self.0);
+        RunProcessingPipelineOnce::<P>::new().apply(world)
+    }
+}
+
+impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
+    fn apply(self, world: &mut World) {
+        world.send_event(self.0);
+        RunProcessingPipelineOnce::<P>::new().apply(world)
     }
 }

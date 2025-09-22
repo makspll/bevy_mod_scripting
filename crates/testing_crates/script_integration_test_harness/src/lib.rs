@@ -30,8 +30,8 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
+    commands::AttachScript,
     error::ScriptError,
-    pipeline::AttachScript,
     script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptContext},
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;

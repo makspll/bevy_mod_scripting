@@ -38,7 +38,7 @@ digraph {
   node_14 [label="custom_system_b"];
   node_15 [label="SystemSet AssetEvents"];
   node_16 [label="SystemSet GarbageCollection"];
-  node_17 [label="SystemSet StartPhase"];
+  node_17 [label="SystemSet InitializePhase"];
   node_18 [label="SystemSet ScriptSystem(custom_system_a)"];
   node_19 [label="SystemSet ScriptSystem(custom_system_b)"];
   node_0 -> node_15 [color=red, label="child of", arrowhead=diamond];

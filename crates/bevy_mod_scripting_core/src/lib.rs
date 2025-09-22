@@ -173,7 +173,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
         app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
-        app.add_plugins(ScriptLoadingPipeline::<P>::default());
+        app.add_plugins(self.processing_pipeline_plugin.clone());
 
         register_types(app);
     }

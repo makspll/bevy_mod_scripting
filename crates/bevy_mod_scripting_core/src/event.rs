@@ -1,6 +1,6 @@
 //! Event handlers and event types for scripting.
 
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use ::{bevy_asset::Handle, bevy_ecs::entity::Entity, bevy_reflect::Reflect};
 use bevy_ecs::event::Event;
@@ -25,6 +25,62 @@ impl ScriptErrorEvent {
     /// Creates a new script error event from a script error
     pub fn new(error: ScriptError) -> Self {
         Self { error }
+    }
+}
+
+/// Emitted when a script is attached.
+#[derive(Event, Clone, Debug)]
+pub struct ScriptAttachedEvent(pub ScriptAttachment);
+
+/// Emitted when a script is detached.
+#[derive(Event, Clone, Debug)]
+pub struct ScriptDetachedEvent(pub ScriptAttachment);
+
+/// Emitted when a script asset is modified and all its attachments require re-loading
+#[derive(Event, Clone, Debug)]
+pub struct ScriptAssetModifiedEvent(pub ScriptId);
+
+#[derive(Event)]
+/// Wrapper around a script event making it available to read by a specific plugin only
+pub struct ForPlugin<T, P: IntoScriptPluginParams>(T, PhantomData<fn(P)>);
+
+impl<T: std::fmt::Debug, P: IntoScriptPluginParams> std::fmt::Debug for ForPlugin<T, P> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ForPlugin").field(&self.0).finish()
+    }
+}
+
+impl<T, P: IntoScriptPluginParams> From<T> for ForPlugin<T, P> {
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
+
+impl<T: Clone, P: IntoScriptPluginParams> Clone for ForPlugin<T, P> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone(), self.1)
+    }
+}
+
+impl<T, P: IntoScriptPluginParams> ForPlugin<T, P> {
+    /// Creates a new wrapper for the specific plugin
+    pub fn new(event: T) -> Self {
+        Self(event, Default::default())
+    }
+
+    /// Retrieves the inner event
+    pub fn event(&self) -> &T {
+        &self.0
+    }
+
+    /// Retrieves the inner event mutably
+    pub fn event_mut(&mut self) -> &mut T {
+        &mut self.0
+    }
+
+    /// Unpacks the inner event
+    pub fn inner(self) -> T {
+        self.0
     }
 }
 

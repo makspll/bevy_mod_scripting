@@ -4,7 +4,7 @@ Scripts live in the standard Bevy `assets` directory. Loading a script means obt
 
 Evaluating a script means:
 - parsing the script body,
-- and creating or updating the resources which store script state.
+- and creating or updating the resources which store script state (i.e. context)
 
 ## Loading 
 Scripts can be loaded into memory via the `AssetServer`.

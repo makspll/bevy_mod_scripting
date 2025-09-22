@@ -1,18 +1,5 @@
 use super::*;
 use bevy_asset::AssetEvent;
-use bevy_log::debug;
-
-/// Emitted when a script is attached.
-#[derive(Event, Clone, Debug)]
-pub struct ScriptAttachedEvent(pub ScriptAttachment);
-
-/// Emitted when a script is detached.
-#[derive(Event, Clone, Debug)]
-pub struct ScriptDetachedEvent(pub ScriptAttachment);
-
-/// Emitted when a script asset is modified and all its attachments require re-loading
-#[derive(Event, Clone, Debug)]
-pub struct ScriptAssetModifiedEvent(pub ScriptId);
 
 /// A handle to a script asset which can only be made from a strong handle
 #[derive(Clone, Debug)]
@@ -134,71 +121,72 @@ pub fn filter_script_detachments<P: IntoScriptPluginParams>(
 /// Process [`ScriptAttachedEvent`]'s and generate loading machines with the [`LoadingInitializedState`] and [`ReloadingInitializedState`] states
 pub fn process_attachments<P: IntoScriptPluginParams>(
     mut events: EventReader<ForPlugin<ScriptAttachedEvent, P>>,
-    mut load_machines: StateMachine<Machine<Loading, LoadingInitialized>, P>,
-    mut reload_machines: StateMachine<Machine<Loading, ReloadingInitialized<P>>, P>,
+    mut machines: ResMut<ActiveMachines<P>>,
     mut assets: ResMut<Assets<ScriptAsset>>,
     contexts: Res<ScriptContext<P>>,
 ) {
     let contexts = contexts.read();
-    let (reload_machines_batch, load_machines_batch): (Vec<_>, Vec<_>) = events
-        .read()
-        .filter_map(|wrapper| {
-            let attachment_event = wrapper.event();
-            let id = attachment_event.0.script().id();
-
-            if let Some(strong_handle) = StrongScriptHandle::upgrade(id, &mut assets) {
-                if let Some(existing_context) = contexts.get_context(&attachment_event.0) {
-                    Some(Either::Left(Machine::start_reload(
-                        attachment_event.0.clone(),
-                        strong_handle,
+    events.read().for_each(|wrapper| {
+        let attachment_event = wrapper.event();
+        let id = attachment_event.0.script().id();
+        let context = Context {
+            attachment: attachment_event.0.clone(),
+            blackboard: Default::default(),
+        };
+        if let Some(strong_handle) = StrongScriptHandle::upgrade(id, &mut assets) {
+            let content = strong_handle.get(&assets);
+            if let Some(existing_context) = contexts.get_context(&attachment_event.0) {
+                machines.queue_machine(
+                    context,
+                    ReloadingInitialized {
+                        source: strong_handle.handle().clone(),
+                        content: content.content,
                         existing_context,
-                    )))
-                } else {
-                    Some(Either::Right(Machine::start_load(
-                        attachment_event.0.clone(),
-                        strong_handle,
-                    )))
-                }
+                    },
+                );
             } else {
-                None
+                machines.queue_machine(
+                    context,
+                    LoadingInitialized {
+                        source: strong_handle.handle().clone(),
+                        content: content.content,
+                    },
+                );
             }
-        })
-        .partition_map(|p| p);
-    debug!(
-        "{}: script loads triggered: {}, script reload triggers: {}",
-        P::LANGUAGE,
-        load_machines_batch.len(),
-        reload_machines_batch.len()
-    );
-    load_machines.write_batch(load_machines_batch);
-    reload_machines.write_batch(reload_machines_batch);
+        }
+    });
 }
 
 /// Processes [`ScriptAttachedEvent`]'s and initialized unloading state machines with [`UnloadingInitializedState`] states
 pub fn process_detachments<P: IntoScriptPluginParams>(
     mut events: EventReader<ForPlugin<ScriptDetachedEvent, P>>,
-    mut unload_machines: StateMachine<Machine<Unloading, UnloadingInitialized<P>>, P>,
+    mut machines: ResMut<ActiveMachines<P>>,
     contexts: Res<ScriptContext<P>>,
 ) {
-    let machines_to_send = events.read().filter_map(|wrapper| {
+    events.read().for_each(|wrapper| {
         let attachment_event = wrapper.event();
         let contexts_guard = contexts.read();
         contexts_guard
             .get_context(&attachment_event.0)
-            .map(|existing_context| {
-                Machine::start_unload(attachment_event.0.clone(), existing_context)
+            .into_iter()
+            .for_each(|existing_context| {
+                machines.queue_machine(
+                    Context {
+                        attachment: attachment_event.0.clone(),
+                        blackboard: Default::default(),
+                    },
+                    UnloadingInitialized { existing_context },
+                );
             })
     });
-
-    unload_machines.write_batch(machines_to_send);
 }
 
 /// Processes [`ScriptAssetModifiedEvent`]'s and initializes loading state machines with [`ReloadingInitializedState`] states
 pub fn process_asset_modifications<P: IntoScriptPluginParams>(
     mut events: EventReader<ForPlugin<ScriptAssetModifiedEvent, P>>,
-    mut load_machines: StateMachine<Machine<Loading, ReloadingInitialized<P>>, P>,
-    contexts: Res<ScriptContext<P>>,
+    mut machines: ResMut<ActiveMachines<P>>,
     mut assets: ResMut<Assets<ScriptAsset>>,
+    contexts: Res<ScriptContext<P>>,
 ) {
     let affected_ids = events.read().map(|e| e.event().0).collect::<HashSet<_>>();
 
@@ -208,11 +196,23 @@ pub fn process_asset_modifications<P: IntoScriptPluginParams>(
         .all_residents()
         .filter(|(a, _)| affected_ids.contains(&a.script().id()));
 
-    let to_send = affected_attachments.filter_map(|(attachment, ctxt)| {
-        let id = attachment.script().id();
-        StrongScriptHandle::upgrade(id, &mut assets)
-            .map(|strong_handle| Machine::start_reload(attachment.clone(), strong_handle, ctxt))
-    });
-
-    load_machines.write_batch(to_send);
+    affected_attachments
+        .into_iter()
+        .for_each(|(attachment, existing_context)| {
+            let id = attachment.script().id();
+            if let Some(strong_handle) = StrongScriptHandle::upgrade(id, &mut assets) {
+                let content = strong_handle.get(&assets);
+                machines.queue_machine(
+                    Context {
+                        attachment,
+                        blackboard: Default::default(),
+                    },
+                    ReloadingInitialized {
+                        source: strong_handle.handle().clone(),
+                        content: content.content,
+                        existing_context,
+                    },
+                );
+            }
+        });
 }

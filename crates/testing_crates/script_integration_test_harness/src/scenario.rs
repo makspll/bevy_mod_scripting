@@ -25,9 +25,11 @@ use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_core::{
     ConfigureScriptPlugin,
-    event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent},
+    event::{
+        CallbackLabel, IntoCallbackLabel, ScriptAttachedEvent, ScriptCallbackEvent,
+        ScriptCallbackResponseEvent, ScriptDetachedEvent,
+    },
     handler::event_handler,
-    pipeline::{AttachScript, DetachScript, ScriptAttachedEvent, ScriptDetachedEvent},
     script::{ContextPolicy, ScriptAttachment, ScriptComponent, ScriptContext},
 };
 use test_utils::test_data::setup_integration_test;
@@ -320,6 +322,7 @@ pub enum ScenarioStep {
     InstallPlugin {
         context_policy: ContextPolicy,
         emit_responses: bool,
+        miliseconds_budget: Option<u64>,
     },
     /// Finalizes the app, cleaning up resources and preparing for the next steps.
     FinalizeApp,
@@ -497,27 +500,41 @@ impl ScenarioStep {
             ScenarioStep::InstallPlugin {
                 context_policy,
                 emit_responses,
+                miliseconds_budget,
             } => {
                 if !context.initialized_app {
                     *app = setup_integration_test(|_, _| {});
                     install_test_plugin(app, true);
                     context.initialized_app = true;
                 }
-
                 match context.current_script_language {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => {
+                        use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
+                        use std::time::Duration;
+                        let mut pipeline = ScriptLoadingPipeline::default();
+                        if let Some(budget) = miliseconds_budget {
+                            pipeline.time_budget = Some(Duration::from_millis(budget));
+                        }
                         let plugin = crate::make_test_lua_plugin();
                         let plugin = plugin
                             .set_context_policy(context_policy)
+                            .set_pipeline_settings(pipeline)
                             .emit_core_callback_responses(emit_responses);
                         app.add_plugins(plugin);
                     }
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => {
+                        use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
+                        use std::time::Duration;
+                        let mut pipeline = ScriptLoadingPipeline::default();
+                        if let Some(budget) = miliseconds_budget {
+                            pipeline.time_budget = Some(Duration::from_millis(budget));
+                        }
                         let plugin = crate::make_test_rhai_plugin();
                         let plugin = plugin
                             .set_context_policy(context_policy)
+                            .set_pipeline_settings(pipeline)
                             .emit_core_callback_responses(emit_responses);
                         app.add_plugins(plugin);
                     }
@@ -746,6 +763,8 @@ impl ScenarioStep {
                 match context.current_script_language {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => {
+                        use bevy_mod_scripting_core::commands::AttachScript;
+
                         AttachScript::<bevy_mod_scripting_lua::LuaScriptingPlugin>::new(
                             ScriptAttachment::StaticScript(script.clone()),
                         )
@@ -753,6 +772,8 @@ impl ScenarioStep {
                     }
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => {
+                        use bevy_mod_scripting_core::commands::AttachScript;
+
                         AttachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
                             ScriptAttachment::StaticScript(script.clone()),
                         )
@@ -772,6 +793,8 @@ impl ScenarioStep {
                 match context.current_script_language {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => {
+                        use bevy_mod_scripting_core::commands::DetachScript;
+
                         DetachScript::<bevy_mod_scripting_lua::LuaScriptingPlugin>::new(
                             ScriptAttachment::StaticScript(script.clone()),
                         )
@@ -779,6 +802,8 @@ impl ScenarioStep {
                     }
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => {
+                        use bevy_mod_scripting_core::commands::DetachScript;
+
                         DetachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
                             ScriptAttachment::StaticScript(script.clone()),
                         )

@@ -1,6 +1,6 @@
 //! Everything to do with the script lifetime management pipeline
 
-use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc};
+use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc, time::Duration};
 
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_asset::{AssetServer, Assets, Handle, LoadState};
@@ -8,13 +8,12 @@ use bevy_ecs::{
     event::{Event, EventCursor, EventReader, EventWriter, Events},
     resource::Resource,
     schedule::{IntoScheduleConfigs, Schedule, ScheduleLabel, SystemSet},
-    system::{Command, Local, Res, ResMut, SystemParam, SystemState},
+    system::{Command, Local, Res, ResMut, SystemParam},
     world::World,
 };
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::WorldGuard;
 use bevy_platform::collections::HashSet;
-use itertools::{Either, Itertools};
 use parking_lot::Mutex;
 use smallvec::SmallVec;
 
@@ -22,31 +21,29 @@ use crate::{
     IntoScriptPluginParams,
     context::ScriptingLoader,
     error::ScriptError,
-    event::ScriptErrorEvent,
+    event::{
+        ForPlugin, ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptDetachedEvent,
+        ScriptErrorEvent,
+    },
+    pipeline::hooks::{
+        OnLoadedListener, OnReloadedListener, OnUnloadedForReloadListener,
+        OnUnloadedForUnloadListener,
+    },
     script::{ScriptAttachment, ScriptContext, ScriptId},
 };
 
-mod finish;
 mod hooks;
-mod insert;
 mod machines;
 mod start;
-mod update;
-pub use {finish::*, hooks::*, insert::*, machines::*, start::*, update::*};
+pub use {machines::*, start::*};
 
 #[derive(SystemSet, Hash, Debug, Clone, Copy, PartialEq, Eq)]
 /// System sets allowing for placing hooks at different stages in the loading/unloading process
 pub enum PipelineSet {
     /// During this phase, various systems listen for
-    StartPhase,
-    /// During this phase, we load and reload contexts for scripts
-    ContextUpdatePhase,
-    /// During this phase, we insert new contexts, and mark scripts as resident
-    InsertionPhase,
-    /// During this phase, we remove old contexts, and unmark scripts as resident,
-    RemovalPhase,
-    /// A phase in which we send machine final states
-    CompletionPhase,
+    InitializePhase,
+    /// The phase during which we tick all state machines
+    TickMachinesPhase,
 }
 
 /// A pipeline plugin which enables the loading and unloading of scripts in a highly modular way
@@ -64,6 +61,25 @@ pub struct ScriptLoadingPipeline<P: IntoScriptPluginParams> {
     /// If true the [`OnScriptUnloaded`] callback will be triggered when loading scripts
     pub on_script_unloaded_callback: bool,
     _ph: PhantomData<fn(P)>,
+
+    /// The budget in wall clock time, for loading scripts each frame, if not set, will default to one 60FPS frametime.
+    /// The executor will try its best to keep loading time up within this budget. This cannot be guaranteed as not all operations are
+    /// granular enough (for example script execution)
+    pub time_budget: Option<Duration>,
+}
+
+impl<P: IntoScriptPluginParams> Clone for ScriptLoadingPipeline<P> {
+    fn clone(&self) -> Self {
+        Self {
+            script_component_triggers: self.script_component_triggers,
+            hot_loading_asset_triggers: self.hot_loading_asset_triggers,
+            on_script_loaded_callback: self.on_script_loaded_callback,
+            on_script_reloaded_callback: self.on_script_reloaded_callback,
+            on_script_unloaded_callback: self.on_script_unloaded_callback,
+            _ph: self._ph,
+            time_budget: self.time_budget,
+        }
+    }
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptLoadingPipeline<P> {
@@ -75,6 +91,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptLoadingPipeline<P> {
             on_script_loaded_callback: true,
             on_script_reloaded_callback: true,
             on_script_unloaded_callback: true,
+            time_budget: Some(Duration::from_millis(16)),
         }
     }
 }
@@ -121,11 +138,6 @@ impl<P: IntoScriptPluginParams> std::fmt::Debug for ScriptProcessingSchedule<P> 
 impl<P: IntoScriptPluginParams> ScriptLoadingPipeline<P> {
     fn add_plugin_event<E: Event>(&self, app: &mut App) -> &Self {
         app.add_event::<E>().add_event::<ForPlugin<E, P>>();
-        self
-    }
-
-    fn add_state<E: Event>(&self, app: &mut App) -> &Self {
-        app.add_event::<ForPlugin<E, P>>();
         self
     }
 }
@@ -186,15 +198,21 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
             .add_plugin_event::<ScriptDetachedEvent>(app)
             .add_plugin_event::<ScriptAssetModifiedEvent>(app);
 
-        self.add_state::<Machine<Loading, LoadingInitialized>>(app)
-            .add_state::<Machine<Loading, ReloadingInitialized<P>>>(app)
-            .add_state::<Machine<Loading, ContextAssigned<P>>>(app)
-            .add_state::<Machine<Loading, LoadingCompleted>>(app);
+        let mut active_machines = app.world_mut().get_resource_or_init::<ActiveMachines<P>>();
+        if self.on_script_loaded_callback {
+            active_machines.push_listener::<ContextAssigned<P>>(OnLoadedListener);
+        }
 
-        self.add_state::<Machine<Unloading, UnloadingInitialized<P>>>(app)
-            .add_state::<Machine<Unloading, ResidentRemoved<P>>>(app)
-            .add_state::<Machine<Unloading, ContextRemoved<P>>>(app)
-            .add_state::<Machine<Unloading, UnloadingCompleted>>(app);
+        if self.on_script_reloaded_callback {
+            active_machines.push_listener::<ContextAssigned<P>>(OnReloadedListener);
+        }
+
+        if self.on_script_unloaded_callback {
+            active_machines.push_listener::<ReloadingInitialized<P>>(OnUnloadedForReloadListener);
+            active_machines.push_listener::<UnloadingInitialized<P>>(OnUnloadedForUnloadListener);
+        }
+
+        active_machines.budget = self.time_budget;
 
         app.init_resource::<RequestProcessingPipelineRun<P>>();
 
@@ -205,29 +223,25 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
                     filter_script_attachments::<P>,
                     filter_script_detachments::<P>,
                 )
-                    .before(PipelineSet::StartPhase),
+                    .before(PipelineSet::InitializePhase),
             );
         }
 
         if self.hot_loading_asset_triggers {
             app.add_systems(
                 PostUpdate,
-                (filter_script_modifications::<P>,).before(PipelineSet::StartPhase),
+                (filter_script_modifications::<P>,).before(PipelineSet::InitializePhase),
             );
         }
 
         app.add_systems(
             PostUpdate,
-            automatic_pipeline_runner::<P>.after(PipelineSet::StartPhase),
+            automatic_pipeline_runner::<P>.after(PipelineSet::InitializePhase),
         );
 
         let mut schedule = Schedule::new(ScriptProcessingSchedule::<P>(Default::default()));
-        schedule.configure_sets((
-            PipelineSet::StartPhase.before(PipelineSet::ContextUpdatePhase),
-            PipelineSet::ContextUpdatePhase.before(PipelineSet::InsertionPhase),
-            PipelineSet::InsertionPhase.before(PipelineSet::RemovalPhase),
-            PipelineSet::RemovalPhase.before(PipelineSet::CompletionPhase),
-        ));
+        schedule
+            .configure_sets(PipelineSet::InitializePhase.before(PipelineSet::TickMachinesPhase));
 
         schedule.add_systems(
             (
@@ -235,75 +249,22 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
                 process_detachments::<P>,
                 process_asset_modifications::<P>,
             )
-                .in_set(PipelineSet::StartPhase),
+                .in_set(PipelineSet::InitializePhase),
         );
 
-        // -- on script unloaded (reload + removal)
-        if self.on_script_unloaded_callback {
-            schedule.add_systems(
-                (run_on_script_unloaded_hooks::<P>)
-                    .after(PipelineSet::StartPhase)
-                    .before(PipelineSet::ContextUpdatePhase),
-            );
-        }
-        // --
-
-        schedule.add_systems(
-            (
-                assign_contexts_for_new_scripts::<P>,
-                reload_existing_contexts::<P>,
-            )
-                .in_set(PipelineSet::ContextUpdatePhase),
-        );
-
-        // -- on script loaded
-        if self.on_script_loaded_callback {
-            schedule.add_systems(
-                (run_on_script_loaded_hooks::<P>)
-                    .after(PipelineSet::ContextUpdatePhase)
-                    .before(PipelineSet::InsertionPhase),
-            );
-        }
-        // --
-
-        // -- on script reloaded
-        if self.on_script_reloaded_callback {
-            schedule.add_systems(
-                (run_on_script_reloaded_hooks::<P>)
-                    .after(run_on_script_loaded_hooks::<P>)
-                    .before(PipelineSet::InsertionPhase),
-            );
-        }
-        // --
-
-        schedule.add_systems((insert_residents::<P>).in_set(PipelineSet::InsertionPhase));
-
-        schedule.add_systems(
-            (remove_residents_or_remove_contexts::<P>).in_set(PipelineSet::RemovalPhase),
-        );
-
-        schedule.add_systems(
-            (complete_loading::<P>, complete_unloading::<P>).in_set(PipelineSet::CompletionPhase),
-        );
+        schedule.add_systems((machine_ticker::<P>).in_set(PipelineSet::TickMachinesPhase));
 
         app.add_schedule(schedule);
     }
 }
 
-/// A run condition which checks that states of the given kind are present, only runs the system if so
-pub fn states_outstanding<M: Send + Sync + 'static, P: IntoScriptPluginParams>(
-    machine: StateMachine<M, P>,
-) -> bool {
-    machine.machines_outstanding() > 0
+/// System which ticks machines within the given time budget
+pub fn machine_ticker<P: IntoScriptPluginParams>(world: &mut World) {
+    if let Some(mut machines) = world.remove_resource::<ActiveMachines<P>>() {
+        machines.tick_machines(world);
+        world.insert_resource(machines)
+    }
 }
-
-/// A run condition which checks that states of the given kind are present, only runs the system if so
-pub fn events_outstanding<M: Send + Sync + 'static, P: IntoScriptPluginParams>(
-    machine: StateMachine<M, P>,
-) -> bool {
-    machine.machines_outstanding() > 0
-}
-
 /// A command which triggers the script processing pipeline to run once,
 /// causing outstanding attachment events to be processed
 pub struct RunProcessingPipelineOnce<P>(PhantomData<fn(P)>);
@@ -356,57 +317,18 @@ impl<P> Default for RequestProcessingPipelineRun<P> {
     }
 }
 
-/// A system which runs [`RunProcessingPipelineOnce`] command for the plugin only if [`RequestProcessingPipelineRun`] resource had [`RequestProcessingPipelineRun::request_run`] was called on it
-pub fn automatic_pipeline_runner<P: IntoScriptPluginParams>(
-    world: &mut World,
-    // mut res: ResMut<RequestProcessingPipelineRun<P>>,
-) {
+/// A system which runs [`RunProcessingPipelineOnce`] command for the plugin only if [`RequestProcessingPipelineRun`] resource had [`RequestProcessingPipelineRun::request_run`] called on it
+pub fn automatic_pipeline_runner<P: IntoScriptPluginParams>(world: &mut World) {
     let mut res = world.get_resource_or_init::<RequestProcessingPipelineRun<P>>();
     if res.get_and_unset() {
         RunProcessingPipelineOnce::<P>::new().apply(world);
     }
 }
 
-/// Command which emits a [`ScriptAttachedEvent`] and then runs the processing pipeline to immediately process it.
-/// The end result is equivalent to attaching a script component or adding a static script and waiting for the normal pipeline to process it.
-pub struct AttachScript<P: IntoScriptPluginParams>(pub ForPlugin<ScriptAttachedEvent, P>);
-
-impl<P: IntoScriptPluginParams> AttachScript<P> {
-    /// Creates a new [`AttachScript`] command, which will create the given attachment, run expected callbacks, and
-    pub fn new(attachment: ScriptAttachment) -> Self {
-        Self(ForPlugin::new(ScriptAttachedEvent(attachment)))
-    }
-}
-
-/// Command which emits a [`ScriptDetachedEvent`] and then runs the processing pipeline to immediately process it.
-/// The end result is equivalent to detaching a script component or removing a static script and waiting for the normal pipeline to process it.
-pub struct DetachScript<P: IntoScriptPluginParams>(pub ForPlugin<ScriptDetachedEvent, P>);
-
-impl<P: IntoScriptPluginParams> DetachScript<P> {
-    /// Creates a new [`DetachScript`] command, which will create the given attachment, run all expected callbacks, and delete contexts if necessary.
-    pub fn new(attachment: ScriptAttachment) -> Self {
-        Self(ForPlugin::new(ScriptDetachedEvent(attachment)))
-    }
-}
-
-impl<P: IntoScriptPluginParams> Command for AttachScript<P> {
-    fn apply(self, world: &mut World) {
-        world.send_event(self.0);
-        RunProcessingPipelineOnce::<P>::new().apply(world)
-    }
-}
-
-impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
-    fn apply(self, world: &mut World) {
-        world.send_event(self.0);
-        RunProcessingPipelineOnce::<P>::new().apply(world)
-    }
-}
-
 #[cfg(test)]
 mod test {
     use bevy_asset::{AssetApp, AssetId, AssetPlugin};
-    use bevy_ecs::world::FromWorld;
+    use bevy_ecs::{system::SystemState, world::FromWorld};
     use bevy_mod_scripting_asset::Language;
 
     use super::*;

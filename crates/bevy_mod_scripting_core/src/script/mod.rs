@@ -6,7 +6,7 @@ use std::{
     ops::Deref,
 };
 
-use crate::pipeline::{ScriptAttachedEvent, ScriptDetachedEvent};
+use crate::event::{ScriptAttachedEvent, ScriptDetachedEvent};
 
 use ::{
     bevy_asset::{Asset, AssetId, Handle},
