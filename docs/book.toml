@@ -7,7 +7,7 @@ title = "Bevy Scripting"
 description = "Documentation for the Bevy Scripting library"
 
 [output.html]
-additional-js = ["multi-code-block.js"]
+additional-js = ["multi-code-block.js", "mermaid.min.js", "mermaid-init.js"]
 git-repository-url = "https://github.com/makspll/bevy_mod_scripting"
 edit-url-template = "https://github.com/makspll/bevy_mod_scripting/edit/main/docs/{path}"
 
@@ -16,3 +16,6 @@ enable = true
 level = 1
 
 [preprocessor.lad-preprocessor]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"

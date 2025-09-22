@@ -6,6 +6,19 @@ Evaluating a script means:
 - parsing the script body,
 - and creating or updating the resources which store script state (i.e. context)
 
+## Script attachments
+
+Script attachments represent both the context in which a script "lives" and is executed, as well as its "residency identifier".
+
+Scripts can be attached either:
+- to an entity via `ScriptComponent`'s (i.e. `ScriptAttachment::EntityScript`)
+- or by being statically activated against their script assset (i.e. `ScriptAttachment::StaticScript`)
+
+When you insert/remove `ScriptComponent`'s, `ScriptAttachedEvent` and `ScriptDetachedEvent`'s are sent and processed by the [script pipeline](../ScriptPipeline/pipeline.md).
+
+Other attachments, like static scripts have to be manually triggered via `AttachScript` and `DetachScript` commands.
+
+
 ## Loading 
 Scripts can be loaded into memory via the `AssetServer`.
 ```rust,ignore
@@ -51,11 +64,43 @@ fn add_script(mut script_assets: ResMut<Assets<ScriptAsset>>, mut commands: Comm
 }
 ```
 
-## Unloading
-When you no longer need a script asset you can freely unload it, but the script attachment will persist.
-In order to trigger the `on_script_unloaded` etc. callbacks, you need to remove the script from the `ScriptComponent` or `StaticScripts`.
+## Static Scripts
+You can use attach and detach commands, which will run the [script pipeline](../ScriptPipeline/pipeline.md), repeatedly until the requested script attachments are processed. If you don't want to incur big frametime slowdowns, you can instead send `ScriptAttachedEvent` and `ScriptDetachedEvent` manually, and let the pipeline pick these up as normal.
 
-When that happens a corresponding `ScriptEvent::Detached` will be dispatched, and then handled by a `DeleteScript` command. Once the last script in a context is removed, the context itself will also be removed.
+### Attach a static script
+```rust
+# extern crate bevy;
+# extern crate bevy_mod_scripting;
+# use bevy::{asset::Assets, prelude::*};
+# use bevy_mod_scripting::prelude::*;
+
+fn add_static_script(mut asset_server: ResMut<AssetServer>, mut commands: Commands) {
+    let handle = asset_server.load(script_path);
+    commands.queue(AttachScript::<LuaScriptingPlugin>::new(
+        ScriptAttachment::StaticScript(handle)
+    ))
+}
+```
+
+### Detach a static script
+```rust
+# extern crate bevy;
+# extern crate bevy_mod_scripting;
+# use bevy::{asset::Assets, prelude::*};
+# use bevy_mod_scripting::prelude::*;
+
+fn remove_static_script(existing_handle: Local<Handle<ScriptAsset>>, mut commands: Commands) {
+    commands.queue(DetachScript::<LuaScriptingPlugin>::new(
+        ScriptAttachment::StaticScript(existing_handle)
+    ))
+}
+```
+
+## Unloading
+When you no longer need a script asset you can freely unload it as soon as it has been loaded, but the script attachment will persist.
+In order to trigger the `on_script_unloaded` etc. callbacks, you need to remove the script from the `ScriptComponent` or detach it manually via `DetachScript` if it's static.
+
+Once the last script in a context is removed, the context itself will also be removed.
 
 ## Hot-loading scripts
 To enable hot-loading of assets, you need to enable the necessary Bevy features as normal [see the bevy cheatbook for instructions](https://bevy-cheatbook.github.io/assets/hot-reload.html).
@@ -73,33 +118,3 @@ If you would like to add more extensions, you need to populate them via `app.add
 ```rust,ignore
     app.add_supported_script_extensions(&[".pua"], Language::Lua);
 ```
-
-## Advanced
-Normally not necessary but knowing these exist could be useful for more advanced use cases.
-
-### Manually (re)loading scripts
-In order to manually re-load or load a script you can issue the `CreateOrUpdateScript` command:
-
-```rust,ignore
-# use bevy::prelude::*;
-# use bevy_mod_scripting::prelude::*;
-let create_or_update = CreateOrUpdateScript::<LuaScriptingPlugin>::new(script_handle)
-    .with_content("print(\"hello world from new script body\")");
-commands.queue(create_or_update);
-```
-
-replace `LuaScriptingPlugin` with the scripting plugin you are using.
-
-### Manually Deleting scripts
-In order to delete a previously loaded script, you will need to issue a `DeleteScript` command like so:
-
-```rust,ignore
-commands.queue(DeleteScript::<LuaScriptingPlugin>::new(script_handle));
-```
-
-Replace `LuaScriptingPlugin` with the scripting plugin you are using.
-
-### Loading/Unloading timeframe
-
-Script asset changes are processed together with bevy asset systems, in the `Last` schedule.
-These are converted to `ScriptEvent`'s which are handled right after via the `ScriptingSystemSet::ScriptingCommandDispatch` system set.

@@ -62,7 +62,6 @@ pub fn filter_script_modifications<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     mut filtered: EventWriter<ForPlugin<ScriptAssetModifiedEvent, P>>,
     assets: Res<Assets<ScriptAsset>>,
-    mut requests: ResMut<RequestProcessingPipelineRun<P>>,
 ) {
     let mut batch = events.read().filter_map(|e| {
         if let AssetEvent::Modified { id } = e
@@ -76,7 +75,6 @@ pub fn filter_script_modifications<P: IntoScriptPluginParams>(
     });
 
     if let Some(next) = batch.next() {
-        requests.request_run();
         filtered.write_batch(std::iter::once(next).chain(batch));
     }
 }
@@ -85,7 +83,6 @@ pub fn filter_script_modifications<P: IntoScriptPluginParams>(
 pub fn filter_script_attachments<P: IntoScriptPluginParams>(
     mut events: LoadedWithHandles<ScriptAttachedEvent>,
     mut filtered: EventWriter<ForPlugin<ScriptAttachedEvent, P>>,
-    mut requests: ResMut<RequestProcessingPipelineRun<P>>,
 ) {
     let mut batch = events.get_loaded().map(|(mut a, b)| {
         *a.0.script_mut() = b.0;
@@ -93,7 +90,6 @@ pub fn filter_script_attachments<P: IntoScriptPluginParams>(
     });
 
     if let Some(next) = batch.next() {
-        requests.request_run();
         filtered.write_batch(std::iter::once(next).chain(batch));
     }
 }
@@ -103,7 +99,6 @@ pub fn filter_script_detachments<P: IntoScriptPluginParams>(
     mut events: EventReader<ScriptDetachedEvent>,
     mut filtered: EventWriter<ForPlugin<ScriptDetachedEvent, P>>,
     contexts: Res<ScriptContext<P>>,
-    mut requests: ResMut<RequestProcessingPipelineRun<P>>,
 ) {
     let contexts_guard = contexts.read();
     let mut batch = events
@@ -113,7 +108,6 @@ pub fn filter_script_detachments<P: IntoScriptPluginParams>(
         .map(ForPlugin::new);
 
     if let Some(next) = batch.next() {
-        requests.request_run();
         filtered.write_batch(std::iter::once(next).chain(batch));
     }
 }

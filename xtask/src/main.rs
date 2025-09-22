@@ -2040,6 +2040,16 @@ impl Xtasks {
             false,
         )?;
 
+        // install mdbook-mermaid
+        Self::run_system_command(
+            &app_settings,
+            "cargo",
+            "Failed to install mdbook",
+            vec!["install", "mdbook-mermaid"],
+            None,
+            false,
+        )?;
+
         // install grcov
         Self::run_system_command(
             &app_settings,

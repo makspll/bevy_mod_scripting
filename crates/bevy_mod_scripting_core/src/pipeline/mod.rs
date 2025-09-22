@@ -40,10 +40,10 @@ pub use {machines::*, start::*};
 #[derive(SystemSet, Hash, Debug, Clone, Copy, PartialEq, Eq)]
 /// System sets allowing for placing hooks at different stages in the loading/unloading process
 pub enum PipelineSet {
-    /// During this phase, various systems listen for
-    InitializePhase,
-    /// The phase during which we tick all state machines
-    TickMachinesPhase,
+    /// During this phase, various systems listen for events and filter through them to match what the pipeline expects
+    ListeningPhase,
+    /// During this phase we convert the filtered events to new machines
+    MachineStartPhase,
 }
 
 /// A pipeline plugin which enables the loading and unloading of scripts in a highly modular way
@@ -214,45 +214,55 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
 
         active_machines.budget = self.time_budget;
 
-        app.init_resource::<RequestProcessingPipelineRun<P>>();
+        app.configure_sets(
+            PostUpdate,
+            PipelineSet::ListeningPhase.before(PipelineSet::MachineStartPhase),
+        );
 
+        // todo: nicer way to order these, ideall .chain() + conditional newtype?
         if self.script_component_triggers {
             app.add_systems(
                 PostUpdate,
-                (
-                    filter_script_attachments::<P>,
-                    filter_script_detachments::<P>,
-                )
-                    .before(PipelineSet::InitializePhase),
+                filter_script_attachments::<P>
+                    .in_set(PipelineSet::ListeningPhase)
+                    .before(filter_script_modifications::<P>)
+                    .before(filter_script_detachments::<P>),
+            );
+            app.add_systems(
+                PostUpdate,
+                filter_script_detachments::<P>
+                    .in_set(PipelineSet::ListeningPhase)
+                    .after(filter_script_attachments::<P>)
+                    .before(filter_script_modifications::<P>),
             );
         }
 
         if self.hot_loading_asset_triggers {
             app.add_systems(
                 PostUpdate,
-                (filter_script_modifications::<P>,).before(PipelineSet::InitializePhase),
+                filter_script_modifications::<P>.in_set(PipelineSet::ListeningPhase),
             );
         }
 
         app.add_systems(
             PostUpdate,
-            automatic_pipeline_runner::<P>.after(PipelineSet::InitializePhase),
-        );
-
-        let mut schedule = Schedule::new(ScriptProcessingSchedule::<P>(Default::default()));
-        schedule
-            .configure_sets(PipelineSet::InitializePhase.before(PipelineSet::TickMachinesPhase));
-
-        schedule.add_systems(
             (
                 process_attachments::<P>,
                 process_detachments::<P>,
                 process_asset_modifications::<P>,
             )
-                .in_set(PipelineSet::InitializePhase),
+                .chain()
+                .in_set(PipelineSet::MachineStartPhase),
         );
 
-        schedule.add_systems((machine_ticker::<P>).in_set(PipelineSet::TickMachinesPhase));
+        app.add_systems(
+            PostUpdate,
+            automatic_pipeline_runner::<P>.after(PipelineSet::MachineStartPhase),
+        );
+
+        let mut schedule = Schedule::new(ScriptProcessingSchedule::<P>(Default::default()));
+
+        schedule.add_systems(machine_ticker::<P>);
 
         app.add_schedule(schedule);
     }
@@ -305,43 +315,11 @@ impl<P: IntoScriptPluginParams> Command for RunProcessingPipelineOnce<P> {
     }
 }
 
-#[derive(Resource)]
-/// A resource marker used to notify the processing pipeline to run
-pub struct RequestProcessingPipelineRun<P>(PhantomData<fn(P)>, bool);
-
-impl<P> RequestProcessingPipelineRun<P> {
-    /// Creates a default [`RequestProcessingPipelineRun`] for the plugi
-    pub fn new() -> Self {
-        Self(Default::default(), false)
-    }
-
-    /// Returns true if a processing pipeline run was requested, and sets the flag to false again.
-    pub fn get_and_unset(&mut self) -> bool {
-        let requested = self.1;
-        self.1 = false;
-        requested
-    }
-
-    /// requests a run this frame
-    pub fn request_run(&mut self) {
-        self.1 = true;
-    }
-}
-
-impl<P> Default for RequestProcessingPipelineRun<P> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// A system which runs [`RunProcessingPipelineOnce`] command for the plugin only if [`RequestProcessingPipelineRun`] resource had [`RequestProcessingPipelineRun::request_run`] called on it,
-/// and or if there are active machines
+/// A system which runs [`RunProcessingPipelineOnce`] command for the plugin only if there are active machines
 pub fn automatic_pipeline_runner<P: IntoScriptPluginParams>(world: &mut World) {
-    let mut res = world.get_resource_or_init::<RequestProcessingPipelineRun<P>>();
-    if res.get_and_unset()
-        || world
-            .get_resource::<ActiveMachines<P>>()
-            .is_some_and(|machines| machines.active_machines() > 0)
+    if world
+        .get_resource::<ActiveMachines<P>>()
+        .is_some_and(|machines| machines.active_machines() > 0)
     {
         RunProcessingPipelineOnce::<P>::new(None).apply(world);
     }
