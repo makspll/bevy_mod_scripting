@@ -1,12 +1,13 @@
 use std::{alloc::Layout, collections::HashMap};
 
+
 use bevy_app::{App, ScheduleRunnerPlugin, TaskPoolPlugin};
 use bevy_diagnostic::FrameCountPlugin;
 use bevy_log::LogPlugin;
 use bevy_time::TimePlugin;
 
 use ::{
-    bevy_asset::AssetPlugin,
+    bevy_asset::{Asset, AssetApp, AssetPlugin},
     bevy_diagnostic::DiagnosticsPlugin,
     bevy_ecs::{component::*, prelude::*, world::World},
     bevy_reflect::{prelude::*, *},
@@ -24,6 +25,18 @@ impl TestComponent {
         Self {
             strings: vec!["Initial".to_string(), "Value".to_string()],
         }
+    }
+}
+
+#[derive(Asset, Reflect, PartialEq, Debug, Clone)]
+pub struct TestAsset {
+    pub value: i32,
+    pub name: String,
+}
+
+impl TestAsset {
+    pub fn new(value: i32, name: String) -> Self {
+        Self { value, name }
     }
 }
 
@@ -361,6 +374,10 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
             ..Default::default()
         },
     ));
+
+    app.init_asset::<TestAsset>();
+    app.register_asset_reflect::<TestAsset>();
+
     app
 }
 

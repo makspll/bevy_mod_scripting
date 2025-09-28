@@ -10,6 +10,7 @@ use crate::{
     error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
     with_access_write,
 };
+use bevy_asset::{ReflectAsset, UntypedHandle};
 use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{
@@ -252,6 +253,61 @@ impl ReflectReference {
         }
     }
 
+    /// Create a new reference to an asset by untyped handle.
+    /// If the type id is incorrect, you will get runtime errors when trying to access the value.
+    pub fn new_asset_ref(
+        handle: UntypedHandle,
+        asset_type_id: TypeId,
+        world: WorldGuard,
+    ) -> Result<Self, InteropError> {
+        Ok(Self {
+            base: ReflectBaseType::new_asset_base(handle, asset_type_id, world)?,
+            reflect_path: ParsedPath(Vec::default()),
+        })
+    }
+
+    /// Tries get an untyped asset handle from this reference.
+    pub fn try_untyped_asset_handle(
+        &self,
+        world: WorldGuard,
+    ) -> Result<UntypedHandle, InteropError> {
+        let handle_type_id = self.tail_type_id(world.clone())?.ok_or_else(|| {
+            InteropError::invariant("Cannot determine handle type ID from reflection")
+                .with_context("Asset handle reflection failed - handle may be invalid or corrupted")
+        })?;
+        
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+        let reflect_handle = type_registry
+            .get_type_data::<bevy_asset::ReflectHandle>(handle_type_id)
+            .ok_or_else(|| {
+                InteropError::missing_type_data(
+                    handle_type_id,
+                    "ReflectHandle".to_string(),
+                )
+                .with_context("Handle type is not registered for asset operations - ensure the asset type is properly registered with ReflectHandle type data")
+            })?;
+
+        let untyped_handle = self.with_reflect(world.clone(), |reflect| {
+            let reflect_any = reflect.try_as_reflect().ok_or_else(|| {
+                InteropError::type_mismatch(
+                    std::any::TypeId::of::<dyn bevy_reflect::Reflect>(),
+                    Some(handle_type_id),
+                )
+                .with_context("Handle must implement Reflect trait for asset operations")
+            })?;
+
+            reflect_handle
+                .downcast_handle_untyped(reflect_any.as_any())
+                .ok_or_else(|| {
+                    InteropError::invariant("Failed to get UntypedHandle")
+                        .with_context("Handle downcast failed - handle may be of wrong type or corrupted")
+                })
+        })??;
+
+        Ok(untyped_handle)
+    }
+
     /// Indexes into the reflect path inside this reference.
     /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
     pub fn index_path<T: Into<ParsedPath>>(&mut self, index: T) {
@@ -399,6 +455,11 @@ impl ReflectReference {
             return self.walk_path(unsafe { &*arc.get_ptr() });
         }
 
+        if let ReflectBase::Asset(handle, _) = &self.base.base_id {
+            let asset = unsafe { self.load_asset_mut(handle, world.clone())? };
+            return self.walk_path(asset.as_partial_reflect());
+        }
+
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
 
@@ -454,6 +515,11 @@ impl ReflectReference {
             return self.walk_path_mut(unsafe { &mut *arc.get_ptr() });
         };
 
+        if let ReflectBase::Asset(handle, _) = &self.base.base_id {
+            let asset = unsafe { self.load_asset_mut(handle, world.clone())? };
+            return self.walk_path_mut(asset.as_partial_reflect_mut());
+        };
+
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
 
@@ -484,6 +550,32 @@ impl ReflectReference {
         let base = unsafe { from_ptr_data.as_reflect_mut(ptr.into_inner()) };
         drop(type_registry);
         self.walk_path_mut(base.as_partial_reflect_mut())
+    }
+
+    /// Get asset from world and return a mutable reference to it
+    unsafe fn load_asset_mut<'w>(
+        &self,
+        handle: &UntypedHandle,
+        world: WorldGuard<'w>,
+    ) -> Result<&'w mut dyn Reflect, InteropError> {
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+
+        let reflect_asset: &ReflectAsset = type_registry
+            .get_type_data(self.base.type_id)
+            .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+
+        let world_cell = world.as_unsafe_world_cell()?;
+        let asset = unsafe { reflect_asset.get_unchecked_mut(world_cell, handle.clone()) }
+            .ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    Some(self.base.type_id),
+                    None,
+                    "Asset not loaded or handle is invalid",
+                )
+            })?;
+
+        Ok(asset)
     }
 
     fn walk_path<'a>(
@@ -589,6 +681,47 @@ impl ReflectBaseType {
             )),
         }
     }
+
+    /// Create a new reflection base pointing to an asset with untyped handle
+    pub fn new_asset_base(
+        handle: UntypedHandle,
+        asset_type_id: TypeId,
+        world: WorldGuard,
+    ) -> Result<Self, InteropError> {
+        // We need to get the Assets<T> resource ComponentId by type registry lookup
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+
+        // Get the ReflectAsset data to find the Assets<T> resource type ID
+        let reflect_asset: &ReflectAsset =
+            type_registry.get_type_data(asset_type_id).ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    Some(asset_type_id),
+                    None,
+                    "Asset type is not registered with ReflectAsset type data",
+                )
+            })?;
+
+        let assets_resource_type_id = reflect_asset.assets_resource_type_id();
+
+        // Convert the TypeId to ComponentId via unsafe world cell
+        let world_cell = world.as_unsafe_world_cell()?;
+        let components = world_cell.components();
+        let assets_resource_id = components
+            .get_resource_id(assets_resource_type_id)
+            .ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    Some(assets_resource_type_id),
+                    None,
+                    "Assets<T> resource is not registered in the world",
+                )
+            })?;
+
+        Ok(Self {
+            type_id: asset_type_id,
+            base_id: ReflectBase::Asset(handle, assets_resource_id),
+        })
+    }
 }
 
 /// The Id of the kind of reflection base being pointed to
@@ -599,8 +732,10 @@ pub enum ReflectBase {
     Component(Entity, ComponentId),
     /// A resource
     Resource(ComponentId),
-    /// an allocation
+    /// An allocation
     Owned(ReflectAllocationId),
+    /// An asset accessed by handle
+    Asset(UntypedHandle, ComponentId),
 }
 
 impl DisplayWithTypeInfo for ReflectBase {
@@ -653,6 +788,13 @@ impl DisplayWithTypeInfo for ReflectBase {
 
                 f.write_str("allocated value with id: ")?;
                 WithTypeInfo::new_with_opt_info(id, type_info_provider)
+                    .display_with_type_info(f, type_info_provider)
+            }
+            ReflectBase::Asset(handle, assets_resource_id) => {
+                f.write_str("asset with handle: ")?;
+                write!(f, "{:?}", handle)?;
+                f.write_str(", in Assets resource: ")?;
+                WithTypeInfo::new_with_opt_info(assets_resource_id, type_info_provider)
                     .display_with_type_info(f, type_info_provider)
             }
         }

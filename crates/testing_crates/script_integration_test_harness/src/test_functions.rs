@@ -5,7 +5,8 @@ use std::{
 
 use ::{
     bevy_app::App,
-    bevy_ecs::{component::ComponentId, entity::Entity, world::World},
+    bevy_asset::Assets,
+    bevy_ecs::{change_detection::Mut, component::ComponentId, entity::Entity, world::World},
     bevy_reflect::{Reflect, TypeRegistration},
 };
 use bevy_mod_scripting_asset::Language;
@@ -20,7 +21,7 @@ use bevy_mod_scripting_bindings::{
 };
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha12Rng;
-use test_utils::test_data::EnumerateTestComponents;
+use test_utils::test_data::{EnumerateTestComponents, TestAsset};
 
 // lazy lock rng state
 pub static RNG: std::sync::LazyLock<Mutex<ChaCha12Rng>> = std::sync::LazyLock::new(|| {
@@ -145,6 +146,29 @@ pub fn register_test_functions(world: &mut App) {
                     "Reason Provided: {}",
                     reason.unwrap_or_default()
                 )
+            },
+        )
+        .register(
+            "create_test_asset",
+            |s: FunctionCallContext, value: i32, name: String| {
+                let world = s.world()?;
+                let test_asset = TestAsset::new(value, name);
+
+                let handle = world.with_resource_mut(|mut assets: Mut<Assets<TestAsset>>| {
+                    assets.add(test_asset)
+                })?;
+                let type_registry = world.type_registry();
+                let type_registry = type_registry.read();
+                let registration = type_registry.get(std::any::TypeId::of::<TestAsset>())
+                    .ok_or_else(|| InteropError::str("TestAsset type not registered"))?;
+                let reg = ScriptTypeRegistration::new(Arc::new(registration.clone()));
+
+                let allocator = world.allocator();
+                let mut allocator = allocator.write();
+                Ok(vec![
+                    ReflectReference::new_allocated(handle, &mut allocator),
+                    ReflectReference::new_allocated(reg, &mut allocator)
+                ])
             },
         );
 }

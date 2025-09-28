@@ -1,3 +1,4 @@
+mod bevy_asset;
 mod bevy_ecs;
 mod bevy_platform;
 mod bevy_reflect;
