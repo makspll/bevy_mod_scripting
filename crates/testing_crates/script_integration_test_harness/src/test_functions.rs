@@ -153,22 +153,12 @@ pub fn register_test_functions(world: &mut App) {
             |s: FunctionCallContext, value: i32, name: String| {
                 let world = s.world()?;
                 let test_asset = TestAsset::new(value, name);
-
                 let handle = world.with_resource_mut(|mut assets: Mut<Assets<TestAsset>>| {
                     assets.add(test_asset)
                 })?;
-                let type_registry = world.type_registry();
-                let type_registry = type_registry.read();
-                let registration = type_registry.get(std::any::TypeId::of::<TestAsset>())
-                    .ok_or_else(|| InteropError::str("TestAsset type not registered"))?;
-                let reg = ScriptTypeRegistration::new(Arc::new(registration.clone()));
-
                 let allocator = world.allocator();
                 let mut allocator = allocator.write();
-                Ok(vec![
-                    ReflectReference::new_allocated(handle, &mut allocator),
-                    ReflectReference::new_allocated(reg, &mut allocator)
-                ])
+                Ok(ReflectReference::new_allocated(handle, &mut allocator))
             },
         );
 }
