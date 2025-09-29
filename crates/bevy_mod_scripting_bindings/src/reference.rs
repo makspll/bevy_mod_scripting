@@ -283,9 +283,9 @@ impl ReflectReference {
             .ok_or_else(|| {
                 InteropError::missing_type_data(
                     handle_type_id,
-                    "ReflectHandle".to_string(),
+                    stringify!(ReflectHandle).into(),
                 )
-                .with_context("Handle type is not registered for asset operations - ensure the asset type is properly registered with ReflectHandle type data")
+                .with_context("Handle type is not registered for asset operations - ensure that you registered it with bevy::App::register_asset_reflect::<T>()")
             })?;
 
         let untyped_handle = self.with_reflect(world.clone(), |reflect| {
@@ -300,12 +300,40 @@ impl ReflectReference {
             reflect_handle
                 .downcast_handle_untyped(reflect_any.as_any())
                 .ok_or_else(|| {
-                    InteropError::invariant("Failed to get UntypedHandle")
-                        .with_context("Handle downcast failed - handle may be of wrong type or corrupted")
+                    InteropError::could_not_downcast(self.clone(), handle_type_id)
+                        .with_context("UntypedHandle downcast failed - handle may be of wrong type or corrupted")
                 })
         })??;
-
         Ok(untyped_handle)
+    }
+
+    /// Get asset from world and return a mutable reference to it
+    unsafe fn load_asset_mut<'w>(
+        &self,
+        handle: &UntypedHandle,
+        world: WorldGuard<'w>,
+    ) -> Result<&'w mut dyn Reflect, InteropError> {
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+
+        let reflect_asset: &ReflectAsset = type_registry
+            .get_type_data(self.base.type_id)
+            .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+
+        let world_cell = world.as_unsafe_world_cell()?;
+        // Safety: The caller guarantees exclusive access to the asset through the WorldGuard,
+        // and we've validated that the type_id matches the ReflectAsset type data.
+        // The UnsafeWorldCell is valid for the lifetime 'w of the WorldGuard.
+        let asset = unsafe { reflect_asset.get_unchecked_mut(world_cell, handle.clone()) }
+            .ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    Some(self.base.type_id),
+                    None,
+                    "Asset not loaded or handle is invalid",
+                )
+            })?;
+
+        Ok(asset)
     }
 
     /// Indexes into the reflect path inside this reference.
@@ -550,32 +578,6 @@ impl ReflectReference {
         let base = unsafe { from_ptr_data.as_reflect_mut(ptr.into_inner()) };
         drop(type_registry);
         self.walk_path_mut(base.as_partial_reflect_mut())
-    }
-
-    /// Get asset from world and return a mutable reference to it
-    unsafe fn load_asset_mut<'w>(
-        &self,
-        handle: &UntypedHandle,
-        world: WorldGuard<'w>,
-    ) -> Result<&'w mut dyn Reflect, InteropError> {
-        let type_registry = world.type_registry();
-        let type_registry = type_registry.read();
-
-        let reflect_asset: &ReflectAsset = type_registry
-            .get_type_data(self.base.type_id)
-            .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
-
-        let world_cell = world.as_unsafe_world_cell()?;
-        let asset = unsafe { reflect_asset.get_unchecked_mut(world_cell, handle.clone()) }
-            .ok_or_else(|| {
-                InteropError::unsupported_operation(
-                    Some(self.base.type_id),
-                    None,
-                    "Asset not loaded or handle is invalid",
-                )
-            })?;
-
-        Ok(asset)
     }
 
     fn walk_path<'a>(
