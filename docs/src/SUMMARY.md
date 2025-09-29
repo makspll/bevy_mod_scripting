@@ -30,6 +30,7 @@
 - [Constructing Arbitrary Types](./ScriptingReference/constructing-arbitrary-types.md)
 - [Core Bindings](./ladfiles/bindings.lad.json)
 - [Core Callbacks](./ScriptingReference/core-callbacks.md)
+- [Asset Operations](./ScriptingReference/asset-operations.md)
 
 # Developing BMS
 
