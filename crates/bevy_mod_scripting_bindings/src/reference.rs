@@ -290,11 +290,11 @@ impl ReflectReference {
 
         let untyped_handle = self.with_reflect(world.clone(), |reflect| {
             let reflect_any = reflect.try_as_reflect().ok_or_else(|| {
-                InteropError::type_mismatch(
-                    std::any::TypeId::of::<dyn bevy_reflect::Reflect>(),
+                InteropError::unsupported_operation(
                     Some(handle_type_id),
+                    None,
+                    "Asset handle must implement Reflect trait for asset operations",
                 )
-                .with_context("Handle must implement Reflect trait for asset operations")
             })?;
 
             reflect_handle
