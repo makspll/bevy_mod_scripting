@@ -21,8 +21,12 @@ use ::{
     },
     bevy_reflect::Reflect,
 };
+use bevy_app::PreUpdate;
 use bevy_asset::Assets;
-use bevy_ecs::world::World;
+use bevy_ecs::{
+    system::{ResMut, SystemId},
+    world::World,
+};
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::{
     CoreScriptGlobalsPlugin, ReflectAccessId, ThreadWorldContainer, WorldAccessGuard,
@@ -358,13 +362,14 @@ pub fn run_plugin_script_load_benchmark<
 
     let world_ptr = app.world_mut() as *mut World;
     let world_guard = Mutex::<()>::new(());
-
+    let mut idx = 0;
     criterion.bench_function(benchmark_id, |c| {
         c.iter_batched(
             || {
+                idx += 1;
                 let mut rng = RNG.lock().unwrap();
                 let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
-
+                // println!("Setup {idx}, {is_reload}");
                 let guard = world_guard.lock().unwrap();
                 // Safety: we claimed a unique guard, only code accessing this will need to do the same
                 let world = unsafe { &mut *world_ptr };
@@ -381,6 +386,9 @@ pub fn run_plugin_script_load_benchmark<
                         })
                     });
                 drop(guard);
+                // run track assets (lives in PreUpdate), so handles can be dropped internally
+                // otherwise causes random overflows due to a u16 tracking strong handles
+                world.run_schedule(PreUpdate);
 
                 // We manually load the script inside a command.
                 (
