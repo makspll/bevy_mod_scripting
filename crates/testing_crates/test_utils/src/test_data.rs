@@ -1,6 +1,5 @@
 use std::{alloc::Layout, collections::HashMap};
 
-
 use bevy_app::{App, ScheduleRunnerPlugin, TaskPoolPlugin};
 use bevy_diagnostic::FrameCountPlugin;
 use bevy_log::LogPlugin;

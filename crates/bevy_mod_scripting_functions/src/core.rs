@@ -528,7 +528,11 @@ impl World {
     ) -> Result<Option<ReflectReference>, InteropError> {
         profiling::function_scope!("get_asset");
         let untyped_handle = handle_reference.try_untyped_asset_handle(ctxt.world()?)?;
-        Ok(Some(ReflectReference::new_asset_ref(untyped_handle, registration.type_id(), ctxt.world()?)?))
+        Ok(Some(ReflectReference::new_asset_ref(
+            untyped_handle,
+            registration.type_id(),
+            ctxt.world()?,
+        )?))
     }
 
     /// Checks if can get asset handle
@@ -537,7 +541,9 @@ impl World {
         handle_reference: ReflectReference,
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("has_asset");
-        Ok(handle_reference.try_untyped_asset_handle(ctxt.world()?).is_ok())
+        Ok(handle_reference
+            .try_untyped_asset_handle(ctxt.world()?)
+            .is_ok())
     }
 }
 

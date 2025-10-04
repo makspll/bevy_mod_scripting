@@ -275,7 +275,7 @@ impl ReflectReference {
             InteropError::invariant("Cannot determine handle type ID from reflection")
                 .with_context("Asset handle reflection failed - handle may be invalid or corrupted")
         })?;
-        
+
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
         let reflect_handle = type_registry
@@ -300,8 +300,9 @@ impl ReflectReference {
             reflect_handle
                 .downcast_handle_untyped(reflect_any.as_any())
                 .ok_or_else(|| {
-                    InteropError::could_not_downcast(self.clone(), handle_type_id)
-                        .with_context("UntypedHandle downcast failed - handle may be of wrong type or corrupted")
+                    InteropError::could_not_downcast(self.clone(), handle_type_id).with_context(
+                        "UntypedHandle downcast failed - handle may be of wrong type or corrupted",
+                    )
                 })
         })??;
         Ok(untyped_handle)
