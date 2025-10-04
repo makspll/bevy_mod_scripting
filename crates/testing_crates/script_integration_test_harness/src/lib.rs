@@ -23,10 +23,7 @@ use ::{
 };
 use bevy_app::PreUpdate;
 use bevy_asset::Assets;
-use bevy_ecs::{
-    system::{ResMut, SystemId},
-    world::World,
-};
+use bevy_ecs::world::World;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::{
     CoreScriptGlobalsPlugin, ReflectAccessId, ThreadWorldContainer, WorldAccessGuard,
