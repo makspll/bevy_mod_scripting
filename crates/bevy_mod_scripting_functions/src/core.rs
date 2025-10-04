@@ -795,25 +795,45 @@ impl ReflectReference {
         profiling::function_scope!("iter");
         let world = ctxt.world()?;
         let mut len = reference.len(world.clone())?.unwrap_or_default();
-        let mut infinite_iter = reference.into_iter_infinite();
-        let iter_function = move || {
-            // world is not thread safe, we can't capture it in the closure
-            // or it will also be non-thread safe
-            let world = ThreadWorldContainer.try_get_world()?;
-            if len == 0 {
-                return Ok(ScriptValue::Unit);
-            }
+        // Check if this is a Map type
+        let is_map = reference.with_reflect(world.clone(), |r| {
+            matches!(r.reflect_ref(), ReflectRef::Map(_))
+        })?;
 
-            let (next_ref, _) = infinite_iter.next_ref();
-
-            let converted = ReflectReference::into_script_ref(next_ref, world);
-            // println!("idx: {idx:?}, converted: {converted:?}");
-            len -= 1;
-            // we stop once the reflection path is invalid
-            converted
-        };
-
-        Ok(iter_function.into_dynamic_script_function_mut())
+        if is_map {
+            // Use special map iterator that doesn't rely on path resolution
+            let mut map_iter = reference.into_map_iter();
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                match map_iter.next_ref(world.clone())? {
+                    Some((key_ref, value_ref)) => {
+                        // Return both key and value as a List for Lua's pairs() to unpack
+                        let key_value = ReflectReference::into_script_ref(key_ref, world.clone())?;
+                        let value_value = ReflectReference::into_script_ref(value_ref, world)?;
+                        Ok(ScriptValue::List(vec![key_value, value_value]))
+                    }
+                    None => Ok(ScriptValue::Unit),
+                }
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
+        } else {
+            let mut infinite_iter = reference.into_iter_infinite();
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                let (next_ref, _) = infinite_iter.next_ref();
+                // we stop once the reflection path is invalid
+                ReflectReference::into_script_ref(next_ref, world)
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
+        }
     }
 
     /// Lists the functions available on the reference.

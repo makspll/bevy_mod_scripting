@@ -598,6 +598,29 @@ impl CustomType for RhaiReflectReference {
                     Ok(str_) => str_.into(),
                     Err(error) => error.to_string(),
                 }
+            })
+            .with_fn("iter", |self_: Self| {
+                let world = ThreadWorldContainer
+                    .try_get_world()
+                    .map_err(IntoRhaiError::into_rhai_error)?;
+
+                let iter_func = world
+                    .lookup_function([TypeId::of::<ReflectReference>()], "iter")
+                    .map_err(|f| {
+                        InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                    })
+                    .map_err(IntoRhaiError::into_rhai_error)?;
+
+                let result = iter_func
+                    .call(vec![ScriptValue::Reference(self_.0)], RHAI_CALLER_CONTEXT)
+                    .map_err(IntoRhaiError::into_rhai_error)?;
+
+                match result {
+                    ScriptValue::FunctionMut(iter_fn) => {
+                        Ok(Dynamic::from(RhaiIterator { iter_fn }))
+                    }
+                    _ => Err(InteropError::invariant("iter function did not return a FunctionMut").into_rhai_error())
+                }
             });
     }
 }
@@ -632,3 +655,24 @@ impl CustomType for RhaiStaticReflectReference {
             });
     }
 }
+
+/// Wrapper for map iterator that unpacks [key, value] pairs for Rhai
+#[derive(Clone)]
+pub struct RhaiIterator {
+    iter_fn: DynamicScriptFunctionMut,
+}
+
+impl CustomType for RhaiIterator {
+    fn build(mut builder: rhai::TypeBuilder<Self>) {
+        builder
+            .with_name("RhaiIterator")
+            .with_fn("next", |self_: &mut Self| {
+                let result = self_
+                    .iter_fn
+                    .call(vec![], RHAI_CALLER_CONTEXT)
+                    .map_err(IntoRhaiError::into_rhai_error)?;
+                result.into_dynamic()
+            });
+    }
+}
+

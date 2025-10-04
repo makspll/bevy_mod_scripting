@@ -133,6 +133,15 @@ impl ReflectReference {
         ReflectRefIter::new_indexed(self)
     }
 
+    /// Creates a new iterator for Maps specifically.
+    /// Unlike `into_iter_infinite`, this iterator is finite and will return None when exhausted.
+    pub fn into_map_iter(self) -> ReflectMapRefIter {
+        ReflectMapRefIter {
+            base: self,
+            index: 0,
+        }
+    }
+
     /// If this is a reference to something with a length accessible via reflection, returns that length.
     pub fn len(&self, world: WorldGuard) -> Result<Option<usize>, InteropError> {
         self.with_reflect(world, |r| match r.reflect_ref() {
@@ -784,6 +793,57 @@ impl ReflectRefIter {
 const fn list_index_access(index: usize) -> Access<'static> {
     Access::ListIndex(index)
 }
+
+/// Iterator specifically for Maps that doesn't use the path system.
+/// This bypasses Bevy's path resolution which rejects ListIndex on Maps,
+/// and instead directly uses Map::get_at() to iterate over map entries.
+pub struct ReflectMapRefIter {
+    pub(crate) base: ReflectReference,
+    pub(crate) index: usize,
+}
+
+#[profiling::all_functions]
+impl ReflectMapRefIter {
+    /// Returns the next map entry as a (key, value) tuple.
+    /// Returns Ok(None) when there are no more entries.
+    pub fn next_ref(&mut self, world: WorldGuard) -> Result<Option<(ReflectReference, ReflectReference)>, InteropError> {
+        let idx = self.index;
+        self.index += 1;
+        
+        // Access the map and get the entry at index
+        self.base.with_reflect(world.clone(), |reflect| {
+            match reflect.reflect_ref() {
+                ReflectRef::Map(map) => {
+                    if let Some((key, value)) = map.get_at(idx) {
+                        let allocator = world.allocator();
+                        let mut allocator_guard = allocator.write();
+                        
+                        let key_ref = ReflectReference::new_allocated_boxed_parial_reflect(
+                            key.to_dynamic(),
+                            &mut *allocator_guard
+                        )?;
+                        
+                        let value_ref = ReflectReference::new_allocated_boxed_parial_reflect(
+                            value.to_dynamic(),
+                            &mut *allocator_guard
+                        )?;
+                        
+                        drop(allocator_guard);
+                        Ok(Some((key_ref, value_ref)))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                _ => Err(InteropError::unsupported_operation(
+                    reflect.get_represented_type_info().map(|ti| ti.type_id()),
+                    None,
+                    "map iteration on non-map type".to_owned(),
+                ))
+            }
+        })?
+    }
+}
+
 #[profiling::all_functions]
 impl Iterator for ReflectRefIter {
     type Item = Result<ReflectReference, InteropError>;
