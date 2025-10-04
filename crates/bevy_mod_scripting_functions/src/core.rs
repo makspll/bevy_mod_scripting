@@ -598,7 +598,7 @@ impl ReflectReference {
             key,
             world.clone(),
         )?;
-        reference.with_reflect_mut(world.clone(), |s| match s.try_map_get(key.as_ref())? {
+        reference.with_reflect(world.clone(), |s| match s.try_map_get(key.as_ref())? {
             Some(value) => {
                 let reference = {
                     let allocator = world.allocator();
