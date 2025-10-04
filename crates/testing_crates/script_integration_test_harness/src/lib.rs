@@ -359,13 +359,12 @@ pub fn run_plugin_script_load_benchmark<
 
     let world_ptr = app.world_mut() as *mut World;
     let world_guard = Mutex::<()>::new(());
-    let mut idx = 0;
     criterion.bench_function(benchmark_id, |c| {
         c.iter_batched(
             || {
-                idx += 1;
                 let mut rng = RNG.lock().unwrap();
                 let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
+
                 // println!("Setup {idx}, {is_reload}");
                 let guard = world_guard.lock().unwrap();
                 // Safety: we claimed a unique guard, only code accessing this will need to do the same
@@ -382,10 +381,19 @@ pub fn run_plugin_script_load_benchmark<
                             language: P::LANGUAGE,
                         })
                     });
-                drop(guard);
-                // run track assets (lives in PreUpdate), so handles can be dropped internally
                 // otherwise causes random overflows due to a u16 tracking strong handles
+
+                // also remove assets apart from the first two
+                assets
+                    .ids()
+                    .skip(2)
+                    .collect::<Vec<_>>()
+                    .into_iter()
+                    .for_each(|asset| _ = assets.remove(asset));
+
+                // run track assets (lives in PreUpdate), so handles can be dropped internally
                 world.run_schedule(PreUpdate);
+                drop(guard);
 
                 // We manually load the script inside a command.
                 (
