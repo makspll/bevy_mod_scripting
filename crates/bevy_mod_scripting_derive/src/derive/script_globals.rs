@@ -42,8 +42,11 @@ pub fn script_globals(
             let registry = world.get_resource_or_init::<#bms_bindings_path::globals::AppScriptGlobalsRegistry>();
             let mut registry = registry.write();
 
-            registry
-                #(#function_registrations)*;
+            #(
+                if (registry #function_registrations).is_some() {
+                    warn!("conflicting global registration under name: {}. This might cause confusing problems, use `CoreScriptGlobalsPlugin.filter` to filter out uneeded duplicate types.", stringify!(#function_name))
+                }
+            )*;
         }
     };
 
