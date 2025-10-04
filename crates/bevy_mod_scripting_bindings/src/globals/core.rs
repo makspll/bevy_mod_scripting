@@ -7,6 +7,7 @@ use ::{
     bevy_reflect::TypeRegistration,
 };
 use bevy_app::App;
+use bevy_log::warn;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_derive::script_globals;
 use bevy_platform::collections::HashMap;
@@ -63,6 +64,7 @@ impl Plugin for CoreScriptGlobalsPlugin {
         register_core_globals(app.world_mut());
     }
 }
+const MSG_DUPLICATE_GLOBAL: &str = "This can cause confusing issues for script users, use `CoreScriptGlobalsPlugin.filter` to filter out uneeded duplicate types.";
 
 #[profiling::function]
 fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration) -> bool) {
@@ -82,20 +84,41 @@ fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration)
         if let Some(global_name) = registration.type_info().type_path_table().ident() {
             let documentation = "A reference to the type, allowing you to call static methods.";
             let type_info = registration.type_info();
-            global_registry.register_static_documented_dynamic(
-                registration.type_id(),
-                into_through_type_info(type_info),
-                global_name.into(),
-                documentation.into(),
-            );
+            if global_registry
+                .register_static_documented_dynamic(
+                    registration.type_id(),
+                    into_through_type_info(type_info),
+                    global_name.into(),
+                    documentation.into(),
+                )
+                .is_some()
+            {
+                warn!(
+                    "Duplicate global registration for type: '{}'. {MSG_DUPLICATE_GLOBAL}",
+                    type_info.type_path_table().short_path()
+                )
+            };
         }
     }
 
     // register basic globals
-    global_registry.register_dummy::<World>("world", "The current ECS world.");
-    global_registry
-        .register_dummy::<Entity>("entity", "The entity this script is attached to if any.");
-    global_registry.register_dummy_typed::<Val<Handle<ScriptAsset>>>("script_asset", "the asset handle for this script. If the asset is ever unloaded, the handle will be less useful.");
+    if global_registry
+        .register_dummy::<World>("world", "The current ECS world.")
+        .is_some()
+    {
+        warn!("existing `world` global was replaced by the core `world` dummy type.")
+    };
+
+    if global_registry
+        .register_dummy::<Entity>("entity", "The entity this script is attached to if any.")
+        .is_some()
+    {
+        warn!("existing `entity` global was replaced by the core `entity` dummy type.")
+    }
+
+    if global_registry.register_dummy_typed::<Val<Handle<ScriptAsset>>>("script_asset", "the asset handle for this script. If the asset is ever unloaded, the handle will be less useful.").is_some() {
+        warn!("existing `script_asset` global was replaced by the core `script_asset` dummy type.")
+    };
 }
 
 #[script_globals(bms_bindings_path = "crate", name = "core_globals")]
@@ -128,7 +151,15 @@ impl CoreGlobals {
             let registration = guard.clone().get_type_registration(registration)?;
             let registration =
                 registration.map_both(Val::from, |u| u.map_both(Val::from, Val::from));
-            type_cache.insert(type_path.to_owned(), registration);
+            if type_cache
+                .insert(type_path.to_owned(), registration)
+                .is_some()
+            {
+                warn!(
+                    "duplicate entry inside `types` global for type: {}. {MSG_DUPLICATE_GLOBAL}",
+                    type_path
+                )
+            };
         }
 
         Ok(type_cache)
