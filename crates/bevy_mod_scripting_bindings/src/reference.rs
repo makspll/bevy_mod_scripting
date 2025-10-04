@@ -794,7 +794,7 @@ impl DisplayWithTypeInfo for ReflectBase {
             }
             ReflectBase::Asset(handle, assets_resource_id) => {
                 f.write_str("asset with handle: ")?;
-                write!(f, "{:?}", handle)?;
+                write!(f, "{handle:?}")?;
                 f.write_str(", in Assets resource: ")?;
                 WithTypeInfo::new_with_opt_info(assets_resource_id, type_info_provider)
                     .display_with_type_info(f, type_info_provider)
