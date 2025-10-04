@@ -7,6 +7,7 @@ use std::ops::Deref;
 use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
+use bevy_reflect::ReflectRef;
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt,
     ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
@@ -571,7 +572,7 @@ impl ReflectReference {
         Ok(format!("{reference:#?}"))
     }
 
-    /// Gets and clones the value under the specified key if the underlying type is a map type.
+    /// Gets the value reference under the specified key if the underlying type is a map type.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
@@ -597,17 +598,22 @@ impl ReflectReference {
             key,
             world.clone(),
         )?;
-        reference.with_reflect_mut(world.clone(), |s| match s.try_map_get(key.as_ref())? {
-            Some(value) => {
-                let reference = {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
-                    ReflectReference::new_allocated_boxed(owned_value, &mut allocator)
-                };
-                Ok(Some(ReflectReference::into_script_ref(reference, world)?))
-            }
-            None => Ok(None),
+        reference.with_reflect(world.clone(), |s| {
+            s.try_map_get(key.as_ref()).and_then(|maybe_value| {
+                maybe_value
+                    .map(|value| {
+                        let reference = {
+                            let allocator = world.allocator();
+                            let mut allocator_guard = allocator.write();
+                            ReflectReference::new_allocated_boxed_parial_reflect(
+                                value.to_dynamic(),
+                                &mut *allocator_guard,
+                            )?
+                        };
+                        ReflectReference::into_script_ref(reference, world)
+                    })
+                    .transpose()
+            })
         })?
     }
 
