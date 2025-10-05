@@ -223,6 +223,7 @@ impl ReflectAccessId {
             ReflectBase::Resource(id) => Self::for_component_id(id),
             ReflectBase::Component(_, id) => Self::for_component_id(id),
             ReflectBase::Owned(id) => Self::for_allocation(id),
+            ReflectBase::Asset(_, assets_resource_id) => Self::for_component_id(assets_resource_id),
         }
     }
 }
