@@ -6,8 +6,8 @@ local map = res.string_map
 local count = 0
 local found_keys = {}
 
--- ipairs_clone on a map returns (index, [key, value]) where value is a list
-for i, entry in map:ipairs_clone() do
+-- ipairs on a map returns (index, [key, value]) where value is a list
+for i, entry in map:ipairs() do
     assert(i == count + 1, "Index should be sequential: expected " .. (count + 1) .. ", got " .. i)
 
     -- entry should be a list with [key, value]

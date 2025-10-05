@@ -1,10 +1,14 @@
 local res_type = world.get_type_by_name("TestResourceWithVariousFields")
 local res = world.get_resource(res_type)
 
-iterated_vals = {}
-for v in pairs(res.vec_usize) do
-    iterated_vals[#iterated_vals + 1] = v
+local iterated_vals = {}
+local iterator = res.vec_usize:iter()
+local result = iterator()
+while result ~= nil do
+    iterated_vals[#iterated_vals + 1] = result
+    result = iterator()
 end
+
 assert(#iterated_vals == 5, "Length is not 5")
 assert(iterated_vals[1] == 1, "First value is not 1")
 assert(iterated_vals[2] == 2, "Second value is not 2")

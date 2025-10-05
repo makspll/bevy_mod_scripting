@@ -606,6 +606,7 @@ impl ReflectReference {
     }
 
     /// Gets and clones the value under the specified key if the underlying type is a map type.
+    /// Uses `from_reflect` to create a fully reflected clone that can be used with all operations.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
@@ -613,7 +614,7 @@ impl ReflectReference {
     /// * `key`: The key to index with.
     /// Returns:
     /// * `value`: The value at the key, if the reference is a map.
-    fn map_get_clone(
+    fn map_get(
         ctxt: FunctionCallContext,
         reference: ReflectReference,
         key: ScriptValue,
@@ -642,53 +643,6 @@ impl ReflectReference {
                 Ok(Some(ReflectReference::into_script_ref(reference, world)?))
             }
             None => Ok(None),
-        })?
-    }
-
-    /// Gets the value reference under the specified key using dynamic reflection if the underlying type is a map type.
-    /// This method uses `to_dynamic()` which creates a dynamic representation that only implements `PartialReflect`.
-    /// Note: Values returned by this method cannot be used with asset operations that require full `Reflect` trait.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to index into.
-    /// * `key`: The key to index with.
-    /// Returns:
-    /// * `value`: The dynamic value at the key, if the reference is a map.
-    fn map_get(
-        ctxt: FunctionCallContext,
-        reference: ReflectReference,
-        key: ScriptValue,
-    ) -> Result<Option<ScriptValue>, InteropError> {
-        profiling::function_scope!("map_get_dynamic");
-        let world = ctxt.world()?;
-        let key = <Box<dyn PartialReflect>>::from_script_ref(
-            reference.key_type_id(world.clone())?.ok_or_else(|| {
-                InteropError::unsupported_operation(
-                    reference.tail_type_id(world.clone()).unwrap_or_default(),
-                    Some(Box::new(key.clone())),
-                    "Could not get key type id. Are you trying to index into a type that's not a map?".to_owned(),
-                )
-            })?,
-            key,
-            world.clone(),
-        )?;
-        reference.with_reflect(world.clone(), |s| {
-            s.try_map_get(key.as_ref()).and_then(|maybe_value| {
-                maybe_value
-                    .map(|value| {
-                        let reference = {
-                            let allocator = world.allocator();
-                            let mut allocator_guard = allocator.write();
-                            ReflectReference::new_allocated_boxed_parial_reflect(
-                                value.to_dynamic(),
-                                &mut *allocator_guard,
-                            )?
-                        };
-                        ReflectReference::into_script_ref(reference, world)
-                    })
-                    .transpose()
-            })
         })?
     }
 
@@ -859,67 +813,8 @@ impl ReflectReference {
     }
 
     /// Iterates over the reference, if the reference is an appropriate container type.
+    /// Uses `from_reflect` to create fully reflected clones that can be used with all operations.
     ///
-    /// Returns an "next" iterator function.
-    ///
-    /// The iterator function should be called until it returns `nil` to signal the end of the iteration.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to iterate over.
-    /// Returns:
-    /// * `iter`: The iterator function.
-    fn iter(
-        ctxt: FunctionCallContext,
-        reference: ReflectReference,
-    ) -> Result<DynamicScriptFunctionMut, InteropError> {
-        profiling::function_scope!("iter");
-        let world = ctxt.world()?;
-        let mut len = reference.len(world.clone())?.unwrap_or_default();
-        // Check if this is a Map type
-        let is_map = reference.with_reflect(world.clone(), |r| {
-            matches!(r.reflect_ref(), ReflectRef::Map(_))
-        })?;
-
-        if is_map {
-            // Use special map iterator that doesn't rely on path resolution
-            let mut map_iter = reference.into_map_iter();
-            let iter_function = move || {
-                if len == 0 {
-                    return Ok(ScriptValue::Unit);
-                }
-                len -= 1;
-                let world = ThreadWorldContainer.try_get_world()?;
-                match map_iter.next_ref(world.clone())? {
-                    Some((key_ref, value_ref)) => {
-                        // Return both key and value as a List for Lua's pairs() to unpack
-                        let key_value = ReflectReference::into_script_ref(key_ref, world.clone())?;
-                        let value_value = ReflectReference::into_script_ref(value_ref, world)?;
-                        Ok(ScriptValue::List(vec![key_value, value_value]))
-                    }
-                    None => Ok(ScriptValue::Unit),
-                }
-            };
-            Ok(iter_function.into_dynamic_script_function_mut())
-        } else {
-            let mut infinite_iter = reference.into_iter_infinite();
-            let iter_function = move || {
-                if len == 0 {
-                    return Ok(ScriptValue::Unit);
-                }
-                len -= 1;
-                let world = ThreadWorldContainer.try_get_world()?;
-                let (next_ref, _) = infinite_iter.next_ref();
-                // we stop once the reflection path is invalid
-                ReflectReference::into_script_ref(next_ref, world)
-            };
-            Ok(iter_function.into_dynamic_script_function_mut())
-        }
-    }
-
-    /// Iterates over the reference with cloned values, if the reference is an appropriate container type.
-    ///
-    /// This method clones the actual values using `from_reflect` instead of creating dynamic references.
     /// Returns an "next" iterator function that returns fully reflected values (Box<dyn Reflect>).
     ///
     /// The iterator function should be called until it returns `nil` to signal the end of the iteration.
@@ -929,11 +824,11 @@ impl ReflectReference {
     /// * `reference`: The reference to iterate over.
     /// Returns:
     /// * `iter`: The iterator function that returns cloned values.
-    fn iter_clone(
+    fn iter(
         ctxt: FunctionCallContext,
         reference: ReflectReference,
     ) -> Result<DynamicScriptFunctionMut, InteropError> {
-        profiling::function_scope!("iter_clone");
+        profiling::function_scope!("iter");
         let world = ctxt.world()?;
         let mut len = reference.len(world.clone())?.unwrap_or_default();
         // Check if this is a Map type

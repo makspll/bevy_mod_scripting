@@ -348,14 +348,14 @@ impl UserData for LuaReflectReference {
             }
         });
 
-        m.add_method("pairs_clone", |lua, s: &LuaReflectReference, _args: ()| {
-            profiling::function_scope!("pairs_clone");
+        m.add_method("pairs", |lua, s: &LuaReflectReference, _args: ()| {
+            profiling::function_scope!("pairs");
             let world = ThreadWorldContainer
                 .try_get_world()
                 .map_err(IntoMluaError::to_lua_error)?;
 
             let iter_func = world
-                .lookup_function([TypeId::of::<ReflectReference>()], "iter_clone")
+                .lookup_function([TypeId::of::<ReflectReference>()], "iter")
                 .map_err(|f| {
                     InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
                 })
@@ -388,18 +388,18 @@ impl UserData for LuaReflectReference {
                         }
                     })
                 }
-                _ => Err(mlua::Error::RuntimeError("iter_clone function did not return a FunctionMut".to_string()))
+                _ => Err(mlua::Error::RuntimeError("iter function did not return a FunctionMut".to_string()))
             }
         });
 
-        m.add_method("ipairs_clone", |lua, s: &LuaReflectReference, _args: ()| {
-            profiling::function_scope!("ipairs_clone");
+        m.add_method("ipairs", |lua, s: &LuaReflectReference, _args: ()| {
+            profiling::function_scope!("ipairs");
             let world = ThreadWorldContainer
                 .try_get_world()
                 .map_err(IntoMluaError::to_lua_error)?;
 
             let iter_func = world
-                .lookup_function([TypeId::of::<ReflectReference>()], "iter_clone")
+                .lookup_function([TypeId::of::<ReflectReference>()], "iter")
                 .map_err(|f| {
                     InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
                 })
@@ -432,7 +432,7 @@ impl UserData for LuaReflectReference {
                         }
                     })
                 }
-                _ => Err(mlua::Error::RuntimeError("iter_clone function did not return a FunctionMut".to_string()))
+                _ => Err(mlua::Error::RuntimeError("iter function did not return a FunctionMut".to_string()))
             }
         });
 

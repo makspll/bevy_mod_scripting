@@ -2,7 +2,8 @@ local res_type = world.get_type_by_name("TestResourceWithVariousFields")
 local res = world.get_resource(res_type)
 
 local iterated_vals = {}
-for v in res.vec_usize:pairs_clone() do
+for i, v in res.vec_usize:ipairs() do
+    assert(i == #iterated_vals + 1, "Index mismatch: expected " .. (#iterated_vals + 1) .. ", got " .. i)
     iterated_vals[#iterated_vals + 1] = v
 end
 

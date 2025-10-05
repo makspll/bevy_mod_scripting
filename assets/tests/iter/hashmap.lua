@@ -3,13 +3,17 @@ local res = world.get_resource(res_type)
 
 local map = res.string_map
 
+local iterator = map:iter()
 local count = 0
 local found_keys = {}
 
---- Iterate over PartialReflect refs using pairs
-for key, value in pairs(map) do
+local result = iterator()
+while result ~= nil do
+    local key = result[1]
+    local value = result[2]
     count = count + 1
     found_keys[key] = value
+    result = iterator()
 end
 
 assert(count == 2, "Expected 2 entries, got " .. count)

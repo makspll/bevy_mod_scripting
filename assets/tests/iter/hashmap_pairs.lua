@@ -6,8 +6,7 @@ local map = res.string_map
 local count = 0
 local found_keys = {}
 
--- Use pairs_clone to loop over Reflect values
-for key, value in map:pairs_clone() do
+for key, value in map:pairs() do
     count = count + 1
     found_keys[key] = value
 end
