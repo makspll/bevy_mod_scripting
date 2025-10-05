@@ -392,6 +392,50 @@ impl UserData for LuaReflectReference {
             }
         });
 
+        m.add_method("ipairs_clone", |lua, s: &LuaReflectReference, _args: ()| {
+            profiling::function_scope!("ipairs_clone");
+            let world = ThreadWorldContainer
+                .try_get_world()
+                .map_err(IntoMluaError::to_lua_error)?;
+
+            let iter_func = world
+                .lookup_function([TypeId::of::<ReflectReference>()], "iter_clone")
+                .map_err(|f| {
+                    InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                })
+                .map_err(IntoMluaError::to_lua_error)?;
+
+            let result = iter_func
+                .call(vec![ScriptValue::Reference(s.clone().into())], LUA_CALLER_CONTEXT)
+                .map_err(IntoMluaError::to_lua_error)?;
+            
+            match result {
+                ScriptValue::FunctionMut(func) => {
+                    let mut index = 0i64;
+                    lua.create_function_mut(move |lua, _args: ()| {
+                        let result = func
+                            .call(vec![], LUA_CALLER_CONTEXT)
+                            .map_err(IntoMluaError::to_lua_error)?;
+                        
+                        match result {
+                            ScriptValue::Unit => {
+                                // End of iteration
+                                Ok((mlua::Value::Nil, mlua::Value::Nil))
+                            }
+                            _ => {
+                                // Return (index, value) tuple for ipairs
+                                index += 1;
+                                let idx = mlua::Value::Integer(index);
+                                let val = LuaScriptValue(result).into_lua(lua)?;
+                                Ok((idx, val))
+                            }
+                        }
+                    })
+                }
+                _ => Err(mlua::Error::RuntimeError("iter_clone function did not return a FunctionMut".to_string()))
+            }
+        });
+
         m.add_meta_function(MetaMethod::ToString, |_, self_: LuaReflectReference| {
             profiling::function_scope!("MetaMethod::ToString");
             let world = ThreadWorldContainer
