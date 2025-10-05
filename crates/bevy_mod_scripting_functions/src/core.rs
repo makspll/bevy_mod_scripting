@@ -884,6 +884,71 @@ impl ReflectReference {
         }
     }
 
+    /// Iterates over the reference with cloned values, if the reference is an appropriate container type.
+    ///
+    /// This method clones the actual values using `from_reflect` instead of creating dynamic references.
+    /// Returns an "next" iterator function that returns fully reflected values (Box<dyn Reflect>).
+    ///
+    /// The iterator function should be called until it returns `nil` to signal the end of the iteration.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to iterate over.
+    /// Returns:
+    /// * `iter`: The iterator function that returns cloned values.
+    fn iter_clone(
+        ctxt: FunctionCallContext,
+        reference: ReflectReference,
+    ) -> Result<DynamicScriptFunctionMut, InteropError> {
+        profiling::function_scope!("iter_clone");
+        let world = ctxt.world()?;
+        let mut len = reference.len(world.clone())?.unwrap_or_default();
+        // Check if this is a Map type
+        let is_map = reference.with_reflect(world.clone(), |r| {
+            matches!(r.reflect_ref(), ReflectRef::Map(_))
+        })?;
+
+        if is_map {
+            // Use special map iterator that clones values
+            let mut map_iter = reference.into_map_iter();
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                match map_iter.next_cloned(world.clone())? {
+                    Some((key_ref, value_ref)) => {
+                        // Return both key and value as a List for Lua's pairs() to unpack
+                        let key_value = ReflectReference::into_script_ref(key_ref, world.clone())?;
+                        let value_value = ReflectReference::into_script_ref(value_ref, world)?;
+                        Ok(ScriptValue::List(vec![key_value, value_value]))
+                    }
+                    None => Ok(ScriptValue::Unit),
+                }
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
+        } else {
+            // Use cloning iterator for lists/arrays
+            let mut infinite_iter = reference.into_iter_infinite();
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                match infinite_iter.next_cloned(world.clone())? {
+                    Some(value_ref) => {
+                        // Convert the cloned value to a script value
+                        ReflectReference::into_script_ref(value_ref, world)
+                    }
+                    None => Ok(ScriptValue::Unit),
+                }
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
+        }
+    }
+
     /// Lists the functions available on the reference.
     ///
     /// Arguments:

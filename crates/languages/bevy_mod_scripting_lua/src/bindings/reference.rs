@@ -323,7 +323,6 @@ impl UserData for LuaReflectReference {
             
             match result {
                 ScriptValue::FunctionMut(func) => {
-                    // Create a Lua function that wraps our iterator and unpacks List results
                     lua.create_function_mut(move |lua, _args: ()| {
                         let result = func
                             .call(vec![], LUA_CALLER_CONTEXT)
@@ -346,6 +345,50 @@ impl UserData for LuaReflectReference {
                     })
                 }
                 _ => Err(mlua::Error::RuntimeError("iter function did not return a FunctionMut".to_string()))
+            }
+        });
+
+        m.add_method("pairs_clone", |lua, s: &LuaReflectReference, _args: ()| {
+            profiling::function_scope!("pairs_clone");
+            let world = ThreadWorldContainer
+                .try_get_world()
+                .map_err(IntoMluaError::to_lua_error)?;
+
+            let iter_func = world
+                .lookup_function([TypeId::of::<ReflectReference>()], "iter_clone")
+                .map_err(|f| {
+                    InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                })
+                .map_err(IntoMluaError::to_lua_error)?;
+
+            let result = iter_func
+                .call(vec![ScriptValue::Reference(s.clone().into())], LUA_CALLER_CONTEXT)
+                .map_err(IntoMluaError::to_lua_error)?;
+            
+            match result {
+                ScriptValue::FunctionMut(func) => {
+                    lua.create_function_mut(move |lua, _args: ()| {
+                        let result = func
+                            .call(vec![], LUA_CALLER_CONTEXT)
+                            .map_err(IntoMluaError::to_lua_error)?;
+                        
+                        // If the result is a List with 2 elements, unpack it into multiple return values
+                        match result {
+                            ScriptValue::List(ref items) if items.len() == 2 => {
+                                // Return as tuple (key, value) which Lua unpacks automatically
+                                let key = LuaScriptValue(items[0].clone()).into_lua(lua)?;
+                                let value = LuaScriptValue(items[1].clone()).into_lua(lua)?;
+                                Ok((key, value))
+                            }
+                            _ => {
+                                // Single value or Unit - return as-is
+                                let val = LuaScriptValue(result).into_lua(lua)?;
+                                Ok((val, mlua::Value::Nil))
+                            }
+                        }
+                    })
+                }
+                _ => Err(mlua::Error::RuntimeError("iter_clone function did not return a FunctionMut".to_string()))
             }
         });
 

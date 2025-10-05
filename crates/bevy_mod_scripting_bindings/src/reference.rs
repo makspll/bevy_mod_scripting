@@ -788,6 +788,46 @@ impl ReflectRefIter {
         };
         (next, index)
     }
+
+    /// Returns the next element as a cloned value using `from_reflect`.
+    /// Returns a fully reflected value (Box<dyn Reflect>) instead of a reference.
+    /// Returns Ok(None) when the path is invalid (end of iteration).
+    pub fn next_cloned(&mut self, world: WorldGuard) -> Result<Option<ReflectReference>, InteropError> {
+        let index = match &mut self.index {
+            IterationKey::Index(i) => {
+                let idx = *i;
+                *i += 1;
+                idx
+            }
+        };
+
+        let element = self.base.with_reflect(world.clone(), |base_reflect| {
+            match base_reflect.reflect_ref() {
+                bevy_reflect::ReflectRef::List(list) => {
+                    list.get(index).map(|item| {
+                        <dyn PartialReflect>::from_reflect(item, world.clone())
+                    })
+                }
+                bevy_reflect::ReflectRef::Array(array) => {
+                    array.get(index).map(|item| {
+                        <dyn PartialReflect>::from_reflect(item, world.clone())
+                    })
+                }
+                _ => None,
+            }
+        })?;
+
+        match element {
+            Some(result) => {
+                let owned_value = result?;
+                let allocator = world.allocator();
+                let mut allocator_guard = allocator.write();
+                let value_ref = ReflectReference::new_allocated_boxed(owned_value, &mut *allocator_guard);
+                Ok(Some(value_ref))
+            }
+            None => Ok(None),
+        }
+    }
 }
 
 const fn list_index_access(index: usize) -> Access<'static> {
@@ -827,6 +867,49 @@ impl ReflectMapRefIter {
                             value.to_dynamic(),
                             &mut *allocator_guard
                         )?;
+                        
+                        drop(allocator_guard);
+                        Ok(Some((key_ref, value_ref)))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                _ => Err(InteropError::unsupported_operation(
+                    reflect.get_represented_type_info().map(|ti| ti.type_id()),
+                    None,
+                    "map iteration on non-map type".to_owned(),
+                ))
+            }
+        })?
+    }
+
+    /// Returns the next map entry as a (key, value) tuple, cloning the values.
+    /// Returns Ok(None) when there are no more entries.
+    /// This uses `from_reflect` to clone the actual values instead of creating dynamic references.
+    /// Returns fully reflected values (Box<dyn Reflect>) like `map_get_clone` does.
+    pub fn next_cloned(&mut self, world: WorldGuard) -> Result<Option<(ReflectReference, ReflectReference)>, InteropError> {
+        let idx = self.index;
+        self.index += 1;
+        
+        // Access the map and get the entry at index
+        self.base.with_reflect(world.clone(), |reflect| {
+            match reflect.reflect_ref() {
+                ReflectRef::Map(map) => {
+                    if let Some((key, value)) = map.get_at(idx) {
+                        let allocator = world.allocator();
+                        let mut allocator_guard = allocator.write();
+                        
+                        let owned_key = <dyn PartialReflect>::from_reflect(key, world.clone())?;
+                        let key_ref = ReflectReference::new_allocated_boxed(
+                            owned_key,
+                            &mut *allocator_guard
+                        );
+                        
+                        let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                        let value_ref = ReflectReference::new_allocated_boxed(
+                            owned_value,
+                            &mut *allocator_guard
+                        );
                         
                         drop(allocator_guard);
                         Ok(Some((key_ref, value_ref)))
