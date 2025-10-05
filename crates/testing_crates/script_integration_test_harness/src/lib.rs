@@ -4,7 +4,6 @@ pub mod test_functions;
 
 use std::{
     path::PathBuf,
-    sync::Mutex,
     time::{Duration, Instant},
 };
 
@@ -22,7 +21,6 @@ use ::{
     bevy_reflect::Reflect,
 };
 use bevy_asset::Assets;
-use bevy_ecs::world::World;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::{
     CoreScriptGlobalsPlugin, ReflectAccessId, ThreadWorldContainer, WorldAccessGuard,
@@ -340,61 +338,40 @@ where
 
 pub fn run_plugin_script_load_benchmark<
     P: IntoScriptPluginParams + Plugin + FromWorld,
+    F: Fn() -> P,
     M: Measurement,
 >(
-    plugin: P,
+    plugin_maker: F,
     benchmark_id: &str,
     content: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
-    reload_probability: f32,
 ) {
-    let mut app = setup_integration_test(|_, _| {});
-    install_test_plugin(&mut app, false);
-    app.add_plugins(plugin);
     let content_boxed = content.to_string().into_bytes().into_boxed_slice();
-    let mut rng_guard = RNG.lock().unwrap();
-    *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
-    drop(rng_guard);
-
-    let world_ptr = app.world_mut() as *mut World;
-    let world_guard = Mutex::<()>::new(());
 
     criterion.bench_function(benchmark_id, |c| {
         c.iter_batched(
             || {
-                let mut rng = RNG.lock().unwrap();
-                let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
+                let mut app = setup_integration_test(|_, _| {});
+                install_test_plugin(&mut app, false);
+                app.add_plugins(plugin_maker());
 
-                let guard = world_guard.lock().unwrap();
                 // Safety: we claimed a unique guard, only code accessing this will need to do the same
-                let world = unsafe { &mut *world_ptr };
+                let world = app.world_mut();
                 let mut assets = world.get_resource_or_init::<Assets<ScriptAsset>>();
 
-                let id = is_reload
-                    .then(|| assets.ids().next())
-                    .flatten()
-                    .and_then(|id| assets.get_strong_handle(id))
-                    .unwrap_or_else(|| {
-                        assets.add(ScriptAsset {
-                            content: content_boxed.clone(),
-                            language: P::LANGUAGE,
-                        })
-                    });
-                drop(guard);
+                let id = assets.add(ScriptAsset {
+                    content: content_boxed.clone(),
+                    language: P::LANGUAGE,
+                });
 
                 // We manually load the script inside a command.
                 (
+                    app,
                     AttachScript::<P>::new(ScriptAttachment::StaticScript(id)),
-                    is_reload,
                 )
             },
-            |(command, _is_reload)| {
-                tracing::event!(
-                    Level::TRACE,
-                    "profiling_iter {} is reload?: {}",
-                    benchmark_id,
-                    _is_reload
-                );
+            |(mut app, command)| {
+                tracing::event!(Level::TRACE, "profiling_iter {}", benchmark_id);
                 command.apply(app.world_mut());
             },
             BatchSize::LargeInput,

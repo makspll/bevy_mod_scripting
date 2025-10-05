@@ -116,6 +116,7 @@ impl ScriptGlobalsRegistry {
     }
 
     /// Inserts a global into the registry, returns the previous value if it existed
+    #[must_use]
     pub fn register<
         T: ScriptReturn + 'static + Typed,
         F: Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync,
@@ -140,11 +141,12 @@ impl ScriptGlobalsRegistry {
     /// This can be useful for globals which you cannot expose normally.
     ///
     /// Dummy globals are stored as non-static instances, i.e. they're expected to be values not type references.
+    #[must_use]
     pub fn register_dummy<T: 'static>(
         &mut self,
         name: impl Into<Cow<'static, str>>,
         documentation: impl Into<Cow<'static, str>>,
-    ) {
+    ) -> Option<ScriptGlobalDummy> {
         self.dummies.insert(
             name.into(),
             ScriptGlobalDummy {
@@ -152,15 +154,16 @@ impl ScriptGlobalsRegistry {
                 type_id: TypeId::of::<T>(),
                 type_information: None,
             },
-        );
+        )
     }
 
     /// Typed equivalent to [`Self::register_dummy`].
+    #[must_use]
     pub fn register_dummy_typed<T: 'static + TypedThrough>(
         &mut self,
         name: impl Into<Cow<'static, str>>,
         documentation: impl Into<Cow<'static, str>>,
-    ) {
+    ) -> Option<ScriptGlobalDummy> {
         self.dummies.insert(
             name.into(),
             ScriptGlobalDummy {
@@ -168,12 +171,13 @@ impl ScriptGlobalsRegistry {
                 type_id: TypeId::of::<T>(),
                 type_information: Some(T::through_type_info()),
             },
-        );
+        )
     }
 
     /// Inserts a global into the registry, returns the previous value if it existed.
     ///
     /// This is a version of [`Self::register`] which stores type information regarding the global.
+    #[must_use]
     pub fn register_documented<
         T: TypedScriptReturn + 'static,
         F: Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync,
@@ -195,7 +199,11 @@ impl ScriptGlobalsRegistry {
     }
 
     /// Registers a static global into the registry.
-    pub fn register_static<T: 'static + Typed>(&mut self, name: Cow<'static, str>) {
+    #[must_use]
+    pub fn register_static<T: 'static + Typed>(
+        &mut self,
+        name: Cow<'static, str>,
+    ) -> Option<ScriptGlobal> {
         self.globals.insert(
             name,
             ScriptGlobal {
@@ -204,17 +212,18 @@ impl ScriptGlobalsRegistry {
                 type_id: TypeId::of::<T>(),
                 type_information: into_through_type_info(T::type_info()),
             },
-        );
+        )
     }
 
     /// Registers a static global into the registry.
     ///
     /// This is a version of [`Self::register_static`] which stores rich type information regarding the global.
+    #[must_use]
     pub fn register_static_documented<T: TypedScriptReturn + 'static>(
         &mut self,
         name: Cow<'static, str>,
         documentation: Cow<'static, str>,
-    ) {
+    ) -> Option<ScriptGlobal> {
         self.globals.insert(
             name,
             ScriptGlobal {
@@ -223,19 +232,20 @@ impl ScriptGlobalsRegistry {
                 type_id: TypeId::of::<T>(),
                 type_information: T::through_type_info(),
             },
-        );
+        )
     }
 
     /// Registers a static global into the registry.
     ///
     /// This is a version of [`Self::register_static_documented`] which does not require compile time type knowledge.
+    #[must_use]
     pub fn register_static_documented_dynamic(
         &mut self,
         type_id: TypeId,
         type_information: ThroughTypeInfo,
         name: Cow<'static, str>,
         documentation: Cow<'static, str>,
-    ) {
+    ) -> Option<ScriptGlobal> {
         self.globals.insert(
             name,
             ScriptGlobal {
@@ -244,7 +254,7 @@ impl ScriptGlobalsRegistry {
                 type_id,
                 type_information,
             },
-        );
+        )
     }
 }
 
@@ -307,14 +317,14 @@ mod test {
     fn test_static_globals() {
         let mut registry = ScriptGlobalsRegistry::default();
 
-        registry.register_static::<i32>(Cow::Borrowed("foo"));
+        _ = registry.register_static::<i32>(Cow::Borrowed("foo"));
 
         let global = registry.get("foo").unwrap();
         assert!(global.maker.is_none());
         assert_eq!(global.type_id, TypeId::of::<i32>());
 
         // the same but documented
-        registry.register_static_documented::<i32>(
+        _ = registry.register_static_documented::<i32>(
             Cow::Borrowed("bar"),
             Cow::Borrowed("This is a test"),
         );
