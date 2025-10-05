@@ -2,16 +2,9 @@ let res_type = world.get_type_by_name.call("TestResourceWithVariousFields");
 let res = world.get_resource.call(res_type);
 
 let iterated_vals = [];
-let iterator = res.vec_usize.iter();
 
-loop {
-    let result = iterator.next();
-    
-    if result == () {
-        break;
-    }
-    
-    iterated_vals.push(result);
+for v in res.vec_usize {
+    iterated_vals.push(v);
 }
 
 assert(iterated_vals.len == 5, "Length is not 5");

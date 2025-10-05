@@ -989,49 +989,9 @@ pub struct ReflectMapRefIter {
 
 #[profiling::all_functions]
 impl ReflectMapRefIter {
-    /// Returns the next map entry as a (key, value) tuple.
-    /// Returns Ok(None) when there are no more entries.
-    pub fn next_ref(&mut self, world: WorldGuard) -> Result<Option<(ReflectReference, ReflectReference)>, InteropError> {
-        let idx = self.index;
-        self.index += 1;
-        
-        // Access the map and get the entry at index
-        self.base.with_reflect(world.clone(), |reflect| {
-            match reflect.reflect_ref() {
-                ReflectRef::Map(map) => {
-                    if let Some((key, value)) = map.get_at(idx) {
-                        let allocator = world.allocator();
-                        let mut allocator_guard = allocator.write();
-                        
-                        let key_ref = ReflectReference::new_allocated_boxed_parial_reflect(
-                            key.to_dynamic(),
-                            &mut *allocator_guard
-                        )?;
-                        
-                        let value_ref = ReflectReference::new_allocated_boxed_parial_reflect(
-                            value.to_dynamic(),
-                            &mut *allocator_guard
-                        )?;
-                        
-                        drop(allocator_guard);
-                        Ok(Some((key_ref, value_ref)))
-                    } else {
-                        Ok(None)
-                    }
-                }
-                _ => Err(InteropError::unsupported_operation(
-                    reflect.get_represented_type_info().map(|ti| ti.type_id()),
-                    None,
-                    "map iteration on non-map type".to_owned(),
-                ))
-            }
-        })?
-    }
-
     /// Returns the next map entry as a (key, value) tuple, cloning the values.
+    /// Uses `from_reflect` to create fully reflected clones that can be used with all operations.
     /// Returns Ok(None) when there are no more entries.
-    /// This uses `from_reflect` to clone the actual values instead of creating dynamic references.
-    /// Returns fully reflected values (Box<dyn Reflect>) like `map_get_clone` does.
     pub fn next_cloned(&mut self, world: WorldGuard) -> Result<Option<(ReflectReference, ReflectReference)>, InteropError> {
         let idx = self.index;
         self.index += 1;

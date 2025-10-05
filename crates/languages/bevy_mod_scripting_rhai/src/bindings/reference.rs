@@ -621,29 +621,6 @@ impl CustomType for RhaiReflectReference {
                     }
                     _ => Err(InteropError::invariant("iter function did not return a FunctionMut").into_rhai_error())
                 }
-            })
-            .with_fn("iter_clone", |self_: Self| {
-                let world = ThreadWorldContainer
-                    .try_get_world()
-                    .map_err(IntoRhaiError::into_rhai_error)?;
-
-                let iter_func = world
-                    .lookup_function([TypeId::of::<ReflectReference>()], "iter_clone")
-                    .map_err(|f| {
-                        InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
-                    })
-                    .map_err(IntoRhaiError::into_rhai_error)?;
-
-                let result = iter_func
-                    .call(vec![ScriptValue::Reference(self_.0)], RHAI_CALLER_CONTEXT)
-                    .map_err(IntoRhaiError::into_rhai_error)?;
-
-                match result {
-                    ScriptValue::FunctionMut(iter_fn) => {
-                        Ok(Dynamic::from(RhaiIterator { iter_fn }))
-                    }
-                    _ => Err(InteropError::invariant("iter_clone function did not return a FunctionMut").into_rhai_error())
-                }
             });
     }
 }
