@@ -512,6 +512,39 @@ impl World {
         let world = ctxt.world()?;
         world.register_script_component(name).map(Val)
     }
+
+    /// Retrieves an asset by its handle and asset type registration.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `handle_reference`: The handle to the asset (as a reflect reference).
+    /// * `registration`: The type registration of the asset type.
+    /// Returns:
+    /// * `asset`: The asset reference, if the asset is loaded.
+    fn get_asset(
+        ctxt: FunctionCallContext,
+        handle_reference: ReflectReference,
+        registration: Val<ScriptTypeRegistration>,
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        profiling::function_scope!("get_asset");
+        let untyped_handle = handle_reference.try_untyped_asset_handle(ctxt.world()?)?;
+        Ok(Some(ReflectReference::new_asset_ref(
+            untyped_handle,
+            registration.type_id(),
+            ctxt.world()?,
+        )?))
+    }
+
+    /// Checks if can get asset handle
+    fn has_asset(
+        ctxt: FunctionCallContext,
+        handle_reference: ReflectReference,
+    ) -> Result<bool, InteropError> {
+        profiling::function_scope!("has_asset");
+        Ok(handle_reference
+            .try_untyped_asset_handle(ctxt.world()?)
+            .is_ok())
+    }
 }
 
 #[script_bindings(
