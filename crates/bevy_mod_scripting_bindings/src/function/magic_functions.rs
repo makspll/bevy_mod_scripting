@@ -133,22 +133,66 @@ impl MagicFunctions {
         value: ScriptValue,
     ) -> Result<(), InteropError> {
         let world = ctxt.world()?;
-        let mut path: ParsedPath = key.try_into()?;
-        if ctxt.convert_to_0_indexed() {
-            path.convert_to_0_indexed();
+        
+        // Check if the reference is a map type
+        let is_map = reference.with_reflect(world.clone(), |r| {
+            matches!(r.reflect_ref(), ReflectRef::Map(_))
+        })?;
+        
+        if is_map {
+            // Handle map setting specially - need to get the key type and convert the script value
+            let key = <Box<dyn PartialReflect>>::from_script_ref(
+                reference.key_type_id(world.clone())?.ok_or_else(|| {
+                    InteropError::unsupported_operation(
+                        reference.tail_type_id(world.clone()).unwrap_or_default(),
+                        Some(Box::new(key.clone())),
+                        "Could not get key type id. Are you trying to index into a type that's not a map?".to_owned(),
+                    )
+                })?,
+                key,
+                world.clone(),
+            )?;
+            
+            // Get the value type for the map and convert the script value
+            let value_type_id = reference.element_type_id(world.clone())?.ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    reference.tail_type_id(world.clone()).unwrap_or_default(),
+                    Some(Box::new(value.clone())),
+                    "Could not get value type id. Are you trying to set a value in a type that's not a map?".to_owned(),
+                )
+            })?;
+            
+            let value = <Box<dyn PartialReflect>>::from_script_ref(
+                value_type_id,
+                value,
+                world.clone(),
+            )?;
+            
+            reference.with_reflect_mut(world, |s| {
+                s.try_insert_boxed(key, value)
+            })??;
+        } else {
+            let mut path: ParsedPath = key.try_into()?;
+            if ctxt.convert_to_0_indexed() {
+                path.convert_to_0_indexed();
+            }
+            reference.index_path(path);
+            
+            let target_type_id = reference.with_reflect(world.clone(), |r| {
+                r.get_represented_type_info()
+                    .map(|i| i.type_id())
+                    .or_fake_id()
+            })?;
+            
+            let other = <Box<dyn PartialReflect>>::from_script_ref(target_type_id, value, world.clone())?;
+            
+            reference.with_reflect_mut(world, |r| {
+                r.try_apply(other.as_partial_reflect())
+                    .map_err(InteropError::reflect_apply_error)
+            })??;
         }
-        reference.index_path(path);
-        reference.with_reflect_mut(world.clone(), |r| {
-            let target_type_id = r
-                .get_represented_type_info()
-                .map(|i| i.type_id())
-                .or_fake_id();
-            let other =
-                <Box<dyn PartialReflect>>::from_script_ref(target_type_id, value, world.clone())?;
-            r.try_apply(other.as_partial_reflect())
-                .map_err(InteropError::reflect_apply_error)?;
-            Ok::<_, InteropError>(())
-        })?
+        
+        Ok(())
     }
 }
 
