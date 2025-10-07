@@ -655,51 +655,6 @@ impl ReflectReference {
         ReflectReference::into_script_ref(reference, world)
     }
 
-    /// Inserts the value into the reference at the specified index, if the reference is an appropriate container type.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to insert the value into.
-    /// * `key`: The index to insert the value at.
-    /// * `value`: The value to insert.
-    /// Returns:
-    /// * `result`: Nothing if the value was inserted successfully.
-    fn insert(
-        ctxt: FunctionCallContext,
-        reference: ReflectReference,
-        key: ScriptValue,
-        value: ScriptValue,
-    ) -> Result<(), InteropError> {
-        profiling::function_scope!("insert");
-        let world = ctxt.world()?;
-        let key_type_id = reference.key_type_id(world.clone())?.ok_or_else(|| {
-            InteropError::unsupported_operation(
-                reference.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(key.clone())),
-                "Could not get key type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
-            )
-        })?;
-
-        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
-
-        if ctxt.convert_to_0_indexed() {
-            key.convert_to_0_indexed_key();
-        }
-
-        let value_type_id = reference.element_type_id(world.clone())?.ok_or_else(|| {
-            InteropError::unsupported_operation(
-                reference.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(value.clone())),
-                "Could not get element type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
-            )
-        })?;
-
-        let value =
-            <Box<dyn PartialReflect>>::from_script_ref(value_type_id, value, world.clone())?;
-
-        reference.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
-    }
-
     /// Clears the container, if the reference is an appropriate container type.
     /// Arguments:
     /// * `ctxt`: The function call context.
