@@ -1,9 +1,9 @@
 //! All the switchable special functions used by language implementors
 use super::{FromScriptRef, FunctionCallContext, IntoScriptRef};
-use crate::{ReflectReference, ReflectionPathExt, ScriptValue, error::InteropError};
+use crate::{error::InteropError, PartialReflectExt, ReflectReference, ReflectionPathExt, ScriptValue};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::OrFakeId;
-use bevy_reflect::{ParsedPath, PartialReflect};
+use bevy_reflect::{ParsedPath, PartialReflect, ReflectRef};
 
 /// A list of magic methods, these only have one replacable implementation, and apply to all `ReflectReferences`.
 /// It's up to the language implementer to call these in the right order (after any type specific overrides).
@@ -51,8 +51,6 @@ impl MagicFunctions {
     /// Indexes into the given reference and if the nested type is a reference type, returns a deeper reference, otherwise
     /// returns the concrete value.
     ///
-    /// Does not support map types at the moment, for maps see `map_get`
-    ///
     /// Arguments:
     /// * `ctxt`: The function call context.
     /// * `reference`: The reference to index into.
@@ -65,13 +63,57 @@ impl MagicFunctions {
         mut reference: ReflectReference,
         key: ScriptValue,
     ) -> Result<ScriptValue, InteropError> {
-        let mut path: ParsedPath = key.try_into()?;
-        if ctxt.convert_to_0_indexed() {
-            path.convert_to_0_indexed();
-        }
-        reference.index_path(path);
         let world = ctxt.world()?;
-        ReflectReference::into_script_ref(reference, world)
+        
+        // Check if the reference is a map type
+        let is_map = reference.with_reflect(world.clone(), |r| {
+            matches!(r.reflect_ref(), ReflectRef::Map(_))
+        })?;
+        
+        if is_map {
+            // Handle map indexing specially - need to get the key type and convert the script value
+            let key = <Box<dyn PartialReflect>>::from_script_ref(
+                reference.key_type_id(world.clone())?.ok_or_else(|| {
+                    InteropError::unsupported_operation(
+                        reference.tail_type_id(world.clone()).unwrap_or_default(),
+                        Some(Box::new(key.clone())),
+                        "Could not get key type id. Are you trying to index into a type that's not a map?".to_owned(),
+                    )
+                })?,
+                key,
+                world.clone(),
+            )?;
+            
+            reference.with_reflect(world.clone(), |s| match s.try_map_get(key.as_ref())? {
+                Some(value) => {
+                    let reference = {
+                        let allocator = world.allocator();
+                        let mut allocator = allocator.write();
+                        let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                        ReflectReference::new_allocated_boxed(owned_value, &mut allocator)
+                    };
+                    ReflectReference::into_script_ref(reference, world)
+                }
+                None => {
+                    // Return None option if key doesn't exist
+                    let none_option: Option<()> = None;
+                    let reference = {
+                        let allocator = world.allocator();
+                        let mut allocator = allocator.write();
+                        ReflectReference::new_allocated_boxed(Box::new(none_option), &mut allocator)
+                    };
+                    ReflectReference::into_script_ref(reference, world)
+                }
+            })?
+        } else {
+            // Handle path-based indexing for non-map types
+            let mut path: ParsedPath = key.try_into()?;
+            if ctxt.convert_to_0_indexed() {
+                path.convert_to_0_indexed();
+            }
+            reference.index_path(path);
+            ReflectReference::into_script_ref(reference, world)
+        }
     }
 
     /// Sets the value under the specified path on the underlying value.

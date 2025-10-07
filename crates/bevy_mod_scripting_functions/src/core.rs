@@ -605,47 +605,6 @@ impl ReflectReference {
         Ok(format!("{reference:#?}"))
     }
 
-    /// Gets and clones the value under the specified key if the underlying type is a map type.
-    /// Uses `from_reflect` to create a fully reflected clone that can be used with all operations.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to index into.
-    /// * `key`: The key to index with.
-    /// Returns:
-    /// * `value`: The value at the key, if the reference is a map.
-    fn map_get(
-        ctxt: FunctionCallContext,
-        reference: ReflectReference,
-        key: ScriptValue,
-    ) -> Result<Option<ScriptValue>, InteropError> {
-        profiling::function_scope!("map_get");
-        let world = ctxt.world()?;
-        let key = <Box<dyn PartialReflect>>::from_script_ref(
-            reference.key_type_id(world.clone())?.ok_or_else(|| {
-                InteropError::unsupported_operation(
-                    reference.tail_type_id(world.clone()).unwrap_or_default(),
-                    Some(Box::new(key.clone())),
-                    "Could not get key type id. Are you trying to index into a type that's not a map?".to_owned(),
-                )
-            })?,
-            key,
-            world.clone(),
-        )?;
-        reference.with_reflect(world.clone(), |s| match s.try_map_get(key.as_ref())? {
-            Some(value) => {
-                let reference = {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
-                    ReflectReference::new_allocated_boxed(owned_value, &mut allocator)
-                };
-                Ok(Some(ReflectReference::into_script_ref(reference, world)?))
-            }
-            None => Ok(None),
-        })?
-    }
-
     /// Pushes the value into the reference, if the reference is an appropriate container type.
     ///
     /// Arguments:

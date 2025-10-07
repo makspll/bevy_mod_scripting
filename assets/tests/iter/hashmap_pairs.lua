@@ -6,7 +6,7 @@ local map = res.string_map
 local count = 0
 local found_keys = {}
 
-for key, value in map:pairs() do
+for key, value in pairs(map) do
     count = count + 1
     found_keys[key] = value
 end
