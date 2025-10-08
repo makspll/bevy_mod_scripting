@@ -146,6 +146,12 @@ impl ReflectReference {
         }
     }
 
+    /// Creates a new iterator for Sets specifically.
+    /// Unlike `into_iter_infinite`, this iterator is finite and will return None when exhausted.
+    pub fn into_set_iter(self, world: WorldGuard) -> Result<ReflectSetRefIter, InteropError> {
+        ReflectSetRefIter::new(self, world)
+    }
+
     /// If this is a reference to something with a length accessible via reflection, returns that length.
     pub fn len(&self, world: WorldGuard) -> Result<Option<usize>, InteropError> {
         self.with_reflect(world, |r| match r.reflect_ref() {
@@ -1194,6 +1200,65 @@ impl ReflectMapRefIter {
                     "map iteration on non-map type".to_owned(),
                 )),
             })?
+    }
+}
+
+/// Iterator specifically for Sets that doesn't use the path system.
+/// This collects all set values in a Vec to enable O(1) iteration, but with memory overhead.
+pub struct ReflectSetRefIter {
+    values: Vec<ReflectReference>,
+    index: usize,
+}
+
+#[profiling::all_functions]
+impl ReflectSetRefIter {
+    /// Creates a new set iterator by collecting all values from the set in a Vec.
+    pub fn new(base: ReflectReference, world: WorldGuard) -> Result<Self, InteropError> {
+        let values = base.with_reflect(world.clone(), |reflect| match reflect.reflect_ref() {
+            ReflectRef::Set(set) => {
+                let allocator = world.allocator();
+                let mut allocator_guard = allocator.write();
+                
+                let mut collected_values = Vec::with_capacity(set.len());
+                
+                for value in set.iter() {
+                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                    let value_ref = ReflectReference::new_allocated_boxed(
+                        owned_value,
+                        &mut *allocator_guard,
+                    );
+                    collected_values.push(value_ref);
+                }
+                
+                drop(allocator_guard);
+                Ok(collected_values)
+            }
+            _ => Err(InteropError::unsupported_operation(
+                reflect.get_represented_type_info().map(|ti| ti.type_id()),
+                None,
+                "set iteration on non-set type".to_owned(),
+            )),
+        })??;
+        
+        Ok(Self {
+            values,
+            index: 0,
+        })
+    }
+    
+    /// Returns the next set entry.
+    /// Returns Ok(None) when there are no more entries.
+    pub fn next_cloned(
+        &mut self,
+        _world: WorldGuard,
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        if self.index < self.values.len() {
+            let value = self.values[self.index].clone();
+            self.index += 1;
+            Ok(Some(value))
+        } else {
+            Ok(None)
+        }
     }
 }
 

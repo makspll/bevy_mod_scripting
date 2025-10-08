@@ -7,7 +7,6 @@ use std::ops::Deref;
 use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
-use bevy_reflect::ReflectRef;
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt,
     ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
@@ -729,6 +728,10 @@ impl ReflectReference {
     /// Iterates over the reference, if the reference is an appropriate container type.
     /// Uses `from_reflect` to create fully reflected clones that can be used with all operations.
     ///
+    /// For Maps, returns an iterator function that returns [key, value] pairs.
+    /// For Sets, returns an iterator function that returns individual values.
+    /// For other containers (Lists, Arrays), returns an iterator function that returns individual elements.
+    ///
     /// Returns an "next" iterator function that returns fully reflected values (Box<dyn Reflect>).
     ///
     /// The iterator function should be called until it returns `nil` to signal the end of the iteration.
@@ -745,10 +748,8 @@ impl ReflectReference {
         profiling::function_scope!("iter");
         let world = ctxt.world()?;
         let mut len = reference.len(world.clone())?.unwrap_or_default();
-        // Check if this is a Map type
-        let is_map = reference.with_reflect(world.clone(), |r| {
-            matches!(r.reflect_ref(), ReflectRef::Map(_))
-        })?;
+        let is_map = reference.is_map(world.clone())?;
+        let is_set = reference.is_set(world.clone())?;
 
         if is_map {
             // Use special map iterator that clones values
@@ -770,6 +771,21 @@ impl ReflectReference {
                 }
             };
             Ok(iter_function.into_dynamic_script_function_mut())
+        } else if is_set {
+            // Use special set iterator that clones values upfront for efficient iteration
+            let mut set_iter = reference.into_set_iter(world.clone())?;
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                match set_iter.next_cloned(world.clone())? {
+                    Some(value_ref) => ReflectReference::into_script_ref(value_ref, world),
+                    None => Ok(ScriptValue::Unit),
+                }
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
         } else {
             // Use cloning iterator for lists/arrays
             let mut infinite_iter = reference.into_iter_infinite();
@@ -780,10 +796,7 @@ impl ReflectReference {
                 len -= 1;
                 let world = ThreadWorldContainer.try_get_world()?;
                 match infinite_iter.next_cloned(world.clone())? {
-                    Some(value_ref) => {
-                        // Convert the cloned value to a script value
-                        ReflectReference::into_script_ref(value_ref, world)
-                    }
+                    Some(value_ref) => ReflectReference::into_script_ref(value_ref, world),
                     None => Ok(ScriptValue::Unit),
                 }
             };
