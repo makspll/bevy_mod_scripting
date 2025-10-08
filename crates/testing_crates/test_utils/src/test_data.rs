@@ -1,4 +1,4 @@
-use std::{alloc::Layout, collections::HashMap};
+use std::{alloc::Layout, collections::{HashMap, HashSet}};
 
 use bevy_app::{App, ScheduleRunnerPlugin, TaskPoolPlugin};
 use bevy_diagnostic::FrameCountPlugin;
@@ -158,6 +158,7 @@ pub struct TestResourceWithVariousFields {
     pub bool: bool,
     pub vec_usize: Vec<usize>,
     pub string_map: HashMap<String, String>,
+    pub string_set: HashSet<String>,
 }
 
 impl TestResourceWithVariousFields {
@@ -172,6 +173,10 @@ impl TestResourceWithVariousFields {
             string_map: vec![("foo", "bar"), ("zoo", "zed")]
                 .into_iter()
                 .map(|(a, b)| (a.to_owned(), b.to_owned()))
+                .collect(),
+            string_set: vec!["apple", "banana"]
+                .into_iter()
+                .map(|s| s.to_owned())
                 .collect(),
         }
     }

@@ -17,6 +17,14 @@ pub trait PartialReflectExt {
         key: &dyn PartialReflect,
     ) -> Result<Option<&dyn PartialReflect>, InteropError>;
 
+    /// Try to get the value from the set if it exists.
+    /// For sets, this checks if the value exists and returns it as a boxed value.
+    /// Returns Some(value) if the value exists in the set, None if it doesn't.
+    fn try_set_get(
+        &self,
+        value: &dyn PartialReflect,
+    ) -> Result<Option<Box<dyn PartialReflect>>, InteropError>;
+
     /// Try to remove the value at the given key, if the type supports removing with the given key.
     fn try_remove_boxed(
         &mut self,
@@ -313,6 +321,31 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                 self.get_represented_type_info().map(|ti| ti.type_id()),
                 None,
                 "map_get".to_owned(),
+            )),
+        }
+    }
+
+    fn try_set_get(
+        &self,
+        value: &dyn PartialReflect,
+    ) -> Result<Option<Box<dyn PartialReflect>>, InteropError> {
+        match self.reflect_ref() {
+            ReflectRef::Set(s) => {
+                // Check if the set contains the value
+                if s.contains(value) {
+                    // Clone and return the value if it exists in the set
+                    let cloned = value.reflect_clone()
+                        .map_err(|e| InteropError::string(format!("Failed to clone set value: {}", e)))?;
+                    // Downcast to PartialReflect since reflect_clone returns Box<dyn Reflect>
+                    Ok(Some(cloned))
+                } else {
+                    Ok(None)
+                }
+            }
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                None,
+                "set_get".to_owned(),
             )),
         }
     }
