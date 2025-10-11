@@ -1,9 +1,7 @@
 //! All the switchable special functions used by language implementors
-use super::{FromScriptRef, FunctionCallContext, IntoScriptRef};
-use crate::{ReflectReference, ReflectionPathExt, ScriptValue, error::InteropError};
+use super::FunctionCallContext;
+use crate::{error::InteropError, ReflectReference, ScriptValue};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::OrFakeId;
-use bevy_reflect::{ParsedPath, PartialReflect};
 
 /// A list of magic methods, these only have one replacable implementation, and apply to all `ReflectReferences`.
 /// It's up to the language implementer to call these in the right order (after any type specific overrides).
@@ -51,8 +49,6 @@ impl MagicFunctions {
     /// Indexes into the given reference and if the nested type is a reference type, returns a deeper reference, otherwise
     /// returns the concrete value.
     ///
-    /// Does not support map types at the moment, for maps see `map_get`
-    ///
     /// Arguments:
     /// * `ctxt`: The function call context.
     /// * `reference`: The reference to index into.
@@ -65,13 +61,8 @@ impl MagicFunctions {
         mut reference: ReflectReference,
         key: ScriptValue,
     ) -> Result<ScriptValue, InteropError> {
-        let mut path: ParsedPath = key.try_into()?;
-        if ctxt.convert_to_0_indexed() {
-            path.convert_to_0_indexed();
-        }
-        reference.index_path(path);
         let world = ctxt.world()?;
-        ReflectReference::into_script_ref(reference, world)
+        reference.get_indexed(key, world, ctxt.convert_to_0_indexed())
     }
 
     /// Sets the value under the specified path on the underlying value.
@@ -91,22 +82,7 @@ impl MagicFunctions {
         value: ScriptValue,
     ) -> Result<(), InteropError> {
         let world = ctxt.world()?;
-        let mut path: ParsedPath = key.try_into()?;
-        if ctxt.convert_to_0_indexed() {
-            path.convert_to_0_indexed();
-        }
-        reference.index_path(path);
-        reference.with_reflect_mut(world.clone(), |r| {
-            let target_type_id = r
-                .get_represented_type_info()
-                .map(|i| i.type_id())
-                .or_fake_id();
-            let other =
-                <Box<dyn PartialReflect>>::from_script_ref(target_type_id, value, world.clone())?;
-            r.try_apply(other.as_partial_reflect())
-                .map_err(InteropError::reflect_apply_error)?;
-            Ok::<_, InteropError>(())
-        })?
+        reference.set_indexed(key, value, world, ctxt.convert_to_0_indexed())
     }
 }
 

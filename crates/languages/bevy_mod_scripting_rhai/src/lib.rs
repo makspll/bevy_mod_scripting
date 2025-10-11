@@ -25,7 +25,7 @@ use bevy_mod_scripting_core::{
     make_plugin_config_static,
     script::{ContextPolicy, DisplayProxy, ScriptAttachment},
 };
-use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference};
+use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference, RhaiIterator};
 use parking_lot::RwLock;
 pub use rhai;
 
@@ -142,6 +142,7 @@ impl Default for RhaiScriptingPlugin {
                     engine.set_max_expr_depths(999, 999);
                     engine.build_type::<RhaiReflectReference>();
                     engine.build_type::<RhaiStaticReflectReference>();
+                    engine.build_type::<RhaiIterator>();
                     engine.register_iterator_result::<RhaiReflectReference, _>();
                     Ok(())
                 }],

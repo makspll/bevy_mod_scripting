@@ -4,32 +4,35 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use super::{WorldGuard, access_map::ReflectAccessId};
-use crate::{
-    ReflectAllocationId, ReflectAllocator, ThreadWorldContainer, WorldContainer,
-    error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
-    with_access_write,
-};
-use bevy_asset::{ReflectAsset, UntypedHandle};
-use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
-use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{
-    DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
-};
-use bevy_reflect::{Access, OffsetAccess, ReflectRef};
 use core::alloc;
 use std::{
     any::{Any, TypeId},
     fmt::Debug,
 };
-use {
-    bevy_ecs::{
-        change_detection::MutUntyped, component::ComponentId, entity::Entity,
-        world::unsafe_world_cell::UnsafeWorldCell,
-    },
-    bevy_reflect::{
-        ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, prelude::ReflectDefault,
-    },
+
+use bevy_asset::{ReflectAsset, UntypedHandle};
+use bevy_ecs::{
+    change_detection::MutUntyped,
+    component::{Component, ComponentId},
+    entity::Entity,
+    ptr::Ptr,
+    resource::Resource,
+    world::unsafe_world_cell::UnsafeWorldCell,
+};
+use bevy_mod_scripting_derive::DebugWithTypeInfo;
+use bevy_mod_scripting_display::{
+    DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
+};
+use bevy_reflect::{
+    Access, OffsetAccess, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath,
+    ReflectRef, prelude::ReflectDefault,
+};
+
+use super::{WorldGuard, access_map::ReflectAccessId};
+use crate::{
+    FromScriptRef, IntoScriptRef, ReflectAllocationId, ReflectAllocator, ThreadWorldContainer,
+    WorldContainer, error::InteropError, reflection_extensions::PartialReflectExt,
+    with_access_read, with_access_write,
 };
 
 /// A reference to an arbitrary reflected instance.
@@ -132,6 +135,21 @@ impl ReflectReference {
     /// Creates a new infinite iterator. This iterator will keep returning the next element reference forever.
     pub fn into_iter_infinite(self) -> ReflectRefIter {
         ReflectRefIter::new_indexed(self)
+    }
+
+    /// Creates a new iterator for Maps specifically.
+    /// Unlike `into_iter_infinite`, this iterator is finite and will return None when exhausted.
+    pub fn into_map_iter(self) -> ReflectMapRefIter {
+        ReflectMapRefIter {
+            base: self,
+            index: 0,
+        }
+    }
+
+    /// Creates a new iterator for Sets specifically.
+    /// Unlike `into_iter_infinite`, this iterator is finite and will return None when exhausted.
+    pub fn into_set_iter(self, world: WorldGuard) -> Result<ReflectSetRefIter, InteropError> {
+        ReflectSetRefIter::new(self, world)
     }
 
     /// If this is a reference to something with a length accessible via reflection, returns that length.
@@ -341,6 +359,123 @@ impl ReflectReference {
     /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
     pub fn index_path<T: Into<ParsedPath>>(&mut self, index: T) {
         self.reflect_path.0.extend(index.into().0);
+    }
+
+    #[inline]
+    /// Checks if the reference points to a map type.
+    pub fn is_map(&self, world: WorldGuard) -> Result<bool, InteropError> {
+        self.with_reflect(world, |r| matches!(r.reflect_ref(), ReflectRef::Map(_)))
+    }
+
+    #[inline]
+    /// Checks if the reference points to a set type.
+    pub fn is_set(&self, world: WorldGuard) -> Result<bool, InteropError> {
+        self.with_reflect(world, |r| matches!(r.reflect_ref(), ReflectRef::Set(_)))
+    }
+
+    /// Gets a value from the reference using the provided key.
+    /// If the reference is a map, uses map indexing with proper key type conversion.
+    /// If the reference is a set, checks if the value exists and returns it or None.
+    /// Otherwise, uses path-based indexing.
+    ///
+    /// Returns a new allocated reference to the retrieved value, or None if not found (for maps/sets).
+    pub fn get_indexed(
+        &mut self,
+        key: crate::ScriptValue,
+        world: WorldGuard,
+        convert_to_0_indexed: bool,
+    ) -> Result<crate::ScriptValue, InteropError> {
+        if self.is_map(world.clone())? {
+            // Handle map indexing specially - need to get the key type and convert the script value
+            let key_type_id = self.get_key_type_id_or_error(&key, world.clone())?;
+            let key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
+
+            self.with_reflect(world.clone(), |s| match s.try_map_get(key.as_ref())? {
+                Some(value) => {
+                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                    Self::allocate_reflect_as_script_value(owned_value, world)
+                }
+                None => Self::allocate_reflect_as_script_value(Box::new(None::<()>), world),
+            })?
+        } else if self.is_set(world.clone())? {
+            // Set containment check - need to get the value type and convert the script value
+            let element_type_id = self.get_element_type_id_or_error(&key, world.clone())?;
+            let value =
+                <Box<dyn PartialReflect>>::from_script_ref(element_type_id, key, world.clone())?;
+
+            self.with_reflect(world.clone(), |s| match s.try_set_get(value.as_ref())? {
+                Some(contained_value) => {
+                    let owned_value = <dyn PartialReflect>::from_reflect(
+                        contained_value.as_ref(),
+                        world.clone(),
+                    )?;
+                    Self::allocate_reflect_as_script_value(owned_value, world)
+                }
+                None => Self::allocate_reflect_as_script_value(Box::new(None::<()>), world),
+            })?
+        } else {
+            let mut path: ParsedPath = key.try_into()?;
+            if convert_to_0_indexed {
+                path.convert_to_0_indexed();
+            }
+            self.index_path(path);
+            ReflectReference::into_script_ref(self.clone(), world)
+        }
+    }
+
+    /// Sets a value in the reference using the provided key.
+    /// If the reference is a map, uses map insertion with proper key/value type conversion.
+    /// If the reference is a set, inserts the key (ignoring the value parameter).
+    /// Otherwise, uses path-based indexing and applies the value.
+    pub fn set_indexed(
+        &mut self,
+        key: crate::ScriptValue,
+        value: crate::ScriptValue,
+        world: WorldGuard,
+        convert_to_0_indexed: bool,
+    ) -> Result<(), InteropError> {
+        if self.is_map(world.clone())? {
+            // Handle map setting specially - need to get the key type and convert the script value
+            let key_type_id = self.get_key_type_id_or_error(&key, world.clone())?;
+            let key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
+
+            // Get the value type for the map and convert the script value
+            let value_type_id = self.get_element_type_id_or_error(&value, world.clone())?;
+            let value =
+                <Box<dyn PartialReflect>>::from_script_ref(value_type_id, value, world.clone())?;
+
+            self.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))??;
+        } else if self.is_set(world.clone())? {
+            // Handle set insertion - need to get the element type and convert the key (which is the value to insert)
+            let element_type_id = self.get_element_type_id_or_error(&key, world.clone())?;
+            let insert_value =
+                <Box<dyn PartialReflect>>::from_script_ref(element_type_id, key, world.clone())?;
+
+            // For sets, try_insert_boxed takes (key, value) but only uses value, so we pass a dummy key
+            self.with_reflect_mut(world, |s| s.try_insert_boxed(Box::new(()), insert_value))??;
+        } else {
+            let mut path: ParsedPath = key.try_into()?;
+            if convert_to_0_indexed {
+                path.convert_to_0_indexed();
+            }
+            self.index_path(path);
+
+            let target_type_id = self.with_reflect(world.clone(), |r| {
+                r.get_represented_type_info()
+                    .map(|i| i.type_id())
+                    .or_fake_id()
+            })?;
+
+            let other =
+                <Box<dyn PartialReflect>>::from_script_ref(target_type_id, value, world.clone())?;
+
+            self.with_reflect_mut(world, |r| {
+                r.try_apply(other.as_partial_reflect())
+                    .map_err(InteropError::reflect_apply_error)
+            })??;
+        }
+
+        Ok(())
     }
 
     /// Tries to downcast to the specified type and cloning the value if successful.
@@ -597,6 +732,51 @@ impl ReflectReference {
         self.reflect_path
             .reflect_element_mut(root)
             .map_err(|e| InteropError::reflection_path_error(e, Some(self.clone())))
+    }
+
+    /// Allocates a reflected value and returns it as a script value.
+    /// Handles the allocator locking and reference wrapping.
+    fn allocate_reflect_as_script_value(
+        value: Box<dyn Reflect>,
+        world: WorldGuard,
+    ) -> Result<crate::ScriptValue, InteropError> {
+        let reference = {
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated_boxed(value, &mut allocator)
+        };
+        ReflectReference::into_script_ref(reference, world)
+    }
+
+    /// Retrieves the key type id with a descriptive error if not available.
+    fn get_key_type_id_or_error(
+        &self,
+        key_value: &crate::ScriptValue,
+        world: WorldGuard,
+    ) -> Result<TypeId, InteropError> {
+        self.key_type_id(world.clone())?.ok_or_else(|| {
+            InteropError::unsupported_operation(
+                self.tail_type_id(world).unwrap_or_default(),
+                Some(Box::new(key_value.clone())),
+                "Could not get key type id. Are you trying to index into a type that's not a map?"
+                    .to_owned(),
+            )
+        })
+    }
+
+    /// Retrieves the element type id with a descriptive error if not available.
+    fn get_element_type_id_or_error(
+        &self,
+        value: &crate::ScriptValue,
+        world: WorldGuard,
+    ) -> Result<TypeId, InteropError> {
+        self.element_type_id(world.clone())?.ok_or_else(|| {
+            InteropError::unsupported_operation(
+                self.tail_type_id(world).unwrap_or_default(),
+                Some(Box::new(value.clone())),
+                "Could not get element type id. Are you trying to index/insert into a type that's not a set/map?".to_owned(),
+            )
+        })
     }
 }
 
@@ -924,11 +1104,164 @@ impl ReflectRefIter {
         };
         (next, index)
     }
+
+    /// Returns the next element as a cloned value using `from_reflect`.
+    /// Returns a fully reflected value (Box<dyn Reflect>) instead of a reference.
+    /// Returns Ok(None) when the path is invalid (end of iteration).
+    pub fn next_cloned(
+        &mut self,
+        world: WorldGuard,
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        let index = match &mut self.index {
+            IterationKey::Index(i) => {
+                let idx = *i;
+                *i += 1;
+                idx
+            }
+        };
+
+        let element = self.base.with_reflect(world.clone(), |base_reflect| {
+            match base_reflect.reflect_ref() {
+                bevy_reflect::ReflectRef::List(list) => list
+                    .get(index)
+                    .map(|item| <dyn PartialReflect>::from_reflect(item, world.clone())),
+                bevy_reflect::ReflectRef::Array(array) => array
+                    .get(index)
+                    .map(|item| <dyn PartialReflect>::from_reflect(item, world.clone())),
+                _ => None,
+            }
+        })?;
+
+        match element {
+            Some(result) => {
+                let owned_value = result?;
+                let allocator = world.allocator();
+                let mut allocator_guard = allocator.write();
+                let value_ref =
+                    ReflectReference::new_allocated_boxed(owned_value, &mut *allocator_guard);
+                Ok(Some(value_ref))
+            }
+            None => Ok(None),
+        }
+    }
 }
 
 const fn list_index_access(index: usize) -> Access<'static> {
     Access::ListIndex(index)
 }
+
+/// Iterator specifically for Maps that doesn't use the path system.
+/// This bypasses Bevy's path resolution which rejects ListIndex on Maps,
+/// and instead directly uses Map::get_at() to iterate over map entries.
+pub struct ReflectMapRefIter {
+    pub(crate) base: ReflectReference,
+    pub(crate) index: usize,
+}
+
+#[profiling::all_functions]
+impl ReflectMapRefIter {
+    /// Returns the next map entry as a (key, value) tuple, cloning the values.
+    /// Uses `from_reflect` to create fully reflected clones that can be used with all operations.
+    /// Returns Ok(None) when there are no more entries.
+    pub fn next_cloned(
+        &mut self,
+        world: WorldGuard,
+    ) -> Result<Option<(ReflectReference, ReflectReference)>, InteropError> {
+        let idx = self.index;
+        self.index += 1;
+
+        // Access the map and get the entry at index
+        self.base
+            .with_reflect(world.clone(), |reflect| match reflect.reflect_ref() {
+                ReflectRef::Map(map) => {
+                    if let Some((key, value)) = map.get_at(idx) {
+                        let allocator = world.allocator();
+                        let mut allocator_guard = allocator.write();
+
+                        let owned_key = <dyn PartialReflect>::from_reflect(key, world.clone())?;
+                        let key_ref =
+                            ReflectReference::new_allocated_boxed(owned_key, &mut *allocator_guard);
+
+                        let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                        let value_ref = ReflectReference::new_allocated_boxed(
+                            owned_value,
+                            &mut *allocator_guard,
+                        );
+
+                        drop(allocator_guard);
+                        Ok(Some((key_ref, value_ref)))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                _ => Err(InteropError::unsupported_operation(
+                    reflect.get_represented_type_info().map(|ti| ti.type_id()),
+                    None,
+                    "map iteration on non-map type".to_owned(),
+                )),
+            })?
+    }
+}
+
+/// Iterator specifically for Sets that doesn't use the path system.
+/// This collects all set values in a Vec to enable O(1) iteration, but with memory overhead.
+pub struct ReflectSetRefIter {
+    values: Vec<ReflectReference>,
+    index: usize,
+}
+
+#[profiling::all_functions]
+impl ReflectSetRefIter {
+    /// Creates a new set iterator by collecting all values from the set in a Vec.
+    pub fn new(base: ReflectReference, world: WorldGuard) -> Result<Self, InteropError> {
+        let values = base.with_reflect(world.clone(), |reflect| match reflect.reflect_ref() {
+            ReflectRef::Set(set) => {
+                let allocator = world.allocator();
+                let mut allocator_guard = allocator.write();
+                
+                let mut collected_values = Vec::with_capacity(set.len());
+                
+                for value in set.iter() {
+                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                    let value_ref = ReflectReference::new_allocated_boxed(
+                        owned_value,
+                        &mut *allocator_guard,
+                    );
+                    collected_values.push(value_ref);
+                }
+                
+                drop(allocator_guard);
+                Ok(collected_values)
+            }
+            _ => Err(InteropError::unsupported_operation(
+                reflect.get_represented_type_info().map(|ti| ti.type_id()),
+                None,
+                "set iteration on non-set type".to_owned(),
+            )),
+        })??;
+        
+        Ok(Self {
+            values,
+            index: 0,
+        })
+    }
+    
+    /// Returns the next set entry.
+    /// Returns Ok(None) when there are no more entries.
+    pub fn next_cloned(
+        &mut self,
+        _world: WorldGuard,
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        if self.index < self.values.len() {
+            let value = self.values[self.index].clone();
+            self.index += 1;
+            Ok(Some(value))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
 #[profiling::all_functions]
 impl Iterator for ReflectRefIter {
     type Item = Result<ReflectReference, InteropError>;
@@ -956,9 +1289,8 @@ mod test {
         component::Component, reflect::AppTypeRegistry, resource::Resource, world::World,
     };
 
-    use crate::{AppReflectAllocator, function::script_function::AppScriptFunctionRegistry};
-
     use super::*;
+    use crate::{AppReflectAllocator, function::script_function::AppScriptFunctionRegistry};
 
     #[derive(Reflect, Component, Debug, Clone, PartialEq)]
     struct TestComponent(Vec<String>);

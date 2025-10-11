@@ -604,46 +604,6 @@ impl ReflectReference {
         Ok(format!("{reference:#?}"))
     }
 
-    /// Gets and clones the value under the specified key if the underlying type is a map type.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to index into.
-    /// * `key`: The key to index with.
-    /// Returns:
-    /// * `value`: The value at the key, if the reference is a map.
-    fn map_get(
-        ctxt: FunctionCallContext,
-        reference: ReflectReference,
-        key: ScriptValue,
-    ) -> Result<Option<ScriptValue>, InteropError> {
-        profiling::function_scope!("map_get");
-        let world = ctxt.world()?;
-        let key = <Box<dyn PartialReflect>>::from_script_ref(
-            reference.key_type_id(world.clone())?.ok_or_else(|| {
-                InteropError::unsupported_operation(
-                    reference.tail_type_id(world.clone()).unwrap_or_default(),
-                    Some(Box::new(key.clone())),
-                    "Could not get key type id. Are you trying to index into a type that's not a map?".to_owned(),
-                )
-            })?,
-            key,
-            world.clone(),
-        )?;
-        reference.with_reflect_mut(world.clone(), |s| match s.try_map_get(key.as_ref())? {
-            Some(value) => {
-                let reference = {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
-                    ReflectReference::new_allocated_boxed(owned_value, &mut allocator)
-                };
-                Ok(Some(ReflectReference::into_script_ref(reference, world)?))
-            }
-            None => Ok(None),
-        })?
-    }
-
     /// Pushes the value into the reference, if the reference is an appropriate container type.
     ///
     /// Arguments:
@@ -692,51 +652,6 @@ impl ReflectReference {
         };
 
         ReflectReference::into_script_ref(reference, world)
-    }
-
-    /// Inserts the value into the reference at the specified index, if the reference is an appropriate container type.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to insert the value into.
-    /// * `key`: The index to insert the value at.
-    /// * `value`: The value to insert.
-    /// Returns:
-    /// * `result`: Nothing if the value was inserted successfully.
-    fn insert(
-        ctxt: FunctionCallContext,
-        reference: ReflectReference,
-        key: ScriptValue,
-        value: ScriptValue,
-    ) -> Result<(), InteropError> {
-        profiling::function_scope!("insert");
-        let world = ctxt.world()?;
-        let key_type_id = reference.key_type_id(world.clone())?.ok_or_else(|| {
-            InteropError::unsupported_operation(
-                reference.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(key.clone())),
-                "Could not get key type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
-            )
-        })?;
-
-        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
-
-        if ctxt.convert_to_0_indexed() {
-            key.convert_to_0_indexed_key();
-        }
-
-        let value_type_id = reference.element_type_id(world.clone())?.ok_or_else(|| {
-            InteropError::unsupported_operation(
-                reference.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(value.clone())),
-                "Could not get element type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
-            )
-        })?;
-
-        let value =
-            <Box<dyn PartialReflect>>::from_script_ref(value_type_id, value, world.clone())?;
-
-        reference.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
     }
 
     /// Clears the container, if the reference is an appropriate container type.
@@ -811,8 +726,13 @@ impl ReflectReference {
     }
 
     /// Iterates over the reference, if the reference is an appropriate container type.
+    /// Uses `from_reflect` to create fully reflected clones that can be used with all operations.
     ///
-    /// Returns an "next" iterator function.
+    /// For Maps, returns an iterator function that returns [key, value] pairs.
+    /// For Sets, returns an iterator function that returns individual values.
+    /// For other containers (Lists, Arrays), returns an iterator function that returns individual elements.
+    ///
+    /// Returns an "next" iterator function that returns fully reflected values (Box<dyn Reflect>).
     ///
     /// The iterator function should be called until it returns `nil` to signal the end of the iteration.
     ///
@@ -820,7 +740,7 @@ impl ReflectReference {
     /// * `ctxt`: The function call context.
     /// * `reference`: The reference to iterate over.
     /// Returns:
-    /// * `iter`: The iterator function.
+    /// * `iter`: The iterator function that returns cloned values.
     fn iter(
         ctxt: FunctionCallContext,
         reference: ReflectReference,
@@ -828,25 +748,60 @@ impl ReflectReference {
         profiling::function_scope!("iter");
         let world = ctxt.world()?;
         let mut len = reference.len(world.clone())?.unwrap_or_default();
-        let mut infinite_iter = reference.into_iter_infinite();
-        let iter_function = move || {
-            // world is not thread safe, we can't capture it in the closure
-            // or it will also be non-thread safe
-            let world = ThreadWorldContainer.try_get_world()?;
-            if len == 0 {
-                return Ok(ScriptValue::Unit);
-            }
+        let is_map = reference.is_map(world.clone())?;
+        let is_set = reference.is_set(world.clone())?;
 
-            let (next_ref, _) = infinite_iter.next_ref();
-
-            let converted = ReflectReference::into_script_ref(next_ref, world);
-            // println!("idx: {idx:?}, converted: {converted:?}");
-            len -= 1;
-            // we stop once the reflection path is invalid
-            converted
-        };
-
-        Ok(iter_function.into_dynamic_script_function_mut())
+        if is_map {
+            // Use special map iterator that clones values
+            let mut map_iter = reference.into_map_iter();
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                match map_iter.next_cloned(world.clone())? {
+                    Some((key_ref, value_ref)) => {
+                        // Return both key and value as a List for Lua's pairs() to unpack
+                        let key_value = ReflectReference::into_script_ref(key_ref, world.clone())?;
+                        let value_value = ReflectReference::into_script_ref(value_ref, world)?;
+                        Ok(ScriptValue::List(vec![key_value, value_value]))
+                    }
+                    None => Ok(ScriptValue::Unit),
+                }
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
+        } else if is_set {
+            // Use special set iterator that clones values upfront for efficient iteration
+            let mut set_iter = reference.into_set_iter(world.clone())?;
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                match set_iter.next_cloned(world.clone())? {
+                    Some(value_ref) => ReflectReference::into_script_ref(value_ref, world),
+                    None => Ok(ScriptValue::Unit),
+                }
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
+        } else {
+            // Use cloning iterator for lists/arrays
+            let mut infinite_iter = reference.into_iter_infinite();
+            let iter_function = move || {
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
+                }
+                len -= 1;
+                let world = ThreadWorldContainer.try_get_world()?;
+                match infinite_iter.next_cloned(world.clone())? {
+                    Some(value_ref) => ReflectReference::into_script_ref(value_ref, world),
+                    None => Ok(ScriptValue::Unit),
+                }
+            };
+            Ok(iter_function.into_dynamic_script_function_mut())
+        }
     }
 
     /// Lists the functions available on the reference.
