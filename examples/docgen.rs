@@ -1,6 +1,7 @@
 use bevy::{DefaultPlugins, app::App, ecs::reflect::AppTypeRegistry};
 use bevy_mod_scripting::ScriptFunctionsPlugin;
 use bevy_mod_scripting_bindings::{
+    DummyScriptFunctionRegistry,
     function::script_function::AppScriptFunctionRegistry,
     globals::{AppScriptGlobalsRegistry, core::CoreScriptGlobalsPlugin},
 };
@@ -44,6 +45,11 @@ fn main() -> std::io::Result<()> {
         .get_resource::<AppScriptFunctionRegistry>()
         .unwrap()
         .clone();
+    let dummy_function_registry = app
+        .world()
+        .get_resource::<DummyScriptFunctionRegistry>()
+        .unwrap()
+        .clone();
     let global_registry = app
         .world()
         .get_resource::<AppScriptGlobalsRegistry>()
@@ -58,6 +64,7 @@ fn main() -> std::io::Result<()> {
     generate_lad_file(
         &type_registry,
         &function_registry,
+        &dummy_function_registry,
         &global_registry,
         &settings,
     );

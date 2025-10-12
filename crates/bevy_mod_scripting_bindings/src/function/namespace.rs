@@ -1,6 +1,7 @@
 //! A module for managing namespaces for functions
 
 use crate::{
+    DummyScriptFunctionRegistry, ScriptFunctionRegistryArc,
     docgen::info::GetFunctionInfo,
     function::script_function::{AppScriptFunctionRegistry, ScriptFunction},
 };
@@ -66,6 +67,8 @@ impl Namespace {
 
 /// A convenience builder for registering multiple functions in a namespace
 pub struct NamespaceBuilder<'a, N> {
+    /// If true will use the dummy function registry instead
+    registry: ScriptFunctionRegistryArc,
     /// phantom data to reference the namespace type
     namespace: PhantomData<N>,
     /// a cached reference to the world
@@ -86,6 +89,10 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
             registry.register::<S>();
         }
         Self {
+            registry: world
+                .get_resource_or_init::<AppScriptFunctionRegistry>()
+                .0
+                .clone(),
             namespace: Default::default(),
             world,
         }
@@ -94,9 +101,25 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
     /// Prefer using the `register` method on the `NamespaceBuilder` instead
     pub fn new_unregistered(world: &'a mut World) -> Self {
         Self {
+            registry: world
+                .get_resource_or_init::<AppScriptFunctionRegistry>()
+                .0
+                .clone(),
             namespace: Default::default(),
             world,
         }
+    }
+
+    /// Register functions for this namespace on the dummy function registry instead.
+    ///
+    /// This will appear in documentation but not become callable.
+    pub fn with_dummy_registry(mut self) -> Self {
+        self.registry = self
+            .world
+            .get_resource_or_init::<DummyScriptFunctionRegistry>()
+            .0
+            .clone();
+        self
     }
 
     /// Registers a function in the namespace
@@ -136,10 +159,7 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
     {
         {
             {
-                let mut registry = self
-                    .world
-                    .get_resource_or_init::<AppScriptFunctionRegistry>();
-                let mut registry = registry.write();
+                let mut registry = self.registry.write();
                 registry.register_with_arg_names(
                     S::into_namespace(),
                     name,

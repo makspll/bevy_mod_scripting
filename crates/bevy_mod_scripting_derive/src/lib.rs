@@ -27,6 +27,7 @@ pub fn into_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// - `unregistered`: If set, will use `new_unregistered` instead of `new` for the namespace builder
 /// - `core`: If set, marks the type as `core` using the `MarkAsCore` type data
 /// - `significant`: If set, marks the type as `significant` using the `MarkAsSignificant` type data
+/// - `use_dummy_registry`: If true will register into the [`DummyScriptFunctionRegistry`] instead of the full one. This is useful for documenting functions without actually making them available, if you're exposing them another way.
 ///
 /// It is encouraged to place `significant` markers on your own types, for the purposes of documentation generation.
 #[proc_macro_attribute]

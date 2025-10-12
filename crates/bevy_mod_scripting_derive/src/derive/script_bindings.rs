@@ -82,9 +82,18 @@ pub fn script_bindings(
         Default::default()
     };
 
+    let use_dummy = if args.use_dummy_registry {
+        quote_spanned! {impl_span=>
+            .with_dummy_registry()
+        }
+    } else {
+        Default::default()
+    };
+
     let out = quote_spanned! {impl_span=>
         #visibility fn #function_name(world: &mut World) {
             #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
+                #use_dummy
                 #(#function_registrations)*;
 
             #mark_as_generated
@@ -113,6 +122,9 @@ struct Args {
     pub core: bool,
     /// If true registers a marker type against the type registry to state that the type is significant (if unregistered is not set)
     pub significant: bool,
+    /// If true will register into the [`DummyScriptFunctionRegistry`] instead of the full one.
+    /// This is useful for documenting functions without actually making them available, if you're exposing them another way.
+    pub use_dummy_registry: bool,
 }
 
 impl syn::parse::Parse for Args {
@@ -127,6 +139,7 @@ impl syn::parse::Parse for Args {
         let mut generated = false;
         let mut core = false;
         let mut significant = false;
+        let mut use_dummy_registry = false;
         let mut bms_bindings_path =
             syn::Path::from(syn::Ident::new("bevy_mod_scripting", Span::call_site()));
         bms_bindings_path.segments.push(syn::PathSegment {
@@ -151,6 +164,9 @@ impl syn::parse::Parse for Args {
                         continue;
                     } else if path.is_ident("significant") {
                         significant = true;
+                        continue;
+                    } else if path.is_ident("use_dummy_registry") {
+                        use_dummy_registry = true;
                         continue;
                     }
                 }
@@ -190,6 +206,7 @@ impl syn::parse::Parse for Args {
             generated,
             core,
             significant,
+            use_dummy_registry,
         })
     }
 }
