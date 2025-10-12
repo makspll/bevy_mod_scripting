@@ -5,7 +5,7 @@ use std::{
 
 use crate::IntoRhaiError;
 use bevy_mod_scripting_bindings::{
-    ReflectReference, ScriptValue, ThreadWorldContainer, WorldContainer, error::InteropError,
+    ReflectReference, ScriptValue, ThreadWorldContainer, error::InteropError,
     function::script_function::DynamicScriptFunctionMut,
 };
 use bevy_mod_scripting_display::OrFakeId;
@@ -256,7 +256,7 @@ impl IntoIterator for RhaiReflectReference {
 
     fn into_iter(self) -> Self::IntoIter {
         let result = (|| {
-            let world = ThreadWorldContainer.try_get_world()?;
+            let world = ThreadWorldContainer.try_get_context()?.world;
 
             let iter_func = world
                 .lookup_function([TypeId::of::<ReflectReference>()], "iter")
@@ -295,8 +295,9 @@ impl CustomType for RhaiReflectReference {
             .with_name(std::any::type_name::<RhaiReflectReference>())
             .with_indexer_get(|self_: &mut Self, index: Dynamic| {
                 let world = ThreadWorldContainer
-                    .try_get_world()
-                    .map_err(IntoRhaiError::into_rhai_error)?;
+                    .try_get_context()
+                    .map_err(IntoRhaiError::into_rhai_error)?
+                    .world;
                 let self_ = &self_.0;
                 let type_id = self_
                     .tail_type_id(world.clone())
@@ -332,8 +333,9 @@ impl CustomType for RhaiReflectReference {
             })
             .with_indexer_set(|self_: &mut Self, index: Dynamic, value: Dynamic| {
                 let world = ThreadWorldContainer
-                    .try_get_world()
-                    .map_err(IntoRhaiError::into_rhai_error)?;
+                    .try_get_context()
+                    .map_err(IntoRhaiError::into_rhai_error)?
+                    .world;
                 let self_ = self_.0.clone();
                 let key = ScriptValue::from_dynamic(index)?;
                 let value = ScriptValue::from_dynamic(value)?;
@@ -351,8 +353,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Sub.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -370,8 +373,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Add.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -389,8 +393,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Mul.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -408,8 +413,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Div.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -427,8 +433,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Mod.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -444,8 +451,9 @@ impl CustomType for RhaiReflectReference {
             )
             .with_fn(RhaiOperator::Unm.function_name(), |self_: Self| {
                 let world = ThreadWorldContainer
-                    .try_get_world()
-                    .map_err(IntoRhaiError::into_rhai_error)?;
+                    .try_get_context()
+                    .map_err(IntoRhaiError::into_rhai_error)?
+                    .world;
                 let self_: ReflectReference = self_.0.clone();
                 let target_type_id = self_
                     .tail_type_id(world.clone())
@@ -461,8 +469,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Pow.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -480,8 +489,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Eq.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -499,8 +509,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Ne.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -524,8 +535,9 @@ impl CustomType for RhaiReflectReference {
                 RhaiOperator::Lt.function_name(),
                 |self_: Self, other: Dynamic| {
                     let world = ThreadWorldContainer
-                        .try_get_world()
-                        .map_err(IntoRhaiError::into_rhai_error)?;
+                        .try_get_context()
+                        .map_err(IntoRhaiError::into_rhai_error)?
+                        .world;
                     let self_: ReflectReference = self_.0.clone();
                     let other: ScriptValue = ScriptValue::from_dynamic(other)?;
                     let target_type_id = self_
@@ -541,7 +553,7 @@ impl CustomType for RhaiReflectReference {
             )
             .on_debug(|self_| {
                 let result: Result<_, InteropError> = (|| {
-                    let world = ThreadWorldContainer.try_get_world()?;
+                    let world = ThreadWorldContainer.try_get_context()?.world;
                     let reflect_reference = self_.0.clone();
 
                     let func = world
@@ -571,7 +583,7 @@ impl CustomType for RhaiReflectReference {
             })
             .on_print(|self_| {
                 let result: Result<_, InteropError> = (|| {
-                    let world = ThreadWorldContainer.try_get_world()?;
+                    let world = ThreadWorldContainer.try_get_context()?.world;
                     let reflect_reference = self_.0.clone();
 
                     let func = world
@@ -612,8 +624,9 @@ impl CustomType for RhaiStaticReflectReference {
             .with_name(std::any::type_name::<RhaiStaticReflectReference>())
             .with_indexer_get(|self_: &mut Self, index: Dynamic| {
                 let world = ThreadWorldContainer
-                    .try_get_world()
-                    .map_err(IntoRhaiError::into_rhai_error)?;
+                    .try_get_context()
+                    .map_err(IntoRhaiError::into_rhai_error)?
+                    .world;
                 let type_id = self_.0;
                 let key: ScriptValue = ScriptValue::from_dynamic(index)?;
 

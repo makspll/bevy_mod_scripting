@@ -1,21 +1,22 @@
 //! Contains the logic for handling script callback events
 use bevy_ecs::world::WorldId;
 use bevy_mod_scripting_bindings::{
-    InteropError, ScriptValue, ThreadWorldContainer, WorldAccessGuard, WorldContainer, WorldGuard,
+    InteropError, ScriptValue, ThreadScriptContext, ThreadWorldContainer, WorldAccessGuard,
+    WorldGuard,
 };
-use bevy_mod_scripting_display::WithTypeInfo;
+use bevy_mod_scripting_display::{DisplayProxy, WithTypeInfo};
+use bevy_mod_scripting_script::ScriptAttachment;
 
-use crate::extractors::CallContext;
-use crate::script::DisplayProxy;
 use crate::{
     IntoScriptPluginParams,
+    callbacks::ScriptCallbacks,
     error::ScriptError,
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
         ScriptErrorEvent,
     },
     extractors::WithWorldGuard,
-    script::{ScriptAttachment, ScriptContext},
+    script::ScriptContext,
 };
 use {
     bevy_ecs::{
@@ -47,6 +48,7 @@ pub trait ScriptingHandler<P: IntoScriptPluginParams> {
         context_key: &ScriptAttachment,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
+        script_callbacks: ScriptCallbacks<P>,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError>;
 }
@@ -55,15 +57,29 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
     /// Calls the handler function while providing the necessary thread local context
     fn handle(
         args: Vec<ScriptValue>,
-        context_key: &ScriptAttachment,
+        attachment: &ScriptAttachment,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
+        script_callbacks: ScriptCallbacks<P>,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             let world_id = world.id();
-            ThreadWorldContainer.set_world(world)?;
-            Self::handler()(args, context_key, callback, script_ctxt, world_id)
+            ThreadWorldContainer.set_context(ThreadScriptContext {
+                world,
+                attachment: attachment.clone(),
+            })?;
+            let callbacks = script_callbacks.callbacks.read();
+            if let Some(callback) = callbacks
+                .get(&(attachment.clone(), callback.to_string()))
+                .cloned()
+            {
+                drop(callbacks);
+                callback(args, script_ctxt, world_id)
+            } else {
+                drop(callbacks);
+                Self::handler()(args, attachment, callback, script_ctxt, world_id)
+            }
         })
     }
 }
@@ -79,12 +95,14 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
         let script_context = world.get_resource_or_init::<ScriptContext<P>>().clone();
+        let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let (event_cursor, mut guard) = state.get_mut(world);
         let (guard, _) = guard.get_mut();
         event_handler_inner::<P>(
             L::into_callback_label(),
             event_cursor,
             script_context,
+            script_callbacks,
             guard,
         );
     }
@@ -101,6 +119,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
     mut event_cursor: Local<EventCursor<ScriptCallbackEvent>>,
     script_context: ScriptContext<P>,
+    script_callbacks: ScriptCallbacks<P>,
     guard: WorldAccessGuard,
 ) {
     let mut errors = Vec::default();
@@ -130,10 +149,13 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
         for (attachment, ctxt) in recipients {
             let mut ctxt = ctxt.lock();
-            let call_result = ctxt.call_context_dynamic(
+
+            let call_result = P::handle(
+                event.args.clone(),
                 &attachment,
                 &callback_label,
-                event.args.clone(),
+                &mut ctxt,
+                script_callbacks.clone(),
                 guard.clone(),
             );
             let call_result = call_result.map_err(|e| {

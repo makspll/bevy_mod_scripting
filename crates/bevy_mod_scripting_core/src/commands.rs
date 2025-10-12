@@ -4,19 +4,20 @@ use std::{sync::Arc, time::Duration};
 
 use crate::{
     IntoScriptPluginParams, ScriptContext,
+    callbacks::ScriptCallbacks,
     error::ScriptError,
     event::{
         CallbackLabel, ForPlugin, ScriptAttachedEvent, ScriptCallbackResponseEvent,
         ScriptDetachedEvent,
     },
-    extractors::CallContext,
-    handler::{send_callback_response, send_script_errors},
+    handler::{ScriptingHandler, send_callback_response, send_script_errors},
     pipeline::RunProcessingPipelineOnce,
-    script::{DisplayProxy, ScriptAttachment},
 };
 use bevy_ecs::{system::Command, world::World};
 use bevy_log::trace;
 use bevy_mod_scripting_bindings::{ScriptValue, WorldGuard};
+use bevy_mod_scripting_display::DisplayProxy;
+use bevy_mod_scripting_script::ScriptAttachment;
 use parking_lot::Mutex;
 
 /// Runs a callback on the script with the given ID if it exists
@@ -66,12 +67,15 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         self,
         guard: WorldGuard,
         ctxt: Arc<Mutex<P::C>>,
+        script_callbacks: ScriptCallbacks<P>,
     ) -> Result<ScriptValue, ScriptError> {
         let mut ctxt_guard = ctxt.lock();
-        let result = ctxt_guard.call_context_dynamic(
+        let result = P::handle(
+            self.args,
             &self.attachment,
             &self.callback,
-            self.args,
+            &mut ctxt_guard,
+            script_callbacks,
             guard.clone(),
         );
         let result = result.map_err(|e| {
@@ -104,11 +108,12 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         result
     }
 
-    /// Equivalent to [`Self::run`], but usable in the case where you already have a [`HandlerContext`].
+    /// Equivalent to [`Self::run`], but usable in the case where you already have [`ScriptContext`] and [`ScriptCallbacks`] resources available.
     pub fn run_with_contexts(
         self,
         guard: WorldGuard,
         script_contexts: ScriptContext<P>,
+        script_callbacks: ScriptCallbacks<P>,
     ) -> Result<ScriptValue, ScriptError> {
         let script_contexts = script_contexts.read();
         let ctxt = script_contexts.get_context(&self.attachment);
@@ -125,7 +130,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
             }
         };
 
-        self.run_with_context(guard, ctxt.clone())
+        self.run_with_context(guard, ctxt.clone(), script_callbacks)
     }
 
     /// Equivalent to running the command, but also returns the result of the callback.
@@ -133,8 +138,9 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// The returned errors will NOT be sent as events or printed
     pub fn run(self, world: &mut World) -> Result<ScriptValue, ScriptError> {
         let script_contexts = world.get_resource_or_init::<ScriptContext<P>>().clone();
+        let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
-        self.run_with_contexts(guard, script_contexts)
+        self.run_with_contexts(guard, script_contexts, script_callbacks)
     }
 }
 

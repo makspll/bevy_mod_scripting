@@ -11,7 +11,11 @@ pub use bevy_mod_scripting_bindings::{
     script_value::ScriptValue,
 };
 
+pub use bevy_mod_scripting_script::*;
+
 pub use bevy_mod_scripting_asset::*;
+
+pub use bevy_mod_scripting_core::commands::*;
 
 #[cfg(feature = "lua")]
 pub use bevy_mod_scripting_lua::LuaScriptingPlugin;

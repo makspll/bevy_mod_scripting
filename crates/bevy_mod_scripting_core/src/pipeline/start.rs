@@ -112,7 +112,7 @@ pub fn filter_script_detachments<P: IntoScriptPluginParams>(
     }
 }
 
-/// Process [`ScriptAttachedEvent`]'s and generate loading machines with the [`LoadingInitializedState`] and [`ReloadingInitializedState`] states
+/// Process [`ScriptAttachedEvent`]'s and generate loading machines with the [`LoadingInitialized`] and [`ReloadingInitialized`] states
 pub fn process_attachments<P: IntoScriptPluginParams>(
     mut events: EventReader<ForPlugin<ScriptAttachedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
@@ -151,7 +151,7 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
     });
 }
 
-/// Processes [`ScriptAttachedEvent`]'s and initialized unloading state machines with [`UnloadingInitializedState`] states
+/// Processes [`ScriptAttachedEvent`]'s and initialized unloading state machines with [`UnloadingInitialized`] states
 pub fn process_detachments<P: IntoScriptPluginParams>(
     mut events: EventReader<ForPlugin<ScriptDetachedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
@@ -175,7 +175,7 @@ pub fn process_detachments<P: IntoScriptPluginParams>(
     });
 }
 
-/// Processes [`ScriptAssetModifiedEvent`]'s and initializes loading state machines with [`ReloadingInitializedState`] states
+/// Processes [`ScriptAssetModifiedEvent`]'s and initializes loading state machines with [`ReloadingInitialized`] states
 pub fn process_asset_modifications<P: IntoScriptPluginParams>(
     mut events: EventReader<ForPlugin<ScriptAssetModifiedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,

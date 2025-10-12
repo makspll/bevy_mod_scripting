@@ -2,13 +2,6 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 
-use crate::{
-    IntoScriptPluginParams,
-    context::Context,
-    event::{CallbackLabel, IntoCallbackLabel},
-    handler::ScriptingHandler,
-    script::ScriptAttachment,
-};
 use bevy_ecs::{
     archetype::Archetype,
     component::{ComponentId, Tick},
@@ -17,54 +10,10 @@ use bevy_ecs::{
     system::{SystemMeta, SystemParam, SystemParamValidationError},
     world::{DeferredWorld, World, unsafe_world_cell::UnsafeWorldCell},
 };
-use bevy_mod_scripting_bindings::{
-    InteropError, WorldAccessGuard, WorldGuard, access_map::ReflectAccessId,
-    script_value::ScriptValue,
-};
+use bevy_mod_scripting_bindings::{WorldAccessGuard, WorldGuard, access_map::ReflectAccessId};
 
 use fixedbitset::FixedBitSet;
 
-/// A reverse mapping from plugin context types to their plugin types.
-/// Useful in implementing generic traits on context types.
-pub trait GetPluginFor {
-    /// The plugin type associated with this context type
-    type P: IntoScriptPluginParams<C = Self>;
-}
-
-/// A utility trait extending arbitrary script contexts with the ability to call callbacks on themselves using their
-/// plugin handler function.
-pub trait CallContext {
-    /// Invoke a callback on this context
-    fn call_context_dynamic(
-        &mut self,
-        context_key: &ScriptAttachment,
-        label: &CallbackLabel,
-        payload: Vec<ScriptValue>,
-        guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, InteropError>;
-
-    /// Invoke a callback on this context
-    fn call_context<C: IntoCallbackLabel>(
-        &mut self,
-        context_key: &ScriptAttachment,
-        payload: Vec<ScriptValue>,
-        guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, InteropError> {
-        self.call_context_dynamic(context_key, &C::into_callback_label(), payload, guard)
-    }
-}
-
-impl<C: Context> CallContext for C {
-    fn call_context_dynamic(
-        &mut self,
-        context_key: &ScriptAttachment,
-        label: &CallbackLabel,
-        payload: Vec<ScriptValue>,
-        guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, InteropError> {
-        C::P::handle(payload, context_key, label, self, guard)
-    }
-}
 /// A wrapper around a world which pre-populates access, to safely co-exist with other system params,
 /// acts exactly like `&mut World` so this should be your only top-level system param
 ///
@@ -219,6 +168,7 @@ pub(crate) fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAc
 mod test {
     use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
     use bevy_ecs::resource::Resource;
+    use bevy_mod_scripting_bindings::ScriptValue;
     use test_utils::make_test_plugin;
 
     use {

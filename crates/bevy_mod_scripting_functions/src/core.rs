@@ -1,6 +1,7 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
 use bevy_mod_scripting_asset::ScriptAsset;
+use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
 use std::ops::Deref;
 
@@ -8,10 +9,10 @@ use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_bindings::{
-    DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt,
-    ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer, Union,
-    WorldContainer,
+    DynamicScriptFunction, DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError,
+    PartialReflectExt, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
+    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer,
+    Union,
     function::{
         from::{Ref, Val},
         from_ref::FromScriptRef,
@@ -20,10 +21,7 @@ use bevy_mod_scripting_bindings::{
     },
     script_value::ScriptValue,
 };
-use bevy_mod_scripting_core::{
-    script::ScriptAttachment,
-    script_system::{ManageScriptSystems, ScriptSystemBuilder},
-};
+use bevy_mod_scripting_core::script_system::{ManageScriptSystems, ScriptSystemBuilder};
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
 use bevy_reflect::PartialReflect;
@@ -832,7 +830,7 @@ impl ReflectReference {
         let iter_function = move || {
             // world is not thread safe, we can't capture it in the closure
             // or it will also be non-thread safe
-            let world = ThreadWorldContainer.try_get_world()?;
+            let world = ThreadWorldContainer.try_get_context()?.world;
             if len == 0 {
                 return Ok(ScriptValue::Unit);
             }
@@ -1332,6 +1330,48 @@ impl Handle<ScriptAsset> {
     }
 }
 
+/// globals which are being registered at lower level within each language plugin.
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "global_namespace_dummy_functions",
+    unregistered,
+    use_dummy_registry
+)]
+impl GlobalNamespace {
+    /// Registers a "frozen" callback handler,
+    ///
+    /// For example, this code:
+    ///
+    /// ```lua
+    /// register_callback("on_script_unloaded", my_unload_handler)
+    ///
+    /// function my_unload_handler()
+    ///     print("handling unload!")
+    /// end
+    /// ```
+    ///
+    /// would call the `my_unload_handler` function, whenever the `on_script_unloaded` callback is triggered, which is when your script is about to be unloaded.
+    ///
+    /// Registered callbacks take precedence over free-standing function callbacks, i.e. the below top level function:
+    /// ```lua
+    /// function on_script_unloaded()
+    ///     print("freestanding unload handler!")
+    /// end
+    /// ```
+    ///
+    /// would be a valid handler, but if a registered callback existed, it would be called instead.
+    ///
+    /// Arguments:
+    /// * `callback`: the callback label to register this function against.
+    /// * `function`: the callback function which will be stored as a handler for this callback label.
+    fn register_callback(callback: String, function: DynamicScriptFunction) {
+        // to avoid clippy unused errors.
+        println!("dummy called!: {callback:?}, {function:?}");
+    }
+}
+
+/// Globals registered by us
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
@@ -1424,5 +1464,6 @@ pub fn register_core_functions(app: &mut App) {
         register_script_handle_functions(world);
 
         register_global_namespace_functions(world);
+        register_global_namespace_dummy_functions(world);
     }
 }

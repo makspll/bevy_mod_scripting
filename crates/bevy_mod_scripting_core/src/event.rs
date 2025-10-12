@@ -6,12 +6,13 @@ use ::{bevy_asset::Handle, bevy_ecs::entity::Entity, bevy_reflect::Reflect};
 use bevy_ecs::event::Event;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::ScriptValue;
+use bevy_mod_scripting_script::ScriptAttachment;
 use parking_lot::Mutex;
 
 use crate::{
     IntoScriptPluginParams,
     error::ScriptError,
-    script::{ScriptAttachment, ScriptContext, ScriptId},
+    script::{ScriptContext, ScriptId},
 };
 
 /// An error coming from a script
@@ -428,7 +429,7 @@ mod test {
     use crate::{
         config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
         event::Recipients,
-        script::{ContextPolicy, ScriptAttachment, ScriptContext},
+        script::{ContextPolicy, ScriptContext},
     };
 
     #[test]

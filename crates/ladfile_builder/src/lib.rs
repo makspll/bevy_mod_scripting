@@ -362,7 +362,7 @@ impl<'t> LadFileBuilder<'t> {
     /// Add a function definition to the LAD file.
     /// Will overwrite any existing function definitions with the same function id.
     ///
-    /// Parses argument and return specific docstrings as per: https://github.com/rust-lang/rust/issues/57525
+    /// Parses argument and return specific docstrings as per: <https://github.com/rust-lang/rust/issues/57525>
     ///
     /// i.e. looks for blocks like:
     /// ```rust,ignore

@@ -8,6 +8,7 @@ use std::{
 
 use bevy_log::debug;
 use bevy_mod_scripting_bindings::InteropError;
+use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
 
 use super::*;

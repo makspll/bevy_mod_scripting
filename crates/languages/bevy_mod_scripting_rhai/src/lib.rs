@@ -1,6 +1,6 @@
 //! Rhai scripting language support for Bevy.
 
-use std::{ops::Deref, str::Utf8Error};
+use std::{ops::Deref, str::Utf8Error, sync::Arc};
 
 use crate::bindings::script_value::{FromDynamic, IntoDynamic};
 
@@ -10,26 +10,28 @@ use ::{
     bevy_ecs::{entity::Entity, world::World},
 };
 use bevy_app::App;
-use bevy_ecs::world::WorldId;
+use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
     AppScriptGlobalsRegistry, InteropError, Namespace, PartialReflectExt, ScriptValue,
-    ThreadWorldContainer, WorldContainer,
+    ThreadWorldContainer,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
+    callbacks::ScriptCallbacks,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     event::CallbackLabel,
-    extractors::GetPluginFor,
     make_plugin_config_static,
-    script::{ContextPolicy, DisplayProxy, ScriptAttachment},
+    script::ContextPolicy,
 };
+use bevy_mod_scripting_display::DisplayProxy;
+use bevy_mod_scripting_script::ScriptAttachment;
 use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference};
 use parking_lot::RwLock;
 pub use rhai;
 
-use rhai::{AST, CallFnOptions, Dynamic, Engine, EvalAltResult, ParseError, Scope};
+use rhai::{AST, CallFnOptions, Dynamic, Engine, EvalAltResult, FnPtr, ParseError, Scope};
 /// Bindings for rhai.
 pub mod bindings;
 
@@ -42,10 +44,6 @@ pub struct RhaiScriptContext {
     pub ast: AST,
     /// The scope of the script
     pub scope: Scope<'static>,
-}
-
-impl GetPluginFor for RhaiScriptContext {
-    type P = RhaiScriptingPlugin;
 }
 
 make_plugin_config_static!(RhaiScriptingPlugin);
@@ -132,6 +130,45 @@ impl AsMut<ScriptingPlugin<Self>> for RhaiScriptingPlugin {
     }
 }
 
+fn register_plugin_globals(ctxt: &mut Engine) {
+    let register_callback_fn = |callback: String, func: FnPtr| {
+        let thread_ctxt = ThreadWorldContainer
+            .try_get_context()
+            .map_err(|e| Box::new(EvalAltResult::ErrorSystem("".to_string(), Box::new(e))))?;
+        let world = thread_ctxt.world;
+        let attachment = thread_ctxt.attachment;
+        world
+            .with_resource_mut(|res: Mut<ScriptCallbacks<RhaiScriptingPlugin>>| {
+                let mut callbacks = res.callbacks.write();
+                callbacks.insert(
+                    (attachment.clone(), callback),
+                    Arc::new(
+                        move |args: Vec<ScriptValue>,
+                              rhai: &mut RhaiScriptContext,
+                              world_id: WorldId| {
+                            let config = RhaiScriptingPlugin::readonly_configuration(world_id);
+                            let pre_handling_callbacks = config.pre_handling_callbacks;
+                            let runtime = config.runtime;
+                            let runtime_guard = runtime.read();
+                            pre_handling_callbacks
+                                .iter()
+                                .try_for_each(|init| init(&attachment, rhai))?;
+
+                            let ret = func
+                                .call::<Dynamic>(&runtime_guard, &rhai.ast, args)
+                                .map_err(IntoInteropError::into_bms_error)?;
+                            ScriptValue::from_dynamic(ret).map_err(IntoInteropError::into_bms_error)
+                        },
+                    ),
+                )
+            })
+            .map_err(|e| Box::new(EvalAltResult::ErrorSystem("".to_string(), Box::new(e))))?;
+        Ok::<_, Box<EvalAltResult>>(())
+    };
+
+    ctxt.register_fn("register_callback", register_callback_fn);
+}
+
 impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
@@ -143,6 +180,7 @@ impl Default for RhaiScriptingPlugin {
                     engine.build_type::<RhaiReflectReference>();
                     engine.build_type::<RhaiStaticReflectReference>();
                     engine.register_iterator_result::<RhaiReflectReference, _>();
+                    register_plugin_globals(&mut engine);
                     Ok(())
                 }],
                 context_initializers: vec![
@@ -155,7 +193,7 @@ impl Default for RhaiScriptingPlugin {
                     },
                     |_, context| {
                         // initialize global functions
-                        let world = ThreadWorldContainer.try_get_world()?;
+                        let world = ThreadWorldContainer.try_get_context()?.world;
                         let globals_registry =
                             world.with_resource(|r: &AppScriptGlobalsRegistry| r.clone())?;
                         let globals_registry = globals_registry.read();
@@ -216,7 +254,7 @@ impl Default for RhaiScriptingPlugin {
                     },
                 ],
                 context_pre_handling_initializers: vec![|context_key, context| {
-                    let world = ThreadWorldContainer.try_get_world()?;
+                    let world = ThreadWorldContainer.try_get_context()?.world;
 
                     if let Some(entity) = context_key.entity() {
                         context.scope.set_or_push(

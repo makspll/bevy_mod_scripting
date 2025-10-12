@@ -51,6 +51,7 @@ use bevy_ecs::{
 };
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_display::GetTypeInfo;
+use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{TypeInfo, VariantInfo};
 use bevy_system_reflection::ReflectSchedule;
@@ -68,7 +69,7 @@ pub type WorldGuard<'w> = WorldAccessGuard<'w>;
 /// Similar to [`WorldGuard`], but without the arc, use for when you don't need the outer Arc.
 pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
 
-/// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
+/// Provides safe access to the world via [`AnyAccessMap`] permissions, which enforce aliasing rules at runtime in multi-thread environments
 #[derive(Clone, Debug)]
 pub struct WorldAccessGuard<'w> {
     /// The guard this guard pointer represents
@@ -1337,44 +1338,45 @@ impl WorldAccessGuard<'_> {
     }
 }
 
-/// Utility type for accessing the world in a callback
-pub trait WorldContainer {
-    /// The error type for the container
-    type Error: Debug;
-    /// Sets the world to the given value in the container
-    fn set_world(&mut self, world: WorldGuard<'static>) -> Result<(), Self::Error>;
-
-    /// Tries to get the world from the container
-    fn try_get_world<'l>(&self) -> Result<WorldGuard<'l>, Self::Error>;
-}
-
 /// A world container that stores the world in a thread local
 pub struct ThreadWorldContainer;
 
+#[derive(Clone)]
+/// Context passed down indirectly to script related functions, used to avoid prop drilling problems.
+pub struct ThreadScriptContext<'l> {
+    /// The world pointer
+    pub world: WorldGuard<'l>,
+    /// The currently active script attachment
+    pub attachment: ScriptAttachment,
+}
+
 thread_local! {
-    static WORLD_CALLBACK_ACCESS: RefCell<Option<WorldGuard<'static>>> = const { RefCell::new(None) };
+    static WORLD_CALLBACK_ACCESS: RefCell<Option<ThreadScriptContext<'static>>> = const { RefCell::new(None) };
 }
 #[profiling::all_functions]
-impl WorldContainer for ThreadWorldContainer {
-    type Error = InteropError;
-
-    fn set_world(&mut self, world: WorldGuard<'static>) -> Result<(), Self::Error> {
+impl ThreadWorldContainer {
+    /// Tries to set the thread context to the given value
+    pub fn set_context(&mut self, world: ThreadScriptContext<'static>) -> Result<(), InteropError> {
         WORLD_CALLBACK_ACCESS.with(|w| {
             w.replace(Some(world));
         });
         Ok(())
     }
 
-    fn try_get_world<'l>(&self) -> Result<WorldGuard<'l>, Self::Error> {
+    /// Tries to get the world from the container
+    pub fn try_get_context<'l>(&self) -> Result<ThreadScriptContext<'l>, InteropError> {
         WORLD_CALLBACK_ACCESS
             .with(|w| w.borrow().clone().ok_or_else(InteropError::missing_world))
-            .map(|v| v.shorten_lifetime())
+            .map(|v| ThreadScriptContext {
+                world: v.world.shorten_lifetime(),
+                attachment: v.attachment,
+            })
     }
 }
 
 impl GetTypeInfo for ThreadWorldContainer {
     fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo> {
-        let world = self.try_get_world().ok()?;
+        let world = self.try_get_context().ok()?.world;
         let registry = world.type_registry();
         let registry = registry.read();
         registry.get(type_id).map(|r| r.type_info())
@@ -1385,7 +1387,7 @@ impl GetTypeInfo for ThreadWorldContainer {
         type_id: TypeId,
         type_data_id: TypeId,
     ) -> Option<Box<dyn bevy_reflect::TypeData>> {
-        let world = self.try_get_world().ok()?;
+        let world = self.try_get_context().ok()?.world;
         let registry = world.type_registry();
         let registry = registry.read();
         registry
@@ -1397,7 +1399,7 @@ impl GetTypeInfo for ThreadWorldContainer {
         &self,
         component_id: ComponentId,
     ) -> Option<&bevy_ecs::component::ComponentInfo> {
-        let world = self.try_get_world().ok()?;
+        let world = self.try_get_context().ok()?.world;
         let cell = world.as_unsafe_world_cell().ok()?;
         cell.components().get_info(component_id)
     }

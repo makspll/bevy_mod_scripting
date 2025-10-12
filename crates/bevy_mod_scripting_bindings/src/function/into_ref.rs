@@ -10,7 +10,7 @@ use crate::{
     reflection_extensions::PartialReflectExt,
 };
 
-/// Converts a value represented by a reference into a [`crate::function::ScriptValue`].
+/// Converts a value represented by a reference into a [`crate::ScriptValue`].
 /// Instead of a direct conversion, the trait tries to peek into the value behind the reference and find out the most suitable representation.
 ///
 /// Type Erased version of [`super::from::FromScript`].
@@ -18,7 +18,7 @@ use crate::{
 /// - Primitives are converted to simple values
 /// - Container types are converted to references (so the references persist after accesses inside them)
 pub trait IntoScriptRef {
-    /// Converts a value represented by a reference into a [`crate::function::ScriptValue`].
+    /// Converts a value represented by a reference into a [`crate::ScriptValue`].
     fn into_script_ref(
         self_: ReflectReference,
         world: WorldGuard,

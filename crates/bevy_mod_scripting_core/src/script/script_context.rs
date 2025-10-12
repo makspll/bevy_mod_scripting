@@ -1,5 +1,6 @@
 use std::{hash::Hash, sync::Arc};
 
+use bevy_mod_scripting_script::ScriptAttachment;
 use parking_lot::{Mutex, RwLock};
 
 use super::*;
@@ -446,7 +447,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
 }
 
 /// Use one script context per entity and script by default; see
-/// [ScriptContext::per_entity_and_script].
+/// [`ContextPolicy::per_entity_and_script`].
 impl<P: IntoScriptPluginParams> Default for ScriptContextInner<P> {
     fn default() -> Self {
         Self {

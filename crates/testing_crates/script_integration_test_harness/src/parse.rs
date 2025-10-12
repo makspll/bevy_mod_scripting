@@ -9,8 +9,9 @@ use bevy_mod_scripting_core::{
         CallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded, Recipients,
         ScriptCallbackEvent,
     },
-    script::{ContextPolicy, ScriptAttachment},
+    script::ContextPolicy,
 };
+use bevy_mod_scripting_script::ScriptAttachment;
 
 use crate::scenario::{SCENARIO_SELF_LANGUAGE_NAME, ScenarioContext, ScenarioStep};
 

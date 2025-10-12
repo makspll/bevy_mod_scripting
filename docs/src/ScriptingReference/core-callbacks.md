@@ -1,11 +1,13 @@
 # Core Callbacks
 
-On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available.
+On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available (unless disabled via plugin settings).
 
 The three core callbacks are:
 - `on_script_loaded`
 - `on_script_unloaded`
 - `on_script_reloaded`
+
+For more information on how callbacks generally work see [the callbacks section](../Summary/callbacks.md).
 
 ## `on_script_loaded`
 

@@ -1,5 +1,5 @@
-//! Defines a set of traits which destruture [`bevy::reflect::TypeInfo`] and implement a light weight wrapper around it, to allow types
-//! which normally can't implement [`bevy::reflect::Typed`] to be used in a reflection context.
+//! Defines a set of traits which destruture [`bevy_reflect::TypeInfo`] and implement a light weight wrapper around it, to allow types
+//! which normally can't implement [`bevy_reflect::Typed`] to be used in a reflection context.
 
 use std::{ffi::OsString, path::PathBuf};
 

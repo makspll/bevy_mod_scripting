@@ -1,10 +1,8 @@
 //! everything to do with dynamically added script systems
 
 use crate::{
-    IntoScriptPluginParams,
-    event::CallbackLabel,
-    extractors::{CallContext, get_all_access_ids},
-    script::{ScriptAttachment, ScriptContext},
+    IntoScriptPluginParams, callbacks::ScriptCallbacks, event::CallbackLabel,
+    extractors::get_all_access_ids, handler::ScriptingHandler, script::ScriptContext,
 };
 
 use ::{
@@ -33,6 +31,7 @@ use bevy_mod_scripting_bindings::{
     ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, Val, WorldAccessGuard,
     WorldGuard,
 };
+use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use std::{
     any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData, ops::Deref,
@@ -203,9 +202,10 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     callback_label: CallbackLabel,
     system_params: Vec<ScriptSystemParam>,
     script_contexts: ScriptContext<P>,
+    script_callbacks: ScriptCallbacks<P>,
 }
 
-/// Equivalent of [`SystemParam`] but for dynamic systems, these are the kinds of things
+/// Equivalent of [`bevy_ecs::system::SystemParam`] but for dynamic systems, these are the kinds of things
 /// that scripts can ask for access to and get passed in through dynamic script systems.
 pub enum ScriptSystemParam {
     /// An exclusive resource access
@@ -387,10 +387,12 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
         if let Some(context) = script_context.get_context(&self.target_attachment) {
             let mut context = context.lock();
-            let result = context.call_context_dynamic(
+            let result = P::handle(
+                payload,
                 &self.target_attachment,
                 &state.callback_label,
-                payload,
+                &mut context,
+                state.script_callbacks.clone(),
                 guard.clone(),
             );
             drop(context);
@@ -493,6 +495,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             callback_label: self.name.to_string().into(),
             system_params,
             script_contexts: world.get_resource_or_init::<ScriptContext<P>>().clone(),
+            script_callbacks: world.get_resource_or_init::<ScriptCallbacks<P>>().clone(),
         })
     }
 

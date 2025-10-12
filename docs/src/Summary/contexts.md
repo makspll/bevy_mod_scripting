@@ -14,6 +14,12 @@ app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
 ));
 ```
 
+<div class="warning">
+
+Shared contexts require your scripts to be more careful about how they register callbacks due to the nature of top level functions belonging to the "currently loaded" global script. See [the callbacks section](./callbacks.md)
+
+</div>
+
 ### Per Script Context
 A per script context provides each script with their own context. However, scripts may be attached to multiple entities, in which case a single script context is shared by multiple entities. 
 

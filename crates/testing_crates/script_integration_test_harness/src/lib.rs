@@ -23,17 +23,19 @@ use ::{
 use bevy_asset::Assets;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::{
-    CoreScriptGlobalsPlugin, ReflectAccessId, ThreadWorldContainer, WorldAccessGuard,
-    WorldContainer, WorldGuard,
+    CoreScriptGlobalsPlugin, ReflectAccessId, ThreadScriptContext, ThreadWorldContainer,
+    WorldAccessGuard, WorldGuard,
 };
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
     commands::AttachScript,
     error::ScriptError,
     pipeline::PipelineRun,
-    script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptContext},
+    script::{ScriptComponent, ScriptContext},
 };
+use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
+use bevy_mod_scripting_script::ScriptAttachment;
 use criterion::{BatchSize, measurement::Measurement};
 use rand::{Rng, SeedableRng};
 use test_functions::{RNG, register_test_functions};
@@ -328,7 +330,10 @@ where
     let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
         // Ensure the world is available via ThreadWorldContainer
         ThreadWorldContainer
-            .set_world(guard.clone())
+            .set_context(ThreadScriptContext {
+                world: guard.clone(),
+                attachment: ScriptAttachment::StaticScript(Handle::Weak(script_id)),
+            })
             .map_err(|e| format!("{e:#?}"))?;
         // Pass the locked context to the closure for benchmarking its Lua (or generic) part
         bench_fn(&mut ctxt_locked, runtime, label, criterion)

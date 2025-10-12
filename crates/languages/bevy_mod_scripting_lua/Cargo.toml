@@ -46,6 +46,7 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
 mlua = { workspace = true, features = ["vendored", "send", "macros"] }
 profiling = { workspace = true }
 

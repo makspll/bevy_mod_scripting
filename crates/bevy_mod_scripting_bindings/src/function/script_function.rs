@@ -4,7 +4,7 @@ use super::MagicFunctions;
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
-use crate::{ScriptValue, ThreadWorldContainer, WorldContainer, WorldGuard, error::InteropError};
+use crate::{ScriptValue, ThreadWorldContainer, WorldGuard, error::InteropError};
 use bevy_ecs::prelude::Resource;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
@@ -55,7 +55,7 @@ impl FunctionCallContext {
     /// Tries to access the world, returning an error if the world is not available
     #[profiling::function]
     pub fn world<'l>(&self) -> Result<WorldGuard<'l>, InteropError> {
-        ThreadWorldContainer.try_get_world()
+        ThreadWorldContainer.try_get_context().map(|c| c.world)
     }
     /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
     #[profiling::function]
@@ -258,10 +258,16 @@ where
     }
 }
 
-/// Equivalent to [`AppFunctionRegistry`] but stores functions with a more convenient signature for scripting to avoid boxing every argument.
+/// Identical to the [`AppScriptFunctionRegistry`], but the functions only exist for docs purposes, use if you provide functions at a lower level,
+/// but still want to include the function in the docs
 #[derive(Clone, Default, Resource, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-pub struct AppScriptFunctionRegistry(ScriptFunctionRegistryArc);
+pub struct DummyScriptFunctionRegistry(pub ScriptFunctionRegistryArc);
+
+/// Equivalent to [`AppScriptFunctionRegistry`] but stores functions with a more convenient signature for scripting to avoid boxing every argument.
+#[derive(Clone, Default, Resource, DebugWithTypeInfo)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+pub struct AppScriptFunctionRegistry(pub ScriptFunctionRegistryArc);
 
 impl Deref for AppScriptFunctionRegistry {
     type Target = ScriptFunctionRegistryArc;
@@ -661,12 +667,19 @@ variadics_please::all_tuples!(impl_script_function, 0, 13, T);
 #[cfg(test)]
 mod test {
     use super::*;
+    use bevy_asset::{AssetId, Handle};
     use bevy_ecs::{prelude::Component, world::World};
+    use bevy_mod_scripting_script::ScriptAttachment;
 
     fn with_local_world<F: Fn()>(f: F) {
         let mut world = World::default();
         WorldGuard::with_static_guard(&mut world, |world| {
-            ThreadWorldContainer.set_world(world).unwrap();
+            ThreadWorldContainer
+                .set_context(crate::ThreadScriptContext {
+                    world,
+                    attachment: ScriptAttachment::StaticScript(Handle::Weak(AssetId::invalid())),
+                })
+                .unwrap();
             f()
         });
     }

@@ -1,16 +1,21 @@
 //! Traits and types for managing script contexts.
 
-use bevy_ecs::world::WorldId;
-use bevy_mod_scripting_bindings::{InteropError, ThreadWorldContainer, WorldContainer, WorldGuard};
+use std::any::Any;
 
-use crate::{IntoScriptPluginParams, extractors::GetPluginFor, script::ScriptAttachment};
+use bevy_ecs::world::WorldId;
+use bevy_mod_scripting_bindings::{
+    InteropError, ThreadScriptContext, ThreadWorldContainer, WorldGuard,
+};
+use bevy_mod_scripting_script::ScriptAttachment;
+
+use crate::IntoScriptPluginParams;
 
 /// A trait that all script contexts must implement.
 ///
 /// Contexts are not required to be `Sync` as they are internally stored behind a `Mutex` but they must satisfy `Send` so they can be
 /// freely sent between threads.
-pub trait Context: 'static + Send + GetPluginFor {}
-impl<T: 'static + Send + GetPluginFor> Context for T {}
+pub trait Context: 'static + Send + Any {}
+impl<T: 'static + Send + Any> Context for T {}
 
 /// Initializer run once after creating a context but before executing it for the first time as well as after re-loading the script
 pub type ContextInitializer<P> =
@@ -63,7 +68,10 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
     ) -> Result<P::C, InteropError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             let world_id = world.id();
-            ThreadWorldContainer.set_world(world)?;
+            ThreadWorldContainer.set_context(ThreadScriptContext {
+                world,
+                attachment: attachment.clone(),
+            })?;
             Self::context_loader()(attachment, content, world_id)
         })
     }
@@ -76,7 +84,10 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
     ) -> Result<(), InteropError> {
         WorldGuard::with_existing_static_guard(world, |world| {
             let world_id = world.id();
-            ThreadWorldContainer.set_world(world)?;
+            ThreadWorldContainer.set_context(ThreadScriptContext {
+                world,
+                attachment: attachment.clone(),
+            })?;
             Self::context_reloader()(attachment, content, previous_context, world_id)
         })
     }

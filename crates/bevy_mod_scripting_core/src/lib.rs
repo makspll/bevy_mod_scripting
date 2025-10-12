@@ -3,6 +3,7 @@
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
 use crate::{
+    callbacks::ScriptCallbacksPlugin,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
@@ -21,8 +22,8 @@ use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, Script
 
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptFunctionRegistry,
-    DynamicScriptComponentPlugin, MarkAsCore, ReflectReference, ScriptTypeRegistration,
-    ScriptValue, ThreadWorldContainer, garbage_collector,
+    DummyScriptFunctionRegistry, DynamicScriptComponentPlugin, MarkAsCore, ReflectReference,
+    ScriptTypeRegistration, ScriptValue, ThreadWorldContainer, garbage_collector,
 };
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
@@ -30,6 +31,7 @@ use handler::HandlerFn;
 use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContext};
 
+pub mod callbacks;
 pub mod commands;
 pub mod config;
 pub mod context;
@@ -62,7 +64,7 @@ pub enum ScriptingSystemSet {
 ///
 /// When implementing a new scripting plugin, also ensure the following implementations exist:
 /// - [`Plugin`] for the plugin, both [`Plugin::build`] and [`Plugin::finish`] methods need to be dispatched to the underlying [`ScriptingPlugin`] struct
-/// - [`AsMut<ScriptingPlugin<Self>`] for the plugin struct
+/// - [`AsMut<ScriptingPlugin<Self>>`] for the plugin struct
 pub trait IntoScriptPluginParams: 'static + GetPluginThreadConfig<Self> {
     /// The language of the scripts
     const LANGUAGE: Language;
@@ -173,7 +175,10 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
         app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
-        app.add_plugins(self.processing_pipeline_plugin.clone());
+        app.add_plugins((
+            self.processing_pipeline_plugin.clone(),
+            ScriptCallbacksPlugin::<P>::default(),
+        ));
 
         register_types(app);
     }
@@ -338,6 +343,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .init_resource::<AppReflectAllocator>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
+            .init_resource::<DummyScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
 
         app.register_type::<ScriptAsset>();

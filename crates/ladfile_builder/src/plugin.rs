@@ -8,7 +8,7 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    IntoNamespace,
+    DummyScriptFunctionRegistry, IntoNamespace,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
 };
@@ -74,11 +74,13 @@ impl ScriptingDocgenPlugin {
 pub fn generate_lad_file(
     type_registry: &AppTypeRegistry,
     function_registry: &AppScriptFunctionRegistry,
+    dummy_function_registry: &DummyScriptFunctionRegistry,
     global_registry: &AppScriptGlobalsRegistry,
     settings: &LadFileSettings,
 ) {
     let type_registry = type_registry.read();
     let function_registry = function_registry.read();
+    let dummy_function_registry = dummy_function_registry.0.read();
     let global_registry = global_registry.read();
     let mut builder = LadFileBuilder::new(&type_registry);
     builder
@@ -92,7 +94,10 @@ pub fn generate_lad_file(
         r#"The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App."#.trim(),
     );
 
-    for (_, function) in function_registry.iter_namespace(World::into_namespace()) {
+    for (_, function) in function_registry
+        .iter_namespace(World::into_namespace())
+        .chain(dummy_function_registry.iter_namespace(World::into_namespace()))
+    {
         builder.add_function_info(&function.info);
     }
 
@@ -113,15 +118,19 @@ pub fn generate_lad_file(
         builder.add_type_info(type_info);
 
         // find functions on the namespace
-        for (_, function) in
-            function_registry.iter_namespace(Namespace::OnType(type_info.type_id()))
+        for (_, function) in function_registry
+            .iter_namespace(Namespace::OnType(type_info.type_id()))
+            .chain(dummy_function_registry.iter_namespace(Namespace::OnType(type_info.type_id())))
         {
             builder.add_function_info(&function.info);
         }
     }
 
     // find functions on the global namespace
-    for (_, function) in function_registry.iter_namespace(Namespace::Global) {
+    for (_, function) in function_registry
+        .iter_namespace(Namespace::Global)
+        .chain(dummy_function_registry.iter_namespace(Namespace::Global))
+    {
         builder.add_function_info(&function.info);
     }
 
@@ -171,12 +180,14 @@ pub fn generate_lad_file(
 fn generate_lad_file_system(
     type_registry: Res<AppTypeRegistry>,
     function_registry: Res<AppScriptFunctionRegistry>,
+    dummy_function_registry: Res<DummyScriptFunctionRegistry>,
     global_registry: Res<AppScriptGlobalsRegistry>,
     settings: Res<LadFileSettings>,
 ) {
     generate_lad_file(
         &type_registry,
         &function_registry,
+        &dummy_function_registry,
         &global_registry,
         &settings,
     );

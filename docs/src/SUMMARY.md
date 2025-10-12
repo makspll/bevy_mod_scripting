@@ -9,6 +9,7 @@
 - [Controlling Script Bindings](./Summary/controlling-script-bindings.md)
 - [Modifying Script Contexts](./Summary/customizing-script-contexts.md)
 - [Contexts](./Summary/contexts.md)
+- [Callbacks](./Summary/callbacks.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
 
