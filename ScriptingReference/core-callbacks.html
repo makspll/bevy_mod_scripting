@@ -182,13 +182,14 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="core-callbacks"><a class="header" href="#core-callbacks">Core Callbacks</a></h1>
-<p>On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available.</p>
+<p>On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available (unless disabled via plugin settings).</p>
 <p>The three core callbacks are:</p>
 <ul>
 <li><code>on_script_loaded</code></li>
 <li><code>on_script_unloaded</code></li>
 <li><code>on_script_reloaded</code></li>
 </ul>
+<p>For more information on how callbacks generally work see <a href="../Summary/callbacks.html">the callbacks section</a>.</p>
 <h2 id="on_script_loaded"><a class="header" href="#on_script_loaded"><code>on_script_loaded</code></a></h2>
 <p>This will be called right after a script has been loaded or reloaded. This is a good place to initialize your script. You should avoid placing a lot of logic into the global body of your script, and instead put it into this callback. Otherwise errors in the initialization will fail the loading of the script.</p>
 <p>This callback will not have access to the <code>entity</code> variable, as when the script is being loaded it's not attached to an entity yet.</p>

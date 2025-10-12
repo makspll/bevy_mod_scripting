@@ -190,6 +190,9 @@
 <pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
     ContextPolicy::shared(),
 ));</code></pre>
+<div class="warning">
+<p>Shared contexts require your scripts to be more careful about how they register callbacks due to the nature of top level functions belonging to the "currently loaded" global script. See <a href="./callbacks.html">the callbacks section</a></p>
+</div>
 <h3 id="per-script-context"><a class="header" href="#per-script-context">Per Script Context</a></h3>
 <p>A per script context provides each script with their own context. However, scripts may be attached to multiple entities, in which case a single script context is shared by multiple entities.</p>
 <p>To enable per script contexts, insert the <code>ContextPolicy::per_script()</code> resource.</p>
@@ -238,7 +241,7 @@ assert_eq!(policy_a, policy_b);</code></pre>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptSystems/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../Summary/callbacks.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -252,7 +255,7 @@ assert_eq!(policy_a, policy_b);</code></pre>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptSystems/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../Summary/callbacks.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
