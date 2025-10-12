@@ -1,6 +1,7 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
 use bevy_mod_scripting_asset::ScriptAsset;
+use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
 use std::ops::Deref;
 
@@ -11,7 +12,6 @@ use bevy_mod_scripting_bindings::{
     DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt,
     ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
     ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer, Union,
-    WorldContainer,
     function::{
         from::{Ref, Val},
         from_ref::FromScriptRef,
@@ -20,10 +20,7 @@ use bevy_mod_scripting_bindings::{
     },
     script_value::ScriptValue,
 };
-use bevy_mod_scripting_core::{
-    script::ScriptAttachment,
-    script_system::{ManageScriptSystems, ScriptSystemBuilder},
-};
+use bevy_mod_scripting_core::script_system::{ManageScriptSystems, ScriptSystemBuilder};
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
 use bevy_reflect::PartialReflect;
@@ -832,7 +829,7 @@ impl ReflectReference {
         let iter_function = move || {
             // world is not thread safe, we can't capture it in the closure
             // or it will also be non-thread safe
-            let world = ThreadWorldContainer.try_get_world()?;
+            let world = ThreadWorldContainer.try_get_context()?.world;
             if len == 0 {
                 return Ok(ScriptValue::Unit);
             }

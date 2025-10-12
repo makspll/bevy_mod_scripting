@@ -1,6 +1,7 @@
 use bevy_mod_scripting_bindings::ScriptValue;
 
 use crate::{
+    callbacks::ScriptCallbacks,
     commands::RunScriptCallback,
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded},
 };
@@ -20,6 +21,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnLoa
     ) -> Result<(), ScriptError> {
         let world_id = world.id();
         let emit_responses = P::readonly_configuration(world_id).emit_responses;
+        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
 
         RunScriptCallback::<P>::new(
@@ -28,7 +30,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnLoa
             vec![],
             emit_responses,
         )
-        .run_with_context(guard.clone(), state.context.clone())
+        .run_with_context(guard.clone(), state.context.clone(), callbacks)
         .map(|_| ())
     }
 }
@@ -45,6 +47,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<UnloadingInitialized<P>>
     ) -> Result<(), ScriptError> {
         let world_id = world.id();
         let emit_responses = P::readonly_configuration(world_id).emit_responses;
+        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
 
         let v = RunScriptCallback::<P>::new(
@@ -53,7 +56,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<UnloadingInitialized<P>>
             vec![],
             emit_responses,
         )
-        .run_with_context(guard.clone(), state.existing_context.clone())?;
+        .run_with_context(guard.clone(), state.existing_context.clone(), callbacks)?;
         ctxt.insert(UNLOADED_SCRIPT_STATE_KEY, v);
         Ok(())
     }
@@ -71,6 +74,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<ReloadingInitialized<P>>
     ) -> Result<(), ScriptError> {
         let world_id = world.id();
         let emit_responses = P::readonly_configuration(world_id).emit_responses;
+        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
 
         let v = RunScriptCallback::<P>::new(
@@ -79,7 +83,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<ReloadingInitialized<P>>
             vec![],
             emit_responses,
         )
-        .run_with_context(guard.clone(), state.existing_context.clone())?;
+        .run_with_context(guard.clone(), state.existing_context.clone(), callbacks)?;
         ctxt.insert(UNLOADED_SCRIPT_STATE_KEY, v);
         Ok(())
     }
@@ -95,6 +99,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnRel
     ) -> Result<(), ScriptError> {
         let world_id = world.id();
         let emit_responses = P::readonly_configuration(world_id).emit_responses;
+        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
 
         if state.is_new_context {
@@ -110,7 +115,7 @@ impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnRel
             vec![unload_state],
             emit_responses,
         )
-        .run_with_context(guard.clone(), state.context.clone())
+        .run_with_context(guard.clone(), state.context.clone(), callbacks)
         .map(|_| ())
     }
 }

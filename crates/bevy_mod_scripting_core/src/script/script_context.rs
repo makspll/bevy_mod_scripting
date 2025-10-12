@@ -1,5 +1,6 @@
 use std::{hash::Hash, sync::Arc};
 
+use bevy_mod_scripting_script::ScriptAttachment;
 use parking_lot::{Mutex, RwLock};
 
 use super::*;

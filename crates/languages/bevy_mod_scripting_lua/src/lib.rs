@@ -1,5 +1,8 @@
 //! Lua integration for the bevy_mod_scripting system.
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
 
 use ::{
     bevy_app::Plugin,
@@ -7,27 +10,28 @@ use ::{
     bevy_ecs::{entity::Entity, world::World},
 };
 use bevy_app::App;
-use bevy_ecs::world::WorldId;
+use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
-    InteropError, PartialReflectExt, ThreadWorldContainer, WorldContainer,
-    function::namespace::Namespace, globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
+    InteropError, PartialReflectExt, ThreadWorldContainer, function::namespace::Namespace,
+    globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
+    callbacks::ScriptCallbacks,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     event::CallbackLabel,
-    extractors::GetPluginFor,
     make_plugin_config_static,
-    script::{ContextPolicy, ScriptAttachment},
+    script::ContextPolicy,
 };
+use bevy_mod_scripting_script::ScriptAttachment;
 use bindings::{
     reference::{LuaReflectReference, LuaStaticReflectReference},
     script_value::LuaScriptValue,
 };
 pub use mlua;
-use mlua::{Function, IntoLua, Lua, MultiValue};
+use mlua::{Function, IntoLua, Lua, MultiValue, Variadic};
 
 /// Bindings for lua.
 pub mod bindings;
@@ -50,10 +54,6 @@ impl DerefMut for LuaContext {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
-}
-
-impl GetPluginFor for LuaContext {
-    type P = LuaScriptingPlugin;
 }
 
 impl IntoScriptPluginParams for LuaScriptingPlugin {
@@ -89,6 +89,51 @@ pub struct LuaScriptingPlugin {
     pub scripting_plugin: ScriptingPlugin<Self>,
 }
 
+fn register_plugin_globals(lua: &mut Lua) -> Result<(), mlua::Error> {
+    lua.globals().set(
+        "register_callback",
+        lua.create_function(|_lua: &Lua, (callback, func): (String, Function)| {
+            let thread_ctxt = ThreadWorldContainer
+                .try_get_context()
+                .map_err(mlua::Error::external)?;
+            let world = thread_ctxt.world;
+            let attachment = thread_ctxt.attachment;
+            world
+                .with_resource_mut(|res: Mut<ScriptCallbacks<LuaScriptingPlugin>>| {
+                    let mut callbacks = res.callbacks.write();
+                    callbacks.insert(
+                        (attachment.clone(), callback),
+                        Arc::new(
+                            move |args: Vec<ScriptValue>,
+                                  lua: &mut LuaContext,
+                                  world_id: WorldId| {
+                                let pre_handling_callbacks =
+                                    LuaScriptingPlugin::readonly_configuration(world_id)
+                                        .pre_handling_callbacks;
+
+                                pre_handling_callbacks
+                                    .iter()
+                                    .try_for_each(|init| init(&attachment, lua))?;
+
+                                let args = args
+                                    .into_iter()
+                                    .map(LuaScriptValue)
+                                    .collect::<Variadic<_>>();
+
+                                func.call::<LuaScriptValue>(args)
+                                    .map_err(IntoInteropError::to_bms_error)
+                                    .map(ScriptValue::from)
+                            },
+                        ),
+                    )
+                })
+                .map_err(mlua::Error::external)?;
+            Ok(())
+        })?,
+    )?;
+    Ok(())
+}
+
 impl Default for LuaScriptingPlugin {
     fn default() -> Self {
         LuaScriptingPlugin {
@@ -98,19 +143,22 @@ impl Default for LuaScriptingPlugin {
                 context_initializers: vec![
                     |_script_id, context| {
                         // set the world global
-                        context
-                            .globals()
+                        let globals = context.globals();
+
+                        globals
                             .set(
                                 "world",
                                 LuaStaticReflectReference(std::any::TypeId::of::<World>()),
                             )
                             .map_err(IntoInteropError::to_bms_error)?;
 
+                        register_plugin_globals(context).map_err(IntoInteropError::to_bms_error)?;
+
                         Ok(())
                     },
                     |_script_id, context| {
                         // set static globals
-                        let world = ThreadWorldContainer.try_get_world()?;
+                        let world = ThreadWorldContainer.try_get_context()?.world;
                         let globals_registry =
                             world.with_resource(|r: &AppScriptGlobalsRegistry| r.clone())?;
                         let globals_registry = globals_registry.read();
@@ -157,7 +205,7 @@ impl Default for LuaScriptingPlugin {
                 ],
                 context_pre_handling_initializers: vec![|context_key, context| {
                     // TODO: convert these to functions
-                    let world = ThreadWorldContainer.try_get_world()?;
+                    let world = ThreadWorldContainer.try_get_context()?.world;
                     if let Some(entity) = context_key.entity() {
                         context
                             .globals()

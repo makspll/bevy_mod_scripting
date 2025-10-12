@@ -27,7 +27,7 @@ bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_system_reflection = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
-
+bevy_mod_scripting_script = { workspace = true }
 bevy_reflect = { workspace = true, default-features = false, features = [] }
 bevy_ecs = { workspace = true, default-features = false, features = [] }
 bevy_app = { workspace = true, default-features = false, features = [] }

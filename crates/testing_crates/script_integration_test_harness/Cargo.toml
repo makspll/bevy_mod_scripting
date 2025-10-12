@@ -26,6 +26,8 @@ bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_functions = { workspace = true, features = [
     "core_functions",
 ] }
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
 regex = { workspace = true }
 pretty_assertions = { workspace = true }
 bevy_mod_scripting_lua = { workspace = true, optional = true }

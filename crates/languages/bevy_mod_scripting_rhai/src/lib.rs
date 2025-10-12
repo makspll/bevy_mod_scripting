@@ -15,16 +15,17 @@ use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
     AppScriptGlobalsRegistry, InteropError, Namespace, PartialReflectExt, ScriptValue,
-    ThreadWorldContainer, WorldContainer,
+    ThreadWorldContainer,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     event::CallbackLabel,
-    extractors::GetPluginFor,
     make_plugin_config_static,
-    script::{ContextPolicy, DisplayProxy, ScriptAttachment},
+    script::ContextPolicy,
 };
+use bevy_mod_scripting_display::DisplayProxy;
+use bevy_mod_scripting_script::ScriptAttachment;
 use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference};
 use parking_lot::RwLock;
 pub use rhai;
@@ -42,10 +43,6 @@ pub struct RhaiScriptContext {
     pub ast: AST,
     /// The scope of the script
     pub scope: Scope<'static>,
-}
-
-impl GetPluginFor for RhaiScriptContext {
-    type P = RhaiScriptingPlugin;
 }
 
 make_plugin_config_static!(RhaiScriptingPlugin);
@@ -155,7 +152,7 @@ impl Default for RhaiScriptingPlugin {
                     },
                     |_, context| {
                         // initialize global functions
-                        let world = ThreadWorldContainer.try_get_world()?;
+                        let world = ThreadWorldContainer.try_get_context()?.world;
                         let globals_registry =
                             world.with_resource(|r: &AppScriptGlobalsRegistry| r.clone())?;
                         let globals_registry = globals_registry.read();
@@ -216,7 +213,7 @@ impl Default for RhaiScriptingPlugin {
                     },
                 ],
                 context_pre_handling_initializers: vec![|context_key, context| {
-                    let world = ThreadWorldContainer.try_get_world()?;
+                    let world = ThreadWorldContainer.try_get_context()?.world;
 
                     if let Some(entity) = context_key.entity() {
                         context.scope.set_or_push(

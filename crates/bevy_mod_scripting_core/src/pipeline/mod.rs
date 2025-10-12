@@ -29,7 +29,7 @@ use crate::{
         OnLoadedListener, OnReloadedListener, OnUnloadedForReloadListener,
         OnUnloadedForUnloadListener,
     },
-    script::{ScriptAttachment, ScriptContext, ScriptId},
+    script::{ScriptContext, ScriptId},
 };
 
 mod hooks;
@@ -351,6 +351,7 @@ mod test {
     use bevy_ecs::{entity::Entity, system::SystemState, world::FromWorld};
     use bevy_mod_scripting_asset::Language;
     use bevy_mod_scripting_bindings::ScriptValue;
+    use bevy_mod_scripting_script::ScriptAttachment;
     use test_utils::make_test_plugin;
 
     use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};

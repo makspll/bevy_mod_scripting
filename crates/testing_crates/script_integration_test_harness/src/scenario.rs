@@ -30,8 +30,9 @@ use bevy_mod_scripting_core::{
         ScriptCallbackResponseEvent, ScriptDetachedEvent,
     },
     handler::event_handler,
-    script::{ContextPolicy, ScriptAttachment, ScriptComponent, ScriptContext},
+    script::{ContextPolicy, ScriptComponent, ScriptContext},
 };
+use bevy_mod_scripting_script::ScriptAttachment;
 use test_utils::test_data::setup_integration_test;
 
 use crate::{install_test_plugin, parse::*};

@@ -17,10 +17,6 @@ use bevy::{
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin, make_layer};
 use bevy_mod_scripting::prelude::*;
 use bevy_mod_scripting_bindings::AllocatorDiagnosticPlugin;
-use bevy_mod_scripting_core::{
-    commands::{AttachScript, DetachScript},
-    script::ScriptAttachment,
-};
 use clap::Parser;
 
 // CONSOLE SETUP

@@ -3,6 +3,7 @@
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
 use crate::{
+    callbacks::ScriptCallbacksPlugin,
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
@@ -30,6 +31,7 @@ use handler::HandlerFn;
 use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContext};
 
+pub mod callbacks;
 pub mod commands;
 pub mod config;
 pub mod context;
@@ -173,7 +175,10 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
         app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
-        app.add_plugins(self.processing_pipeline_plugin.clone());
+        app.add_plugins((
+            self.processing_pipeline_plugin.clone(),
+            ScriptCallbacksPlugin::<P>::default(),
+        ));
 
         register_types(app);
     }

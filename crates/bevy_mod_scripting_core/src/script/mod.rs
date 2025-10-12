@@ -2,14 +2,13 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    fmt,
     ops::Deref,
 };
 
 use crate::event::{ScriptAttachedEvent, ScriptDetachedEvent};
 
 use ::{
-    bevy_asset::{Asset, AssetId, Handle},
+    bevy_asset::{AssetId, Handle},
     bevy_ecs::{
         component::HookContext, entity::Entity, prelude::ReflectComponent, resource::Resource,
         world::DeferredWorld,
@@ -21,6 +20,7 @@ mod context_key;
 mod script_context;
 use bevy_ecs::component::Component;
 use bevy_mod_scripting_asset::ScriptAsset;
+use bevy_mod_scripting_script::ScriptAttachment;
 pub use context_key::*;
 pub use script_context::*;
 
@@ -28,48 +28,6 @@ pub use script_context::*;
 ///
 /// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
 pub type ScriptId = AssetId<ScriptAsset>;
-
-/// Display the path of a script or its asset ID.
-#[doc(hidden)]
-pub struct HandleDisplay<'a, T: Asset>(&'a Handle<T>);
-
-impl<'a, A: Asset> fmt::Display for HandleDisplay<'a, A> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(path) = self.0.path() {
-            write!(f, "path {path}")
-        } else {
-            write!(f, "id {}", self.0.id())
-        }
-    }
-}
-
-impl<'a, A: Asset> fmt::Debug for HandleDisplay<'a, A> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(path) = self.0.path() {
-            write!(f, "path {path:?}")
-        } else {
-            write!(f, "id {:?}", self.0.id())
-        }
-    }
-}
-
-/// Make a type display-able.
-pub trait DisplayProxy {
-    /// The type that does the displaying.
-    type D<'a>: fmt::Display + fmt::Debug
-    where
-        Self: 'a;
-    /// Return a display-able reference.
-    fn display<'a>(&'a self) -> Self::D<'a>;
-}
-
-impl<A: Asset> DisplayProxy for Handle<A> {
-    type D<'a> = HandleDisplay<'a, A>;
-
-    fn display<'a>(&'a self) -> Self::D<'a> {
-        HandleDisplay(self)
-    }
-}
 
 #[derive(Component, Reflect, Clone, Default, Debug)]
 #[reflect(Component)]

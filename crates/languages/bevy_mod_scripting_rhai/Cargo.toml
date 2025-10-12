@@ -26,6 +26,7 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
 strum = { workspace = true, features = ["derive"] }
 parking_lot = { workspace = true }
 

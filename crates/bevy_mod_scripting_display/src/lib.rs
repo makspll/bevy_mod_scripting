@@ -4,9 +4,10 @@ use std::{
     any::{Any, TypeId},
     ops::Deref,
 };
+mod handle;
 mod impls;
 mod printer;
-pub use printer::*;
+pub use {handle::*, printer::*};
 
 use bevy_ecs::{
     component::{ComponentId, ComponentInfo},

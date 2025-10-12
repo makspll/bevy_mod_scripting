@@ -6,9 +6,8 @@
 //! we need wrapper types which have owned and ref variants.
 use super::{WorldGuard, access_map::ReflectAccessId};
 use crate::{
-    ReflectAllocationId, ReflectAllocator, ThreadWorldContainer, WorldContainer,
-    error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
-    with_access_write,
+    ReflectAllocationId, ReflectAllocator, ThreadWorldContainer, error::InteropError,
+    reflection_extensions::PartialReflectExt, with_access_read, with_access_write,
 };
 use bevy_asset::{ReflectAsset, UntypedHandle};
 use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
@@ -68,7 +67,7 @@ impl DisplayWithTypeInfo for ReflectReference {
 
             let guard = any.downcast_ref::<WorldGuard>().cloned().or_else(|| {
                 any.downcast_ref::<ThreadWorldContainer>()
-                    .and_then(|t| t.try_get_world().ok())
+                    .and_then(|t| t.try_get_context().ok().map(|c| c.world))
             });
 
             if let Some(guard) = guard {
@@ -767,7 +766,7 @@ impl DisplayWithTypeInfo for ReflectBase {
 
                     let guard = any.downcast_ref::<WorldGuard>().cloned().or_else(|| {
                         any.downcast_ref::<ThreadWorldContainer>()
-                            .and_then(|t| t.try_get_world().ok())
+                            .and_then(|t| t.try_get_context().ok().map(|c| c.world))
                     });
 
                     if let Some(guard) = guard {
