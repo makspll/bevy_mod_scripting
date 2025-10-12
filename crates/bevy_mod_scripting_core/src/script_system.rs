@@ -205,7 +205,7 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     script_callbacks: ScriptCallbacks<P>,
 }
 
-/// Equivalent of [`SystemParam`] but for dynamic systems, these are the kinds of things
+/// Equivalent of [`bevy_ecs::system::SystemParam`] but for dynamic systems, these are the kinds of things
 /// that scripts can ask for access to and get passed in through dynamic script systems.
 pub enum ScriptSystemParam {
     /// An exclusive resource access

@@ -7,7 +7,7 @@ use bevy_mod_scripting_display::DisplayProxy;
 use bevy_reflect::Reflect;
 use std::fmt;
 
-/// Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.
+/// Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Reflect)]
 pub enum ScriptAttachment {
     /// a script attached to an entity, with an optional domain. By default selecting a domain will put the context of this script on a per-domain basis.

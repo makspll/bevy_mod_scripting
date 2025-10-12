@@ -447,7 +447,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
 }
 
 /// Use one script context per entity and script by default; see
-/// [ScriptContext::per_entity_and_script].
+/// [`ContextPolicy::per_entity_and_script`].
 impl<P: IntoScriptPluginParams> Default for ScriptContextInner<P> {
     fn default() -> Self {
         Self {

@@ -10,7 +10,7 @@ use crate::IntoMluaError;
 
 use super::script_value::{LUA_CALLER_CONTEXT, LuaScriptValue};
 
-/// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
+/// Lua UserData wrapper for [`ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
 #[derive(Debug, Clone, PartialEq, mlua::FromLua)]
 pub struct LuaReflectReference(pub ReflectReference);

@@ -64,7 +64,7 @@ pub enum ScriptingSystemSet {
 ///
 /// When implementing a new scripting plugin, also ensure the following implementations exist:
 /// - [`Plugin`] for the plugin, both [`Plugin::build`] and [`Plugin::finish`] methods need to be dispatched to the underlying [`ScriptingPlugin`] struct
-/// - [`AsMut<ScriptingPlugin<Self>`] for the plugin struct
+/// - [`AsMut<ScriptingPlugin<Self>>`] for the plugin struct
 pub trait IntoScriptPluginParams: 'static + GetPluginThreadConfig<Self> {
     /// The language of the scripts
     const LANGUAGE: Language;

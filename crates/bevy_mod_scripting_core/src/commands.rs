@@ -108,7 +108,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         result
     }
 
-    /// Equivalent to [`Self::run`], but usable in the case where you already have a [`HandlerContext`].
+    /// Equivalent to [`Self::run`], but usable in the case where you already have [`ScriptContext`] and [`ScriptCallbacks`] resources available.
     pub fn run_with_contexts(
         self,
         guard: WorldGuard,

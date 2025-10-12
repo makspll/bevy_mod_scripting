@@ -354,11 +354,11 @@ impl ReflectReference {
         })?
     }
 
-    /// Attempts to create a [`Box<dyn PartialReflect>`] from the reference. This is possible using a few strategies:
-    /// - If the reference is to a world, a [`WorldCallbackAccess`] is created and boxed
+    /// Attempts to create a `Box<dyn PartialReflect>` from the reference. This is possible using a few strategies:
+    /// - If the reference is to a world, a [`crate::world::WorldCallbackAccess`] is created and boxed
     /// - If the reference is to an allocation with no reflection path and references to it, the value is taken as is.
-    /// - If the reference has a [`bevy::reflect::ReflectFromReflect`] type data associated with it, the value is cloned using that impl.
-    /// - If all above fails, [`bevy::reflect::PartialReflect::clone_value`] is used to clone the value.
+    /// - If the reference has a [`bevy_reflect::ReflectFromReflect`] type data associated with it, the value is cloned using that impl.
+    /// - If all above fails, [`bevy_reflect::PartialReflect::clone_value`] is used to clone the value.
     ///
     pub fn to_owned_value(
         &self,
@@ -466,7 +466,7 @@ impl ReflectReference {
     /// - The caller must ensure the cell has permission to access the underlying value
     /// - The caller must ensure no aliasing references to the same value exist at all at the same time
     ///
-    /// To do this safely you need to use [`WorldAccessGuard::claim_read_access`] or [`WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
+    /// To do this safely you need to use [`crate::world::WorldAccessGuard::claim_read_access`] or [`crate::world::WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
     pub unsafe fn reflect_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,
@@ -527,7 +527,7 @@ impl ReflectReference {
     /// - The caller must ensure the cell has permission to access the underlying value
     /// - The caller must ensure no other references to the same value exist at all at the same time (even if you have the correct access)
     ///
-    /// To do this safely you need to use [`WorldAccessGuard::claim_write_access`] or [`WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
+    /// To do this safely you need to use [`crate::world::WorldAccessGuard::claim_write_access`] or [`crate::world::WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
     pub unsafe fn reflect_mut_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,

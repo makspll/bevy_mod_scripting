@@ -341,8 +341,8 @@ impl IntoMarkdown for Box<dyn IntoMarkdown> {
     }
 }
 
-/// Usage: markdown_vec![item1, item2, item3]
-/// Creates Vec<dyn IntoMarkdown> from a list of items.
+/// Usage: `markdown_vec![item1, item2, item3]`
+/// Creates `Vec<dyn IntoMarkdown>`` from a list of items.
 #[macro_export]
 macro_rules! markdown_vec {
     ($($x:expr),*$(,)?) => {

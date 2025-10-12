@@ -195,13 +195,13 @@ pub struct ReflectAllocator {
 
 #[profiling::all_functions]
 impl ReflectAllocator {
-    /// Allocates a new [`Reflect`] value and returns an [`AllocationId`] which can be used to access it later.
+    /// Allocates a new `Reflect` value and returns an [`ReflectAllocationId`] which can be used to access it later.
     /// Use [`Self::allocate_boxed`] if you already have an allocated boxed value.
     pub fn allocate<T: PartialReflect>(&mut self, value: T) -> ReflectAllocationId {
         self.allocate_boxed(Box::new(value))
     }
 
-    /// Allocates a new boxed [`PartialReflect`] value and returns an [`AllocationId`] which can be used to access it later.
+    /// Allocates a new boxed `PartialReflect` value and returns an [`ReflectAllocationId`] which can be used to access it later.
     pub fn allocate_boxed(&mut self, value: Box<dyn PartialReflect>) -> ReflectAllocationId {
         static COUNTER: AtomicU64 = AtomicU64::new(0);
 
@@ -236,7 +236,7 @@ impl ReflectAllocator {
         self.allocations.get(id)
     }
 
-    /// Deallocates the [`PartialReflect`] value with the given [`AllocationId`]
+    /// Deallocates the `PartialReflect` value with the given [`ReflectAllocationId`]
     pub fn deallocate(&mut self, id: &ReflectAllocationId) {
         self.allocations.remove(id);
     }

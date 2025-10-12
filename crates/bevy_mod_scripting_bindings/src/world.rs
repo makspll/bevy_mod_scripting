@@ -69,7 +69,7 @@ pub type WorldGuard<'w> = WorldAccessGuard<'w>;
 /// Similar to [`WorldGuard`], but without the arc, use for when you don't need the outer Arc.
 pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
 
-/// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
+/// Provides safe access to the world via [`AnyAccessMap`] permissions, which enforce aliasing rules at runtime in multi-thread environments
 #[derive(Clone, Debug)]
 pub struct WorldAccessGuard<'w> {
     /// The guard this guard pointer represents

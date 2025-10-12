@@ -229,7 +229,7 @@ impl<T: FromReflect> FromScript for Val<T> {
 /// Before downcasting the reference, it will claim write access to the object to ensure that the reference is valid.
 ///
 /// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
-/// The [`ScriptFunction`] calling mechanism will take care of releasing all accesses claimed during the function call.
+/// The script function calling mechanism will take care of releasing all accesses claimed during the function call.
 pub struct Ref<'w, T>(pub &'w T);
 
 impl<T> Deref for Ref<'_, T> {

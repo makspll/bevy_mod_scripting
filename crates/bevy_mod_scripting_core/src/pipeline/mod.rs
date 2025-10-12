@@ -48,17 +48,17 @@ pub enum PipelineSet {
 
 /// A pipeline plugin which enables the loading and unloading of scripts in a highly modular way
 pub struct ScriptLoadingPipeline<P: IntoScriptPluginParams> {
-    /// by default the plugin will listen to [`ScriptComponent`] attachments/detachments and synchronize scripts accordingly,
+    /// by default the plugin will listen to [`crate::ScriptComponent`] attachments/detachments and synchronize scripts accordingly,
     /// you can opt out of this behavior by disabling this flag.
     pub script_component_triggers: bool,
-    /// by default the plugin will listen to [`AssetEvent<ScriptAsset>`] events, and trigger the pipeline on asset modifications.
+    /// by default the plugin will listen to [`bevy_asset::AssetEvent<ScriptAsset>`] events, and trigger the pipeline on asset modifications.
     pub hot_loading_asset_triggers: bool,
 
-    /// If true the [`OnScriptLoaded`] callback will be triggered when loading scripts
+    /// If true the [`crate::event::OnScriptLoaded`] callback will be triggered when loading scripts
     pub on_script_loaded_callback: bool,
-    /// If true the [`OnScriptReloaded`] callback will be triggered when loading scripts
+    /// If true the [`crate::event::OnScriptReloaded`] callback will be triggered when loading scripts
     pub on_script_reloaded_callback: bool,
-    /// If true the [`OnScriptUnloaded`] callback will be triggered when loading scripts
+    /// If true the [`crate::event::OnScriptUnloaded`] callback will be triggered when loading scripts
     pub on_script_unloaded_callback: bool,
     _ph: PhantomData<fn(P)>,
 

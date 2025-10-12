@@ -264,7 +264,7 @@ where
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub struct DummyScriptFunctionRegistry(pub ScriptFunctionRegistryArc);
 
-/// Equivalent to [`AppFunctionRegistry`] but stores functions with a more convenient signature for scripting to avoid boxing every argument.
+/// Equivalent to [`AppScriptFunctionRegistry`] but stores functions with a more convenient signature for scripting to avoid boxing every argument.
 #[derive(Clone, Default, Resource, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub struct AppScriptFunctionRegistry(pub ScriptFunctionRegistryArc);
