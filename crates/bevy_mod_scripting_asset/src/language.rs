@@ -13,10 +13,26 @@ pub enum Language {
     /// The Rune scripting language
     Rune,
     /// An external scripting language
-    External(Cow<'static, str>),
+    External {
+        /// The identifier of the language
+        name: Cow<'static, str>,
+        /// If this language is one indexed
+        one_indexed: bool,
+    },
     /// Set if none of the asset path to language mappers match
     #[default]
     Unknown,
+}
+
+impl Language {
+    /// Returns true if the language is one-indexed and requires correction when converting
+    pub fn one_indexed(&self) -> bool {
+        match &self {
+            Language::Lua => true,
+            Language::External { one_indexed, .. } => *one_indexed,
+            _ => false,
+        }
+    }
 }
 
 impl std::fmt::Display for Language {
@@ -31,7 +47,7 @@ impl From<&Language> for Cow<'static, str> {
             Language::Rhai => Cow::Borrowed("Rhai"),
             Language::Lua => Cow::Borrowed("Lua"),
             Language::Rune => Cow::Borrowed("Rune"),
-            Language::External(cow) => cow.clone(),
+            Language::External { name, .. } => name.clone(),
             Language::Unknown => Cow::Borrowed("Unknown"),
         }
     }

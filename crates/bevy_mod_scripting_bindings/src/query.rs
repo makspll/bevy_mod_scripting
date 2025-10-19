@@ -12,7 +12,7 @@ use ::{
         reflect::ReflectComponent,
         world::World,
     },
-    bevy_reflect::{ParsedPath, Reflect, TypeRegistration},
+    bevy_reflect::{Reflect, TypeRegistration},
 };
 use std::{any::TypeId, collections::VecDeque, ptr::NonNull, sync::Arc};
 
@@ -352,7 +352,7 @@ impl WorldAccessGuard<'_> {
                                 type_id: c.type_registration().type_id(),
                                 base_id: super::ReflectBase::Component(r.id(), c.component_id()),
                             },
-                            reflect_path: ParsedPath(vec![]),
+                            reflect_path: Default::default(),
                         })
                         .collect();
                     ScriptQueryResult {

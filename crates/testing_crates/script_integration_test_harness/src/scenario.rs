@@ -257,7 +257,10 @@ impl ScenarioSchedule {
         language: Option<Language>,
         app: &mut App,
     ) {
-        let language = language.unwrap_or(Language::External("Unset language".into()));
+        let language = language.unwrap_or(Language::External {
+            name: "Unset language".into(),
+            one_indexed: false,
+        });
         match language {
             #[cfg(feature = "lua")]
             Language::Lua => {
@@ -464,7 +467,7 @@ impl ScenarioStep {
     pub fn execute(self, context: &mut ScenarioContext, app: &mut App) -> Result<(), Error> {
         match self {
             ScenarioStep::SetCurrentLanguage { language } => {
-                let language = if language == Language::External(SCENARIO_SELF_LANGUAGE_NAME.into())
+                let language = if matches!(&language, Language::External { name, .. } if name == SCENARIO_SELF_LANGUAGE_NAME)
                 {
                     // main script language can be gotten from the "this_script_asset_relative_path"
                     let extension = context

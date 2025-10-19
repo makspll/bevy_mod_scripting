@@ -60,7 +60,7 @@ impl FunctionCallContext {
     /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
     #[profiling::function]
     pub fn convert_to_0_indexed(&self) -> bool {
-        matches!(&self.language, Language::Lua)
+        self.language.one_indexed()
     }
 
     /// Gets the scripting language of the caller

@@ -20,9 +20,10 @@ local expected_vec3_debug = [[
             ReflectAllocationId(*anything*),
         ),
     },
-    reflect_path: ParsedPath(
-        [],
-    ),
+    reflect_path: ReferencePath {
+        one_indexed: false,
+        path: [],
+    },
 }
 ]]
 -- normalize allocation ids before comparison so tests don't fail on runtime-generated ids
@@ -49,9 +50,10 @@ ReflectReference {
             ),
         ),
     },
-    reflect_path: ParsedPath(
-        [],
-    ),
+    reflect_path: ReferencePath {
+        one_indexed: false,
+        path: [],
+    },
 }
 ]]
 

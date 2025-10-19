@@ -39,7 +39,7 @@ use ::{
         world::{CommandQueue, Mut, World, unsafe_world_cell::UnsafeWorldCell},
     },
     bevy_reflect::{
-        DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct, DynamicVariant, ParsedPath,
+        DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct, DynamicVariant,
         PartialReflect, TypeRegistryArc, std_traits::ReflectDefault,
     },
 };
@@ -702,7 +702,7 @@ impl WorldAccessGuard<'_> {
             } else {
                 field_idx
             };
-            let field_string = format!("_{script_idx}");
+            let field_string = script_idx.to_string();
             dynamic.insert_boxed(self.construct_from_script_value(
                 field_string.clone(),
                 field_type_id,
@@ -727,7 +727,7 @@ impl WorldAccessGuard<'_> {
                 field_idx
             };
 
-            let field_string = format!("_{script_idx}");
+            let field_string = script_idx.to_string();
 
             dynamic.insert_boxed(self.construct_from_script_value(
                 field_string.clone(),
@@ -1112,7 +1112,7 @@ impl WorldAccessGuard<'_> {
                         component_registration.component_id,
                     ),
                 },
-                reflect_path: ParsedPath(vec![]),
+                reflect_path: Default::default(),
             }))
         } else {
             Ok(None)
@@ -1169,7 +1169,7 @@ impl WorldAccessGuard<'_> {
                     })?,
                 base_id: ReflectBase::Resource(resource_id),
             },
-            reflect_path: ParsedPath(vec![]),
+            reflect_path: Default::default(),
         }))
     }
 

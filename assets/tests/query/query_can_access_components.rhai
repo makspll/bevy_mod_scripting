@@ -19,7 +19,7 @@ for (result, i) in query_result {
     let A = components[0];
     let B = components[1];
     let C = components[2];
-    assert(A["_0"] == "Default", "Expected 'Default', got: " + A["_0"]);
-    assert(B["_0"] == "Default", "Expected 'Default', got: " + B["_0"]);
+    assert(A[0] == "Default", "Expected 'Default', got: " + A[0]);
+    assert(B[0] == "Default", "Expected 'Default', got: " + B[0]);
     assert(C.strings[0] == "asd", "Expected 'asd', got: " + C.strings[0]);
 }
