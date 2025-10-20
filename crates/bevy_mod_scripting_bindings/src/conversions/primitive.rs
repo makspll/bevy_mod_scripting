@@ -15,8 +15,7 @@ use bevy_reflect::PartialReflect;
 /// Note: string ref types cannot be effectively converted into their static reference versions without leaking, so they are not supported here.
 pub fn convert(value: &dyn PartialReflect, target: TypeId) -> Option<Box<dyn PartialReflect>> {
     let primitive = Primitive::from(value);
-    let out = primitive.convert(target);
-    out
+    primitive.convert(target)
 }
 
 /// A coercion primitive used for intermediate normalizations.
@@ -268,11 +267,15 @@ impl<'a> From<&'a dyn PartialReflect> for Primitive<'a> {
             && let Some(v) = v.try_downcast_ref::<f64>()
         {
             Primitive::F(*v)
+        } else if t == TypeId::of::<Cow<'static, str>>()
+            && let Some(v) = v.try_downcast_ref::<Cow<'static, str>>()
+        {
+            Primitive::S(v.clone())
         } else if t == TypeId::of::<String>()
             && let Some(v) = v.try_downcast_ref::<String>()
         {
             Primitive::S(Cow::Borrowed(v.as_str()))
-        } else if t == TypeId::of::<String>()
+        } else if t == TypeId::of::<&'static str>()
             && let Some(v) = v.try_downcast_ref::<&'static str>()
         {
             Primitive::S(Cow::Borrowed(*v))
