@@ -1492,7 +1492,7 @@ mod test {
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
 
         // one indexed
-        let payload = HashMap::from_iter(vec![("_1".to_owned(), ScriptValue::Integer(1))]);
+        let payload = HashMap::from_iter(vec![("1".to_owned(), ScriptValue::Integer(1))]);
 
         let result = world.construct(type_registration, payload, true);
         let expected =
