@@ -39,7 +39,7 @@ use {
 /// - The path, which specifies how to access the value from the base.
 ///
 /// Bindings defined on this type, apply to ALL references.
-#[derive(Clone, PartialEq, Eq, Reflect, DebugWithTypeInfo)]
+#[derive(Clone, PartialEq, Reflect, DebugWithTypeInfo)]
 #[reflect(Default, opaque)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 #[non_exhaustive]

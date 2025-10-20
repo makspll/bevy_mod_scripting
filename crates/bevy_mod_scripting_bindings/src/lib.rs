@@ -2,6 +2,7 @@
 
 pub mod access_map;
 pub mod allocator;
+pub mod conversions;
 pub mod docgen;
 pub mod error;
 pub mod function;
@@ -23,6 +24,7 @@ pub use error::*;
 pub use function::*;
 pub use globals::*;
 // pub use pretty_print::*;
+pub use conversions::*;
 pub use path::*;
 pub use query::*;
 pub use reference::*;

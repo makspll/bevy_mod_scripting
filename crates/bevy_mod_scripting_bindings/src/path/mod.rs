@@ -7,16 +7,44 @@ use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo};
 use bevy_reflect::{PartialReflect, ReflectMut, ReflectRef, TypeInfo, TypeRegistry};
 
-use crate::ScriptValue;
+use crate::{ScriptValue, convert};
 
 /// A key referencing into a `Reflect` supporting trait object.
-#[derive(DebugWithTypeInfo, Clone, PartialEq, Eq)]
+#[derive(DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub enum ReferencePart {
     /// A string labelled reference
     StringAccess(Cow<'static, str>),
     /// An integer labelled reference, with optional indexing correction
     IntegerAccess(i64, bool),
+    /// A key to a map or set,
+    MapAccess(Box<dyn PartialReflect>),
+}
+
+impl Clone for ReferencePart {
+    fn clone(&self) -> Self {
+        match self {
+            Self::StringAccess(arg0) => Self::StringAccess(arg0.clone()),
+            Self::IntegerAccess(arg0, arg1) => Self::IntegerAccess(*arg0, *arg1),
+            Self::MapAccess(arg0) => Self::MapAccess(match arg0.reflect_clone() {
+                Ok(c) => c,
+                Err(_) => arg0.to_dynamic(), // this is okay, because we need to call FromReflect on the map side anyway
+            }),
+        }
+    }
+}
+
+impl PartialEq for ReferencePart {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::StringAccess(l0), Self::StringAccess(r0)) => l0 == r0,
+            (Self::IntegerAccess(l0, l1), Self::IntegerAccess(r0, r1)) => l0 == r0 && l1 == r1,
+            (Self::MapAccess(l0), Self::MapAccess(r0)) => {
+                l0.reflect_partial_eq(r0.as_ref()).unwrap_or(false)
+            }
+            _ => false,
+        }
+    }
 }
 
 impl Display for ReferencePart {
@@ -30,6 +58,11 @@ impl Display for ReferencePart {
             ReferencePart::IntegerAccess(int, correction) => {
                 f.write_str("[")?;
                 f.write_str(&if *correction { *int - 1 } else { *int }.to_string())?;
+                f.write_str("]")
+            }
+            ReferencePart::MapAccess(partial_reflect) => {
+                f.write_str("[")?;
+                partial_reflect.debug(f)?;
                 f.write_str("]")
             }
         }
@@ -57,6 +90,25 @@ impl ReferencePart {
                 })
             }
             _ => Err(()),
+        }
+    }
+
+    /// Casts the keys into a partial reflect value regardless of type of access
+    pub fn with_any<O, F: FnOnce(&dyn PartialReflect) -> O>(
+        &self,
+        correct_indexing: bool,
+        f: F,
+    ) -> O {
+        match self {
+            ReferencePart::StringAccess(cow) => f(cow),
+            ReferencePart::IntegerAccess(index, correction) => {
+                f(&(if *correction && correct_indexing {
+                    *index - 1
+                } else {
+                    *index
+                }))
+            }
+            ReferencePart::MapAccess(partial_reflect) => f(partial_reflect.as_ref()),
         }
     }
 
@@ -96,6 +148,23 @@ impl ReferencePart {
                 }
                 bevy_reflect::VariantType::Unit => return Err(()),
             },
+            ReflectRef::Map(x) => {
+                let id = x.get_represented_map_info().ok_or(())?.key_ty().id();
+                self.with_any(one_indexed, |key| {
+                    let coerced = convert(key, id).ok_or(())?;
+                    Ok(x.get(coerced.as_ref()))
+                })?
+            }
+            ReflectRef::Set(x) => {
+                let id = match x.get_represented_type_info().ok_or(())? {
+                    TypeInfo::Set(set_info) => set_info.value_ty().id(),
+                    _ => unreachable!("impossible"),
+                };
+                self.with_any(one_indexed, |key| {
+                    let coerced = convert(key, id).ok_or(())?;
+                    Ok(x.get(coerced.as_ref()))
+                })?
+            }
             _ => return Err(()),
         })
     }
@@ -120,13 +189,21 @@ impl ReferencePart {
                 }
                 bevy_reflect::VariantType::Unit => return Err(()),
             },
+            ReflectMut::Map(x) => {
+                let id = x.get_represented_map_info().ok_or(())?.key_ty().id();
+                self.with_any(one_indexed, |key| {
+                    let coerced = convert(key, id).ok_or(())?;
+                    Ok(x.get_mut(coerced.as_ref()))
+                })?
+            }
+            // ReflectMut::Set(x) => {} // no get_mut is available
             _ => return Err(()),
         })
     }
 }
 
 /// A collection of references into a `Reflect` supporting trait object in series.
-#[derive(DebugWithTypeInfo, Clone, PartialEq, Eq, Default)]
+#[derive(DebugWithTypeInfo, Clone, PartialEq, Default)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub struct ReferencePath {
     one_indexed: bool,
@@ -253,6 +330,7 @@ impl Display for ReferencePathError {
         f.write_str(match &self.part {
             ReferencePart::StringAccess(_) => "string key",
             ReferencePart::IntegerAccess(_, _) => "integer key",
+            ReferencePart::MapAccess(_) => "map key",
         })?;
 
         f.write_str(": `")?;
