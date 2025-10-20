@@ -418,9 +418,7 @@ mod tests {
                     boxed.unwrap().try_downcast_ref::<String>().unwrap(),
                     expected.unwrap()
                 );
-            } else if *ty == TypeId::of::<&'static str>() {
-                assert!(boxed.is_none());
-            } else if *ty == TypeId::of::<Cow<str>>() {
+            } else if *ty == TypeId::of::<&'static str>() || *ty == TypeId::of::<Cow<str>>() {
                 assert!(boxed.is_none());
             } else if *ty == TypeId::of::<PathBuf>() {
                 assert_eq!(
