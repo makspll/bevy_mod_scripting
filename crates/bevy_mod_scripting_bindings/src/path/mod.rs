@@ -7,7 +7,7 @@ use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo};
 use bevy_reflect::{PartialReflect, ReflectMut, ReflectRef, TypeInfo, TypeRegistry};
 
-use crate::{ScriptValue, convert};
+use crate::{ScriptValue, WorldGuard, convert};
 
 /// A key referencing into a `Reflect` supporting trait object.
 #[derive(DebugWithTypeInfo)]
@@ -112,10 +112,13 @@ impl ReferencePart {
         }
     }
 
-    /// Converts a [`ScriptValue`] to a indexing corrected reference part
+    /// Converts a [`ScriptValue`] to a indexing corrected reference part.
+    ///
+    /// If given a world guard also supports arbitrary references as keys
     pub fn new_from_script_val(
         value: ScriptValue,
         language: Language,
+        world: Option<WorldGuard>,
     ) -> Result<Self, ScriptValue> {
         Ok(match value {
             ScriptValue::Integer(v) => Self::IntegerAccess(v, language.one_indexed()),
@@ -124,6 +127,9 @@ impl ReferencePart {
                 language.one_indexed(),
             ),
             ScriptValue::String(cow) => Self::StringAccess(cow),
+            ScriptValue::Reference(_ref) => world
+                .and_then(|world| Some(Self::MapAccess(_ref.to_owned_value(world).ok()?)))
+                .ok_or_else(|| ScriptValue::Reference(_ref))?,
             _ => return Err(value),
         })
     }

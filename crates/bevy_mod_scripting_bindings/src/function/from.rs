@@ -3,7 +3,7 @@
 use crate::{
     ReflectReference, ScriptValue, WorldGuard, access_map::ReflectAccessId, error::InteropError,
 };
-use bevy_platform::collections::HashMap;
+use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{FromReflect, Reflect};
 use std::{
     any::TypeId,
@@ -489,6 +489,45 @@ macro_rules! impl_from_script_hashmap {
 
 impl_from_script_hashmap!(HashMap<String, V>);
 impl_from_script_hashmap!(std::collections::HashMap<String, V>);
+
+macro_rules! impl_from_script_hashset {
+    ($hashset_type:path) => {
+        #[profiling::all_functions]
+        impl<V> FromScript for $hashset_type
+        where
+            V: FromScript + Eq + std::hash::Hash + 'static,
+            for<'w> V::This<'w>: Into<V>,
+        {
+            type This<'w> = Self;
+            #[profiling::function]
+            fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+                match value {
+                    ScriptValue::Map(map) => {
+                        let mut hashmap = <$hashset_type>::new();
+                        for (_, value) in map {
+                            hashmap.insert(V::from_script(value, world.clone())?.into());
+                        }
+                        Ok(hashmap)
+                    }
+                    ScriptValue::List(list) => {
+                        let mut hashmap = <$hashset_type>::new();
+                        for elem in list {
+                            let key = <V>::from_script(elem, world.clone())?;
+                            hashmap.insert(key.into());
+                        }
+                        Ok(hashmap)
+                    }
+                    _ => Err(InteropError::value_mismatch(
+                        std::any::TypeId::of::<$hashset_type>(),
+                        value,
+                    )),
+                }
+            }
+        }
+    };
+}
+
+impl_from_script_hashset![HashSet<V>];
 
 /// A union of two or more (by nesting unions) types.
 pub struct Union<T1, T2>(Result<T1, T2>);

@@ -65,16 +65,19 @@ impl MagicFunctions {
         mut reference: ReflectReference,
         key: ScriptValue,
     ) -> Result<ScriptValue, InteropError> {
-        let path: ReferencePart = ReferencePart::new_from_script_val(key, ctxt.language())
-            .map_err(|e| InteropError::InvalidIndex {
-                index: Box::new(e),
-                reason: Box::new("Cannot convert to valid reflection path".to_owned()),
-            })?;
+        let world = ctxt.world()?;
+
+        let path: ReferencePart =
+            ReferencePart::new_from_script_val(key, ctxt.language(), Some(world.clone())).map_err(
+                |e| InteropError::InvalidIndex {
+                    index: Box::new(e),
+                    reason: Box::new("Cannot convert to valid reflection path".to_owned()),
+                },
+            )?;
         reference
             .reflect_path
             .set_is_one_indexed(ctxt.convert_to_0_indexed());
         reference.push_path(path);
-        let world = ctxt.world()?;
         ReflectReference::into_script_ref(reference, world)
     }
 
@@ -95,11 +98,13 @@ impl MagicFunctions {
         value: ScriptValue,
     ) -> Result<(), InteropError> {
         let world = ctxt.world()?;
-        let path: ReferencePart = ReferencePart::new_from_script_val(key, ctxt.language())
-            .map_err(|e| InteropError::InvalidIndex {
-                index: Box::new(e),
-                reason: Box::new("Cannot convert to valid reflection path".to_owned()),
-            })?;
+        let path: ReferencePart =
+            ReferencePart::new_from_script_val(key, ctxt.language(), Some(world.clone())).map_err(
+                |e| InteropError::InvalidIndex {
+                    index: Box::new(e),
+                    reason: Box::new("Cannot convert to valid reflection path".to_owned()),
+                },
+            )?;
         reference
             .reflect_path
             .set_is_one_indexed(ctxt.convert_to_0_indexed());
