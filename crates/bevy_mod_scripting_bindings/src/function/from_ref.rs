@@ -5,7 +5,8 @@ use crate::{
     reflection_extensions::TypeInfoExtensions,
 };
 use bevy_reflect::{
-    DynamicEnum, DynamicList, DynamicMap, DynamicTuple, DynamicVariant, Map, PartialReflect,
+    DynamicEnum, DynamicList, DynamicMap, DynamicSet, DynamicTuple, DynamicVariant, Map,
+    PartialReflect, ReflectKind, Set,
 };
 use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
@@ -85,34 +86,52 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             return Ok(Box::new(dynamic_enum));
         }
 
-        if let Some(inner_list_type) = type_info.list_inner_type()
-            && let ScriptValue::List(vec) = value
-        {
-            let mut dynamic_list = DynamicList::default();
-            for item in vec {
-                let inner = Self::from_script_ref(inner_list_type, item, world.clone())?;
-                dynamic_list.push_box(inner);
+        // speed up lookups for non-complex things
+        if matches!(
+            type_info.kind(),
+            ReflectKind::Set | ReflectKind::List | ReflectKind::Map
+        ) {
+            if let Some(inner_list_type) = type_info.list_inner_type()
+                && let ScriptValue::List(vec) = value
+            {
+                let mut dynamic_list = DynamicList::default();
+                for item in vec {
+                    let inner = Self::from_script_ref(inner_list_type, item, world.clone())?;
+                    dynamic_list.push_box(inner);
+                }
+
+                dynamic_list.set_represented_type(Some(type_info));
+                return Ok(Box::new(dynamic_list));
             }
 
-            dynamic_list.set_represented_type(Some(type_info));
-            return Ok(Box::new(dynamic_list));
-        }
-
-        if let Some((key_type, val_type)) = type_info.map_inner_types()
-            && let ScriptValue::Map(map) = value
-        {
-            let mut dynamic_map = DynamicMap::default();
-            for (key, val) in map {
-                let key = Self::from_script_ref(
-                    key_type,
-                    ScriptValue::String(key.into()),
-                    world.clone(),
-                )?;
-                let val = Self::from_script_ref(val_type, val, world.clone())?;
-                dynamic_map.insert_boxed(key, val);
+            if let Some((key_type, val_type)) = type_info.map_inner_types()
+                && let ScriptValue::Map(map) = value
+            {
+                let mut dynamic_map = DynamicMap::default();
+                for (key, val) in map {
+                    let key = Self::from_script_ref(
+                        key_type,
+                        ScriptValue::String(key.into()),
+                        world.clone(),
+                    )?;
+                    let val = Self::from_script_ref(val_type, val, world.clone())?;
+                    dynamic_map.insert_boxed(key, val);
+                }
+                dynamic_map.set_represented_type(Some(type_info));
+                return Ok(Box::new(dynamic_map));
             }
-            dynamic_map.set_represented_type(Some(type_info));
-            return Ok(Box::new(dynamic_map));
+
+            if let Some(val_type) = type_info.set_inner_type()
+                && let ScriptValue::List(set) = value
+            {
+                let mut dynamic_set = DynamicSet::default();
+                for val in set {
+                    let key = Self::from_script_ref(val_type, val, world.clone())?;
+                    dynamic_set.insert_boxed(key);
+                }
+                dynamic_set.set_represented_type(Some(type_info));
+                return Ok(Box::new(dynamic_set));
+            }
         }
 
         match value {

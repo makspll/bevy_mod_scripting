@@ -6,7 +6,7 @@ use bevy_mod_scripting_display::{
     DisplayWithTypeInfo, GetTypeInfo, ReflectDisplayWithTypeInfo, WithTypeInfo,
 };
 use bevy_platform::collections::HashMap;
-use bevy_reflect::{Access, OffsetAccess, ParsedPath, Reflect};
+use bevy_reflect::Reflect;
 use std::borrow::Cow;
 
 use super::{
@@ -230,81 +230,5 @@ impl<T: Into<ScriptValue>, E: Into<InteropError>> From<Result<T, E>> for ScriptV
 impl From<HashMap<String, ScriptValue>> for ScriptValue {
     fn from(value: HashMap<String, ScriptValue>) -> Self {
         ScriptValue::Map(value)
-    }
-}
-#[profiling::all_functions]
-impl TryFrom<ScriptValue> for ParsedPath {
-    type Error = InteropError;
-    fn try_from(value: ScriptValue) -> Result<Self, Self::Error> {
-        Ok(match value {
-            ScriptValue::Integer(i) => ParsedPath::from(vec![OffsetAccess {
-                access: Access::ListIndex(i as usize),
-                offset: Some(1),
-            }]),
-            ScriptValue::Float(_) => {
-                return Err(InteropError::invalid_index(
-                    value,
-                    "Floating point numbers cannot be used to index into reflected values"
-                        .to_owned(),
-                ));
-            }
-            ScriptValue::String(cow) => {
-                if let Some(tuple_struct_index) = cow.strip_prefix("_")
-                    && let Ok(index) = tuple_struct_index.parse::<usize>()
-                {
-                    let parsed_path = ParsedPath::from(vec![OffsetAccess {
-                        access: Access::TupleIndex(index),
-                        offset: Some(1),
-                    }]);
-                    return Ok(parsed_path);
-                }
-
-                match cow {
-                    Cow::Borrowed(v) => ParsedPath::parse_static(v)
-                        .map_err(|e| InteropError::reflection_path_error(e, None))?,
-                    Cow::Owned(o) => ParsedPath::parse(&o)
-                        .map_err(|e| InteropError::reflection_path_error(e, None))?,
-                }
-            }
-            ScriptValue::Reference(reflect_reference) => {
-                return Err(InteropError::invalid_index(
-                    ScriptValue::Reference(reflect_reference),
-                    "References cannot be used to index into reflected values".to_owned(),
-                ));
-            }
-            _ => ParsedPath(vec![]),
-        })
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_script_value_to_parsed_path() {
-        let value = ScriptValue::String("test".into());
-        let parsed_path = ParsedPath::from(vec![OffsetAccess {
-            access: Access::Field("test".to_owned().into()),
-            offset: Some(4),
-        }]);
-        assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
-
-        let value = ScriptValue::String("_0".into());
-        let parsed_path = ParsedPath::from(vec![OffsetAccess {
-            access: Access::TupleIndex(0),
-            offset: Some(1),
-        }]);
-        assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
-
-        let value = ScriptValue::Integer(0);
-        let parsed_path = ParsedPath::from(vec![OffsetAccess {
-            access: Access::ListIndex(0),
-            offset: Some(1),
-        }]);
-        assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
-
-        let value = ScriptValue::Float(0.0);
-        assert!(ParsedPath::try_from(value).is_err());
     }
 }

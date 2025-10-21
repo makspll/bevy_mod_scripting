@@ -1,4 +1,7 @@
-use std::{alloc::Layout, collections::HashMap};
+use std::{
+    alloc::Layout,
+    collections::{HashMap, HashSet},
+};
 
 use bevy_app::{App, ScheduleRunnerPlugin, TaskPoolPlugin};
 use bevy_diagnostic::FrameCountPlugin;
@@ -23,6 +26,21 @@ impl TestComponent {
     pub fn init() -> Self {
         Self {
             strings: vec!["Initial".to_string(), "Value".to_string()],
+        }
+    }
+}
+
+/// Test component with Reflect and ReflectComponent registered
+#[derive(Resource, Reflect, PartialEq, Eq, Debug, Hash)]
+#[reflect(Resource)]
+pub struct SimpleType {
+    pub inner: String,
+}
+
+impl SimpleType {
+    pub fn init() -> Self {
+        Self {
+            inner: String::from("initial"),
         }
     }
 }
@@ -158,6 +176,8 @@ pub struct TestResourceWithVariousFields {
     pub bool: bool,
     pub vec_usize: Vec<usize>,
     pub string_map: HashMap<String, String>,
+    pub string_set: HashSet<String>,
+    pub simple_type_map: HashMap<SimpleType, String>,
 }
 
 impl TestResourceWithVariousFields {
@@ -169,10 +189,30 @@ impl TestResourceWithVariousFields {
             float: 69.0,
             bool: true,
             vec_usize: vec![1, 2, 3, 4, 5],
-            string_map: vec![("foo", "bar"), ("zoo", "zed")]
-                .into_iter()
-                .map(|(a, b)| (a.to_owned(), b.to_owned()))
-                .collect(),
+            string_map: HashMap::from_iter(vec![
+                (String::from("foo"), String::from("bar")),
+                (String::from("zoo"), String::from("zed")),
+            ]),
+            string_set: HashSet::from_iter(vec![
+                String::from("foo"),
+                String::from("bar"),
+                String::from("zoo"),
+                String::from("zed"),
+            ]),
+            simple_type_map: HashMap::from_iter(vec![
+                (
+                    SimpleType {
+                        inner: String::from("foo"),
+                    },
+                    String::from("bar"),
+                ),
+                (
+                    SimpleType {
+                        inner: String::from("zoo"),
+                    },
+                    String::from("zed"),
+                ),
+            ]),
         }
     }
 }
@@ -314,6 +354,7 @@ impl_test_component_ids!(
         TestResource => 10,
         ResourceWithDefault => 11,
         TestResourceWithVariousFields => 12,
+        SimpleType => 13
     ]
 );
 

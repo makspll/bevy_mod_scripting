@@ -182,9 +182,10 @@ impl ScenarioStepSerialized {
         match language {
             ScenarioLanguage::Lua => Language::Lua,
             ScenarioLanguage::Rhai => Language::Rhai,
-            ScenarioLanguage::ThisScriptLanguage => {
-                Language::External(SCENARIO_SELF_LANGUAGE_NAME.into())
-            }
+            ScenarioLanguage::ThisScriptLanguage => Language::External {
+                name: SCENARIO_SELF_LANGUAGE_NAME.into(),
+                one_indexed: false,
+            },
         }
     }
 

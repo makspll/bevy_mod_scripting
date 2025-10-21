@@ -39,7 +39,7 @@ use ::{
         world::{CommandQueue, Mut, World, unsafe_world_cell::UnsafeWorldCell},
     },
     bevy_reflect::{
-        DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct, DynamicVariant, ParsedPath,
+        DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct, DynamicVariant,
         PartialReflect, TypeRegistryArc, std_traits::ReflectDefault,
     },
 };
@@ -702,7 +702,7 @@ impl WorldAccessGuard<'_> {
             } else {
                 field_idx
             };
-            let field_string = format!("_{script_idx}");
+            let field_string = script_idx.to_string();
             dynamic.insert_boxed(self.construct_from_script_value(
                 field_string.clone(),
                 field_type_id,
@@ -727,7 +727,7 @@ impl WorldAccessGuard<'_> {
                 field_idx
             };
 
-            let field_string = format!("_{script_idx}");
+            let field_string = script_idx.to_string();
 
             dynamic.insert_boxed(self.construct_from_script_value(
                 field_string.clone(),
@@ -1112,7 +1112,7 @@ impl WorldAccessGuard<'_> {
                         component_registration.component_id,
                     ),
                 },
-                reflect_path: ParsedPath(vec![]),
+                reflect_path: Default::default(),
             }))
         } else {
             Ok(None)
@@ -1169,7 +1169,7 @@ impl WorldAccessGuard<'_> {
                     })?,
                 base_id: ReflectBase::Resource(resource_id),
             },
-            reflect_path: ParsedPath(vec![]),
+            reflect_path: Default::default(),
         }))
     }
 
@@ -1484,7 +1484,7 @@ mod test {
         let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
 
         // zero indexed
-        let payload = HashMap::from_iter(vec![("_0".to_owned(), ScriptValue::Integer(1))]);
+        let payload = HashMap::from_iter(vec![("0".to_owned(), ScriptValue::Integer(1))]);
 
         let result = world.construct(type_registration.clone(), payload, false);
         let expected =
@@ -1492,7 +1492,7 @@ mod test {
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
 
         // one indexed
-        let payload = HashMap::from_iter(vec![("_1".to_owned(), ScriptValue::Integer(1))]);
+        let payload = HashMap::from_iter(vec![("1".to_owned(), ScriptValue::Integer(1))]);
 
         let result = world.construct(type_registration, payload, true);
         let expected =
@@ -1523,8 +1523,8 @@ mod test {
 
         // zero indexed
         let payload = HashMap::from_iter(vec![
-            ("_0".to_owned(), ScriptValue::Integer(1)),
-            ("_1".to_owned(), ScriptValue::Integer(2)),
+            ("0".to_owned(), ScriptValue::Integer(1)),
+            ("1".to_owned(), ScriptValue::Integer(2)),
         ]);
 
         let result = world.construct(type_registration.clone(), payload, false);
@@ -1533,8 +1533,8 @@ mod test {
 
         // one indexed
         let payload = HashMap::from_iter(vec![
-            ("_1".to_owned(), ScriptValue::Integer(1)),
-            ("_2".to_owned(), ScriptValue::Integer(2)),
+            ("1".to_owned(), ScriptValue::Integer(1)),
+            ("2".to_owned(), ScriptValue::Integer(2)),
         ]);
 
         let result = world.construct(type_registration.clone(), payload, true);
@@ -1567,7 +1567,7 @@ mod test {
 
         // tuple struct version
         let payload = HashMap::from_iter(vec![
-            ("_0".to_owned(), ScriptValue::Integer(1)),
+            ("0".to_owned(), ScriptValue::Integer(1)),
             (
                 "variant".to_owned(),
                 ScriptValue::String("TupleStruct".into()),

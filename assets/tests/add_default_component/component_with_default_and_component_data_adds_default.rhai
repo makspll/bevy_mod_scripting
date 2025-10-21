@@ -6,4 +6,4 @@ let added = world.has_component.call(entity, _type);
 assert(type_of(added) != "()", "Component not added");
 
 let component = world.get_component.call(entity, _type);
-assert(component["_0"] == "Default", "Component did not have default value, got: " + component["_0"]);
+assert(component[0] == "Default", "Component did not have default value, got: " + component[0]);

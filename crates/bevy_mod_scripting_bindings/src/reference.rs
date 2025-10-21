@@ -6,8 +6,9 @@
 //! we need wrapper types which have owned and ref variants.
 use super::{WorldGuard, access_map::ReflectAccessId};
 use crate::{
-    ReflectAllocationId, ReflectAllocator, ThreadWorldContainer, error::InteropError,
-    reflection_extensions::PartialReflectExt, with_access_read, with_access_write,
+    ReferencePart, ReferencePath, ReflectAllocationId, ReflectAllocator, ThreadWorldContainer,
+    error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
+    with_access_write,
 };
 use bevy_asset::{ReflectAsset, UntypedHandle};
 use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
@@ -15,7 +16,7 @@ use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
 };
-use bevy_reflect::{Access, OffsetAccess, ReflectRef};
+use bevy_reflect::{Access, OffsetAccess, ReflectRef, TypeRegistry};
 use core::alloc;
 use std::{
     any::{Any, TypeId},
@@ -26,9 +27,7 @@ use {
         change_detection::MutUntyped, component::ComponentId, entity::Entity,
         world::unsafe_world_cell::UnsafeWorldCell,
     },
-    bevy_reflect::{
-        ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, prelude::ReflectDefault,
-    },
+    bevy_reflect::{ParsedPath, PartialReflect, Reflect, ReflectFromPtr, prelude::ReflectDefault},
 };
 
 /// A reference to an arbitrary reflected instance.
@@ -40,7 +39,7 @@ use {
 /// - The path, which specifies how to access the value from the base.
 ///
 /// Bindings defined on this type, apply to ALL references.
-#[derive(Clone, PartialEq, Eq, Reflect, DebugWithTypeInfo)]
+#[derive(Clone, PartialEq, Reflect, DebugWithTypeInfo)]
 #[reflect(Default, opaque)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 #[non_exhaustive]
@@ -50,7 +49,7 @@ pub struct ReflectReference {
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost
     // needs benchmarks first though
     /// The path from the top level type to the actual value we want to access
-    pub reflect_path: ParsedPath,
+    pub reflect_path: ReferencePath,
 }
 
 impl DisplayWithTypeInfo for ReflectReference {
@@ -99,7 +98,7 @@ impl Default for ReflectReference {
                 type_id: None::<TypeId>.or_fake_id(),
                 base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
             },
-            reflect_path: ParsedPath(vec![]),
+            reflect_path: Default::default(),
         }
     }
 }
@@ -164,7 +163,7 @@ impl ReflectReference {
                 type_id,
                 base_id: ReflectBase::Owned(id),
             },
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         }
     }
 
@@ -176,7 +175,7 @@ impl ReflectReference {
                 type_id,
                 base_id: ReflectBase::Owned(id),
             },
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         }
     }
 
@@ -190,7 +189,7 @@ impl ReflectReference {
     ) -> Result<ReflectReference, InteropError> {
         Ok(ReflectReference {
             base: ReflectBaseType::new_allocated_base_partial(value, allocator)?,
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         })
     }
 
@@ -201,7 +200,7 @@ impl ReflectReference {
     ) -> ReflectReference {
         ReflectReference {
             base: ReflectBaseType::new_allocated_base(value, allocator),
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         }
     }
 
@@ -209,7 +208,7 @@ impl ReflectReference {
     pub fn new_resource_ref<T: Resource>(world: WorldGuard) -> Result<Self, InteropError> {
         Ok(Self {
             base: ReflectBaseType::new_resource_base::<T>(world)?,
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         })
     }
 
@@ -220,7 +219,7 @@ impl ReflectReference {
     ) -> Result<Self, InteropError> {
         Ok(Self {
             base: ReflectBaseType::new_component_base::<T>(entity, world)?,
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         })
     }
 
@@ -236,7 +235,7 @@ impl ReflectReference {
                 type_id,
                 base_id: ReflectBase::Component(entity, component_id),
             },
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         }
     }
 
@@ -248,7 +247,7 @@ impl ReflectReference {
                 type_id,
                 base_id: ReflectBase::Resource(component_id),
             },
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         }
     }
 
@@ -261,7 +260,7 @@ impl ReflectReference {
     ) -> Result<Self, InteropError> {
         Ok(Self {
             base: ReflectBaseType::new_asset_base(handle, asset_type_id, world)?,
-            reflect_path: ParsedPath(Vec::default()),
+            reflect_path: Default::default(),
         })
     }
 
@@ -338,8 +337,14 @@ impl ReflectReference {
 
     /// Indexes into the reflect path inside this reference.
     /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
-    pub fn index_path<T: Into<ParsedPath>>(&mut self, index: T) {
-        self.reflect_path.0.extend(index.into().0);
+    pub fn extend_path(&mut self, index: impl Iterator<Item = ReferencePart>) {
+        self.reflect_path.extend(index);
+    }
+
+    /// Indexes into the reflect path inside this reference.
+    /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
+    pub fn push_path(&mut self, index: ReferencePart) {
+        self.reflect_path.push(index);
     }
 
     /// Tries to downcast to the specified type and cloning the value if successful.
@@ -406,7 +411,16 @@ impl ReflectReference {
             &world.inner.accesses,
             access_id,
             "could not access reflect reference",
-            { unsafe { self.reflect_unsafe(world.clone()) }.map(f)? }
+            {
+                f(
+                    unsafe { self.reflect_unsafe(world.clone()) }?.ok_or_else(|| {
+                        InteropError::reflection_path_error(
+                            "Reference was out of bounds or value is missing".into(),
+                            Some(self.clone()),
+                        )
+                    })?,
+                )
+            }
         )
     }
 
@@ -423,7 +437,16 @@ impl ReflectReference {
             &world.inner.accesses,
             access_id,
             "Could not access reflect reference mutably",
-            { unsafe { self.reflect_mut_unsafe(world.clone()) }.map(f)? }
+            {
+                f(
+                    unsafe { self.reflect_mut_unsafe(world.clone()) }?.ok_or_else(|| {
+                        InteropError::reflection_path_error(
+                            "Reference was out of bounds or value is missing".into(),
+                            Some(self.clone()),
+                        )
+                    })?,
+                )
+            }
         )
     }
 
@@ -460,6 +483,22 @@ impl ReflectReference {
         }
     }
 
+    /// Equivalent to [`Self::reflect_unsafe`] but expecting a non-None value from the reference, i.e. will return an Err if the reference is to a missing key in a dictionary.
+    /// # Safety
+    /// - The bounds of [`Self::reflect_unsafe`] must be upheld
+    pub unsafe fn reflect_unsafe_non_empty<'w>(
+        &self,
+        world: WorldGuard<'w>,
+    ) -> Result<&'w dyn PartialReflect, InteropError> {
+        let val = unsafe { self.reflect_unsafe(world) }?;
+        val.ok_or_else(|| {
+            InteropError::reflection_path_error(
+                "Reference out of bounds or value missing".into(),
+                Some(self.clone()),
+            )
+        })
+    }
+
     /// Retrieves a reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell
     /// # Safety
     ///
@@ -470,7 +509,7 @@ impl ReflectReference {
     pub unsafe fn reflect_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,
-    ) -> Result<&'w dyn PartialReflect, InteropError> {
+    ) -> Result<Option<&'w dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
             let allocator = world.allocator();
             let allocator = allocator.read();
@@ -480,12 +519,17 @@ impl ReflectReference {
                 .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
 
             // safety: caller promises it's fine :)
-            return self.walk_path(unsafe { &*arc.get_ptr() });
+            let type_registry = world.type_registry();
+            let type_registry = type_registry.read();
+
+            return self.walk_path(unsafe { &*arc.get_ptr() }, &type_registry);
         }
 
         if let ReflectBase::Asset(handle, _) = &self.base.base_id {
             let asset = unsafe { self.load_asset_mut(handle, world.clone())? };
-            return self.walk_path(asset.as_partial_reflect());
+            let type_registry = world.type_registry();
+            let type_registry = type_registry.read();
+            return self.walk_path(asset.as_partial_reflect(), &type_registry);
         }
 
         let type_registry = world.type_registry();
@@ -516,10 +560,23 @@ impl ReflectReference {
         );
 
         let base = unsafe { from_ptr_data.as_reflect(ptr) };
+        self.walk_path(base.as_partial_reflect(), &type_registry)
+    }
 
-        drop(type_registry);
-
-        self.walk_path(base.as_partial_reflect())
+    /// Equivalent to [`Self::reflect_mut_unsafe`] but expecting a non-None value from the reference, i.e. will return an Err if the reference is to a missing key in a dictionary.
+    /// # Safety
+    /// - The bounds of [`Self::reflect_mut_unsafe`] must be upheld
+    pub unsafe fn reflect_mut_unsafe_non_empty<'w>(
+        &self,
+        world: WorldGuard<'w>,
+    ) -> Result<&'w mut dyn PartialReflect, InteropError> {
+        let val = unsafe { self.reflect_mut_unsafe(world) }?;
+        val.ok_or_else(|| {
+            InteropError::reflection_path_error(
+                "Reference out of bounds or value missing".into(),
+                Some(self.clone()),
+            )
+        })
     }
 
     /// Retrieves mutable reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell
@@ -531,7 +588,7 @@ impl ReflectReference {
     pub unsafe fn reflect_mut_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,
-    ) -> Result<&'w mut dyn PartialReflect, InteropError> {
+    ) -> Result<Option<&'w mut dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
             let allocator = world.allocator();
             let allocator = allocator.read();
@@ -540,12 +597,16 @@ impl ReflectReference {
                 .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
 
             // Safety: caller promises this is fine :)
-            return self.walk_path_mut(unsafe { &mut *arc.get_ptr() });
+            let type_registry = world.type_registry();
+            let type_registry = type_registry.read();
+            return self.walk_path_mut(unsafe { &mut *arc.get_ptr() }, &type_registry);
         };
 
         if let ReflectBase::Asset(handle, _) = &self.base.base_id {
             let asset = unsafe { self.load_asset_mut(handle, world.clone())? };
-            return self.walk_path_mut(asset.as_partial_reflect_mut());
+            let type_registry = world.type_registry();
+            let type_registry = type_registry.read();
+            return self.walk_path_mut(asset.as_partial_reflect_mut(), &type_registry);
         };
 
         let type_registry = world.type_registry();
@@ -576,26 +637,27 @@ impl ReflectReference {
         );
 
         let base = unsafe { from_ptr_data.as_reflect_mut(ptr.into_inner()) };
-        drop(type_registry);
-        self.walk_path_mut(base.as_partial_reflect_mut())
+        self.walk_path_mut(base.as_partial_reflect_mut(), &type_registry)
     }
 
     fn walk_path<'a>(
         &self,
         root: &'a dyn PartialReflect,
-    ) -> Result<&'a dyn PartialReflect, InteropError> {
+        type_registry: &TypeRegistry,
+    ) -> Result<Option<&'a dyn PartialReflect>, InteropError> {
         self.reflect_path
-            .reflect_element(root)
-            .map_err(|e| InteropError::reflection_path_error(e, Some(self.clone())))
+            .reflect_element(root, type_registry)
+            .map_err(|e| InteropError::reflection_path_error(e.to_string(), Some(self.clone())))
     }
 
     fn walk_path_mut<'a>(
         &self,
         root: &'a mut dyn PartialReflect,
-    ) -> Result<&'a mut dyn PartialReflect, InteropError> {
+        type_registry: &TypeRegistry,
+    ) -> Result<Option<&'a mut dyn PartialReflect>, InteropError> {
         self.reflect_path
-            .reflect_element_mut(root)
-            .map_err(|e| InteropError::reflection_path_error(e, Some(self.clone())))
+            .reflect_element_mut(root, type_registry)
+            .map_err(|e| InteropError::reflection_path_error(e.to_string(), Some(self.clone())))
     }
 }
 
@@ -915,8 +977,8 @@ impl ReflectRefIter {
         let next = match &mut self.index {
             IterationKey::Index(i) => {
                 let mut next = self.base.clone();
-                let parsed_path = ParsedPath::from(vec![list_index_access(*i)]);
-                next.index_path(parsed_path);
+                let parsed_path = ReferencePart::IntegerAccess(*i as i64, false);
+                next.push_path(parsed_path);
                 *i += 1;
                 next
             }
@@ -925,9 +987,6 @@ impl ReflectRefIter {
     }
 }
 
-const fn list_index_access(index: usize) -> Access<'static> {
-    Access::ListIndex(index)
-}
 #[profiling::all_functions]
 impl Iterator for ReflectRefIter {
     type Item = Result<ReflectReference, InteropError>;
@@ -937,8 +996,8 @@ impl Iterator for ReflectRefIter {
             match &mut self.index {
                 IterationKey::Index(i) => {
                     let mut next = self.base.clone();
-                    let parsed_path = ParsedPath::from(vec![list_index_access(*i)]);
-                    next.index_path(parsed_path);
+                    let parsed_path = ReferencePart::IntegerAccess(*i as i64, false);
+                    next.push_path(parsed_path);
                     *i += 1;
                     Ok(next)
                 }
@@ -1020,7 +1079,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        component_ref.index_path(ParsedPath::parse_static(".0").unwrap());
+        component_ref.push_path(ReferencePart::IntegerAccess(0, true));
         assert_eq!(
             component_ref
                 .tail_type_id(world_guard.clone())
@@ -1053,7 +1112,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        component_ref.index_path(ParsedPath::parse_static("[0]").unwrap());
+        component_ref.push_path(ReferencePart::IntegerAccess(0, true));
 
         component_ref
             .with_reflect(world_guard.clone(), |s| {
@@ -1103,7 +1162,8 @@ mod test {
             .unwrap();
 
         // index into vec field
-        resource_ref.index_path(ParsedPath::parse_static(".0").unwrap());
+        resource_ref.push_path(ReferencePart::IntegerAccess(0, true));
+
         assert_eq!(
             resource_ref
                 .tail_type_id(world_guard.clone())
@@ -1136,7 +1196,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        resource_ref.index_path(ParsedPath::parse_static("[0]").unwrap());
+        resource_ref.push_path(ReferencePart::IntegerAccess(0, true));
 
         resource_ref
             .with_reflect(world_guard.clone(), |s| {
@@ -1186,7 +1246,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        allocation_ref.index_path(ParsedPath::parse_static(".0").unwrap());
+        allocation_ref.push_path(ReferencePart::IntegerAccess(0, true));
         assert_eq!(
             allocation_ref
                 .tail_type_id(world_guard.clone())
@@ -1219,7 +1279,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        allocation_ref.index_path(ParsedPath::parse_static("[0]").unwrap());
+        allocation_ref.push_path(ReferencePart::IntegerAccess(0, true));
 
         allocation_ref
             .with_reflect(world_guard.clone(), |s| {

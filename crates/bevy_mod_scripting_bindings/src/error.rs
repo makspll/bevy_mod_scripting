@@ -9,7 +9,7 @@ use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DisplayWithTypeInfo, GetTypeInfo, OrFakeId, PrintReflectAsDebug,
     WithTypeInfo,
 };
-use bevy_reflect::{ApplyError, PartialReflect, Reflect, ReflectPathError};
+use bevy_reflect::{ApplyError, PartialReflect, Reflect};
 use std::{any::TypeId, borrow::Cow, error::Error, fmt::Display, panic::Location, sync::Arc};
 
 /// A wrapper around a reflect value to implement various traits useful for error reporting.
@@ -389,12 +389,9 @@ impl InteropError {
     }
 
     /// Creates a new reflection path error.
-    pub fn reflection_path_error<'a>(
-        error: ReflectPathError<'a>,
-        reflected: Option<ReflectReference>,
-    ) -> Self {
+    pub fn reflection_path_error(error: String, reflected: Option<ReflectReference>) -> Self {
         Self::ReflectionPathError {
-            error: Box::new(error.to_string()),
+            error: Box::new(error),
             reflected: reflected.map(Box::new),
         }
     }

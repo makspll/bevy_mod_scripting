@@ -3,11 +3,11 @@
 use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
 use bevy_mod_scripting_display::OrFakeId;
-use bevy_reflect::{Access, PartialReflect};
+use bevy_reflect::PartialReflect;
 
 use crate::{
-    ReflectReference, ScriptValue, WorldGuard, error::InteropError, function::into::IntoScript,
-    reflection_extensions::PartialReflectExt,
+    ReferencePart, ReflectReference, ScriptValue, WorldGuard, error::InteropError,
+    function::into::IntoScript, reflection_extensions::PartialReflectExt,
 };
 
 /// Converts a value represented by a reference into a [`crate::ScriptValue`].
@@ -111,7 +111,8 @@ fn into_script_ref(
     // either return nil or ref into
     if let Ok(as_option) = r.as_option() {
         return if let Some(s) = as_option {
-            self_.index_path(vec![FIRST_TUPLE_FIELD_ACCESS]);
+            // don't want correction to mess with this
+            self_.push_path(ReferencePart::IntegerAccess(0, false));
             into_script_ref(self_, s, world)
         } else {
             Ok(ScriptValue::Unit)
@@ -120,5 +121,3 @@ fn into_script_ref(
 
     Ok(ScriptValue::Reference(self_))
 }
-
-const FIRST_TUPLE_FIELD_ACCESS: Access = Access::TupleIndex(0);
