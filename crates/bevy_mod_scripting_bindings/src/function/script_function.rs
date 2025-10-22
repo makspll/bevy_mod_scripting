@@ -44,12 +44,36 @@ pub trait ScriptFunctionMut<'env, Marker> {
 #[reflect(opaque)]
 pub struct FunctionCallContext {
     language: Language,
+    location_context: Option<LocationContext>,
+}
+
+#[derive(Clone, Debug, Reflect)]
+/// Describes a location within a script
+pub struct LocationContext {
+    /// The line number
+    pub line: u32,
+    /// The column number
+    pub col: u32,
 }
 
 impl FunctionCallContext {
     /// Create a new FunctionCallContext with the given 1-indexing conversion preference
     pub const fn new(language: Language) -> Self {
-        Self { language }
+        Self {
+            language,
+            location_context: None,
+        }
+    }
+
+    /// Creates a new function call context with location information
+    pub const fn new_with_location(
+        language: Language,
+        location_context: Option<LocationContext>,
+    ) -> Self {
+        Self {
+            language,
+            location_context,
+        }
     }
 
     /// Tries to access the world, returning an error if the world is not available
@@ -67,6 +91,11 @@ impl FunctionCallContext {
     #[profiling::function]
     pub fn language(&self) -> Language {
         self.language.clone()
+    }
+
+    /// Returns call location inside the script if available
+    pub fn location(&self) -> Option<&LocationContext> {
+        self.location_context.as_ref()
     }
 }
 
