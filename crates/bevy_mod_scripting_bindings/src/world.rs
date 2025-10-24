@@ -619,6 +619,7 @@ impl<'w> WorldAccessGuard<'w> {
                 return Err(InteropError::missing_function(
                     name.to_string(),
                     Namespace::OnType(type_id),
+                    Some(context.clone()),
                 ));
             }
         };
@@ -660,6 +661,7 @@ impl WorldAccessGuard<'_> {
                                 "field missing and no default provided: '{}'",
                                 descriptor.into()
                             )),
+                            None,
                         )
                     })?;
                 return Ok(default_data.default().into_partial_reflect());
@@ -820,6 +822,7 @@ impl WorldAccessGuard<'_> {
                         "construct",
                         Namespace::OnType(TypeId::of::<World>()),
                         InteropError::str("missing 'variant' field in enum constructor payload"),
+                        None,
                     )
                 })?;
 
@@ -834,6 +837,7 @@ impl WorldAccessGuard<'_> {
                             variant_name,
                             enum_info.type_path()
                         )),
+                        None,
                     )
                 })?;
 

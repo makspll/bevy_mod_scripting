@@ -325,7 +325,11 @@ impl UserData for LuaReflectReference {
             let iter_func = world
                 .lookup_function([TypeId::of::<ReflectReference>()], "iter")
                 .map_err(|f| {
-                    InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                    InteropError::missing_function(
+                        f,
+                        TypeId::of::<ReflectReference>().into(),
+                        Some(LUA_CALLER_CONTEXT),
+                    )
                 })
                 .map_err(IntoMluaError::to_lua_error)?;
 
@@ -347,7 +351,11 @@ impl UserData for LuaReflectReference {
             let func = world
                 .lookup_function([TypeId::of::<ReflectReference>()], "display")
                 .map_err(|f| {
-                    InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                    InteropError::missing_function(
+                        f,
+                        TypeId::of::<ReflectReference>().into(),
+                        Some(LUA_CALLER_CONTEXT),
+                    )
                 })
                 .map_err(IntoMluaError::to_lua_error)?;
             let out = func
@@ -389,10 +397,12 @@ impl UserData for LuaStaticReflectReference {
                     },
                     Err(key) => key,
                 };
-                Err(
-                    InteropError::missing_function(format!("{key:#?}"), type_id.into())
-                        .into_lua_err(),
+                Err(InteropError::missing_function(
+                    format!("{key:#?}"),
+                    type_id.into(),
+                    Some(LUA_CALLER_CONTEXT),
                 )
+                .into_lua_err())
             },
         );
     }

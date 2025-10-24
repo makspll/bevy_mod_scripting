@@ -261,7 +261,11 @@ impl IntoIterator for RhaiReflectReference {
             let iter_func = world
                 .lookup_function([TypeId::of::<ReflectReference>()], "iter")
                 .map_err(|f| {
-                    InteropError::missing_function(f, TypeId::of::<ReflectReference>().into())
+                    InteropError::missing_function(
+                        f,
+                        TypeId::of::<ReflectReference>().into(),
+                        Some(RHAI_CALLER_CONTEXT),
+                    )
                 })?;
 
             iter_func.call(
@@ -562,6 +566,7 @@ impl CustomType for RhaiReflectReference {
                             InteropError::missing_function(
                                 f,
                                 TypeId::of::<ReflectReference>().into(),
+                                Some(RHAI_CALLER_CONTEXT),
                             )
                         })?;
 
@@ -592,6 +597,7 @@ impl CustomType for RhaiReflectReference {
                             InteropError::missing_function(
                                 f,
                                 TypeId::of::<ReflectReference>().into(),
+                                Some(RHAI_CALLER_CONTEXT),
                             )
                         })?;
 
@@ -639,8 +645,12 @@ impl CustomType for RhaiStaticReflectReference {
                 };
 
                 Err::<_, Box<EvalAltResult>>(
-                    InteropError::missing_function(format!("{key:#?}"), type_id.into())
-                        .into_rhai_error(),
+                    InteropError::missing_function(
+                        format!("{key:#?}"),
+                        type_id.into(),
+                        Some(RHAI_CALLER_CONTEXT),
+                    )
+                    .into_rhai_error(),
                 )
             });
     }

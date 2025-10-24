@@ -1,10 +1,14 @@
 //! Defines supported scripting languages and their file extensions.
 
+use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
+#[derive(
+    Clone, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize, DebugWithTypeInfo,
+)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub enum Language {
     /// The Rhai scripting language
     Rhai,

@@ -40,16 +40,56 @@ pub trait ScriptFunctionMut<'env, Marker> {
 
 /// The caller context when calling a script function.
 /// Functions can choose to react to caller preferences such as converting 1-indexed numbers to 0-indexed numbers
-#[derive(Clone, Debug, Reflect)]
+#[derive(Clone, Reflect, DebugWithTypeInfo)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 #[reflect(opaque)]
 pub struct FunctionCallContext {
     language: Language,
+    location_context: Option<LocationContext>,
+}
+
+impl std::fmt::Display for FunctionCallContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("in language: ")?;
+        self.language.fmt(f)?;
+        if let Some(context) = &self.location_context {
+            f.write_str(", at line: ")?;
+            context.line.fmt(f)?;
+            f.write_str(", at column: ")?;
+            context.col.fmt(f)?;
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Reflect, DebugWithTypeInfo)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+/// Describes a location within a script
+pub struct LocationContext {
+    /// The line number
+    pub line: u32,
+    /// The column number
+    pub col: u32,
 }
 
 impl FunctionCallContext {
     /// Create a new FunctionCallContext with the given 1-indexing conversion preference
     pub const fn new(language: Language) -> Self {
-        Self { language }
+        Self {
+            language,
+            location_context: None,
+        }
+    }
+
+    /// Creates a new function call context with location information
+    pub const fn new_with_location(
+        language: Language,
+        location_context: Option<LocationContext>,
+    ) -> Self {
+        Self {
+            language,
+            location_context,
+        }
     }
 
     /// Tries to access the world, returning an error if the world is not available
@@ -67,6 +107,11 @@ impl FunctionCallContext {
     #[profiling::function]
     pub fn language(&self) -> Language {
         self.language.clone()
+    }
+
+    /// Returns call location inside the script if available
+    pub fn location(&self) -> Option<&LocationContext> {
+        self.location_context.as_ref()
     }
 }
 
@@ -158,12 +203,13 @@ impl DynamicScriptFunction {
         profiling::scope!("Dynamic Call ", self.name().deref());
         let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
-        let return_val = (self.func)(context, args);
+        let return_val = (self.func)(context.clone(), args);
         match return_val {
             ScriptValue::Error(e) => Err(InteropError::function_interop_error(
                 self.name(),
                 self.info.namespace,
                 e,
+                Some(context),
             )),
             v => Ok(v),
         }
@@ -195,12 +241,13 @@ impl DynamicScriptFunctionMut {
         let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
         let mut write = self.func.write();
-        let return_val = (write)(context, args);
+        let return_val = (write)(context.clone(), args);
         match return_val {
             ScriptValue::Error(e) => Err(InteropError::function_interop_error(
                 self.name(),
                 self.info.namespace,
                 e,
+                Some(context),
             )),
             v => Ok(v),
         }
@@ -737,6 +784,7 @@ mod test {
                 function_name,
                 on,
                 error,
+                ..
             } = gotten
             {
                 assert_eq!(*function_name, expected_function_name);
