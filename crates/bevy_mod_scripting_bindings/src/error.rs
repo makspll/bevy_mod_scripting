@@ -1,9 +1,10 @@
 //! Error types for the bindings
 use crate::{
-    Namespace, ReflectBaseType, ReflectReference, access_map::ReflectAccessId,
+    FunctionCallContext, Namespace, ReflectBaseType, ReflectReference, access_map::ReflectAccessId,
     script_value::ScriptValue,
 };
 use bevy_ecs::entity::Entity;
+use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DisplayWithTypeInfo, GetTypeInfo, OrFakeId, PrintReflectAsDebug,
@@ -148,6 +149,8 @@ pub enum InteropError {
         on: Box<Namespace>,
         /// The error that occurred
         error: Box<InteropError>,
+        /// The context at the time of the call
+        context: Box<Option<FunctionCallContext>>,
     },
     /// An error occurred when converting a function argument
     FunctionArgConversionError {
@@ -353,11 +356,13 @@ impl InteropError {
         function_name: impl Display,
         on: Namespace,
         error: InteropError,
+        context: Option<FunctionCallContext>,
     ) -> Self {
         Self::FunctionInteropError {
             function_name: Box::new(function_name.to_string()),
             on: Box::new(on),
             error: Box::new(error),
+            context: Box::new(context),
         }
     }
 
@@ -423,11 +428,16 @@ impl InteropError {
     }
 
     /// Creates a new missing function error.
-    pub fn missing_function(function_name: impl Display, on: Namespace) -> Self {
+    pub fn missing_function(
+        function_name: impl Display,
+        on: Namespace,
+        context: Option<FunctionCallContext>,
+    ) -> Self {
         Self::FunctionInteropError {
             function_name: Box::new(function_name.to_string()),
             on: Box::new(on),
             error: Box::new(InteropError::str("Function not found")),
+            context: Box::new(context),
         }
     }
 }
@@ -563,10 +573,14 @@ impl DisplayWithTypeInfo for InteropError {
                 function_name,
                 on,
                 error,
+                context,
             } => {
                 write!(
                     f,
-                    "Error in function {} on {}: {}",
+                    "Error {} in function {} on {}: {}",
+                    context
+                        .clone()
+                        .unwrap_or(FunctionCallContext::new(Language::Unknown)),
                     function_name,
                     WithTypeInfo::new_with_opt_info(on, type_info_provider),
                     error

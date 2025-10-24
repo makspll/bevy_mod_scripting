@@ -142,8 +142,8 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => lua
                 .create_function(move |lua, args: Variadic<LuaScriptValue>| {
-                    let loc = lua.inspect_stack(0).map(|debug| LocationContext {
-                        line: debug.curr_line() as u32,
+                    let loc = lua.inspect_stack(1).map(|debug| LocationContext {
+                        line: debug.curr_line().try_into().unwrap_or_default(),
                         col: 0,
                     });
                     let out = function
