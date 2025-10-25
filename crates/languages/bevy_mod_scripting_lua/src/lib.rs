@@ -10,6 +10,7 @@ use ::{
     bevy_ecs::{entity::Entity, world::World},
 };
 use bevy_app::App;
+use bevy_asset::AssetPath;
 use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
@@ -275,6 +276,13 @@ fn load_lua_content_into_context(
     Ok(())
 }
 
+/// App data which can be retrieved via [`mlua::Lua::app_data_ref`], containing some metadata about scripts present
+#[derive(Default, Debug)]
+pub struct LuaContextAppData {
+    /// the asset path of the script loaded last if this is a shared context, or the only script if it's not.
+    pub last_loaded_script_name: Option<AssetPath<'static>>,
+}
+
 #[profiling::function]
 /// Load a lua context from a script
 pub fn lua_context_load(
@@ -286,6 +294,10 @@ pub fn lua_context_load(
     let mut context = LuaContext(unsafe { Lua::unsafe_new() });
     #[cfg(not(feature = "unsafe_lua_modules"))]
     let mut context = LuaContext(Lua::new());
+
+    context.set_app_data(LuaContextAppData {
+        last_loaded_script_name: context_key.script().path().cloned(),
+    });
 
     load_lua_content_into_context(&mut context, context_key, content, world_id)?;
     Ok(context)

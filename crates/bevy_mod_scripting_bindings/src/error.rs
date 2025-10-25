@@ -577,7 +577,7 @@ impl DisplayWithTypeInfo for InteropError {
             } => {
                 write!(
                     f,
-                    "Error {} in function {} on {}: {}",
+                    "Error {}\n in function {} on {}:\n {}",
                     context
                         .clone()
                         .unwrap_or(FunctionCallContext::new(Language::Unknown)),

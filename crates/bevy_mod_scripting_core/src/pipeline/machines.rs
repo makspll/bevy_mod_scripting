@@ -229,9 +229,10 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
         match &mut self.internal_state {
             MachineExecutionState::Initialized(machine_state) => {
                 debug!(
-                    "State '{}' entered. For script: {}",
+                    "State '{}' entered. For script: {}, {:?}",
                     machine_state.state_name(),
-                    self.context.attachment
+                    self.context.attachment,
+                    self.context.attachment.script(),
                 );
 
                 if let Some(listeners) = listeners.get(&machine_state.as_ref().type_id()) {
@@ -517,7 +518,8 @@ impl<P: IntoScriptPluginParams> MachineState<P> for ContextAssigned<P> {
         let contexts = world.get_resource_or_init::<ScriptContext<P>>();
         let mut contexts_guard = contexts.write();
 
-        match contexts_guard.insert(attachment.clone(), self.context.clone()) {
+        // drop any strong handles
+        match contexts_guard.insert(attachment.clone().into_weak(), self.context.clone()) {
             Ok(_) => {}
             Err(_) => {
                 drop(contexts_guard);

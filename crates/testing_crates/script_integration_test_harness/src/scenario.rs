@@ -32,6 +32,7 @@ use bevy_mod_scripting_core::{
     handler::event_handler,
     script::{ContextPolicy, ScriptComponent, ScriptContext},
 };
+use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
 use test_utils::test_data::setup_integration_test;
 
@@ -593,7 +594,7 @@ impl ScenarioStep {
                     return Err(anyhow!("Failed to load script: {e}"));
                 }
 
-                info!("Script '{}' loaded successfully", script.id());
+                info!("Script '{}' loaded successfully", script.display());
             }
             ScenarioStep::SetupHandler { schedule, label } => {
                 match label.to_string().as_str() {
@@ -629,7 +630,10 @@ impl ScenarioStep {
                     .id();
 
                 context.entities.insert(name.to_string(), entity);
-                info!("Spawned entity '{entity}' with script '{}'", script.id());
+                info!(
+                    "Spawned entity '{entity}' with script '{}'",
+                    script.display()
+                );
             }
             ScenarioStep::EmitScriptCallbackEvent { event } => {
                 app.world_mut().send_event(event.clone());

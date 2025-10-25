@@ -29,7 +29,7 @@ use crate::{
         OnLoadedListener, OnReloadedListener, OnUnloadedForReloadListener,
         OnUnloadedForUnloadListener,
     },
-    script::{ScriptContext, ScriptId},
+    script::ScriptContext,
 };
 
 mod hooks;
