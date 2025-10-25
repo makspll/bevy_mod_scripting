@@ -38,12 +38,10 @@ impl StrongScriptHandle {
         handle: Handle<ScriptAsset>,
         assets: &mut Assets<ScriptAsset>,
     ) -> Option<Self> {
-        assets.get_strong_handle(handle.id()).map(Self)
-    }
-
-    /// Upgrades an asset Id pointing to a script to a strong handle if the asset hasn't been dropped
-    pub fn upgrade(id: ScriptId, assets: &mut Assets<ScriptAsset>) -> Option<Self> {
-        assets.get_strong_handle(id).map(Self)
+        match handle {
+            s @ Handle::Strong(_) => Some(Self(s)),
+            _ => assets.get_strong_handle(handle.id()).map(Self),
+        }
     }
 
     /// Returns a reference to the strong handle inside
@@ -122,12 +120,14 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
     let contexts = contexts.read();
     events.read().for_each(|wrapper| {
         let attachment_event = wrapper.event();
-        let id = attachment_event.0.script().id();
-        let context = Context {
+        let id = attachment_event.0.script();
+        let mut context = Context {
             attachment: attachment_event.0.clone(),
             blackboard: Default::default(),
         };
-        if let Some(strong_handle) = StrongScriptHandle::upgrade(id, &mut assets) {
+        if let Some(strong_handle) = StrongScriptHandle::from_assets(id, &mut assets) {
+            // we want the loading process to have access to asset paths, we will weaken the handle at the end.
+            *context.attachment.script_mut() = strong_handle.0.clone();
             let content = strong_handle.get(&assets);
             if let Some(existing_context) = contexts.get_context(&attachment_event.0) {
                 machines.queue_machine(
@@ -193,8 +193,8 @@ pub fn process_asset_modifications<P: IntoScriptPluginParams>(
     affected_attachments
         .into_iter()
         .for_each(|(attachment, existing_context)| {
-            let id = attachment.script().id();
-            if let Some(strong_handle) = StrongScriptHandle::upgrade(id, &mut assets) {
+            let id = attachment.script();
+            if let Some(strong_handle) = StrongScriptHandle::from_assets(id, &mut assets) {
                 let content = strong_handle.get(&assets);
                 machines.queue_machine(
                     Context {

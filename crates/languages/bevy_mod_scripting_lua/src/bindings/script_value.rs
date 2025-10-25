@@ -11,7 +11,7 @@ use bevy_mod_scripting_bindings::{
 use bevy_platform::collections::HashMap;
 use mlua::{FromLua, IntoLua, Value, Variadic};
 
-use crate::IntoMluaError;
+use crate::{IntoMluaError, LuaContextAppData};
 
 use super::reference::LuaReflectReference;
 
@@ -144,7 +144,10 @@ impl IntoLua for LuaScriptValue {
                 .create_function(move |lua, args: Variadic<LuaScriptValue>| {
                     let loc = lua.inspect_stack(1).map(|debug| LocationContext {
                         line: debug.curr_line().try_into().unwrap_or_default(),
-                        col: 0,
+                        col: None,
+                        script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
+                            v.last_loaded_script_name.as_ref().map(|n| n.to_string())
+                        }),
                     });
                     let out = function
                         .call(
@@ -160,7 +163,10 @@ impl IntoLua for LuaScriptValue {
                 .create_function(move |lua, args: Variadic<LuaScriptValue>| {
                     let loc = lua.inspect_stack(0).map(|debug| LocationContext {
                         line: debug.curr_line() as u32,
-                        col: 0,
+                        col: None,
+                        script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
+                            v.last_loaded_script_name.as_ref().map(|n| n.to_string())
+                        }),
                     });
                     let out = function
                         .call(

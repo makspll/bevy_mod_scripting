@@ -53,10 +53,18 @@ impl std::fmt::Display for FunctionCallContext {
         f.write_str("in language: ")?;
         self.language.fmt(f)?;
         if let Some(context) = &self.location_context {
+            if let Some(script_name) = &context.script_name {
+                f.write_str(", in script: ")?;
+                script_name.fmt(f)?;
+            }
+
             f.write_str(", at line: ")?;
             context.line.fmt(f)?;
-            f.write_str(", at column: ")?;
-            context.col.fmt(f)?;
+
+            if let Some(col) = &context.col {
+                f.write_str(", at column: ")?;
+                col.fmt(f)?;
+            }
         }
         Ok(())
     }
@@ -66,10 +74,12 @@ impl std::fmt::Display for FunctionCallContext {
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 /// Describes a location within a script
 pub struct LocationContext {
+    /// The name of the script the function call originates from
+    pub script_name: Option<String>,
     /// The line number
     pub line: u32,
     /// The column number
-    pub col: u32,
+    pub col: Option<u32>,
 }
 
 impl FunctionCallContext {
