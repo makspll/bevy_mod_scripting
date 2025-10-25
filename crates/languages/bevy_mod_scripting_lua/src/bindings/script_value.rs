@@ -142,13 +142,16 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => lua
                 .create_function(move |lua, args: Variadic<LuaScriptValue>| {
-                    let loc = lua.inspect_stack(1).map(|debug| LocationContext {
-                        line: debug.curr_line().try_into().unwrap_or_default(),
-                        col: None,
-                        script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
-                            v.last_loaded_script_name.as_ref().map(|n| n.to_string())
-                        }),
-                    });
+                    let loc = {
+                        profiling::scope!("function call context");
+                        lua.inspect_stack(1).map(|debug| LocationContext {
+                            line: debug.curr_line().try_into().unwrap_or_default(),
+                            col: None,
+                            script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
+                                v.last_loaded_script_name.as_ref().map(|n| n.to_string())
+                            }),
+                        })
+                    };
                     let out = function
                         .call(
                             args.into_iter().map(Into::into),
@@ -161,13 +164,16 @@ impl IntoLua for LuaScriptValue {
                 .into_lua(lua)?,
             ScriptValue::FunctionMut(function) => lua
                 .create_function(move |lua, args: Variadic<LuaScriptValue>| {
-                    let loc = lua.inspect_stack(0).map(|debug| LocationContext {
-                        line: debug.curr_line() as u32,
-                        col: None,
-                        script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
-                            v.last_loaded_script_name.as_ref().map(|n| n.to_string())
-                        }),
-                    });
+                    let loc = {
+                        profiling::scope!("function call context");
+                        lua.inspect_stack(1).map(|debug| LocationContext {
+                            line: debug.curr_line().try_into().unwrap_or_default(),
+                            col: None,
+                            script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
+                                v.last_loaded_script_name.as_ref().map(|n| n.to_string())
+                            }),
+                        })
+                    };
                     let out = function
                         .call(
                             args.into_iter().map(Into::into),
