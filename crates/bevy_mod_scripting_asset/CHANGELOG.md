@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_asset-v0.16.0...bevy_mod_scripting_asset-v0.17.0) - 2025-10-26
+
+### Added
+
+- add location information to function call context ([#492](https://github.com/makspll/bevy_mod_scripting/pull/492))
+- Replace `ParsedPath` with custom `ReferencePath`, support `Map` and `Set` references with arbitrary types ([#491](https://github.com/makspll/bevy_mod_scripting/pull/491))
+
 ## [0.16.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_asset-v0.15.1...bevy_mod_scripting_asset-v0.16.0) - 2025-09-22
 
 ### Added
