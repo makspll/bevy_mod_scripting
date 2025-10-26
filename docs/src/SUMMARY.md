@@ -12,6 +12,7 @@
 - [Callbacks](./Summary/callbacks.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
+  - [Sprite spawn](./Examples/sprite-spawn.md)
 
 # Script Pipeline
 
