@@ -81,3 +81,7 @@ The script loading/unloading order will look as follows:
 - scripts are processed one-by-one, i.e. each machine is ticked to completion before the next one is started
     - meaning for example if two scripts are loaded, their `on_script_loaded` hooks will not run at the same "lockstep".
 - loading/unloading might happen over multiple frames, depending on the pipeline's settings.
+
+## Waiting for scripts to load
+
+In order to check on the pipeline and figure out when everything is ready, you can use the `ScriptPipelineState<P>` system parameter in a system as shown in the `script_loading` [example](https://github.com/makspll/bevy_mod_scripting/blob/main/examples/script_loading.rs).
