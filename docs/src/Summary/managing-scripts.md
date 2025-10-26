@@ -49,6 +49,13 @@ fn load_script(asset_server: Res<AssetServer>, mut commands: Commands) {
     commands.spawn(ScriptComponent(vec![handle]));
 }
 ```
+
+<div class="warning">
+
+Prefer using strong asset handles, internal references will only persist weak versions of the handle, leaving you in control of the asset handle via the container component.
+
+</div>
+
 ### Create `ScriptAsset` and Add It
 ```rust
 # extern crate bevy;
@@ -64,6 +71,11 @@ fn add_script(mut script_assets: ResMut<Assets<ScriptAsset>>, mut commands: Comm
     commands.spawn(ScriptComponent(vec![handle]));
 }
 ```
+<div class="warning">
+
+Scripts added directly through assets, or via asset server without an asset path, will not contain path information, and logs will be slightly less useful.
+
+</div>
 
 ## Static Scripts
 You can use attach and detach commands, which will run the [script pipeline](../ScriptPipeline/pipeline.md), repeatedly until the requested script attachments are processed. If you don't want to incur big frametime slowdowns, you can instead send `ScriptAttachedEvent` and `ScriptDetachedEvent` manually, and let the pipeline pick these up as normal.
