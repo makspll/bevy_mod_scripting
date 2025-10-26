@@ -221,6 +221,9 @@ fn load_script(asset_server: Res&lt;AssetServer&gt;, mut commands: Commands) {
     commands.spawn(ScriptComponent(vec![handle]));
 }
 <span class="boring">}</span></code></pre></pre>
+<div class="warning">
+<p>Prefer using strong asset handles, internal references will only persist weak versions of the handle, leaving you in control of the asset handle via the container component.</p>
+</div>
 <h3 id="create-scriptasset-and-add-it"><a class="header" href="#create-scriptasset-and-add-it">Create <code>ScriptAsset</code> and Add It</a></h3>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -237,6 +240,9 @@ fn add_script(mut script_assets: ResMut&lt;Assets&lt;ScriptAsset&gt;&gt;, mut co
     commands.spawn(ScriptComponent(vec![handle]));
 }
 <span class="boring">}</span></code></pre></pre>
+<div class="warning">
+<p>Scripts added directly through assets, or via asset server without an asset path, will not contain path information, and logs will be slightly less useful.</p>
+</div>
 <h2 id="static-scripts"><a class="header" href="#static-scripts">Static Scripts</a></h2>
 <p>You can use attach and detach commands, which will run the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>, repeatedly until the requested script attachments are processed. If you don't want to incur big frametime slowdowns, you can instead send <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code> manually, and let the pipeline pick these up as normal.</p>
 <h3 id="attach-a-static-script"><a class="header" href="#attach-a-static-script">Attach a static script</a></h3>
