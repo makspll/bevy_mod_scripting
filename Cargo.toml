@@ -13,7 +13,7 @@ categories.workspace = true
 readme.workspace = true
 
 [workspace.package]
-version = "0.16.0"
+version = "0.17.0"
 edition = "2024"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -118,21 +118,21 @@ bevy_mod_scripting_script = { workspace = true }
 # local crates
 script_integration_test_harness = { path = "crates/testing_crates/script_integration_test_harness" }
 test_utils = { path = "crates/testing_crates/test_utils" }
-bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.16.0", default-features = false }
-bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.16.0" }
+bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.17.0", default-features = false }
+bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.17.0" }
 bevy_system_reflection = { path = "crates/bevy_system_reflection", version = "0.3.0", default-features = false }
 ladfile = { path = "crates/ladfile", version = "0.6.0" }
-ladfile_builder = { path = "crates/ladfile_builder", version = "0.6.0" }
-bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.16.0", default-features = false }
-bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.16.0", default-features = false }
-bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.16.0", default-features = false }
-bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.16.0", default-features = false }
-bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.16.0", default-features = false }
-bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.16.0", default-features = false }
+ladfile_builder = { path = "crates/ladfile_builder", version = "0.7.0" }
+bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.17.0", default-features = false }
+bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.17.0", default-features = false }
+bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.17.0", default-features = false }
+bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.17.0", default-features = false }
+bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.17.0", default-features = false }
+bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.17.0", default-features = false }
 
 # bevy
 
-bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.16.0" }
+bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.17.0" }
 bevy = { version = "0.16.0", default-features = false }
 bevy_math = { version = "0.16.0", default-features = false, features = ["std"] }
 bevy_transform = { version = "0.16.0", default-features = false }

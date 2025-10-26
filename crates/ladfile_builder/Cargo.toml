@@ -1,6 +1,6 @@
 [package]
 name = "ladfile_builder"
-version = "0.6.0"
+version = "0.7.0"
 description = "Language Agnostic Declaration (LAD) file format for the bevy_mod_scripting crate"
 edition.workspace = true
 authors.workspace = true
