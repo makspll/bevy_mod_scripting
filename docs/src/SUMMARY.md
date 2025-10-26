@@ -12,6 +12,7 @@
 - [Callbacks](./Summary/callbacks.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
+    - [Entity spawning](./Examples/EntitySpawning.md)
 
 # Script Pipeline
 
