@@ -19,6 +19,7 @@ use ::{
 mod context_key;
 mod script_context;
 use bevy_ecs::component::Component;
+use bevy_log::trace;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
 pub use context_key::*;
@@ -65,6 +66,7 @@ impl ScriptComponent {
     /// the removal of the script.
     pub fn on_remove(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
+        trace!("on remove hook for script components: {context_keys:?}");
         world.send_event_batch(context_keys.into_iter().map(ScriptDetachedEvent));
     }
 
@@ -72,6 +74,7 @@ impl ScriptComponent {
     /// the addition of the script.
     pub fn on_add(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
+        trace!("on add hook for script components: {context_keys:?}");
         world.send_event_batch(context_keys.into_iter().map(ScriptAttachedEvent));
     }
 }

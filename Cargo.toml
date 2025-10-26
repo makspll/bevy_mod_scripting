@@ -129,6 +129,7 @@ bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version =
 bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.16.0", default-features = false }
 bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.16.0", default-features = false }
 bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.16.0", default-features = false }
+
 # bevy
 
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.16.0" }
@@ -230,7 +231,10 @@ bevy = { workspace = true, features = [
     "bevy_asset",
     "bevy_core_pipeline",
     "bevy_sprite",
+    "bevy_state",
     "x11",
+    "bevy_ui",
+    "default_font",
 ] }
 bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
@@ -308,7 +312,11 @@ required-features = []
 
 [[example]]
 name = "runscript"
-path = "examples/run-script.rs"
+path = "examples/run_script.rs"
+
+[[example]]
+name = "script_loading"
+path = "examples/script_loading.rs"
 
 [workspace.lints.clippy]
 panic = "deny"

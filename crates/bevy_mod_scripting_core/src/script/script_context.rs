@@ -391,6 +391,11 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
         })
     }
 
+    /// Returns the count of residents as would be returned by [`Self::all_residents`]
+    pub fn all_residents_len(&self) -> usize {
+        self.map.values().map(|entry| entry.residents.len()).sum()
+    }
+
     /// Retrieves the first resident from each context.
     ///
     /// For example if using a single global context, and with 2 scripts:
