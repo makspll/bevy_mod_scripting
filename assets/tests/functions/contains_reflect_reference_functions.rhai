@@ -11,4 +11,4 @@ for function_ref in functions {
     available_names.push(function_ref.name);
 }
 
-assert("display_ref" in available_names, "functions should contain display_ref, but got: " + available_names);
+assert("display" in available_names, "functions should contain display, but got: " + available_names);

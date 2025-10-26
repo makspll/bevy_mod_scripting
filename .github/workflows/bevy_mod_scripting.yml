@@ -18,6 +18,7 @@ env:
   GH_TOKEN: ${{ github.token }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
+  RUST_BACKTRACE: 1
   
 concurrency:
   # Use github.run_id on main branch
@@ -44,6 +45,7 @@ jobs:
           base: main
           filters: |
             src:
+              - 'bindings/**'
               - 'src/**'
               - 'crates/**'
               - 'examples/**'
@@ -83,7 +85,7 @@ jobs:
       - name: Check if fork
         id: check-fork
         run: | 
-          if [ "${{ github.repository }}" != "${{ github.event.pull_request.head.repo.full_name }}" ]; then
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.repository }}" != "${{ github.event.pull_request.head.repo.full_name }}" ]]; then
             echo "This is a forked repository."
             echo "is_fork=true" >> $GITHUB_OUTPUT
           else
@@ -124,7 +126,15 @@ jobs:
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         with:
           toolchain: stable
-          override: true
+          override: false 
+      - name: Print versions 
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
+        run: |
+          echo "Rust version: $(rustc --version)"
+          echo "Clippy version: $(cargo clippy --version)"
+          echo "Active toolchain: $(rustup show active-toolchain)"
+        continue-on-error: true
+
       - name: Rust Cache
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: Swatinem/rust-cache@v2.7.7
@@ -178,4 +188,19 @@ jobs:
             sed -n 's/.*pull\/\([0-9]*\).*/\1/p' pr.txt > pr_number.txt
             PRNUMBER=$(cat pr_number.txt)
             gh pr merge $PRNUMBER --squash
+          fi
+
+  rollup-check:
+    name: Required Checks Successful
+    needs: [check]
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: Check if all jobs succeeded
+        run: |
+          if [[ "${{ needs.check.result }}" != "success" ]]; then
+            echo "One or more checks failed. See detailed job results above."
+            exit 1
+          else
+            echo "All checks passed successfully!"
           fi

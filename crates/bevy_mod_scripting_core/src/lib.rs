@@ -2,42 +2,47 @@
 //!
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
-use crate::event::ScriptErrorEvent;
-use asset::{
-    configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader, ScriptAssetSettings,
+use crate::{
+    callbacks::ScriptCallbacksPlugin,
+    config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
+    context::{ContextLoadFn, ContextReloadFn},
+    event::ScriptErrorEvent,
+    handler::script_error_logger,
+    pipeline::ScriptLoadingPipeline,
 };
-use bevy::prelude::*;
-use bindings::{
-    function::script_function::AppScriptFunctionRegistry, garbage_collector,
-    schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator,
-    DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
+use bevy_app::{App, Plugin, PostUpdate};
+use bevy_asset::{AssetApp, Handle};
+use bevy_ecs::schedule::IntoScheduleConfigs;
+use bevy_ecs::{
+    reflect::{AppTypeRegistry, ReflectComponent},
+    schedule::SystemSet,
 };
-use commands::{AddStaticScript, RemoveStaticScript};
-use context::{
-    Context, ContextAssignmentStrategy, ContextBuilder, ContextInitializer, ContextLoadingSettings,
-    ContextPreHandlingInitializer,
-};
-use error::ScriptError;
-use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
-use handler::{CallbackSettings, HandlerFn};
-use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptId, Scripts, StaticScripts};
+use bevy_log::error;
+use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, ScriptAssetLoader};
 
-pub mod asset;
-pub mod bindings;
+use bevy_mod_scripting_bindings::{
+    AppReflectAllocator, AppScheduleRegistry, AppScriptFunctionRegistry,
+    DummyScriptFunctionRegistry, DynamicScriptComponentPlugin, MarkAsCore, ReflectReference,
+    ScriptTypeRegistration, ScriptValue, ThreadWorldContainer, garbage_collector,
+};
+use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
+use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
+use handler::HandlerFn;
+use runtime::{Runtime, RuntimeInitializer};
+use script::{ContextPolicy, ScriptComponent, ScriptContext};
+
+pub mod callbacks;
 pub mod commands;
+pub mod config;
 pub mod context;
-pub mod docgen;
 pub mod error;
 pub mod event;
 pub mod extractors;
 pub mod handler;
-pub mod reflection_extensions;
+pub mod pipeline;
 pub mod runtime;
 pub mod script;
-
-pub(crate) mod private;
+pub mod script_system;
 
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
@@ -46,12 +51,10 @@ pub enum ScriptingSystemSet {
     ScriptAssetDispatch,
     /// Systems which read incoming internal script asset events and produce script lifecycle commands
     ScriptCommandDispatch,
-    /// Systems which read incoming script asset events and remove metadata for removed assets
-    ScriptMetadataRemoval,
-
+    // /// Systems which read entity removal events and remove contexts associated with them
+    // EntityRemoval,
     /// One time runtime initialization systems
     RuntimeInitialization,
-
     /// Systems which handle the garbage collection of allocated values
     GarbageCollection,
 }
@@ -61,8 +64,8 @@ pub enum ScriptingSystemSet {
 ///
 /// When implementing a new scripting plugin, also ensure the following implementations exist:
 /// - [`Plugin`] for the plugin, both [`Plugin::build`] and [`Plugin::finish`] methods need to be dispatched to the underlying [`ScriptingPlugin`] struct
-/// - [`AsMut<ScriptingPlugin<Self>`] for the plugin struct
-pub trait IntoScriptPluginParams: 'static {
+/// - [`AsMut<ScriptingPlugin<Self>>`] for the plugin struct
+pub trait IntoScriptPluginParams: 'static + GetPluginThreadConfig<Self> {
     /// The language of the scripts
     const LANGUAGE: Language;
     /// The context type used for the scripts
@@ -72,73 +75,110 @@ pub trait IntoScriptPluginParams: 'static {
 
     /// Build the runtime
     fn build_runtime() -> Self::R;
+
+    /// Returns the handler function for the plugin
+    fn handler() -> HandlerFn<Self>;
+
+    /// Returns the context loader function for the plugin
+    fn context_loader() -> ContextLoadFn<Self>;
+
+    /// Returns the context reloader function for the plugin
+    fn context_reloader() -> ContextReloadFn<Self>;
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
-    /// Settings for the runtime
-    pub runtime_settings: RuntimeSettings<P>,
-    /// The handler used for executing callbacks in scripts
-    pub callback_handler: HandlerFn<P>,
-    /// The context builder for loading contexts
-    pub context_builder: ContextBuilder<P>,
+    /// Functions configuring the runtime after it is created
+    pub runtime_initializers: Vec<RuntimeInitializer<P>>,
 
-    /// The strategy for assigning contexts to scripts
-    pub context_assignment_strategy: ContextAssignmentStrategy,
+    /// The strategy used to assign contexts to scripts
+    pub context_policy: ContextPolicy,
 
     /// The language this plugin declares
     pub language: Language,
-    /// Supported extensions to be added to the asset settings without the dot
-    /// By default BMS populates a set of extensions for the languages it supports.
-    pub additional_supported_extensions: &'static [&'static str],
+
+    /// Declares the file extensions this plugin supports
+    pub supported_extensions: Vec<&'static str>,
 
     /// initializers for the contexts, run when loading the script
     pub context_initializers: Vec<ContextInitializer<P>>,
+
     /// initializers for the contexts run every time before handling events
     pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
+
+    /// Whether to emit responses from core script callbacks like `on_script_loaded` or `on_script_unloaded`.
+    pub emit_responses: bool,
+
+    /// The settings customising the processing (loading, unloading etc.) pipeline for this plugin
+    pub processing_pipeline_plugin: ScriptLoadingPipeline<P>,
+}
+
+impl<P> std::fmt::Debug for ScriptingPlugin<P>
+where
+    P: IntoScriptPluginParams,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ScriptingPlugin")
+            .field("context_policy", &self.context_policy)
+            .field("language", &self.language)
+            .field("context_initializers", &self.context_initializers)
+            .field(
+                "context_pre_handling_initializers",
+                &self.context_pre_handling_initializers,
+            )
+            .field("emit_responses", &self.emit_responses)
+            .finish()
+    }
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
     fn default() -> Self {
         Self {
-            runtime_settings: Default::default(),
-            callback_handler: CallbackSettings::<P>::default().callback_handler,
-            context_builder: Default::default(),
-            context_assignment_strategy: Default::default(),
+            runtime_initializers: Default::default(),
+            context_policy: ContextPolicy::default(),
             language: Default::default(),
+            supported_extensions: Default::default(),
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
-            additional_supported_extensions: Default::default(),
+            emit_responses: false,
+            processing_pipeline_plugin: Default::default(),
         }
     }
 }
 
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
-    fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(self.runtime_settings.clone())
-            .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
-                runtime: P::build_runtime(),
-            })
-            .insert_resource::<CallbackSettings<P>>(CallbackSettings {
-                callback_handler: self.callback_handler,
-            })
-            .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
-                loader: self.context_builder.clone(),
-                assignment_strategy: self.context_assignment_strategy,
-                context_initializers: self.context_initializers.clone(),
-                context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
-            })
-            .init_resource::<Scripts<P>>();
+    fn build(&self, app: &mut App) {
+        // initialize thread local configs
 
-        register_script_plugin_systems::<P>(app);
-
-        if !self.additional_supported_extensions.is_empty() {
-            app.add_supported_script_extensions(
-                self.additional_supported_extensions,
-                self.language.clone(),
-            );
+        let runtime = P::build_runtime();
+        for initializer in &self.runtime_initializers {
+            if let Err(e) = initializer(&runtime) {
+                error!("Error initializing runtime: {:?}. Continuing.", e);
+            }
         }
+
+        let config = ScriptingPluginConfiguration::<P> {
+            pre_handling_callbacks: Vec::leak(self.context_pre_handling_initializers.clone()),
+            context_initialization_callbacks: Vec::leak(self.context_initializers.clone()),
+            emit_responses: self.emit_responses,
+            runtime: Box::leak(Box::new(runtime)),
+            language_extensions: Box::leak(Box::new(LanguageExtensions::new(
+                self.supported_extensions
+                    .iter()
+                    .map(|&ext| (ext, P::LANGUAGE.clone())),
+            ))),
+        };
+
+        P::set_world_local_config(app.world().id(), config);
+
+        app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
+        app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
+
+        app.add_plugins((
+            self.processing_pipeline_plugin.clone(),
+            ScriptCallbacksPlugin::<P>::default(),
+        ));
 
         register_types(app);
     }
@@ -168,7 +208,13 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
     ///
     /// Initializers will be run after the runtime is created, but before any contexts are loaded.
     pub fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<P>) -> &mut Self {
-        self.runtime_settings.initializers.push(initializer);
+        self.runtime_initializers.push(initializer);
+        self
+    }
+
+    /// Sets the script pipeline settings plugin
+    pub fn set_pipeline_settings(&mut self, pipeline: ScriptLoadingPipeline<P>) -> &mut Self {
+        self.processing_pipeline_plugin = pipeline;
         self
     }
 }
@@ -190,16 +236,27 @@ pub trait ConfigureScriptPlugin {
     /// Add a runtime initializer to the plugin
     fn add_runtime_initializer(self, initializer: RuntimeInitializer<Self::P>) -> Self;
 
-    /// Switch the context assigning strategy to a global context assigner.
+    /// Switch the context assigning strategy to the given policy.
     ///
-    /// This means that all scripts will share the same context. This is useful for when you want to share data between scripts easilly.
-    /// Be careful however as this also means that scripts can interfere with each other in unexpected ways! Including overwriting each other's handlers.
-    fn enable_context_sharing(self) -> Self;
+    /// Some context policies might work in unexpected ways.
+    /// For example, a single shared context might cause issues with scripts overriding each other's handlers.
+    fn set_context_policy(self, context_policy: ContextPolicy) -> Self;
 
-    /// Set the set of extensions to be added for the plugin's language.
+    /// Whether to emit responses from core script callbacks like `on_script_loaded` or `on_script_unloaded`.
+    /// By default, this is `false` and responses are not emitted.
     ///
-    /// This is useful for adding extensions that are not supported by default by BMS.
-    fn set_additional_supported_extensions(self, extensions: &'static [&'static str]) -> Self;
+    /// You won't be able to react to these events until after contexts are fully loaded,
+    /// but they might be useful for other purposes, such as debugging or logging.
+    fn emit_core_callback_responses(self, emit_responses: bool) -> Self;
+
+    /// Adds a supported file extension for the plugin's language.
+    fn add_supported_extension(self, extension: &'static str) -> Self;
+
+    /// removes a supported file extension for the plugin's language.
+    fn remove_supported_extension(self, extension: &'static str) -> Self;
+
+    /// Sets the script pipeline settings plugin
+    fn set_pipeline_settings(self, pipeline: ScriptLoadingPipeline<Self::P>) -> Self;
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -224,13 +281,30 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
         self
     }
 
-    fn enable_context_sharing(mut self) -> Self {
-        self.as_mut().context_assignment_strategy = ContextAssignmentStrategy::Global;
+    fn set_context_policy(mut self, policy: ContextPolicy) -> Self {
+        self.as_mut().context_policy = policy;
         self
     }
 
-    fn set_additional_supported_extensions(mut self, extensions: &'static [&'static str]) -> Self {
-        self.as_mut().additional_supported_extensions = extensions;
+    fn emit_core_callback_responses(mut self, emit_responses: bool) -> Self {
+        self.as_mut().emit_responses = emit_responses;
+        self
+    }
+
+    fn add_supported_extension(mut self, extension: &'static str) -> Self {
+        self.as_mut().supported_extensions.push(extension);
+        self
+    }
+
+    fn remove_supported_extension(mut self, extension: &'static str) -> Self {
+        self.as_mut()
+            .supported_extensions
+            .retain(|&ext| ext != extension);
+        self
+    }
+
+    fn set_pipeline_settings(mut self, pipeline: ScriptLoadingPipeline<P>) -> Self {
+        self.as_mut().set_pipeline_settings(pipeline);
         self
     }
 }
@@ -252,7 +326,14 @@ fn pre_register_components(app: &mut App) {
 /// A plugin defining shared settings between various scripting plugins
 /// It is necessary to register this plugin for any of them to work
 #[derive(Default)]
-pub struct BMSScriptingInfrastructurePlugin;
+pub struct BMSScriptingInfrastructurePlugin {
+    /// If set to true will not log all ScriptErrorEvents using bevy_log::error.
+    ///
+    /// you can opt out of this behavior if you want to log the errors in a different way.
+    ///
+    /// see the [`crate::handler::script_error_logger`] system.
+    dont_log_script_event_errors: bool,
+}
 
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
@@ -260,58 +341,35 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .add_event::<ScriptCallbackEvent>()
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
-            .init_resource::<StaticScripts>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
+            .init_resource::<DummyScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
+
+        app.register_type::<ScriptAsset>();
+        app.register_type::<Handle<ScriptAsset>>();
+        app.register_type_data::<Handle<ScriptAsset>, MarkAsCore>();
 
         app.add_systems(
             PostUpdate,
             ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
         );
 
-        configure_asset_systems(app);
+        if !self.dont_log_script_event_errors {
+            app.add_systems(PostUpdate, script_error_logger);
+        }
+
+        let _ = bevy_mod_scripting_display::GLOBAL_TYPE_INFO_PROVIDER
+            .set(|| Some(&ThreadWorldContainer));
 
         DynamicScriptComponentPlugin.build(app);
     }
 
     fn finish(&self, app: &mut App) {
-        // read extensions from asset settings
-        let asset_settings_extensions = app
-            .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>()
-            .supported_extensions;
-
-        // convert extensions to static array
-        bevy::log::info!(
-            "Initializing BMS with Supported extensions: {:?}",
-            asset_settings_extensions
-        );
-
-        app.register_asset_loader(ScriptAssetLoader {
-            extensions: asset_settings_extensions,
-            preprocessor: None,
-        });
-
-        // pre-register component id's
+        // Pre-register component IDs.
         pre_register_components(app);
         DynamicScriptComponentPlugin.finish(app);
     }
-}
-
-/// Systems registered per-language
-fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
-    app.add_systems(
-        PostStartup,
-        (initialize_runtime::<P>.pipe(|e: In<Result<(), ScriptError>>| {
-            if let Err(e) = e.0 {
-                error!("Error initializing runtime: {:?}", e);
-            }
-        }))
-        .in_set(ScriptingSystemSet::RuntimeInitialization),
-    );
-
-    configure_asset_systems_for_plugin::<P>(app);
 }
 
 /// Register all types that need to be accessed via reflection
@@ -322,130 +380,13 @@ fn register_types(app: &mut App) {
     app.register_type::<ScriptComponent>();
 }
 
-/// Trait for adding a runtime initializer to an app
-pub trait AddRuntimeInitializer {
-    /// Adds a runtime initializer to the app
-    fn add_runtime_initializer<P: IntoScriptPluginParams>(
-        &mut self,
-        initializer: RuntimeInitializer<P>,
-    ) -> &mut Self;
-}
-
-impl AddRuntimeInitializer for App {
-    fn add_runtime_initializer<P: IntoScriptPluginParams>(
-        &mut self,
-        initializer: RuntimeInitializer<P>,
-    ) -> &mut Self {
-        if !self.world_mut().contains_resource::<RuntimeSettings<P>>() {
-            self.world_mut().init_resource::<RuntimeSettings<P>>();
-        }
-        self.world_mut()
-            .resource_mut::<RuntimeSettings<P>>()
-            .as_mut()
-            .initializers
-            .push(initializer);
-        self
-    }
-}
-
-/// Trait for adding static scripts to an app
-pub trait ManageStaticScripts {
-    /// Registers a script id as a static script.
-    ///
-    /// Event handlers will run these scripts on top of the entity scripts.
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
-
-    /// Removes a script id from the list of static scripts.
-    ///
-    /// Does nothing if the script id is not in the list.
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
-}
-
-impl ManageStaticScripts for App {
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
-        AddStaticScript::new(script_id.into()).apply(self.world_mut());
-        self
-    }
-
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
-        RemoveStaticScript::new(script_id.into()).apply(self.world_mut());
-        self
-    }
-}
-
-/// Trait for adding a supported extension to the script asset settings.
-///
-/// This is only valid in the plugin building phase, as the asset loader will be created in the `finalize` phase.
-/// Any changes to the asset settings after that will not be reflected in the asset loader.
-pub trait ConfigureScriptAssetSettings {
-    /// Adds a supported extension to the asset settings
-    ///
-    /// This is only valid to call in the plugin building phase, as the asset loader will be created in the `finalize` phase.
-    fn add_supported_script_extensions(
-        &mut self,
-        extensions: &[&'static str],
-        language: Language,
-    ) -> &mut Self;
-}
-
-impl ConfigureScriptAssetSettings for App {
-    fn add_supported_script_extensions(
-        &mut self,
-        extensions: &[&'static str],
-        language: Language,
-    ) -> &mut Self {
-        let mut asset_settings = self
-            .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>();
-
-        let mut new_arr = Vec::from(asset_settings.supported_extensions);
-
-        new_arr.extend(extensions);
-
-        let new_arr_static = Vec::leak(new_arr);
-
-        asset_settings.supported_extensions = new_arr_static;
-        for extension in extensions {
-            asset_settings
-                .extension_to_language_map
-                .insert(*extension, language.clone());
-        }
-
-        self
-    }
-}
-
 #[cfg(test)]
 mod test {
+    use bevy_asset::AssetPlugin;
+    use bevy_ecs::prelude::*;
+    use bevy_reflect::Reflect;
+
     use super::*;
-
-    #[tokio::test]
-    async fn test_asset_extensions_correctly_accumulate() {
-        let mut app = App::new();
-        app.init_resource::<ScriptAssetSettings>();
-        app.add_plugins(AssetPlugin::default());
-
-        app.world_mut()
-            .resource_mut::<ScriptAssetSettings>()
-            .supported_extensions = &["lua", "rhai"];
-
-        BMSScriptingInfrastructurePlugin.finish(&mut app);
-
-        let asset_loader = app
-            .world()
-            .get_resource::<AssetServer>()
-            .expect("Asset loader not found");
-
-        asset_loader
-            .get_asset_loader_with_extension("lua")
-            .await
-            .expect("Lua loader not found");
-
-        asset_loader
-            .get_asset_loader_with_extension("rhai")
-            .await
-            .expect("Rhai loader not found");
-    }
 
     #[test]
     fn test_reflect_component_is_preregistered_in_app_finalize() {
@@ -461,7 +402,7 @@ mod test {
 
         assert!(app.world_mut().component_id::<Comp>().is_none());
 
-        BMSScriptingInfrastructurePlugin.finish(&mut app);
+        BMSScriptingInfrastructurePlugin::default().finish(&mut app);
 
         assert!(app.world_mut().component_id::<Comp>().is_some());
     }

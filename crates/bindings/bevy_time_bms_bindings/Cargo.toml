@@ -1,0 +1,42 @@
+[package]
+name = "bevy_time_bms_bindings"
+description = "Automatically generated bindings for bevy_time crate"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_time = { version = "0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = true }
+
+
+bevy_app = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = true }
+
+bevy_ecs = { version = "^0.16.1", features = [
+    "std",
+    "bevy_reflect",
+], default-features = false }
+
+bevy_platform = { version = "^0.16.1", features = [
+    "std",
+], default-features = false }
+
+bevy_reflect = { version = "^0.16.1", features = [
+    "std",
+], default-features = false }

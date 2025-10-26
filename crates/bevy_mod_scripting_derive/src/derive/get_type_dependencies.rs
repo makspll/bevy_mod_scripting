@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
-use quote::{quote_spanned, ToTokens};
-use syn::{parse_quote, parse_quote_spanned, DeriveInput, WhereClause};
+use quote::{ToTokens, quote_spanned};
+use syn::{DeriveInput, WhereClause, parse_quote, parse_quote_spanned};
 
 /// Generate a GetTypeDependencies impl like below:
 /// For type:
@@ -36,7 +36,7 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
         Err(error) => return error.to_compile_error(),
     };
 
-    let bms_core = &args.bms_core_path;
+    let bms_core = &args.bms_bindings_path;
 
     let (impl_generics, type_generics, impl_where) = derive_input.generics.split_for_impl();
 
@@ -77,22 +77,22 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
             });
 
             impl_where.predicates.push(
-                parse_quote_spanned!(param.ident.span()=> #param_name::Underlying: bevy::reflect::GetTypeRegistration),
+                parse_quote_spanned!(param.ident.span()=> #param_name::Underlying: GetTypeRegistration),
             );
         } else {
-            impl_where.predicates.push(
-                parse_quote_spanned!(param.ident.span()=> #param_name: bevy::reflect::GetTypeRegistration),
-            )
+            impl_where
+                .predicates
+                .push(parse_quote_spanned!(param.ident.span()=> #param_name: GetTypeRegistration))
         }
     }
 
     quote_spanned! {derive_input.ident.span()=>
         #[automatically_derived]
         #[allow(clippy::needless_lifetimes)]
-        impl #impl_generics #bms_core::bindings::GetTypeDependencies for #name #type_generics #impl_where
+        impl #impl_generics #bms_core::GetTypeDependencies for #name #type_generics #impl_where
         {
             type Underlying = #underlying;
-            fn register_type_dependencies(registry: &mut bevy::reflect::TypeRegistry) {
+            fn register_type_dependencies(registry: &mut TypeRegistry) {
                 #(#recursive_registrations)*
 
                 registry.register::<#underlying>();
@@ -111,7 +111,7 @@ pub fn get_type_dependencies(input: TokenStream) -> TokenStream {
 }
 
 struct Args {
-    bms_core_path: syn::Path,
+    bms_bindings_path: syn::Path,
     underlying: Option<syn::Type>,
     dont_recurse: bool,
     // bounds: Vec<syn::TypeParamBound>,
@@ -119,7 +119,7 @@ struct Args {
 
 impl Args {
     fn parse(attrs: &[syn::Attribute]) -> syn::Result<Self> {
-        let mut bms_core_path = parse_quote!(::bevy_mod_scripting::core);
+        let mut bms_bindings_path = parse_quote!(::bevy_mod_scripting::bindings);
         let mut underlying = None;
         let mut dont_recurse = false;
 
@@ -128,10 +128,10 @@ impl Args {
             // then parse its meta
             if attr.path().is_ident("get_type_dependencies") {
                 attr.parse_nested_meta(|meta| {
-                    if meta.path.is_ident("bms_core_path") {
+                    if meta.path.is_ident("bms_bindings_path") {
                         let value = meta.value()?;
                         let string: syn::LitStr = value.parse()?;
-                        bms_core_path = string.parse()?;
+                        bms_bindings_path = string.parse()?;
                         Ok(())
                     } else if meta.path.is_ident("underlying") {
                         let value = meta.value()?;
@@ -144,7 +144,7 @@ impl Args {
                     } else {
                         Err(syn::Error::new_spanned(
                             meta.path,
-                            "unknown attribute, allowed: bms_core_path, underlying",
+                            "unknown attribute, allowed: bms_bindings_path, underlying",
                         ))
                     }
                 })?;
@@ -152,7 +152,7 @@ impl Args {
         }
 
         Ok(Self {
-            bms_core_path,
+            bms_bindings_path,
             underlying,
             dont_recurse,
         })

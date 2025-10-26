@@ -1,27 +1,29 @@
 [package]
 name = "ladfile_builder"
-version = "0.3.3"
-edition = "2021"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-license = "MIT OR Apache-2.0"
+version = "0.6.0"
 description = "Language Agnostic Declaration (LAD) file format for the bevy_mod_scripting crate"
-repository = "https://github.com/makspll/bevy_mod_scripting"
-homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "format", "json"]
-categories = ["game-development", "parser-implementations"]
-include = ["readme.md", "/src", "/test_assets"]
-readme = "readme.md"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
 
 [dependencies]
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_mod_scripting_core = { workspace = true }
-# I don't think bevy has a top level feature for this :C
-bevy = { workspace = true }
-bevy_reflect = { version = "0.15.3", features = ["documentation"] }
-ladfile = { version = "0.5.0", path = "../ladfile" }
-regex = "1.11"
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_reflect = { workspace = true, features = ["documentation"] }
+ladfile = { workspace = true }
+regex = { workspace = true }
 
 [dev-dependencies]
-pretty_assertions = "1.4"
+pretty_assertions = { workspace = true }
 
 [lints]
 workspace = true

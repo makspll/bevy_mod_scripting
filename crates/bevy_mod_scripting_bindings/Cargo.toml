@@ -1,0 +1,39 @@
+[package]
+name = "bevy_mod_scripting_bindings"
+description = "Core traits and structures required for smoothly interfacing with other languages in a generic way"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+
+[dependencies]
+bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
+bevy_system_reflection = { workspace = true }
+bevy_diagnostic = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_reflect = { workspace = true }
+bevy_log = { workspace = true }
+bevy_app = { workspace = true }
+bevy_platform = { workspace = true }
+parking_lot = { workspace = true }
+smallvec = { workspace = true }
+itertools = { workspace = true }
+profiling = { workspace = true }
+bevy_asset = { workspace = true }
+variadics_please = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }
+test_utils = { workspace = true }
+
+[lints]
+workspace = true

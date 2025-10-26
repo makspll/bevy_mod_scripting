@@ -1,3 +1,4 @@
+mod debug_with_type_info;
 mod get_type_dependencies;
 mod into_script;
 mod script_bindings;
@@ -5,12 +6,13 @@ mod script_globals;
 mod typed_through;
 
 use proc_macro2::{Span, TokenStream};
-use quote::{quote_spanned, ToTokens};
+use quote::{ToTokens, quote_spanned};
 use syn::{Ident, ImplItemFn, ItemImpl};
 
 pub use self::{
-    get_type_dependencies::get_type_dependencies, into_script::into_script,
-    script_bindings::script_bindings, script_globals::script_globals, typed_through::typed_through,
+    debug_with_type_info::debug_with_type_info, get_type_dependencies::get_type_dependencies,
+    into_script::into_script, script_bindings::script_bindings, script_globals::script_globals,
+    typed_through::typed_through,
 };
 
 pub(crate) fn impl_fn_to_namespace_builder_registration(fun: &ImplItemFn) -> TokenStream {
@@ -112,17 +114,15 @@ pub(crate) fn parse_docstring<'a>(
     attrs: impl Iterator<Item = &'a syn::Attribute>,
 ) -> Option<String> {
     let docs = attrs.filter_map(|attr| {
-        if attr.path().is_ident("doc") {
-            if let syn::Meta::NameValue(meta_name_value) = &attr.meta {
-                if let syn::Expr::Lit(expr_lit) = &meta_name_value.value {
-                    if let syn::Lit::Str(lit_str) = &expr_lit.lit {
-                        if lit_str.value().len() > 1 {
-                            return Some(lit_str.value()[1..].to_string());
-                        } else {
-                            return Some(lit_str.value());
-                        }
-                    }
-                }
+        if attr.path().is_ident("doc")
+            && let syn::Meta::NameValue(meta_name_value) = &attr.meta
+            && let syn::Expr::Lit(expr_lit) = &meta_name_value.value
+            && let syn::Lit::Str(lit_str) = &expr_lit.lit
+        {
+            if lit_str.value().len() > 1 {
+                return Some(lit_str.value()[1..].to_string());
+            } else {
+                return Some(lit_str.value());
             }
         };
 

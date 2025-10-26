@@ -1,7 +1,7 @@
 [package]
 name = "xtask"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 publish = false
 
 
@@ -24,3 +24,4 @@ toml = "0.8"
 tera = "1.20"
 json_comments = "0.2"
 is-root = "0.1"
+indexmap = { version = "2", features = ["serde"] }

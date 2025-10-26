@@ -1,2 +1,2 @@
-crates/bevy_script_api/providers/*.rs linguist-generated
-crates/bevy_script_api/providers/*.rs -diff -merge
+crates/bindings/**/* linguist-generated
+crates/bindings/**/* -diff -merge

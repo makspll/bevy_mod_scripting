@@ -1,11 +1,18 @@
 [package]
 name = "test_utils"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 publish = false
 
 [dependencies]
-bevy = { workspace = true, features = ["bevy_asset"] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+bevy_diagnostic = { workspace = true, default-features = false, features = [] }
+bevy_reflect = { workspace = true, default-features = false, features = [] }
+bevy_time = { workspace = true, default-features = false, features = [] }
+
 
 [lib]
 path = "src/lib.rs"

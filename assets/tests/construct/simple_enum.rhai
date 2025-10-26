@@ -7,10 +7,10 @@ assert(constructed.variant_name.call() == "Struct", "Value was constructed incor
 assert(constructed.foo == 123, "Value was constructed incorrectly, expected constructed.foo to be 123 but got " + constructed.foo);
 
 // TupleStruct Variant
-constructed = construct.call(type, #{ variant: "TupleStruct", "_0": 123 });
+constructed = construct.call(type, #{ variant: "TupleStruct", "0": 123 });
 
 assert(constructed.variant_name.call() == "TupleStruct", "Value was constructed incorrectly, expected constructed.variant to be TupleStruct but got " + constructed.variant_name.call());
-assert(constructed["_0"] == 123, "Value was constructed incorrectly, expected constructed._0 to be 123 but got " + constructed["_0"]);
+assert(constructed[0] == 123, "Value was constructed incorrectly, expected constructed[0] to be 123 but got " + constructed[0]);
 
 // Unit Variant
 constructed = construct.call(type, #{ variant: "Unit" });

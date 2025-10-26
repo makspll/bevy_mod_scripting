@@ -1,29 +1,28 @@
 [package]
 name = "mdbook_lad_preprocessor"
-version = "0.1.8"
-edition = "2021"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-license = "MIT OR Apache-2.0"
+version = "0.3.0"
 description = "Language Agnostic Declaration (LAD) file format for the bevy_mod_scripting crate"
-repository = "https://github.com/makspll/bevy_mod_scripting"
-homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "documentation", "generator"]
-categories = ["game-development", "development-tools"]
-include = ["readme.md", "/src"]
 readme = "readme.md"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
-clap = "4"
-mdbook = "0.4"
-ladfile = { path = "../../ladfile", version = "0.5.0" }
-env_logger = "0.11"
-log = "0.4"
-serde_json = "1.0"
-regex = "1.11"
+env_logger = { workspace = true }
+clap = { workspace = true }
+ladfile = { workspace = true }
+mdbook = { workspace = true, features = ["search"] }
+log = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
+regex = { workspace = true }
 
 [dev-dependencies]
-assert_cmd = "2.0"
-pretty_assertions = "1.4.1"
+assert_cmd = { workspace = true }
+pretty_assertions = { workspace = true }
 
 [lints]
 workspace = true

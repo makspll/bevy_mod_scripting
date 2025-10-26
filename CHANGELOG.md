@@ -1,5 +1,52 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.16.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.15.1...v0.16.0) - 2025-09-22
+
+### Added
+
+- improve and formalize script processing pipeline ([#481](https://github.com/makspll/bevy_mod_scripting/pull/481))
+- improved dynamic printing, adds `ReflectDisplayWithTypeInfo` for overriding opaque type printing ([#478](https://github.com/makspll/bevy_mod_scripting/pull/478))
+- improve codegen crate calculation, separate bindings into crates ([#467](https://github.com/makspll/bevy_mod_scripting/pull/467))
+- pre-expand generated codegen macros ([#462](https://github.com/makspll/bevy_mod_scripting/pull/462))
+
+### Refactored
+
+- extract `bevy_mod_scripting_asset` and `bevy_mod_scripting_display` crates, decouple concerns ([#477](https://github.com/makspll/bevy_mod_scripting/pull/477))
+- extract `bevy_mod_scripting_asset` crate, simplify supported extensions logic ([#475](https://github.com/makspll/bevy_mod_scripting/pull/475))
+- remove `HandlerCtxt`, wrap `ScriptContext<P>` in Arc ([#474](https://github.com/makspll/bevy_mod_scripting/pull/474))
+- remove `StaticScripts`  resource ([#473](https://github.com/makspll/bevy_mod_scripting/pull/473))
+- modify `ContextLoadFn` & `ContextReloadFn` & `HandlerFn` to use `WorldId` instead of direct config ([#472](https://github.com/makspll/bevy_mod_scripting/pull/472))
+- remove `RuntimeContainer` & `RuntimeSettings`, add plugin runtime to static world local settings ([#471](https://github.com/makspll/bevy_mod_scripting/pull/471))
+- add world-local static plugin config, remove `ContextLoadingSettings` resource ([#470](https://github.com/makspll/bevy_mod_scripting/pull/470))
+- [**breaking**] refactor dependencies, point at bevy subcrates directly ([#463](https://github.com/makspll/bevy_mod_scripting/pull/463))
+- restructure monorepo, rename `bevy_api_gen` to `bevy_mod_scripting_codegen` ([#461](https://github.com/makspll/bevy_mod_scripting/pull/461))
+- inline `CallbackBuilder<P>` into `IntoScriptPluginParams` at compile time ([#456](https://github.com/makspll/bevy_mod_scripting/pull/456))
+- inline `CallbackSettings<P>` into `IntoScriptPluginParam` at compile time ([#455](https://github.com/makspll/bevy_mod_scripting/pull/455))
+
+## [0.15.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.15.0...v0.15.1) - 2025-08-18
+
+### Changed
+
+- Remove asset_path field from ScriptAsset. ([#450](https://github.com/makspll/bevy_mod_scripting/pull/450))
+
+### Fixed
+
+- "luau" extension regression ([#453](https://github.com/makspll/bevy_mod_scripting/pull/453))
+
+## [0.15.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.14.0...v0.15.0) - 2025-08-14
+
+### Added
+
+- [**breaking**] Use the Handles, Luke! ([#427](https://github.com/makspll/bevy_mod_scripting/pull/427)) ([#444](https://github.com/makspll/bevy_mod_scripting/pull/444))
+# Changelog
+
 ## [0.13.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.12.0...v0.13.0) - 2025-07-05
 
 ### Added

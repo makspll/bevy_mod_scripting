@@ -3,4 +3,4 @@ let entity = world._get_entity_with_test_component.call("CompWithDefault");
 let retrieved = world.get_component.call(entity, component);
 
 assert(type_of(retrieved) != "()", "Component was not found");
-assert(retrieved["_0"] == "Initial Value", "Component data was not retrieved correctly, retrieved._0 was: " + retrieved["_0"]);
+assert(retrieved[0] == "Initial Value", "Component data was not retrieved correctly, retrieved._0 was: " + retrieved[0]);

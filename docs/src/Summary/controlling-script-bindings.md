@@ -63,7 +63,7 @@ Note the `new_unregistered` call instead of `new`, this is because `GlobalNamesp
 The above is a bit tedious, so instead you can use the `script_bindings` macro, which applies to impl blocks like so:
 
 ```rust,ignore
-#[script_bindings("test_fn")]
+#[script_bindings(name = "test_fn")]
 impl TestStruct {
     /// My docs !!
     /// 
@@ -153,8 +153,10 @@ There are a few reserved functions that you can override by registering them on 
 | eq | an equality function, used for checking if two values are equal | ✅ | ❌ |
 | lt | a less than function, used for checking if a value is less than another | ✅ | ❌ |
 | iter | an iterator function, used for iterating over a value | ❌ | ✅ |
-| display_ref | a display function, used for displaying a reference to a value | ❌ | ✅ |
-| display_value | a display function, used for displaying a mutable reference to a value | ❌ | ✅ |
+| display | a display function, used for pretty printing values | ❌\* | ✅ |
+| debug | a display function, used for displaying the internals of a value | ❌\* | ✅ |
+
+\* - You can register an instance of `ReflectDisplayWithTypeInfo` type data on `Reflect` implementing types to override their printing behavior
 
 In this context `overridable` indicates whether language implementations will look for a specific function on your type before looking at the generic `ReflectReference` namespace. You can still remove the existing registration for these functions on the `ReflectReference` namespace if you want to replace them with your own implementation.
 

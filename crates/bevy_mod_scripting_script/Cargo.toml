@@ -1,0 +1,21 @@
+[package]
+name = "bevy_mod_scripting_script"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_reflect = { workspace = true }
+bevy_asset = { workspace = true }
+
+[lints]
+workspace = true

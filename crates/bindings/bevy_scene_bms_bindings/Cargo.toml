@@ -1,0 +1,53 @@
+[package]
+name = "bevy_scene_bms_bindings"
+description = "Automatically generated bindings for bevy_scene crate"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_scene = { version = "0.16.1", features = [
+    "bevy_render",
+    "serialize",
+], default-features = true }
+
+
+bevy_app = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_asset = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_derive = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_ecs = { version = "^0.16.1", features = [
+    "serialize",
+], default-features = false }
+
+bevy_platform = { version = "^0.16.1", features = [
+    "serialize",
+], default-features = false }
+
+bevy_reflect = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_render = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_transform = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_utils = { version = "^0.16.1", features = [], default-features = true }
+
+serde = { version = "^1.0", features = [], default-features = true }
+
+uuid = { version = "^1.13.1", features = [
+    "serde",
+    "serde",
+], default-features = false }

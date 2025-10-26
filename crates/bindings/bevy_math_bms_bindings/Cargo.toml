@@ -1,0 +1,57 @@
+[package]
+name = "bevy_math_bms_bindings"
+description = "Automatically generated bindings for bevy_math crate"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
+bevy_app = { workspace = true, features = ["std"] }
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_math = { version = "0.16.1", features = [
+    "std",
+    "rand",
+    "curve",
+    "alloc",
+    "bevy_reflect",
+], default-features = true }
+
+
+bevy_reflect = { version = "^0.16.1", features = [
+    "std",
+], default-features = false }
+
+derive_more = { version = "^1", features = ["std"], default-features = false }
+
+glam = { version = "^0.29.3", features = [
+    "std",
+    "rand",
+], default-features = false }
+
+itertools = { version = "^0.14.0", features = [
+    "use_std",
+    "use_alloc",
+], default-features = false }
+
+rand = { version = "^0.8", features = [
+    "std",
+    "alloc",
+], default-features = false }
+
+rand_distr = { version = "^0.4.3", features = [
+    "std",
+    "alloc",
+], default-features = false }
+
+smallvec = { version = "^1.11", features = [], default-features = true }
+
+variadics_please = { version = "^1.1", features = [], default-features = true }

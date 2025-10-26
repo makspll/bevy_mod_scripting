@@ -35,6 +35,7 @@ In order for a language to be called "implemented" in BMS, it needs to support t
         - Less than: dispatches to the `lt` binary function on the type
         - Length: calls the `len` method on `ReflectReference` or on the table if the value is one.
         - Iteration: dispatches to the `iter` method on `ReflectReference` which returns an iterator function, this can be repeatedly called until it returns `ScriptValue::Unit` to signal the end of the iteration.
-        - Print: calls the `display_ref` method on `ReflectReference` or on the table if the value is one.
+        - Print: calls the `display` method on `ReflectReference` or on the table if the value is one.
+        - Debug print: calls the `debug` method on `ReflectReference` or on the table if the value is one.
 - Script handlers, loaders etc. must be implemented such that the `ThreadWorldContainer` is set for every interaction with script contexts, or anywhere else it might be needed.
     

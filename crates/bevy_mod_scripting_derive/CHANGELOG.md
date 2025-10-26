@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_derive-v0.15.1...bevy_mod_scripting_derive-v0.16.0) - 2025-09-22
+
+### Added
+
+- improved dynamic printing, adds `ReflectDisplayWithTypeInfo` for overriding opaque type printing ([#478](https://github.com/makspll/bevy_mod_scripting/pull/478))
+
+### Refactored
+
+- extract `bevy_mod_scripting_asset` and `bevy_mod_scripting_display` crates, decouple concerns ([#477](https://github.com/makspll/bevy_mod_scripting/pull/477))
+- [**breaking**] refactor dependencies, point at bevy subcrates directly ([#463](https://github.com/makspll/bevy_mod_scripting/pull/463))
+
 ## [0.12.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_derive-v0.11.1...bevy_mod_scripting_derive-v0.12.0) - 2025-04-07
 
 ### Fixed

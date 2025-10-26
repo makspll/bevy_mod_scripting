@@ -1,0 +1,22 @@
+[package]
+name = "bevy_mod_scripting_asset"
+description = "Core traits and structures required for other parts of bevy_mod_scripting"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_reflect = { workspace = true }
+bevy_asset = { workspace = true }
+bevy_log = { workspace = true }
+serde = { workspace = true, features = ["derive", "std"] }
+[lints]
+workspace = true

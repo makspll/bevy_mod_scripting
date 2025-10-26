@@ -3,28 +3,25 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use bevy::{
-    app::App,
-    ecs::component::ComponentId,
-    prelude::{Entity, World},
-    reflect::{Reflect, TypeRegistration},
+use ::{
+    bevy_app::App,
+    bevy_asset::Assets,
+    bevy_ecs::{change_detection::Mut, component::ComponentId, entity::Entity, world::World},
+    bevy_reflect::{Reflect, TypeRegistration},
 };
-use bevy_mod_scripting_core::{
-    asset::Language,
-    bindings::{
-        function::{
-            namespace::{GlobalNamespace, NamespaceBuilder},
-            script_function::{DynamicScriptFunctionMut, FunctionCallContext},
-        },
-        pretty_print::DisplayWithWorld,
-        DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
-        ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue,
-    },
+use bevy_mod_scripting_asset::Language;
+use bevy_mod_scripting_bindings::{
+    DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
+    ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue,
     error::InteropError,
+    function::{
+        namespace::{GlobalNamespace, NamespaceBuilder},
+        script_function::{DynamicScriptFunctionMut, FunctionCallContext},
+    },
 };
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha12Rng;
-use test_utils::test_data::EnumerateTestComponents;
+use test_utils::test_data::{EnumerateTestComponents, TestAsset};
 
 // lazy lock rng state
 pub static RNG: std::sync::LazyLock<Mutex<ChaCha12Rng>> = std::sync::LazyLock::new(|| {
@@ -90,31 +87,26 @@ pub fn register_test_functions(world: &mut App) {
         )
         .register(
             "_assert_throws",
-            |s: FunctionCallContext, f: DynamicScriptFunctionMut, reg: String| {
-                let world = s.world().unwrap();
-
+            |_s: FunctionCallContext, f: DynamicScriptFunctionMut, reg: String| {
                 let result = f.call(vec![], FunctionCallContext::new(Language::Unknown));
                 let err = match result {
                     Ok(_) => {
-                        return Err(InteropError::external_error(
-                            "Expected function to throw error, but it did not.".into(),
-                        ))
+                        return Err(InteropError::str(
+                            "Expected function to throw error, but it did not.",
+                        ));
                     }
-                    Err(e) => e.display_with_world(world.clone()),
+                    Err(e) => format!("{e:#?}"),
                 };
 
                 let regex = regex::Regex::new(&reg).unwrap();
                 if regex.is_match(&err) {
                     Ok(())
                 } else {
-                    Err(InteropError::external_error(
-                        format!(
-                            "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
-                            regex.as_str(),
-                            err
-                        )
-                        .into(),
-                    ))
+                    Err(InteropError::string(format!(
+                        "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                        regex.as_str(),
+                        err
+                    )))
                 }
             },
         );
@@ -154,6 +146,19 @@ pub fn register_test_functions(world: &mut App) {
                     "Reason Provided: {}",
                     reason.unwrap_or_default()
                 )
+            },
+        )
+        .register(
+            "create_test_asset",
+            |s: FunctionCallContext, value: i32, name: String| {
+                let world = s.world()?;
+                let test_asset = TestAsset::new(value, name);
+                let handle = world.with_resource_mut(|mut assets: Mut<Assets<TestAsset>>| {
+                    assets.add(test_asset)
+                })?;
+                let allocator = world.allocator();
+                let mut allocator = allocator.write();
+                Ok(ReflectReference::new_allocated(handle, &mut allocator))
             },
         );
 }

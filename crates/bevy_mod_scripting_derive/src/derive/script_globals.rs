@@ -1,6 +1,6 @@
 use proc_macro2::Span;
 use quote::{format_ident, quote_spanned};
-use syn::{spanned::Spanned, ItemImpl};
+use syn::{ItemImpl, spanned::Spanned};
 
 use super::{impl_fn_to_global_registry_registration, is_public_impl};
 
@@ -25,7 +25,7 @@ pub fn script_globals(
     }
 
     let function_name = format_ident!("register_{}", args.name);
-    let bms_core_path = &args.bms_core_path;
+    let bms_bindings_path = &args.bms_bindings_path;
 
     let visibility = match is_public_impl(&impl_block) {
         true => quote_spanned! {impl_span=>
@@ -37,13 +37,16 @@ pub fn script_globals(
     };
 
     let out = quote_spanned! {impl_span=>
-        #visibility fn #function_name(world: &mut bevy::ecs::world::World) {
+        #visibility fn #function_name(world: &mut World) {
 
-            let registry = world.get_resource_or_init::<#bms_core_path::bindings::globals::AppScriptGlobalsRegistry>();
+            let registry = world.get_resource_or_init::<#bms_bindings_path::globals::AppScriptGlobalsRegistry>();
             let mut registry = registry.write();
 
-            registry
-                #(#function_registrations)*;
+            #(
+                if (registry #function_registrations).is_some() {
+                    warn!("conflicting global registration under name: {}. This might cause confusing problems, use `CoreScriptGlobalsPlugin.filter` to filter out uneeded duplicate types.", stringify!(#function_name))
+                }
+            )*;
         }
     };
 
@@ -54,7 +57,7 @@ struct Args {
     /// The name to use to suffix the generated function, i.e. `test_fn` will generate `register_test_fn
     pub name: syn::Ident,
     /// If set the path to override bms imports
-    pub bms_core_path: syn::Path,
+    pub bms_bindings_path: syn::Path,
 }
 
 impl syn::parse::Parse for Args {
@@ -64,9 +67,9 @@ impl syn::parse::Parse for Args {
             syn::punctuated::Punctuated::<syn::Meta, syn::Token![,]>::parse_terminated(input)?;
 
         let mut name = syn::Ident::new("functions", Span::call_site());
-        let mut bms_core_path =
+        let mut bms_bindings_path =
             syn::Path::from(syn::Ident::new("bevy_mod_scripting", Span::call_site()));
-        bms_core_path.segments.push(syn::PathSegment {
+        bms_bindings_path.segments.push(syn::PathSegment {
             ident: syn::Ident::new("core", Span::call_site()),
             arguments: syn::PathArguments::None,
         });
@@ -74,20 +77,18 @@ impl syn::parse::Parse for Args {
         for pair in pairs {
             match &pair {
                 syn::Meta::NameValue(name_value) => {
-                    if name_value.path.is_ident("bms_core_path") {
-                        if let syn::Expr::Lit(path) = &name_value.value {
-                            if let syn::Lit::Str(lit_str) = &path.lit {
-                                bms_core_path = syn::parse_str(&lit_str.value())?;
-                                continue;
-                            }
-                        }
-                    } else if name_value.path.is_ident("name") {
-                        if let syn::Expr::Lit(path) = &name_value.value {
-                            if let syn::Lit::Str(lit_str) = &path.lit {
-                                name = syn::parse_str(&lit_str.value())?;
-                                continue;
-                            }
-                        }
+                    if name_value.path.is_ident("bms_bindings_path")
+                        && let syn::Expr::Lit(path) = &name_value.value
+                        && let syn::Lit::Str(lit_str) = &path.lit
+                    {
+                        bms_bindings_path = syn::parse_str(&lit_str.value())?;
+                        continue;
+                    } else if name_value.path.is_ident("name")
+                        && let syn::Expr::Lit(path) = &name_value.value
+                        && let syn::Lit::Str(lit_str) = &path.lit
+                    {
+                        name = syn::parse_str(&lit_str.value())?;
+                        continue;
                     }
                 }
                 _ => {
@@ -104,7 +105,7 @@ impl syn::parse::Parse for Args {
         }
 
         Ok(Self {
-            bms_core_path,
+            bms_bindings_path,
             name,
         })
     }

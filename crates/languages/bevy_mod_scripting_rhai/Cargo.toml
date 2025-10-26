@@ -1,26 +1,34 @@
 [package]
 name = "bevy_mod_scripting_rhai"
-version = "0.13.0"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-edition = "2021"
-license = "MIT OR Apache-2.0"
 description = "Necessary functionality for Rhai support with bevy_mod_scripting"
-repository = "https://github.com/makspll/bevy_mod_scripting"
-homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "rhai"]
-categories = ["game-development"]
-readme = "readme.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
 
 [lib]
 name = "bevy_mod_scripting_rhai"
 path = "src/lib.rs"
 
 [dependencies]
-bevy = { workspace = true, default-features = false }
-rhai = { version = "1.21" }
-bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
-strum = { version = "0.26", features = ["derive"] }
-parking_lot = "0.12.1"
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+rhai = { workspace = true, features = ["std", "sync"] }
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
+strum = { workspace = true, features = ["derive"] }
+parking_lot = { workspace = true }
 
 [lints]
 workspace = true

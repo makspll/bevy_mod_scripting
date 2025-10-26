@@ -1,0 +1,70 @@
+[package]
+name = "bevy_gltf_bms_bindings"
+description = "Automatically generated bindings for bevy_gltf crate"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_gltf = { version = "0.16.1", features = [
+    "bevy_animation",
+], default-features = true }
+
+
+base64 = { version = "^0.22.0", features = [], default-features = true }
+
+bevy_animation = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_app = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_asset = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_color = { version = "^0.16.2", features = [], default-features = true }
+
+bevy_core_pipeline = { version = "^0.16.1", features = [
+], default-features = true }
+
+bevy_ecs = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_image = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_math = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_mesh = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_pbr = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_reflect = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_render = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_scene = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_tasks = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_transform = { version = "^0.16.1", features = [], default-features = true }
+
+bevy_utils = { version = "^0.16.1", features = [], default-features = true }
+
+fixedbitset = { version = "^0.5", features = [], default-features = true }
+
+itertools = { version = "^0.14", features = [], default-features = true }
+
+percent-encoding = { version = "^2.1", features = [], default-features = true }
+
+serde = { version = "^1.0", features = [], default-features = true }
+
+serde_json = { version = "^1.0.140", features = [], default-features = true }
+
+smallvec = { version = "^1.11", features = [], default-features = true }

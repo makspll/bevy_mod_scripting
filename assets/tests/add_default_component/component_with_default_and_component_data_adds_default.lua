@@ -6,4 +6,4 @@ local added = world.has_component(entity, _type)
 assert(added ~= nil, 'Component not added')
 
 local component = world.get_component(entity, _type)
-assert(component._1 == "Default", 'Component did not have default value, got: ' .. component._1)
+assert(component[1] == "Default", 'Component did not have default value, got: ' .. component[1])

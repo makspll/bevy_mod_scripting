@@ -3,11 +3,8 @@
 use std::path::PathBuf;
 
 use libtest_mimic::{Arguments, Failed, Trial};
-use script_integration_test_harness::{
-    execute_lua_integration_test, execute_rhai_integration_test,
-};
-
-use test_utils::{discover_all_tests, Test, TestKind};
+use script_integration_test_harness::{execute_integration_test, scenario::Scenario};
+use test_utils::{Test, discover_all_tests};
 
 trait TestExecutor {
     fn execute(self) -> Result<(), Failed>;
@@ -16,21 +13,29 @@ trait TestExecutor {
 
 impl TestExecutor for Test {
     fn execute(self) -> Result<(), Failed> {
-        println!("Running test: {:?}", self.path);
+        let script_asset_path = self.script_asset_path;
+        let scenario_path = self.scenario_path.ok_or_else(|| {
+            Failed::from("Test does not have a scenario.txt file near to use for test".to_string())
+        })?;
+        println!(
+            "Running test: {}, with scenario: {}",
+            script_asset_path.display(),
+            scenario_path.display()
+        );
 
-        match self.kind {
-            TestKind::Lua => execute_lua_integration_test(&self.path.to_string_lossy())?,
-            TestKind::Rhai => execute_rhai_integration_test(&self.path.to_string_lossy())?,
-        }
+        let scenario = Scenario::from_scenario_file(&script_asset_path, &scenario_path)
+            .map_err(|e| format!("{e:?}"))?; // print whole error from anyhow including source and backtrace
 
-        Ok(())
+        // do this in a separate thread to isolate the thread locals
+
+        Ok(execute_integration_test(scenario)?)
     }
 
     fn name(&self) -> String {
         format!(
             "script_test - {} - {}",
             self.kind,
-            self.path
+            self.script_asset_path
                 .to_string_lossy()
                 .split(&format!("tests{}data", std::path::MAIN_SEPARATOR))
                 .last()
@@ -43,10 +48,11 @@ impl TestExecutor for Test {
 // or filter using the prefix "lua test -"
 fn main() {
     // Parse command line arguments
-    let args = Arguments::from_args();
+    let mut args = Arguments::from_args();
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    args.test_threads = Some(1); // force single-threaded to avoid issues with thread-local storage
 
-    let tests = discover_all_tests(manifest_dir, |p| p.path.starts_with("tests"))
+    let tests = discover_all_tests(manifest_dir, |p| p.script_asset_path.starts_with("tests"))
         .into_iter()
         .map(|t| Trial::test(t.name(), move || t.execute()))
         .collect::<Vec<_>>();

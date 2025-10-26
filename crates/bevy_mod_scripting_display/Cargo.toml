@@ -1,0 +1,22 @@
+[package]
+name = "bevy_mod_scripting_display"
+description = "Traits focused on printing types with type information contained in the bevy type registry"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+bevy_reflect = { workspace = true }
+bevy_asset = { workspace = true }
+bevy_ecs = { workspace = true, features = ["bevy_reflect"] }
+bevy_platform = { workspace = true }
+parking_lot = { workspace = true }
+
+[lints]
+workspace = true

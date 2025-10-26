@@ -1,0 +1,27 @@
+// #main_script dynamic_on_test.lua
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin miliseconds_budget=999999
+SetupHandler OnTest=null, Update=null
+SetupHandler OnTestPostUpdate=null, PostUpdate=null
+SetupHandler Last=null, OnTestLast=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptLoaded name="@this_script"
+SpawnEntityWithScript name="test_entity", script="@this_script"
+RunUpdateOnce
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script", expect_string_value="on test: I am dynamically registered from a normal callback!"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="on test last: I am dynamically registered from another dynamic callback!"
+
+// reload, deleting old callbacks, expect stored callbacks to still work
+ReloadScriptFrom script="@this_script", path="empty.lua"
+RunUpdateOnce 
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script", expect_string_value="on test: I am dynamically registered from a normal callback!"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="on test last: I am dynamically registered from another dynamic callback!"
+

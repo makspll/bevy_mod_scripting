@@ -1,21 +1,20 @@
 [package]
 name = "ladfile"
-version = "0.5.0"
-edition = "2021"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-license = "MIT OR Apache-2.0"
+version = "0.6.0"
 description = "Language Agnostic Declaration (LAD) file format for the bevy_mod_scripting crate"
-repository = "https://github.com/makspll/bevy_mod_scripting"
-homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "format", "json"]
-categories = ["game-development", "parser-implementations"]
-include = ["readme.md", "/src", "/test_assets"]
 readme = "readme.md"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-indexmap = { version = "2.7", features = ["serde"] }
+serde = { workspace = true, features = ["derive", "std"] }
+serde_json = { workspace = true, features = ["std"] }
+indexmap = { workspace = true, features = ["serde"] }
 
 
 [features]

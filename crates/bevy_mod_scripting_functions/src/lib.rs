@@ -1,9 +1,10 @@
 #![allow(missing_docs)]
 
-use bevy::prelude::*;
-pub mod bevy_bindings;
 pub mod core;
 pub use core::*;
+
+use bevy_app::{App, Plugin};
+use bevy_ecs::hierarchy::{ChildOf, Children};
 
 /// A plugin that registers the core scripting functions.
 #[derive(Default)]
@@ -15,7 +16,8 @@ impl Plugin for ScriptFunctionsPlugin {
         register_core_functions(app);
 
         // TODO: if bevy ever does this itself we should remove this
-        app.world_mut().register_component::<Parent>();
-        app.world_mut().register_component::<Children>();
+        let world_mut = app.world_mut();
+        world_mut.register_component::<ChildOf>();
+        world_mut.register_component::<Children>();
     }
 }
