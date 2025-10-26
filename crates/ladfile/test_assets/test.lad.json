@@ -3,7 +3,7 @@
   "globals": {
     "my_static_instance": {
       "type_kind": {
-        "val": "ladfile_builder::test::StructType<usize>"
+        "val": "ladfile_builder::test::GenericStructType<usize>"
       },
       "is_static": true
     },
@@ -37,10 +37,31 @@
     }
   },
   "types": {
-    "ladfile_builder::test::StructType<usize>": {
-      "identifier": "StructType",
+    "ladfile_builder::test::PlainStructType": {
+      "identifier": "PlainStructType",
       "crate": "ladfile_builder",
-      "path": "ladfile_builder::test::StructType<usize>",
+      "path": "ladfile_builder::test::PlainStructType",
+      "documentation": " I am a simple plain struct type",
+      "associated_functions": [
+        "ladfile_builder::test::PlainStructType::plain_struct_function"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "PlainStructType",
+        "fields": [
+          {
+            "name": "int_field",
+            "type": "usize"
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000
+    },
+    "ladfile_builder::test::GenericStructType<usize>": {
+      "identifier": "GenericStructType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::GenericStructType<usize>",
       "generics": [
         {
           "type_id": "usize",
@@ -49,11 +70,11 @@
       ],
       "documentation": " I am a struct",
       "associated_functions": [
-        "ladfile_builder::test::StructType<usize>::hello_world"
+        "ladfile_builder::test::GenericStructType<usize>::hello_world"
       ],
       "layout": {
         "kind": "Struct",
-        "name": "StructType",
+        "name": "GenericStructType",
         "fields": [
           {
             "name": "field",
@@ -154,8 +175,8 @@
         }
       }
     },
-    "ladfile_builder::test::StructType<usize>::hello_world": {
-      "namespace": "ladfile_builder::test::StructType<usize>",
+    "ladfile_builder::test::GenericStructType<usize>::hello_world": {
+      "namespace": "ladfile_builder::test::GenericStructType<usize>",
       "identifier": "hello_world",
       "arguments": [
         {
@@ -197,6 +218,27 @@
         },
         "documentation": "I am some docs for the return type, I provide a name for the return value too",
         "name": "return"
+      }
+    },
+    "ladfile_builder::test::PlainStructType::plain_struct_function": {
+      "namespace": "ladfile_builder::test::PlainStructType",
+      "identifier": "plain_struct_function",
+      "arguments": [
+        {
+          "kind": {
+            "ref": "ladfile_builder::test::PlainStructType"
+          }
+        },
+        {
+          "kind": {
+            "primitive": "usize"
+          }
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "unknown": "ladfile_builder::test::PlainStructType"
+        }
       }
     }
   },

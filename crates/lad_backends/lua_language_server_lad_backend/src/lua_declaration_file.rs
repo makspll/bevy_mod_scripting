@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use std::collections::HashMap;
 
 /// Basic primitive types supported by Lua Language Server annotations.
@@ -72,6 +72,7 @@ pub enum LuaPrimitiveType {
 /// ---@type "left" | "right"          -- Literal types
 /// ```
 #[derive(Debug, Clone, Serialize)]
+#[serde(tag = "kind", content = "value")]
 pub enum LuaType {
     Primitive(LuaPrimitiveType), // "number", "string", "boolean", etc.
     Alias(String),
@@ -83,13 +84,19 @@ pub enum LuaType {
         value: Box<LuaType>,
     },
     TableLiteral(HashMap<String, LuaType>),
-    Function(FunctionSignature),
+    Function(FunctionSignatureShort),
     Generic {
         name: String,
         parent: Option<Box<LuaType>>,
     },
     Literal(String), // for literal types, e.g., '"left"'
     Any,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FunctionSignatureShort {
+    pub parameters: Vec<(String, LuaType)>,
+    pub return_type: Box<LuaType>,
 }
 
 // Function-related definitions
@@ -128,6 +135,7 @@ pub struct FunctionParam {
 /// ```
 #[derive(Debug, Clone, Serialize)]
 pub struct FunctionSignature {
+    pub name: String,
     pub params: Vec<FunctionParam>,
     pub returns: Vec<LuaType>,
     pub async_fn: bool,

@@ -1064,14 +1064,26 @@ mod test {
 
         #[derive(Reflect)]
         /// I am a struct
-        struct StructType<T> {
+        struct GenericStructType<T> {
             /// hello from field
             field: usize,
             /// hello from field 2
             field2: T,
         }
 
-        impl TypedThrough for StructType<usize> {
+        impl TypedThrough for GenericStructType<usize> {
+            fn through_type_info() -> ThroughTypeInfo {
+                ThroughTypeInfo::TypeInfo(Self::type_info())
+            }
+        }
+
+        #[derive(Reflect)]
+        /// I am a simple plain struct type
+        struct PlainStructType {
+            int_field: usize,
+        }
+
+        impl TypedThrough for PlainStructType {
             fn through_type_info() -> ThroughTypeInfo {
                 ThroughTypeInfo::TypeInfo(Self::type_info())
             }
@@ -1104,20 +1116,31 @@ mod test {
             TupleStruct(usize, #[doc = "asd"] String),
         }
 
-        type_registry.register::<StructType<usize>>();
+        type_registry.register::<GenericStructType<usize>>();
         type_registry.register::<UnitType>();
         type_registry.register::<TupleStructType>();
         type_registry.register::<EnumType>();
+        type_registry.register::<PlainStructType>();
+
+        let plain_struct_function =
+            |_: Ref<PlainStructType>, _: usize| PlainStructType { int_field: 2 };
+        let plain_struct_function_info = plain_struct_function.get_function_info(
+            "plain_struct_function".into(),
+            PlainStructType::into_namespace(),
+        );
 
         let function = |_: ReflectReference, _: usize| 2usize;
         let function_info = function
-            .get_function_info("hello_world".into(), StructType::<usize>::into_namespace())
+            .get_function_info(
+                "hello_world".into(),
+                GenericStructType::<usize>::into_namespace(),
+            )
             .with_docs("hello docs");
 
         let function_with_complex_args =
             |_: ReflectReference, _: (usize, String), _: Option<Vec<Ref<EnumType>>>| 2usize;
         let function_with_complex_args_info = function_with_complex_args
-            .get_function_info("hello_world".into(), StructType::<usize>::into_namespace())
+            .get_function_info("hello_world".into(), GenericStructType::<usize>::into_namespace())
             .with_arg_names(&["ref_", "tuple", "option_vec_ref_wrapper"])
             .with_docs(
                 "Arguments: ".to_owned()
@@ -1141,14 +1164,16 @@ mod test {
         let mut lad_file = LadFileBuilder::new(&type_registry)
             .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
             .set_sorted(true)
+            .add_function_info(&plain_struct_function_info)
             .add_function_info(&function_info)
             .add_function_info(&global_function_info)
             .add_function_info(&function_with_complex_args_info)
-            .add_type::<StructType<usize>>()
+            .add_type::<GenericStructType<usize>>()
             .add_type::<UnitType>()
             .add_type::<TupleStructType>()
+            .add_type::<PlainStructType>()
             .add_type_info(EnumType::type_info())
-            .add_instance::<Val<StructType<usize>>>("my_static_instance", true)
+            .add_instance::<Val<GenericStructType<usize>>>("my_static_instance", true)
             .add_instance::<Vec<Val<UnitType>>>("my_non_static_instance", false)
             .add_instance::<HashMap<String, Union<String, String>>>("map", false)
             .build();

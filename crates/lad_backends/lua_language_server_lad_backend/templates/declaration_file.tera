@@ -6,33 +6,40 @@
 {%- for class in module.classes -%}
 ---@class {{ class.name }}
 {# newline #}
-{{- self::multiline_description(description=class.documentation) -}}
-
-{%- for field in class.fields -%}
-{{- class_field(field=field) -}}
+{{- self::multiline_description(description=class.documentation) }}
+{% for field in class.fields -%}
+{{- self::class_field(field=field) -}}
 {%- endfor -%}
-
 {%- for function in module.functions -%}
+{# newline #}
+{# newline #}
 {%- if function.async_fn -%}
 ---@async
+{# newline #}
 {%- endif -%}
 {%- if function.deprecated -%}
 ---@deprecated
+{# newline #}
 {%- endif -%}
 {%- if function.no_discard -%}
 ---@nodiscard
+{# newline #}
 {%- endif -%}
 {%- if function.package -%}
 ---@package
+{# newline #}
 {%- endif -%}
 {%- for generic in function.generics -%}
 ---@generic {{ generic.name }}
+{# newline #}
 {%- endfor -%}
 {%- for param in function.params -%}
-{{ function_param(param=param) }}
+{{ self::function_param(arg=param) }}
 {%- endfor -%}
 {%- for return in function.returns -%}
----@return {{ return.ty }}
+---@return {{ self::lua_type(ty=return) }}
+local function {{ function.name }}() end
+{# newline #}
 {%- endfor -%}
 {%- endfor -%} {# functions #}
 {%- endfor -%} {# class #}
@@ -41,15 +48,65 @@
 {%- endfor -%} {# modules #}
 
 {%- macro class_field(field) -%}
----@field {{ field.scope }} {{ field.name }} {% if field.optional %}?{% endif %} {{ field.ty }}
+---@field {{ field.scope }} {{ field.name }} {% if field.optional %}?{% endif %} {{ self::lua_type(ty=field.ty) }}
 {# newline #}
-{{- multiline_description(description=field.description) -}}
+{{- self::multiline_description(description=field.description) -}}
 {%- endmacro class_field -%}
 
+{%- macro lua_type(ty) -%}
+    {%- if ty.kind == "Primitive" -%}
+        {{ ty.value }}
+    {%- elif ty.kind == "Alias" -%}
+        {{ ty.value }}
+    {%- elif ty.kind == "Literal" -%}
+        {{ ty.value }}
+    {%- elif ty.kind == "Any" -%}
+        any
+    {%- elif ty.kind == "Array" -%}
+        {{ self::lua_type(ty=ty.value) }}[]
+    {%- elif ty.kind == "Union" -%}
+        {%- for subtype in ty.value -%}
+            {{ self::lua_type(ty=subtype) }}
+            {%- if not loop.last %} | {% endif -%}
+        {%- endfor -%}
+    {%- elif ty.kind == "Tuple" -%}
+        [
+        {%- for subtype in ty.value -%}
+            {{ self::lua_type(ty=subtype) }}
+            {%- if not loop.last %}, {% endif -%}
+        {%- endfor -%}
+        ]
+    {%- elif ty.kind == "Dictionary" -%}
+        table<{{ self::lua_type(ty=ty.key) }}, {{ self::lua_type(ty=ty.value) }}>
+    {%- elif ty.kind == "TableLiteral" -%}
+        {
+        {%- for key in ty.value | keys -%}
+            {{ key }}: {{ self::lua_type(ty=ty.value[key]) }}
+            {%- if not loop.last %}, {% endif -%}
+        {%- endfor -%}
+        }
+    {%- elif ty.kind == "Function" -%}
+        fun(
+        {%- for param in ty.value.parameters -%}
+            {{ param[0] }}: {{ self::lua_type(ty=param[1]) }}
+            {%- if not loop.last %}, {% endif -%}
+        {%- endfor -%}
+        ): {{ self::lua_type(ty=ty.value.returns) }}
+    {%- elif ty.kind == "Generic" -%}
+        {%- if ty.value.parent is defined and ty.value.parent is not null -%}
+            {{ ty.value.name }}<{{ self::lua_type(ty=ty.value.parent) }}>
+        {%- else -%}
+            {{ ty.value.name }}
+        {%- endif -%}
+    {%- else -%}
+        ??? {# fallback #}
+    {%- endif -%}
+{%- endmacro lua_type -%}
+
 {%- macro function_param(arg) -%}
----@param {{ arg.name }} {{ arg.ty }} {% if arg.optional %}?{% endif %}
+---@param {{ arg.name }} {{ self::lua_type(ty=arg.ty) }} {% if arg.optional %}?{% endif %}
 {# newline #}
-{{- multiline_description(description=arg.description) -}}
+{{- self::multiline_description(description=arg.description) -}}
 {%- endmacro function_param -%}
 
 {%- macro multiline_description(description) -%}

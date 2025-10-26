@@ -16,6 +16,7 @@ function on_script_loaded()
     info("Lua: Click on the screen to set cells alive after running the `gol start` command")
 
     local life_state = fetch_life_state()
+
     local cells = life_state.cells
 
     -- set some cells alive

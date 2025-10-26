@@ -18,7 +18,7 @@ clap = { version = "4", features = ["derive"] }
 anyhow = "1"
 tera = "1.20"
 strum = { version = "0.25", features = ["derive"] }
-ladfile = { path = "../../ladfile", version = "0.5.0" }
+ladfile = { path = "../../ladfile", version = "0.6.0" }
 env_logger = "0.11"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
