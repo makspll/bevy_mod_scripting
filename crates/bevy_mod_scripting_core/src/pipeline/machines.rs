@@ -135,6 +135,11 @@ pub trait TransitionListener<State>: 'static + Send + Sync {
 }
 
 impl<P: IntoScriptPluginParams> ActiveMachines<P> {
+    /// Returns the currently processing machine
+    pub fn current_machine(&self) -> Option<&ScriptMachine<P>> {
+        self.machines.front()
+    }
+
     /// Adds a listener to the back of the listener list for the state
     pub fn push_listener<S: 'static>(&mut self, listener: impl TransitionListener<S> + 'static) {
         let erased = listener.erased::<P>();
@@ -229,10 +234,9 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
         match &mut self.internal_state {
             MachineExecutionState::Initialized(machine_state) => {
                 debug!(
-                    "State '{}' entered. For script: {}, {:?}",
+                    "State '{}' entered. For script: {}",
                     machine_state.state_name(),
                     self.context.attachment,
-                    self.context.attachment.script(),
                 );
 
                 if let Some(listeners) = listeners.get(&machine_state.as_ref().type_id()) {

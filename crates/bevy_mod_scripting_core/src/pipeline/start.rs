@@ -1,5 +1,6 @@
 use super::*;
 use bevy_asset::AssetEvent;
+use bevy_log::{debug, trace};
 
 /// A handle to a script asset which can only be made from a strong handle
 #[derive(Clone, Debug)]
@@ -83,6 +84,7 @@ pub fn filter_script_attachments<P: IntoScriptPluginParams>(
     mut filtered: EventWriter<ForPlugin<ScriptAttachedEvent, P>>,
 ) {
     let mut batch = events.get_loaded().map(|(mut a, b)| {
+        trace!("dispatching script attachment event for: {a:?}");
         *a.0.script_mut() = b.0;
         ForPlugin::new(a)
     });
@@ -106,6 +108,7 @@ pub fn filter_script_detachments<P: IntoScriptPluginParams>(
         .map(ForPlugin::new);
 
     if let Some(next) = batch.next() {
+        trace!("dispatching script dettachments for plugin");
         filtered.write_batch(std::iter::once(next).chain(batch));
     }
 }
@@ -120,6 +123,7 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
     let contexts = contexts.read();
     events.read().for_each(|wrapper| {
         let attachment_event = wrapper.event();
+        debug!("received attachment event: {attachment_event:?}");
         let id = attachment_event.0.script();
         let mut context = Context {
             attachment: attachment_event.0.clone(),

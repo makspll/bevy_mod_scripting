@@ -11,8 +11,10 @@ use bevy_ecs::{
     system::{Command, Local, Res, ResMut, SystemParam},
     world::World,
 };
+use bevy_log::debug;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::WorldGuard;
+use bevy_mod_scripting_display::DisplayProxy;
 use bevy_platform::collections::HashSet;
 use parking_lot::Mutex;
 use smallvec::SmallVec;
@@ -22,7 +24,7 @@ use crate::{
     context::ScriptingLoader,
     error::ScriptError,
     event::{
-        ForPlugin, ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptDetachedEvent,
+        ForPlugin, Recipients, ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptDetachedEvent,
         ScriptErrorEvent,
     },
     pipeline::hooks::{
@@ -175,7 +177,7 @@ impl<T: GetScriptHandle + Event + Clone> LoadedWithHandles<'_, '_, T> {
         self.loading.retain(|e| {
             let handle = e.get_script_handle();
             match self.asset_server.get_load_state(&handle) {
-                Some(LoadState::Loaded) => {
+                Some(LoadState::Loaded) | None => { // none in case this is added in memory and not through asset server
                     let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
                     if let Some(strong) = strong {
                         self.loaded_with_handles.push_front((e.clone(), strong));
@@ -183,7 +185,14 @@ impl<T: GetScriptHandle + Event + Clone> LoadedWithHandles<'_, '_, T> {
                     false
                 }
                 Some(LoadState::Loading) => true,
-                _ => false,
+                state => {
+
+                    debug!(
+                        "discarding script lifecycle triggers with handle: {} due to asset load state: {state:?}",
+                        handle.display()
+                    );
+                    false
+                }
             }
         });
 
@@ -342,6 +351,55 @@ impl PipelineRun for App {
             }
             self.update();
         }
+    }
+}
+
+#[derive(SystemParam)]
+/// System parameter composing resources related to script loading, exposing utility methods for checking on your script pipeline status
+pub struct ScriptPipelineState<'w, P: IntoScriptPluginParams> {
+    contexts: Res<'w, ScriptContext<P>>,
+    machines: Res<'w, ActiveMachines<P>>,
+}
+
+impl<'w, P: IntoScriptPluginParams> ScriptPipelineState<'w, P> {
+    /// Returns the handle to the currently processing script, if the handle came from an asset server and a path,
+    /// it can be used to display the currently loading script
+    pub fn currently_loading_script(&self) -> Option<Handle<ScriptAsset>> {
+        self.machines
+            .current_machine()
+            .map(|machine| machine.context.attachment.script())
+    }
+
+    /// Returns the number of scripts currently being processed,
+    /// this includes loads, reloads and removals, when this is zero, no processing is happening at the moment
+    pub fn num_processing_scripts(&self) -> usize {
+        self.machines.active_machines()
+    }
+
+    /// returns true if the current processing batch is completed,
+    /// a batch is completed when the last active processing machine is finished.
+    /// If new machines are added during the processing of a batch, that batch is "extended".
+    pub fn processing_batch_completed(&self) -> bool {
+        self.num_processing_scripts() == 0
+    }
+
+    /// Returns the number of scripts currently existing in contexts.
+    /// This corresponds to [`Recipients::AllScripts`], i.e. it counts 'residents' within contexts as a script
+    pub fn num_loaded_scripts(&self) -> usize {
+        Recipients::AllScripts
+            .get_recipients(self.contexts.clone())
+            .len()
+    }
+
+    /// returns a number between 0 and 100.0 to represent the current script pipeline progress,
+    /// 0 representing no progress made, and 100 all processing completed, together with the numbers used for the fraction loaded and total.
+    pub fn progress(&self) -> (f32, usize, usize) {
+        let fraction = self.num_loaded_scripts();
+        let total = self.num_processing_scripts() + fraction;
+        if total == 0 {
+            return (0.0, 0, 0);
+        }
+        ((fraction as f32 / total as f32) * 100.0, fraction, total)
     }
 }
 

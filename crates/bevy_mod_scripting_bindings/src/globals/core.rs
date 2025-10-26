@@ -7,7 +7,7 @@ use ::{
     bevy_reflect::TypeRegistration,
 };
 use bevy_app::App;
-use bevy_log::warn;
+use bevy_log::{warn, warn_once};
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_derive::script_globals;
 use bevy_platform::collections::HashMap;
@@ -155,7 +155,7 @@ impl CoreGlobals {
                 .insert(type_path.to_owned(), registration)
                 .is_some()
             {
-                warn!(
+                warn_once!(
                     "duplicate entry inside `types` global for type: {}. {MSG_DUPLICATE_GLOBAL}",
                     type_path
                 )
