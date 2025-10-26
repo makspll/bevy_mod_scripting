@@ -12,6 +12,7 @@
 - [Callbacks](./Summary/callbacks.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
+    - [Luau-lsp integration](./Examples/luau-lsp.md)
 
 # Script Pipeline
 
