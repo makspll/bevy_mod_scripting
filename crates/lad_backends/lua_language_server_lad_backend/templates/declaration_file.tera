@@ -10,6 +10,8 @@
 {% for field in class.fields -%}
 {{- self::class_field(field=field) -}}
 {%- endfor -%}
+{{ class.name }} = {}
+{# newline #}
 {%- for function in module.functions -%}
 {# newline #}
 {# newline #}
@@ -38,7 +40,11 @@
 {%- endfor -%}
 {%- for return in function.returns -%}
 ---@return {{ self::lua_type(ty=return) }}
-local function {{ function.name }}() end
+function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%- endif -%} {{ function.name }}(
+    {%- for param in function.params -%}
+        {{ param.name }} {%- if not loop.last -%},{%- endif -%}
+    {%- endfor -%}
+) end
 {# newline #}
 {%- endfor -%}
 {%- endfor -%} {# functions #}
@@ -51,6 +57,7 @@ local function {{ function.name }}() end
 ---@field {{ field.scope }} {{ field.name }} {% if field.optional %}?{% endif %} {{ self::lua_type(ty=field.ty) }}
 {# newline #}
 {{- self::multiline_description(description=field.description) -}}
+{# newline #}
 {%- endmacro class_field -%}
 
 {%- macro lua_type(ty) -%}
@@ -107,6 +114,8 @@ local function {{ function.name }}() end
 ---@param {{ arg.name }} {{ self::lua_type(ty=arg.ty) }} {% if arg.optional %}?{% endif %}
 {# newline #}
 {{- self::multiline_description(description=arg.description) -}}
+{# newline #}
+{# newline #}
 {%- endmacro function_param -%}
 
 {%- macro multiline_description(description) -%}

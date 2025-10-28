@@ -3,9 +3,12 @@ use std::ops::Index;
 use indexmap::IndexMap;
 use ladfile::{LadFile, LadFunction, LadTypeId, LadTypeKind};
 
-use crate::lua_declaration_file::{
-    ClassField, FunctionParam, FunctionSignature, LuaClass, LuaDefinitionFile, LuaModule,
-    LuaPrimitiveType, LuaType,
+use crate::{
+    keywords::ForbiddenKeywords,
+    lua_declaration_file::{
+        ClassField, FunctionParam, FunctionSignature, LuaClass, LuaDefinitionFile, LuaModule,
+        LuaPrimitiveType, LuaType,
+    },
 };
 
 pub fn convert_ladfile_to_lua_declaration_file(
@@ -152,23 +155,53 @@ pub fn lad_function_to_lua_function(
     ladfile: &LadFile,
     function: &LadFunction,
 ) -> Result<FunctionSignature, anyhow::Error> {
-    let params = function
+    if let Some((name, idx)) = function.as_overload() {
+        return Err(anyhow::anyhow!(
+            "overloads are not yet supported: {name}-{idx}",
+        ));
+    }
+
+    ForbiddenKeywords::is_forbidden_err(&function.identifier)?;
+
+    let mut params = function
         .arguments
         .iter()
+        .filter(|a| {
+            !matches!(
+                a.kind,
+                LadTypeKind::Primitive(ladfile::LadBMSPrimitiveKind::FunctionCallContext)
+            )
+        })
         .enumerate()
         .map(|(idx, a)| {
+            let ident = a
+                .name
+                .as_ref()
+                .map(|v| v.to_string())
+                .unwrap_or(format!("p{}", idx + 1));
             Ok(FunctionParam {
-                name: a
-                    .name
-                    .as_ref()
-                    .map(|v| v.to_string())
-                    .unwrap_or(format!("p{}", idx + 1)),
+                name: match ForbiddenKeywords::is_forbidden_err(&ident) {
+                    Ok(_) => ident,
+                    Err(_) => format!("_{ident}"),
+                },
                 ty: lad_instance_to_lua_type(ladfile, &a.kind)?,
                 optional: matches!(a.kind, LadTypeKind::Option(..)),
                 description: a.documentation.as_ref().map(|d| d.to_string()),
             })
         })
         .collect::<Result<Vec<_>, anyhow::Error>>()?;
+
+    let self_type = match &function.namespace {
+        ladfile::LadFunctionNamespace::Type(lad_type_id) => function
+            .arguments
+            .first()
+            .is_some_and(|a| match &a.kind {
+                LadTypeKind::Ref(i) | LadTypeKind::Mut(i) | LadTypeKind::Val(i) => lad_type_id == i,
+                _ => false,
+            })
+            .then_some(lad_type_id),
+        ladfile::LadFunctionNamespace::Global => None,
+    };
 
     let returns = lad_instance_to_lua_type(ladfile, &function.return_type.kind)?;
 
@@ -183,6 +216,7 @@ pub fn lad_function_to_lua_function(
         overloads: vec![],
         generics: vec![],
         documentation: function.documentation.as_ref().map(|d| d.to_string()),
+        has_self: self_type.is_some(),
     })
 }
 
@@ -192,7 +226,7 @@ pub fn to_lua_many(
 ) -> Result<Vec<LuaType>, anyhow::Error> {
     let lua_types = lad_types
         .iter()
-        .map(|lad_type| lad_instance_to_lua_type(ladfile, &lad_type))
+        .map(|lad_type| lad_instance_to_lua_type(ladfile, lad_type))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(lua_types)
 }

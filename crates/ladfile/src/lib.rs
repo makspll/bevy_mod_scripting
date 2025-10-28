@@ -204,6 +204,17 @@ pub struct LadFunction {
     pub documentation: Option<Cow<'static, str>>,
 }
 
+impl LadFunction {
+    /// Checks if the function is an overload, and if so parses the overload number and the true name.
+    pub fn as_overload(&self) -> Option<(String, usize)> {
+        let split = self.identifier.split('-').collect::<Vec<_>>();
+        if split.len() == 2 {
+            return Some((split[0].to_string(), split[1].parse().ok()?));
+        }
+        None
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 /// A function namespace used in a LAD file.

@@ -145,6 +145,7 @@ pub struct FunctionSignature {
     pub overloads: Vec<FunctionSignature>,
     pub generics: Vec<String>,
     pub documentation: Option<String>,
+    pub has_self: bool,
 }
 
 // Class-related definitions

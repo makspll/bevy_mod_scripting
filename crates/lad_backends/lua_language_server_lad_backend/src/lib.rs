@@ -7,6 +7,7 @@ use anyhow::Context;
 use crate::{convert::convert_ladfile_to_lua_declaration_file, templating::render_template};
 
 mod convert;
+mod keywords;
 mod lua_declaration_file;
 mod templating;
 

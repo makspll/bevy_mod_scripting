@@ -4,25 +4,29 @@
 ---@class PlainStructType
 ---  I am a simple plain struct type
 ---@field  int_field ? integer
+PlainStructType = {}
 
 ---@package
 ---@param p1 PlainStructType 
 ---@param p2 integer 
 ---@return any
-local function plain_struct_function() end
+local function plain_struct_function(p1,p2) end
 
 
 ---@class EnumType
 
+EnumType = {}
 
 
 ---@class TupleStructType
 ---  I am a tuple test type
 ---@field  [1] ? integer
 ---@field  [2] ? string
+TupleStructType = {}
 
 
 ---@class UnitType
 ---  I am a unit test type
+UnitType = {}
 
 
