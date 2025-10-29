@@ -121,7 +121,6 @@ function World.despawn_descendants(entity) end
 ---@return ReflectReference | nil
 function World.get_asset(handle_reference,registration) end
 
----@package
 ---@param registration ScriptResourceRegistration 
 --- The registration of the resource to retrieve.
 ---@return ReflectReference | nil
@@ -28879,4 +28878,1642 @@ Range = {}
 
 RangeInclusive = {}
 
+
+
+
+---@type Annulus
+--- A static class allowing calls through the "." operator only. 
+Annulus = {}
+
+---@type CompositeAlphaMode
+--- A static class allowing calls through the "." operator only. 
+CompositeAlphaMode = {}
+
+---@type FunctionInfo
+--- A static class allowing calls through the "." operator only. 
+FunctionInfo = {}
+
+---@type GamepadSettings
+--- A static class allowing calls through the "." operator only. 
+GamepadSettings = {}
+
+---@type WindowBackendScaleFactorChanged
+--- A static class allowing calls through the "." operator only. 
+WindowBackendScaleFactorChanged = {}
+
+---@type Aabb2d
+--- A static class allowing calls through the "." operator only. 
+Aabb2d = {}
+
+---@type Camera3d
+--- A static class allowing calls through the "." operator only. 
+Camera3d = {}
+
+---@type Arc
+--- A static class allowing calls through the "." operator only. 
+Arc = {}
+
+---@type ClearColorConfig
+--- A static class allowing calls through the "." operator only. 
+ClearColorConfig = {}
+
+---@type DVec3
+--- A static class allowing calls through the "." operator only. 
+DVec3 = {}
+
+---@type GamepadRumbleRequest
+--- A static class allowing calls through the "." operator only. 
+GamepadRumbleRequest = {}
+
+---@type AtomicU16
+--- A static class allowing calls through the "." operator only. 
+AtomicU16 = {}
+
+---@type ConeMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+ConeMeshBuilder = {}
+
+---@type Segment2d
+--- A static class allowing calls through the "." operator only. 
+Segment2d = {}
+
+---@type KeyboardFocusLost
+--- A static class allowing calls through the "." operator only. 
+KeyboardFocusLost = {}
+
+---@type Hwba
+--- A static class allowing calls through the "." operator only. 
+Hwba = {}
+
+---@type DMat3
+--- A static class allowing calls through the "." operator only. 
+DMat3 = {}
+
+---@type Identifier
+--- A static class allowing calls through the "." operator only. 
+Identifier = {}
+
+---@type DynamicFunctionMut
+--- A static class allowing calls through the "." operator only. 
+DynamicScriptFunctionMut = {}
+
+---@type MotionVectorPrepass
+--- A static class allowing calls through the "." operator only. 
+MotionVectorPrepass = {}
+
+---@type RegularPolygonMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+RegularPolygonMeshBuilder = {}
+
+---@type SmolStr
+--- A static class allowing calls through the "." operator only. 
+SmolStr = {}
+
+---@type ButtonAxisSettings
+--- A static class allowing calls through the "." operator only. 
+ButtonAxisSettings = {}
+
+---@type ChromaticAberration
+--- A static class allowing calls through the "." operator only. 
+ChromaticAberration = {}
+
+---@type OnInsert
+--- A static class allowing calls through the "." operator only. 
+OnInsert = {}
+
+---@type U8Vec3
+--- A static class allowing calls through the "." operator only. 
+U8Vec3 = {}
+
+---@type DQuat
+--- A static class allowing calls through the "." operator only. 
+DQuat = {}
+
+---@type DynamicComponent
+--- A static class allowing calls through the "." operator only. 
+DynamicComponent = {}
+
+---@type OrthographicProjection
+--- A static class allowing calls through the "." operator only. 
+OrthographicProjection = {}
+
+---@type U16Vec4
+--- A static class allowing calls through the "." operator only. 
+U16Vec4 = {}
+
+---@type CursorLeft
+--- A static class allowing calls through the "." operator only. 
+CursorLeft = {}
+
+---@type Arc2d
+--- A static class allowing calls through the "." operator only. 
+Arc2d = {}
+
+---@type SystemCursorIcon
+--- A static class allowing calls through the "." operator only. 
+SystemCursorIcon = {}
+
+---@type CameraRenderGraph
+--- A static class allowing calls through the "." operator only. 
+CameraRenderGraph = {}
+
+---@type BloomCompositeMode
+--- A static class allowing calls through the "." operator only. 
+BloomCompositeMode = {}
+
+---@type FileDragAndDrop
+--- A static class allowing calls through the "." operator only. 
+FileDragAndDrop = {}
+
+---@type U64Vec3
+--- A static class allowing calls through the "." operator only. 
+U64Vec3 = {}
+
+---@type BVec4
+--- A static class allowing calls through the "." operator only. 
+BVec4 = {}
+
+---@type Mat3
+--- A static class allowing calls through the "." operator only. 
+Mat3 = {}
+
+---@type Uuid
+--- A static class allowing calls through the "." operator only. 
+Uuid = {}
+
+---@type Frustum
+--- A static class allowing calls through the "." operator only. 
+Frustum = {}
+
+---@type ColorGradingSection
+--- A static class allowing calls through the "." operator only. 
+ColorGradingSection = {}
+
+---@type bool
+--- A static class allowing calls through the "." operator only. 
+bool = {}
+
+---@type ShaderStorageBuffer
+--- A static class allowing calls through the "." operator only. 
+ShaderStorageBuffer = {}
+
+---@type Mesh2d
+--- A static class allowing calls through the "." operator only. 
+Mesh2d = {}
+
+---@type GamepadButtonStateChangedEvent
+--- A static class allowing calls through the "." operator only. 
+GamepadButtonStateChangedEvent = {}
+
+---@type AabbCast2d
+--- A static class allowing calls through the "." operator only. 
+AabbCast2d = {}
+
+---@type ReflectableScheduleLabel
+--- A static class allowing calls through the "." operator only. 
+ReflectableScheduleLabel = {}
+
+---@type AutoExposureCompensationCurve
+--- A static class allowing calls through the "." operator only. 
+AutoExposureCompensationCurve = {}
+
+---@type SystemIdMarker
+--- A static class allowing calls through the "." operator only. 
+SystemIdMarker = {}
+
+---@type WindowPosition
+--- A static class allowing calls through the "." operator only. 
+WindowPosition = {}
+
+---@type AccumulatedMouseMotion
+--- A static class allowing calls through the "." operator only. 
+AccumulatedMouseMotion = {}
+
+---@type ClearColor
+--- A static class allowing calls through the "." operator only. 
+ClearColor = {}
+
+---@type CircularSectorMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+CircularSectorMeshBuilder = {}
+
+---@type Plane3d
+--- A static class allowing calls through the "." operator only. 
+Plane3d = {}
+
+---@type WindowDestroyed
+--- A static class allowing calls through the "." operator only. 
+WindowDestroyed = {}
+
+---@type Capsule3d
+--- A static class allowing calls through the "." operator only. 
+Capsule3d = {}
+
+---@type WindowCreated
+--- A static class allowing calls through the "." operator only. 
+WindowCreated = {}
+
+---@type MouseWheel
+--- A static class allowing calls through the "." operator only. 
+MouseWheel = {}
+
+---@type BoundingSphereCast
+--- A static class allowing calls through the "." operator only. 
+BoundingSphereCast = {}
+
+---@type SmaaPreset
+--- A static class allowing calls through the "." operator only. 
+SmaaPreset = {}
+
+---@type NativeKeyCode
+--- A static class allowing calls through the "." operator only. 
+NativeKeyCode = {}
+
+---@type DMat2
+--- A static class allowing calls through the "." operator only. 
+DMat2 = {}
+
+---@type i16
+--- A static class allowing calls through the "." operator only. 
+i16 = {}
+
+---@type PathBuf
+--- A static class allowing calls through the "." operator only. 
+PathBuf = {}
+
+---@type IVec2
+--- A static class allowing calls through the "." operator only. 
+IVec2 = {}
+
+---@type WindowClosing
+--- A static class allowing calls through the "." operator only. 
+WindowClosing = {}
+
+---@type ReflectSchedule
+--- A static class allowing calls through the "." operator only. 
+ReflectSchedule = {}
+
+---@type Entity
+--- A static class allowing calls through the "." operator only. 
+Entity = {}
+
+---@type Namespace
+--- A static class allowing calls through the "." operator only. 
+Namespace = {}
+
+---@type DefaultQueryFilters
+--- A static class allowing calls through the "." operator only. 
+DefaultQueryFilters = {}
+
+---@type Isometry2d
+--- A static class allowing calls through the "." operator only. 
+Isometry2d = {}
+
+---@type f64
+--- A static class allowing calls through the "." operator only. 
+f64 = {}
+
+---@type Sensitivity
+--- A static class allowing calls through the "." operator only. 
+Sensitivity = {}
+
+---@type Capsule2d
+--- A static class allowing calls through the "." operator only. 
+Capsule2d = {}
+
+---@type RemovedComponentEntity
+--- A static class allowing calls through the "." operator only. 
+RemovedComponentEntity = {}
+
+---@type FloatOrd
+--- A static class allowing calls through the "." operator only. 
+FloatOrd = {}
+
+---@type Anchor
+--- A static class allowing calls through the "." operator only. 
+Anchor = {}
+
+---@type Hsla
+--- A static class allowing calls through the "." operator only. 
+Hsla = {}
+
+---@type AtomicU64
+--- A static class allowing calls through the "." operator only. 
+AtomicU64 = {}
+
+---@type NormalPrepass
+--- A static class allowing calls through the "." operator only. 
+NormalPrepass = {}
+
+---@type BloomPrefilter
+--- A static class allowing calls through the "." operator only. 
+BloomPrefilter = {}
+
+---@type Torus
+--- A static class allowing calls through the "." operator only. 
+Torus = {}
+
+---@type ScriptSystemBuilder
+--- A static class allowing calls through the "." operator only. 
+ScriptSystemBuilder = {}
+
+---@type ComponentTicks
+--- A static class allowing calls through the "." operator only. 
+ComponentTicks = {}
+
+---@type Interval
+--- A static class allowing calls through the "." operator only. 
+Interval = {}
+
+---@type AtomicU8
+--- A static class allowing calls through the "." operator only. 
+AtomicU8 = {}
+
+---@type TouchPhase
+--- A static class allowing calls through the "." operator only. 
+TouchPhase = {}
+
+---@type TorusMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+TorusMeshBuilder = {}
+
+---@type CompassQuadrant
+--- A static class allowing calls through the "." operator only. 
+CompassQuadrant = {}
+
+---@type EulerRot
+--- A static class allowing calls through the "." operator only. 
+EulerRot = {}
+
+---@type DepthPrepass
+--- A static class allowing calls through the "." operator only. 
+DepthPrepass = {}
+
+---@type AlphaMode2d
+--- A static class allowing calls through the "." operator only. 
+AlphaMode2d = {}
+
+---@type NativeKey
+--- A static class allowing calls through the "." operator only. 
+NativeKey = {}
+
+---@type SocketAddr
+--- A static class allowing calls through the "." operator only. 
+SocketAddr = {}
+
+---@type Camera3dDepthTextureUsage
+--- A static class allowing calls through the "." operator only. 
+Camera3dDepthTextureUsage = {}
+
+---@type U64Vec2
+--- A static class allowing calls through the "." operator only. 
+U64Vec2 = {}
+
+---@type IVec3
+--- A static class allowing calls through the "." operator only. 
+IVec3 = {}
+
+---@type I8Vec2
+--- A static class allowing calls through the "." operator only. 
+I8Vec2 = {}
+
+---@type DVec2
+--- A static class allowing calls through the "." operator only. 
+DVec2 = {}
+
+---@type Viewport
+--- A static class allowing calls through the "." operator only. 
+Viewport = {}
+
+---@type I64Vec3
+--- A static class allowing calls through the "." operator only. 
+I64Vec3 = {}
+
+---@type OrderIndependentTransparencySettings
+--- A static class allowing calls through the "." operator only. 
+OrderIndependentTransparencySettings = {}
+
+---@type WindowFocused
+--- A static class allowing calls through the "." operator only. 
+WindowFocused = {}
+
+---@type Oklaba
+--- A static class allowing calls through the "." operator only. 
+Oklaba = {}
+
+---@type MouseMotion
+--- A static class allowing calls through the "." operator only. 
+MouseMotion = {}
+
+---@type Cuboid
+--- A static class allowing calls through the "." operator only. 
+Cuboid = {}
+
+---@type Tetrahedron
+--- A static class allowing calls through the "." operator only. 
+Tetrahedron = {}
+
+---@type ScriptAttachment
+--- A static class allowing calls through the "." operator only. 
+ScriptAttachment = {}
+
+---@type BVec3
+--- A static class allowing calls through the "." operator only. 
+BVec3 = {}
+
+---@type WindowOccluded
+--- A static class allowing calls through the "." operator only. 
+WindowOccluded = {}
+
+---@type ScreenshotCaptured
+--- A static class allowing calls through the "." operator only. 
+ScreenshotCaptured = {}
+
+---@type Quat
+--- A static class allowing calls through the "." operator only. 
+Quat = {}
+
+---@type Plane2d
+--- A static class allowing calls through the "." operator only. 
+Plane2d = {}
+
+---@type I16Vec4
+--- A static class allowing calls through the "." operator only. 
+I16Vec4 = {}
+
+---@type ImageRenderTarget
+--- A static class allowing calls through the "." operator only. 
+ImageRenderTarget = {}
+
+---@type DenoiseCas
+--- A static class allowing calls through the "." operator only. 
+DenoiseCas = {}
+
+---@type GamepadButtonChangedEvent
+--- A static class allowing calls through the "." operator only. 
+GamepadButtonChangedEvent = {}
+
+---@type Key
+--- A static class allowing calls through the "." operator only. 
+Key = {}
+
+---@type PinchGesture
+--- A static class allowing calls through the "." operator only. 
+PinchGesture = {}
+
+---@type Monitor
+--- A static class allowing calls through the "." operator only. 
+Monitor = {}
+
+---@type Cone
+--- A static class allowing calls through the "." operator only. 
+Cone = {}
+
+---@type Ime
+--- A static class allowing calls through the "." operator only. 
+Ime = {}
+
+---@type OnRemove
+--- A static class allowing calls through the "." operator only. 
+OnRemove = {}
+
+---@type Line2d
+--- A static class allowing calls through the "." operator only. 
+Line2d = {}
+
+---@type AtomicI8
+--- A static class allowing calls through the "." operator only. 
+AtomicI8 = {}
+
+---@type DeferredPrepass
+--- A static class allowing calls through the "." operator only. 
+DeferredPrepass = {}
+
+---@type KeyCode
+--- A static class allowing calls through the "." operator only. 
+KeyCode = {}
+
+---@type TetrahedronMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+TetrahedronMeshBuilder = {}
+
+---@type WindowResized
+--- A static class allowing calls through the "." operator only. 
+WindowResized = {}
+
+---@type BVec2
+--- A static class allowing calls through the "." operator only. 
+BVec2 = {}
+
+---@type AspectRatio
+--- A static class allowing calls through the "." operator only. 
+AspectRatio = {}
+
+---@type TemporalJitter
+--- A static class allowing calls through the "." operator only. 
+TemporalJitter = {}
+
+---@type AtomicI32
+--- A static class allowing calls through the "." operator only. 
+AtomicI32 = {}
+
+---@type Color
+--- A static class allowing calls through the "." operator only. 
+Color = {}
+
+---@type WindowMode
+--- A static class allowing calls through the "." operator only. 
+WindowMode = {}
+
+---@type I64Vec4
+--- A static class allowing calls through the "." operator only. 
+I64Vec4 = {}
+
+---@type WindowRef
+--- A static class allowing calls through the "." operator only. 
+WindowRef = {}
+
+---@type ViewVisibility
+--- A static class allowing calls through the "." operator only. 
+ViewVisibility = {}
+
+---@type RawGamepadAxisChangedEvent
+--- A static class allowing calls through the "." operator only. 
+RawGamepadAxisChangedEvent = {}
+
+---@type GlobalTransform
+--- A static class allowing calls through the "." operator only. 
+GlobalTransform = {}
+
+---@type Rectangle
+--- A static class allowing calls through the "." operator only. 
+Rectangle = {}
+
+---@type Dir3
+--- A static class allowing calls through the "." operator only. 
+Dir3 = {}
+
+---@type Sprite
+--- A static class allowing calls through the "." operator only. 
+Sprite = {}
+
+---@type ButtonSettings
+--- A static class allowing calls through the "." operator only. 
+ButtonSettings = {}
+
+---@type IVec4
+--- A static class allowing calls through the "." operator only. 
+IVec4 = {}
+
+---@type PerspectiveProjection
+--- A static class allowing calls through the "." operator only. 
+PerspectiveProjection = {}
+
+---@type RequestRedraw
+--- A static class allowing calls through the "." operator only. 
+RequestRedraw = {}
+
+---@type WindowThemeChanged
+--- A static class allowing calls through the "." operator only. 
+WindowThemeChanged = {}
+
+---@type Line3d
+--- A static class allowing calls through the "." operator only. 
+Line3d = {}
+
+---@type Mat2
+--- A static class allowing calls through the "." operator only. 
+Mat2 = {}
+
+---@type IRect
+--- A static class allowing calls through the "." operator only. 
+IRect = {}
+
+---@type Mesh3d
+--- A static class allowing calls through the "." operator only. 
+Mesh3d = {}
+
+---@type TextureAtlas
+--- A static class allowing calls through the "." operator only. 
+TextureAtlas = {}
+
+---@type ContrastAdaptiveSharpening
+--- A static class allowing calls through the "." operator only. 
+ContrastAdaptiveSharpening = {}
+
+---@type Msaa
+--- A static class allowing calls through the "." operator only. 
+Msaa = {}
+
+---@type CubemapFrusta
+--- A static class allowing calls through the "." operator only. 
+CubemapFrusta = {}
+
+---@type PrimaryWindow
+--- A static class allowing calls through the "." operator only. 
+PrimaryWindow = {}
+
+---@type AlphaMode
+--- A static class allowing calls through the "." operator only. 
+AlphaMode = {}
+
+---@type U8Vec2
+--- A static class allowing calls through the "." operator only. 
+U8Vec2 = {}
+
+---@type ScalingMode
+--- A static class allowing calls through the "." operator only. 
+ScalingMode = {}
+
+---@type CameraMainTextureUsages
+--- A static class allowing calls through the "." operator only. 
+CameraMainTextureUsages = {}
+
+---@type U64Vec4
+--- A static class allowing calls through the "." operator only. 
+U64Vec4 = {}
+
+---@type Exposure
+--- A static class allowing calls through the "." operator only. 
+Exposure = {}
+
+---@type SphereKind
+--- A static class allowing calls through the "." operator only. 
+SphereKind = {}
+
+---@type SubCameraView
+--- A static class allowing calls through the "." operator only. 
+SubCameraView = {}
+
+---@type Triangle2dMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+Triangle2dMeshBuilder = {}
+
+---@type UVec3
+--- A static class allowing calls through the "." operator only. 
+UVec3 = {}
+
+---@type MotionBlur
+--- A static class allowing calls through the "." operator only. 
+MotionBlur = {}
+
+---@type GamepadButton
+--- A static class allowing calls through the "." operator only. 
+GamepadButton = {}
+
+---@type WindowLevel
+--- A static class allowing calls through the "." operator only. 
+WindowLevel = {}
+
+---@type TemporalAntiAliasing
+--- A static class allowing calls through the "." operator only. 
+TemporalAntiAliasing = {}
+
+---@type Screenshot
+--- A static class allowing calls through the "." operator only. 
+Screenshot = {}
+
+---@type i64
+--- A static class allowing calls through the "." operator only. 
+i64 = {}
+
+---@type UVec4
+--- A static class allowing calls through the "." operator only. 
+UVec4 = {}
+
+---@type ButtonState
+--- A static class allowing calls through the "." operator only. 
+ButtonState = {}
+
+---@type RegularPolygon
+--- A static class allowing calls through the "." operator only. 
+RegularPolygon = {}
+
+---@type Hsva
+--- A static class allowing calls through the "." operator only. 
+Hsva = {}
+
+---@type ScriptQueryBuilder
+--- A static class allowing calls through the "." operator only. 
+ScriptQueryBuilder = {}
+
+---@type I8Vec3
+--- A static class allowing calls through the "." operator only. 
+I8Vec3 = {}
+
+---@type Fixed
+--- A static class allowing calls through the "." operator only. 
+Fixed = {}
+
+---@type Duration
+--- A static class allowing calls through the "." operator only. 
+Duration = {}
+
+---@type CursorGrabMode
+--- A static class allowing calls through the "." operator only. 
+CursorGrabMode = {}
+
+---@type Lcha
+--- A static class allowing calls through the "." operator only. 
+Lcha = {}
+
+---@type WindowMoved
+--- A static class allowing calls through the "." operator only. 
+WindowMoved = {}
+
+---@type Vec2
+--- A static class allowing calls through the "." operator only. 
+Vec2 = {}
+
+---@type Triangle3d
+--- A static class allowing calls through the "." operator only. 
+Triangle3d = {}
+
+---@type Image
+--- A static class allowing calls through the "." operator only. 
+Image = {}
+
+---@type Laba
+--- A static class allowing calls through the "." operator only. 
+Laba = {}
+
+---@type AssetPath
+--- A static class allowing calls through the "." operator only. 
+AssetPath = {}
+
+---@type Capsule3dMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+Capsule3dMeshBuilder = {}
+
+---@type EllipseMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+EllipseMeshBuilder = {}
+
+---@type BoundingCircle
+--- A static class allowing calls through the "." operator only. 
+BoundingCircle = {}
+
+---@type ScriptValue
+--- A static class allowing calls through the "." operator only. 
+ScriptValue = {}
+
+---@type CircleMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+CircleMeshBuilder = {}
+
+---@type GamepadAxisChangedEvent
+--- A static class allowing calls through the "." operator only. 
+GamepadAxisChangedEvent = {}
+
+---@type VisibleEntities
+--- A static class allowing calls through the "." operator only. 
+VisibleEntities = {}
+
+---@type Camera
+--- A static class allowing calls through the "." operator only. 
+Camera = {}
+
+---@type BorderRect
+--- A static class allowing calls through the "." operator only. 
+BorderRect = {}
+
+---@type f32
+--- A static class allowing calls through the "." operator only. 
+f32 = {}
+
+---@type MipBias
+--- A static class allowing calls through the "." operator only. 
+MipBias = {}
+
+---@type DepthOfField
+--- A static class allowing calls through the "." operator only. 
+DepthOfField = {}
+
+---@type i8
+--- A static class allowing calls through the "." operator only. 
+i8 = {}
+
+---@type CascadesFrusta
+--- A static class allowing calls through the "." operator only. 
+CascadesFrusta = {}
+
+---@type DAffine3
+--- A static class allowing calls through the "." operator only. 
+DAffine3 = {}
+
+---@type RawGamepadButtonChangedEvent
+--- A static class allowing calls through the "." operator only. 
+RawGamepadButtonChangedEvent = {}
+
+---@type MorphWeights
+--- A static class allowing calls through the "." operator only. 
+MorphWeights = {}
+
+---@type Range
+--- A static class allowing calls through the "." operator only. 
+Range = {}
+
+---@type Rect
+--- A static class allowing calls through the "." operator only. 
+Rect = {}
+
+---@type NonZeroU32
+--- A static class allowing calls through the "." operator only. 
+NonZeroU32 = {}
+
+---@type BoundingCircleCast
+--- A static class allowing calls through the "." operator only. 
+BoundingCircleCast = {}
+
+---@type ScriptResourceRegistration
+--- A static class allowing calls through the "." operator only. 
+ScriptResourceRegistration = {}
+
+---@type Indices
+--- A static class allowing calls through the "." operator only. 
+Indices = {}
+
+---@type AxisSettings
+--- A static class allowing calls through the "." operator only. 
+AxisSettings = {}
+
+---@type SliceScaleMode
+--- A static class allowing calls through the "." operator only. 
+SliceScaleMode = {}
+
+---@type Vec3
+--- A static class allowing calls through the "." operator only. 
+Vec3 = {}
+
+---@type u64
+--- A static class allowing calls through the "." operator only. 
+u64 = {}
+
+---@type Transform
+--- A static class allowing calls through the "." operator only. 
+Transform = {}
+
+---@type Vec4
+--- A static class allowing calls through the "." operator only. 
+Vec4 = {}
+
+---@type Ellipse
+--- A static class allowing calls through the "." operator only. 
+Ellipse = {}
+
+---@type DebandDither
+--- A static class allowing calls through the "." operator only. 
+DebandDither = {}
+
+---@type Ray3d
+--- A static class allowing calls through the "." operator only. 
+Ray3d = {}
+
+---@type AssetIndex
+--- A static class allowing calls through the "." operator only. 
+AssetIndex = {}
+
+---@type CompassOctant
+--- A static class allowing calls through the "." operator only. 
+CompassOctant = {}
+
+---@type CircularSegmentMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+CircularSegmentMeshBuilder = {}
+
+---@type FunctionReturnInfo
+--- A static class allowing calls through the "." operator only. 
+FunctionReturnInfo = {}
+
+---@type VideoMode
+--- A static class allowing calls through the "." operator only. 
+VideoMode = {}
+
+---@type AtomicUsize
+--- A static class allowing calls through the "." operator only. 
+AtomicUsize = {}
+
+---@type BVec3A
+--- A static class allowing calls through the "." operator only. 
+BVec3A = {}
+
+---@type RenderAssetUsages
+--- A static class allowing calls through the "." operator only. 
+RenderAssetUsages = {}
+
+---@type Fxaa
+--- A static class allowing calls through the "." operator only. 
+Fxaa = {}
+
+---@type Vec3A
+--- A static class allowing calls through the "." operator only. 
+Vec3A = {}
+
+---@type Ray2d
+--- A static class allowing calls through the "." operator only. 
+Ray2d = {}
+
+---@type RotationGesture
+--- A static class allowing calls through the "." operator only. 
+RotationGesture = {}
+
+---@type AtomicIsize
+--- A static class allowing calls through the "." operator only. 
+AtomicIsize = {}
+
+---@type TransformTreeChanged
+--- A static class allowing calls through the "." operator only. 
+TransformTreeChanged = {}
+
+---@type ScriptComponentRegistration
+--- A static class allowing calls through the "." operator only. 
+ScriptComponentRegistration = {}
+
+---@type AtomicI64
+--- A static class allowing calls through the "." operator only. 
+AtomicI64 = {}
+
+---@type MouseButton
+--- A static class allowing calls through the "." operator only. 
+MouseButton = {}
+
+---@type CircularSector
+--- A static class allowing calls through the "." operator only. 
+CircularSector = {}
+
+---@type VisibilityClass
+--- A static class allowing calls through the "." operator only. 
+VisibilityClass = {}
+
+---@type Rot2
+--- A static class allowing calls through the "." operator only. 
+Rot2 = {}
+
+---@type RayCast2d
+--- A static class allowing calls through the "." operator only. 
+RayCast2d = {}
+
+---@type TextureSlicer
+--- A static class allowing calls through the "." operator only. 
+TextureSlicer = {}
+
+---@type GamepadConnection
+--- A static class allowing calls through the "." operator only. 
+GamepadConnection = {}
+
+---@type AutoExposure
+--- A static class allowing calls through the "." operator only. 
+AutoExposure = {}
+
+---@type DVec4
+--- A static class allowing calls through the "." operator only. 
+DVec4 = {}
+
+---@type Srgba
+--- A static class allowing calls through the "." operator only. 
+Srgba = {}
+
+---@type Camera2d
+--- A static class allowing calls through the "." operator only. 
+Camera2d = {}
+
+---@type Visibility
+--- A static class allowing calls through the "." operator only. 
+Visibility = {}
+
+---@type Instant
+--- A static class allowing calls through the "." operator only. 
+Instant = {}
+
+---@type Xyza
+--- A static class allowing calls through the "." operator only. 
+Xyza = {}
+
+---@type CuboidMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+CuboidMeshBuilder = {}
+
+---@type ScriptAsset
+--- A static class allowing calls through the "." operator only. 
+ScriptAsset = {}
+
+---@type EntityHashSet
+--- A static class allowing calls through the "." operator only. 
+EntityHashSet = {}
+
+---@type DynamicFunction
+--- A static class allowing calls through the "." operator only. 
+DynamicScriptFunction = {}
+
+---@type CircularMeshUvMode
+--- A static class allowing calls through the "." operator only. 
+CircularMeshUvMode = {}
+
+---@type BoundingSphere
+--- A static class allowing calls through the "." operator only. 
+BoundingSphere = {}
+
+---@type OnAdd
+--- A static class allowing calls through the "." operator only. 
+OnAdd = {}
+
+---@type u8
+--- A static class allowing calls through the "." operator only. 
+u8 = {}
+
+---@type CapsuleUvProfile
+--- A static class allowing calls through the "." operator only. 
+CapsuleUvProfile = {}
+
+---@type ReflectReference
+--- A static class allowing calls through the "." operator only. 
+ReflectReference = {}
+
+---@type CustomProjection
+--- A static class allowing calls through the "." operator only. 
+CustomProjection = {}
+
+---@type Mesh
+--- A static class allowing calls through the "." operator only. 
+Mesh = {}
+
+---@type ReflectSystem
+--- A static class allowing calls through the "." operator only. 
+ReflectSystem = {}
+
+---@type GamepadAxis
+--- A static class allowing calls through the "." operator only. 
+GamepadAxis = {}
+
+---@type Mat4
+--- A static class allowing calls through the "." operator only. 
+Mat4 = {}
+
+---@type OnDespawn
+--- A static class allowing calls through the "." operator only. 
+OnDespawn = {}
+
+---@type RawGamepadEvent
+--- A static class allowing calls through the "." operator only. 
+RawGamepadEvent = {}
+
+---@type Virtual
+--- A static class allowing calls through the "." operator only. 
+Virtual = {}
+
+---@type ColorGradingGlobal
+--- A static class allowing calls through the "." operator only. 
+ColorGradingGlobal = {}
+
+---@type CursorIcon
+--- A static class allowing calls through the "." operator only. 
+CursorIcon = {}
+
+---@type Affine2
+--- A static class allowing calls through the "." operator only. 
+Affine2 = {}
+
+---@type isize
+--- A static class allowing calls through the "." operator only. 
+isize = {}
+
+---@type AtomicU32
+--- A static class allowing calls through the "." operator only. 
+AtomicU32 = {}
+
+---@type FunctionCallContext
+--- A static class allowing calls through the "." operator only. 
+FunctionCallContext = {}
+
+---@type i128
+--- A static class allowing calls through the "." operator only. 
+i128 = {}
+
+---@type Circle
+--- A static class allowing calls through the "." operator only. 
+Circle = {}
+
+---@type ComponentId
+--- A static class allowing calls through the "." operator only. 
+ComponentId = {}
+
+---@type FunctionArgInfo
+--- A static class allowing calls through the "." operator only. 
+FunctionArgInfo = {}
+
+---@type SpriteImageMode
+--- A static class allowing calls through the "." operator only. 
+SpriteImageMode = {}
+
+---@type MonitorSelection
+--- A static class allowing calls through the "." operator only. 
+MonitorSelection = {}
+
+---@type AtomicBool
+--- A static class allowing calls through the "." operator only. 
+AtomicBool = {}
+
+---@type Isometry3d
+--- A static class allowing calls through the "." operator only. 
+Isometry3d = {}
+
+---@type JumpAt
+--- A static class allowing calls through the "." operator only. 
+JumpAt = {}
+
+---@type Bloom
+--- A static class allowing calls through the "." operator only. 
+Bloom = {}
+
+---@type OcclusionCulling
+--- A static class allowing calls through the "." operator only. 
+OcclusionCulling = {}
+
+---@type InfinitePlane3d
+--- A static class allowing calls through the "." operator only. 
+InfinitePlane3d = {}
+
+---@type Tonemapping
+--- A static class allowing calls through the "." operator only. 
+Tonemapping = {}
+
+---@type ManualTextureViewHandle
+--- A static class allowing calls through the "." operator only. 
+ManualTextureViewHandle = {}
+
+---@type ScriptTypeRegistration
+--- A static class allowing calls through the "." operator only. 
+ScriptTypeRegistration = {}
+
+---@type Disabled
+--- A static class allowing calls through the "." operator only. 
+Disabled = {}
+
+---@type RangeFull
+--- A static class allowing calls through the "." operator only. 
+RangeFull = {}
+
+---@type Segment3d
+--- A static class allowing calls through the "." operator only. 
+Segment3d = {}
+
+---@type U16Vec3
+--- A static class allowing calls through the "." operator only. 
+U16Vec3 = {}
+
+---@type u32
+--- A static class allowing calls through the "." operator only. 
+u32 = {}
+
+---@type WindowClosed
+--- A static class allowing calls through the "." operator only. 
+WindowClosed = {}
+
+---@type Cow
+--- A static class allowing calls through the "." operator only. 
+Cow = {}
+
+---@type ColorGrading
+--- A static class allowing calls through the "." operator only. 
+ColorGrading = {}
+
+---@type ScriptQueryResult
+--- A static class allowing calls through the "." operator only. 
+ScriptQueryResult = {}
+
+---@type EnabledButtons
+--- A static class allowing calls through the "." operator only. 
+EnabledButtons = {}
+
+---@type RangeInclusive
+--- A static class allowing calls through the "." operator only. 
+RangeInclusive = {}
+
+---@type Timer
+--- A static class allowing calls through the "." operator only. 
+Timer = {}
+
+---@type usize
+--- A static class allowing calls through the "." operator only. 
+usize = {}
+
+---@type InternalWindowState
+--- A static class allowing calls through the "." operator only. 
+InternalWindowState = {}
+
+---@type WindowScaleFactorChanged
+--- A static class allowing calls through the "." operator only. 
+WindowScaleFactorChanged = {}
+
+---@type RenderTarget
+--- A static class allowing calls through the "." operator only. 
+RenderTarget = {}
+
+---@type GamepadConnectionEvent
+--- A static class allowing calls through the "." operator only. 
+GamepadConnectionEvent = {}
+
+---@type DAffine2
+--- A static class allowing calls through the "." operator only. 
+DAffine2 = {}
+
+---@type AnnulusMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+AnnulusMeshBuilder = {}
+
+---@type VideoModeSelection
+--- A static class allowing calls through the "." operator only. 
+VideoModeSelection = {}
+
+---@type ForceTouch
+--- A static class allowing calls through the "." operator only. 
+ForceTouch = {}
+
+---@type InteropError
+--- A static class allowing calls through the "." operator only. 
+InteropError = {}
+
+---@type WindowResolution
+--- A static class allowing calls through the "." operator only. 
+WindowResolution = {}
+
+---@type ChildOf
+--- A static class allowing calls through the "." operator only. 
+ChildOf = {}
+
+---@type CylinderAnchor
+--- A static class allowing calls through the "." operator only. 
+CylinderAnchor = {}
+
+---@type U16Vec2
+--- A static class allowing calls through the "." operator only. 
+U16Vec2 = {}
+
+---@type u128
+--- A static class allowing calls through the "." operator only. 
+u128 = {}
+
+---@type GamepadRumbleIntensity
+--- A static class allowing calls through the "." operator only. 
+GamepadRumbleIntensity = {}
+
+---@type table<string, ScriptTypeRegistration | ScriptComponentRegistration | ScriptResourceRegistration>
+--- An global instance of this type
+types = {}
+
+---@type Skybox
+--- A static class allowing calls through the "." operator only. 
+Skybox = {}
+
+---@type CylinderMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+CylinderMeshBuilder = {}
+
+---@type Camera3dDepthLoadOp
+--- A static class allowing calls through the "." operator only. 
+Camera3dDepthLoadOp = {}
+
+---@type AccumulatedMouseScroll
+--- A static class allowing calls through the "." operator only. 
+AccumulatedMouseScroll = {}
+
+---@type WindowEvent
+--- A static class allowing calls through the "." operator only. 
+WindowEvent = {}
+
+---@type ScreenSpaceTransmissionQuality
+--- A static class allowing calls through the "." operator only. 
+ScreenSpaceTransmissionQuality = {}
+
+---@type Dir2
+--- A static class allowing calls through the "." operator only. 
+Dir2 = {}
+
+---@type Sphere
+--- A static class allowing calls through the "." operator only. 
+Sphere = {}
+
+---@type ConicalFrustum
+--- A static class allowing calls through the "." operator only. 
+ConicalFrustum = {}
+
+---@type CircularSegment
+--- A static class allowing calls through the "." operator only. 
+CircularSegment = {}
+
+---@type LinearRgba
+--- A static class allowing calls through the "." operator only. 
+LinearRgba = {}
+
+---@type NoFrustumCulling
+--- A static class allowing calls through the "." operator only. 
+NoFrustumCulling = {}
+
+---@type Dir3A
+--- A static class allowing calls through the "." operator only. 
+Dir3A = {}
+
+---@type DepthOfFieldMode
+--- A static class allowing calls through the "." operator only. 
+DepthOfFieldMode = {}
+
+---@type TypeId
+--- A static class allowing calls through the "." operator only. 
+TypeId = {}
+
+---@type I16Vec2
+--- A static class allowing calls through the "." operator only. 
+I16Vec2 = {}
+
+---@type RectangleMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+RectangleMeshBuilder = {}
+
+---@type KeyboardInput
+--- A static class allowing calls through the "." operator only. 
+KeyboardInput = {}
+
+---@type Name
+--- A static class allowing calls through the "." operator only. 
+Name = {}
+
+---@type AppLifecycle
+--- A static class allowing calls through the "." operator only. 
+AppLifecycle = {}
+
+---@type URect
+--- A static class allowing calls through the "." operator only. 
+URect = {}
+
+---@type MouseScrollUnit
+--- A static class allowing calls through the "." operator only. 
+MouseScrollUnit = {}
+
+---@type char
+--- A static class allowing calls through the "." operator only. 
+char = {}
+
+---@type TouchInput
+--- A static class allowing calls through the "." operator only. 
+TouchInput = {}
+
+---@type Capsule2dMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+Capsule2dMeshBuilder = {}
+
+---@type EaseFunction
+--- A static class allowing calls through the "." operator only. 
+EaseFunction = {}
+
+---@type GamepadEvent
+--- A static class allowing calls through the "." operator only. 
+GamepadEvent = {}
+
+---@type Triangle2d
+--- A static class allowing calls through the "." operator only. 
+Triangle2d = {}
+
+---@type u16
+--- A static class allowing calls through the "." operator only. 
+u16 = {}
+
+---@type String
+--- A static class allowing calls through the "." operator only. 
+String = {}
+
+---@type ConeAnchor
+--- A static class allowing calls through the "." operator only. 
+ConeAnchor = {}
+
+---@type i32
+--- A static class allowing calls through the "." operator only. 
+i32 = {}
+
+---@type CursorOptions
+--- A static class allowing calls through the "." operator only. 
+CursorOptions = {}
+
+---@type AtomicI16
+--- A static class allowing calls through the "." operator only. 
+AtomicI16 = {}
+
+---@type Children
+--- A static class allowing calls through the "." operator only. 
+Children = {}
+
+---@type I64Vec2
+--- A static class allowing calls through the "." operator only. 
+I64Vec2 = {}
+
+---@type SphereMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+SphereMeshBuilder = {}
+
+---@type MouseButtonInput
+--- A static class allowing calls through the "." operator only. 
+MouseButtonInput = {}
+
+---@type MeshMorphWeights
+--- A static class allowing calls through the "." operator only. 
+MeshMorphWeights = {}
+
+---@type Projection
+--- A static class allowing calls through the "." operator only. 
+Projection = {}
+
+---@type DMat4
+--- A static class allowing calls through the "." operator only. 
+DMat4 = {}
+
+---@type GamepadInput
+--- A static class allowing calls through the "." operator only. 
+GamepadInput = {}
+
+---@type CursorMoved
+--- A static class allowing calls through the "." operator only. 
+CursorMoved = {}
+
+---@type Gamepad
+--- A static class allowing calls through the "." operator only. 
+Gamepad = {}
+
+---@type ColorMaterial
+--- A static class allowing calls through the "." operator only. 
+ColorMaterial = {}
+
+---@type GlobalsUniform
+--- A static class allowing calls through the "." operator only. 
+GlobalsUniform = {}
+
+---@type TimerMode
+--- A static class allowing calls through the "." operator only. 
+TimerMode = {}
+
+---@type Affine3
+--- A static class allowing calls through the "." operator only. 
+Affine3 = {}
+
+---@type Tick
+--- A static class allowing calls through the "." operator only. 
+Tick = {}
+
+---@type RhombusMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+RhombusMeshBuilder = {}
+
+---@type VisibilityRange
+--- A static class allowing calls through the "." operator only. 
+VisibilityRange = {}
+
+---@type OnReplace
+--- A static class allowing calls through the "." operator only. 
+OnReplace = {}
+
+---@type U8Vec4
+--- A static class allowing calls through the "." operator only. 
+U8Vec4 = {}
+
+---@type BVec4A
+--- A static class allowing calls through the "." operator only. 
+BVec4A = {}
+
+---@type Affine3A
+--- A static class allowing calls through the "." operator only. 
+Affine3A = {}
+
+---@type RenderLayers
+--- A static class allowing calls through the "." operator only. 
+RenderLayers = {}
+
+---@type SyncToRenderWorld
+--- A static class allowing calls through the "." operator only. 
+SyncToRenderWorld = {}
+
+---@type DoubleTapGesture
+--- A static class allowing calls through the "." operator only. 
+DoubleTapGesture = {}
+
+---@type Stopwatch
+--- A static class allowing calls through the "." operator only. 
+Stopwatch = {}
+
+---@type AabbCast3d
+--- A static class allowing calls through the "." operator only. 
+AabbCast3d = {}
+
+---@type I8Vec4
+--- A static class allowing calls through the "." operator only. 
+I8Vec4 = {}
+
+---@type ConicalFrustumMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+ConicalFrustumMeshBuilder = {}
+
+---@type WindowTheme
+--- A static class allowing calls through the "." operator only. 
+WindowTheme = {}
+
+---@type Real
+--- A static class allowing calls through the "." operator only. 
+Real = {}
+
+---@type PlaneMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+PlaneMeshBuilder = {}
+
+---@type WindowCloseRequested
+--- A static class allowing calls through the "." operator only. 
+WindowCloseRequested = {}
+
+---@type RayCast3d
+--- A static class allowing calls through the "." operator only. 
+RayCast3d = {}
+
+---@type Mat3A
+--- A static class allowing calls through the "." operator only. 
+Mat3A = {}
+
+---@type SkinnedMesh
+--- A static class allowing calls through the "." operator only. 
+SkinnedMesh = {}
+
+---@type PresentMode
+--- A static class allowing calls through the "." operator only. 
+PresentMode = {}
+
+---@type Aabb3d
+--- A static class allowing calls through the "." operator only. 
+Aabb3d = {}
+
+---@type EntityHash
+--- A static class allowing calls through the "." operator only. 
+EntityHash = {}
+
+---@type UVec2
+--- A static class allowing calls through the "." operator only. 
+UVec2 = {}
+
+---@type Window
+--- A static class allowing calls through the "." operator only. 
+Window = {}
+
+---@type InheritedVisibility
+--- A static class allowing calls through the "." operator only. 
+InheritedVisibility = {}
+
+---@type CursorEntered
+--- A static class allowing calls through the "." operator only. 
+CursorEntered = {}
+
+---@type TextureAtlasLayout
+--- A static class allowing calls through the "." operator only. 
+TextureAtlasLayout = {}
+
+---@type Triangle3dMeshBuilder
+--- A static class allowing calls through the "." operator only. 
+Triangle3dMeshBuilder = {}
+
+---@type Aabb
+--- A static class allowing calls through the "." operator only. 
+Aabb = {}
+
+---@type I16Vec3
+--- A static class allowing calls through the "." operator only. 
+I16Vec3 = {}
+
+---@type PanGesture
+--- A static class allowing calls through the "." operator only. 
+PanGesture = {}
+
+---@type Smaa
+--- A static class allowing calls through the "." operator only. 
+Smaa = {}
+
+---@type Rhombus
+--- A static class allowing calls through the "." operator only. 
+Rhombus = {}
+
+---@type WindowResizeConstraints
+--- A static class allowing calls through the "." operator only. 
+WindowResizeConstraints = {}
+
+---@type Oklcha
+--- A static class allowing calls through the "." operator only. 
+Oklcha = {}
+
+---@type Cylinder
+--- A static class allowing calls through the "." operator only. 
+Cylinder = {}
+
+---@type Handle
+--- An global instance of this type
+script_asset = {}
+
+---@type World
+--- An global instance of this type
+world = {}
+
+---@type Entity
+--- An global instance of this type
+entity = {}
 

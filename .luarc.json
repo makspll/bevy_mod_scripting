@@ -4,5 +4,6 @@
         "assets"
     ],
     "runtime.version": "Lua 5.4",
-    "hint.enable": false
+    "hint.enable": false,
+    "diagnostics.workspaceDelay": 30000
 }

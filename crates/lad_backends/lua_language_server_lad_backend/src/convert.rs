@@ -54,6 +54,35 @@ pub fn convert_ladfile_to_lua_declaration_file(
         });
     }
 
+    let mut globals_module = LuaModule {
+        name: "globals".to_string(),
+        ..Default::default()
+    };
+    for (name, instance) in ladfile.globals.iter() {
+        let class = match lad_instance_to_lua_type(&ladfile, &instance.type_kind) {
+            Ok(c) => c,
+            Err(e) => {
+                log::error!("Could not generate global: {e}");
+                continue;
+            }
+        };
+
+        let description = if instance.is_static {
+            "A static class allowing calls through the \".\" operator only. "
+        } else {
+            "An global instance of this type"
+        };
+
+        globals_module
+            .globals
+            .push(crate::lua_declaration_file::TypeInstance {
+                name: name.to_string(),
+                definition: class,
+                description: Some(description.into()),
+            })
+    }
+    definition_file.modules.push(globals_module);
+
     Ok(definition_file)
 }
 
@@ -212,7 +241,7 @@ pub fn lad_function_to_lua_function(
         async_fn: false,
         deprecated: false,
         nodiscard: false,
-        package: true,
+        package: false,
         overloads: vec![],
         generics: vec![],
         documentation: function.documentation.as_ref().map(|d| d.to_string()),

@@ -306,18 +306,24 @@ pub struct EnumVariant {
 /// ---| "green"
 /// ---| "blue"
 ///
-/// ---@enum Status
-/// local Status = {
-///     PENDING = 0,
-///     SUCCESS = 1,
-///     ERROR = 2
-/// }
 /// ```
 #[derive(Debug, Clone, Serialize)]
 pub struct TypeAlias {
+    pub instance: TypeInstance,
+}
+
+/// Represents a local/global
+//////
+/// # Examples
+/// ```lua
+/// ---@type MyType
+/// MyType = {}
+///
+/// ```
+#[derive(Debug, Clone, Serialize)]
+pub struct TypeInstance {
     pub name: String,
     pub definition: LuaType,
-    pub enum_variants: Vec<EnumVariant>, // For enum-like aliases
     pub description: Option<String>,
 }
 
@@ -344,9 +350,8 @@ pub struct TypeAlias {
 pub struct LuaModule {
     pub name: String,
     pub classes: Vec<LuaClass>,
-    pub aliases: Vec<TypeAlias>,
+    pub globals: Vec<TypeInstance>,
     pub functions: Vec<FunctionSignature>,
-    pub enums: Vec<TypeAlias>,
     pub documentation: Option<String>,
     pub is_meta: bool,
 }

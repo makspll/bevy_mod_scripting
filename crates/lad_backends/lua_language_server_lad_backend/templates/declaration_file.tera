@@ -51,6 +51,14 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
 {%- endfor -%} {# class #}
 {# newline #}
 {# newline #}
+{%- for global in module.globals -%}
+---@type {{self::lua_type(ty=global.definition)}}
+{{self::multiline_description(description=global.description)}}
+{{global.name}} = {}
+{# newline #}
+{# newline #}
+{%- endfor -%}
+
 {%- endfor -%} {# modules #}
 
 {%- macro class_field(field) -%}
@@ -84,7 +92,7 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
         {%- endfor -%}
         ]
     {%- elif ty.kind == "Dictionary" -%}
-        table<{{ self::lua_type(ty=ty.key) }}, {{ self::lua_type(ty=ty.value) }}>
+        table<{{ self::lua_type(ty=ty.value.key) }}, {{ self::lua_type(ty=ty.value.value) }}>
     {%- elif ty.kind == "TableLiteral" -%}
         {
         {%- for key in ty.value | keys -%}
