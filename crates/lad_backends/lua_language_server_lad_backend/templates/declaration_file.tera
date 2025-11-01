@@ -4,10 +4,9 @@
 {# newline #}
 {%- for module in modules -%} {# module #}
 {%- for class in module.classes -%}
----@class {{ class.name }}
-{# newline #}
-{{- self::multiline_description(description=class.documentation) }}
-{% for field in class.fields -%}
+---@class {{ class.name }} {%- if class.parents %} : {% endif -%}{%- for parent in class.parents -%}{{parent}}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
+{{ self::multiline_description(description=class.documentation) -}}
+{%- for field in class.fields -%}
 {{- self::class_field(field=field) -}}
 {%- endfor -%}
 {{ class.name }} = {}
@@ -36,7 +35,7 @@
 {# newline #}
 {%- endfor -%}
 {%- for param in function.params -%}
-{{ self::function_param(arg=param) }}
+{{- self::function_param(arg=param) -}}
 {%- endfor -%}
 {%- for return in function.returns -%}
 ---@return {{ self::lua_type(ty=return) }}
@@ -53,8 +52,8 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
 {# newline #}
 {%- for global in module.globals -%}
 ---@type {{self::lua_type(ty=global.definition)}}
-{{self::multiline_description(description=global.description)}}
-{{global.name}} = {}
+{{ self::multiline_description(description=global.description) -}}
+{{ global.name}} = {}
 {# newline #}
 {# newline #}
 {%- endfor -%}
@@ -62,10 +61,9 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
 {%- endfor -%} {# modules #}
 
 {%- macro class_field(field) -%}
----@field {{ field.scope }} {{ field.name }} {% if field.optional %}?{% endif %} {{ self::lua_type(ty=field.ty) }}
-{# newline #}
-{{- self::multiline_description(description=field.description) -}}
-{# newline #}
+---@field {{ field.scope }} {{ field.name }} {% if field.optional %}?{% endif %} {{ self::lua_type(ty=field.ty) -}}
+{{- self::multiline_description(description=field.description) }}
+{# newline -#}
 {%- endmacro class_field -%}
 
 {%- macro lua_type(ty) -%}
@@ -93,13 +91,6 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
         ]
     {%- elif ty.kind == "Dictionary" -%}
         table<{{ self::lua_type(ty=ty.value.key) }}, {{ self::lua_type(ty=ty.value.value) }}>
-    {%- elif ty.kind == "TableLiteral" -%}
-        {
-        {%- for key in ty.value | keys -%}
-            {{ key }}: {{ self::lua_type(ty=ty.value[key]) }}
-            {%- if not loop.last %}, {% endif -%}
-        {%- endfor -%}
-        }
     {%- elif ty.kind == "Function" -%}
         fun(
         {%- for param in ty.value.parameters -%}
@@ -119,20 +110,17 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
 {%- endmacro lua_type -%}
 
 {%- macro function_param(arg) -%}
----@param {{ arg.name }} {{ self::lua_type(ty=arg.ty) }} {% if arg.optional %}?{% endif %}
+---@param {{ arg.name }} {{ self::lua_type(ty=arg.ty) }} {% if arg.optional %}?{%- endif -%}
 {# newline #}
+{# newline -#}
 {{- self::multiline_description(description=arg.description) -}}
-{# newline #}
-{# newline #}
 {%- endmacro function_param -%}
 
 {%- macro multiline_description(description) -%}
-{% if description %}
+{%- if description -%}
 {%- for line in description | split(pat="\n") -%}
 --- {{ line }}
-{%- if not last -%}
-{# newline #}
-{%- endif -%}
-{%- endfor -%}
+{% endfor -%}
+{%- else -%}
 {%- endif -%}
 {%- endmacro multiline_description -%}

@@ -4,7 +4,10 @@
 //! - Centralization, we want to centralize as much of the "documentation" logic in the building of this format. For example, instead of letting each backend parse argument docstrings from the function docstring, we can do this here, and let the backends concentrate on pure generation.
 //! - Rust centric, the format describes bindings from the Rust side, so we generate rust centric declarations. These can then freely be converted into whatever representaion necessary.
 
-use std::borrow::Cow;
+use std::{
+    borrow::Cow,
+    collections::{HashMap, HashSet},
+};
 
 use indexmap::IndexMap;
 
@@ -99,20 +102,26 @@ impl LadFile {
             })
     }
 
+    /// Retrieves the metadata section for the given lad type id.
+    /// Primitives don't contain metadata
+    pub fn get_type_metadata(&self, type_id: &LadTypeId) -> Option<&LadTypeMetadata> {
+        self.types.get(type_id).map(|t| &t.metadata)
+    }
+
     /// Retrieves all unique types, then groups them by their generics arity,
     /// this grouping represents types as expected to be seen in rust source code.
     ///
     /// For example `Vec<T>` and `Vec<i32>` will be grouped together as `Vec` with arity 1.
-    pub fn polymorphizied_types(&self) -> IndexMap<PolymorphicTypeKey, Vec<&LadTypeId>> {
-        let mut types_by_identifier_and_arity: IndexMap<PolymorphicTypeKey, Vec<&LadTypeId>> =
-            IndexMap::<PolymorphicTypeKey, Vec<&LadTypeId>>::new();
+    pub fn polymorphizied_types(&self) -> IndexMap<PolymorphicTypeKey, HashSet<&LadTypeId>> {
+        let mut types_by_identifier_and_arity: IndexMap<PolymorphicTypeKey, HashSet<&LadTypeId>> =
+            IndexMap::<PolymorphicTypeKey, HashSet<&LadTypeId>>::new();
         for type_id in self.types.keys() {
             let arity = self.get_type_arity(type_id);
             let identifier = self.get_type_identifier(type_id, None);
             types_by_identifier_and_arity
                 .entry(PolymorphicTypeKey { identifier, arity })
                 .or_default()
-                .push(type_id);
+                .insert(type_id);
         }
 
         for (primitive_id, primitive) in &self.primitives {
@@ -121,7 +130,7 @@ impl LadFile {
             types_by_identifier_and_arity
                 .entry(PolymorphicTypeKey { identifier, arity })
                 .or_default()
-                .push(primitive_id);
+                .insert(primitive_id);
         }
 
         types_by_identifier_and_arity
@@ -528,6 +537,26 @@ pub struct LadType {
     /// Backends can use this value to determine the order in which types are displayed.
     #[serde(default = "default_importance")]
     pub insignificance: usize,
+
+    /// Additional metadata about the type.
+    pub metadata: LadTypeMetadata,
+}
+
+/// Metadata either calculated from the type registry or added by plugins
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadTypeMetadata {
+    /// True if the type is a component according to the type registry
+    pub is_component: bool,
+    /// Returns true if the type is a component according to the type registry
+    pub is_resource: bool,
+
+    /// True if the type actually implements reflect, some types can be
+    /// added as namespaces without actually implementing the Reflect trait
+    pub is_reflect: bool,
+
+    /// Extra metadata sections that plugins can use to serialize other information
+    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
+    pub misc: HashMap<String, String>,
 }
 
 /// The default importance value for a type.

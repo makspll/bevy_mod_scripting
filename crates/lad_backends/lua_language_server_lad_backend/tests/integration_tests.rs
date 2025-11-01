@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, clippy::expect_used, clippy::unwrap_used, clippy::panic)]
 
 use std::{fs::DirEntry, path::PathBuf};
 
@@ -92,8 +92,7 @@ fn main() {
             }
         }
     }
-    assert!(
-        !BLESS_MODE,
-        "BLESS_MODE is enabled, please disable it to run the tests"
-    );
+    if BLESS_MODE {
+        panic!("BLESS_MODE is enabled, please disable it to run the tests");
+    }
 }

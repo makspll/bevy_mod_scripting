@@ -9,7 +9,10 @@ use std::{
     path::PathBuf,
 };
 
-use bevy_ecs::world::World;
+use bevy_ecs::{
+    reflect::{ReflectComponent, ReflectResource},
+    world::World,
+};
 use bevy_log::warn;
 use bevy_mod_scripting_bindings::{
     MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
@@ -255,6 +258,12 @@ impl<'t> LadFileBuilder<'t> {
                 layout: LadTypeLayout::Opaque,
                 generated: false,
                 insignificance: default_importance(),
+                metadata: LadTypeMetadata {
+                    is_component: false,
+                    is_resource: false,
+                    is_reflect: false,
+                    misc: Default::default(),
+                },
             },
         );
         self
@@ -275,6 +284,9 @@ impl<'t> LadFileBuilder<'t> {
 
         let mut insignificance = default_importance();
         let mut generated = false;
+        let mut is_component = false;
+        let mut is_resource = false;
+        let is_reflect = true;
         if let Some(registration) = registration {
             if registration.contains::<MarkAsGenerated>() {
                 generated = true;
@@ -284,6 +296,12 @@ impl<'t> LadFileBuilder<'t> {
             }
             if registration.contains::<MarkAsSignificant>() {
                 insignificance = default_importance() / 4;
+            }
+            if registration.contains::<ReflectResource>() {
+                is_resource = true
+            }
+            if registration.contains::<ReflectComponent>() {
+                is_component = true
             }
         }
 
@@ -312,6 +330,12 @@ impl<'t> LadFileBuilder<'t> {
             layout: self.lad_layout_from_type_info(type_info),
             generated,
             insignificance,
+            metadata: LadTypeMetadata {
+                is_component,
+                is_resource,
+                is_reflect,
+                misc: Default::default(),
+            },
         };
         self.file.types.insert(type_id, lad_type);
         self

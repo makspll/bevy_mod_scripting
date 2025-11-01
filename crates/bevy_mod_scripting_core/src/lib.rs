@@ -348,6 +348,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
 
         app.register_type::<ScriptAsset>();
         app.register_type::<Handle<ScriptAsset>>();
+        app.register_type::<ReflectReference>();
         app.register_type_data::<Handle<ScriptAsset>, MarkAsCore>();
 
         app.add_systems(

@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 use indexmap::IndexMap;
 use ladfile::{LadFile, LadFunction, LadTypeId, LadTypeKind};
 
@@ -29,7 +27,14 @@ pub fn convert_ladfile_to_lua_declaration_file(
     for (key, types) in rust_types.iter() {
         // right now one class == one lad type id, when we can properly denormorphize types, we will
         // be able to have multiple lad type ids per class
-        let lua_classes_for_type = convert_polymorphic_type_to_lua_classes(key, types, &ladfile);
+        let lua_classes_for_type =
+            match convert_polymorphic_type_to_lua_classes(key, types.iter().copied(), &ladfile) {
+                Ok(r) => r,
+                Err(e) => {
+                    log::error!("{e}");
+                    continue;
+                }
+            };
 
         lua_classes.extend(
             lua_classes_for_type
@@ -62,8 +67,8 @@ pub fn convert_ladfile_to_lua_declaration_file(
         let class = match lad_instance_to_lua_type(&ladfile, &instance.type_kind) {
             Ok(c) => c,
             Err(e) => {
-                log::error!("Could not generate global: {e}");
-                continue;
+                log::error!("Error generating global {name}: {e}. Using `any` type");
+                LuaType::Any
             }
         };
 
@@ -88,16 +93,31 @@ pub fn convert_ladfile_to_lua_declaration_file(
 
 const GENERIC_PLACEHOLDERS: [&str; 10] = ["T", "U", "V", "W", "X", "Y", "Z", "A", "B", "C"];
 
+// /// Splits the given class into two,
+// /// - The first one containing all of its non-static + static functions
+// /// - The second one only containing its static functions
+// pub fn split_static_class_out(class: LuaClass) -> (LuaClass, LuaClass) {
+//     let static_class = class.clone();
+//     static_class.
+
+//     (class, static_class)
+// }
+
 // TODO: once https://github.com/bevyengine/bevy/issues/17117 is solved, we will be able to figure out
 // where the generic types are actually used, for now we only know what they are per type.
-pub fn convert_polymorphic_type_to_lua_classes(
+pub fn convert_polymorphic_type_to_lua_classes<'a>(
     polymorphic_type_key: &ladfile::PolymorphicTypeKey,
-    monomorphized_types: &[&ladfile::LadTypeId],
+    monomorphized_types: impl Iterator<Item = &'a ladfile::LadTypeId>,
     ladfile: &ladfile::LadFile,
-) -> Vec<(LadTypeId, LuaClass, Vec<FunctionSignature>)> {
+) -> Result<Vec<(LadTypeId, LuaClass, Vec<FunctionSignature>)>, anyhow::Error> {
+    let monomorphized_types: Vec<_> = monomorphized_types.collect();
     if monomorphized_types.len() > 1 || polymorphic_type_key.arity != 0 {
         // TODO: support generics, currently bevy doesn't let you track back generic instantiations to their definition
-        return vec![];
+        return Err(anyhow::anyhow!(
+            "Type {} with arity {} is not supported yet, ignoring.",
+            polymorphic_type_key.identifier,
+            polymorphic_type_key.arity
+        ));
     }
 
     let mut types = Vec::default();
@@ -125,7 +145,12 @@ pub fn convert_polymorphic_type_to_lua_classes(
                                 name: format!("[{}]", idx + 1),
                                 ty: match lad_type_to_lua_type(ladfile, field.type_.clone()) {
                                     Ok(ty) => ty,
-                                    Err(e) => panic!("{e}"),
+                                    Err(e) => {
+                                        log::error!(
+                                            "error converting field {idx}: {e}. for tuple struct {name}"
+                                        );
+                                        LuaType::Any
+                                    }
                                 },
                                 scope: crate::lua_declaration_file::FieldScope::Public,
                                 optional: true,
@@ -139,7 +164,13 @@ pub fn convert_polymorphic_type_to_lua_classes(
                                 name: field.name.clone(),
                                 ty: match lad_type_to_lua_type(ladfile, field.type_.clone()) {
                                     Ok(ty) => ty,
-                                    Err(e) => panic!("{e}"),
+                                    Err(e) => {
+                                        log::error!(
+                                            "error converting field {}: {e}. for struct {name}",
+                                            field.name
+                                        );
+                                        LuaType::Any
+                                    }
                                 },
                                 scope: crate::lua_declaration_file::FieldScope::Public,
                                 optional: true,
@@ -147,9 +178,11 @@ pub fn convert_polymorphic_type_to_lua_classes(
                             })
                         }
                     }
-                    ladfile::LadVariant::Unit { name } => {}
+                    ladfile::LadVariant::Unit { .. } => {}
                 },
-                ladfile::LadTypeLayout::Enum(lad_variants) => {}
+                ladfile::LadTypeLayout::Enum(_) => {
+                    // TODO: enums
+                }
             }
 
             for function in &lad_type.associated_functions {
@@ -157,17 +190,38 @@ pub fn convert_polymorphic_type_to_lua_classes(
                     lua_functions.push(match lad_function_to_lua_function(ladfile, function) {
                         Ok(func) => func,
                         Err(err) => {
-                            log::error!("Error converting function: {err}");
-                            continue;
+                            log::error!(
+                                "Error converting function: {} on namespace {:?}: {err}. Using empty definition",
+                                function.identifier,
+                                function.namespace
+                            );
+                            FunctionSignature {
+                                name: function.identifier.to_string().replace("-", "_"),
+                                ..Default::default()
+                            }
                         }
                     })
                 }
             }
         }
+        let name = polymorphic_type_key.identifier.to_string();
+        let mut parents = vec![];
+
+        if let Some(metadata) = ladfile.get_type_metadata(lad_type_id) {
+            if metadata.is_reflect && name != "ReflectReference" {
+                parents.push(String::from("ReflectReference"))
+            }
+            // if metadata.is_component {
+            //     parents.push(String::from("ScriptComponentRegistration"))
+            // }
+            // if metadata.is_resource {
+            //     parents.push(String::from("ScriptResourceRegistration"))
+            // }
+        }
 
         let class = LuaClass {
-            name: polymorphic_type_key.identifier.to_string(),
-            parents: vec![],    // not needed
+            name,
+            parents: vec![String::from("ReflectReference")],
             fields: lua_fields, // TODO: Find fields
             generics,
             documentation,
@@ -177,22 +231,22 @@ pub fn convert_polymorphic_type_to_lua_classes(
 
         types.push(((*lad_type_id).clone(), class, lua_functions));
     }
-    types
+    Ok(types)
 }
 
 pub fn lad_function_to_lua_function(
     ladfile: &LadFile,
     function: &LadFunction,
 ) -> Result<FunctionSignature, anyhow::Error> {
-    if let Some((name, idx)) = function.as_overload() {
-        return Err(anyhow::anyhow!(
-            "overloads are not yet supported: {name}-{idx}",
-        ));
-    }
+    let name = if let Some((name, _)) = function.as_overload() {
+        name
+    } else {
+        function.identifier.to_string()
+    };
 
     ForbiddenKeywords::is_forbidden_err(&function.identifier)?;
 
-    let mut params = function
+    let params = function
         .arguments
         .iter()
         .filter(|a| {
@@ -235,7 +289,7 @@ pub fn lad_function_to_lua_function(
     let returns = lad_instance_to_lua_type(ladfile, &function.return_type.kind)?;
 
     Ok(FunctionSignature {
-        name: function.identifier.to_string(),
+        name,
         params,
         returns: vec![returns],
         async_fn: false,
@@ -299,7 +353,11 @@ pub fn lad_instance_to_lua_type(
             lad_instance_to_lua_type(ladfile, lad_type_kind)? // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
         }
         ladfile::LadTypeKind::Tuple(lad_type_kinds) => {
-            LuaType::Tuple(to_lua_many(ladfile, lad_type_kinds)?)
+            if lad_type_kinds.is_empty() {
+                LuaType::Primitive(LuaPrimitiveType::Nil)
+            } else {
+                LuaType::Tuple(to_lua_many(ladfile, lad_type_kinds)?)
+            }
         }
         ladfile::LadTypeKind::Array(lad_type_kind, _) => {
             LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))

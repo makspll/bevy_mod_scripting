@@ -1,5 +1,6 @@
-use serde::{Serialize, Serializer};
-use std::collections::HashMap;
+#![allow(dead_code)]
+
+use serde::Serialize;
 
 /// Basic primitive types supported by Lua Language Server annotations.
 ///
@@ -83,7 +84,6 @@ pub enum LuaType {
         key: Box<LuaType>,
         value: Box<LuaType>,
     },
-    TableLiteral(HashMap<String, LuaType>),
     Function(FunctionSignatureShort),
     Generic {
         name: String,
@@ -133,7 +133,7 @@ pub struct FunctionParam {
 /// ---@overload fun(name: string): string  -- Function overloads
 /// function getName(name, age) end
 /// ```
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Default)]
 pub struct FunctionSignature {
     pub name: String,
     pub params: Vec<FunctionParam>,
