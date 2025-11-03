@@ -1,11 +1,12 @@
+use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use indexmap::IndexMap;
-use ladfile::{LadFile, LadFunction, LadTypeId, LadTypeKind};
+use ladfile::{LadFieldOrVariableKind, LadFile, LadFunction, LadTypeId, ReflectionPrimitiveKind};
 
 use crate::{
     keywords::ForbiddenKeywords,
     lua_declaration_file::{
         ClassField, FunctionParam, FunctionSignature, LuaClass, LuaDefinitionFile, LuaModule,
-        LuaPrimitiveType, LuaType,
+        LuaOperator, LuaOperatorKind, LuaPrimitiveType, LuaType,
     },
 };
 
@@ -133,6 +134,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
 
         let mut lua_fields = vec![];
         let mut lua_functions = vec![];
+        let mut lua_operators = vec![];
 
         if let Some(lad_type) = ladfile.types.get(*lad_type_id) {
             // add fields for the type
@@ -143,7 +145,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                         for (idx, field) in fields.iter().enumerate() {
                             lua_fields.push(ClassField {
                                 name: format!("[{}]", idx + 1),
-                                ty: match lad_type_to_lua_type(ladfile, field.type_.clone()) {
+                                ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
                                     Ok(ty) => ty,
                                     Err(e) => {
                                         log::error!(
@@ -162,7 +164,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                         for field in fields.iter() {
                             lua_fields.push(ClassField {
                                 name: field.name.clone(),
-                                ty: match lad_type_to_lua_type(ladfile, field.type_.clone()) {
+                                ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
                                     Ok(ty) => ty,
                                     Err(e) => {
                                         log::error!(
@@ -187,7 +189,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
 
             for function in &lad_type.associated_functions {
                 if let Some(function) = ladfile.functions.get(function) {
-                    lua_functions.push(match lad_function_to_lua_function(ladfile, function) {
+                    let lua_function = match lad_function_to_lua_function(ladfile, function) {
                         Ok(func) => func,
                         Err(err) => {
                             log::error!(
@@ -200,7 +202,22 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                                 ..Default::default()
                             }
                         }
-                    })
+                    };
+
+                    if function.metadata.is_operator {
+                        match lua_function_to_operator(&lua_function) {
+                            Some(Ok(op)) => lua_operators.push(op),
+                            Some(Err(func)) => lua_functions.push(func),
+                            None => {
+                                log::error!(
+                                    "Error converting operator function: {} on namespace {:?}. Skipping",
+                                    function.identifier,
+                                    function.namespace
+                                );
+                            }
+                        };
+                    }
+                    lua_functions.push(lua_function);
                 }
             }
         }
@@ -222,11 +239,11 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
         let class = LuaClass {
             name,
             parents: vec![String::from("ReflectReference")],
-            fields: lua_fields, // TODO: Find fields
+            fields: lua_fields,
             generics,
             documentation,
             exact: true,
-            operators: vec![], // TODO: Find operators
+            operators: lua_operators,
         };
 
         types.push(((*lad_type_id).clone(), class, lua_functions));
@@ -234,16 +251,108 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
     Ok(types)
 }
 
+/// converts a lua function to an operator if it matches the expected strucutre
+pub fn lua_function_to_operator(
+    func: &FunctionSignature,
+) -> Option<Result<LuaOperator, FunctionSignature>> {
+    let operator = ScriptOperatorNames::parse(&func.name)?;
+
+    // first arg is implied to be `self`
+    let (metamethod, second_arg, ret) = match operator {
+        ScriptOperatorNames::Addition => (
+            LuaOperatorKind::Add,
+            Some(func.params.get(1)?),
+            func.returns.first()?,
+        ),
+        ScriptOperatorNames::Subtraction => (
+            LuaOperatorKind::Sub,
+            Some(func.params.get(1)?),
+            func.returns.first()?,
+        ),
+        ScriptOperatorNames::Multiplication => (
+            LuaOperatorKind::Mul,
+            Some(func.params.get(1)?),
+            func.returns.first()?,
+        ),
+        ScriptOperatorNames::Division => (
+            LuaOperatorKind::Div,
+            Some(func.params.get(1)?),
+            func.returns.first()?,
+        ),
+        ScriptOperatorNames::Remainder => (
+            LuaOperatorKind::Mod,
+            Some(func.params.get(1)?),
+            func.returns.first()?,
+        ),
+        ScriptOperatorNames::Negation => (LuaOperatorKind::Unm, None, func.returns.first()?),
+        ScriptOperatorNames::Exponentiation => (
+            LuaOperatorKind::Pow,
+            Some(func.params.get(1)?),
+            func.returns.first()?,
+        ),
+        ScriptOperatorNames::Equality => {
+            return Some(Err(FunctionSignature {
+                name: "__eq".into(),
+                ..func.clone()
+            }))
+        }
+        ScriptOperatorNames::LessThanComparison => {
+            return Some(Err(FunctionSignature {
+                name: "__lt".into(),
+                ..func.clone()
+            }))
+        }
+        ScriptOperatorNames::Length => (LuaOperatorKind::Len, None, func.returns.first()?),
+        ScriptOperatorNames::Iteration => {
+            return Some(Err(FunctionSignature {
+                name: "__pairs".into(),
+                ..func.clone()
+            }))
+        }
+        ScriptOperatorNames::DisplayPrint | ScriptOperatorNames::DebugPrint => {
+            return Some(Err(FunctionSignature {
+                name: "__tostring".into(),
+                ..func.clone()
+            }))
+        }
+    };
+
+    Some(Ok(LuaOperator {
+        operation: metamethod,
+        param_type: second_arg.map(|a| a.ty.clone()),
+        return_type: ret.clone(),
+    }))
+}
+
+// /// some operators aren't fully supported by lua language server.
+// /// we implement those by converting to metatable entries, to signal the existence
+// pub fn lua_operator_to_special_function(op: &LuaOperator) -> Option<FunctionSignature> {
+//     Some(match op.operation {
+//         LuaOperatorKind::Eq => FunctionSignature {
+//             name: "__eq",
+//             params: ,
+//             returns: (),
+//             async_fn: (),
+//             deprecated: (),
+//             nodiscard: (),
+//             package: (),
+//             overloads: (),
+//             generics: (),
+//             documentation: (),
+//             has_self: (),
+//         },
+//         LuaOperatorKind::ToString => todo!(),
+//         LuaOperatorKind::Pairs => todo!(),
+//         _ => return None,
+//     })
+// }
+
 pub fn lad_function_to_lua_function(
     ladfile: &LadFile,
     function: &LadFunction,
 ) -> Result<FunctionSignature, anyhow::Error> {
-    let name = if let Some((name, _)) = function.as_overload() {
-        name
-    } else {
-        function.identifier.to_string()
-    };
-
+    // overloads get a unique instantiation, but maybe that's wrong
+    let name = function.identifier.to_string();
     ForbiddenKeywords::is_forbidden_err(&function.identifier)?;
 
     let params = function
@@ -252,7 +361,7 @@ pub fn lad_function_to_lua_function(
         .filter(|a| {
             !matches!(
                 a.kind,
-                LadTypeKind::Primitive(ladfile::LadBMSPrimitiveKind::FunctionCallContext)
+                LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
             )
         })
         .enumerate()
@@ -268,7 +377,7 @@ pub fn lad_function_to_lua_function(
                     Err(_) => format!("_{ident}"),
                 },
                 ty: lad_instance_to_lua_type(ladfile, &a.kind)?,
-                optional: matches!(a.kind, LadTypeKind::Option(..)),
+                optional: matches!(a.kind, LadFieldOrVariableKind::Option(..)),
                 description: a.documentation.as_ref().map(|d| d.to_string()),
             })
         })
@@ -279,7 +388,9 @@ pub fn lad_function_to_lua_function(
             .arguments
             .first()
             .is_some_and(|a| match &a.kind {
-                LadTypeKind::Ref(i) | LadTypeKind::Mut(i) | LadTypeKind::Val(i) => lad_type_id == i,
+                LadFieldOrVariableKind::Ref(i)
+                | LadFieldOrVariableKind::Mut(i)
+                | LadFieldOrVariableKind::Val(i) => lad_type_id == i,
                 _ => false,
             })
             .then_some(lad_type_id),
@@ -305,7 +416,7 @@ pub fn lad_function_to_lua_function(
 
 pub fn to_lua_many(
     ladfile: &LadFile,
-    lad_types: &[ladfile::LadTypeKind],
+    lad_types: &[ladfile::LadFieldOrVariableKind],
 ) -> Result<Vec<LuaType>, anyhow::Error> {
     let lua_types = lad_types
         .iter()
@@ -314,89 +425,100 @@ pub fn to_lua_many(
     Ok(lua_types)
 }
 
-pub fn lad_type_to_lua_type(
-    ladfile: &LadFile,
-    lad_type_id: LadTypeId,
-) -> Result<LuaType, anyhow::Error> {
-    if let Some(primitive) = ladfile.primitives.get(&lad_type_id) {
-        Ok(lad_primitive_to_lua_type(&primitive.kind))
-    } else {
-        Ok(LuaType::Alias(
-            ladfile.get_type_identifier(&lad_type_id, None).to_string(),
-        ))
-    }
-}
+// pub fn lad_type_to_lua_type(
+//     ladfile: &LadFile,
+//     lad_type_id: LadTypeId,
+// ) -> Result<LuaType, anyhow::Error> {
+//     if let Some(primitive) = ladfile.primitives.get(&lad_type_id) {
+//         Ok(lad_primitive_to_lua_type(&primitive.kind))
+//     } else {
+//         if ladfile.get_type_generics(&lad_type_id).is_some() {
+//             return Err(anyhow::anyhow!(
+//                 "Type contains generics: {}",
+//                 ladfile.get_type_identifier(&lad_type_id, None)
+//             ));
+//         }
+//         Ok(LuaType::Alias(
+//             ladfile.get_type_identifier(&lad_type_id, None).to_string(),
+//         ))
+//     }
+// }
 
 pub fn lad_instance_to_lua_type(
     ladfile: &LadFile,
-    lad_type: &ladfile::LadTypeKind,
+    lad_type: &ladfile::LadFieldOrVariableKind,
 ) -> Result<LuaType, anyhow::Error> {
     Ok(match &lad_type {
-        ladfile::LadTypeKind::Primitive(prim) => lad_primitive_to_lua_type(prim),
-        ladfile::LadTypeKind::Ref(lad_type_id)
-        | ladfile::LadTypeKind::Mut(lad_type_id)
-        | ladfile::LadTypeKind::Val(lad_type_id) => {
+        ladfile::LadFieldOrVariableKind::Primitive(prim) => lad_primitive_to_lua_type(prim),
+        ladfile::LadFieldOrVariableKind::Ref(lad_type_id)
+        | ladfile::LadFieldOrVariableKind::Mut(lad_type_id)
+        | ladfile::LadFieldOrVariableKind::Val(lad_type_id) => {
             LuaType::Alias(ladfile.get_type_identifier(lad_type_id, None).to_string())
         }
-        ladfile::LadTypeKind::Option(lad_type_kind) => LuaType::Union(vec![
+        ladfile::LadFieldOrVariableKind::Option(lad_type_kind) => LuaType::Union(vec![
             lad_instance_to_lua_type(ladfile, lad_type_kind)?,
             LuaType::Primitive(LuaPrimitiveType::Nil),
         ]),
-        ladfile::LadTypeKind::Vec(lad_type_kind) => {
+        ladfile::LadFieldOrVariableKind::Vec(lad_type_kind) => {
             LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
         }
-        ladfile::LadTypeKind::HashMap(key, value) => LuaType::Dictionary {
+        ladfile::LadFieldOrVariableKind::HashMap(key, value) => LuaType::Dictionary {
             key: Box::new(lad_instance_to_lua_type(ladfile, key)?),
             value: Box::new(lad_instance_to_lua_type(ladfile, value)?),
         },
-        ladfile::LadTypeKind::InteropResult(lad_type_kind) => {
+        ladfile::LadFieldOrVariableKind::HashSet(key) => LuaType::Dictionary {
+            key: Box::new(lad_instance_to_lua_type(ladfile, key)?),
+            value: Box::new(LuaType::Primitive(LuaPrimitiveType::Boolean)),
+        },
+        ladfile::LadFieldOrVariableKind::InteropResult(lad_type_kind) => {
             lad_instance_to_lua_type(ladfile, lad_type_kind)? // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
         }
-        ladfile::LadTypeKind::Tuple(lad_type_kinds) => {
+        ladfile::LadFieldOrVariableKind::Tuple(lad_type_kinds) => {
             if lad_type_kinds.is_empty() {
                 LuaType::Primitive(LuaPrimitiveType::Nil)
             } else {
                 LuaType::Tuple(to_lua_many(ladfile, lad_type_kinds)?)
             }
         }
-        ladfile::LadTypeKind::Array(lad_type_kind, _) => {
+        ladfile::LadFieldOrVariableKind::Array(lad_type_kind, _) => {
             LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
         }
-        ladfile::LadTypeKind::Union(lad_type_kinds) => {
+        ladfile::LadFieldOrVariableKind::Union(lad_type_kinds) => {
             LuaType::Union(to_lua_many(ladfile, lad_type_kinds)?)
         }
-        ladfile::LadTypeKind::Unknown(_) => LuaType::Any,
+        ladfile::LadFieldOrVariableKind::Unknown(_) => LuaType::Any,
     })
 }
 
-pub fn lad_primitive_to_lua_type(lad_primitive: &ladfile::LadBMSPrimitiveKind) -> LuaType {
+pub fn lad_primitive_to_lua_type(lad_primitive: &ReflectionPrimitiveKind) -> LuaType {
     LuaType::Primitive(match lad_primitive {
-        ladfile::LadBMSPrimitiveKind::Bool => LuaPrimitiveType::Boolean,
-        ladfile::LadBMSPrimitiveKind::Isize
-        | ladfile::LadBMSPrimitiveKind::I8
-        | ladfile::LadBMSPrimitiveKind::I16
-        | ladfile::LadBMSPrimitiveKind::I32
-        | ladfile::LadBMSPrimitiveKind::I64
-        | ladfile::LadBMSPrimitiveKind::I128
-        | ladfile::LadBMSPrimitiveKind::Usize
-        | ladfile::LadBMSPrimitiveKind::U8
-        | ladfile::LadBMSPrimitiveKind::U16
-        | ladfile::LadBMSPrimitiveKind::U32
-        | ladfile::LadBMSPrimitiveKind::U64
-        | ladfile::LadBMSPrimitiveKind::U128 => LuaPrimitiveType::Integer,
-        ladfile::LadBMSPrimitiveKind::F32 | ladfile::LadBMSPrimitiveKind::F64 => {
-            LuaPrimitiveType::Number
+        ReflectionPrimitiveKind::Bool => LuaPrimitiveType::Boolean,
+        ReflectionPrimitiveKind::Isize
+        | ReflectionPrimitiveKind::I8
+        | ReflectionPrimitiveKind::I16
+        | ReflectionPrimitiveKind::I32
+        | ReflectionPrimitiveKind::I64
+        | ReflectionPrimitiveKind::I128
+        | ReflectionPrimitiveKind::Usize
+        | ReflectionPrimitiveKind::U8
+        | ReflectionPrimitiveKind::U16
+        | ReflectionPrimitiveKind::U32
+        | ReflectionPrimitiveKind::U64
+        | ReflectionPrimitiveKind::U128 => LuaPrimitiveType::Integer,
+        ReflectionPrimitiveKind::F32 | ReflectionPrimitiveKind::F64 => LuaPrimitiveType::Number,
+        ReflectionPrimitiveKind::Char
+        | ReflectionPrimitiveKind::Str
+        | ReflectionPrimitiveKind::String
+        | ReflectionPrimitiveKind::OsString
+        | ReflectionPrimitiveKind::PathBuf => LuaPrimitiveType::String,
+        ReflectionPrimitiveKind::FunctionCallContext => return LuaType::Any,
+        ReflectionPrimitiveKind::DynamicFunction | ReflectionPrimitiveKind::DynamicFunctionMut => {
+            LuaPrimitiveType::Function
         }
-        ladfile::LadBMSPrimitiveKind::Char
-        | ladfile::LadBMSPrimitiveKind::Str
-        | ladfile::LadBMSPrimitiveKind::String
-        | ladfile::LadBMSPrimitiveKind::OsString
-        | ladfile::LadBMSPrimitiveKind::PathBuf => LuaPrimitiveType::String,
-        ladfile::LadBMSPrimitiveKind::FunctionCallContext => return LuaType::Any,
-        ladfile::LadBMSPrimitiveKind::DynamicFunction
-        | ladfile::LadBMSPrimitiveKind::DynamicFunctionMut => LuaPrimitiveType::Function,
-        ladfile::LadBMSPrimitiveKind::ReflectReference => {
+        ReflectionPrimitiveKind::ReflectReference => {
             return LuaType::Alias("ReflectReference".to_string())
         }
+        ReflectionPrimitiveKind::ScriptValue => return LuaType::Any,
+        ReflectionPrimitiveKind::External(_) => return LuaType::Any,
     })
 }

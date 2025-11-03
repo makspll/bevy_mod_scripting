@@ -32,8 +32,6 @@ fn copy_example_ladfile_to_relevant_test(tests_dir: &std::path::Path) {
     std::fs::write(book_ladfile_path, ladfile).expect("failed to copy LAD file");
 }
 
-const BLESS_MODE: bool = true;
-
 #[test]
 fn main() {
     add_executable_dir_to_path();
@@ -79,7 +77,7 @@ fn main() {
             let generated_str = std::fs::read_to_string(folder_path.join("bindings.lua"))
                 .expect("failed to read bindings.lua file");
 
-            if BLESS_MODE {
+            if std::env::var("BLESS_MODE").is_ok() {
                 std::fs::write(&expected_path, &generated_str)
                     .expect("failed to write expected.lua file");
             } else {
@@ -92,7 +90,7 @@ fn main() {
             }
         }
     }
-    if BLESS_MODE {
+    if std::env::var("BLESS_MODE").is_ok() {
         panic!("BLESS_MODE is enabled, please disable it to run the tests");
     }
 }

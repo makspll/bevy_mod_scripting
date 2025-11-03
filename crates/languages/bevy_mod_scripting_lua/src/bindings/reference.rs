@@ -3,6 +3,7 @@ use std::any::TypeId;
 use bevy_mod_scripting_bindings::{
     ReflectReference, ThreadWorldContainer, error::InteropError, script_value::ScriptValue,
 };
+use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_display::OrFakeId;
 use mlua::{ExternalError, MetaMethod, UserData, UserDataMethods};
 
@@ -115,7 +116,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "sub", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::Subtraction.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -137,7 +143,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "add", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::Addition.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -159,7 +170,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "mul", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::Multiplication.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -181,7 +197,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "div", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::Division.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -203,7 +224,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "rem", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::Remainder.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -222,7 +248,12 @@ impl UserData for LuaReflectReference {
                 .or_fake_id();
             let args = vec![ScriptValue::Reference(self_)];
             let out = world
-                .try_call_overloads(target_type_id, "neg", args, LUA_CALLER_CONTEXT)
+                .try_call_overloads(
+                    target_type_id,
+                    ScriptOperatorNames::Negation.script_function_name(),
+                    args,
+                    LUA_CALLER_CONTEXT,
+                )
                 .map_err(IntoMluaError::to_lua_error)?;
             Ok(LuaScriptValue(out))
         });
@@ -243,7 +274,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "pow", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::Exponentiation.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -265,7 +301,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "eq", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::Equality.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -287,7 +328,12 @@ impl UserData for LuaReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
                 let out = world
-                    .try_call_overloads(target_type_id, "lt", args, LUA_CALLER_CONTEXT)
+                    .try_call_overloads(
+                        target_type_id,
+                        ScriptOperatorNames::LessThanComparison.script_function_name(),
+                        args,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map_err(IntoMluaError::to_lua_error)?;
                 Ok(LuaScriptValue(out))
             },
@@ -323,7 +369,10 @@ impl UserData for LuaReflectReference {
                 .world;
 
             let iter_func = world
-                .lookup_function([TypeId::of::<ReflectReference>()], "iter")
+                .lookup_function(
+                    [TypeId::of::<ReflectReference>()],
+                    ScriptOperatorNames::Iteration.script_function_name(),
+                )
                 .map_err(|f| {
                     InteropError::missing_function(
                         f,
@@ -349,7 +398,10 @@ impl UserData for LuaReflectReference {
             let reflect_reference: ReflectReference = self_.into();
 
             let func = world
-                .lookup_function([TypeId::of::<ReflectReference>()], "display")
+                .lookup_function(
+                    [TypeId::of::<ReflectReference>()],
+                    ScriptOperatorNames::DisplayPrint.script_function_name(),
+                )
                 .map_err(|f| {
                     InteropError::missing_function(
                         f,

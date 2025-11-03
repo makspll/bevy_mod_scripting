@@ -6,6 +6,7 @@ pub mod display {
 
 pub mod bindings {
     pub use bevy_mod_scripting_bindings::*;
+    pub use bevy_mod_scripting_bindings_domain::*;
 }
 
 pub mod core {

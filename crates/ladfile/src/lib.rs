@@ -9,6 +9,7 @@ use std::{
     collections::{HashMap, HashSet},
 };
 
+pub use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind; // re-export the thing we use
 use indexmap::IndexMap;
 
 /// The current version of the LAD_VERSION format supported by this library.
@@ -29,13 +30,10 @@ pub struct LadFile {
     pub globals: IndexMap<Cow<'static, str>, LadInstance>,
 
     /// The types defined in the LAD file.
-    pub types: IndexMap<LadTypeId, LadType>,
+    pub types: IndexMap<LadTypeId, LadTypeDefinition>,
 
     /// The functions defined in the LAD file.
     pub functions: IndexMap<LadFunctionId, LadFunction>,
-
-    /// A mapping from type ids to primitive types
-    pub primitives: IndexMap<LadTypeId, LadBMSPrimitiveType>,
 
     /// A description of the LAD file and its contents in markdown
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -50,7 +48,6 @@ impl LadFile {
             globals: IndexMap::new(),
             types: IndexMap::new(),
             functions: IndexMap::new(),
-            primitives: IndexMap::new(),
             description: None,
         }
     }
@@ -61,10 +58,6 @@ impl LadFile {
         type_id: &LadTypeId,
         raw_type_id_replacement: Option<&'static str>,
     ) -> Cow<'static, str> {
-        if let Some(primitive) = self.primitives.get(type_id) {
-            return primitive.kind.lad_type_id().to_string().into();
-        }
-
         self.types
             .get(type_id)
             .map(|t| t.identifier.clone().into())
@@ -78,8 +71,10 @@ impl LadFile {
     }
 
     /// Retrieves true if the type id corresponds to a primitive type.
-    pub fn is_primitive(&self, type_id: &LadTypeId) -> bool {
-        self.primitives.contains_key(type_id)
+    pub fn primitive_kind(&self, type_id: &LadTypeId) -> Option<&ReflectionPrimitiveKind> {
+        self.types
+            .get(type_id)
+            .and_then(|t| t.metadata.mapped_to_primitive_kind.as_ref())
     }
 
     /// Retrieves the generics of a type id if it is a generic type.
@@ -94,12 +89,6 @@ impl LadFile {
         self.types
             .get(type_id)
             .and_then(|t| t.documentation.as_deref())
-            // try primitives
-            .or_else(|| {
-                self.primitives
-                    .get(type_id)
-                    .map(|p| p.documentation.as_ref())
-            })
     }
 
     /// Retrieves the metadata section for the given lad type id.
@@ -122,15 +111,6 @@ impl LadFile {
                 .entry(PolymorphicTypeKey { identifier, arity })
                 .or_default()
                 .insert(type_id);
-        }
-
-        for (primitive_id, primitive) in &self.primitives {
-            let arity = 0; // primitives have no generics currently
-            let identifier = primitive.kind.lad_type_id().to_string().into();
-            types_by_identifier_and_arity
-                .entry(PolymorphicTypeKey { identifier, arity })
-                .or_default()
-                .insert(primitive_id);
         }
 
         types_by_identifier_and_arity
@@ -167,7 +147,7 @@ impl Default for LadFile {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadInstance {
     /// The kind of the instance
-    pub type_kind: LadTypeKind,
+    pub type_kind: LadFieldOrVariableKind,
 
     /// whether the instance is static or not
     ///
@@ -203,6 +183,8 @@ pub struct LadFunction {
     pub namespace: LadFunctionNamespace,
     /// The identifier or name of the function.
     pub identifier: Cow<'static, str>,
+    /// If `Some`, signifies the function is an overload of another function
+    pub overload_index: Option<usize>,
     /// The argument information for the function.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub arguments: Vec<LadArgument>,
@@ -211,16 +193,34 @@ pub struct LadFunction {
     /// The documentation describing the function.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<Cow<'static, str>>,
+    /// Function metadata
+    pub metadata: LadFunctionMetadata,
+}
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+/// Additional data relevant to functions
+pub struct LadFunctionMetadata {
+    /// True if the function represents a supported binary or unary operation
+    pub is_operator: bool,
+    /// Extra metadata to be populated by external plugins
+    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
+    pub misc: HashMap<String, String>,
 }
 
 impl LadFunction {
     /// Checks if the function is an overload, and if so parses the overload number and the true name.
-    pub fn as_overload(&self) -> Option<(String, usize)> {
-        let split = self.identifier.split('-').collect::<Vec<_>>();
-        if split.len() == 2 {
-            return Some((split[0].to_string(), split[1].parse().ok()?));
+    pub fn as_overload(&self) -> Option<(Cow<'static, str>, usize)> {
+        self.overload_index
+            .map(|index| (self.identifier.clone(), index))
+    }
+
+    /// Qualifies the identifier of this function with its overload number.
+    /// Use this instead of the identifier if you require a unique name per function.
+    pub fn identifier_with_overload(&self) -> Cow<'static, str> {
+        if let Some(index) = self.overload_index {
+            format!("{}-{index}", self.identifier).into()
+        } else {
+            self.identifier.clone()
         }
-        None
     }
 }
 
@@ -238,7 +238,7 @@ pub enum LadFunctionNamespace {
 /// An argument definition used in a LAD file.
 pub struct LadArgument {
     /// The kind and type of argument
-    pub kind: LadTypeKind,
+    pub kind: LadFieldOrVariableKind,
 
     /// The provided documentation for this argument. Normally derived from the function docstring.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -250,8 +250,8 @@ pub struct LadArgument {
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-/// The kind of type in a LAD file.
-/// There is a distinction between the "core" identity of a type
+/// The kind of field or variable/parameter in a LAD file.
+/// There is a distinction between the "core" definition/identity of a type
 /// and how it's used in various contexts.
 ///
 /// for example:
@@ -260,7 +260,7 @@ pub struct LadArgument {
 ///
 /// In generating documents, it's convenient to distinguish a few core "containers" to provide useful information.
 #[serde(rename_all = "camelCase")]
-pub enum LadTypeKind {
+pub enum LadFieldOrVariableKind {
     /// a `Ref` wrapped argument
     Ref(LadTypeId),
     /// a `Mut` wrapped argument
@@ -268,27 +268,46 @@ pub enum LadTypeKind {
     /// a `Val` wrapped argument
     Val(LadTypeId),
     /// an `Option` wrapped argument
-    Option(Box<LadTypeKind>),
+    Option(Box<LadFieldOrVariableKind>),
     /// a `Vec`
-    Vec(Box<LadTypeKind>),
+    Vec(Box<LadFieldOrVariableKind>),
     /// a `HashMap`
-    HashMap(Box<LadTypeKind>, Box<LadTypeKind>),
+    HashMap(Box<LadFieldOrVariableKind>, Box<LadFieldOrVariableKind>),
+    /// a `HashSet`
+    HashSet(Box<LadFieldOrVariableKind>),
     /// A `InteropResult`
-    InteropResult(Box<LadTypeKind>),
+    InteropResult(Box<LadFieldOrVariableKind>),
     /// A tuple of arguments
-    Tuple(Vec<LadTypeKind>),
+    Tuple(Vec<LadFieldOrVariableKind>),
     /// An array
-    Array(Box<LadTypeKind>, usize),
+    Array(Box<LadFieldOrVariableKind>, usize),
     /// A primitive type, implementing `IntoScript` and `FromScript` natively in BMS.
-    Primitive(LadBMSPrimitiveKind),
+    Primitive(ReflectionPrimitiveKind),
     /// A union of two or more types
-    Union(Vec<LadTypeKind>),
+    Union(Vec<LadFieldOrVariableKind>),
     /// An arbitrary type which is either unsupported, doesn't contain type information, or is generally unknown.
     ///
     /// This will be the variant used for external primitives as well.
     Unknown(LadTypeId),
 }
 
+/// Utility for dispatching visitors on dyn traits
+pub trait LadVisitable {
+    /// Runs the visitor on the given node
+    fn accept(&self, visitor: &mut dyn ArgumentVisitor);
+}
+
+impl LadVisitable for LadTypeId {
+    fn accept(&self, visitor: &mut dyn ArgumentVisitor) {
+        visitor.visit_lad_type_id(self);
+    }
+}
+
+impl LadVisitable for LadFieldOrVariableKind {
+    fn accept(&self, visitor: &mut dyn ArgumentVisitor) {
+        visitor.visit(self);
+    }
+}
 /// A visitor pattern for running arbitrary logic on the hierarchy of arguments.
 ///
 /// Use cases are mostly to do with printing the arguments in a human readable format.
@@ -296,10 +315,20 @@ pub enum LadTypeKind {
 #[cfg(feature = "visitor")]
 pub trait ArgumentVisitor {
     /// perform an action on a `LadTypeId`, by default noop
-    fn visit_lad_type_id(&mut self, type_id: &LadTypeId) {}
+    fn visit_lad_type_id(&mut self, type_id: &LadTypeId);
+
     /// perform an action on a `LadBMSPrimitiveKind`, by default visits the type id of the primitive kind
-    fn visit_lad_bms_primitive_kind(&mut self, primitive_kind: &LadBMSPrimitiveKind) {
-        self.visit_lad_type_id(&primitive_kind.lad_type_id());
+    fn visit_lad_bms_primitive_kind(&mut self, primitive_kind: &ReflectionPrimitiveKind);
+
+    /// perform an action on a `Unknown`, by default visits the type id of the unknown type
+    fn visit_unknown(&mut self, type_id: &LadTypeId) {
+        self.visit_lad_type_id(type_id);
+    }
+
+    /// walks the lad type_id structure, by default simply visits type_id's
+    /// Can be used to dispatch to primitives instead of the type maps to these
+    fn walk_lad_type_id(&mut self, type_id: &LadTypeId) {
+        self.visit_lad_type_id(type_id);
     }
 
     /// traverse a `Ref` wrapped argument, by default calls `visit` on the inner argument
@@ -318,45 +347,50 @@ pub trait ArgumentVisitor {
     }
 
     /// traverse an `Option` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_option(&mut self, inner: &LadTypeKind) {
+    fn walk_option(&mut self, inner: &LadFieldOrVariableKind) {
         self.visit(inner);
     }
 
     /// traverse a `Vec` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_vec(&mut self, inner: &LadTypeKind) {
+    fn walk_vec(&mut self, inner: &LadFieldOrVariableKind) {
         self.visit(inner);
     }
 
     /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_map(&mut self, key: &LadTypeKind, value: &LadTypeKind) {
+    fn walk_hash_map(&mut self, key: &LadFieldOrVariableKind, value: &LadFieldOrVariableKind) {
         self.visit(key);
         self.visit(value);
     }
 
+    /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
+    fn walk_hash_set(&mut self, key: &LadFieldOrVariableKind) {
+        self.visit(key);
+    }
+
     /// traverse an `InteropResult` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_interop_result(&mut self, inner: &LadTypeKind) {
+    fn walk_interop_result(&mut self, inner: &LadFieldOrVariableKind) {
         self.visit(inner);
     }
 
     /// traverse a tuple of arguments, by default calls `visit` on each argument
-    fn walk_tuple(&mut self, inner: &[LadTypeKind]) {
+    fn walk_tuple(&mut self, inner: &[LadFieldOrVariableKind]) {
         for arg in inner {
             self.visit(arg);
         }
     }
 
     /// traverse an array of arguments, by default calls `visit` on the inner argument
-    fn walk_array(&mut self, inner: &LadTypeKind, size: usize) {
+    fn walk_array(&mut self, inner: &LadFieldOrVariableKind, size: usize) {
         self.visit(inner);
     }
 
     /// traverse a primitive argument, by default calls `visit` on the primitive kind
-    fn walk_primitive(&mut self, primitive_kind: &LadBMSPrimitiveKind) {
+    fn walk_primitive(&mut self, primitive_kind: &ReflectionPrimitiveKind) {
         self.visit_lad_bms_primitive_kind(primitive_kind);
     }
 
     /// traverse a union of arguments, by default calls `visit` on each argument
-    fn walk_union(&mut self, inner: &[LadTypeKind]) {
+    fn walk_union(&mut self, inner: &[LadFieldOrVariableKind]) {
         for arg in inner {
             self.visit(arg);
         }
@@ -364,7 +398,7 @@ pub trait ArgumentVisitor {
 
     /// traverse an unknown argument, by default calls `visit` on the type id
     fn walk_unknown(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+        self.visit_unknown(type_id);
     }
 
     /// Visit an argument kind, by default calls the appropriate walk method on each enum variant.
@@ -372,105 +406,79 @@ pub trait ArgumentVisitor {
     /// Each walk variant will walk over nested kinds, and visit the leaf types.
     ///
     /// If you want to do something with the parent types, you WILL have to override each individual walk method.
-    fn visit(&mut self, kind: &LadTypeKind) {
+    fn visit(&mut self, kind: &LadFieldOrVariableKind) {
         match kind {
-            LadTypeKind::Ref(type_id) => self.walk_ref(type_id),
-            LadTypeKind::Mut(type_id) => self.walk_mut(type_id),
-            LadTypeKind::Val(type_id) => self.walk_val(type_id),
-            LadTypeKind::Option(inner) => self.walk_option(inner),
-            LadTypeKind::Vec(inner) => self.walk_vec(inner),
-            LadTypeKind::HashMap(key, value) => self.walk_hash_map(key, value),
-            LadTypeKind::InteropResult(inner) => self.walk_interop_result(inner),
-            LadTypeKind::Tuple(inner) => self.walk_tuple(inner),
-            LadTypeKind::Array(inner, size) => self.walk_array(inner, *size),
-            LadTypeKind::Primitive(primitive_kind) => self.walk_primitive(primitive_kind),
-            LadTypeKind::Union(inner) => self.walk_union(inner),
-            LadTypeKind::Unknown(type_id) => self.walk_unknown(type_id),
+            LadFieldOrVariableKind::Ref(type_id) => self.walk_ref(type_id),
+            LadFieldOrVariableKind::Mut(type_id) => self.walk_mut(type_id),
+            LadFieldOrVariableKind::Val(type_id) => self.walk_val(type_id),
+            LadFieldOrVariableKind::Option(inner) => self.walk_option(inner),
+            LadFieldOrVariableKind::Vec(inner) => self.walk_vec(inner),
+            LadFieldOrVariableKind::HashMap(key, value) => self.walk_hash_map(key, value),
+            LadFieldOrVariableKind::HashSet(key) => self.walk_hash_set(key),
+            LadFieldOrVariableKind::InteropResult(inner) => self.walk_interop_result(inner),
+            LadFieldOrVariableKind::Tuple(inner) => self.walk_tuple(inner),
+            LadFieldOrVariableKind::Array(inner, size) => self.walk_array(inner, *size),
+            LadFieldOrVariableKind::Primitive(primitive_kind) => {
+                self.walk_primitive(primitive_kind)
+            }
+            LadFieldOrVariableKind::Union(inner) => self.walk_union(inner),
+            LadFieldOrVariableKind::Unknown(type_id) => self.walk_unknown(type_id),
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-/// A BMS primitive definition
-pub struct LadBMSPrimitiveType {
-    /// The kind of primitive
-    pub kind: LadBMSPrimitiveKind,
-    /// The documentation describing the primitive
-    pub documentation: Cow<'static, str>,
-}
+// #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+// /// A BMS primitive definition
+// pub struct LadBMSPrimitiveType {
+//     /// The kind of primitive
+//     pub kind: ReflectionPrimitiveKind,
+//     /// The documentation describing the primitive
+//     pub documentation: Cow<'static, str>,
+// }
 
-/// A primitive type kind in the LAD file format.
-///
-/// The docstrings on variants corresponding to Reflect types, are used to generate documentation for these primitives.
-#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[allow(missing_docs)]
-pub enum LadBMSPrimitiveKind {
-    Bool,
-    Isize,
-    I8,
-    I16,
-    I32,
-    I64,
-    I128,
-    Usize,
-    U8,
-    U16,
-    U32,
-    U64,
-    U128,
-    F32,
-    F64,
-    Char,
-    Str,
-    String,
-    OsString,
-    PathBuf,
-    FunctionCallContext,
-    DynamicFunction,
-    DynamicFunctionMut,
-    ReflectReference,
-}
-
-impl LadBMSPrimitiveKind {
-    /// Get the corresponding type id for a primitive kind.
-    pub fn lad_type_id(self) -> LadTypeId {
-        match self {
-            LadBMSPrimitiveKind::Bool => LadTypeId::new_string_id("bool".into()),
-            LadBMSPrimitiveKind::Isize => LadTypeId::new_string_id("isize".into()),
-            LadBMSPrimitiveKind::I8 => LadTypeId::new_string_id("i8".into()),
-            LadBMSPrimitiveKind::I16 => LadTypeId::new_string_id("i16".into()),
-            LadBMSPrimitiveKind::I32 => LadTypeId::new_string_id("i32".into()),
-            LadBMSPrimitiveKind::I64 => LadTypeId::new_string_id("i64".into()),
-            LadBMSPrimitiveKind::I128 => LadTypeId::new_string_id("i128".into()),
-            LadBMSPrimitiveKind::Usize => LadTypeId::new_string_id("usize".into()),
-            LadBMSPrimitiveKind::U8 => LadTypeId::new_string_id("u8".into()),
-            LadBMSPrimitiveKind::U16 => LadTypeId::new_string_id("u16".into()),
-            LadBMSPrimitiveKind::U32 => LadTypeId::new_string_id("u32".into()),
-            LadBMSPrimitiveKind::U64 => LadTypeId::new_string_id("u64".into()),
-            LadBMSPrimitiveKind::U128 => LadTypeId::new_string_id("u128".into()),
-            LadBMSPrimitiveKind::F32 => LadTypeId::new_string_id("f32".into()),
-            LadBMSPrimitiveKind::F64 => LadTypeId::new_string_id("f64".into()),
-            LadBMSPrimitiveKind::Char => LadTypeId::new_string_id("char".into()),
-            LadBMSPrimitiveKind::Str => LadTypeId::new_string_id("str".into()),
-            LadBMSPrimitiveKind::String => LadTypeId::new_string_id("String".into()),
-            LadBMSPrimitiveKind::OsString => LadTypeId::new_string_id("OsString".into()),
-            LadBMSPrimitiveKind::PathBuf => LadTypeId::new_string_id("PathBuf".into()),
-            LadBMSPrimitiveKind::FunctionCallContext => {
-                LadTypeId::new_string_id("FunctionCallContext".into())
-            }
-            LadBMSPrimitiveKind::DynamicFunction => {
-                LadTypeId::new_string_id("DynamicFunction".into())
-            }
-            LadBMSPrimitiveKind::DynamicFunctionMut => {
-                LadTypeId::new_string_id("DynamicFunctionMut".into())
-            }
-            LadBMSPrimitiveKind::ReflectReference => {
-                LadTypeId::new_string_id("ReflectReference".into())
-            }
-        }
-    }
-}
+// impl LadBMSPrimitiveType {
+//     /// Get the corresponding type id for a primitive kind.
+//     pub fn lad_type_id(kind: ReflectionPrimitiveKind) -> LadTypeId {
+//         match kind {
+//             ReflectionPrimitiveKind::Bool => LadTypeId::new_string_id("bool".into()),
+//             ReflectionPrimitiveKind::Isize => LadTypeId::new_string_id("isize".into()),
+//             ReflectionPrimitiveKind::I8 => LadTypeId::new_string_id("i8".into()),
+//             ReflectionPrimitiveKind::I16 => LadTypeId::new_string_id("i16".into()),
+//             ReflectionPrimitiveKind::I32 => LadTypeId::new_string_id("i32".into()),
+//             ReflectionPrimitiveKind::I64 => LadTypeId::new_string_id("i64".into()),
+//             ReflectionPrimitiveKind::I128 => LadTypeId::new_string_id("i128".into()),
+//             ReflectionPrimitiveKind::Usize => LadTypeId::new_string_id("usize".into()),
+//             ReflectionPrimitiveKind::U8 => LadTypeId::new_string_id("u8".into()),
+//             ReflectionPrimitiveKind::U16 => LadTypeId::new_string_id("u16".into()),
+//             ReflectionPrimitiveKind::U32 => LadTypeId::new_string_id("u32".into()),
+//             ReflectionPrimitiveKind::U64 => LadTypeId::new_string_id("u64".into()),
+//             ReflectionPrimitiveKind::U128 => LadTypeId::new_string_id("u128".into()),
+//             ReflectionPrimitiveKind::F32 => LadTypeId::new_string_id("f32".into()),
+//             ReflectionPrimitiveKind::F64 => LadTypeId::new_string_id("f64".into()),
+//             ReflectionPrimitiveKind::Char => LadTypeId::new_string_id("char".into()),
+//             ReflectionPrimitiveKind::Str => LadTypeId::new_string_id("str".into()),
+//             ReflectionPrimitiveKind::String => LadTypeId::new_string_id("String".into()),
+//             ReflectionPrimitiveKind::OsString => LadTypeId::new_string_id("OsString".into()),
+//             ReflectionPrimitiveKind::PathBuf => LadTypeId::new_string_id("PathBuf".into()),
+//             ReflectionPrimitiveKind::FunctionCallContext => {
+//                 LadTypeId::new_string_id("FunctionCallContext".into())
+//             }
+//             ReflectionPrimitiveKind::DynamicFunction => {
+//                 LadTypeId::new_string_id("DynamicFunction".into())
+//             }
+//             ReflectionPrimitiveKind::DynamicFunctionMut => {
+//                 LadTypeId::new_string_id("DynamicFunctionMut".into())
+//             }
+//             ReflectionPrimitiveKind::ReflectReference => {
+//                 LadTypeId::new_string_id("ReflectReference".into())
+//             }
+//             ReflectionPrimitiveKind::ScriptValue => LadTypeId::new_string_id("ScriptValue".into()),
+//             ReflectionPrimitiveKind::External(external) => {
+//                 LadTypeId::new_string_id(external.into())
+//             }
+//         }
+//     }
+// }
 
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
@@ -496,7 +504,7 @@ impl LadTypeId {
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A type definition used in a LAD file.
-pub struct LadType {
+pub struct LadTypeDefinition {
     /// The identifier or name of the type.
     pub identifier: String,
 
@@ -553,6 +561,9 @@ pub struct LadTypeMetadata {
     /// True if the type actually implements reflect, some types can be
     /// added as namespaces without actually implementing the Reflect trait
     pub is_reflect: bool,
+
+    /// Set to a primitive kind if this type is mapped to a primitive
+    pub mapped_to_primitive_kind: Option<ReflectionPrimitiveKind>,
 
     /// Extra metadata sections that plugins can use to serialize other information
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
@@ -649,7 +660,7 @@ pub enum LadVariant {
 pub struct LadField {
     /// The type of the field.
     #[serde(rename = "type")]
-    pub type_: LadTypeId,
+    pub type_: LadFieldOrVariableKind,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -659,7 +670,7 @@ pub struct LadNamedField {
     pub name: String,
     #[serde(rename = "type")]
     /// The type of the field.
-    pub type_: LadTypeId,
+    pub type_: LadFieldOrVariableKind,
 }
 
 /// A generic type definition used in a LAD file.

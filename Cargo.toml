@@ -111,6 +111,7 @@ bevy_mod_scripting_functions = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
 
@@ -127,9 +128,9 @@ bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", ver
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.16.0", default-features = false }
 bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.16.0", default-features = false }
 bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.16.0", default-features = false }
+bevy_mod_scripting_bindings_domain = { path = "crates/bevy_mod_scripting_bindings_domain", version = "0.16.0", default-features = false }
 bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.16.0", default-features = false }
 bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.16.0", default-features = false }
-
 # bevy
 
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.16.0" }
@@ -269,6 +270,7 @@ members = [
     "crates/bevy_mod_scripting_bindings",
     "crates/bevy_mod_scripting_display",
     "crates/bevy_mod_scripting_script",
+    "crates/bevy_mod_scripting_bindings_domain",
 ]
 resolver = "2"
 exclude = ["codegen", "crates/macro_tests", "xtask"]

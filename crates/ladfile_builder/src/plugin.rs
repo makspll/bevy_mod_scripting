@@ -11,8 +11,9 @@ use bevy_mod_scripting_bindings::{
     DummyScriptFunctionRegistry, IntoNamespace,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
+    into_through_type_info,
 };
-use ladfile::{LadTypeKind, default_importance};
+use ladfile::{LadFieldOrVariableKind, default_importance};
 
 use crate::LadFileBuilder;
 
@@ -115,7 +116,10 @@ pub fn generate_lad_file(
             continue;
         }
 
-        builder.add_type_info(type_info);
+        // we don't really care about the Option in Option<T> as that is magically worked around in the entire API
+        // get the "pure" types
+        let through_type_info = into_through_type_info(type_info);
+        builder.add_through_type_info(&through_type_info);
 
         // find functions on the namespace
         for (_, function) in function_registry
@@ -146,7 +150,7 @@ pub fn generate_lad_file(
             builder.add_through_type_info(type_info);
             builder.lad_type_kind_from_through_type(type_info)
         } else {
-            LadTypeKind::Val(builder.lad_id_from_type_id(global.type_id))
+            LadFieldOrVariableKind::Val(builder.lad_id_from_type_id(global.type_id))
         };
 
         builder.add_instance_manually(key.to_string(), false, kind);

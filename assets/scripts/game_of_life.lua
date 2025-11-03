@@ -33,6 +33,7 @@ function on_click(x, y)
     local cells = life_state.cells
 
     local settings = world.get_resource(Settings)
+
     local dimensions = settings.physical_grid_dimensions
     local screen = settings.display_grid_dimensions
 

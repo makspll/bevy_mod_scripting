@@ -203,7 +203,7 @@ pub struct ClassField {
 /// ```
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum LuaOperator {
+pub enum LuaOperatorKind {
     Add, // +
     Sub, // -
     Mul, // *
@@ -224,6 +224,8 @@ pub enum LuaOperator {
     NewIndex, // []=
     #[serde(rename = "tostring")]
     ToString, // tostring()
+    Pairs, // pairs()
+    IPairs, // ipars()
 }
 
 /// Represents an operator overload for a class.
@@ -236,8 +238,8 @@ pub enum LuaOperator {
 /// ---@operator call(...): Vector     -- Call operator with variadic parameters
 /// ```
 #[derive(Debug, Clone, Serialize)]
-pub struct Operator {
-    pub operation: LuaOperator, // e.g., "add", "unm", "call"
+pub struct LuaOperator {
+    pub operation: LuaOperatorKind, // e.g., "add", "unm", "call"
     pub param_type: Option<LuaType>,
     pub return_type: LuaType,
 }
@@ -264,7 +266,7 @@ pub struct LuaClass {
     pub parents: Vec<String>,
     pub fields: Vec<ClassField>,
     pub generics: Vec<String>,
-    pub operators: Vec<Operator>,
+    pub operators: Vec<LuaOperator>,
     pub documentation: Option<String>,
 }
 

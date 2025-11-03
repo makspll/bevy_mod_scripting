@@ -8,7 +8,10 @@
 {{ self::multiline_description(description=class.documentation) -}}
 {%- for field in class.fields -%}
 {{- self::class_field(field=field) -}}
-{%- endfor -%}
+{%- endfor -%} {#- fields -#}
+{%- for operator in class.operators -%}
+---@operator {{operator.operation}}{% if operator.param_type %}({{self::lua_type(ty=operator.param_type)}}){% endif %}: {{self::lua_type(ty=operator.return_type)}}
+{% endfor -%}
 {{ class.name }} = {}
 {# newline #}
 {%- for function in module.functions -%}

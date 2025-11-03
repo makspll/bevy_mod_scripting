@@ -13,6 +13,7 @@ include = ["readme.md", "/src"]
 readme = "readme.md"
 
 [dependencies]
+bevy_mod_scripting_bindings_domain = { workspace = true }
 clap = { version = "4", features = ["derive"] }
 # mdbook = "0.4"
 anyhow = "1"

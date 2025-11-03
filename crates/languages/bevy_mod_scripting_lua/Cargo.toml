@@ -45,6 +45,7 @@ bevy_platform = { workspace = true, default-features = false, features = [] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
 mlua = { workspace = true, features = ["vendored", "send", "macros"] }
