@@ -18,7 +18,9 @@ pub fn convert_ladfile_to_lua_declaration_file(
         diagnostics: vec![],
     };
 
-    let rust_types = ladfile.polymorphizied_types();
+    // // ignore primitive types
+    // let exclude_primitives = true;
+    let rust_types = ladfile.polymorphizied_types(false);
 
     // convert each rust type to a lua class with generics
 
@@ -78,6 +80,11 @@ pub fn convert_ladfile_to_lua_declaration_file(
         } else {
             "An global instance of this type"
         };
+
+        // ignore primitives
+        if matches!(class, LuaType::Primitive(..)) {
+            continue;
+        }
 
         globals_module
             .globals
@@ -155,7 +162,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                                     }
                                 },
                                 scope: crate::lua_declaration_file::FieldScope::Public,
-                                optional: true,
+                                optional: false,
                                 description: None,
                             })
                         }
@@ -453,7 +460,14 @@ pub fn lad_instance_to_lua_type(
         ladfile::LadFieldOrVariableKind::Ref(lad_type_id)
         | ladfile::LadFieldOrVariableKind::Mut(lad_type_id)
         | ladfile::LadFieldOrVariableKind::Val(lad_type_id) => {
-            LuaType::Alias(ladfile.get_type_identifier(lad_type_id, None).to_string())
+            if ladfile.get_type_generics(lad_type_id).is_none() {
+                LuaType::Alias(ladfile.get_type_identifier(lad_type_id, None).to_string())
+            } else {
+                return Err(anyhow::anyhow!(
+                    "Generic fields are not supported: {}",
+                    lad_type_id
+                ));
+            }
         }
         ladfile::LadFieldOrVariableKind::Option(lad_type_kind) => LuaType::Union(vec![
             lad_instance_to_lua_type(ladfile, lad_type_kind)?,

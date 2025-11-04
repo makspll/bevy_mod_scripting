@@ -101,12 +101,18 @@ impl LadFile {
     /// this grouping represents types as expected to be seen in rust source code.
     ///
     /// For example `Vec<T>` and `Vec<i32>` will be grouped together as `Vec` with arity 1.
-    pub fn polymorphizied_types(&self) -> IndexMap<PolymorphicTypeKey, HashSet<&LadTypeId>> {
+    pub fn polymorphizied_types(
+        &self,
+        exclude_primitives: bool,
+    ) -> IndexMap<PolymorphicTypeKey, HashSet<&LadTypeId>> {
         let mut types_by_identifier_and_arity: IndexMap<PolymorphicTypeKey, HashSet<&LadTypeId>> =
             IndexMap::<PolymorphicTypeKey, HashSet<&LadTypeId>>::new();
         for type_id in self.types.keys() {
             let arity = self.get_type_arity(type_id);
             let identifier = self.get_type_identifier(type_id, None);
+            if exclude_primitives && self.primitive_kind(type_id).is_some() {
+                continue;
+            }
             types_by_identifier_and_arity
                 .entry(PolymorphicTypeKey { identifier, arity })
                 .or_default()
