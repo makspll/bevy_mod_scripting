@@ -430,25 +430,6 @@ pub fn to_lua_many(
     Ok(lua_types)
 }
 
-// pub fn lad_type_to_lua_type(
-//     ladfile: &LadFile,
-//     lad_type_id: LadTypeId,
-// ) -> Result<LuaType, anyhow::Error> {
-//     if let Some(primitive) = ladfile.primitives.get(&lad_type_id) {
-//         Ok(lad_primitive_to_lua_type(&primitive.kind))
-//     } else {
-//         if ladfile.get_type_generics(&lad_type_id).is_some() {
-//             return Err(anyhow::anyhow!(
-//                 "Type contains generics: {}",
-//                 ladfile.get_type_identifier(&lad_type_id, None)
-//             ));
-//         }
-//         Ok(LuaType::Alias(
-//             ladfile.get_type_identifier(&lad_type_id, None).to_string(),
-//         ))
-//     }
-// }
-
 pub fn lad_instance_to_lua_type(
     ladfile: &LadFile,
     lad_type: &ladfile::LadFieldOrVariableKind,
@@ -462,8 +443,7 @@ pub fn lad_instance_to_lua_type(
                 LuaType::Alias(ladfile.get_type_identifier(lad_type_id, None).to_string())
             } else {
                 return Err(anyhow::anyhow!(
-                    "Generic fields are not supported: {}",
-                    lad_type_id
+                    "Generic fields are not supported: {lad_type_id}",
                 ));
             }
         }
