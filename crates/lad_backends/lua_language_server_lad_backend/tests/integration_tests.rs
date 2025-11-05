@@ -82,6 +82,7 @@ fn main() {
             if std::env::var("BLESS_MODE").is_ok() {
                 std::fs::write(&expected_path, &generated_str)
                     .expect("failed to write expected.lua file");
+                panic!("BLESS_MODE is enabled, please disable it to run the tests");
             } else {
                 pretty_assertions::assert_eq!(
                     expected_str,
@@ -91,8 +92,5 @@ fn main() {
                 );
             }
         }
-    }
-    if std::env::var("BLESS_MODE").is_ok() {
-        panic!("BLESS_MODE is enabled, please disable it to run the tests");
     }
 }

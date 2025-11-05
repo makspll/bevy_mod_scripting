@@ -176,11 +176,11 @@ mod test {
             PathBuf::from("root\\asd").join(str)
         });
 
-        let first_type_id = ladfile.types.first().unwrap().0;
-        visitor.visit_lad_type_id(first_type_id);
+        let second_type_id = ladfile.types.iter().nth(1).unwrap().0;
+        visitor.visit_lad_type_id(second_type_id);
         assert_eq!(
             visitor.buffer.build(),
-            "StructType<[usize](root/asd/usize)>"
+            "GenericStructType<[Usize](root/asd/Usize)>"
         );
     }
 
@@ -192,13 +192,13 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit_lad_type_id(first_type_id);
-        assert_eq!(visitor.buffer.build(), "StructType<usize>");
+        assert_eq!(visitor.buffer.build(), "PlainStructType");
 
         visitor.buffer.clear();
 
         let second_type_id = ladfile.types.iter().nth(1).unwrap().0;
         visitor.visit_lad_type_id(second_type_id);
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "GenericStructType<Usize>");
     }
 
     #[test]
@@ -209,7 +209,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadFieldOrVariableKind::Ref(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "StructType<usize>");
+        assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
     #[test]
@@ -220,7 +220,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadFieldOrVariableKind::Mut(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "StructType<usize>");
+        assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
     #[test]
@@ -231,7 +231,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadFieldOrVariableKind::Val(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "StructType<usize>");
+        assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
     #[test]
@@ -243,7 +243,7 @@ mod test {
         visitor.visit(&LadFieldOrVariableKind::Option(Box::new(
             LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::Bool),
         )));
-        assert_eq!(visitor.buffer.build(), "Optional<bool>");
+        assert_eq!(visitor.buffer.build(), "Optional<Bool>");
     }
 
     #[test]
@@ -255,7 +255,7 @@ mod test {
         visitor.visit(&LadFieldOrVariableKind::Vec(Box::new(
             LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::Bool),
         )));
-        assert_eq!(visitor.buffer.build(), "Vec<bool>");
+        assert_eq!(visitor.buffer.build(), "Vec<Bool>");
     }
 
     #[test]
@@ -273,7 +273,7 @@ mod test {
             )),
         ));
 
-        assert_eq!(visitor.buffer.build(), "HashMap<bool, String>");
+        assert_eq!(visitor.buffer.build(), "HashMap<Bool, String>");
     }
 
     #[test]
@@ -297,7 +297,7 @@ mod test {
         ));
         assert_eq!(
             visitor.buffer.build(),
-            "HashMap<bool, StructType<usize> | StructType<usize> | StructType<usize>>"
+            "HashMap<Bool, PlainStructType | PlainStructType | PlainStructType>"
         );
     }
 
@@ -311,7 +311,7 @@ mod test {
             LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::Bool),
             LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::String),
         ]));
-        assert_eq!(visitor.buffer.build(), "(bool, String)");
+        assert_eq!(visitor.buffer.build(), "(Bool, String)");
     }
 
     #[test]
@@ -326,7 +326,7 @@ mod test {
             )),
             5,
         ));
-        assert_eq!(visitor.buffer.build(), "[bool; 5]");
+        assert_eq!(visitor.buffer.build(), "[Bool; 5]");
     }
 
     #[test]
@@ -338,6 +338,6 @@ mod test {
         let first_type_id = ladfile.types.first().unwrap().0;
 
         visitor.visit(&LadFieldOrVariableKind::Unknown(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "StructType<usize>");
+        assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 }

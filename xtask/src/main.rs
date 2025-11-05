@@ -1823,6 +1823,10 @@ impl Xtasks {
         test_args.push("--exclude".to_owned());
         test_args.push("xtask".to_owned());
 
+        if std::env::var("BLESS_MODE").is_ok() {
+            test_args.push("--no-fail-fast".to_owned())
+        }
+
         Self::run_workspace_command(
             &app_settings,
             "test",

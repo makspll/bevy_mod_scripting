@@ -87,12 +87,23 @@ fn test_on_example_ladfile() {
             book_files.contains(&book_file),
             "File not found: {book_file:?}"
         );
+
+        let book_content = std::fs::read_to_string(&book_file).expect("failed to read file");
+
+        if std::env::var("BLESS_MODE").is_ok() {
+            std::fs::write(&expected_file, book_content.clone()).unwrap();
+        }
+
         let expected_content =
             std::fs::read_to_string(&expected_file).expect("failed to read file");
-        let book_content = std::fs::read_to_string(&book_file).expect("failed to read file");
+
         pretty_assertions::assert_eq!(
             normalize_file(expected_content),
             normalize_file(book_content)
         );
+    }
+
+    if std::env::var("BLESS_MODE").is_ok() {
+        panic!("BLESS_MODE is enabled, re-run the test with this off")
     }
 }

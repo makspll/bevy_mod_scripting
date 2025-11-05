@@ -229,6 +229,8 @@ variadics_please::all_tuples!(impl_documentable, 0, 13, T);
 
 #[cfg(test)]
 mod test {
+    use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
+
     use crate::{
         docgen::typed_through::UntypedWrapperKind,
         function::from::{Mut, Ref, Val},
@@ -252,15 +254,15 @@ mod test {
         assert_eq!(info.arg_info[1].type_id, TypeId::of::<f32>());
 
         match info.arg_info[0].type_info.as_ref().unwrap() {
-            ThroughTypeInfo::TypeInfo(type_info) => {
-                assert_eq!(type_info.type_id(), TypeId::of::<i32>());
+            ThroughTypeInfo::Primitive(prim) => {
+                assert_eq!(*prim, ReflectionPrimitiveKind::I32);
             }
             _ => panic!("Expected TypeInfo"),
         }
 
         match info.arg_info[1].type_info.as_ref().unwrap() {
-            ThroughTypeInfo::TypeInfo(type_info) => {
-                assert_eq!(type_info.type_id(), TypeId::of::<f32>());
+            ThroughTypeInfo::Primitive(prim) => {
+                assert_eq!(*prim, ReflectionPrimitiveKind::F32);
             }
             _ => panic!("Expected TypeInfo"),
         }
