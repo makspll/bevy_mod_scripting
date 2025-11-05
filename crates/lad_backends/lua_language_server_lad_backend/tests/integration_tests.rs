@@ -2,9 +2,9 @@
 
 use std::{fs::DirEntry, path::PathBuf};
 
-use assert_cmd::Command;
+use assert_cmd::{Command, cargo_bin};
 fn add_executable_dir_to_path() {
-    let command_path = Command::cargo_bin("lad-lls").expect("failed to find lad-lls binary");
+    let command_path = Command::new(cargo_bin!("lad-lls"));
     let command_path = command_path.get_program();
     let command_path = PathBuf::from(command_path);
     let dir = command_path
@@ -62,8 +62,7 @@ fn main() {
             let folder_path = entry.path();
             let ladfile_path = folder_path.join("test.lad.json");
 
-            Command::cargo_bin("lad-lls")
-                .expect("failed to find lad-lls binary")
+            Command::new(cargo_bin!("lad-lls"))
                 .arg("--input")
                 .arg(&ladfile_path)
                 .arg("--output")

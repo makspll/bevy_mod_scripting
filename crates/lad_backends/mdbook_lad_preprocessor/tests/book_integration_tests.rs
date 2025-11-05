@@ -2,10 +2,10 @@
 
 use std::path::PathBuf;
 
-use assert_cmd::Command;
+use assert_cmd::{Command, cargo_bin};
 fn add_executable_dir_to_path() {
-    let command_path = Command::cargo_bin("mdbook-lad-preprocessor")
-        .expect("failed to find mdbook-lad-preprocessor binary");
+    let command_path = Command::new(cargo_bin!("mdbook-lad-preprocessor"));
+
     let command_path = command_path.get_program();
     let command_path = PathBuf::from(command_path);
     let dir = command_path
