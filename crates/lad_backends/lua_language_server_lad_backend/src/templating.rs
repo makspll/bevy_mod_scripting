@@ -1,4 +1,4 @@
-use include_dir::{include_dir, Dir};
+use include_dir::{Dir, include_dir};
 use std::error::Error;
 
 pub const TEMPLATE_DIRECTORY: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
@@ -14,7 +14,6 @@ pub fn prepare_tera() -> Result<tera::Tera, anyhow::Error> {
         let template_name = file.path().to_string_lossy();
         tera.add_raw_template(&template_name, content_utf8)
             .map_err(handle_tera_error)?;
-        log::info!("Added template: {template_name}");
     }
 
     Ok(tera)
@@ -34,7 +33,7 @@ pub fn render_template(
 ) -> Result<String, anyhow::Error> {
     let tera = prepare_tera()?;
     tera.get_template_names().for_each(|name| {
-        log::info!("Available template: {name}");
+        log::trace!("Available template: {name}");
     });
     tera.render(template_name, context)
         .map_err(handle_tera_error)

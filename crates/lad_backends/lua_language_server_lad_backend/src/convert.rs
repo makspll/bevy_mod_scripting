@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub fn convert_ladfile_to_lua_declaration_file(
-    ladfile: ladfile::LadFile,
+    ladfile: &ladfile::LadFile,
 ) -> Result<LuaDefinitionFile, anyhow::Error> {
     let mut definition_file = LuaDefinitionFile {
         modules: vec![],
@@ -31,10 +31,10 @@ pub fn convert_ladfile_to_lua_declaration_file(
         // right now one class == one lad type id, when we can properly denormorphize types, we will
         // be able to have multiple lad type ids per class
         let lua_classes_for_type =
-            match convert_polymorphic_type_to_lua_classes(key, types.iter().copied(), &ladfile) {
+            match convert_polymorphic_type_to_lua_classes(key, types.iter().copied(), ladfile) {
                 Ok(r) => r,
                 Err(e) => {
-                    log::error!("{e}");
+                    log::warn!("{e}");
                     continue;
                 }
             };
@@ -67,10 +67,10 @@ pub fn convert_ladfile_to_lua_declaration_file(
         ..Default::default()
     };
     for (name, instance) in ladfile.globals.iter() {
-        let class = match lad_instance_to_lua_type(&ladfile, &instance.type_kind) {
+        let class = match lad_instance_to_lua_type(ladfile, &instance.type_kind) {
             Ok(c) => c,
             Err(e) => {
-                log::error!("Error generating global {name}: {e}. Using `any` type");
+                log::warn!("Error generating global {name}: {e}. Using `any` type");
                 LuaType::Any
             }
         };
@@ -142,6 +142,8 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
         let mut lua_fields = vec![];
         let mut lua_functions = vec![];
         let mut lua_operators = vec![];
+        let mut parents = vec![];
+        let name = polymorphic_type_key.identifier.to_string();
 
         if let Some(lad_type) = ladfile.types.get(*lad_type_id) {
             // add fields for the type
@@ -155,7 +157,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                                 ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
                                     Ok(ty) => ty,
                                     Err(e) => {
-                                        log::error!(
+                                        log::warn!(
                                             "error converting field {idx}: {e}. for tuple struct {name}"
                                         );
                                         LuaType::Any
@@ -174,7 +176,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                                 ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
                                     Ok(ty) => ty,
                                     Err(e) => {
-                                        log::error!(
+                                        log::warn!(
                                             "error converting field {}: {e}. for struct {name}",
                                             field.name
                                         );
@@ -199,7 +201,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                     let lua_function = match lad_function_to_lua_function(ladfile, function) {
                         Ok(func) => func,
                         Err(err) => {
-                            log::error!(
+                            log::warn!(
                                 "Error converting function: {} on namespace {:?}: {err}. Using empty definition",
                                 function.identifier,
                                 function.namespace
@@ -216,7 +218,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                             Some(Ok(op)) => lua_operators.push(op),
                             Some(Err(func)) => lua_functions.push(func),
                             None => {
-                                log::error!(
+                                log::warn!(
                                     "Error converting operator function: {} on namespace {:?}. Skipping",
                                     function.identifier,
                                     function.namespace
@@ -227,12 +229,8 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                     lua_functions.push(lua_function);
                 }
             }
-        }
-        let name = polymorphic_type_key.identifier.to_string();
-        let mut parents = vec![];
 
-        if let Some(metadata) = ladfile.get_type_metadata(lad_type_id) {
-            if metadata.is_reflect && name != "ReflectReference" {
+            if lad_type.metadata.is_reflect && name != "ReflectReference" {
                 parents.push(String::from("ReflectReference"))
             }
             // if metadata.is_component {
@@ -245,7 +243,7 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
 
         let class = LuaClass {
             name,
-            parents: vec![String::from("ReflectReference")],
+            parents,
             fields: lua_fields,
             generics,
             documentation,
@@ -301,26 +299,26 @@ pub fn lua_function_to_operator(
             return Some(Err(FunctionSignature {
                 name: "__eq".into(),
                 ..func.clone()
-            }))
+            }));
         }
         ScriptOperatorNames::LessThanComparison => {
             return Some(Err(FunctionSignature {
                 name: "__lt".into(),
                 ..func.clone()
-            }))
+            }));
         }
         ScriptOperatorNames::Length => (LuaOperatorKind::Len, None, func.returns.first()?),
         ScriptOperatorNames::Iteration => {
             return Some(Err(FunctionSignature {
                 name: "__pairs".into(),
                 ..func.clone()
-            }))
+            }));
         }
         ScriptOperatorNames::DisplayPrint | ScriptOperatorNames::DebugPrint => {
             return Some(Err(FunctionSignature {
                 name: "__tostring".into(),
                 ..func.clone()
-            }))
+            }));
         }
     };
 
@@ -530,7 +528,7 @@ pub fn lad_primitive_to_lua_type(lad_primitive: &ReflectionPrimitiveKind) -> Lua
             LuaPrimitiveType::Function
         }
         ReflectionPrimitiveKind::ReflectReference => {
-            return LuaType::Alias("ReflectReference".to_string())
+            return LuaType::Alias("ReflectReference".to_string());
         }
         ReflectionPrimitiveKind::ScriptValue => return LuaType::Any,
         ReflectionPrimitiveKind::External(_) => return LuaType::Any,

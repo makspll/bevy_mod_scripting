@@ -43,7 +43,6 @@ pub mod pipeline;
 pub mod runtime;
 pub mod script;
 pub mod script_system;
-
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
 pub enum ScriptingSystemSet {

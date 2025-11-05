@@ -58,6 +58,9 @@ enum Feature {
     BevySpriteBindings,
     BevyTextBindings,
 
+    // Ladfile
+    LuaLanguageServerFiles,
+
     // Lua
     Lua51,
     Lua52,
@@ -149,7 +152,9 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevySceneBindings
             | Feature::BevySpriteBindings
             | Feature::BevyTextBindings => FeatureGroup::BMSFeatureNotInPowerset,
-            Feature::CoreFunctions | Feature::ProfileWithTracy => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
+            Feature::CoreFunctions
+            | Feature::ProfileWithTracy
+            | Feature::LuaLanguageServerFiles => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
         }
     }
 }
@@ -172,6 +177,7 @@ impl Default for Features {
             Feature::BevyTransformBindings,
             Feature::BevyColorBindings,
             Feature::BevyCorePipelineBindings,
+            Feature::LuaLanguageServerFiles,
         ])
     }
 }
@@ -1434,7 +1440,8 @@ impl Xtasks {
         Self::example(app_settings.clone(), "docgen".to_owned())?;
 
         // copy the `<workspace>/assets/bindings.lad.json` file to it's path in the book
-        let ladfile_path = Self::relative_workspace_dir(&app_settings, "assets/bindings.lad.json")?;
+        let ladfile_path =
+            Self::relative_workspace_dir(&app_settings, "assets/definitions/bindings.lad.json")?;
         let destination_path =
             Self::relative_workspace_dir(&app_settings, "docs/src/ladfiles/bindings.lad.json")?;
 

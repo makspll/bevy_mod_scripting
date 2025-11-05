@@ -1,32 +1,35 @@
+use bevy::prelude::PluginGroup;
 use bevy::{DefaultPlugins, app::App, ecs::reflect::AppTypeRegistry};
-use bevy_mod_scripting::ScriptFunctionsPlugin;
+use bevy_mod_scripting::BMSPlugin;
 use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry,
-    function::script_function::AppScriptFunctionRegistry,
-    globals::{AppScriptGlobalsRegistry, core::CoreScriptGlobalsPlugin},
+    DummyScriptFunctionRegistry, function::script_function::AppScriptFunctionRegistry,
+    globals::AppScriptGlobalsRegistry,
 };
-use bevy_mod_scripting_core::BMSScriptingInfrastructurePlugin;
-use ladfile_builder::plugin::{LadFileSettings, ScriptingDocgenPlugin, generate_lad_file};
-
+use ladfile_builder::plugin::{
+    LadFileSettingsArc, ScriptingFilesGenerationPlugin, generate_lad_file,
+};
+use std::path::PathBuf;
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     // headless bevy, kinda, I want to include as many plugins as I can which actually
     // provide reflected type definitions, but exclude anything that runs rendering stuff.
     app.add_plugins(DefaultPlugins);
 
-    // docgen + scripting
-    app.add_plugins((
-        // normally the global plugin is included as part of each scripting plugin, here we just take
-        // the definitions by themselves
-        CoreScriptGlobalsPlugin::default(),
-        ScriptFunctionsPlugin,
-        BMSScriptingInfrastructurePlugin::default(),
+    // this example is used to drive the generated docs on the official BMS book
+    app.add_plugins(BMSPlugin.set::<ScriptingFilesGenerationPlugin>(
+        ScriptingFilesGenerationPlugin::new(
+            true, // enabled, you can use a compilation feature to disable this here
+            PathBuf::from("assets").join("definitions"),
+            Some(PathBuf::from("bindings.lad.json")), // do also save the ladfile itself
+            "Core BMS framework bindings",
+            true,
+            true,
+        ),
     ));
 
     // there are two ways to generate the ladfile
 
     // 1. add the docgen plugin and run your app as normal
-    app.add_plugins(ScriptingDocgenPlugin::default());
     app.finish();
     app.cleanup();
     // running update once will do the trick
@@ -56,17 +59,18 @@ fn main() -> std::io::Result<()> {
         .unwrap()
         .clone();
 
-    let settings = LadFileSettings {
-        description: "Core BMS framework bindings",
-        ..Default::default()
-    };
+    let settings = app
+        .world()
+        .get_resource::<LadFileSettingsArc>()
+        .unwrap()
+        .clone();
 
     generate_lad_file(
         &type_registry,
         &function_registry,
         &dummy_function_registry,
         &global_registry,
-        &settings,
+        &settings.0,
     );
 
     // bah bye, the generated file will be found in assets/

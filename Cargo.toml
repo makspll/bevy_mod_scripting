@@ -44,10 +44,9 @@ default = [
     "bevy_core_pipeline_bindings",
 ]
 
-lua = [
-    "bevy_mod_scripting_lua",
-    "bevy_mod_scripting_functions/lua_bindings",
-] ## lua
+
+# lua
+lua = ["bevy_mod_scripting_lua", "bevy_mod_scripting_functions/lua_bindings"]
 # one of these must be selected
 lua51 = ["bevy_mod_scripting_lua/lua51", "lua"]
 lua52 = ["bevy_mod_scripting_lua/lua52", "lua"]
@@ -56,6 +55,10 @@ lua54 = ["bevy_mod_scripting_lua/lua54", "lua"]
 luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 luau = ["bevy_mod_scripting_lua/luau", "lua"]
+lua_language_server_files = [
+    "ladfile_builder",
+    "ladfile_builder/lua_language_server_files",
+]
 
 # bindings 
 core_functions = ["bevy_mod_scripting_functions/core_functions"]
@@ -114,6 +117,7 @@ bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
+ladfile_builder = { workspace = true, optional = true }
 
 [workspace.dependencies]
 # local crates
@@ -131,6 +135,8 @@ bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", ver
 bevy_mod_scripting_bindings_domain = { path = "crates/bevy_mod_scripting_bindings_domain", version = "0.16.0", default-features = false }
 bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.16.0", default-features = false }
 bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.16.0", default-features = false }
+lua_language_server_lad_backend = { path = "crates/lad_backends/lua_language_server_lad_backend", version = "0.16.0", default-features = false }
+
 # bevy
 
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.16.0" }

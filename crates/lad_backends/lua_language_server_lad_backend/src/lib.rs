@@ -9,18 +9,19 @@ use crate::{convert::convert_ladfile_to_lua_declaration_file, templating::render
 mod convert;
 mod keywords;
 mod lua_declaration_file;
+mod plugin;
 mod templating;
-
-const DECLARATION_FILE_NAME: &str = "bindings.lua";
+pub use plugin::*;
 
 /// Processess a LAD file and generates Lua language server files.
 pub fn generate_lua_language_server_files(
-    ladfile: ladfile::LadFile,
+    ladfile: &ladfile::LadFile,
     output_dir: &Path,
+    file_name: &Path,
 ) -> Result<(), anyhow::Error> {
     let declaration_file = convert_ladfile_to_lua_declaration_file(ladfile)?;
 
-    let output_path = output_dir.join(DECLARATION_FILE_NAME);
+    let output_path = output_dir.join(file_name);
     std::fs::create_dir_all(
         output_path
             .parent()
@@ -28,7 +29,10 @@ pub fn generate_lua_language_server_files(
     )
     .with_context(|| "failed to create output directories")?;
     let context = tera::Context::from_serialize(&declaration_file).with_context(|| {
-        format!("Failed to serialize LuaModule for template rendering: {DECLARATION_FILE_NAME}")
+        format!(
+            "Failed to serialize LuaModule for template rendering: {}",
+            file_name.as_os_str().display()
+        )
     })?;
 
     let rendered = render_template("declaration_file.tera", &context)?;

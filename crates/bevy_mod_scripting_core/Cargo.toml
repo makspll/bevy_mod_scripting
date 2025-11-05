@@ -17,8 +17,6 @@ path = "src/lib.rs"
 
 [features]
 default = []
-# if enabled enables documentation updating in optimized builds
-doc_always = []
 
 
 [dependencies]

@@ -11,6 +11,8 @@ use std::{
 
 pub use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind; // re-export the thing we use
 use indexmap::IndexMap;
+mod plugin;
+pub use plugin::*;
 
 /// The current version of the LAD_VERSION format supported by this library.
 /// Earlier versions are not guaranteed to be supported.
