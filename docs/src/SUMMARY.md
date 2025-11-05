@@ -12,6 +12,11 @@
 - [Callbacks](./Summary/callbacks.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
+- [Scripting IDE Integrations](./ScriptTooling/summary.md)
+
+# Script Tooling
+
+- [Ladfiles](./ScriptTooling/summary.md)
 
 # Script Pipeline
 
