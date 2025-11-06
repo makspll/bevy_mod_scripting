@@ -7,24 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.16.1](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings-v0.16.0...bevy_mod_scripting_bindings-v0.16.1) - 2025-11-06
+## [0.16.1](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings_domain-v0.16.0...bevy_mod_scripting_bindings_domain-v0.16.1) - 2025-11-06
 
 ### Added
 
 - Lua definition file generation, ladfile re-work ([#497](https://github.com/makspll/bevy_mod_scripting/pull/497))
-- add `ScriptPipelineState` system parameter and rust script loading example ([#494](https://github.com/makspll/bevy_mod_scripting/pull/494))
-- add script asset path to function call context ([#493](https://github.com/makspll/bevy_mod_scripting/pull/493))
-- add location information to function call context ([#492](https://github.com/makspll/bevy_mod_scripting/pull/492))
-- Replace `ParsedPath` with custom `ReferencePath`, support `Map` and `Set` references with arbitrary types ([#491](https://github.com/makspll/bevy_mod_scripting/pull/491))
-- registered callbacks via `register_callback`, and `bevy_mod_scripting_script` crate. ([#490](https://github.com/makspll/bevy_mod_scripting/pull/490))
-- Asset references, `world.get_asset` and `world.has_asset` bindings ([#484](https://github.com/makspll/bevy_mod_scripting/pull/484))
-- warn on duplicate globals ([#486](https://github.com/makspll/bevy_mod_scripting/pull/486))
-
-## [0.16.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings-v0.15.1...bevy_mod_scripting_bindings-v0.16.0) - 2025-09-22
-
-### Added
-
-- improved dynamic printing, adds `ReflectDisplayWithTypeInfo` for overriding opaque type printing ([#478](https://github.com/makspll/bevy_mod_scripting/pull/478))
 - Don't panic! ([#216](https://github.com/makspll/bevy_mod_scripting/pull/216))
 - Improvements to BMS in multi-language context ([#194](https://github.com/makspll/bevy_mod_scripting/pull/194))
 - complete plugin re-write
@@ -110,7 +97,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - remove bs in docs
 - updated readme.md
 - added initial functionality
-
-### Refactored
-
-- extract `bevy_mod_scripting_asset` and `bevy_mod_scripting_display` crates, decouple concerns ([#477](https://github.com/makspll/bevy_mod_scripting/pull/477))

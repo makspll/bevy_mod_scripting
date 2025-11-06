@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.6.0-ladfile_builder...v0.6.1-ladfile_builder) - 2025-11-06
+
+### Added
+
+- Lua definition file generation, ladfile re-work ([#497](https://github.com/makspll/bevy_mod_scripting/pull/497))
+- registered callbacks via `register_callback`, and `bevy_mod_scripting_script` crate. ([#490](https://github.com/makspll/bevy_mod_scripting/pull/490))
+
 ## [0.6.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.5.1-ladfile_builder...v0.6.0-ladfile_builder) - 2025-09-22
 
 ### Added

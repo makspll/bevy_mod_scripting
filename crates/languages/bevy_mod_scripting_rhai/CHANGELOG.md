@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.1](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.16.0...bevy_mod_scripting_rhai-v0.16.1) - 2025-11-06
+
+### Added
+
+- add location information to function call context ([#492](https://github.com/makspll/bevy_mod_scripting/pull/492))
+- registered callbacks via `register_callback`, and `bevy_mod_scripting_script` crate. ([#490](https://github.com/makspll/bevy_mod_scripting/pull/490))
+
 ## [0.16.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.15.1...bevy_mod_scripting_rhai-v0.16.0) - 2025-09-22
 
 ### Added
