@@ -1,5 +1,6 @@
 [package]
 name = "lua_language_server_lad_backend"
+description = "LADfile processor for the BMS scripting framework"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
