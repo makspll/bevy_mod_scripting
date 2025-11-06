@@ -1,5 +1,6 @@
 [package]
 name = "bevy_mod_scripting_script"
+description = "script domain types for the BMS framework"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
