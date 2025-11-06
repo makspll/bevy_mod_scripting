@@ -184,11 +184,11 @@
                         <h1 id="axissettings"><a class="header" href="#axissettings"><code>AxisSettings</code></a></h1>
 <h3 id="axissettings-1"><a class="header" href="#axissettings-1">AxisSettings</a></h3>
 <ul>
-<li><strong>livezone_upperbound</strong>:f32</li>
-<li><strong>deadzone_upperbound</strong>:f32</li>
-<li><strong>deadzone_lowerbound</strong>:f32</li>
-<li><strong>livezone_lowerbound</strong>:f32</li>
-<li><strong>threshold</strong>:f32</li>
+<li><strong>livezone_upperbound</strong>:<a href="./f32.html">F32</a></li>
+<li><strong>deadzone_upperbound</strong>:<a href="./f32.html">F32</a></li>
+<li><strong>deadzone_lowerbound</strong>:<a href="./f32.html">F32</a></li>
+<li><strong>livezone_lowerbound</strong>:<a href="./f32.html">F32</a></li>
+<li><strong>threshold</strong>:<a href="./f32.html">F32</a></li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
@@ -205,19 +205,19 @@ For example, a value that is one fourth of the way from <code>deadzone_upperboun
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./axissettings/livezone_upperbound.html">livezone_upperbound</a></td><td>Get the value above which inputs will be rounded up to 1.0.</td></tr>
-<tr><td><a href="./axissettings/clamp.html">clamp</a></td><td>Clamps the `raw_value` according to the `AxisSettings`.</td></tr>
-<tr><td><a href="./axissettings/deadzone_lowerbound.html">deadzone_lowerbound</a></td><td>Get the value above which inputs will be rounded up to 0.0.</td></tr>
-<tr><td><a href="./axissettings/set_livezone_lowerbound.html">set_livezone_lowerbound</a></td><td>Try to set the value below which negative inputs will be rounded down to -1.0.  If the value passed...</td></tr>
-<tr><td><a href="./axissettings/set_threshold.html">set_threshold</a></td><td>Try to set the minimum value by which input must change before the changes will be applied.  If the...</td></tr>
-<tr><td><a href="./axissettings/set_deadzone_upperbound.html">set_deadzone_upperbound</a></td><td>Try to set the value below which positive inputs will be rounded down to 0.0.  If the value passed ...</td></tr>
-<tr><td><a href="./axissettings/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./axissettings/deadzone_upperbound.html">deadzone_upperbound</a></td><td>Get the value below which positive inputs will be rounded down to 0.0.</td></tr>
+<tr><td><a href="./axissettings/set_livezone_upperbound.html">set_livezone_upperbound</a></td><td>Try to set the value above which inputs will be rounded up to 1.0.  If the value passed is negative...</td></tr>
 <tr><td><a href="./axissettings/threshold.html">threshold</a></td><td>Get the minimum value by which input must change before the change is registered.</td></tr>
-<tr><td><a href="./axissettings/livezone_lowerbound.html">livezone_lowerbound</a></td><td>Get the value below which negative inputs will be rounded down to -1.0.</td></tr>
+<tr><td><a href="./axissettings/set_livezone_lowerbound.html">set_livezone_lowerbound</a></td><td>Try to set the value below which negative inputs will be rounded down to -1.0.  If the value passed...</td></tr>
+<tr><td><a href="./axissettings/deadzone_upperbound.html">deadzone_upperbound</a></td><td>Get the value below which positive inputs will be rounded down to 0.0.</td></tr>
+<tr><td><a href="./axissettings/livezone_upperbound.html">livezone_upperbound</a></td><td>Get the value above which inputs will be rounded up to 1.0.</td></tr>
+<tr><td><a href="./axissettings/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./axissettings/set_deadzone_upperbound.html">set_deadzone_upperbound</a></td><td>Try to set the value below which positive inputs will be rounded down to 0.0.  If the value passed ...</td></tr>
+<tr><td><a href="./axissettings/clamp.html">clamp</a></td><td>Clamps the `raw_value` according to the `AxisSettings`.</td></tr>
 <tr><td><a href="./axissettings/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./axissettings/set_deadzone_lowerbound.html">set_deadzone_lowerbound</a></td><td>Try to set the value above which inputs will be rounded up to 0.0.  If the value passed is less tha...</td></tr>
-<tr><td><a href="./axissettings/set_livezone_upperbound.html">set_livezone_upperbound</a></td><td>Try to set the value above which inputs will be rounded up to 1.0.  If the value passed is negative...</td></tr>
+<tr><td><a href="./axissettings/livezone_lowerbound.html">livezone_lowerbound</a></td><td>Get the value below which negative inputs will be rounded down to -1.0.</td></tr>
+<tr><td><a href="./axissettings/set_threshold.html">set_threshold</a></td><td>Try to set the minimum value by which input must change before the changes will be applied.  If the...</td></tr>
+<tr><td><a href="./axissettings/deadzone_lowerbound.html">deadzone_lowerbound</a></td><td>Get the value above which inputs will be rounded up to 0.0.</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -228,7 +228,7 @@ For example, a value that is one fourth of the way from <code>deadzone_upperboun
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/axissettings/livezone_upperbound.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/axissettings/set_livezone_upperbound.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -242,7 +242,7 @@ For example, a value that is one fourth of the way from <code>deadzone_upperboun
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/axissettings/livezone_upperbound.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/axissettings/set_livezone_upperbound.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Option&lt;TextureAtlas&gt; - Bevy Scripting</title>
+        <title>LADfiles - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../../favicon.svg">
-        <link rel="shortcut icon" href="../../favicon.png">
-        <link rel="stylesheet" href="../../css/variables.css">
-        <link rel="stylesheet" href="../../css/general.css">
-        <link rel="stylesheet" href="../../css/chrome.css">
-        <link rel="stylesheet" href="../../css/print.css" media="print">
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="../../fonts/fonts.css">
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
-        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
-        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "../../";
+            const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex.js";
+            window.path_to_searchindex_js = "../searchindex.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc.js"></script>
+        <script src="../toc.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -141,13 +141,13 @@
                     <h1 class="menu-title">Bevy Scripting</h1>
 
                     <div class="right-buttons">
-                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/optiontextureatlas.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/ScriptTooling/introduction.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -181,28 +181,51 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="optiontextureatlas"><a class="header" href="#optiontextureatlas"><code>Option&lt;TextureAtlas&gt;</code></a></h1>
-<h3 id="none"><a class="header" href="#none">None</a></h3>
-<h3 id="some"><a class="header" href="#some">Some</a></h3>
-<ol>
-<li>bevy_image::texture_atlas::TextureAtlas</li>
-</ol>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
-<p>No Documentation 🚧</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+                        <h2 id="ladfiles"><a class="header" href="#ladfiles">LADfiles</a></h2>
+<p>BMS provides a custom Language Agnostic Declaration format (LAD), which can be used to integrate with other tooling.</p>
+<p>If you use <code>#[script_bindings]</code> macros, these files will magically contain your code comments, bindings as well as everything else required to drive other powerful integrations.</p>
+<p>The declaration file is generated from the type registry and serves as a light abstraction layer simplifying the traversal of all
+available types and globals as well as functions.</p>
+<p>You can customize how / where and if these files are stored using the main BMS plugin group:</p>
+<pre><code class="language-rust ignore">    app.add_plugins(BMSPlugin.set::&lt;ScriptingFilesGenerationPlugin&gt;(
+        ScriptingFilesGenerationPlugin::new(
+            true, // enabled, you can use a compilation feature to disable this here
+            PathBuf::from("assets").join("definitions"),
+            Some(PathBuf::from("bindings.lad.json")), // do also save the ladfile itself
+            "Core BMS framework bindings",
+            true,
+            true,
+        ),
+    ));</code></pre>
+<p>This plugin is only available when one of the sub features (like <code>lua_language_server_files</code>) mentioned in this chapter is enabled.</p>
+<p>You might not want to run this pipeline in your final binary, but rather bundle some of the generated files into some sort of development pack for modding. You can use compiler flags like <code>#[cfg(not(debug_assertions))]</code> to disable ladfile generation at runtime, or simply disable the lower level features within BMS to avoid compiling related dependencies too.</p>
+<h2 id="lua-language-server"><a class="header" href="#lua-language-server">Lua Language Server</a></h2>
+<div class="warning">
+    This feature is in early stages, the definitions provide 90% of the way there, but there are rough edges that will need to be worked out
+</div>
+<p><a href="https://github.com/LuaLS/lua-language-server">Luals</a> or LLS, is an open source language server which integrates with many IDE's.</p>
+<p>It is powered by lua specific annotation or definition files which BMS can generate directly from its own LADfiles.</p>
+<p>To enable this simply enable the <code>lua_language_server_files</code> feature, and a <code>bindings.lua</code> definition file will be generated in the LADfile output directory in the <code>Startup</code> schedule.</p>
+<p>Script writers can then use this generated file by pointing their <code>.luarc.json</code> file to these definitions:</p>
+<pre><code class="language-json">{
+    "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+    "workspace.library": [
+        "assets/definitions"
+    ],
+    "runtime.version": "Lua 5.4",
+    "hint.enable": false,
+}
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/optionentity.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ScriptTooling/summary.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/optionforcetouch.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ScriptPipeline/pipeline.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -212,11 +235,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/optionentity.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ScriptTooling/summary.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/optionforcetouch.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ScriptPipeline/pipeline.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
@@ -231,18 +254,18 @@
         </script>
 
 
-        <script src="../../elasticlunr.min.js"></script>
-        <script src="../../mark.min.js"></script>
-        <script src="../../searcher.js"></script>
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
 
-        <script src="../../clipboard.min.js"></script>
-        <script src="../../highlight.js"></script>
-        <script src="../../book.js"></script>
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block.js"></script>
-        <script src="../../mermaid.min.js"></script>
-        <script src="../../mermaid-init.js"></script>
+        <script src="../multi-code-block.js"></script>
+        <script src="../mermaid.min.js"></script>
+        <script src="../mermaid-init.js"></script>
 
 
 
