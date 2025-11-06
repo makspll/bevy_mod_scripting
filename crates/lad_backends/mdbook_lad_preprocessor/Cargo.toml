@@ -1,6 +1,6 @@
 [package]
 name = "mdbook_lad_preprocessor"
-version = "0.3.0"
+version = "0.3.1"
 description = "Language Agnostic Declaration (LAD) file format for the bevy_mod_scripting crate"
 readme = "readme.md"
 edition.workspace = true
