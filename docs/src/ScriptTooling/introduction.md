@@ -27,7 +27,7 @@ You might not want to run this pipeline in your final binary, but rather bundle 
 
 ## Lua Language Server
 
-<div class="Warning">
+<div class="warning">
     This feature is in early stages, the definitions provide 90% of the way there, but there are rough edges that will need to be worked out
 </div>
 
