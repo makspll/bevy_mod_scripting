@@ -1,4 +1,4 @@
-## Ladfiles
+## LADfiles
 BMS provides a custom Language Agnostic Declaration format (LAD), which can be used to integrate with other tooling.
 
 If you use `#[script_bindings]` macros, these files will magically contain your code comments, bindings as well as everything else required to drive other powerful integrations.
