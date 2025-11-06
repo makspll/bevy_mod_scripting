@@ -2,10 +2,10 @@
 
 use std::path::PathBuf;
 
-use assert_cmd::Command;
+use assert_cmd::{Command, cargo_bin};
 fn add_executable_dir_to_path() {
-    let command_path = Command::cargo_bin("mdbook-lad-preprocessor")
-        .expect("failed to find mdbook-lad-preprocessor binary");
+    let command_path = Command::new(cargo_bin!("mdbook-lad-preprocessor"));
+
     let command_path = command_path.get_program();
     let command_path = PathBuf::from(command_path);
     let dir = command_path
@@ -87,12 +87,23 @@ fn test_on_example_ladfile() {
             book_files.contains(&book_file),
             "File not found: {book_file:?}"
         );
+
+        let book_content = std::fs::read_to_string(&book_file).expect("failed to read file");
+
+        if std::env::var("BLESS_MODE").is_ok() {
+            std::fs::write(&expected_file, book_content.clone()).unwrap();
+        }
+
         let expected_content =
             std::fs::read_to_string(&expected_file).expect("failed to read file");
-        let book_content = std::fs::read_to_string(&book_file).expect("failed to read file");
+
         pretty_assertions::assert_eq!(
             normalize_file(expected_content),
             normalize_file(book_content)
         );
+    }
+
+    if std::env::var("BLESS_MODE").is_ok() {
+        panic!("BLESS_MODE is enabled, re-run the test with this off")
     }
 }

@@ -6,6 +6,7 @@ pub mod display {
 
 pub mod bindings {
     pub use bevy_mod_scripting_bindings::*;
+    pub use bevy_mod_scripting_bindings_domain::*;
 }
 
 pub mod core {
@@ -32,6 +33,11 @@ pub mod rhai {
     pub use bevy_mod_scripting_rhai::*;
 }
 
+#[cfg(feature = "lua_language_server_files")]
+pub mod ladfile {
+    pub use ladfile_builder::*;
+}
+
 use bevy_app::plugin_group;
 use bevy_mod_scripting_bindings::CoreScriptGlobalsPlugin;
 use bevy_mod_scripting_core::BMSScriptingInfrastructurePlugin;
@@ -47,5 +53,7 @@ plugin_group! {
         bevy_mod_scripting_lua:::LuaScriptingPlugin,
         #[custom(cfg(feature = "rhai"))]
         bevy_mod_scripting_rhai:::RhaiScriptingPlugin,
+        #[custom(cfg(feature = "lua_language_server_files"))]
+        ladfile_builder::plugin:::ScriptingFilesGenerationPlugin
     }
 }

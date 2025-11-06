@@ -15,7 +15,7 @@ categories.workspace = true
 serde = { workspace = true, features = ["derive", "std"] }
 serde_json = { workspace = true, features = ["std"] }
 indexmap = { workspace = true, features = ["serde"] }
-
+bevy_mod_scripting_bindings_domain = { workspace = true }
 
 [features]
 default = ["visitor", "testfile"]

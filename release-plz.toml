@@ -73,6 +73,10 @@ name = "bevy_mod_scripting_functions"
 version_group = "main"
 
 [[package]]
+name = "lua_language_server_lad_backend"
+version_group = "main"
+
+[[package]]
 name = "ladfile"
 git_release_enable = true
 git_release_latest = false

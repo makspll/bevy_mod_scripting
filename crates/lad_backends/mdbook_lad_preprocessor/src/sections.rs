@@ -1,8 +1,8 @@
 use std::{borrow::Cow, collections::HashSet, path::PathBuf};
 
 use ladfile::{
-    ArgumentVisitor, LadArgument, LadBMSPrimitiveKind, LadFile, LadFunction, LadInstance, LadType,
-    LadTypeId, LadTypeKind, LadTypeLayout,
+    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadInstance, LadTypeDefinition,
+    LadTypeId, LadTypeLayout, LadVisitable, ReflectionPrimitiveKind,
 };
 use mdbook::book::{Chapter, SectionNumber};
 
@@ -12,26 +12,37 @@ use crate::{
     markdown_vec,
 };
 
-fn print_type(ladfile: &LadFile, type_: &LadTypeId) -> String {
-    let mut visitor = MarkdownArgumentVisitor::new(ladfile);
-    visitor.visit_lad_type_id(type_);
-    visitor.build()
-}
-
-fn print_type_with_replacement(
+fn print_type(
     ladfile: &LadFile,
-    type_: &LadTypeId,
-    raw_type_id_replacement: &'static str,
+    type_: &dyn LadVisitable,
+    raw_type_id_replacement: Option<&'static str>,
+    linkifier_base_path_and_escape_opt: Option<(PathBuf, bool)>,
 ) -> String {
     let mut visitor =
-        MarkdownArgumentVisitor::new(ladfile).with_raw_type_id_replacement(raw_type_id_replacement);
-    visitor.visit_lad_type_id(type_);
-    visitor.build()
+        if let Some((linkifier_base_path, _)) = linkifier_base_path_and_escape_opt.clone() {
+            MarkdownArgumentVisitor::new_with_linkifier(ladfile, move |str| {
+                let printed_type = linkify_filename(str);
+                linkifier_base_path.join(printed_type).with_extension("md")
+            })
+        } else {
+            MarkdownArgumentVisitor::new(ladfile)
+        };
+    if let Some(replacement) = raw_type_id_replacement {
+        visitor = visitor.with_raw_type_id_replacement(replacement);
+    }
+
+    type_.accept(&mut visitor);
+    let mut printed = visitor.build();
+    if let Some((_, escape_opt)) = linkifier_base_path_and_escape_opt
+        && escape_opt
+    {
+        printed = escape_markdown(printed)
+    }
+    printed
 }
 
-fn build_escaped_visitor(arg_visitor: MarkdownArgumentVisitor<'_>) -> String {
-    arg_visitor
-        .build()
+fn escape_markdown(markdown: String) -> String {
+    markdown
         .replace("<", "\\<")
         .replace(">", "\\>")
         .replace("|", "\\|")
@@ -50,7 +61,7 @@ pub(crate) enum SectionData<'a> {
     InstancesSummary,
     TypeDetail {
         lad_type_id: &'a LadTypeId,
-        lad_type: &'a LadType,
+        lad_type: &'a LadTypeDefinition,
     },
     FunctionDetail {
         types_directory: PathBuf,
@@ -140,8 +151,12 @@ impl<'a> Section<'a> {
             SectionData::TypeSummary { .. } => "Types".to_owned(),
             SectionData::FunctionSummary { .. } => "Functions".to_owned(),
             SectionData::InstancesSummary { .. } => "Globals".to_owned(),
-            SectionData::TypeDetail { lad_type_id, .. } => print_type(self.ladfile, lad_type_id),
-            SectionData::FunctionDetail { function, .. } => function.identifier.to_string(),
+            SectionData::TypeDetail { lad_type_id, .. } => {
+                print_type(self.ladfile, *lad_type_id, None, None)
+            }
+            SectionData::FunctionDetail { function, .. } => {
+                function.identifier_with_overload().to_string()
+            }
         }
     }
 
@@ -349,6 +364,8 @@ impl<'a> Section<'a> {
                 vec![
                     SectionItem::Layout {
                         layout: &lad_type.layout,
+                        ladfile: self.ladfile,
+                        types_directory: PathBuf::from("./"),
                     },
                     SectionItem::Description { lad_type },
                     SectionItem::Markdown {
@@ -399,9 +416,11 @@ pub enum SectionItem<'a> {
     },
     Layout {
         layout: &'a LadTypeLayout,
+        ladfile: &'a LadFile,
+        types_directory: PathBuf,
     },
     Description {
-        lad_type: &'a LadType,
+        lad_type: &'a LadTypeDefinition,
     },
     FunctionsSummary {
         functions: Vec<&'a LadFunction>,
@@ -442,7 +461,11 @@ impl IntoMarkdown for SectionItem<'_> {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
         match self {
             SectionItem::Markdown { markdown } => (markdown)(builder),
-            SectionItem::Layout { layout } => {
+            SectionItem::Layout {
+                layout,
+                ladfile,
+                types_directory,
+            } => {
                 // process the variants here
                 let opaque = layout.for_each_variant(
                     |v, _i| match v {
@@ -451,7 +474,14 @@ impl IntoMarkdown for SectionItem<'_> {
                                 true,
                                 fields
                                     .iter()
-                                    .map(|f| Markdown::new_paragraph(f.type_.to_string()))
+                                    .map(|f| {
+                                        Markdown::Raw(print_type(
+                                            ladfile,
+                                            &f.type_,
+                                            None,
+                                            Some((types_directory.clone(), true)),
+                                        ))
+                                    })
                                     .collect(),
                             );
                         }
@@ -464,7 +494,12 @@ impl IntoMarkdown for SectionItem<'_> {
                                         markdown_vec![
                                             Markdown::new_paragraph(f.name.clone()).bold(),
                                             Markdown::new_paragraph(":"),
-                                            f.type_.to_string()
+                                            Markdown::Raw(print_type(
+                                                ladfile,
+                                                &f.type_,
+                                                None,
+                                                Some((types_directory.clone(), true))
+                                            ))
                                         ]
                                     })
                                     .collect(),
@@ -502,7 +537,7 @@ impl IntoMarkdown for SectionItem<'_> {
                 builder.table(|builder| {
                     builder.headers(vec!["Function", "Summary"]);
                     for function in functions.iter() {
-                        let first_col = function.identifier.to_string();
+                        let first_col = function.identifier_with_overload().to_string();
 
                         // first line with content from documentation trimmed to 100 chars
                         let second_col = function
@@ -514,7 +549,11 @@ impl IntoMarkdown for SectionItem<'_> {
                         builder.row(markdown_vec![
                             Markdown::Link {
                                 text: Box::new(first_col),
-                                url: format!("./{}/{}.md", functions_path, function.identifier),
+                                url: format!(
+                                    "./{}/{}.md",
+                                    functions_path,
+                                    function.identifier_with_overload()
+                                ),
                                 anchor: false
                             },
                             Markdown::new_paragraph(second_col.to_string().replace("\n", " ")),
@@ -534,9 +573,9 @@ impl IntoMarkdown for SectionItem<'_> {
                 builder.table(|builder| {
                     builder.headers(vec!["Type", "Summary"]);
                     for type_ in types.iter() {
-                        let printed_type_for_url = print_type(ladfile, type_);
+                        let printed_type_for_url = print_type(ladfile, *type_, None, None);
                         let printed_type_pretty =
-                            print_type_with_replacement(ladfile, type_, "Unknown");
+                            print_type(ladfile, *type_, Some("Unknown"), None);
 
                         let documentation = ladfile.get_type_documentation(type_);
 
@@ -577,16 +616,8 @@ impl IntoMarkdown for SectionItem<'_> {
                     .map(|(k, v)| {
                         let name = k.to_string();
                         let types_directory = types_directory.clone();
-                        let mut arg_visitor = MarkdownArgumentVisitor::new_with_linkifier(
-                            ladfile,
-                            move |lad_type_id, ladfile| {
-                                let printed_type =
-                                    linkify_filename(print_type(ladfile, &lad_type_id));
-                                Some(types_directory.join(printed_type).with_extension("md"))
-                            },
-                        );
-                        arg_visitor.visit(&v.type_kind);
-                        let escaped = build_escaped_visitor(arg_visitor);
+                        let escaped =
+                            print_type(ladfile, &v.type_kind, None, Some((types_directory, true)));
                         (v.is_static, name, escaped)
                     })
                     .collect::<Vec<_>>();
@@ -625,7 +656,9 @@ impl IntoMarkdown for SectionItem<'_> {
                 if function.arguments.iter().any(|a| {
                     matches!(
                         a.kind,
-                        LadTypeKind::Primitive(LadBMSPrimitiveKind::FunctionCallContext)
+                        LadFieldOrVariableKind::Primitive(
+                            ReflectionPrimitiveKind::FunctionCallContext
+                        )
                     )
                 }) {
                     builder.raw(
@@ -689,19 +722,13 @@ fn build_lad_function_argument_row(
     // we exclude function call context as it's not something scripts pass down
     if matches!(
         arg.kind,
-        LadTypeKind::Primitive(LadBMSPrimitiveKind::FunctionCallContext)
+        LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
     ) {
         return;
     }
 
     let types_directory = types_directory.to_owned();
-    let mut arg_visitor =
-        MarkdownArgumentVisitor::new_with_linkifier(ladfile, move |lad_type_id, ladfile| {
-            let printed_type = linkify_filename(print_type(ladfile, &lad_type_id));
-            Some(types_directory.join(printed_type).with_extension("md"))
-        });
-    arg_visitor.visit(&arg.kind);
-    let markdown = build_escaped_visitor(arg_visitor);
+    let escaped = print_type(ladfile, &arg.kind, None, Some((types_directory, false)));
 
     let arg_name = arg
         .name
@@ -711,7 +738,7 @@ fn build_lad_function_argument_row(
 
     builder.row(markdown_vec![
         Markdown::new_paragraph(arg_name).bold(),
-        Markdown::Raw(markdown),
+        Markdown::Raw(escaped),
         Markdown::Raw(
             arg.documentation
                 .as_deref()

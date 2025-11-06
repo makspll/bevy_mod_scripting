@@ -43,7 +43,6 @@ pub mod pipeline;
 pub mod runtime;
 pub mod script;
 pub mod script_system;
-
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
 pub enum ScriptingSystemSet {
@@ -348,6 +347,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
 
         app.register_type::<ScriptAsset>();
         app.register_type::<Handle<ScriptAsset>>();
+        app.register_type::<ReflectReference>();
         app.register_type_data::<Handle<ScriptAsset>, MarkAsCore>();
 
         app.add_systems(

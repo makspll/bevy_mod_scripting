@@ -487,8 +487,6 @@ mod test {
 
     fn system_e() {}
 
-    const BLESS_MODE: bool = false;
-
     #[test]
     fn test_graph_is_as_expected() {
         // create empty schedule and graph it
@@ -535,7 +533,7 @@ mod test {
         let expected = include_str!("../test_graph.dot");
         let expected_path = manifest_dir_macros::file_path!("test_graph.dot");
 
-        if BLESS_MODE {
+        if std::env::var("BLESS_MODE").is_ok() {
             std::fs::write(expected_path, normalize(&dot)).unwrap();
             panic!("Bless mode is active");
         } else {

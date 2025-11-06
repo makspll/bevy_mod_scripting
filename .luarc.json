@@ -1,0 +1,9 @@
+{
+    "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+    "workspace.library": [
+        "assets/definitions"
+    ],
+    "runtime.version": "Lua 5.4",
+    "hint.enable": false,
+    "diagnostics.workspaceDelay": 30000
+}

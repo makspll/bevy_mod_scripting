@@ -1,0 +1,129 @@
+---@meta
+---@module "{{ modules | first | get(key="name")}}"
+{# newline #}
+{# newline #}
+{%- for module in modules -%} {# module #}
+{%- for class in module.classes -%}
+---@class {{ class.name }} {%- if class.parents %} : {% endif -%}{%- for parent in class.parents -%}{{parent}}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
+{{ self::multiline_description(description=class.documentation) -}}
+{%- for field in class.fields -%}
+{{- self::class_field(field=field) -}}
+{%- endfor -%} {#- fields -#}
+{%- for operator in class.operators -%}
+---@operator {{operator.operation}}{% if operator.param_type %}({{self::lua_type(ty=operator.param_type)}}){% endif %}: {{self::lua_type(ty=operator.return_type)}}
+{% endfor -%}
+{{ class.name }} = {}
+{# newline #}
+{%- for function in module.functions -%}
+{# newline #}
+{# newline #}
+{%- if function.async_fn -%}
+---@async
+{# newline #}
+{%- endif -%}
+{%- if function.deprecated -%}
+---@deprecated
+{# newline #}
+{%- endif -%}
+{%- if function.no_discard -%}
+---@nodiscard
+{# newline #}
+{%- endif -%}
+{%- if function.package -%}
+---@package
+{# newline #}
+{%- endif -%}
+{%- for generic in function.generics -%}
+---@generic {{ generic.name }}
+{# newline #}
+{%- endfor -%}
+{%- for param in function.params -%}
+{{- self::function_param(arg=param) -}}
+{%- endfor -%}
+{%- for return in function.returns -%}
+---@return {{ self::lua_type(ty=return) }}
+function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%- endif -%} {{ function.name }}(
+    {%- for param in function.params -%}
+        {{ param.name }} {%- if not loop.last -%},{%- endif -%}
+    {%- endfor -%}
+) end
+{# newline #}
+{%- endfor -%}
+{%- endfor -%} {# functions #}
+{%- endfor -%} {# class #}
+{# newline #}
+{# newline #}
+{%- for global in module.globals -%}
+---@type {{self::lua_type(ty=global.definition)}}
+{{ self::multiline_description(description=global.description) -}}
+{{ global.name}} = {}
+{# newline #}
+{# newline #}
+{%- endfor -%}
+
+{%- endfor -%} {# modules #}
+
+{%- macro class_field(field) -%}
+---@field {{ field.scope }} {{ field.name }} {% if field.optional %}?{% endif %} {{ self::lua_type(ty=field.ty) -}}
+{{- self::multiline_description(description=field.description) }}
+{# newline -#}
+{%- endmacro class_field -%}
+
+{%- macro lua_type(ty) -%}
+    {%- if ty.kind == "Primitive" -%}
+        {{ ty.value }}
+    {%- elif ty.kind == "Alias" -%}
+        {{ ty.value }}
+    {%- elif ty.kind == "Literal" -%}
+        {{ ty.value }}
+    {%- elif ty.kind == "Any" -%}
+        any
+    {%- elif ty.kind == "Array" -%}
+        {{ self::lua_type(ty=ty.value) }}[]
+    {%- elif ty.kind == "Union" -%}
+        {%- for subtype in ty.value -%}
+            {{ self::lua_type(ty=subtype) }}
+            {%- if not loop.last %} | {% endif -%}
+        {%- endfor -%}
+    {%- elif ty.kind == "Tuple" -%}
+        [
+        {%- for subtype in ty.value -%}
+            {{ self::lua_type(ty=subtype) }}
+            {%- if not loop.last %}, {% endif -%}
+        {%- endfor -%}
+        ]
+    {%- elif ty.kind == "Dictionary" -%}
+        table<{{ self::lua_type(ty=ty.value.key) }}, {{ self::lua_type(ty=ty.value.value) }}>
+    {%- elif ty.kind == "Function" -%}
+        fun(
+        {%- for param in ty.value.parameters -%}
+            {{ param[0] }}: {{ self::lua_type(ty=param[1]) }}
+            {%- if not loop.last %}, {% endif -%}
+        {%- endfor -%}
+        ): {{ self::lua_type(ty=ty.value.returns) }}
+    {%- elif ty.kind == "Generic" -%}
+        {%- if ty.value.parent is defined and ty.value.parent is not null -%}
+            {{ ty.value.name }}<{{ self::lua_type(ty=ty.value.parent) }}>
+        {%- else -%}
+            {{ ty.value.name }}
+        {%- endif -%}
+    {%- else -%}
+        ??? {# fallback #}
+    {%- endif -%}
+{%- endmacro lua_type -%}
+
+{%- macro function_param(arg) -%}
+---@param {{ arg.name }} {{ self::lua_type(ty=arg.ty) }} {% if arg.optional %}?{%- endif -%}
+{# newline #}
+{# newline -#}
+{{- self::multiline_description(description=arg.description) -}}
+{%- endmacro function_param -%}
+
+{%- macro multiline_description(description) -%}
+{%- if description -%}
+{%- for line in description | split(pat="\n") -%}
+--- {{ line }}
+{% endfor -%}
+{%- else -%}
+{%- endif -%}
+{%- endmacro multiline_description -%}

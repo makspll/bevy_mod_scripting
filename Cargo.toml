@@ -44,10 +44,9 @@ default = [
     "bevy_core_pipeline_bindings",
 ]
 
-lua = [
-    "bevy_mod_scripting_lua",
-    "bevy_mod_scripting_functions/lua_bindings",
-] ## lua
+
+# lua
+lua = ["bevy_mod_scripting_lua", "bevy_mod_scripting_functions/lua_bindings"]
 # one of these must be selected
 lua51 = ["bevy_mod_scripting_lua/lua51", "lua"]
 lua52 = ["bevy_mod_scripting_lua/lua52", "lua"]
@@ -56,6 +55,10 @@ lua54 = ["bevy_mod_scripting_lua/lua54", "lua"]
 luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 luau = ["bevy_mod_scripting_lua/luau", "lua"]
+lua_language_server_files = [
+    "ladfile_builder",
+    "ladfile_builder/lua_language_server_files",
+]
 
 # bindings 
 core_functions = ["bevy_mod_scripting_functions/core_functions"]
@@ -111,8 +114,10 @@ bevy_mod_scripting_functions = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
+ladfile_builder = { workspace = true, optional = true }
 
 [workspace.dependencies]
 # local crates
@@ -127,8 +132,10 @@ bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", ver
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.16.0", default-features = false }
 bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.16.0", default-features = false }
 bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.16.0", default-features = false }
+bevy_mod_scripting_bindings_domain = { path = "crates/bevy_mod_scripting_bindings_domain", version = "0.16.0", default-features = false }
 bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.16.0", default-features = false }
 bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.16.0", default-features = false }
+lua_language_server_lad_backend = { path = "crates/lad_backends/lua_language_server_lad_backend", version = "0.16.0", default-features = false }
 
 # bevy
 
@@ -215,7 +222,7 @@ pretty_assertions = { version = "1.4", default-features = false, features = [
     "std",
 ] }
 manifest-dir-macros = { version = "0.1.18", default-features = false }
-assert_cmd = { version = "2.0", default-features = false }
+assert_cmd = { version = "2.1", default-features = false }
 tokio = { version = "1", default-features = false }
 bevy_console = { version = "0.14", default-features = false }
 tracing-tracy = { version = "0.11", default-features = false }
@@ -260,6 +267,7 @@ members = [
     "crates/testing_crates/script_integration_test_harness",
     "crates/bevy_mod_scripting_derive",
     "crates/ladfile",
+    "crates/lad_backends/lua_language_server_lad_backend",
     "crates/lad_backends/mdbook_lad_preprocessor",
     "crates/ladfile_builder",
     "crates/bevy_system_reflection",
@@ -268,6 +276,7 @@ members = [
     "crates/bevy_mod_scripting_bindings",
     "crates/bevy_mod_scripting_display",
     "crates/bevy_mod_scripting_script",
+    "crates/bevy_mod_scripting_bindings_domain",
 ]
 resolver = "2"
 exclude = ["codegen", "crates/macro_tests", "xtask"]

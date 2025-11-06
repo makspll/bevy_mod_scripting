@@ -3,7 +3,7 @@
   "globals": {
     "my_static_instance": {
       "type_kind": {
-        "val": "ladfile_builder::test::StructType<usize>"
+        "val": "ladfile_builder::test::GenericStructType<usize>"
       },
       "is_static": true
     },
@@ -37,36 +37,425 @@
     }
   },
   "types": {
-    "ladfile_builder::test::StructType<usize>": {
-      "identifier": "StructType",
+    "ladfile_builder::test::PlainStructType": {
+      "identifier": "PlainStructType",
       "crate": "ladfile_builder",
-      "path": "ladfile_builder::test::StructType<usize>",
+      "path": "ladfile_builder::test::PlainStructType",
+      "documentation": " I am a simple plain struct type",
+      "associated_functions": [
+        "ladfile_builder::test::PlainStructType::plain_struct_function"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "PlainStructType",
+        "fields": [
+          {
+            "name": "int_field",
+            "type": {
+              "primitive": "usize"
+            }
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "ladfile_builder::test::GenericStructType<usize>": {
+      "identifier": "GenericStructType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::GenericStructType<usize>",
       "generics": [
         {
-          "type_id": "usize",
+          "type_id": "Usize",
           "name": "T"
         }
       ],
       "documentation": " I am a struct",
       "associated_functions": [
-        "ladfile_builder::test::StructType<usize>::hello_world"
+        "ladfile_builder::test::GenericStructType<usize>::hello_world"
       ],
       "layout": {
         "kind": "Struct",
-        "name": "StructType",
+        "name": "GenericStructType",
         "fields": [
           {
             "name": "field",
-            "type": "usize"
+            "type": {
+              "primitive": "usize"
+            }
           },
           {
             "name": "field2",
-            "type": "usize"
+            "type": {
+              "primitive": "usize"
+            }
           }
         ]
       },
       "generated": false,
-      "insignificance": 1000
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "Bool": {
+      "identifier": "Bool",
+      "path": "Bool",
+      "documentation": "A boolean value",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "bool"
+      }
+    },
+    "Char": {
+      "identifier": "Char",
+      "path": "Char",
+      "documentation": "An 8-bit character",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "char"
+      }
+    },
+    "DynamicFunction": {
+      "identifier": "DynamicFunction",
+      "path": "DynamicFunction",
+      "documentation": "A callable dynamic function",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "dynamicFunction"
+      }
+    },
+    "DynamicFunctionMut": {
+      "identifier": "DynamicFunctionMut",
+      "path": "DynamicFunctionMut",
+      "documentation": "A stateful and callable dynamic function",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "dynamicFunctionMut"
+      }
+    },
+    "F32": {
+      "identifier": "F32",
+      "path": "F32",
+      "documentation": "A 32-bit floating point number",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "f32"
+      }
+    },
+    "F64": {
+      "identifier": "F64",
+      "path": "F64",
+      "documentation": "A 64-bit floating point number",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "f64"
+      }
+    },
+    "FunctionCallContext": {
+      "identifier": "FunctionCallContext",
+      "path": "FunctionCallContext",
+      "documentation": "Function call context, if accepted by a function, means the function can access the world in arbitrary ways.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "functionCallContext"
+      }
+    },
+    "I128": {
+      "identifier": "I128",
+      "path": "I128",
+      "documentation": "A signed 128-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "i128"
+      }
+    },
+    "I16": {
+      "identifier": "I16",
+      "path": "I16",
+      "documentation": "A signed 16-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "i16"
+      }
+    },
+    "I32": {
+      "identifier": "I32",
+      "path": "I32",
+      "documentation": "A signed 32-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "i32"
+      }
+    },
+    "I64": {
+      "identifier": "I64",
+      "path": "I64",
+      "documentation": "A signed 64-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "i64"
+      }
+    },
+    "I8": {
+      "identifier": "I8",
+      "path": "I8",
+      "documentation": "A signed 8-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "i8"
+      }
+    },
+    "Isize": {
+      "identifier": "Isize",
+      "path": "Isize",
+      "documentation": "A signed pointer-sized integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "isize"
+      }
+    },
+    "OsString": {
+      "identifier": "OsString",
+      "path": "OsString",
+      "documentation": "A heap allocated OS string",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "osString"
+      }
+    },
+    "PathBuf": {
+      "identifier": "PathBuf",
+      "path": "PathBuf",
+      "documentation": "A heap allocated file path",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "pathBuf"
+      }
+    },
+    "ReflectReference": {
+      "identifier": "ReflectReference",
+      "path": "ReflectReference",
+      "documentation": "A reference to a reflectable type",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "reflectReference"
+      }
+    },
+    "ScriptValue": {
+      "identifier": "ScriptValue",
+      "path": "ScriptValue",
+      "documentation": "A value representing the union of all representable values",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "scriptValue"
+      }
+    },
+    "Str": {
+      "identifier": "Str",
+      "path": "Str",
+      "documentation": "A string slice",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "str"
+      }
+    },
+    "String": {
+      "identifier": "String",
+      "path": "String",
+      "documentation": "A heap allocated string",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "string"
+      }
+    },
+    "U128": {
+      "identifier": "U128",
+      "path": "U128",
+      "documentation": "An unsigned 128-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "u128"
+      }
+    },
+    "U16": {
+      "identifier": "U16",
+      "path": "U16",
+      "documentation": "An unsigned 16-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "u16"
+      }
+    },
+    "U32": {
+      "identifier": "U32",
+      "path": "U32",
+      "documentation": "An unsigned 32-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "u32"
+      }
+    },
+    "U64": {
+      "identifier": "U64",
+      "path": "U64",
+      "documentation": "An unsigned 64-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "u64"
+      }
+    },
+    "U8": {
+      "identifier": "U8",
+      "path": "U8",
+      "documentation": "An unsigned 8-bit integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "u8"
+      }
+    },
+    "Usize": {
+      "identifier": "Usize",
+      "path": "Usize",
+      "documentation": "An unsigned pointer-sized integer",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "usize"
+      }
     },
     "ladfile_builder::test::EnumType": {
       "identifier": "EnumType",
@@ -83,7 +472,9 @@
           "fields": [
             {
               "name": "field",
-              "type": "usize"
+              "type": {
+                "primitive": "usize"
+              }
             }
           ]
         },
@@ -92,16 +483,26 @@
           "name": "TupleStruct",
           "fields": [
             {
-              "type": "usize"
+              "type": {
+                "primitive": "usize"
+              }
             },
             {
-              "type": "String"
+              "type": {
+                "primitive": "string"
+              }
             }
           ]
         }
       ],
       "generated": false,
-      "insignificance": 1000
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
     },
     "ladfile_builder::test::TupleStructType": {
       "identifier": "TupleStructType",
@@ -113,15 +514,25 @@
         "name": "TupleStructType",
         "fields": [
           {
-            "type": "usize"
+            "type": {
+              "primitive": "usize"
+            }
           },
           {
-            "type": "String"
+            "type": {
+              "primitive": "string"
+            }
           }
         ]
       },
       "generated": false,
-      "insignificance": 1000
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
     },
     "ladfile_builder::test::UnitType": {
       "identifier": "UnitType",
@@ -133,13 +544,20 @@
         "name": "UnitType"
       },
       "generated": false,
-      "insignificance": 1000
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
     }
   },
   "functions": {
     "::hello_world": {
       "namespace": null,
       "identifier": "hello_world",
+      "overload_index": null,
       "arguments": [
         {
           "kind": {
@@ -152,11 +570,15 @@
         "kind": {
           "primitive": "usize"
         }
+      },
+      "metadata": {
+        "is_operator": false
       }
     },
-    "ladfile_builder::test::StructType<usize>::hello_world": {
-      "namespace": "ladfile_builder::test::StructType<usize>",
+    "ladfile_builder::test::GenericStructType<usize>::hello_world": {
+      "namespace": "ladfile_builder::test::GenericStructType<usize>",
       "identifier": "hello_world",
+      "overload_index": null,
       "arguments": [
         {
           "kind": {
@@ -197,105 +619,35 @@
         },
         "documentation": "I am some docs for the return type, I provide a name for the return value too",
         "name": "return"
+      },
+      "metadata": {
+        "is_operator": false
       }
-    }
-  },
-  "primitives": {
-    "DynamicFunction": {
-      "kind": "dynamicFunction",
-      "documentation": "A callable dynamic function"
     },
-    "DynamicFunctionMut": {
-      "kind": "dynamicFunctionMut",
-      "documentation": "A stateful and callable dynamic function"
-    },
-    "FunctionCallContext": {
-      "kind": "functionCallContext",
-      "documentation": "Function call context, if accepted by a function, means the function can access the world in arbitrary ways."
-    },
-    "OsString": {
-      "kind": "osString",
-      "documentation": "A heap allocated OS string"
-    },
-    "PathBuf": {
-      "kind": "pathBuf",
-      "documentation": "A heap allocated file path"
-    },
-    "ReflectReference": {
-      "kind": "reflectReference",
-      "documentation": "A reference to a reflectable type"
-    },
-    "String": {
-      "kind": "string",
-      "documentation": "A heap allocated string"
-    },
-    "bool": {
-      "kind": "bool",
-      "documentation": "A boolean value"
-    },
-    "char": {
-      "kind": "char",
-      "documentation": "An 8-bit character"
-    },
-    "f32": {
-      "kind": "f32",
-      "documentation": "A 32-bit floating point number"
-    },
-    "f64": {
-      "kind": "f64",
-      "documentation": "A 64-bit floating point number"
-    },
-    "i128": {
-      "kind": "i128",
-      "documentation": "A signed 128-bit integer"
-    },
-    "i16": {
-      "kind": "i16",
-      "documentation": "A signed 16-bit integer"
-    },
-    "i32": {
-      "kind": "i32",
-      "documentation": "A signed 32-bit integer"
-    },
-    "i64": {
-      "kind": "i64",
-      "documentation": "A signed 64-bit integer"
-    },
-    "i8": {
-      "kind": "i8",
-      "documentation": "A signed 8-bit integer"
-    },
-    "isize": {
-      "kind": "isize",
-      "documentation": "A signed pointer-sized integer"
-    },
-    "str": {
-      "kind": "str",
-      "documentation": "A string slice"
-    },
-    "u128": {
-      "kind": "u128",
-      "documentation": "An unsigned 128-bit integer"
-    },
-    "u16": {
-      "kind": "u16",
-      "documentation": "An unsigned 16-bit integer"
-    },
-    "u32": {
-      "kind": "u32",
-      "documentation": "An unsigned 32-bit integer"
-    },
-    "u64": {
-      "kind": "u64",
-      "documentation": "An unsigned 64-bit integer"
-    },
-    "u8": {
-      "kind": "u8",
-      "documentation": "An unsigned 8-bit integer"
-    },
-    "usize": {
-      "kind": "usize",
-      "documentation": "An unsigned pointer-sized integer"
+    "ladfile_builder::test::PlainStructType::plain_struct_function": {
+      "namespace": "ladfile_builder::test::PlainStructType",
+      "identifier": "plain_struct_function",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "ref": "ladfile_builder::test::PlainStructType"
+          }
+        },
+        {
+          "kind": {
+            "primitive": "usize"
+          }
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "unknown": "ladfile_builder::test::PlainStructType"
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
     }
   },
   "description": "## Hello gentlemen\n I am  markdown file.\n - hello\n - world"

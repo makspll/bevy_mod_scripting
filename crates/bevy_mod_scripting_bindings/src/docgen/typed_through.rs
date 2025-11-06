@@ -1,11 +1,7 @@
 //! Defines a set of traits which destruture [`bevy_reflect::TypeInfo`] and implement a light weight wrapper around it, to allow types
 //! which normally can't implement [`bevy_reflect::Typed`] to be used in a reflection context.
 
-use std::{ffi::OsString, path::PathBuf};
-
-use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_platform::collections::HashMap;
-use bevy_reflect::{TypeInfo, Typed};
+use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
 use crate::{
     ReflectReference,
@@ -16,6 +12,10 @@ use crate::{
     script_value::ScriptValue,
 };
 use crate::{error::InteropError, reflection_extensions::TypeInfoExtensions};
+use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
+use bevy_mod_scripting_derive::DebugWithTypeInfo;
+use bevy_platform::collections::HashMap;
+use bevy_reflect::{TypeInfo, Typed};
 
 /// All Through types follow one rule:
 /// - A through type can not contain a nested through type. It must always contain a fully typed inner type.
@@ -40,6 +40,8 @@ pub enum ThroughTypeInfo {
     TypedWrapper(TypedWrapperKind),
     /// an actual type info
     TypeInfo(&'static TypeInfo),
+    /// A primitive type, which mostly speaks for itself
+    Primitive(ReflectionPrimitiveKind),
 }
 
 #[derive(Clone, PartialEq, Eq, DebugWithTypeInfo)]
@@ -64,6 +66,8 @@ pub enum TypedWrapperKind {
     Vec(Box<ThroughTypeInfo>),
     /// Wraps a `HashMap` of a through typed type.
     HashMap(Box<ThroughTypeInfo>, Box<ThroughTypeInfo>),
+    /// Wraps a `HashSet` of a through typed type.
+    HashSet(Box<ThroughTypeInfo>),
     /// Wraps a `Result` of a through typed type.
     Array(Box<ThroughTypeInfo>, usize),
     /// Wraps an `Option` of a through typed type.
@@ -128,6 +132,8 @@ pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(
                 tuple_types,
             )));
+        } else if let Some(primitive) = as_reflect_primitive(type_info) {
+            return Some(ThroughTypeInfo::Primitive(primitive));
         }
         None
     })();
@@ -135,6 +141,62 @@ pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
     option.unwrap_or(ThroughTypeInfo::UntypedWrapper {
         through_type: type_info,
         wrapper_kind: UntypedWrapperKind::Val,
+    })
+}
+
+/// Returns the primitive kind if the given type info corresponds to one
+pub fn as_reflect_primitive(type_info: &'static TypeInfo) -> Option<ReflectionPrimitiveKind> {
+    let type_id = type_info.type_id();
+    Some(if type_id == TypeId::of::<bool>() {
+        ReflectionPrimitiveKind::Bool
+    } else if type_id == TypeId::of::<isize>() {
+        ReflectionPrimitiveKind::Isize
+    } else if type_id == TypeId::of::<i8>() {
+        ReflectionPrimitiveKind::I8
+    } else if type_id == TypeId::of::<i16>() {
+        ReflectionPrimitiveKind::I16
+    } else if type_id == TypeId::of::<i32>() {
+        ReflectionPrimitiveKind::I32
+    } else if type_id == TypeId::of::<i64>() {
+        ReflectionPrimitiveKind::I64
+    } else if type_id == TypeId::of::<i128>() {
+        ReflectionPrimitiveKind::I128
+    } else if type_id == TypeId::of::<usize>() {
+        ReflectionPrimitiveKind::Usize
+    } else if type_id == TypeId::of::<u8>() {
+        ReflectionPrimitiveKind::U8
+    } else if type_id == TypeId::of::<u16>() {
+        ReflectionPrimitiveKind::U16
+    } else if type_id == TypeId::of::<u32>() {
+        ReflectionPrimitiveKind::U32
+    } else if type_id == TypeId::of::<u64>() {
+        ReflectionPrimitiveKind::U64
+    } else if type_id == TypeId::of::<u128>() {
+        ReflectionPrimitiveKind::U128
+    } else if type_id == TypeId::of::<f32>() {
+        ReflectionPrimitiveKind::F32
+    } else if type_id == TypeId::of::<f64>() {
+        ReflectionPrimitiveKind::F64
+    } else if type_id == TypeId::of::<char>() {
+        ReflectionPrimitiveKind::Char
+    } else if type_id == TypeId::of::<&'static str>() || type_id == TypeId::of::<str>() {
+        ReflectionPrimitiveKind::Str
+    } else if type_id == TypeId::of::<String>() {
+        ReflectionPrimitiveKind::String
+    } else if type_id == TypeId::of::<OsString>() {
+        ReflectionPrimitiveKind::OsString
+    } else if type_id == TypeId::of::<PathBuf>() {
+        ReflectionPrimitiveKind::PathBuf
+    } else if type_id == TypeId::of::<FunctionCallContext>() {
+        ReflectionPrimitiveKind::FunctionCallContext
+    } else if type_id == TypeId::of::<DynamicScriptFunction>() {
+        ReflectionPrimitiveKind::DynamicFunction
+    } else if type_id == TypeId::of::<DynamicScriptFunctionMut>() {
+        ReflectionPrimitiveKind::DynamicFunctionMut
+    } else if type_id == TypeId::of::<ReflectReference>() {
+        ReflectionPrimitiveKind::ReflectReference
+    } else {
+        return None;
     })
 }
 
@@ -225,11 +287,11 @@ impl<T: TypedThrough> TypedThrough for Option<T> {
 }
 
 macro_rules! impl_through_typed {
-    ($($ty:ty),*) => {
+    ($($ty:ty => $ident:ident),*) => {
         $(
             impl $crate::docgen::typed_through::TypedThrough for $ty {
                 fn through_type_info() -> $crate::docgen::typed_through::ThroughTypeInfo {
-                    $crate::docgen::typed_through::ThroughTypeInfo::TypeInfo(<$ty as bevy_reflect::Typed>::type_info())
+                    $crate::docgen::typed_through::ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::$ident)
                 }
             }
         )*
@@ -237,31 +299,31 @@ macro_rules! impl_through_typed {
 }
 
 impl_through_typed!(
-    FunctionCallContext,
-    ReflectReference,
-    DynamicScriptFunctionMut,
-    DynamicScriptFunction,
-    ScriptValue,
-    bool,
-    i8,
-    i16,
-    i32,
-    i64,
-    i128,
-    u8,
-    u16,
-    u32,
-    u64,
-    u128,
-    f32,
-    f64,
-    usize,
-    isize,
-    String,
-    PathBuf,
-    OsString,
-    char,
-    &'static str
+    FunctionCallContext => FunctionCallContext,
+    ReflectReference => ReflectReference,
+    DynamicScriptFunctionMut => DynamicFunctionMut,
+    DynamicScriptFunction => DynamicFunction,
+    ScriptValue => ScriptValue,
+    bool => Bool,
+    i8 => I8,
+    i16 => I16,
+    i32 => I32,
+    i64 => I64,
+    i128 => I128,
+    u8 => U8,
+    u16 => U16,
+    u32 => U32,
+    u64 => U64,
+    u128 => U128,
+    f32 => F32,
+    f64 => F64,
+    usize => Usize,
+    isize => Isize,
+    String => String,
+    PathBuf => PathBuf,
+    OsString => OsString,
+    char => Char,
+    &'static str => Str
 );
 
 macro_rules! impl_through_typed_tuple {
@@ -280,80 +342,54 @@ variadics_please::all_tuples!(impl_through_typed_tuple, 0, 13, T);
 mod test {
     use super::*;
 
-    fn assert_type_info_is_through<T: Typed + TypedThrough>() {
+    fn assert_type_info_is_primitive<T: Typed + TypedThrough>(kind: ReflectionPrimitiveKind) {
         let type_info = T::type_info();
         let through_type_info = T::through_type_info();
+        let dynamic_through_type_info = into_through_type_info(type_info);
 
-        match through_type_info {
-            ThroughTypeInfo::TypeInfo(info) => {
-                assert_eq!(info.type_id(), type_info.type_id());
-                assert_eq!(info.type_path(), type_info.type_path());
+        for (test, info) in [
+            ("static", through_type_info),
+            ("dynamic", dynamic_through_type_info),
+        ] {
+            match info {
+                ThroughTypeInfo::Primitive(prim) => {
+                    assert_eq!(
+                        prim,
+                        kind,
+                        "expected {} to have primitive {test} type info: {kind}",
+                        std::any::type_name::<T>()
+                    )
+                }
+                _ => panic!("Expected ThroughTypeInfo::TypeInfo"),
             }
-            _ => panic!("Expected ThroughTypeInfo::TypeInfo"),
-        }
-    }
-
-    fn assert_dynamic_through_type_is_val_info<T: Typed + TypedThrough>() {
-        let type_info = T::type_info();
-        let through_type_info = into_through_type_info(type_info);
-
-        match through_type_info {
-            ThroughTypeInfo::UntypedWrapper {
-                through_type,
-                wrapper_kind,
-            } => {
-                assert_eq!(wrapper_kind, UntypedWrapperKind::Val);
-                assert_eq!(through_type.type_id(), type_info.type_id());
-                assert_eq!(through_type.type_path(), type_info.type_path());
-            }
-            _ => panic!("Expected ThroughTypeInfo::TypeInfo"),
         }
     }
 
     #[test]
     fn test_typed_through_primitives() {
-        assert_type_info_is_through::<bool>();
-        assert_dynamic_through_type_is_val_info::<bool>();
-        assert_type_info_is_through::<i8>();
-        assert_dynamic_through_type_is_val_info::<i8>();
-        assert_type_info_is_through::<i16>();
-        assert_dynamic_through_type_is_val_info::<i16>();
-        assert_type_info_is_through::<i32>();
-        assert_dynamic_through_type_is_val_info::<i32>();
-        assert_type_info_is_through::<i64>();
-        assert_dynamic_through_type_is_val_info::<i64>();
-        assert_type_info_is_through::<i128>();
-        assert_dynamic_through_type_is_val_info::<i128>();
-        assert_type_info_is_through::<u8>();
-        assert_dynamic_through_type_is_val_info::<u8>();
-        assert_type_info_is_through::<u16>();
-        assert_dynamic_through_type_is_val_info::<u16>();
-        assert_type_info_is_through::<u32>();
-        assert_dynamic_through_type_is_val_info::<u32>();
-        assert_type_info_is_through::<u64>();
-        assert_dynamic_through_type_is_val_info::<u64>();
-        assert_type_info_is_through::<u128>();
-        assert_dynamic_through_type_is_val_info::<u128>();
-        assert_type_info_is_through::<f32>();
-        assert_dynamic_through_type_is_val_info::<f32>();
-        assert_type_info_is_through::<f64>();
-        assert_dynamic_through_type_is_val_info::<f64>();
-        assert_type_info_is_through::<usize>();
-        assert_dynamic_through_type_is_val_info::<usize>();
-        assert_type_info_is_through::<isize>();
-        assert_dynamic_through_type_is_val_info::<isize>();
-        assert_type_info_is_through::<String>();
-        assert_dynamic_through_type_is_val_info::<String>();
-        assert_type_info_is_through::<PathBuf>();
-        assert_dynamic_through_type_is_val_info::<PathBuf>();
-        assert_type_info_is_through::<OsString>();
-        assert_dynamic_through_type_is_val_info::<OsString>();
-        assert_type_info_is_through::<char>();
-        assert_dynamic_through_type_is_val_info::<char>();
-        assert_type_info_is_through::<ReflectReference>();
-        assert_dynamic_through_type_is_val_info::<ReflectReference>();
-        assert_type_info_is_through::<&'static str>();
-        assert_dynamic_through_type_is_val_info::<&'static str>();
+        assert_type_info_is_primitive::<bool>(ReflectionPrimitiveKind::Bool);
+        assert_type_info_is_primitive::<i8>(ReflectionPrimitiveKind::I8);
+        assert_type_info_is_primitive::<i16>(ReflectionPrimitiveKind::I16);
+        assert_type_info_is_primitive::<i32>(ReflectionPrimitiveKind::I32);
+        assert_type_info_is_primitive::<i64>(ReflectionPrimitiveKind::I64);
+        assert_type_info_is_primitive::<i128>(ReflectionPrimitiveKind::I128);
+        assert_type_info_is_primitive::<u8>(ReflectionPrimitiveKind::U8);
+        assert_type_info_is_primitive::<u16>(ReflectionPrimitiveKind::U16);
+        assert_type_info_is_primitive::<u32>(ReflectionPrimitiveKind::U32);
+        assert_type_info_is_primitive::<u64>(ReflectionPrimitiveKind::U64);
+        assert_type_info_is_primitive::<u128>(ReflectionPrimitiveKind::U128);
+        assert_type_info_is_primitive::<f32>(ReflectionPrimitiveKind::F32);
+        assert_type_info_is_primitive::<f64>(ReflectionPrimitiveKind::F64);
+        assert_type_info_is_primitive::<usize>(ReflectionPrimitiveKind::Usize);
+        assert_type_info_is_primitive::<isize>(ReflectionPrimitiveKind::Isize);
+        assert_type_info_is_primitive::<String>(ReflectionPrimitiveKind::String);
+        assert_type_info_is_primitive::<PathBuf>(ReflectionPrimitiveKind::PathBuf);
+        assert_type_info_is_primitive::<OsString>(ReflectionPrimitiveKind::OsString);
+        assert_type_info_is_primitive::<char>(ReflectionPrimitiveKind::Char);
+        assert_type_info_is_primitive::<ReflectReference>(
+            ReflectionPrimitiveKind::ReflectReference,
+        );
+        assert_type_info_is_primitive::<&'static str>(ReflectionPrimitiveKind::Str);
     }
 
     #[test]

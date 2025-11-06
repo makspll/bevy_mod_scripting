@@ -1,0 +1,20 @@
+[package]
+name = "bevy_mod_scripting_bindings_domain"
+description = "Definitions of shared interfaces from the bevy_mod_scripting_bindings crate."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+
+[lints]
+workspace = true

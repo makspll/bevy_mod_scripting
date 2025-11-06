@@ -11,6 +11,10 @@ keywords.workspace = true
 categories.workspace = true
 readme.workspace = true
 
+[features]
+default = []
+lua_language_server_files = ["lua_language_server_lad_backend"]
+
 [dependencies]
 bevy_app = { workspace = true, default-features = false, features = [] }
 bevy_ecs = { workspace = true, default-features = false, features = [] }
@@ -18,7 +22,9 @@ bevy_platform = { workspace = true, default-features = false, features = [] }
 bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_reflect = { workspace = true, features = ["documentation"] }
+lua_language_server_lad_backend = { workspace = true, optional = true }
 ladfile = { workspace = true }
 regex = { workspace = true }
 
