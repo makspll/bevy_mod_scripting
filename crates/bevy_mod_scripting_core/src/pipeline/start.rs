@@ -1,5 +1,6 @@
 use super::*;
 use bevy_asset::AssetEvent;
+use bevy_ecs::message::{MessageReader, MessageWriter};
 use bevy_log::{debug, trace};
 
 /// A handle to a script asset which can only be made from a strong handle
@@ -8,7 +9,7 @@ pub struct StrongScriptHandle(Handle<ScriptAsset>);
 
 impl GetScriptHandle for ScriptAssetModifiedEvent {
     fn get_script_handle(&self) -> Handle<ScriptAsset> {
-        Handle::Weak(self.0)
+        self.0.clone()
     }
 }
 
@@ -58,8 +59,8 @@ impl StrongScriptHandle {
 
 /// Generate [`ScriptAssetModifiedEvent`]'s from asset modification events, filtering to only forward those matching the plugin's language
 pub fn filter_script_modifications<P: IntoScriptPluginParams>(
-    mut events: EventReader<AssetEvent<ScriptAsset>>,
-    mut filtered: EventWriter<ForPlugin<ScriptAssetModifiedEvent, P>>,
+    mut events: MessageReader<AssetEvent<ScriptAsset>>,
+    mut filtered: MessageWriter<ForPlugin<ScriptAssetModifiedEvent, P>>,
     assets: Res<Assets<ScriptAsset>>,
 ) {
     let mut batch = events.read().filter_map(|e| {
@@ -81,7 +82,7 @@ pub fn filter_script_modifications<P: IntoScriptPluginParams>(
 /// Filters incoming [`ScriptAttachedEvent`]'s leaving only those which match the plugin's language
 pub fn filter_script_attachments<P: IntoScriptPluginParams>(
     mut events: LoadedWithHandles<ScriptAttachedEvent>,
-    mut filtered: EventWriter<ForPlugin<ScriptAttachedEvent, P>>,
+    mut filtered: MessageWriter<ForPlugin<ScriptAttachedEvent, P>>,
 ) {
     let mut batch = events.get_loaded().map(|(mut a, b)| {
         trace!("dispatching script attachment event for: {a:?}");
@@ -96,8 +97,8 @@ pub fn filter_script_attachments<P: IntoScriptPluginParams>(
 
 /// Filters incoming [`ScriptDetachedEvent`]'s leaving only those which are currently attached
 pub fn filter_script_detachments<P: IntoScriptPluginParams>(
-    mut events: EventReader<ScriptDetachedEvent>,
-    mut filtered: EventWriter<ForPlugin<ScriptDetachedEvent, P>>,
+    mut events: MessageReader<ScriptDetachedEvent>,
+    mut filtered: MessageWriter<ForPlugin<ScriptDetachedEvent, P>>,
     contexts: Res<ScriptContext<P>>,
 ) {
     let contexts_guard = contexts.read();
@@ -115,7 +116,7 @@ pub fn filter_script_detachments<P: IntoScriptPluginParams>(
 
 /// Process [`ScriptAttachedEvent`]'s and generate loading machines with the [`LoadingInitialized`] and [`ReloadingInitialized`] states
 pub fn process_attachments<P: IntoScriptPluginParams>(
-    mut events: EventReader<ForPlugin<ScriptAttachedEvent, P>>,
+    mut events: MessageReader<ForPlugin<ScriptAttachedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
     mut assets: ResMut<Assets<ScriptAsset>>,
     contexts: Res<ScriptContext<P>>,
@@ -157,7 +158,7 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
 
 /// Processes [`ScriptAttachedEvent`]'s and initialized unloading state machines with [`UnloadingInitialized`] states
 pub fn process_detachments<P: IntoScriptPluginParams>(
-    mut events: EventReader<ForPlugin<ScriptDetachedEvent, P>>,
+    mut events: MessageReader<ForPlugin<ScriptDetachedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
     contexts: Res<ScriptContext<P>>,
 ) {
@@ -181,7 +182,7 @@ pub fn process_detachments<P: IntoScriptPluginParams>(
 
 /// Processes [`ScriptAssetModifiedEvent`]'s and initializes loading state machines with [`ReloadingInitialized`] states
 pub fn process_asset_modifications<P: IntoScriptPluginParams>(
-    mut events: EventReader<ForPlugin<ScriptAssetModifiedEvent, P>>,
+    mut events: MessageReader<ForPlugin<ScriptAssetModifiedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
     mut assets: ResMut<Assets<ScriptAsset>>,
     contexts: Res<ScriptContext<P>>,

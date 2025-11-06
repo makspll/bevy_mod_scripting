@@ -1,7 +1,8 @@
-use std::fmt;
+use std::{fmt, marker::PhantomData};
 
 use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_display::DisplayProxy;
+use uuid::Uuid;
 
 use super::*;
 use crate::ScriptAsset;
@@ -56,7 +57,7 @@ impl ContextKey {
     /// Creates an invalid context key, which should never exist.
     pub const INVALID: Self = Self {
         entity: Some(Entity::PLACEHOLDER),
-        script: Some(Handle::Weak(AssetId::invalid())),
+        script: Some(Handle::Uuid(Uuid::nil(), PhantomData)),
     };
 
     /// Creates a shared context key, which is used for shared contexts
@@ -80,15 +81,15 @@ impl ContextKey {
         }
     }
 
-    /// If a script handle is present and is strong, convert it to a weak
-    /// handle.
-    pub fn into_weak(mut self) -> Self {
-        if let Some(script) = &self.script
-            && script.is_strong()
-        {
-            self.script = Some(script.clone_weak());
-        }
+    // /// If a script handle is present and is strong, convert it to a weak
+    // /// handle.
+    // pub fn into_weak(mut self) -> Self {
+    //     if let Some(script) = &self.script
+    //         && script.is_strong()
+    //     {
+    //         self.script = Some(script.clone());
+    //     }
 
-        self
-    }
+    //     self
+    // }
 }

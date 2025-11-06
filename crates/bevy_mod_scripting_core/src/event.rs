@@ -2,8 +2,8 @@
 
 use std::{marker::PhantomData, sync::Arc};
 
-use ::{bevy_asset::Handle, bevy_ecs::entity::Entity, bevy_reflect::Reflect};
-use bevy_ecs::event::Event;
+use ::{bevy_ecs::entity::Entity, bevy_reflect::Reflect};
+use bevy_ecs::message::Message;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -16,7 +16,7 @@ use crate::{
 };
 
 /// An error coming from a script
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct ScriptErrorEvent {
     /// The script that caused the error
     pub error: ScriptError,
@@ -30,18 +30,18 @@ impl ScriptErrorEvent {
 }
 
 /// Emitted when a script is attached.
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct ScriptAttachedEvent(pub ScriptAttachment);
 
 /// Emitted when a script is detached.
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct ScriptDetachedEvent(pub ScriptAttachment);
 
 /// Emitted when a script asset is modified and all its attachments require re-loading
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct ScriptAssetModifiedEvent(pub ScriptId);
 
-#[derive(Event)]
+#[derive(Message)]
 /// Wrapper around a script event making it available to read by a specific plugin only
 pub struct ForPlugin<T, P: IntoScriptPluginParams>(T, PhantomData<fn(P)>);
 
@@ -65,8 +65,8 @@ impl<T: Clone, P: IntoScriptPluginParams> Clone for ForPlugin<T, P> {
 
 impl<T, P: IntoScriptPluginParams> ForPlugin<T, P> {
     /// Creates a new wrapper for the specific plugin
-    pub fn new(event: T) -> Self {
-        Self(event, Default::default())
+    pub fn new(Message: T) -> Self {
+        Self(Message, Default::default())
     }
 
     /// Retrieves the inner event
@@ -218,7 +218,7 @@ impl Recipients {
             Recipients::AllScripts => script_context.all_residents().collect(),
             Recipients::AllContexts => script_context.first_resident_from_each_context().collect(),
             Recipients::ScriptEntity(script, entity) => {
-                let attachment = ScriptAttachment::EntityScript(*entity, Handle::Weak(*script));
+                let attachment = ScriptAttachment::EntityScript(*entity, script.clone());
                 script_context
                     .get_context(&attachment)
                     .into_iter()
@@ -226,7 +226,7 @@ impl Recipients {
                     .collect()
             }
             Recipients::StaticScript(script) => {
-                let attachment = ScriptAttachment::StaticScript(Handle::Weak(*script));
+                let attachment = ScriptAttachment::StaticScript(script.clone());
                 script_context
                     .get_context(&attachment)
                     .into_iter()
@@ -238,7 +238,7 @@ impl Recipients {
 }
 
 /// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
-#[derive(Clone, Event, Debug)]
+#[derive(Clone, Message, Debug)]
 #[non_exhaustive]
 pub struct ScriptCallbackEvent {
     /// The label of the callback
@@ -290,7 +290,7 @@ impl ScriptCallbackEvent {
 }
 
 /// Event published when a script completes a callback and a response is requested.
-#[derive(Clone, Event, Debug)]
+#[derive(Clone, Message, Debug)]
 #[non_exhaustive]
 pub struct ScriptCallbackResponseEvent {
     /// the label of the callback
@@ -419,11 +419,12 @@ mod test {
 
     use ::{
         bevy_app::{App, Plugin},
-        bevy_asset::{AssetId, AssetIndex, Handle},
+        bevy_asset::{AssetId, Handle},
         bevy_ecs::entity::Entity,
     };
     use parking_lot::Mutex;
     use test_utils::make_test_plugin;
+    use uuid::uuid;
 
     use super::FORBIDDEN_KEYWORDS;
     use crate::{
@@ -476,18 +477,18 @@ mod test {
     /// make the following arrangement:
     /// use AssetId's to identify residents
     /// ContextA:
-    /// - EntityScriptA (Entity::from_raw(0), AssetId::from_bits(0))
-    /// - EntityScriptB (Entity::from_raw(0), AssetId::from_bits(1))
+    /// - EntityScriptA (Entity::from_raw(0), 163f1128-62f9-456f-9b76-a326fbe86fa8)
+    /// - EntityScriptB (Entity::from_raw(0), 263f1128-62f9-456f-9b76-a326fbe86fa8)
     ///
     /// ContextB:
-    /// - EntityScriptC (Entity::from_raw(1), AssetId::from_bits(2))
-    /// - EntityScriptD (Entity::from_raw(1), AssetId::from_bits(3))
+    /// - EntityScriptC (Entity::from_raw(1), 363f1128-62f9-456f-9b76-a326fbe86fa8)
+    /// - EntityScriptD (Entity::from_raw(1), 463f1128-62f9-456f-9b76-a326fbe86fa8)
     ///
     /// ContextC:
-    /// - StaticScriptA (AssetId::from_bits(4))
+    /// - StaticScriptA (563f1128-62f9-456f-9b76-a326fbe86fa8)
     ///
     /// ContextD:
-    /// - StaticScriptB (AssetId::from_bits(5))
+    /// - StaticScriptB (663f1128-62f9-456f-9b76-a326fbe86fa8)
     fn make_test_contexts() -> ScriptContext<TestPlugin> {
         let policy = ContextPolicy::per_entity();
         let script_context = ScriptContext::<TestPlugin>::new(policy);
@@ -505,37 +506,55 @@ mod test {
             invocations: vec![ScriptValue::String("d".to_string().into())],
         }));
 
-        let entity_script_a = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
-        let entity_script_b = Handle::Weak(AssetId::from(AssetIndex::from_bits(1)));
-        let entity_script_c = Handle::Weak(AssetId::from(AssetIndex::from_bits(2)));
-        let entity_script_d = Handle::Weak(AssetId::from(AssetIndex::from_bits(3)));
+        let entity_script_a = Handle::Uuid(
+            uuid!("163f1128-62f9-456f-9b76-a326fbe86fa8"),
+            Default::default(),
+        );
+        let entity_script_b = Handle::Uuid(
+            uuid!("263f1128-62f9-456f-9b76-a326fbe86fa8"),
+            Default::default(),
+        );
+        let entity_script_c = Handle::Uuid(
+            uuid!("363f1128-62f9-456f-9b76-a326fbe86fa8"),
+            Default::default(),
+        );
+        let entity_script_d = Handle::Uuid(
+            uuid!("463f1128-62f9-456f-9b76-a326fbe86fa8"),
+            Default::default(),
+        );
 
-        let static_script_a = Handle::Weak(AssetId::from(AssetIndex::from_bits(4)));
-        let static_script_b = Handle::Weak(AssetId::from(AssetIndex::from_bits(5)));
+        let static_script_a = Handle::Uuid(
+            uuid!("563f1128-62f9-456f-9b76-a326fbe86fa8"),
+            Default::default(),
+        );
+        let static_script_b = Handle::Uuid(
+            uuid!("663f1128-62f9-456f-9b76-a326fbe86fa8"),
+            Default::default(),
+        );
 
         script_context_guard
             .insert(
-                ScriptAttachment::EntityScript(Entity::from_raw(0), entity_script_a),
+                ScriptAttachment::EntityScript(Entity::from_raw_u32(0).unwrap(), entity_script_a),
                 context_a,
             )
             .unwrap();
 
         script_context_guard
             .insert_resident(ScriptAttachment::EntityScript(
-                Entity::from_raw(0),
+                Entity::from_raw_u32(0).unwrap(),
                 entity_script_b,
             ))
             .unwrap();
 
         script_context_guard
             .insert(
-                ScriptAttachment::EntityScript(Entity::from_raw(1), entity_script_c),
+                ScriptAttachment::EntityScript(Entity::from_raw_u32(1).unwrap(), entity_script_c),
                 context_b,
             )
             .unwrap();
         script_context_guard
             .insert_resident(ScriptAttachment::EntityScript(
-                Entity::from_raw(1),
+                Entity::from_raw_u32(1).unwrap(),
                 entity_script_d,
             ))
             .unwrap();
@@ -629,9 +648,14 @@ mod test {
     #[test]
     fn test_script_entity_recipients() {
         let script_context = make_test_contexts();
-        let recipients =
-            Recipients::ScriptEntity(AssetId::from(AssetIndex::from_bits(0)), Entity::from_raw(0))
-                .get_recipients(script_context);
+        let recipients = Recipients::ScriptEntity(
+            Handle::Uuid(
+                uuid!("163f1128-62f9-456f-9b76-a326fbe86fa8"),
+                Default::default(),
+            ),
+            Entity::from_raw_u32(0).unwrap(),
+        )
+        .get_recipients(script_context);
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);
@@ -641,8 +665,11 @@ mod test {
     #[test]
     fn test_static_script_recipients() {
         let script_context = make_test_contexts();
-        let recipients = Recipients::StaticScript(AssetId::from(AssetIndex::from_bits(4)))
-            .get_recipients(script_context);
+        let recipients = Recipients::StaticScript(Handle::Uuid(
+            uuid!("563f1128-62f9-456f-9b76-a326fbe86fa8"),
+            Default::default(),
+        ))
+        .get_recipients(script_context);
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);

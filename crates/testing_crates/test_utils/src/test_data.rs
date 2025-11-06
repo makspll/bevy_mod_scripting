@@ -292,7 +292,7 @@ macro_rules! impl_test_component_ids {
 
             impl GetTestEntityId for $comp_type {
                 fn test_entity_id() -> Entity {
-                    Entity::from_raw(TEST_ENTITY_ID_START + $comp_id)
+                    Entity::from_raw_u32(TEST_ENTITY_ID_START + $comp_id).unwrap()
                 }
             }
         )*
@@ -312,7 +312,7 @@ macro_rules! impl_test_component_ids {
                 assert_eq!(registered_id, TEST_COMPONENT_ID_START + $comp_id, "Test setup failed. Did you register components before running setup_world?: {}", stringify!($comp_type));
                 let entity = world.spawn(<$comp_type>::init()).id();
                 assert_eq!(entity.index(), TEST_ENTITY_ID_START + $comp_id, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
-                assert_eq!(entity.generation(), 1, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
+                assert_eq!(entity.generation(), bevy_ecs::entity::EntityGeneration::FIRST, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
             )*
             $(
                 world.insert_resource::<$res_type>(<$res_type>::init());

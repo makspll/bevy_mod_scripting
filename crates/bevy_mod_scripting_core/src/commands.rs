@@ -175,14 +175,14 @@ impl<P: IntoScriptPluginParams> DetachScript<P> {
 
 impl<P: IntoScriptPluginParams> Command for AttachScript<P> {
     fn apply(self, world: &mut World) {
-        world.send_event(self.0);
+        world.write_message(self.0);
         RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
     }
 }
 
 impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
     fn apply(self, world: &mut World) {
-        world.send_event(self.0);
+        world.write_message(self.0);
         RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
     }
 }

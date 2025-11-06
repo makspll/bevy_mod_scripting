@@ -303,13 +303,10 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
     ) -> Result<(), (ScriptAttachment, Arc<Mutex<P::C>>)> {
         match self.policy.select(&context_key) {
             Some(key) => {
-                let entry = self
-                    .map
-                    .entry(key.into_weak())
-                    .or_insert_with(|| ContextEntry {
-                        context: context.clone(),
-                        residents: HashSet::from_iter([context_key.clone()]),
-                    });
+                let entry = self.map.entry(key.clone()).or_insert_with(|| ContextEntry {
+                    context: context.clone(),
+                    residents: HashSet::from_iter([context_key.clone()]),
+                });
                 entry.context = context;
                 entry.residents.insert(context_key.clone());
 
@@ -348,7 +345,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
                     context,
                     residents: HashSet::from_iter([context_key.clone()]), // context with a residency of one
                 };
-                self.map.insert(key.into_weak(), entry);
+                self.map.insert(key.clone(), entry);
                 Ok(())
             }
             None => Err(context),
@@ -466,7 +463,6 @@ impl<P: IntoScriptPluginParams> Default for ScriptContextInner<P> {
 mod tests {
     use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
     use bevy_app::{App, Plugin};
-    use bevy_asset::AssetIndex;
     use bevy_mod_scripting_bindings::ScriptValue;
     use test_utils::make_test_plugin;
 
@@ -480,14 +476,10 @@ mod tests {
 
         let script_context = ScriptContext::<TestPlugin>::new(policy.clone());
         let mut script_context = script_context.write();
-        let context_key = ScriptAttachment::EntityScript(
-            Entity::from_raw(1),
-            Handle::Weak(AssetIndex::from_bits(1).into()),
-        );
-        let context_key2 = ScriptAttachment::EntityScript(
-            Entity::from_raw(2),
-            Handle::Weak(AssetIndex::from_bits(1).into()),
-        );
+        let context_key =
+            ScriptAttachment::EntityScript(Entity::from_raw_u32(1u32).unwrap(), Handle::default());
+        let context_key2 =
+            ScriptAttachment::EntityScript(Entity::from_raw_u32(2u32).unwrap(), Handle::default());
         assert_eq!(policy.select(&context_key), policy.select(&context_key2));
 
         script_context
