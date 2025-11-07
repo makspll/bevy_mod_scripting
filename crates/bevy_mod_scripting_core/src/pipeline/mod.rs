@@ -5,7 +5,7 @@ use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc, time:
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_asset::{AssetServer, Assets, Handle, LoadState};
 use bevy_ecs::{
-    event::{Event, EventCursor, EventReader, EventWriter, Events},
+    message::{Message, MessageReader},
     resource::Resource,
     schedule::{IntoScheduleConfigs, Schedule, ScheduleLabel, SystemSet},
     system::{Command, Local, Res, ResMut, SystemParam},
@@ -138,8 +138,8 @@ impl<P: IntoScriptPluginParams> std::fmt::Debug for ScriptProcessingSchedule<P> 
 }
 
 impl<P: IntoScriptPluginParams> ScriptLoadingPipeline<P> {
-    fn add_plugin_event<E: Event>(&self, app: &mut App) -> &Self {
-        app.add_event::<E>().add_event::<ForPlugin<E, P>>();
+    fn add_plugin_message<E: Message>(&self, app: &mut App) -> &Self {
+        app.add_message::<E>().add_message::<ForPlugin<E, P>>();
         self
     }
 }
@@ -156,15 +156,15 @@ pub trait GetScriptHandle {
 /// is loaded, will also guarantee a strong handle, otherwise the whole thing is skipped.
 ///
 /// Think of this as a proxy for "baby'ing" asset handles
-pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Event + Clone> {
+pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone> {
     assets: ResMut<'w, Assets<ScriptAsset>>,
     asset_server: Res<'w, AssetServer>,
-    fresh_events: EventReader<'w, 's, T>,
+    fresh_events: MessageReader<'w, 's, T>,
     loaded_with_handles: Local<'s, VecDeque<(T, StrongScriptHandle)>>,
     loading: Local<'s, VecDeque<T>>,
 }
 
-impl<T: GetScriptHandle + Event + Clone> LoadedWithHandles<'_, '_, T> {
+impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
     /// Retrieves all of the events of type `T`, which have finished loading and have a strong handle,
     /// the rest will be discarded.
     ///
@@ -203,9 +203,9 @@ impl<T: GetScriptHandle + Event + Clone> LoadedWithHandles<'_, '_, T> {
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
     fn build(&self, app: &mut App) {
-        self.add_plugin_event::<ScriptAttachedEvent>(app)
-            .add_plugin_event::<ScriptDetachedEvent>(app)
-            .add_plugin_event::<ScriptAssetModifiedEvent>(app);
+        self.add_plugin_message::<ScriptAttachedEvent>(app)
+            .add_plugin_message::<ScriptDetachedEvent>(app)
+            .add_plugin_message::<ScriptAssetModifiedEvent>(app);
 
         let mut active_machines = app.world_mut().get_resource_or_init::<ActiveMachines<P>>();
         if self.on_script_loaded_callback {
@@ -405,7 +405,7 @@ impl<'w, P: IntoScriptPluginParams> ScriptPipelineState<'w, P> {
 
 #[cfg(test)]
 mod test {
-    use bevy_asset::{AssetApp, AssetId, AssetPlugin};
+    use bevy_asset::{AssetApp, AssetPlugin};
     use bevy_ecs::{entity::Entity, system::SystemState, world::FromWorld};
     use bevy_mod_scripting_asset::Language;
     use bevy_mod_scripting_bindings::ScriptValue;
@@ -418,7 +418,7 @@ mod test {
     #[test]
     fn test_system_params() {
         let mut app = App::default();
-        app.add_event::<ScriptAttachedEvent>();
+        app.add_message::<ScriptAttachedEvent>();
         app.add_plugins(AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
         app.finish();
@@ -441,9 +441,9 @@ mod test {
             language: Language::Lua,
         };
         let handle = asset_server.add(asset);
-        let handle_invalid = Handle::Weak(AssetId::invalid());
-        world.send_event(ScriptAttachedEvent(ScriptAttachment::StaticScript(handle)));
-        world.send_event(ScriptAttachedEvent(ScriptAttachment::StaticScript(
+        let handle_invalid = Handle::default();
+        world.write_message(ScriptAttachedEvent(ScriptAttachment::StaticScript(handle)));
+        world.write_message(ScriptAttachedEvent(ScriptAttachment::StaticScript(
             handle_invalid,
         )));
 
@@ -468,7 +468,7 @@ mod test {
     #[test]
     fn test_run_override_is_undid() {
         let mut app = App::default();
-        app.add_event::<ScriptAttachedEvent>();
+        app.add_message::<ScriptAttachedEvent>();
 
         app.add_plugins((AssetPlugin::default(), TestPlugin::default()));
         app.init_asset::<ScriptAsset>();

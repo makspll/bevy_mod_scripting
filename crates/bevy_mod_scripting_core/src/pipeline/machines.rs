@@ -6,6 +6,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use bevy_ecs::message::{MessageCursor, Messages};
 use bevy_log::debug;
 use bevy_mod_scripting_bindings::InteropError;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -19,8 +20,8 @@ use super::*;
 /// Allows re-publishing of the same events too
 #[derive(SystemParam)]
 pub struct StateMachine<'w, 's, T: Send + Sync + 'static, P: IntoScriptPluginParams> {
-    events: ResMut<'w, Events<ForPlugin<T, P>>>,
-    cursor: Local<'s, EventCursor<ForPlugin<T, P>>>,
+    events: ResMut<'w, Messages<ForPlugin<T, P>>>,
+    cursor: Local<'s, MessageCursor<ForPlugin<T, P>>>,
 }
 
 impl<'w, 's, T: Send + Sync + 'static, P: IntoScriptPluginParams> StateMachine<'w, 's, T, P> {
@@ -62,7 +63,7 @@ impl<'w, 's, T: Send + Sync + 'static, P: IntoScriptPluginParams> StateMachine<'
     /// Consumes an iterator of state machines and writes them to the asset pipe
     pub fn write_batch(&mut self, batch: impl IntoIterator<Item = T>) {
         self.events
-            .send_batch(batch.into_iter().map(ForPlugin::new));
+            .write_batch(batch.into_iter().map(ForPlugin::new));
     }
 }
 
@@ -165,7 +166,7 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
                         // removed
                     }
                     Some(Err(err)) => {
-                        _ = world.send_event(ScriptErrorEvent::new(err));
+                        _ = world.write_message(ScriptErrorEvent::new(err));
                         // removed
                     }
                     None => {
@@ -244,7 +245,7 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
                         if let Err(err) =
                             (on_entered)(machine_state.as_mut(), world, &mut self.context)
                         {
-                            _ = world.send_event(ScriptErrorEvent::new(
+                            _ = world.write_message(ScriptErrorEvent::new(
                                 err.with_context(self.context.attachment.to_string())
                                     .with_context(machine_state.state_name())
                                     .with_language(P::LANGUAGE),
@@ -523,13 +524,13 @@ impl<P: IntoScriptPluginParams> MachineState<P> for ContextAssigned<P> {
         let mut contexts_guard = contexts.write();
 
         // drop any strong handles
-        match contexts_guard.insert(attachment.clone().into_weak(), self.context.clone()) {
+        match contexts_guard.insert(attachment.clone(), self.context.clone()) {
             Ok(_) => {}
             Err(_) => {
                 drop(contexts_guard);
-                _ = world.send_event(ScriptErrorEvent::new(ScriptError::from(InteropError::str(
-                    "no context policy matched",
-                ))))
+                _ = world.write_message(ScriptErrorEvent::new(ScriptError::from(
+                    InteropError::str("no context policy matched"),
+                )))
             }
         }
         Box::new(ready(Ok(
