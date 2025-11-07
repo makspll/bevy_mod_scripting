@@ -42,9 +42,40 @@ git_release_name = "v{{ version }}"
 changelog_include = [
     "bevy_mod_scripting_lua",
     "bevy_mod_scripting_core",
+    "bevy_mod_scripting_derive",
     "bevy_mod_scripting_rhai",
-    # "bevy_mod_scripting_rune",
+    "bevy_mod_scripting_rune",
     "bevy_mod_scripting_functions",
+    "lua_language_server_lad_backend",
+    "ladfile",
+    "ladfile_builder",
+    "mdbook_lad_preprocessor",
+    "bevy_system_reflection",
+
+    ## bindings crates 
+
+    "bevy_a11y_bms_bindings",
+    "bevy_animation_bms_bindings",
+    "bevy_asset_bms_bindings",
+    "bevy_color_bms_bindings",
+    "bevy_core_pipeline_bms_bindings",
+    "bevy_ecs_bms_bindings",
+    "bevy_gizmos_bms_bindings",
+    "bevy_gltf_bms_bindings",
+    "bevy_image_bms_bindings",
+    "bevy_input_bms_bindings",
+    "bevy_input_focus_bms_bindings",
+    "bevy_math_bms_bindings",
+    "bevy_mesh_bms_bindings",
+    "bevy_pbr_bms_bindings",
+    "bevy_picking_bms_bindings",
+    "bevy_reflect_bms_bindings",
+    "bevy_render_bms_bindings",
+    "bevy_scene_bms_bindings",
+    "bevy_sprite_bms_bindings",
+    "bevy_text_bms_bindings",
+    "bevy_time_bms_bindings",
+    "bevy_transform_bms_bindings",
 ]
 
 [[package]]
@@ -78,34 +109,106 @@ version_group = "main"
 
 [[package]]
 name = "ladfile"
-git_release_enable = true
-git_release_latest = false
-git_tag_enable = true
-git_tag_name = "v{{ version }}-ladfile"
-git_release_name = "v{{ version }}-ladfile"
+version_group = "main"
 
 [[package]]
 name = "ladfile_builder"
-git_release_enable = true
-git_release_latest = false
-git_tag_enable = true
-git_tag_name = "v{{ version }}-ladfile_builder"
-git_release_name = "v{{ version }}-ladfile_builder"
+version_group = "main"
 
 [[package]]
-changelog_update = true
 name = "mdbook_lad_preprocessor"
-git_release_enable = true
-git_release_latest = false
-git_tag_enable = true
-git_tag_name = "v{{ version }}-mdbook_lad_preprocessor"
-git_release_name = "v{{ version }}-mdbook_lad_preprocessor"
+version_group = "main"
 
 [[package]]
-changelog_update = true
 name = "bevy_system_reflection"
-git_release_enable = true
-git_release_latest = false
-git_tag_enable = true
-git_tag_name = "v{{ version }}-bevy_system_reflection"
-git_release_name = "v{{ version }}-bevy_system_reflection"
+version_group = "main"
+
+# bindings crates
+
+[[package]]
+name = "bevy_a11y_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_animation_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_asset_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_color_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_core_pipeline_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_ecs_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_gizmos_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_gltf_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_image_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_input_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_input_focus_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_math_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_mesh_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_pbr_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_picking_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_reflect_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_render_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_scene_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_sprite_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_text_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_time_bms_bindings"
+version_group = "main"
+
+[[package]]
+name = "bevy_transform_bms_bindings"
+version_group = "main"
