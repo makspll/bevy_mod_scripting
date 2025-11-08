@@ -1216,13 +1216,15 @@ impl Xtasks {
         )?;
 
         let metadata = Self::main_workspace_cargo_metadata()?;
+
         let bevy_version = metadata
             .packages
             .iter()
-            .find(|p| p.name.as_str() == "bevy")
-            .expect("Could not find bevy package in metadata")
-            .version
-            .clone();
+            .filter_map(|p| (p.name.as_str() == "bevy").then_some(&p.version))
+            .max()
+            .expect("could not find bevy package in metadata");
+
+        log::info!("Using bevy version {bevy_version}");
         // create directories if they don't already exist
         std::fs::create_dir_all(&bevy_dir)?;
         std::fs::create_dir_all(&output_dir)?;
