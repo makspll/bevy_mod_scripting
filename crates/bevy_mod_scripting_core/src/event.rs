@@ -3,8 +3,9 @@
 use std::{marker::PhantomData, sync::Arc};
 
 use ::{bevy_ecs::entity::Entity, bevy_reflect::Reflect};
+use bevy_asset::AssetId;
 use bevy_ecs::message::Message;
-use bevy_mod_scripting_asset::Language;
+use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_script::ScriptAttachment;
 use parking_lot::Mutex;
@@ -39,7 +40,7 @@ pub struct ScriptDetachedEvent(pub ScriptAttachment);
 
 /// Emitted when a script asset is modified and all its attachments require re-loading
 #[derive(Message, Clone, Debug)]
-pub struct ScriptAssetModifiedEvent(pub ScriptId);
+pub struct ScriptAssetModifiedEvent(pub AssetId<ScriptAsset>);
 
 #[derive(Message)]
 /// Wrapper around a script event making it available to read by a specific plugin only
@@ -65,8 +66,8 @@ impl<T: Clone, P: IntoScriptPluginParams> Clone for ForPlugin<T, P> {
 
 impl<T, P: IntoScriptPluginParams> ForPlugin<T, P> {
     /// Creates a new wrapper for the specific plugin
-    pub fn new(Message: T) -> Self {
-        Self(Message, Default::default())
+    pub fn new(message: T) -> Self {
+        Self(message, Default::default())
     }
 
     /// Retrieves the inner event

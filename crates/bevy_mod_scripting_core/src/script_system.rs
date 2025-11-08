@@ -7,7 +7,6 @@ use crate::{
 
 use ::{
     bevy_ecs::{
-        archetype::ArchetypeGeneration,
         component::{ComponentId, Tick},
         entity::Entity,
         query::{FilteredAccess, FilteredAccessSet, QueryState},
@@ -223,7 +222,6 @@ pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
     exclusive: bool,
     pub(crate) last_run: Tick,
     target_attachment: ScriptAttachment,
-    archetype_generation: ArchetypeGeneration,
     system_param_descriptors: Vec<ScriptSystemParamDescriptor>,
     state: Option<ScriptSystemState<P>>,
     _marker: std::marker::PhantomData<fn() -> P>,
@@ -242,7 +240,6 @@ impl<P: IntoScriptPluginParams> bevy_ecs::system::IntoSystem<(), (), IsDynamicSc
         Self::System {
             name: builder.name.to_string().into(),
             exclusive: builder.is_exclusive,
-            archetype_generation: ArchetypeGeneration::initial(),
             system_param_descriptors: builder.system_params,
             last_run: Default::default(),
             target_attachment: builder.attachment,

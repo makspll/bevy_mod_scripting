@@ -7,11 +7,11 @@ use bevy_log::{debug, trace};
 #[derive(Clone, Debug)]
 pub struct StrongScriptHandle(Handle<ScriptAsset>);
 
-impl GetScriptHandle for ScriptAssetModifiedEvent {
-    fn get_script_handle(&self) -> Handle<ScriptAsset> {
-        self.0.clone()
-    }
-}
+// impl GetScriptHandle for ScriptAssetModifiedEvent {
+//     fn get_script_handle(&self) -> Handle<ScriptAsset> {
+//         self.0.clone()
+//     }
+// }
 
 impl GetScriptHandle for ScriptAttachedEvent {
     fn get_script_handle(&self) -> Handle<ScriptAsset> {

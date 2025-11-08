@@ -63,7 +63,7 @@ impl ContextKeySelector for ContextRule {
             ContextRule::EntityScript => {
                 context_key
                     .entity
-                    .zip(context_key.script.clone())
+                    .zip(context_key.script)
                     .map(|(entity, script)| ContextKey {
                         entity: Some(entity),
                         script: Some(script),
