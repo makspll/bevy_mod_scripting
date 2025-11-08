@@ -1,4 +1,4 @@
-#![feature(rustc_private, let_chains)]
+#![feature(rustc_private)]
 #![deny(rustc::internal)]
 
 extern crate rustc_ast;

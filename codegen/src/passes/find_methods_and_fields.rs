@@ -32,7 +32,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                     .variants()
                     .iter()
                     .flat_map(|variant| {
-                        if has_reflect_ignore_attr(ctxt.tcx.get_attrs_unchecked(variant.def_id)) {
+                        if has_reflect_ignore_attr(ctxt.tcx.get_all_attrs(variant.def_id)) {
                             // TODO: is this the right approach? do we need to still include those variants? or do we just provide dummies
                             // or can we just skip those ?
                             info!(
@@ -159,7 +159,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
 
                     let trait_did = ctxt
                         .tcx
-                        .impl_trait_ref(*impl_did)
+                        .impl_opt_trait_ref(*impl_did)
                         .map(|tr| tr.skip_binder().def_id);
                     let trait_name = trait_did
                         .map(|td| ctxt.tcx.item_name(td).to_ident_string())
@@ -353,7 +353,8 @@ fn process_fields<'tcx, 'f, I: Iterator<Item = &'f FieldDef>>(
                 return (f.did, crate::ReflectionStrategy::Filtered);
             }
 
-            let field_ty = tcx.erase_regions(tcx.type_of(f.did).instantiate_identity());
+            let field_ty =
+                tcx.erase_and_anonymize_regions(tcx.type_of(f.did).instantiate_identity());
             if type_is_supported_as_non_proxy_arg(tcx, param_env, cached_traits, field_ty)
                 && type_is_supported_as_non_proxy_return_val(
                     tcx,
@@ -367,7 +368,7 @@ fn process_fields<'tcx, 'f, I: Iterator<Item = &'f FieldDef>>(
                 && type_is_supported_as_proxy_return_val(tcx, reflect_types, meta_loader, field_ty)
             {
                 (f.did, crate::ReflectionStrategy::Proxy)
-            } else if !has_reflect_ignore_attr(tcx.get_attrs_unchecked(f.did)) {
+            } else if !has_reflect_ignore_attr(tcx.get_all_attrs(f.did)) {
                 (f.did, crate::ReflectionStrategy::Reflection)
             } else {
                 (f.did, crate::ReflectionStrategy::Filtered)
@@ -487,7 +488,9 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
         "Checkign type is supported as non proxy return val: '{ty:?}' with param_env: '{param_env:?}'"
     );
     if let TyKind::Ref(region, _, _) = ty.kind()
-        && region.get_name().is_none_or(|rn| rn.as_str() != "'static")
+        && region
+            .get_name(tcx)
+            .is_none_or(|rn| rn.as_str() != "'static")
     {
         return false;
     }

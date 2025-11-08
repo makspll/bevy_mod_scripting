@@ -57,7 +57,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
             .variants()
             .iter()
             .map(|variant| Variant {
-                docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(variant.def_id)),
+                docstrings: docstrings(ctxt.tcx.get_all_attrs(variant.def_id)),
                 name: variant.name.to_ident_string().into(),
                 fields: process_fields(ctxt, variant.fields.iter(), &ty_ctxt),
             })
@@ -71,7 +71,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
             is_enum: variants.len() > 1,
             variants,
             is_tuple_struct,
-            docstrings: docstrings(tcx.get_attrs_unchecked(reflect_ty_did)),
+            docstrings: docstrings(tcx.get_all_attrs(reflect_ty_did)),
             impls_clone: trait_impls.contains_key(&clone_diagnostic),
             impls_debug: trait_impls.contains_key(&debug_diagnostic),
             impls_display: trait_impls.contains_key(&display_diagnostic),
@@ -110,7 +110,7 @@ pub(crate) fn process_fields<'f, I: Iterator<Item = &'f FieldDef>>(
 ) -> Vec<Field> {
     fields
         .map(|field| Field {
-            docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(field.did)),
+            docstrings: docstrings(ctxt.tcx.get_all_attrs(field.did)),
             ident: field.name.to_ident_string(),
             ty: ty_to_string(ctxt, ctxt.tcx.type_of(field.did).skip_binder(), false),
             reflection_strategy: *ty_ctxt
@@ -163,9 +163,9 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
                 args,
                 output,
                 has_self: fn_ctxt.has_self,
-                docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(fn_ctxt.def_id)),
+                docstrings: docstrings(ctxt.tcx.get_all_attrs(fn_ctxt.def_id)),
                 from_trait_path: fn_ctxt.trait_and_impl_did.map(|(_, impl_did)| {
-                    let trait_ref = ctxt.tcx.impl_trait_ref(impl_did).unwrap().skip_binder();
+                    let trait_ref = ctxt.tcx.impl_trait_ref(impl_did).skip_binder();
 
                     trait_ref_to_string(ctxt, trait_ref)
                 }),
@@ -239,7 +239,7 @@ fn trait_ref_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, trait_ref: TraitRef<'tcx>) -
         // filter out non const | type generics and the compiler generated ones
         .filter(|(_, arg_def)| match arg_def.kind {
             GenericParamDefKind::Lifetime => false,
-            GenericParamDefKind::Const { synthetic, .. } => !synthetic,
+            GenericParamDefKind::Type { synthetic, .. } => !synthetic,
             _ => true,
         })
         .map(|(arg, arg_def)| {
