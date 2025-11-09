@@ -17,12 +17,12 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_color = { version = "0.17.2", features = ["wgpu-types", "alloc", "std", "bevy_reflect", "encase"], default-features = true}
+bevy_color = { version = "0.17.2", features = ["std", "bevy_reflect", "encase", "alloc", "wgpu-types"], default-features = true}
 
 
-bevy_math = { version = "^0.17.2", features = ["alloc", "std", "rand", "curve", "bevy_reflect"], default-features = true}
+bevy_math = { version = "^0.17.2", features = ["std", "alloc", "rand", "curve", "bevy_reflect"], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["std", "glam", "uuid", "smol_str", "auto_register", "auto_register_inventory", "smallvec", "debug", "debug_stack"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["std", "glam", "uuid", "smol_str", "smallvec", "debug", "auto_register_inventory", "debug_stack", "auto_register"], default-features = true}
 
 bytemuck = { version = "^1", features = [], default-features = true}
 

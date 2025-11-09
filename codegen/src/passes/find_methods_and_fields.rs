@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use log::{info, trace};
 use rustc_hir::{
-    Safety,
+    Safety, StableSince,
     def_id::{DefId, LOCAL_CRATE},
 };
 use rustc_infer::infer::TyCtxtInferExt;
@@ -191,21 +191,22 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, args: &Args) -> b
                         return None;
                     }
 
-                    if let Some(unstability) = ctxt.tcx.lookup_stability(fn_did)
-                        && let Some(stable_since) = unstability.stable_since()
-                        && match stable_since {
-                            rustc_hir::StableSince::Version(rustc_version) => {
+                    let is_stable_for_target = ctxt
+                        .tcx
+                        .lookup_stability(fn_did)
+                        .map(|stability| match stability.stable_since() {
+                            Some(StableSince::Version(rustc_version)) => {
                                 args.rustc_version_is_greater_than_mrsv_target(rustc_version)
                             }
-                            rustc_hir::StableSince::Current => true,
-                            rustc_hir::StableSince::Err(_) => true,
-                        }
-                    {
+                            _ => false,
+                        })
+                        .unwrap_or(true);
+
+                    if !is_stable_for_target {
                         log::debug!(
-                            "Skipping unstable function: `{}` on type: `{}` feature: {:?}, msrv target: {:?}",
+                            "Skipping unstable function: `{}` on type: `{}`, msrv target: {:?}",
                             ctxt.tcx.item_name(fn_did),
                             ctxt.tcx.item_name(def_id),
-                            unstability.feature.as_str(),
                             args.mrsv_target()
                         );
                         return None;

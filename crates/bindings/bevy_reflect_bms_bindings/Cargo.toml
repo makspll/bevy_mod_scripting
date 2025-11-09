@@ -17,7 +17,7 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_reflect = { version = "0.17.2", features = ["glam", "uuid", "smol_str", "auto_register", "auto_register_inventory", "std", "smallvec", "debug", "debug_stack"], default-features = true}
+bevy_reflect = { version = "0.17.2", features = ["glam", "uuid", "smol_str", "std", "smallvec", "debug", "auto_register_inventory", "debug_stack", "auto_register"], default-features = true}
 
 
 assert_type_match = { version = "^0.1.1", features = [], default-features = true}

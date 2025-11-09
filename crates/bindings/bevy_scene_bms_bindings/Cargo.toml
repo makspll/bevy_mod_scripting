@@ -20,7 +20,7 @@ bevy_mod_scripting_derive = { workspace = true }
 bevy_scene = { version = "0.17.2", features = ["serialize"], default-features = true}
 
 
-bevy_app = { version = "^0.17.2", features = ["bevy_reflect", "reflect_auto_register", "std", "error_panic_hook"], default-features = true}
+bevy_app = { version = "^0.17.2", features = ["std", "bevy_reflect", "error_panic_hook", "reflect_auto_register"], default-features = true}
 
 bevy_asset = { version = "^0.17.2", features = ["notify-debouncer-full", "watch", "multi_threaded", "file_watcher"], default-features = true}
 
@@ -28,15 +28,15 @@ bevy_camera = { version = "^0.17.2", features = [], default-features = true}
 
 bevy_derive = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_ecs = { version = "^0.17.2", features = ["serialize", "std", "async_executor", "multi_threaded", "bevy_reflect", "reflect_auto_register", "backtrace"], default-features = true}
+bevy_ecs = { version = "^0.17.2", features = ["serialize", "std", "bevy_reflect", "async_executor", "backtrace", "multi_threaded", "reflect_auto_register"], default-features = true}
 
 bevy_platform = { version = "^0.17.2", features = ["serialize", "alloc", "std"], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["glam", "uuid", "smol_str", "auto_register", "auto_register_inventory", "std", "smallvec", "debug", "debug_stack"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["glam", "uuid", "smol_str", "std", "smallvec", "debug", "auto_register_inventory", "debug_stack", "auto_register"], default-features = true}
 
-bevy_transform = { version = "^0.17.2", features = ["std", "async_executor", "alloc", "bevy_log", "bevy-support", "bevy_reflect"], default-features = true}
+bevy_transform = { version = "^0.17.2", features = ["std", "bevy-support", "bevy_reflect", "async_executor", "alloc", "bevy_log"], default-features = true}
 
-bevy_utils = { version = "^0.17.2", features = ["debug", "parallel"], default-features = true}
+bevy_utils = { version = "^0.17.2", features = ["parallel", "debug"], default-features = true}
 
 serde = { version = "^1.0", features = [], default-features = true}
 

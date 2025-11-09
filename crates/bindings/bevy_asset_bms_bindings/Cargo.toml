@@ -22,7 +22,7 @@ bevy_asset = { version = "0.17.2", features = ["notify-debouncer-full", "watch",
 
 bevy_asset_macros = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_tasks = { version = "^0.17.2", features = ["multi_threaded", "async_executor", "futures-lite"], default-features = true}
+bevy_tasks = { version = "^0.17.2", features = ["multi_threaded", "futures-lite", "async_executor"], default-features = true}
 
 js-sys = { version = "^0.3", features = [], default-features = true}
 
