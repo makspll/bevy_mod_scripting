@@ -1196,16 +1196,19 @@ impl Xtasks {
         }
 
         let api_gen_dir = Self::codegen_crate_dir(&main_workspace_app_settings)?;
+        let codegen_toolchain = Self::read_rust_toolchain(&api_gen_dir);
         let codegen_app_settings = main_workspace_app_settings
             .clone()
             .with_workspace_dir(api_gen_dir.clone());
+            // .with_toolchain(codegen_toolchain.clone()); // don't think it's needed, the rust toolchain file sorts that out
 
         let bevy_repo_app_settings = main_workspace_app_settings
             .clone()
             .with_workspace_dir(bevy_dir.clone())
-            .with_toolchain(Self::read_rust_toolchain(&api_gen_dir));
+            .with_toolchain(codegen_toolchain.clone());
 
         // run cargo install
+        log::info!("Running bevy_api_gen against toolchain: {codegen_toolchain}");
         Self::run_system_command(
             &codegen_app_settings,
             "cargo",
@@ -2235,9 +2238,13 @@ fn pop_cargo_env() -> Result<()> {
     let env = std::env::vars().collect::<Vec<_>>();
     // RUSTUP TOOLCHAIN exclude is a temporary fix, it might make deving the api codegen crate not work
     let exclude_list = ["CARGO_HOME"];
+    let include_list = []; //"LD_LIBRARY_PATH"
 
     for (key, value) in env.iter() {
-        if key.starts_with("CARGO_") && !exclude_list.contains(&(key.as_str())) {
+        let key_str = &(key.as_str());
+        if (include_list.contains(key_str) || key.starts_with("CARGO_"))
+            && !exclude_list.contains(key_str)
+        {
             let new_key = format!("MAIN_{key}");
             unsafe { std::env::set_var(new_key, value) };
             unsafe { std::env::remove_var(key) };

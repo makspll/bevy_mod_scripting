@@ -14,6 +14,15 @@ pub(crate) enum ImportPathElement {
     Item(DefId),
 }
 
+impl ImportPathElement {
+    pub fn def_id(&self) -> DefId {
+        match self {
+            Self::Rename(did, _) => *did,
+            Self::Item(did) => *did,
+        }
+    }
+}
+
 impl std::fmt::Debug for ImportPathElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -55,11 +64,12 @@ impl<'tcx> ImportPathFinder<'tcx> {
     fn crawl_module(&mut self, did: DefId, frontier: &[ImportPathElement]) {
         trace!("Crawling module {did:?}");
 
+        // Push current module onto the path frontier
         let mut new_frontier = frontier.to_vec();
         new_frontier.push(ImportPathElement::Item(did));
-        // do not allow modification or weird things happen
         let new_frontier = &new_frontier;
 
+        // Get children of the module
         let children = if did.is_local() {
             self.tcx.module_children_local(did.expect_local())
         } else {
@@ -69,15 +79,16 @@ impl<'tcx> ImportPathFinder<'tcx> {
         for child in children {
             let rename = child.ident.to_string();
 
+            // Skip private items if we don't include them
             if !self.include_private_paths && !child.vis.is_public() {
                 trace!("Skipping private child {rename:?}");
                 continue;
             }
 
-            let did = if let Some(did) = child.res.opt_def_id() {
-                did
-            } else {
-                continue;
+            // Skip if the child has no DefId
+            let did = match child.res.opt_def_id() {
+                Some(did) => did,
+                None => continue,
             };
 
             trace!(
@@ -87,16 +98,24 @@ impl<'tcx> ImportPathFinder<'tcx> {
             );
 
             match self.tcx.def_kind(did) {
-                DefKind::Mod => self.crawl_module(did, new_frontier),
-                DefKind::Struct | DefKind::Union | DefKind::Enum | DefKind::Trait => {
-                    // save the rename and the def id
-
-                    let mut new_frontier = new_frontier.clone();
-                    new_frontier.push(ImportPathElement::Rename(did, rename));
-
-                    trace!("saving import path for {did:?}: {new_frontier:?}");
-                    self.cache.entry(did).or_default().push(new_frontier);
+                DefKind::Mod => {
+                    // Only recurse if this DefId is not already in the current path
+                    if new_frontier.iter().any(|el| el.def_id() == did) {
+                        trace!("Cycle detected for {did:?}, skipping recursion");
+                        continue;
+                    }
+                    self.crawl_module(did, new_frontier)
                 }
+
+                DefKind::Struct | DefKind::Union | DefKind::Enum | DefKind::Trait => {
+                    // Save the rename and the DefId
+                    let mut path_for_item = new_frontier.clone();
+                    path_for_item.push(ImportPathElement::Rename(did, rename));
+
+                    trace!("Saving import path for {did:?}: {path_for_item:?}");
+                    self.cache.entry(did).or_default().push(path_for_item);
+                }
+
                 _ => continue,
             }
         }
