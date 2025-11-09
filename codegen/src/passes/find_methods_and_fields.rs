@@ -16,7 +16,7 @@ use crate::{
 };
 
 /// Finds all methods and fields which can be wrapped on a proxy, stores them in sorted order.
-pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
+pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     // we need to find all the methods and fields for which we want to generate lua bindings
     // we have to filter some out
     // go through all impls on the types (traits and non-traits) and pick signatures we're happy with
@@ -192,18 +192,35 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                     }
 
                     if let Some(unstability) = ctxt.tcx.lookup_stability(fn_did)
-                        && unstability.is_unstable()
+                        && let Some(stable_since) = unstability.stable_since()
+                        && match stable_since {
+                            rustc_hir::StableSince::Version(rustc_version) => {
+                                args.rustc_version_is_greater_than_mrsv_target(rustc_version)
+                            }
+                            rustc_hir::StableSince::Current => true,
+                            rustc_hir::StableSince::Err(_) => true,
+                        }
                     {
                         log::debug!(
-                            "Skipping unstable function: `{}` on type: `{}` feature: {:?}",
+                            "Skipping unstable function: `{}` on type: `{}` feature: {:?}, msrv target: {:?}",
                             ctxt.tcx.item_name(fn_did),
                             ctxt.tcx.item_name(def_id),
-                            unstability.feature.as_str()
+                            unstability.feature.as_str(),
+                            args.mrsv_target()
                         );
                         return None;
                     };
 
                     let is_unsafe = sig.safety == Safety::Unsafe;
+
+                    if is_unsafe {
+                        log::debug!(
+                            "Skipping unsafe function: `{}` on type: `{}`",
+                            ctxt.tcx.item_name(fn_did),
+                            ctxt.tcx.item_name(def_id),
+                        );
+                        return None;
+                    }
 
                     if trait_did.is_none() && !ctxt.tcx.visibility(fn_did).is_public() {
                         log::info!(

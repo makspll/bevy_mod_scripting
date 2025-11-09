@@ -30,7 +30,7 @@ bevy_math = { version = "^0.17.2", features = ["bevy_reflect", "alloc", "std", "
 
 bevy_reflect = { version = "^0.17.2", features = ["glam", "uuid", "smol_str", "auto_register", "auto_register_inventory", "std", "smallvec", "debug", "debug_stack"], default-features = true}
 
-bevy_utils = { version = "^0.17.2", features = ["parallel", "debug"], default-features = true}
+bevy_utils = { version = "^0.17.2", features = ["debug", "parallel"], default-features = true}
 
 bitflags = { version = "^2.3", features = [], default-features = true}
 

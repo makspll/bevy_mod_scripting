@@ -710,6 +710,48 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "as_millis_f32",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_millis_f32(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of milliseconds contained by this `Duration` as `f32`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n #![feature(duration_millis_float)]\n use std::time::Duration;\n let dur = Duration::new(2, 345_678_000);\n assert_eq!(dur.as_millis_f32(), 2_345.678);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_millis_f64",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: f64 = {
+                    {
+                        let output: f64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_millis_f64(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of milliseconds contained by this `Duration` as `f64`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n #![feature(duration_millis_float)]\n use std::time::Duration;\n let dur = Duration::new(2, 345_678_000);\n assert_eq!(dur.as_millis_f64(), 2_345.678);\n ```",
+            &["_self"],
+        )
+        .register_documented(
             "as_nanos",
             |
                 _self: Ref<
@@ -994,16 +1036,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
-            "from_hours",
-            |hours: u64| {
+            "from_days",
+            |days: u64| {
                 let output: Val<
                     ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                 > = {
                     {
                         let output: Val<
                             ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
-                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_hours(
-                                hours,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_days(
+                                days,
                             )
                             .into();
                         output
@@ -1011,8 +1053,8 @@ pub(crate) fn register_duration_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a new `Duration` from the specified number of hours.\n # Panics\n Panics if the given number of hours overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_hours(6);\n assert_eq!(6 * 60 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
-            &["hours"],
+            " Creates a new `Duration` from the specified number of days.\n # Panics\n Panics if the given number of days overflows the `Duration` size.\n # Examples\n ```\n #![feature(duration_constructors)]\n use std::time::Duration;\n let duration = Duration::from_days(7);\n assert_eq!(7 * 24 * 60 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["days"],
         )
         .register_documented(
             "from_micros",
@@ -1057,27 +1099,6 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["millis"],
         )
         .register_documented(
-            "from_mins",
-            |mins: u64| {
-                let output: Val<
-                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
-                > = {
-                    {
-                        let output: Val<
-                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
-                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_mins(
-                                mins,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of minutes.\n # Panics\n Panics if the given number of minutes overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_mins(10);\n assert_eq!(10 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
-            &["mins"],
-        )
-        .register_documented(
             "from_nanos",
             |nanos: u64| {
                 let output: Val<
@@ -1096,6 +1117,27 @@ pub(crate) fn register_duration_functions(world: &mut World) {
                 output
             },
             " Creates a new `Duration` from the specified number of nanoseconds.\n Note: Using this on the return value of `as_nanos()` might cause unexpected behavior:\n `as_nanos()` returns a u128, and can return values that do not fit in u64, e.g. 585 years.\n Instead, consider using the pattern `Duration::new(d.as_secs(), d.subsec_nanos())`\n if you cannot copy/clone the Duration directly.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_nanos(1_000_000_123);\n assert_eq!(1, duration.as_secs());\n assert_eq!(123, duration.subsec_nanos());\n ```",
+            &["nanos"],
+        )
+        .register_documented(
+            "from_nanos_u128",
+            |nanos: u128| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_nanos_u128(
+                                nanos,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of nanoseconds.\n # Panics\n Panics if the given number of nanoseconds is greater than [`Duration::MAX`].\n # Examples\n ```\n #![feature(duration_from_nanos_u128)]\n use std::time::Duration;\n let nanos = 10_u128.pow(24) + 321;\n let duration = Duration::from_nanos_u128(nanos);\n assert_eq!(10_u64.pow(15), duration.as_secs());\n assert_eq!(321, duration.subsec_nanos());\n ```",
             &["nanos"],
         )
         .register_documented(
@@ -1160,6 +1202,27 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             },
             " Creates a new `Duration` from the specified number of seconds represented\n as `f64`.\n # Panics\n This constructor will panic if `secs` is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let res = Duration::from_secs_f64(0.0);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(1e-20);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(4.2e-7);\n assert_eq!(res, Duration::new(0, 420));\n let res = Duration::from_secs_f64(2.7);\n assert_eq!(res, Duration::new(2, 700_000_000));\n let res = Duration::from_secs_f64(3e10);\n assert_eq!(res, Duration::new(30_000_000_000, 0));\n // subnormal float\n let res = Duration::from_secs_f64(f64::from_bits(1));\n assert_eq!(res, Duration::new(0, 0));\n // conversion uses rounding\n let res = Duration::from_secs_f64(0.999e-9);\n assert_eq!(res, Duration::new(0, 1));\n ```",
             &["secs"],
+        )
+        .register_documented(
+            "from_weeks",
+            |weeks: u64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_weeks(
+                                weeks,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of weeks.\n # Panics\n Panics if the given number of weeks overflows the `Duration` size.\n # Examples\n ```\n #![feature(duration_constructors)]\n use std::time::Duration;\n let duration = Duration::from_weeks(4);\n assert_eq!(4 * 7 * 24 * 60 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["weeks"],
         )
         .register_documented(
             "is_zero",
@@ -57433,23 +57496,6 @@ pub(crate) fn register_non_nil_uuid_functions(world: &mut World) {
             },
             " Get the underlying [`Uuid`] value.",
             &["_self"],
-        )
-        .register_documented(
-            "new_unchecked",
-            |uuid: Val<::uuid::Uuid>| {
-                let output: Val<::uuid::NonNilUuid> = {
-                    {
-                        let output: Val<::uuid::NonNilUuid> = ::uuid::NonNilUuid::new_unchecked(
-                                uuid.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a non-nil without checking whether the value is non-nil. This results in undefined behavior if the value is nil.\n # Safety\n The value must not be nil.",
-            &["uuid"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
