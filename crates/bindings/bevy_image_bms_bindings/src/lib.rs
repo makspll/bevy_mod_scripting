@@ -69,6 +69,24 @@ pub(crate) fn register_texture_atlas_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "with_index",
+            |_self: Val<::bevy_image::prelude::TextureAtlas>, index: usize| {
+                let output: Val<::bevy_image::prelude::TextureAtlas> = {
+                    {
+                        let output: Val<::bevy_image::prelude::TextureAtlas> = ::bevy_image::prelude::TextureAtlas::with_index(
+                                _self.into_inner(),
+                                index,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns this [`TextureAtlas`] with the specified index.",
+            &["_self", "index"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -268,6 +286,26 @@ pub(crate) fn register_image_functions(world: &mut World) {
             },
             " Creates a new uninitialized 1x1x1 image",
             &[],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_image::prelude::Image>,
+                other: Ref<::bevy_image::prelude::Image>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::prelude::Image as ::std::cmp::PartialEq<
+                            ::bevy_image::prelude::Image,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
         )
         .register_documented(
             "height",

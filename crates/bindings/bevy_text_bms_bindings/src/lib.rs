@@ -12,16 +12,16 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTextScriptingPlugin;
-pub(crate) fn register_justify_text_functions(world: &mut World) {
+pub(crate) fn register_justify_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_text::prelude::JustifyText,
+        ::bevy_text::prelude::Justify,
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_text::prelude::JustifyText>| {
+            |_self: Ref<::bevy_text::prelude::Justify>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_text::prelude::JustifyText as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_text::prelude::Justify as ::std::cmp::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -35,10 +35,10 @@ pub(crate) fn register_justify_text_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_text::prelude::JustifyText>| {
-                let output: Val<::bevy_text::prelude::JustifyText> = {
+            |_self: Ref<::bevy_text::prelude::Justify>| {
+                let output: Val<::bevy_text::prelude::Justify> = {
                     {
-                        let output: Val<::bevy_text::prelude::JustifyText> = <::bevy_text::prelude::JustifyText as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_text::prelude::Justify> = <::bevy_text::prelude::Justify as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -53,13 +53,13 @@ pub(crate) fn register_justify_text_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_text::prelude::JustifyText>,
-                other: Ref<::bevy_text::prelude::JustifyText>|
+                _self: Ref<::bevy_text::prelude::Justify>,
+                other: Ref<::bevy_text::prelude::Justify>|
             {
                 let output: bool = {
                     {
-                        let output: bool = <::bevy_text::prelude::JustifyText as ::std::cmp::PartialEq<
-                            ::bevy_text::prelude::JustifyText,
+                        let output: bool = <::bevy_text::prelude::Justify as ::std::cmp::PartialEq<
+                            ::bevy_text::prelude::Justify,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -74,7 +74,7 @@ pub(crate) fn register_justify_text_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_text::prelude::JustifyText,
+            ::bevy_text::prelude::Justify,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -144,33 +144,6 @@ pub(crate) fn register_line_break_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_text_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_text::prelude::Text2d,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_text::prelude::Text2d>| {
-            let output: Val<::bevy_text::prelude::Text2d> = {
-                {
-                    let output: Val<::bevy_text::prelude::Text2d> =
-                        <::bevy_text::prelude::Text2d as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_text::prelude::Text2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_text_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::prelude::TextColor,
@@ -236,6 +209,23 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
         },
         "",
         &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_text::prelude::TextFont>, other: Ref<::bevy_text::prelude::TextFont>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_text::prelude::TextFont as ::std::cmp::PartialEq<
+                        ::bevy_text::prelude::TextFont,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
     )
     .register_documented(
         "from_font_size",
@@ -342,7 +332,7 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
         .register_documented(
             "new",
             |
-                justify: Val<::bevy_text::prelude::JustifyText>,
+                justify: Val<::bevy_text::prelude::Justify>,
                 linebreak: Val<::bevy_text::prelude::LineBreak>|
             {
                 let output: Val<::bevy_text::prelude::TextLayout> = {
@@ -362,7 +352,7 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
         )
         .register_documented(
             "new_with_justify",
-            |justify: Val<::bevy_text::prelude::JustifyText>| {
+            |justify: Val<::bevy_text::prelude::Justify>| {
                 let output: Val<::bevy_text::prelude::TextLayout> = {
                     {
                         let output: Val<::bevy_text::prelude::TextLayout> = ::bevy_text::prelude::TextLayout::new_with_justify(
@@ -374,7 +364,7 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
                 };
                 output
             },
-            " Makes a new [`TextLayout`] with the specified [`JustifyText`].",
+            " Makes a new [`TextLayout`] with the specified [`Justify`].",
             &["justify"],
         )
         .register_documented(
@@ -413,7 +403,7 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             "with_justify",
             |
                 _self: Val<::bevy_text::prelude::TextLayout>,
-                justify: Val<::bevy_text::prelude::JustifyText>|
+                justify: Val<::bevy_text::prelude::Justify>|
             {
                 let output: Val<::bevy_text::prelude::TextLayout> = {
                     {
@@ -427,7 +417,7 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns this [`TextLayout`] with the specified [`JustifyText`].",
+            " Returns this [`TextLayout`] with the specified [`Justify`].",
             &["_self", "justify"],
         )
         .register_documented(
@@ -501,35 +491,6 @@ pub(crate) fn register_text_span_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::prelude::TextSpan,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_line_height_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_text::LineHeight,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::LineHeight>| {
-                let output: Val<::bevy_text::LineHeight> = {
-                    {
-                        let output: Val<::bevy_text::LineHeight> = <::bevy_text::LineHeight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_text::LineHeight,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -611,81 +572,6 @@ pub(crate) fn register_text_bounds_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::TextBounds,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_computed_text_block_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_text::ComputedTextBlock,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::ComputedTextBlock>| {
-                let output: Val<::bevy_text::ComputedTextBlock> = {
-                    {
-                        let output: Val<::bevy_text::ComputedTextBlock> = <::bevy_text::ComputedTextBlock as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "needs_rerender",
-            |_self: Ref<::bevy_text::ComputedTextBlock>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_text::ComputedTextBlock::needs_rerender(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Indicates if the text needs to be refreshed in [`TextLayoutInfo`].\n Updated automatically by [`detect_text_needs_rerender`] and cleared\n by [`TextPipeline`](crate::TextPipeline) methods.",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_text::ComputedTextBlock,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_text_entity_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_text::TextEntity,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_text::TextEntity>| {
-                let output: Val<::bevy_text::TextEntity> = {
-                    {
-                        let output: Val<::bevy_text::TextEntity> = <::bevy_text::TextEntity as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_text::TextEntity,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -839,6 +725,81 @@ pub(crate) fn register_positioned_glyph_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_computed_text_block_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::ComputedTextBlock,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_text::ComputedTextBlock>| {
+                let output: Val<::bevy_text::ComputedTextBlock> = {
+                    {
+                        let output: Val<::bevy_text::ComputedTextBlock> = <::bevy_text::ComputedTextBlock as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "needs_rerender",
+            |_self: Ref<::bevy_text::ComputedTextBlock>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_text::ComputedTextBlock::needs_rerender(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Indicates if the text needs to be refreshed in [`TextLayoutInfo`].\n Updated automatically by [`detect_text_needs_rerender`] and cleared\n by [`TextPipeline`](crate::TextPipeline) methods.",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::ComputedTextBlock,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_text_entity_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::TextEntity,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_text::TextEntity>| {
+                let output: Val<::bevy_text::TextEntity> = {
+                    {
+                        let output: Val<::bevy_text::TextEntity> = <::bevy_text::TextEntity as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::TextEntity,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_text_layout_info_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::TextLayoutInfo,
@@ -868,24 +829,117 @@ pub(crate) fn register_text_layout_info_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_line_height_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::LineHeight,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_text::LineHeight>| {
+                let output: Val<::bevy_text::LineHeight> = {
+                    {
+                        let output: Val<::bevy_text::LineHeight> = <::bevy_text::LineHeight as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_text::LineHeight>, other: Ref<::bevy_text::LineHeight>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_text::LineHeight as ::std::cmp::PartialEq<
+                            ::bevy_text::LineHeight,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::LineHeight,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_text_background_color_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::TextBackgroundColor,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_text::TextBackgroundColor>| {
+            let output: Val<::bevy_text::TextBackgroundColor> = {
+                {
+                    let output: Val<::bevy_text::TextBackgroundColor> =
+                        <::bevy_text::TextBackgroundColor as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_text::TextBackgroundColor>,
+         other: Ref<::bevy_text::TextBackgroundColor>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_text::TextBackgroundColor as ::std::cmp::PartialEq<
+                            ::bevy_text::TextBackgroundColor,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::TextBackgroundColor,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 impl Plugin for BevyTextScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
-        register_justify_text_functions(&mut world);
+        register_justify_functions(&mut world);
         register_line_break_functions(&mut world);
-        register_text_2_d_functions(&mut world);
         register_text_color_functions(&mut world);
         register_text_font_functions(&mut world);
         register_text_layout_functions(&mut world);
         register_text_span_functions(&mut world);
-        register_line_height_functions(&mut world);
         register_text_bounds_functions(&mut world);
-        register_computed_text_block_functions(&mut world);
-        register_text_entity_functions(&mut world);
         register_font_smoothing_functions(&mut world);
         register_glyph_atlas_location_functions(&mut world);
         register_glyph_atlas_info_functions(&mut world);
         register_positioned_glyph_functions(&mut world);
+        register_computed_text_block_functions(&mut world);
+        register_text_entity_functions(&mut world);
         register_text_layout_info_functions(&mut world);
+        register_line_height_functions(&mut world);
+        register_text_background_color_functions(&mut world);
     }
 }

@@ -12,6 +12,804 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyMeshScriptingPlugin;
+pub(crate) fn register_morph_weights_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::morph::MorphWeights,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_mesh::morph::MorphWeights>| {
+            let output: Val<::bevy_mesh::morph::MorphWeights> = {
+                {
+                    let output: Val<::bevy_mesh::morph::MorphWeights> =
+                        <::bevy_mesh::morph::MorphWeights as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::morph::MorphWeights,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_mesh_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::prelude::Mesh,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::prelude::Mesh>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = <::bevy_mesh::prelude::Mesh as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "compute_area_weighted_normals",
+            |mut _self: Mut<::bevy_mesh::prelude::Mesh>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::compute_area_weighted_normals(
+                                &mut _self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of an indexed mesh, smoothing normals for shared\n vertices.\n This method weights normals by the area of each triangle containing the vertex. Thus,\n larger triangles will skew the normals of their vertices towards their own normal more\n than smaller triangles will.\n This method is actually somewhat faster than [`Mesh::compute_smooth_normals`] because an\n intermediate result of triangle normal calculation is already scaled by the triangle's area.\n If you would rather have the computed normals be influenced only by the angles of connected\n edges, see [`Mesh::compute_smooth_normals`] instead. If you need to weight them in some\n other way, see [`Mesh::compute_custom_smooth_normals`].\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            &["_self"],
+        )
+        .register_documented(
+            "compute_flat_normals",
+            |mut _self: Mut<::bevy_mesh::prelude::Mesh>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::compute_flat_normals(
+                                &mut _self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n # Panics\n Panics if [`Indices`] are set or [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Consider calling [`Mesh::duplicate_vertices`] or exporting your mesh with normal\n attributes.\n FIXME: This should handle more cases since this is called as a part of gltf\n mesh loading where we can't really blame users for loading meshes that might\n not conform to the limitations here!",
+            &["_self"],
+        )
+        .register_documented(
+            "compute_normals",
+            |mut _self: Mut<::bevy_mesh::prelude::Mesh>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::compute_normals(
+                                &mut _self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].=",
+            &["_self"],
+        )
+        .register_documented(
+            "compute_smooth_normals",
+            |mut _self: Mut<::bevy_mesh::prelude::Mesh>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::compute_smooth_normals(
+                                &mut _self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of an indexed mesh, smoothing normals for shared\n vertices.\n This method weights normals by the angles of the corners of connected triangles, thus\n eliminating triangle area and count as factors in the final normal. This does make it\n somewhat slower than [`Mesh::compute_area_weighted_normals`] which does not need to\n greedily normalize each triangle's normal or calculate corner angles.\n If you would rather have the computed normals be weighted by triangle area, see\n [`Mesh::compute_area_weighted_normals`] instead. If you need to weight them in some other\n way, see [`Mesh::compute_custom_smooth_normals`].\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            &["_self"],
+        )
+        .register_documented(
+            "count_vertices",
+            |_self: Ref<::bevy_mesh::prelude::Mesh>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::bevy_mesh::prelude::Mesh::count_vertices(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Counts all vertices of the mesh.\n If the attributes have different vertex counts, the smallest is returned.",
+            &["_self"],
+        )
+        .register_documented(
+            "create_packed_vertex_buffer_data",
+            |_self: Ref<::bevy_mesh::prelude::Mesh>| {
+                let output: ::std::vec::Vec<u8> = {
+                    {
+                        let output: ::std::vec::Vec<u8> = ::bevy_mesh::prelude::Mesh::create_packed_vertex_buffer_data(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes and returns the vertex data of the mesh as bytes.\n Therefore the attributes are located in the order of their [`MeshVertexAttribute::id`].\n This is used to transform the vertex data into a GPU friendly format.\n If the vertex attributes have different lengths, they are all truncated to\n the length of the smallest.\n This is a convenience method which allocates a Vec.\n Prefer pre-allocating and using [`Mesh::write_packed_vertex_buffer_data`] when possible.",
+            &["_self"],
+        )
+        .register_documented(
+            "duplicate_vertices",
+            |mut _self: Mut<::bevy_mesh::prelude::Mesh>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::duplicate_vertices(
+                                &mut _self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Duplicates the vertex attributes so that no vertices are shared.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [Indices] are set.",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_mesh::prelude::Mesh>,
+                other: Ref<::bevy_mesh::prelude::Mesh>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_mesh::prelude::Mesh as ::std::cmp::PartialEq<
+                            ::bevy_mesh::prelude::Mesh,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get_vertex_buffer_size",
+            |_self: Ref<::bevy_mesh::prelude::Mesh>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::bevy_mesh::prelude::Mesh::get_vertex_buffer_size(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the size required for the vertex buffer in bytes.",
+            &["_self"],
+        )
+        .register_documented(
+            "get_vertex_size",
+            |_self: Ref<::bevy_mesh::prelude::Mesh>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::bevy_mesh::prelude::Mesh::get_vertex_size(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the size of a vertex in bytes.",
+            &["_self"],
+        )
+        .register_documented(
+            "has_morph_targets",
+            |_self: Ref<::bevy_mesh::prelude::Mesh>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_mesh::prelude::Mesh::has_morph_targets(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Whether this mesh has morph targets.",
+            &["_self"],
+        )
+        .register_documented(
+            "insert_indices",
+            |
+                mut _self: Mut<::bevy_mesh::prelude::Mesh>,
+                indices: Val<::bevy_mesh::Indices>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::insert_indices(
+                                &mut _self,
+                                indices.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the vertex indices of the mesh. They describe how triangles are constructed out of the\n vertex attributes and are therefore only useful for the [`PrimitiveTopology`] variants\n that use triangles.",
+            &["_self", "indices"],
+        )
+        .register_documented(
+            "normalize_joint_weights",
+            |mut _self: Mut<::bevy_mesh::prelude::Mesh>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::normalize_joint_weights(
+                                &mut _self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Normalize joint weights so they sum to 1.",
+            &["_self"],
+        )
+        .register_documented(
+            "rotate_by",
+            |
+                mut _self: Mut<::bevy_mesh::prelude::Mesh>,
+                rotation: Val<::bevy_math::Quat>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::rotate_by(
+                                &mut _self,
+                                rotation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates the vertex positions, normals, and tangents of the mesh in place by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "rotation"],
+        )
+        .register_documented(
+            "rotated_by",
+            |_self: Val<::bevy_mesh::prelude::Mesh>, rotation: Val<::bevy_math::Quat>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::rotated_by(
+                                _self.into_inner(),
+                                rotation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates the vertex positions, normals, and tangents of the mesh by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "rotation"],
+        )
+        .register_documented(
+            "scale_by",
+            |mut _self: Mut<::bevy_mesh::prelude::Mesh>, scale: Val<::bevy_math::Vec3>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::scale_by(
+                                &mut _self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Scales the vertex positions, normals, and tangents of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "scale"],
+        )
+        .register_documented(
+            "scaled_by",
+            |_self: Val<::bevy_mesh::prelude::Mesh>, scale: Val<::bevy_math::Vec3>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::scaled_by(
+                                _self.into_inner(),
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Scales the vertex positions, normals, and tangents of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "scale"],
+        )
+        .register_documented(
+            "set_morph_target_names",
+            |
+                mut _self: Mut<::bevy_mesh::prelude::Mesh>,
+                names: ::std::vec::Vec<::std::string::String>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::set_morph_target_names(
+                                &mut _self,
+                                names,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the names of each morph target. This should correspond to the order of the morph targets in `set_morph_targets`.",
+            &["_self", "names"],
+        )
+        .register_documented(
+            "transform_by",
+            |
+                mut _self: Mut<::bevy_mesh::prelude::Mesh>,
+                transform: Val<::bevy_transform::components::Transform>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::transform_by(
+                                &mut _self,
+                                transform.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms the vertex positions, normals, and tangents of the mesh in place by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "transform"],
+        )
+        .register_documented(
+            "transformed_by",
+            |
+                _self: Val<::bevy_mesh::prelude::Mesh>,
+                transform: Val<::bevy_transform::components::Transform>|
+            {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::transformed_by(
+                                _self.into_inner(),
+                                transform.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms the vertex positions, normals, and tangents of the mesh by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "transform"],
+        )
+        .register_documented(
+            "translate_by",
+            |
+                mut _self: Mut<::bevy_mesh::prelude::Mesh>,
+                translation: Val<::bevy_math::Vec3>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::prelude::Mesh::translate_by(
+                                &mut _self,
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Translates the vertex positions of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "translation"],
+        )
+        .register_documented(
+            "translated_by",
+            |
+                _self: Val<::bevy_mesh::prelude::Mesh>,
+                translation: Val<::bevy_math::Vec3>|
+            {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::translated_by(
+                                _self.into_inner(),
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Translates the vertex positions of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            &["_self", "translation"],
+        )
+        .register_documented(
+            "with_computed_area_weighted_normals",
+            |_self: Val<::bevy_mesh::prelude::Mesh>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_computed_area_weighted_normals(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_area_weighted_normals`] to mutate an existing mesh in-place)\n This method weights normals by the area of each triangle containing the vertex. Thus,\n larger triangles will skew the normals of their vertices towards their own normal more\n than smaller triangles will. If you would rather have the computed normals be influenced\n only by the angles of connected edges, see [`Mesh::with_computed_smooth_normals`] instead.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            &["_self"],
+        )
+        .register_documented(
+            "with_computed_flat_normals",
+            |_self: Val<::bevy_mesh::prelude::Mesh>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_computed_flat_normals(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_flat_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh has indices defined",
+            &["_self"],
+        )
+        .register_documented(
+            "with_computed_normals",
+            |_self: Val<::bevy_mesh::prelude::Mesh>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_computed_normals(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n (Alternatively, you can use [`Mesh::compute_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].",
+            &["_self"],
+        )
+        .register_documented(
+            "with_computed_smooth_normals",
+            |_self: Val<::bevy_mesh::prelude::Mesh>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_computed_smooth_normals(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_smooth_normals`] to mutate an existing mesh in-place)\n This method weights normals by the angles of triangle corners connected to each vertex. If\n you would rather have the computed normals be weighted by triangle area, see\n [`Mesh::with_computed_area_weighted_normals`] instead.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            &["_self"],
+        )
+        .register_documented(
+            "with_duplicated_vertices",
+            |_self: Val<::bevy_mesh::prelude::Mesh>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_duplicated_vertices(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh with no shared vertices.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [`Indices`] are set.\n (Alternatively, you can use [`Mesh::duplicate_vertices`] to mutate an existing mesh in-place)",
+            &["_self"],
+        )
+        .register_documented(
+            "with_inserted_indices",
+            |_self: Val<::bevy_mesh::prelude::Mesh>, indices: Val<::bevy_mesh::Indices>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_inserted_indices(
+                                _self.into_inner(),
+                                indices.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh with the given vertex indices. They describe how triangles\n are constructed out of the vertex attributes and are therefore only useful for the\n [`PrimitiveTopology`] variants that use triangles.\n (Alternatively, you can use [`Mesh::insert_indices`] to mutate an existing mesh in-place)",
+            &["_self", "indices"],
+        )
+        .register_documented(
+            "with_morph_target_names",
+            |
+                _self: Val<::bevy_mesh::prelude::Mesh>,
+                names: ::std::vec::Vec<::std::string::String>|
+            {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_morph_target_names(
+                                _self.into_inner(),
+                                names,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh with morph target names.\n Names should correspond to the order of the morph targets in `set_morph_targets`.\n (Alternatively, you can use [`Mesh::set_morph_target_names`] to mutate an existing mesh in-place)",
+            &["_self", "names"],
+        )
+        .register_documented(
+            "with_removed_indices",
+            |_self: Val<::bevy_mesh::prelude::Mesh>| {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::with_removed_indices(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the mesh and returns a mesh without the vertex `indices` of the mesh.\n (Alternatively, you can use [`Mesh::remove_indices`] to mutate an existing mesh in-place)",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::prelude::Mesh,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_mesh_2_d_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::prelude::Mesh2d,
+    >::new(world)
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::bevy_mesh::prelude::Mesh2d>| {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_mesh::prelude::Mesh2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::prelude::Mesh2d>| {
+                let output: Val<::bevy_mesh::prelude::Mesh2d> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh2d> = <::bevy_mesh::prelude::Mesh2d as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_mesh::prelude::Mesh2d>,
+                other: Ref<::bevy_mesh::prelude::Mesh2d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_mesh::prelude::Mesh2d as ::std::cmp::PartialEq<
+                            ::bevy_mesh::prelude::Mesh2d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::prelude::Mesh2d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_mesh_3_d_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::prelude::Mesh3d,
+    >::new(world)
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::bevy_mesh::prelude::Mesh3d>| {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_mesh::prelude::Mesh3d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::prelude::Mesh3d>| {
+                let output: Val<::bevy_mesh::prelude::Mesh3d> = {
+                    {
+                        let output: Val<::bevy_mesh::prelude::Mesh3d> = <::bevy_mesh::prelude::Mesh3d as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_mesh::prelude::Mesh3d>,
+                other: Ref<::bevy_mesh::prelude::Mesh3d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_mesh::prelude::Mesh3d as ::std::cmp::PartialEq<
+                            ::bevy_mesh::prelude::Mesh3d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::prelude::Mesh3d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_mesh_tag_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::MeshTag,
+    >::new(world)
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::bevy_mesh::MeshTag>| {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_mesh::MeshTag as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::MeshTag>| {
+                let output: Val<::bevy_mesh::MeshTag> = {
+                    {
+                        let output: Val<::bevy_mesh::MeshTag> = <::bevy_mesh::MeshTag as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_mesh::MeshTag>, other: Ref<::bevy_mesh::MeshTag>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_mesh::MeshTag as ::std::cmp::PartialEq<
+                            ::bevy_mesh::MeshTag,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_mesh::MeshTag, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
 pub(crate) fn register_indices_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::Indices,
@@ -32,6 +830,23 @@ pub(crate) fn register_indices_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_mesh::Indices>, other: Ref<::bevy_mesh::Indices>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_mesh::Indices as ::std::cmp::PartialEq<
+                            ::bevy_mesh::Indices,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
         )
         .register_documented(
             "is_empty",
@@ -80,535 +895,6 @@ pub(crate) fn register_indices_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<::bevy_mesh::Indices, bevy_mod_scripting_bindings::MarkAsGenerated>();
-}
-pub(crate) fn register_mesh_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_mesh::Mesh,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_mesh::Mesh>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = <::bevy_mesh::Mesh as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "compute_flat_normals",
-            |mut _self: Mut<::bevy_mesh::Mesh>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::compute_flat_normals(
-                                &mut _self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n # Panics\n Panics if [`Indices`] are set or [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Consider calling [`Mesh::duplicate_vertices`] or exporting your mesh with normal\n attributes.\n FIXME: This should handle more cases since this is called as a part of gltf\n mesh loading where we can't really blame users for loading meshes that might\n not conform to the limitations here!",
-            &["_self"],
-        )
-        .register_documented(
-            "compute_normals",
-            |mut _self: Mut<::bevy_mesh::Mesh>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::compute_normals(&mut _self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n FIXME: This should handle more cases since this is called as a part of gltf\n mesh loading where we can't really blame users for loading meshes that might\n not conform to the limitations here!",
-            &["_self"],
-        )
-        .register_documented(
-            "compute_smooth_normals",
-            |mut _self: Mut<::bevy_mesh::Mesh>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::compute_smooth_normals(
-                                &mut _self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of an indexed mesh, smoothing normals for shared\n vertices.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.\n FIXME: This should handle more cases since this is called as a part of gltf\n mesh loading where we can't really blame users for loading meshes that might\n not conform to the limitations here!",
-            &["_self"],
-        )
-        .register_documented(
-            "count_vertices",
-            |_self: Ref<::bevy_mesh::Mesh>| {
-                let output: usize = {
-                    {
-                        let output: usize = ::bevy_mesh::Mesh::count_vertices(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Counts all vertices of the mesh.\n If the attributes have different vertex counts, the smallest is returned.",
-            &["_self"],
-        )
-        .register_documented(
-            "create_packed_vertex_buffer_data",
-            |_self: Ref<::bevy_mesh::Mesh>| {
-                let output: ::std::vec::Vec<u8> = {
-                    {
-                        let output: ::std::vec::Vec<u8> = ::bevy_mesh::Mesh::create_packed_vertex_buffer_data(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Computes and returns the vertex data of the mesh as bytes.\n Therefore the attributes are located in the order of their [`MeshVertexAttribute::id`].\n This is used to transform the vertex data into a GPU friendly format.\n If the vertex attributes have different lengths, they are all truncated to\n the length of the smallest.\n This is a convenience method which allocates a Vec.\n Prefer pre-allocating and using [`Mesh::write_packed_vertex_buffer_data`] when possible.",
-            &["_self"],
-        )
-        .register_documented(
-            "duplicate_vertices",
-            |mut _self: Mut<::bevy_mesh::Mesh>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::duplicate_vertices(
-                                &mut _self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Duplicates the vertex attributes so that no vertices are shared.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [Indices] are set.",
-            &["_self"],
-        )
-        .register_documented(
-            "get_vertex_buffer_size",
-            |_self: Ref<::bevy_mesh::Mesh>| {
-                let output: usize = {
-                    {
-                        let output: usize = ::bevy_mesh::Mesh::get_vertex_buffer_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size required for the vertex buffer in bytes.",
-            &["_self"],
-        )
-        .register_documented(
-            "get_vertex_size",
-            |_self: Ref<::bevy_mesh::Mesh>| {
-                let output: u64 = {
-                    {
-                        let output: u64 = ::bevy_mesh::Mesh::get_vertex_size(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of a vertex in bytes.",
-            &["_self"],
-        )
-        .register_documented(
-            "has_morph_targets",
-            |_self: Ref<::bevy_mesh::Mesh>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_mesh::Mesh::has_morph_targets(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Whether this mesh has morph targets.",
-            &["_self"],
-        )
-        .register_documented(
-            "insert_indices",
-            |mut _self: Mut<::bevy_mesh::Mesh>, indices: Val<::bevy_mesh::Indices>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::insert_indices(
-                                &mut _self,
-                                indices.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the vertex indices of the mesh. They describe how triangles are constructed out of the\n vertex attributes and are therefore only useful for the [`PrimitiveTopology`] variants\n that use triangles.",
-            &["_self", "indices"],
-        )
-        .register_documented(
-            "normalize_joint_weights",
-            |mut _self: Mut<::bevy_mesh::Mesh>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::normalize_joint_weights(
-                                &mut _self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Normalize joint weights so they sum to 1.",
-            &["_self"],
-        )
-        .register_documented(
-            "rotate_by",
-            |mut _self: Mut<::bevy_mesh::Mesh>, rotation: Val<::bevy_math::Quat>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::rotate_by(
-                                &mut _self,
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Rotates the vertex positions, normals, and tangents of the mesh in place by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "rotation"],
-        )
-        .register_documented(
-            "rotated_by",
-            |_self: Val<::bevy_mesh::Mesh>, rotation: Val<::bevy_math::Quat>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::rotated_by(
-                                _self.into_inner(),
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Rotates the vertex positions, normals, and tangents of the mesh by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "rotation"],
-        )
-        .register_documented(
-            "scale_by",
-            |mut _self: Mut<::bevy_mesh::Mesh>, scale: Val<::bevy_math::Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::scale_by(
-                                &mut _self,
-                                scale.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Scales the vertex positions, normals, and tangents of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "scale"],
-        )
-        .register_documented(
-            "scaled_by",
-            |_self: Val<::bevy_mesh::Mesh>, scale: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::scaled_by(
-                                _self.into_inner(),
-                                scale.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Scales the vertex positions, normals, and tangents of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "scale"],
-        )
-        .register_documented(
-            "set_morph_target_names",
-            |
-                mut _self: Mut<::bevy_mesh::Mesh>,
-                names: ::std::vec::Vec<::std::string::String>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::set_morph_target_names(
-                                &mut _self,
-                                names,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the names of each morph target. This should correspond to the order of the morph targets in `set_morph_targets`.",
-            &["_self", "names"],
-        )
-        .register_documented(
-            "transform_by",
-            |
-                mut _self: Mut<::bevy_mesh::Mesh>,
-                transform: Val<::bevy_transform::components::Transform>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::transform_by(
-                                &mut _self,
-                                transform.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Transforms the vertex positions, normals, and tangents of the mesh in place by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "transform"],
-        )
-        .register_documented(
-            "transformed_by",
-            |
-                _self: Val<::bevy_mesh::Mesh>,
-                transform: Val<::bevy_transform::components::Transform>|
-            {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::transformed_by(
-                                _self.into_inner(),
-                                transform.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Transforms the vertex positions, normals, and tangents of the mesh by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "transform"],
-        )
-        .register_documented(
-            "translate_by",
-            |mut _self: Mut<::bevy_mesh::Mesh>, translation: Val<::bevy_math::Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::Mesh::translate_by(
-                                &mut _self,
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Translates the vertex positions of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "translation"],
-        )
-        .register_documented(
-            "translated_by",
-            |_self: Val<::bevy_mesh::Mesh>, translation: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::translated_by(
-                                _self.into_inner(),
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Translates the vertex positions of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "translation"],
-        )
-        .register_documented(
-            "with_computed_flat_normals",
-            |_self: Val<::bevy_mesh::Mesh>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_computed_flat_normals(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_flat_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh has indices defined",
-            &["_self"],
-        )
-        .register_documented(
-            "with_computed_normals",
-            |_self: Val<::bevy_mesh::Mesh>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_computed_normals(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n (Alternatively, you can use [`Mesh::compute_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].",
-            &["_self"],
-        )
-        .register_documented(
-            "with_computed_smooth_normals",
-            |_self: Val<::bevy_mesh::Mesh>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_computed_smooth_normals(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_smooth_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
-            &["_self"],
-        )
-        .register_documented(
-            "with_duplicated_vertices",
-            |_self: Val<::bevy_mesh::Mesh>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_duplicated_vertices(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the mesh and returns a mesh with no shared vertices.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [`Indices`] are set.\n (Alternatively, you can use [`Mesh::duplicate_vertices`] to mutate an existing mesh in-place)",
-            &["_self"],
-        )
-        .register_documented(
-            "with_inserted_indices",
-            |_self: Val<::bevy_mesh::Mesh>, indices: Val<::bevy_mesh::Indices>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_inserted_indices(
-                                _self.into_inner(),
-                                indices.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the mesh and returns a mesh with the given vertex indices. They describe how triangles\n are constructed out of the vertex attributes and are therefore only useful for the\n [`PrimitiveTopology`] variants that use triangles.\n (Alternatively, you can use [`Mesh::insert_indices`] to mutate an existing mesh in-place)",
-            &["_self", "indices"],
-        )
-        .register_documented(
-            "with_morph_target_names",
-            |
-                _self: Val<::bevy_mesh::Mesh>,
-                names: ::std::vec::Vec<::std::string::String>|
-            {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_morph_target_names(
-                                _self.into_inner(),
-                                names,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the mesh and returns a mesh with morph target names.\n Names should correspond to the order of the morph targets in `set_morph_targets`.\n (Alternatively, you can use [`Mesh::set_morph_target_names`] to mutate an existing mesh in-place)",
-            &["_self", "names"],
-        )
-        .register_documented(
-            "with_removed_indices",
-            |_self: Val<::bevy_mesh::Mesh>| {
-                let output: Val<::bevy_mesh::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_removed_indices(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the mesh and returns a mesh without the vertex `indices` of the mesh.\n (Alternatively, you can use [`Mesh::remove_indices`] to mutate an existing mesh in-place)",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<::bevy_mesh::Mesh, bevy_mod_scripting_bindings::MarkAsGenerated>();
-}
-pub(crate) fn register_morph_weights_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_mesh::morph::MorphWeights,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_mesh::morph::MorphWeights>| {
-            let output: Val<::bevy_mesh::morph::MorphWeights> = {
-                {
-                    let output: Val<::bevy_mesh::morph::MorphWeights> =
-                        <::bevy_mesh::morph::MorphWeights as ::std::clone::Clone>::clone(&_self)
-                            .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_mesh::morph::MorphWeights,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
 }
 pub(crate) fn register_mesh_morph_weights_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -960,6 +1246,37 @@ pub(crate) fn register_circular_segment_mesh_builder_functions(world: &mut World
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_convex_polygon_mesh_builder_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::primitives::ConvexPolygonMeshBuilder,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::ConvexPolygonMeshBuilder>| {
+                let output: Val<::bevy_mesh::primitives::ConvexPolygonMeshBuilder> = {
+                    {
+                        let output: Val<
+                            ::bevy_mesh::primitives::ConvexPolygonMeshBuilder,
+                        > = <::bevy_mesh::primitives::ConvexPolygonMeshBuilder as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::primitives::ConvexPolygonMeshBuilder,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_regular_polygon_mesh_builder_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::RegularPolygonMeshBuilder,
@@ -1074,6 +1391,37 @@ pub(crate) fn register_ellipse_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::EllipseMeshBuilder,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_polyline_2_d_mesh_builder_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::primitives::Polyline2dMeshBuilder,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_mesh::primitives::Polyline2dMeshBuilder>| {
+                let output: Val<::bevy_mesh::primitives::Polyline2dMeshBuilder> = {
+                    {
+                        let output: Val<
+                            ::bevy_mesh::primitives::Polyline2dMeshBuilder,
+                        > = <::bevy_mesh::primitives::Polyline2dMeshBuilder as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::primitives::Polyline2dMeshBuilder,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -2052,6 +2400,68 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_polyline_3_d_mesh_builder_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::primitives::dim3::polyline3d::Polyline3dMeshBuilder,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::primitives::dim3::polyline3d::Polyline3dMeshBuilder>| {
+                let output: Val<::primitives::dim3::polyline3d::Polyline3dMeshBuilder> = {
+                    {
+                        let output: Val<
+                            ::primitives::dim3::polyline3d::Polyline3dMeshBuilder,
+                        > = <::primitives::dim3::polyline3d::Polyline3dMeshBuilder as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::primitives::dim3::polyline3d::Polyline3dMeshBuilder,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_segment_3_d_mesh_builder_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::primitives::dim3::segment3d::Segment3dMeshBuilder,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::primitives::dim3::segment3d::Segment3dMeshBuilder>| {
+                let output: Val<::primitives::dim3::segment3d::Segment3dMeshBuilder> = {
+                    {
+                        let output: Val<
+                            ::primitives::dim3::segment3d::Segment3dMeshBuilder,
+                        > = <::primitives::dim3::segment3d::Segment3dMeshBuilder as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::primitives::dim3::segment3d::Segment3dMeshBuilder,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_sphere_kind_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::primitives::SphereKind,
@@ -2147,9 +2557,9 @@ pub(crate) fn register_sphere_mesh_builder_functions(world: &mut World) {
                 sectors: u32,
                 stacks: u32|
             {
-                let output: Val<::bevy_mesh::Mesh> = {
+                let output: Val<::bevy_mesh::prelude::Mesh> = {
                     {
-                        let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::primitives::SphereMeshBuilder::uv(
+                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::primitives::SphereMeshBuilder::uv(
                                 &_self,
                                 sectors,
                                 stacks,
@@ -2347,16 +2757,21 @@ pub(crate) fn register_skinned_mesh_functions(world: &mut World) {
 impl Plugin for BevyMeshScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
-        register_indices_functions(&mut world);
-        register_mesh_functions(&mut world);
         register_morph_weights_functions(&mut world);
+        register_mesh_functions(&mut world);
+        register_mesh_2_d_functions(&mut world);
+        register_mesh_3_d_functions(&mut world);
+        register_mesh_tag_functions(&mut world);
+        register_indices_functions(&mut world);
         register_mesh_morph_weights_functions(&mut world);
         register_circle_mesh_builder_functions(&mut world);
         register_circular_mesh_uv_mode_functions(&mut world);
         register_circular_sector_mesh_builder_functions(&mut world);
         register_circular_segment_mesh_builder_functions(&mut world);
+        register_convex_polygon_mesh_builder_functions(&mut world);
         register_regular_polygon_mesh_builder_functions(&mut world);
         register_ellipse_mesh_builder_functions(&mut world);
+        register_polyline_2_d_mesh_builder_functions(&mut world);
         register_annulus_mesh_builder_functions(&mut world);
         register_rhombus_mesh_builder_functions(&mut world);
         register_triangle_2_d_mesh_builder_functions(&mut world);
@@ -2371,6 +2786,8 @@ impl Plugin for BevyMeshScriptingPlugin {
         register_cylinder_anchor_functions(&mut world);
         register_cylinder_mesh_builder_functions(&mut world);
         register_plane_mesh_builder_functions(&mut world);
+        register_polyline_3_d_mesh_builder_functions(&mut world);
+        register_segment_3_d_mesh_builder_functions(&mut world);
         register_sphere_kind_functions(&mut world);
         register_sphere_mesh_builder_functions(&mut world);
         register_tetrahedron_mesh_builder_functions(&mut world);

@@ -1020,7 +1020,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the rotation in degrees in the `(-180, 180]` range.",
+            " Returns a corresponding rotation angle in degrees in the `(-180, 180]` range.",
             &["_self"],
         )
         .register_documented(
@@ -1037,7 +1037,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the rotation in radians in the `(-pi, pi]` range.",
+            " Returns a corresponding rotation angle in radians in the `(-pi, pi]` range.",
             &["_self"],
         )
         .register_documented(
@@ -1054,7 +1054,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the rotation as a fraction of a full 360 degree turn.",
+            " Returns a corresponding rotation angle as a fraction of a full 360 degree turn in the `(-0.5, 0.5]` range.",
             &["_self"],
         )
         .register_documented(
@@ -1088,7 +1088,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a [`Rot2`] from a counterclockwise angle in degrees.\n # Note\n The input rotation will always be clamped to the range `(-180°, 180°]` by design.\n # Example\n ```\n # use bevy_math::Rot2;\n # use approx::assert_relative_eq;\n let rot1 = Rot2::degrees(270.0);\n let rot2 = Rot2::degrees(-90.0);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1, rot2);\n let rot3 = Rot2::degrees(180.0);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1 * rot1, rot3);\n ```",
+            " Creates a [`Rot2`] from a counterclockwise angle in degrees.\n A negative argument corresponds to a clockwise rotation.\n # Note\n Angles larger than or equal to 360° (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.\n # Example\n ```\n # use bevy_math::Rot2;\n # use approx::{assert_relative_eq, assert_abs_diff_eq};\n let rot1 = Rot2::degrees(270.0);\n let rot2 = Rot2::degrees(-90.0);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1, rot2);\n let rot3 = Rot2::degrees(180.0);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1 * rot1, rot3);\n // A rotation by 365° and 5° are the same\n #[cfg(feature = \"approx\")]\n assert_abs_diff_eq!(Rot2::degrees(365.0), Rot2::degrees(5.0), epsilon = 2e-7);\n ```",
             &["degrees"],
         )
         .register_documented(
@@ -1140,7 +1140,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a [`Rot2`] from the sine and cosine of an angle in radians.\n The rotation is only valid if `sin * sin + cos * cos == 1.0`.\n # Panics\n Panics if `sin * sin + cos * cos != 1.0` when the `glam_assert` feature is enabled.",
+            " Creates a [`Rot2`] from the sine and cosine of an angle.\n The rotation is only valid if `sin * sin + cos * cos == 1.0`.\n # Panics\n Panics if `sin * sin + cos * cos != 1.0` when the `glam_assert` feature is enabled.",
             &["sin", "cos"],
         )
         .register_documented(
@@ -1376,7 +1376,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a [`Rot2`] from a counterclockwise angle in radians.\n # Note\n The input rotation will always be clamped to the range `(-π, π]` by design.\n # Example\n ```\n # use bevy_math::Rot2;\n # use approx::assert_relative_eq;\n # use std::f32::consts::{FRAC_PI_2, PI};\n let rot1 = Rot2::radians(3.0 * FRAC_PI_2);\n let rot2 = Rot2::radians(-FRAC_PI_2);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1, rot2);\n let rot3 = Rot2::radians(PI);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1 * rot1, rot3);\n ```",
+            " Creates a [`Rot2`] from a counterclockwise angle in radians.\n A negative argument corresponds to a clockwise rotation.\n # Note\n Angles larger than or equal to 2π (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.\n # Example\n ```\n # use bevy_math::Rot2;\n # use approx::assert_relative_eq;\n # use std::f32::consts::{FRAC_PI_2, PI};\n let rot1 = Rot2::radians(3.0 * FRAC_PI_2);\n let rot2 = Rot2::radians(-FRAC_PI_2);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1, rot2);\n let rot3 = Rot2::radians(PI);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1 * rot1, rot3);\n // A rotation by 3π and 1π are the same\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(Rot2::radians(3.0 * PI), Rot2::radians(PI));\n ```",
             &["radians"],
         )
         .register_documented(
@@ -1393,7 +1393,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the sine and cosine of the rotation angle in radians.",
+            " Returns the sine and cosine of the rotation angle.",
             &["_self"],
         )
         .register_documented(
@@ -1429,7 +1429,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.\n # Note\n The input rotation will always be clamped to the range `(-50%, 50%]` by design.\n # Example\n ```\n # use bevy_math::Rot2;\n # use approx::assert_relative_eq;\n let rot1 = Rot2::turn_fraction(0.75);\n let rot2 = Rot2::turn_fraction(-0.25);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1, rot2);\n let rot3 = Rot2::turn_fraction(0.5);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1 * rot1, rot3);\n ```",
+            " Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.\n A negative argument corresponds to a clockwise rotation.\n # Note\n Angles larger than or equal to 1 turn (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.\n # Example\n ```\n # use bevy_math::Rot2;\n # use approx::assert_relative_eq;\n let rot1 = Rot2::turn_fraction(0.75);\n let rot2 = Rot2::turn_fraction(-0.25);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1, rot2);\n let rot3 = Rot2::turn_fraction(0.5);\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rot1 * rot1, rot3);\n // A rotation by 1.5 turns and 0.5 turns are the same\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(Rot2::turn_fraction(1.5), Rot2::turn_fraction(0.5));\n ```",
             &["fraction"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -5457,6 +5457,27 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "closest_point",
+            |
+                _self: Ref<::bevy_math::primitives::Segment2d>,
+                point: Val<::bevy_math::prelude::Vec2>|
+            {
+                let output: Val<::bevy_math::prelude::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::prelude::Vec2> = ::bevy_math::primitives::Segment2d::closest_point(
+                                &_self,
+                                point.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the point on the [`Segment2d`] that is closest to the specified `point`.",
+            &["_self", "point"],
+        )
+        .register_documented(
             "direction",
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::prelude::Dir2> = {
@@ -6020,6 +6041,193 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Triangle2d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_convex_polygon_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::primitives::ConvexPolygon,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_math::primitives::ConvexPolygon>| {
+            let output: Val<::bevy_math::primitives::ConvexPolygon> = {
+                {
+                    let output: Val<::bevy_math::primitives::ConvexPolygon> =
+                        <::bevy_math::primitives::ConvexPolygon as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_math::primitives::ConvexPolygon>,
+         other: Ref<::bevy_math::primitives::ConvexPolygon>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_math::primitives::ConvexPolygon as ::core::cmp::PartialEq<
+                            ::bevy_math::primitives::ConvexPolygon,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::primitives::ConvexPolygon,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_polygon_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::primitives::Polygon,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Polygon>| {
+                let output: Val<::bevy_math::primitives::Polygon> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Polygon> = <::bevy_math::primitives::Polygon as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Polygon>,
+                other: Ref<::bevy_math::primitives::Polygon>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Polygon as ::core::cmp::PartialEq<
+                            ::bevy_math::primitives::Polygon,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "is_simple",
+            |_self: Ref<::bevy_math::primitives::Polygon>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::primitives::Polygon::is_simple(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Tests if the polygon is simple.\n A polygon is simple if it is not self intersecting and not self tangent.\n As such, no two edges of the polygon may cross each other and each vertex must not lie on another edge.",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::primitives::Polygon,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_polyline_2_d_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::primitives::Polyline2d,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Polyline2d>| {
+                let output: Val<::bevy_math::primitives::Polyline2d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Polyline2d> = <::bevy_math::primitives::Polyline2d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Polyline2d>,
+                other: Ref<::bevy_math::primitives::Polyline2d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Polyline2d as ::core::cmp::PartialEq<
+                            ::bevy_math::primitives::Polyline2d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "with_subdivisions",
+            |
+                start: Val<::bevy_math::prelude::Vec2>,
+                end: Val<::bevy_math::prelude::Vec2>,
+                subdivisions: usize|
+            {
+                let output: Val<::bevy_math::primitives::Polyline2d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Polyline2d> = ::bevy_math::primitives::Polyline2d::with_subdivisions(
+                                start.into_inner(),
+                                end.into_inner(),
+                                subdivisions,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Polyline2d` from two endpoints with subdivision points.\n `subdivisions = 0` creates a simple line with just start and end points.\n `subdivisions = 1` adds one point in the middle, creating 2 segments, etc.",
+            &["start", "end", "subdivisions"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::primitives::Polyline2d,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -6987,6 +7195,27 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "closest_point",
+            |
+                _self: Ref<::bevy_math::primitives::Segment3d>,
+                point: Val<::bevy_math::prelude::Vec3>|
+            {
+                let output: Val<::bevy_math::prelude::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::prelude::Vec3> = ::bevy_math::primitives::Segment3d::closest_point(
+                                &_self,
+                                point.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the point on the [`Segment3d`] that is closest to the specified `point`.",
+            &["_self", "point"],
+        )
+        .register_documented(
             "direction",
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::prelude::Dir3> = {
@@ -7617,6 +7846,78 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Triangle3d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_polyline_3_d_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::primitives::Polyline3d,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Polyline3d>| {
+                let output: Val<::bevy_math::primitives::Polyline3d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Polyline3d> = <::bevy_math::primitives::Polyline3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Polyline3d>,
+                other: Ref<::bevy_math::primitives::Polyline3d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Polyline3d as ::core::cmp::PartialEq<
+                            ::bevy_math::primitives::Polyline3d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "with_subdivisions",
+            |
+                start: Val<::bevy_math::prelude::Vec3>,
+                end: Val<::bevy_math::prelude::Vec3>,
+                subdivisions: usize|
+            {
+                let output: Val<::bevy_math::primitives::Polyline3d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Polyline3d> = ::bevy_math::primitives::Polyline3d::with_subdivisions(
+                                start.into_inner(),
+                                end.into_inner(),
+                                subdivisions,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Polyline3d` from two endpoints with subdivision points.\n `subdivisions = 0` creates a simple line with just start and end points.\n `subdivisions = 1` adds one point in the middle, creating 2 segments, etc.",
+            &["start", "end", "subdivisions"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::primitives::Polyline3d,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -8363,6 +8664,154 @@ pub(crate) fn register_interval_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_dir_4_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::Dir4,
+    >::new(world)
+        .register_documented(
+            "as_vec4",
+            |_self: Ref<::bevy_math::Dir4>| {
+                let output: Val<::bevy_math::prelude::Vec4> = {
+                    {
+                        let output: Val<::bevy_math::prelude::Vec4> = ::bevy_math::Dir4::as_vec4(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inner [`Vec4`]",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::Dir4>| {
+                let output: Val<::bevy_math::Dir4> = {
+                    {
+                        let output: Val<::bevy_math::Dir4> = <::bevy_math::Dir4 as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_math::Dir4>, other: Ref<::bevy_math::Dir4>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::Dir4 as ::core::cmp::PartialEq<
+                            ::bevy_math::Dir4,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "fast_renormalize",
+            |_self: Val<::bevy_math::Dir4>| {
+                let output: Val<::bevy_math::Dir4> = {
+                    {
+                        let output: Val<::bevy_math::Dir4> = ::bevy_math::Dir4::fast_renormalize(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `self` after an approximate normalization, assuming the value is already nearly normalized.\n Useful for preventing numerical error accumulation.",
+            &["_self"],
+        )
+        .register_documented(
+            "from_xyzw_unchecked",
+            |x: f32, y: f32, z: f32, w: f32| {
+                let output: Val<::bevy_math::Dir4> = {
+                    {
+                        let output: Val<::bevy_math::Dir4> = ::bevy_math::Dir4::from_xyzw_unchecked(
+                                x,
+                                y,
+                                z,
+                                w,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a direction from its `x`, `y`, `z`, and `w` components, assuming the resulting vector is normalized.\n # Warning\n The vector produced from `x`, `y`, `z`, and `w` must be normalized, i.e its length must be `1.0`.",
+            &["x", "y", "z", "w"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::bevy_math::Dir4>, rhs: f32| {
+                let output: Val<::bevy_math::prelude::Vec4> = {
+                    {
+                        let output: Val<::bevy_math::prelude::Vec4> = <::bevy_math::Dir4 as ::core::ops::Mul<
+                            f32,
+                        >>::mul(_self.into_inner(), rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "neg",
+            |_self: Val<::bevy_math::Dir4>| {
+                let output: Val<::bevy_math::Dir4> = {
+                    {
+                        let output: Val<::bevy_math::Dir4> = <::bevy_math::Dir4 as ::core::ops::Neg>::neg(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "new_unchecked",
+            |value: Val<::bevy_math::prelude::Vec4>| {
+                let output: Val<::bevy_math::Dir4> = {
+                    {
+                        let output: Val<::bevy_math::Dir4> = ::bevy_math::Dir4::new_unchecked(
+                                value.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a [`Dir4`] from a [`Vec4`] that is already normalized.\n # Warning\n `value` must be normalized, i.e its length must be `1.0`.",
+            &["value"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_math::Dir4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
 pub(crate) fn register_float_ord_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::FloatOrd,
@@ -8819,6 +9268,9 @@ impl Plugin for BevyMathScriptingPlugin {
         register_rhombus_functions(&mut world);
         register_segment_2_d_functions(&mut world);
         register_triangle_2_d_functions(&mut world);
+        register_convex_polygon_functions(&mut world);
+        register_polygon_functions(&mut world);
+        register_polyline_2_d_functions(&mut world);
         register_aabb_3_d_functions(&mut world);
         register_bounding_sphere_functions(&mut world);
         register_sphere_functions(&mut world);
@@ -8832,6 +9284,7 @@ impl Plugin for BevyMathScriptingPlugin {
         register_segment_3_d_functions(&mut world);
         register_torus_functions(&mut world);
         register_triangle_3_d_functions(&mut world);
+        register_polyline_3_d_functions(&mut world);
         register_ray_cast_2_d_functions(&mut world);
         register_aabb_cast_2_d_functions(&mut world);
         register_bounding_circle_cast_functions(&mut world);
@@ -8839,6 +9292,7 @@ impl Plugin for BevyMathScriptingPlugin {
         register_aabb_cast_3_d_functions(&mut world);
         register_bounding_sphere_cast_functions(&mut world);
         register_interval_functions(&mut world);
+        register_dir_4_functions(&mut world);
         register_float_ord_functions(&mut world);
         register_plane_3_d_functions(&mut world);
         register_tetrahedron_functions(&mut world);

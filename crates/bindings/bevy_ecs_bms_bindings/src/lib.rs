@@ -71,12 +71,12 @@ pub(crate) fn register_entity_functions(world: &mut World) {
             &["bits"],
         )
         .register_documented(
-            "from_raw",
-            |index: u32| {
+            "from_row",
+            |row: Val<::bevy_ecs::entity::EntityRow>| {
                 let output: Val<::bevy_ecs::entity::Entity> = {
                     {
-                        let output: Val<::bevy_ecs::entity::Entity> = ::bevy_ecs::entity::Entity::from_raw(
-                                index,
+                        let output: Val<::bevy_ecs::entity::Entity> = ::bevy_ecs::entity::Entity::from_row(
+                                row.into_inner(),
                             )
                             .into();
                         output
@@ -84,15 +84,36 @@ pub(crate) fn register_entity_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a new entity ID with the specified `index` and a generation of 1.\n # Note\n Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor\n [`Commands::spawn`](crate::system::Commands::spawn). This method should generally\n only be used for sharing entities across apps, and only when they have a scheme\n worked out to share an index space (which doesn't happen by default).\n In general, one should not try to synchronize the ECS by attempting to ensure that\n `Entity` lines up between instances, but instead insert a secondary identifier as\n a component.",
-            &["index"],
+            " Creates a new entity ID with the specified `row` and a generation of 1.\n # Note\n Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor\n [`Commands::spawn`](crate::system::Commands::spawn). This method should generally\n only be used for sharing entities across apps, and only when they have a scheme\n worked out to share an index space (which doesn't happen by default).\n In general, one should not try to synchronize the ECS by attempting to ensure that\n `Entity` lines up between instances, but instead insert a secondary identifier as\n a component.",
+            &["row"],
+        )
+        .register_documented(
+            "from_row_and_generation",
+            |
+                row: Val<::bevy_ecs::entity::EntityRow>,
+                generation: Val<::bevy_ecs::entity::EntityGeneration>|
+            {
+                let output: Val<::bevy_ecs::entity::Entity> = {
+                    {
+                        let output: Val<::bevy_ecs::entity::Entity> = ::bevy_ecs::entity::Entity::from_row_and_generation(
+                                row.into_inner(),
+                                generation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new instance with the given index and generation.",
+            &["row", "generation"],
         )
         .register_documented(
             "generation",
             |_self: Val<::bevy_ecs::entity::Entity>| {
-                let output: u32 = {
+                let output: Val<::bevy_ecs::entity::EntityGeneration> = {
                     {
-                        let output: u32 = ::bevy_ecs::entity::Entity::generation(
+                        let output: Val<::bevy_ecs::entity::EntityGeneration> = ::bevy_ecs::entity::Entity::generation(
                                 _self.into_inner(),
                             )
                             .into();
@@ -101,7 +122,7 @@ pub(crate) fn register_entity_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the generation of this Entity's index. The generation is incremented each time an\n entity with a given index is despawned. This serves as a \"count\" of the number of times a\n given index has been reused (index, generation) pairs uniquely identify a given Entity.",
+            " Returns the generation of this Entity's row. The generation is incremented each time an\n entity with a given row is despawned. This serves as a \"count\" of the number of times a\n given row has been reused (row, generation) pairs uniquely identify a given Entity.",
             &["_self"],
         )
         .register_documented(
@@ -118,7 +139,24 @@ pub(crate) fn register_entity_functions(world: &mut World) {
                 };
                 output
             },
-            " Return a transiently unique identifier.\n No two simultaneously-live entities share the same index, but dead entities' indices may collide\n with both live and dead entities. Useful for compactly representing entities within a\n specific snapshot of the world, such as when serializing.",
+            " Equivalent to `self.row().index()`. See [`Self::row`] for details.",
+            &["_self"],
+        )
+        .register_documented(
+            "row",
+            |_self: Val<::bevy_ecs::entity::Entity>| {
+                let output: Val<::bevy_ecs::entity::EntityRow> = {
+                    {
+                        let output: Val<::bevy_ecs::entity::EntityRow> = ::bevy_ecs::entity::Entity::row(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return a transiently unique identifier.\n See also [`EntityRow`].\n No two simultaneously-live entities share the same row, but dead entities' indices may collide\n with both live and dead entities. Useful for compactly representing entities within a\n specific snapshot of the world, such as when serializing.",
             &["_self"],
         )
         .register_documented(
@@ -203,23 +241,6 @@ pub(crate) fn register_child_of_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
-        )
-        .register_documented(
-            "get",
-            |_self: Ref<::bevy_ecs::hierarchy::ChildOf>| {
-                let output: Val<::bevy_ecs::entity::Entity> = {
-                    {
-                        let output: Val<::bevy_ecs::entity::Entity> = ::bevy_ecs::hierarchy::ChildOf::get(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The parent entity of this child entity.",
-            &["_self"],
         )
         .register_documented(
             "parent",
@@ -318,6 +339,147 @@ pub(crate) fn register_children_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_add_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ecs::lifecycle::Add,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ecs::lifecycle::Add>| {
+                let output: Val<::bevy_ecs::lifecycle::Add> = {
+                    {
+                        let output: Val<::bevy_ecs::lifecycle::Add> = <::bevy_ecs::lifecycle::Add as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ecs::lifecycle::Add,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_despawn_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ecs::lifecycle::Despawn,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::lifecycle::Despawn>| {
+            let output: Val<::bevy_ecs::lifecycle::Despawn> = {
+                {
+                    let output: Val<::bevy_ecs::lifecycle::Despawn> =
+                        <::bevy_ecs::lifecycle::Despawn as ::core::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ecs::lifecycle::Despawn,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_insert_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ecs::lifecycle::Insert,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::lifecycle::Insert>| {
+            let output: Val<::bevy_ecs::lifecycle::Insert> = {
+                {
+                    let output: Val<::bevy_ecs::lifecycle::Insert> =
+                        <::bevy_ecs::lifecycle::Insert as ::core::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ecs::lifecycle::Insert,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_remove_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ecs::lifecycle::Remove,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::lifecycle::Remove>| {
+            let output: Val<::bevy_ecs::lifecycle::Remove> = {
+                {
+                    let output: Val<::bevy_ecs::lifecycle::Remove> =
+                        <::bevy_ecs::lifecycle::Remove as ::core::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ecs::lifecycle::Remove,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_replace_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ecs::lifecycle::Replace,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::lifecycle::Replace>| {
+            let output: Val<::bevy_ecs::lifecycle::Replace> = {
+                {
+                    let output: Val<::bevy_ecs::lifecycle::Replace> =
+                        <::bevy_ecs::lifecycle::Replace as ::core::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ecs::lifecycle::Replace,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_name_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::name::Name,
@@ -362,51 +524,53 @@ pub(crate) fn register_name_functions(world: &mut World) {
         .register_type_data::<::bevy_ecs::name::Name, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
 }
-pub(crate) fn register_on_add_functions(world: &mut World) {
+pub(crate) fn register_default_query_filters_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::world::OnAdd,
-    >::new(world);
+        ::bevy_ecs::entity_disabling::DefaultQueryFilters,
+    >::new(world)
+        .register_documented(
+            "empty",
+            || {
+                let output: Val<::bevy_ecs::entity_disabling::DefaultQueryFilters> = {
+                    {
+                        let output: Val<
+                            ::bevy_ecs::entity_disabling::DefaultQueryFilters,
+                        > = ::bevy_ecs::entity_disabling::DefaultQueryFilters::empty()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new, completely empty [`DefaultQueryFilters`].\n This is provided as an escape hatch; in most cases you should initialize this using [`FromWorld`],\n which is automatically called when creating a new [`World`].",
+            &[],
+        )
+        .register_documented(
+            "register_disabling_component",
+            |
+                mut _self: Mut<::bevy_ecs::entity_disabling::DefaultQueryFilters>,
+                component_id: Val<::bevy_ecs::component::ComponentId>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_ecs::entity_disabling::DefaultQueryFilters::register_disabling_component(
+                                &mut _self,
+                                component_id.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Adds this [`ComponentId`] to the set of [`DefaultQueryFilters`],\n causing entities with this component to be excluded from queries.\n This method is idempotent, and will not add the same component multiple times.\n # Warning\n This method should only be called before the app starts, as it will not affect queries\n initialized before it is called.\n As discussed in the [module docs](crate::entity_disabling), this can have performance implications,\n as well as create interoperability issues, and should be used with caution.",
+            &["_self", "component_id"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_ecs::world::OnAdd,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_on_insert_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::world::OnInsert,
-    >::new(world);
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ecs::world::OnInsert,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_on_remove_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::world::OnRemove,
-    >::new(world);
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ecs::world::OnRemove,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_on_replace_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::world::OnReplace,
-    >::new(world);
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ecs::world::OnReplace,
+            ::bevy_ecs::entity_disabling::DefaultQueryFilters,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -507,56 +671,6 @@ pub(crate) fn register_component_id_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ecs::component::ComponentId,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_default_query_filters_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::entity_disabling::DefaultQueryFilters,
-    >::new(world)
-        .register_documented(
-            "empty",
-            || {
-                let output: Val<::bevy_ecs::entity_disabling::DefaultQueryFilters> = {
-                    {
-                        let output: Val<
-                            ::bevy_ecs::entity_disabling::DefaultQueryFilters,
-                        > = ::bevy_ecs::entity_disabling::DefaultQueryFilters::empty()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new, completely empty [`DefaultQueryFilters`].\n This is provided as an escape hatch; in most cases you should initialize this using [`FromWorld`],\n which is automatically called when creating a new [`World`].",
-            &[],
-        )
-        .register_documented(
-            "register_disabling_component",
-            |
-                mut _self: Mut<::bevy_ecs::entity_disabling::DefaultQueryFilters>,
-                component_id: Val<::bevy_ecs::component::ComponentId>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_ecs::entity_disabling::DefaultQueryFilters::register_disabling_component(
-                                &mut _self,
-                                component_id.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Adds this [`ComponentId`] to the set of [`DefaultQueryFilters`],\n causing entities with this component to be excluded from queries.\n This method is idempotent, and will not add the same component multiple times.\n # Warning\n This method should only be called before the app starts, as it will not affect queries\n initialized before it is called.\n As discussed in the [module docs](crate::entity_disabling), this can have performance implications,\n as well as create interoperability issues, and should be used with caution.",
-            &["_self", "component_id"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ecs::entity_disabling::DefaultQueryFilters,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -803,7 +917,7 @@ pub(crate) fn register_component_ticks_functions(world: &mut World) {
                 };
                 output
             },
-            " Manually sets the change tick.\n This is normally done automatically via the [`DerefMut`] implementation\n on [`Mut<T>`](crate::change_detection::Mut), [`ResMut<T>`](crate::change_detection::ResMut), etc.\n However, components and resources that make use of interior mutability might require manual updates.\n # Example\n ```no_run\n # use bevy_ecs::{world::World, component::ComponentTicks};\n let world: World = unimplemented!();\n let component_ticks: ComponentTicks = unimplemented!();\n component_ticks.set_changed(world.read_change_tick());\n ```",
+            " Manually sets the change tick.\n This is normally done automatically via the [`DerefMut`](core::ops::DerefMut) implementation\n on [`Mut<T>`](crate::change_detection::Mut), [`ResMut<T>`](crate::change_detection::ResMut), etc.\n However, components and resources that make use of interior mutability might require manual updates.\n # Example\n ```no_run\n # use bevy_ecs::{world::World, component::ComponentTicks};\n let world: World = unimplemented!();\n let component_ticks: ComponentTicks = unimplemented!();\n component_ticks.set_changed(world.read_change_tick());\n ```",
             &["_self", "change_tick"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -946,16 +1060,33 @@ pub(crate) fn register_entity_hash_set_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_identifier_functions(world: &mut World) {
+pub(crate) fn register_entity_row_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::identifier::Identifier,
+        ::bevy_ecs::entity::EntityRow,
     >::new(world)
         .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ecs::identifier::Identifier>| {
-                let output: Val<::bevy_ecs::identifier::Identifier> = {
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::bevy_ecs::entity::EntityRow>| {
+                let output: () = {
                     {
-                        let output: Val<::bevy_ecs::identifier::Identifier> = <::bevy_ecs::identifier::Identifier as ::core::clone::Clone>::clone(
+                        let output: () = <::bevy_ecs::entity::EntityRow as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ecs::entity::EntityRow>| {
+                let output: Val<::bevy_ecs::entity::EntityRow> = {
+                    {
+                        let output: Val<::bevy_ecs::entity::EntityRow> = <::bevy_ecs::entity::EntityRow as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -970,13 +1101,114 @@ pub(crate) fn register_identifier_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ecs::identifier::Identifier>,
-                other: Ref<::bevy_ecs::identifier::Identifier>|
+                _self: Ref<::bevy_ecs::entity::EntityRow>,
+                other: Ref<::bevy_ecs::entity::EntityRow>|
             {
                 let output: bool = {
                     {
-                        let output: bool = <::bevy_ecs::identifier::Identifier as ::core::cmp::PartialEq<
-                            ::bevy_ecs::identifier::Identifier,
+                        let output: bool = <::bevy_ecs::entity::EntityRow as ::core::cmp::PartialEq<
+                            ::bevy_ecs::entity::EntityRow,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "index",
+            |_self: Val<::bevy_ecs::entity::EntityRow>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::bevy_ecs::entity::EntityRow::index(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Gets the index of the entity.",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ecs::entity::EntityRow,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_entity_generation_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ecs::entity::EntityGeneration,
+    >::new(world)
+        .register_documented(
+            "after_versions",
+            |_self: Val<::bevy_ecs::entity::EntityGeneration>, versions: u32| {
+                let output: Val<::bevy_ecs::entity::EntityGeneration> = {
+                    {
+                        let output: Val<::bevy_ecs::entity::EntityGeneration> = ::bevy_ecs::entity::EntityGeneration::after_versions(
+                                _self.into_inner(),
+                                versions,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`EntityGeneration`] that would result from this many more `versions` of the corresponding [`EntityRow`] from passing.",
+            &["_self", "versions"],
+        )
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::bevy_ecs::entity::EntityGeneration>| {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_ecs::entity::EntityGeneration as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ecs::entity::EntityGeneration>| {
+                let output: Val<::bevy_ecs::entity::EntityGeneration> = {
+                    {
+                        let output: Val<::bevy_ecs::entity::EntityGeneration> = <::bevy_ecs::entity::EntityGeneration as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_ecs::entity::EntityGeneration>,
+                other: Ref<::bevy_ecs::entity::EntityGeneration>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ecs::entity::EntityGeneration as ::core::cmp::PartialEq<
+                            ::bevy_ecs::entity::EntityGeneration,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -989,11 +1221,11 @@ pub(crate) fn register_identifier_functions(world: &mut World) {
         )
         .register_documented(
             "from_bits",
-            |value: u64| {
-                let output: Val<::bevy_ecs::identifier::Identifier> = {
+            |bits: u32| {
+                let output: Val<::bevy_ecs::entity::EntityGeneration> = {
                     {
-                        let output: Val<::bevy_ecs::identifier::Identifier> = ::bevy_ecs::identifier::Identifier::from_bits(
-                                value,
+                        let output: Val<::bevy_ecs::entity::EntityGeneration> = ::bevy_ecs::entity::EntityGeneration::from_bits(
+                                bits,
                             )
                             .into();
                         output
@@ -1001,49 +1233,15 @@ pub(crate) fn register_identifier_functions(world: &mut World) {
                 };
                 output
             },
-            " Convert a `u64` into an [`Identifier`].\n # Panics\n This method will likely panic if given `u64` values that did not come from [`Identifier::to_bits`].",
-            &["value"],
-        )
-        .register_documented(
-            "low",
-            |_self: Val<::bevy_ecs::identifier::Identifier>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::bevy_ecs::identifier::Identifier::low(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the value of the low segment of the [`Identifier`].",
-            &["_self"],
-        )
-        .register_documented(
-            "masked_high",
-            |_self: Val<::bevy_ecs::identifier::Identifier>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::bevy_ecs::identifier::Identifier::masked_high(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the masked value of the high segment of the [`Identifier`].\n Does not include the flag bits.",
-            &["_self"],
+            " Reconstruct an [`EntityGeneration`] previously destructured with [`EntityGeneration::to_bits`].\n Only useful when applied to results from `to_bits` in the same instance of an application.",
+            &["bits"],
         )
         .register_documented(
             "to_bits",
-            |_self: Val<::bevy_ecs::identifier::Identifier>| {
-                let output: u64 = {
+            |_self: Val<::bevy_ecs::entity::EntityGeneration>| {
+                let output: u32 = {
                     {
-                        let output: u64 = ::bevy_ecs::identifier::Identifier::to_bits(
+                        let output: u32 = ::bevy_ecs::entity::EntityGeneration::to_bits(
                                 _self.into_inner(),
                             )
                             .into();
@@ -1052,14 +1250,14 @@ pub(crate) fn register_identifier_functions(world: &mut World) {
                 };
                 output
             },
-            " Convert the [`Identifier`] into a `u64`.",
+            " Gets some bits that represent this value.\n The bits are opaque and should not be regarded as meaningful.",
             &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_ecs::identifier::Identifier,
+            ::bevy_ecs::entity::EntityGeneration,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -1121,18 +1319,46 @@ pub(crate) fn register_disabled_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_internal_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ecs::entity_disabling::Internal,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::entity_disabling::Internal>| {
+            let output: Val<::bevy_ecs::entity_disabling::Internal> = {
+                {
+                    let output: Val<::bevy_ecs::entity_disabling::Internal> =
+                        <::bevy_ecs::entity_disabling::Internal as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ecs::entity_disabling::Internal,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_removed_component_entity_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::removal_detection::RemovedComponentEntity,
+        ::bevy_ecs::lifecycle::RemovedComponentEntity,
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ecs::removal_detection::RemovedComponentEntity>| {
-                let output: Val<::bevy_ecs::removal_detection::RemovedComponentEntity> = {
+            |_self: Ref<::bevy_ecs::lifecycle::RemovedComponentEntity>| {
+                let output: Val<::bevy_ecs::lifecycle::RemovedComponentEntity> = {
                     {
-                        let output: Val<
-                            ::bevy_ecs::removal_detection::RemovedComponentEntity,
-                        > = <::bevy_ecs::removal_detection::RemovedComponentEntity as ::core::clone::Clone>::clone(
+                        let output: Val<::bevy_ecs::lifecycle::RemovedComponentEntity> = <::bevy_ecs::lifecycle::RemovedComponentEntity as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1148,31 +1374,19 @@ pub(crate) fn register_removed_component_entity_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_ecs::removal_detection::RemovedComponentEntity,
+            ::bevy_ecs::lifecycle::RemovedComponentEntity,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_system_id_marker_functions(world: &mut World) {
+pub(crate) fn register_observed_by_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::system::SystemIdMarker,
+        ::bevy_ecs::observer::ObservedBy,
     >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_ecs::system::SystemIdMarker,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_on_despawn_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ecs::world::OnDespawn,
-    >::new(world);
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ecs::world::OnDespawn,
+            ::bevy_ecs::observer::ObservedBy,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -1182,21 +1396,23 @@ impl Plugin for BevyEcsScriptingPlugin {
         register_entity_functions(&mut world);
         register_child_of_functions(&mut world);
         register_children_functions(&mut world);
+        register_add_functions(&mut world);
+        register_despawn_functions(&mut world);
+        register_insert_functions(&mut world);
+        register_remove_functions(&mut world);
+        register_replace_functions(&mut world);
         register_name_functions(&mut world);
-        register_on_add_functions(&mut world);
-        register_on_insert_functions(&mut world);
-        register_on_remove_functions(&mut world);
-        register_on_replace_functions(&mut world);
-        register_component_id_functions(&mut world);
         register_default_query_filters_functions(&mut world);
+        register_component_id_functions(&mut world);
         register_tick_functions(&mut world);
         register_component_ticks_functions(&mut world);
         register_entity_hash_set_functions(&mut world);
-        register_identifier_functions(&mut world);
+        register_entity_row_functions(&mut world);
+        register_entity_generation_functions(&mut world);
         register_entity_hash_functions(&mut world);
         register_disabled_functions(&mut world);
+        register_internal_functions(&mut world);
         register_removed_component_entity_functions(&mut world);
-        register_system_id_marker_functions(&mut world);
-        register_on_despawn_functions(&mut world);
+        register_observed_by_functions(&mut world);
     }
 }

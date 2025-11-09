@@ -83,6 +83,34 @@ pub(crate) fn register_sprite_picking_settings_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_text_2_d_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_sprite::prelude::Text2d,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_sprite::prelude::Text2d>| {
+            let output: Val<::bevy_sprite::prelude::Text2d> = {
+                {
+                    let output: Val<::bevy_sprite::prelude::Text2d> =
+                        <::bevy_sprite::prelude::Text2d as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_sprite::prelude::Text2d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_sprite_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::prelude::Sprite,
@@ -197,6 +225,26 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         ::bevy_sprite::prelude::BorderRect,
     >::new(world)
         .register_documented(
+            "add",
+            |
+                _self: Val<::bevy_sprite::prelude::BorderRect>,
+                rhs: Val<::bevy_sprite::prelude::BorderRect>|
+            {
+                let output: Val<::bevy_sprite::prelude::BorderRect> = {
+                    {
+                        let output: Val<::bevy_sprite::prelude::BorderRect> = <::bevy_sprite::prelude::BorderRect as ::std::ops::Add<
+                            ::bevy_sprite::prelude::BorderRect,
+                        >>::add(_self.into_inner(), rhs.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "all",
             |extent: f32| {
                 let output: Val<::bevy_sprite::prelude::BorderRect> = {
@@ -249,6 +297,23 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "div",
+            |_self: Val<::bevy_sprite::prelude::BorderRect>, rhs: f32| {
+                let output: Val<::bevy_sprite::prelude::BorderRect> = {
+                    {
+                        let output: Val<::bevy_sprite::prelude::BorderRect> = <::bevy_sprite::prelude::BorderRect as ::std::ops::Div<
+                            f32,
+                        >>::div(_self.into_inner(), rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "eq",
             |
                 _self: Ref<::bevy_sprite::prelude::BorderRect>,
@@ -267,6 +332,43 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::bevy_sprite::prelude::BorderRect>, rhs: f32| {
+                let output: Val<::bevy_sprite::prelude::BorderRect> = {
+                    {
+                        let output: Val<::bevy_sprite::prelude::BorderRect> = <::bevy_sprite::prelude::BorderRect as ::std::ops::Mul<
+                            f32,
+                        >>::mul(_self.into_inner(), rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
+            |
+                _self: Val<::bevy_sprite::prelude::BorderRect>,
+                rhs: Val<::bevy_sprite::prelude::BorderRect>|
+            {
+                let output: Val<::bevy_sprite::prelude::BorderRect> = {
+                    {
+                        let output: Val<::bevy_sprite::prelude::BorderRect> = <::bevy_sprite::prelude::BorderRect as ::std::ops::Sub<
+                            ::bevy_sprite::prelude::BorderRect,
+                        >>::sub(_self.into_inner(), rhs.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -371,36 +473,6 @@ pub(crate) fn register_texture_slicer_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::prelude::TextureSlicer,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_color_material_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::prelude::ColorMaterial,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_sprite::prelude::ColorMaterial>| {
-            let output: Val<::bevy_sprite::prelude::ColorMaterial> = {
-                {
-                    let output: Val<::bevy_sprite::prelude::ColorMaterial> =
-                        <::bevy_sprite::prelude::ColorMaterial as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::prelude::ColorMaterial,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -512,16 +584,16 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
         .register_type_data::<::bevy_sprite::Anchor, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
 }
-pub(crate) fn register_alpha_mode_2_d_functions(world: &mut World) {
+pub(crate) fn register_text_2_d_shadow_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::AlphaMode2d,
+        ::bevy_sprite::Text2dShadow,
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_sprite::AlphaMode2d>| {
-                let output: Val<::bevy_sprite::AlphaMode2d> = {
+            |_self: Ref<::bevy_sprite::Text2dShadow>| {
+                let output: Val<::bevy_sprite::Text2dShadow> = {
                     {
-                        let output: Val<::bevy_sprite::AlphaMode2d> = <::bevy_sprite::AlphaMode2d as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_sprite::Text2dShadow> = <::bevy_sprite::Text2dShadow as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -536,13 +608,13 @@ pub(crate) fn register_alpha_mode_2_d_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_sprite::AlphaMode2d>,
-                other: Ref<::bevy_sprite::AlphaMode2d>|
+                _self: Ref<::bevy_sprite::Text2dShadow>,
+                other: Ref<::bevy_sprite::Text2dShadow>|
             {
                 let output: bool = {
                     {
-                        let output: bool = <::bevy_sprite::AlphaMode2d as ::std::cmp::PartialEq<
-                            ::bevy_sprite::AlphaMode2d,
+                        let output: bool = <::bevy_sprite::Text2dShadow as ::std::cmp::PartialEq<
+                            ::bevy_sprite::Text2dShadow,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -557,289 +629,7 @@ pub(crate) fn register_alpha_mode_2_d_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_sprite::AlphaMode2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_wireframe_2_d_material_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::Wireframe2dMaterial,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_sprite::Wireframe2dMaterial>| {
-            let output: Val<::bevy_sprite::Wireframe2dMaterial> = {
-                {
-                    let output: Val<::bevy_sprite::Wireframe2dMaterial> =
-                        <::bevy_sprite::Wireframe2dMaterial as ::std::clone::Clone>::clone(&_self)
-                            .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::Wireframe2dMaterial,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_no_wireframe_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::NoWireframe2d,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_sprite::NoWireframe2d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite::NoWireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_sprite::NoWireframe2d>| {
-                let output: Val<::bevy_sprite::NoWireframe2d> = {
-                    {
-                        let output: Val<::bevy_sprite::NoWireframe2d> = <::bevy_sprite::NoWireframe2d as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_sprite::NoWireframe2d>,
-                other: Ref<::bevy_sprite::NoWireframe2d>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::NoWireframe2d as ::std::cmp::PartialEq<
-                            ::bevy_sprite::NoWireframe2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::NoWireframe2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_wireframe_2_d_config_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::Wireframe2dConfig,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_sprite::Wireframe2dConfig>| {
-            let output: Val<::bevy_sprite::Wireframe2dConfig> = {
-                {
-                    let output: Val<::bevy_sprite::Wireframe2dConfig> =
-                        <::bevy_sprite::Wireframe2dConfig as ::std::clone::Clone>::clone(&_self)
-                            .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::Wireframe2dConfig,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_wireframe_2_d_color_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::Wireframe2dColor,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_sprite::Wireframe2dColor>| {
-            let output: Val<::bevy_sprite::Wireframe2dColor> = {
-                {
-                    let output: Val<::bevy_sprite::Wireframe2dColor> =
-                        <::bevy_sprite::Wireframe2dColor as ::std::clone::Clone>::clone(&_self)
-                            .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::Wireframe2dColor,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_wireframe_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::Wireframe2d,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_sprite::Wireframe2d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite::Wireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_sprite::Wireframe2d>| {
-                let output: Val<::bevy_sprite::Wireframe2d> = {
-                    {
-                        let output: Val<::bevy_sprite::Wireframe2d> = <::bevy_sprite::Wireframe2d as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_sprite::Wireframe2d>,
-                other: Ref<::bevy_sprite::Wireframe2d>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::Wireframe2d as ::std::cmp::PartialEq<
-                            ::bevy_sprite::Wireframe2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::Wireframe2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::Mesh2dWireframe,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_sprite::Mesh2dWireframe>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite::Mesh2dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_sprite::Mesh2dWireframe>| {
-                let output: Val<::bevy_sprite::Mesh2dWireframe> = {
-                    {
-                        let output: Val<::bevy_sprite::Mesh2dWireframe> = <::bevy_sprite::Mesh2dWireframe as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_sprite::Mesh2dWireframe>,
-                other: Ref<::bevy_sprite::Mesh2dWireframe>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::Mesh2dWireframe as ::std::cmp::PartialEq<
-                            ::bevy_sprite::Mesh2dWireframe,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::Mesh2dWireframe,
+            ::bevy_sprite::Text2dShadow,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -849,20 +639,14 @@ impl Plugin for BevySpriteScriptingPlugin {
         register_sprite_picking_camera_functions(&mut world);
         register_sprite_picking_mode_functions(&mut world);
         register_sprite_picking_settings_functions(&mut world);
+        register_text_2_d_functions(&mut world);
         register_sprite_functions(&mut world);
         register_sprite_image_mode_functions(&mut world);
         register_border_rect_functions(&mut world);
         register_slice_scale_mode_functions(&mut world);
         register_texture_slicer_functions(&mut world);
-        register_color_material_functions(&mut world);
         register_scaling_mode_functions(&mut world);
         register_anchor_functions(&mut world);
-        register_alpha_mode_2_d_functions(&mut world);
-        register_wireframe_2_d_material_functions(&mut world);
-        register_no_wireframe_2_d_functions(&mut world);
-        register_wireframe_2_d_config_functions(&mut world);
-        register_wireframe_2_d_color_functions(&mut world);
-        register_wireframe_2_d_functions(&mut world);
-        register_mesh_2_d_wireframe_functions(&mut world);
+        register_text_2_d_shadow_functions(&mut world);
     }
 }

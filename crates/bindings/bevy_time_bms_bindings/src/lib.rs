@@ -197,6 +197,21 @@ pub(crate) fn register_timer_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
+            "finish",
+            |mut _self: Mut<::bevy_time::prelude::Timer>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_time::prelude::Timer::finish(&mut _self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Finishes the timer.\n # Examples\n ```\n # use bevy_time::*;\n let mut timer = Timer::from_seconds(1.5, TimerMode::Once);\n timer.finish();\n assert!(timer.finished());\n ```",
+            &["_self"],
+        )
+        .register_documented(
             "finished",
             |_self: Ref<::bevy_time::prelude::Timer>| {
                 let output: bool = {
@@ -260,6 +275,38 @@ pub(crate) fn register_timer_functions(world: &mut World) {
             },
             " Creates a new timer with a given duration in seconds.\n # Example\n ```\n # use bevy_time::*;\n let mut timer = Timer::from_seconds(1.0, TimerMode::Once);\n ```",
             &["duration", "mode"],
+        )
+        .register_documented(
+            "is_finished",
+            |_self: Ref<::bevy_time::prelude::Timer>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_time::prelude::Timer::is_finished(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the timer has reached its duration.\n For repeating timers, this method behaves identically to [`Timer::just_finished`].\n # Examples\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer_once = Timer::from_seconds(1.0, TimerMode::Once);\n timer_once.tick(Duration::from_secs_f32(1.5));\n assert!(timer_once.is_finished());\n timer_once.tick(Duration::from_secs_f32(0.5));\n assert!(timer_once.is_finished());\n let mut timer_repeating = Timer::from_seconds(1.0, TimerMode::Repeating);\n timer_repeating.tick(Duration::from_secs_f32(1.1));\n assert!(timer_repeating.is_finished());\n timer_repeating.tick(Duration::from_secs_f32(0.8));\n assert!(!timer_repeating.is_finished());\n timer_repeating.tick(Duration::from_secs_f32(0.6));\n assert!(timer_repeating.is_finished());\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "is_paused",
+            |_self: Ref<::bevy_time::prelude::Timer>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_time::prelude::Timer::is_paused(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the timer is paused.\n See also [`Stopwatch::is_paused`](Stopwatch::is_paused).\n # Examples\n ```\n # use bevy_time::*;\n let mut timer = Timer::from_seconds(1.0, TimerMode::Once);\n assert!(!timer.is_paused());\n timer.pause();\n assert!(timer.is_paused());\n timer.unpause();\n assert!(!timer.is_paused());\n ```",
+            &["_self"],
         )
         .register_documented(
             "just_finished",
@@ -392,7 +439,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
                 };
                 output
             },
-            " Resets the timer. The reset doesn't affect the `paused` state of the timer.\n See also [`Stopwatch::reset`](Stopwatch::reset).\n Examples\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer = Timer::from_seconds(1.0, TimerMode::Once);\n timer.tick(Duration::from_secs_f32(1.5));\n timer.reset();\n assert!(!timer.finished());\n assert!(!timer.just_finished());\n assert_eq!(timer.elapsed_secs(), 0.0);\n ```",
+            " Resets the timer. The reset doesn't affect the `paused` state of the timer.\n See also [`Stopwatch::reset`](Stopwatch::reset).\n Examples\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer = Timer::from_seconds(1.0, TimerMode::Once);\n timer.tick(Duration::from_secs_f32(1.5));\n timer.reset();\n assert!(!timer.is_finished());\n assert!(!timer.just_finished());\n assert_eq!(timer.elapsed_secs(), 0.0);\n ```",
             &["_self"],
         )
         .register_documented(
@@ -434,7 +481,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
                 };
                 output
             },
-            " Sets the elapsed time of the timer without any other considerations.\n See also [`Stopwatch::set`](Stopwatch::set).\n #\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer = Timer::from_seconds(1.0, TimerMode::Once);\n timer.set_elapsed(Duration::from_secs(2));\n assert_eq!(timer.elapsed(), Duration::from_secs(2));\n // the timer is not finished even if the elapsed time is greater than the duration.\n assert!(!timer.finished());\n ```",
+            " Sets the elapsed time of the timer without any other considerations.\n See also [`Stopwatch::set`](Stopwatch::set).\n #\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer = Timer::from_seconds(1.0, TimerMode::Once);\n timer.set_elapsed(Duration::from_secs(2));\n assert_eq!(timer.elapsed(), Duration::from_secs(2));\n // the timer is not finished even if the elapsed time is greater than the duration.\n assert!(!timer.is_finished());\n ```",
             &["_self", "time"],
         )
         .register_documented(

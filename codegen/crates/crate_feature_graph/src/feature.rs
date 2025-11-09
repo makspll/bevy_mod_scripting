@@ -49,6 +49,10 @@ impl FeatureName {
     pub fn new(name: impl Into<Cow<'static, str>>) -> Self {
         Self(name.into())
     }
+
+    pub fn is_special_default_enabling_feature(&self) -> bool {
+        self.0.contains("enable_default_for")
+    }
 }
 
 impl Display for FeatureName {
@@ -228,7 +232,7 @@ pub struct Crate {
     pub version: Version,
     pub in_workspace: Option<bool>,
     pub active_features: Option<IndexSet<FeatureName>>,
-    pub active_dependency_features: Option<IndexMap<CrateName, Vec<FeatureName>>>,
+    pub active_dependency_features: Option<IndexMap<CrateName, Vec<(FeatureName, bool)>>>,
     pub is_enabled: Option<bool>,
 }
 

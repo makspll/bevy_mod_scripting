@@ -1,0 +1,63 @@
+[package]
+name = "bevy_ui_render_bms_bindings"
+description = "Automatically generated bindings for bevy_ui_render crate"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_ui_render = { version = "0.17.2", features = [], default-features = true}
+
+
+bevy_app = { version = "^0.17.2", features = ["bevy_reflect", "reflect_auto_register", "std", "error_panic_hook"], default-features = true}
+
+bevy_asset = { version = "^0.17.2", features = ["notify-debouncer-full", "watch", "multi_threaded", "file_watcher"], default-features = true}
+
+bevy_camera = { version = "^0.17.2", features = [], default-features = true}
+
+bevy_color = { version = "^0.17.2", features = ["wgpu-types", "alloc", "std", "bevy_reflect", "encase"], default-features = true}
+
+bevy_core_pipeline = { version = "^0.17.2", features = ["tonemapping_luts", "webgl"], default-features = true}
+
+bevy_derive = { version = "^0.17.2", features = [], default-features = true}
+
+bevy_ecs = { version = "^0.17.2", features = ["std", "async_executor", "multi_threaded", "bevy_reflect", "reflect_auto_register", "backtrace", "serialize"], default-features = true}
+
+bevy_image = { version = "^0.17.2", features = ["hdr", "ktx2", "png", "zstd", "zstd_rust", "bevy_reflect"], default-features = true}
+
+bevy_math = { version = "^0.17.2", features = ["alloc", "std", "rand", "curve", "bevy_reflect"], default-features = true}
+
+bevy_mesh = { version = "^0.17.2", features = [], default-features = true}
+
+bevy_reflect = { version = "^0.17.2", features = ["glam", "uuid", "smol_str", "auto_register", "auto_register_inventory", "std", "smallvec", "debug", "debug_stack"], default-features = true}
+
+bevy_render = { version = "^0.17.2", features = ["multi_threaded", "webgl"], default-features = true}
+
+bevy_shader = { version = "^0.17.2", features = [], default-features = true}
+
+bevy_sprite = { version = "^0.17.2", features = ["bevy_picking", "bevy_window", "bevy_sprite_picking_backend", "bevy_text"], default-features = true}
+
+bevy_sprite_render = { version = "^0.17.2", features = ["bevy_text", "webgl"], default-features = true}
+
+bevy_text = { version = "^0.17.2", features = ["default_font"], default-features = true}
+
+bevy_transform = { version = "^0.17.2", features = ["std", "async_executor", "alloc", "bevy_log", "bevy-support", "bevy_reflect"], default-features = true}
+
+bevy_ui = { version = "^0.17.2", features = ["bevy_picking", "bevy_ui_picking_backend"], default-features = true}
+
+bevy_utils = { version = "^0.17.2", features = ["parallel", "debug"], default-features = true}
+
+bytemuck = { version = "^1.5", features = [], default-features = true}
+
+

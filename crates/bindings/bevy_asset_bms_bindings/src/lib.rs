@@ -12,6 +12,145 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAssetScriptingPlugin;
+pub(crate) fn register_untyped_handle_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_asset::prelude::UntypedHandle,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_asset::prelude::UntypedHandle>| {
+            let output: Val<::bevy_asset::prelude::UntypedHandle> = {
+                {
+                    let output: Val<::bevy_asset::prelude::UntypedHandle> =
+                        <::bevy_asset::prelude::UntypedHandle as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_asset::prelude::UntypedHandle>,
+         other: Ref<::bevy_asset::prelude::UntypedHandle>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_asset::prelude::UntypedHandle as ::core::cmp::PartialEq<
+                            ::bevy_asset::prelude::UntypedHandle,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "id",
+        |_self: Ref<::bevy_asset::prelude::UntypedHandle>| {
+            let output: Val<::bevy_asset::UntypedAssetId> = {
+                {
+                    let output: Val<::bevy_asset::UntypedAssetId> =
+                        ::bevy_asset::prelude::UntypedHandle::id(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the [`UntypedAssetId`] for the referenced asset.",
+        &["_self"],
+    )
+    .register_documented(
+        "type_id",
+        |_self: Ref<::bevy_asset::prelude::UntypedHandle>| {
+            let output: Val<::core::any::TypeId> = {
+                {
+                    let output: Val<::core::any::TypeId> =
+                        ::bevy_asset::prelude::UntypedHandle::type_id(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the [`TypeId`] of the referenced [`Asset`].",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_asset::prelude::UntypedHandle,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_asset::UntypedAssetId,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_asset::UntypedAssetId>| {
+            let output: Val<::bevy_asset::UntypedAssetId> = {
+                {
+                    let output: Val<::bevy_asset::UntypedAssetId> =
+                        <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_asset::UntypedAssetId>, other: Ref<::bevy_asset::UntypedAssetId>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
+                        ::bevy_asset::UntypedAssetId,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "type_id",
+        |_self: Ref<::bevy_asset::UntypedAssetId>| {
+            let output: Val<::core::any::TypeId> = {
+                {
+                    let output: Val<::core::any::TypeId> =
+                        ::bevy_asset::UntypedAssetId::type_id(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the stored [`TypeId`] of the referenced [`Asset`].",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_asset::UntypedAssetId,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_asset_index_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_asset::AssetIndex,
@@ -540,6 +679,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
 impl Plugin for BevyAssetScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
+        register_untyped_handle_functions(&mut world);
+        register_untyped_asset_id_functions(&mut world);
         register_asset_index_functions(&mut world);
         register_render_asset_usages_functions(&mut world);
     }

@@ -14,14 +14,18 @@ use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyReflectScriptingPlugin;
 pub(crate) fn register_atomic_bool_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicBool,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
     >::new(world)
         .register_documented(
             "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicBool>| {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
+                >|
+            {
                 let output: bool = {
                     {
-                        let output: bool = ::core::sync::atomic::AtomicBool::into_inner(
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool::into_inner(
                                 _self.into_inner(),
                             )
                             .into();
@@ -36,9 +40,13 @@ pub(crate) fn register_atomic_bool_functions(world: &mut World) {
         .register_documented(
             "new",
             |v: bool| {
-                let output: Val<::core::sync::atomic::AtomicBool> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
+                > = {
                     {
-                        let output: Val<::core::sync::atomic::AtomicBool> = ::core::sync::atomic::AtomicBool::new(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool::new(
                                 v,
                             )
                             .into();
@@ -54,158 +62,24 @@ pub(crate) fn register_atomic_bool_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::core::sync::atomic::AtomicBool,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_i_16_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI16,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicI16>| {
-                let output: i16 = {
-                    {
-                        let output: i16 = ::core::sync::atomic::AtomicI16::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet some_var = AtomicI16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: i16| {
-                let output: Val<::core::sync::atomic::AtomicI16> = {
-                    {
-                        let output: Val<::core::sync::atomic::AtomicI16> = ::core::sync::atomic::AtomicI16::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet atomic_forty_two = AtomicI16::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicI16,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_i_32_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI32,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicI32>| {
-                let output: i32 = {
-                    {
-                        let output: i32 = ::core::sync::atomic::AtomicI32::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet some_var = AtomicI32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: i32| {
-                let output: Val<::core::sync::atomic::AtomicI32> = {
-                    {
-                        let output: Val<::core::sync::atomic::AtomicI32> = ::core::sync::atomic::AtomicI32::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet atomic_forty_two = AtomicI32::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicI32,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_i_64_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI64,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicI64>| {
-                let output: i64 = {
-                    {
-                        let output: i64 = ::core::sync::atomic::AtomicI64::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet some_var = AtomicI64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: i64| {
-                let output: Val<::core::sync::atomic::AtomicI64> = {
-                    {
-                        let output: Val<::core::sync::atomic::AtomicI64> = ::core::sync::atomic::AtomicI64::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet atomic_forty_two = AtomicI64::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicI64,
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI8,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
     >::new(world)
         .register_documented(
             "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicI8>| {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
+                >|
+            {
                 let output: i8 = {
                     {
-                        let output: i8 = ::core::sync::atomic::AtomicI8::into_inner(
+                        let output: i8 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8::into_inner(
                                 _self.into_inner(),
                             )
                             .into();
@@ -220,9 +94,13 @@ pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
         .register_documented(
             "new",
             |v: i8| {
-                let output: Val<::core::sync::atomic::AtomicI8> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
+                > = {
                     {
-                        let output: Val<::core::sync::atomic::AtomicI8> = ::core::sync::atomic::AtomicI8::new(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8::new(
                                 v,
                             )
                             .into();
@@ -238,20 +116,186 @@ pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::core::sync::atomic::AtomicI8,
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_atomic_i_16_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+                >|
+            {
+                let output: i16 = {
+                    {
+                        let output: i16 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet some_var = AtomicI16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: i16| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet atomic_forty_two = AtomicI16::new(42);\n ```",
+            &["v"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_atomic_i_32_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+                >|
+            {
+                let output: i32 = {
+                    {
+                        let output: i32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet some_var = AtomicI32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: i32| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet atomic_forty_two = AtomicI32::new(42);\n ```",
+            &["v"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_atomic_i_64_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
+                >|
+            {
+                let output: i64 = {
+                    {
+                        let output: i64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet some_var = AtomicI64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: i64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet atomic_forty_two = AtomicI64::new(42);\n ```",
+            &["v"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_isize_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicIsize,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
     >::new(world)
         .register_documented(
             "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicIsize>| {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
+                >|
+            {
                 let output: isize = {
                     {
-                        let output: isize = ::core::sync::atomic::AtomicIsize::into_inner(
+                        let output: isize = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize::into_inner(
                                 _self.into_inner(),
                             )
                             .into();
@@ -266,9 +310,13 @@ pub(crate) fn register_atomic_isize_functions(world: &mut World) {
         .register_documented(
             "new",
             |v: isize| {
-                let output: Val<::core::sync::atomic::AtomicIsize> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
+                > = {
                     {
-                        let output: Val<::core::sync::atomic::AtomicIsize> = ::core::sync::atomic::AtomicIsize::new(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize::new(
                                 v,
                             )
                             .into();
@@ -284,158 +332,24 @@ pub(crate) fn register_atomic_isize_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::core::sync::atomic::AtomicIsize,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_u_16_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU16,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicU16>| {
-                let output: u16 = {
-                    {
-                        let output: u16 = ::core::sync::atomic::AtomicU16::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet some_var = AtomicU16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: u16| {
-                let output: Val<::core::sync::atomic::AtomicU16> = {
-                    {
-                        let output: Val<::core::sync::atomic::AtomicU16> = ::core::sync::atomic::AtomicU16::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet atomic_forty_two = AtomicU16::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicU16,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_u_32_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU32,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicU32>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::core::sync::atomic::AtomicU32::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet some_var = AtomicU32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: u32| {
-                let output: Val<::core::sync::atomic::AtomicU32> = {
-                    {
-                        let output: Val<::core::sync::atomic::AtomicU32> = ::core::sync::atomic::AtomicU32::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet atomic_forty_two = AtomicU32::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicU32,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_u_64_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU64,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicU64>| {
-                let output: u64 = {
-                    {
-                        let output: u64 = ::core::sync::atomic::AtomicU64::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet some_var = AtomicU64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: u64| {
-                let output: Val<::core::sync::atomic::AtomicU64> = {
-                    {
-                        let output: Val<::core::sync::atomic::AtomicU64> = ::core::sync::atomic::AtomicU64::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet atomic_forty_two = AtomicU64::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicU64,
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU8,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
     >::new(world)
         .register_documented(
             "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicU8>| {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
+                >|
+            {
                 let output: u8 = {
                     {
-                        let output: u8 = ::core::sync::atomic::AtomicU8::into_inner(
+                        let output: u8 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8::into_inner(
                                 _self.into_inner(),
                             )
                             .into();
@@ -450,9 +364,13 @@ pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
         .register_documented(
             "new",
             |v: u8| {
-                let output: Val<::core::sync::atomic::AtomicU8> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
+                > = {
                     {
-                        let output: Val<::core::sync::atomic::AtomicU8> = ::core::sync::atomic::AtomicU8::new(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8::new(
                                 v,
                             )
                             .into();
@@ -468,20 +386,186 @@ pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::core::sync::atomic::AtomicU8,
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_atomic_u_16_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+                >|
+            {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet some_var = AtomicU16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: u16| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet atomic_forty_two = AtomicU16::new(42);\n ```",
+            &["v"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_atomic_u_32_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+                >|
+            {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet some_var = AtomicU32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: u32| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet atomic_forty_two = AtomicU32::new(42);\n ```",
+            &["v"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_atomic_u_64_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
+                >|
+            {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet some_var = AtomicU64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: u64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet atomic_forty_two = AtomicU64::new(42);\n ```",
+            &["v"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_atomic_usize_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicUsize,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
     >::new(world)
         .register_documented(
             "into_inner",
-            |_self: Val<::core::sync::atomic::AtomicUsize>| {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
+                >|
+            {
                 let output: usize = {
                     {
-                        let output: usize = ::core::sync::atomic::AtomicUsize::into_inner(
+                        let output: usize = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize::into_inner(
                                 _self.into_inner(),
                             )
                             .into();
@@ -496,9 +580,13 @@ pub(crate) fn register_atomic_usize_functions(world: &mut World) {
         .register_documented(
             "new",
             |v: usize| {
-                let output: Val<::core::sync::atomic::AtomicUsize> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
+                > = {
                     {
-                        let output: Val<::core::sync::atomic::AtomicUsize> = ::core::sync::atomic::AtomicUsize::new(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize::new(
                                 v,
                             )
                             .into();
@@ -514,20 +602,31 @@ pub(crate) fn register_atomic_usize_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::core::sync::atomic::AtomicUsize,
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_duration_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::time::Duration,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
     >::new(world)
         .register_documented(
             "abs_diff",
-            |_self: Val<::core::time::Duration>, other: Val<::core::time::Duration>| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                other: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::abs_diff(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::abs_diff(
                                 _self.into_inner(),
                                 other.into_inner(),
                             )
@@ -542,11 +641,22 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |_self: Val<::core::time::Duration>, rhs: Val<::core::time::Duration>| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = <::core::time::Duration as ::core::ops::Add<
-                            ::core::time::Duration,
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
@@ -559,10 +669,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "as_micros",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: u128 = {
                     {
-                        let output: u128 = ::core::time::Duration::as_micros(&_self)
+                        let output: u128 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_micros(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -574,10 +690,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "as_millis",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: u128 = {
                     {
-                        let output: u128 = ::core::time::Duration::as_millis(&_self)
+                        let output: u128 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_millis(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -589,10 +711,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "as_nanos",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: u128 = {
                     {
-                        let output: u128 = ::core::time::Duration::as_nanos(&_self)
+                        let output: u128 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_nanos(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -604,10 +732,17 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "as_secs",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: u64 = {
                     {
-                        let output: u64 = ::core::time::Duration::as_secs(&_self).into();
+                        let output: u64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_secs(
+                                &_self,
+                            )
+                            .into();
                         output
                     }
                 };
@@ -618,10 +753,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "as_secs_f32",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: f32 = {
                     {
-                        let output: f32 = ::core::time::Duration::as_secs_f32(&_self)
+                        let output: f32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_secs_f32(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -633,10 +774,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "as_secs_f64",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: f64 = {
                     {
-                        let output: f64 = ::core::time::Duration::as_secs_f64(&_self)
+                        let output: f64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_secs_f64(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -648,10 +795,14 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: () = {
                     {
-                        let output: () = <::core::time::Duration as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -665,10 +816,18 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::core::time::Duration>| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = <::core::time::Duration as ::core::clone::Clone>::clone(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -682,10 +841,19 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |_self: Val<::core::time::Duration>, rhs: u32| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: u32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = <::core::time::Duration as ::core::ops::Div<
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -699,10 +867,17 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "div_duration_f32",
-            |_self: Val<::core::time::Duration>, rhs: Val<::core::time::Duration>| {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: f32 = {
                     {
-                        let output: f32 = ::core::time::Duration::div_duration_f32(
+                        let output: f32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_duration_f32(
                                 _self.into_inner(),
                                 rhs.into_inner(),
                             )
@@ -717,10 +892,17 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "div_duration_f64",
-            |_self: Val<::core::time::Duration>, rhs: Val<::core::time::Duration>| {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: f64 = {
                     {
-                        let output: f64 = ::core::time::Duration::div_duration_f64(
+                        let output: f64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_duration_f64(
                                 _self.into_inner(),
                                 rhs.into_inner(),
                             )
@@ -735,10 +917,19 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "div_f32",
-            |_self: Val<::core::time::Duration>, rhs: f32| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::div_f32(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_f32(
                                 _self.into_inner(),
                                 rhs,
                             )
@@ -753,10 +944,19 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "div_f64",
-            |_self: Val<::core::time::Duration>, rhs: f64| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f64|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::div_f64(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_f64(
                                 _self.into_inner(),
                                 rhs,
                             )
@@ -771,11 +971,18 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::core::time::Duration>, other: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                other: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: bool = {
                     {
-                        let output: bool = <::core::time::Duration as ::core::cmp::PartialEq<
-                            ::core::time::Duration,
+                        let output: bool = <::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -787,11 +994,36 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
+            "from_hours",
+            |hours: u64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_hours(
+                                hours,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of hours.\n # Panics\n Panics if the given number of hours overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_hours(6);\n assert_eq!(6 * 60 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["hours"],
+        )
+        .register_documented(
             "from_micros",
             |micros: u64| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::from_micros(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_micros(
                                 micros,
                             )
                             .into();
@@ -806,9 +1038,13 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         .register_documented(
             "from_millis",
             |millis: u64| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::from_millis(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_millis(
                                 millis,
                             )
                             .into();
@@ -821,11 +1057,36 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["millis"],
         )
         .register_documented(
+            "from_mins",
+            |mins: u64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_mins(
+                                mins,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of minutes.\n # Panics\n Panics if the given number of minutes overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_mins(10);\n assert_eq!(10 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["mins"],
+        )
+        .register_documented(
             "from_nanos",
             |nanos: u64| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::from_nanos(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_nanos(
                                 nanos,
                             )
                             .into();
@@ -840,9 +1101,13 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         .register_documented(
             "from_secs",
             |secs: u64| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::from_secs(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_secs(
                                 secs,
                             )
                             .into();
@@ -857,9 +1122,13 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         .register_documented(
             "from_secs_f32",
             |secs: f32| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::from_secs_f32(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_secs_f32(
                                 secs,
                             )
                             .into();
@@ -874,9 +1143,13 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         .register_documented(
             "from_secs_f64",
             |secs: f64| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::from_secs_f64(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_secs_f64(
                                 secs,
                             )
                             .into();
@@ -890,10 +1163,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "is_zero",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: bool = {
                     {
-                        let output: bool = ::core::time::Duration::is_zero(&_self)
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::is_zero(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -905,10 +1184,19 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: Val<::core::time::Duration>, rhs: u32| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: u32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = <::core::time::Duration as ::core::ops::Mul<
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -922,10 +1210,19 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "mul_f32",
-            |_self: Val<::core::time::Duration>, rhs: f32| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::mul_f32(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::mul_f32(
                                 _self.into_inner(),
                                 rhs,
                             )
@@ -940,10 +1237,19 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "mul_f64",
-            |_self: Val<::core::time::Duration>, rhs: f64| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f64|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::mul_f64(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::mul_f64(
                                 _self.into_inner(),
                                 rhs,
                             )
@@ -959,9 +1265,13 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         .register_documented(
             "new",
             |secs: u64, nanos: u32| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::new(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::new(
                                 secs,
                                 nanos,
                             )
@@ -976,10 +1286,21 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "saturating_add",
-            |_self: Val<::core::time::Duration>, rhs: Val<::core::time::Duration>| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::saturating_add(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::saturating_add(
                                 _self.into_inner(),
                                 rhs.into_inner(),
                             )
@@ -994,10 +1315,19 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "saturating_mul",
-            |_self: Val<::core::time::Duration>, rhs: u32| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: u32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::saturating_mul(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::saturating_mul(
                                 _self.into_inner(),
                                 rhs,
                             )
@@ -1012,10 +1342,21 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "saturating_sub",
-            |_self: Val<::core::time::Duration>, rhs: Val<::core::time::Duration>| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::core::time::Duration::saturating_sub(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::saturating_sub(
                                 _self.into_inner(),
                                 rhs.into_inner(),
                             )
@@ -1030,11 +1371,22 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |_self: Val<::core::time::Duration>, rhs: Val<::core::time::Duration>| {
-                let output: Val<::core::time::Duration> = {
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = <::core::time::Duration as ::core::ops::Sub<
-                            ::core::time::Duration,
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
@@ -1047,10 +1399,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "subsec_micros",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: u32 = {
                     {
-                        let output: u32 = ::core::time::Duration::subsec_micros(&_self)
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::subsec_micros(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -1062,10 +1420,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "subsec_millis",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: u32 = {
                     {
-                        let output: u32 = ::core::time::Duration::subsec_millis(&_self)
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::subsec_millis(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -1077,10 +1441,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
         )
         .register_documented(
             "subsec_nanos",
-            |_self: Ref<::core::time::Duration>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: u32 = {
                     {
-                        let output: u32 = ::core::time::Duration::subsec_nanos(&_self)
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::subsec_nanos(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -1093,8 +1463,10 @@ pub(crate) fn register_duration_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::time::Duration, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_instant_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1102,11 +1474,16 @@ pub(crate) fn register_instant_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "add",
-            |_self: Val<::std::time::Instant>, other: Val<::core::time::Duration>| {
+            |
+                _self: Val<::std::time::Instant>,
+                other: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: Val<::std::time::Instant> = {
                     {
-                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::core::ops::Add<
-                            ::core::time::Duration,
+                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                         >>::add(_self.into_inner(), other.into_inner())
                             .into();
                         output
@@ -1122,7 +1499,7 @@ pub(crate) fn register_instant_functions(world: &mut World) {
             |_self: Ref<::std::time::Instant>| {
                 let output: () = {
                     {
-                        let output: () = <::std::time::Instant as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::std::time::Instant as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -1139,7 +1516,7 @@ pub(crate) fn register_instant_functions(world: &mut World) {
             |_self: Ref<::std::time::Instant>| {
                 let output: Val<::std::time::Instant> = {
                     {
-                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::core::clone::Clone>::clone(
+                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1154,9 +1531,13 @@ pub(crate) fn register_instant_functions(world: &mut World) {
         .register_documented(
             "duration_since",
             |_self: Ref<::std::time::Instant>, earlier: Val<::std::time::Instant>| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::std::time::Instant::duration_since(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::std::time::Instant::duration_since(
                                 &_self,
                                 earlier.into_inner(),
                             )
@@ -1172,12 +1553,13 @@ pub(crate) fn register_instant_functions(world: &mut World) {
         .register_documented(
             "elapsed",
             |_self: Ref<::std::time::Instant>| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::std::time::Instant::elapsed(
-                                &_self,
-                            )
-                            .into();
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::std::time::Instant::elapsed(&_self).into();
                         output
                     }
                 };
@@ -1191,7 +1573,7 @@ pub(crate) fn register_instant_functions(world: &mut World) {
             |_self: Ref<::std::time::Instant>, other: Ref<::std::time::Instant>| {
                 let output: bool = {
                     {
-                        let output: bool = <::std::time::Instant as ::core::cmp::PartialEq<
+                        let output: bool = <::std::time::Instant as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::std::time::Instant,
                         >>::eq(&_self, &other)
                             .into();
@@ -1221,9 +1603,13 @@ pub(crate) fn register_instant_functions(world: &mut World) {
         .register_documented(
             "saturating_duration_since",
             |_self: Ref<::std::time::Instant>, earlier: Val<::std::time::Instant>| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = ::std::time::Instant::saturating_duration_since(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::std::time::Instant::saturating_duration_since(
                                 &_self,
                                 earlier.into_inner(),
                             )
@@ -1238,11 +1624,16 @@ pub(crate) fn register_instant_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |_self: Val<::std::time::Instant>, other: Val<::core::time::Duration>| {
+            |
+                _self: Val<::std::time::Instant>,
+                other: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
                 let output: Val<::std::time::Instant> = {
                     {
-                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::core::ops::Sub<
-                            ::core::time::Duration,
+                        let output: Val<::std::time::Instant> = <::std::time::Instant as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                         >>::sub(_self.into_inner(), other.into_inner())
                             .into();
                         output
@@ -1256,9 +1647,13 @@ pub(crate) fn register_instant_functions(world: &mut World) {
         .register_documented(
             "sub",
             |_self: Val<::std::time::Instant>, other: Val<::std::time::Instant>| {
-                let output: Val<::core::time::Duration> = {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
                     {
-                        let output: Val<::core::time::Duration> = <::std::time::Instant as ::core::ops::Sub<
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = <::std::time::Instant as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::std::time::Instant,
                         >>::sub(_self.into_inner(), other.into_inner())
                             .into();
@@ -1277,14 +1672,18 @@ pub(crate) fn register_instant_functions(world: &mut World) {
 }
 pub(crate) fn register_range_full_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::ops::RangeFull,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::core::ops::RangeFull>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
+                >|
+            {
                 let output: () = {
                     {
-                        let output: () = <::core::ops::RangeFull as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -1298,10 +1697,18 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::core::ops::RangeFull>| {
-                let output: Val<::core::ops::RangeFull> = {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
+                > = {
                     {
-                        let output: Val<::core::ops::RangeFull> = <::core::ops::RangeFull as ::core::clone::Clone>::clone(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1315,11 +1722,18 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::core::ops::RangeFull>, other: Ref<::core::ops::RangeFull>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
+                >,
+                other: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
+                >|
+            {
                 let output: bool = {
                     {
-                        let output: bool = <::core::ops::RangeFull as ::core::cmp::PartialEq<
-                            ::core::ops::RangeFull,
+                        let output: bool = <::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -1333,67 +1747,92 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::ops::RangeFull, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::RangeFull,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_type_id_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::core::any::TypeId>::new(
-        world,
-    )
-    .register_documented(
-        "assert_receiver_is_total_eq",
-        |_self: Ref<::core::any::TypeId>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::core::any::TypeId as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::core::any::TypeId>| {
-            let output: Val<::core::any::TypeId> = {
-                {
-                    let output: Val<::core::any::TypeId> =
-                        <::core::any::TypeId as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::core::any::TypeId>, other: Ref<::core::any::TypeId>| {
-            let output: bool = {
-                {
-                    let output: bool = <::core::any::TypeId as ::core::cmp::PartialEq<
-                        ::core::any::TypeId,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+    >::new(world)
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+                >|
+            {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+                >,
+                other: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+                >|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::any::TypeId, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::any::TypeId,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_quat_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1420,10 +1859,27 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::Quat>, rhs: Ref<::glam::Quat>| {
+                let output: Val<::glam::Quat> = {
+                    {
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::Quat,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::Quat>, rhs: Val<::glam::Quat>| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::ops::Add<
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Quat,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -1475,7 +1931,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Ref<::glam::Quat>| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1509,7 +1965,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Val<::glam::Quat>, rhs: f32| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::ops::Div<
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -1544,7 +2000,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Ref<::glam::Quat>, rhs: Ref<::glam::Quat>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Quat as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Quat,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -1976,11 +2432,136 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             &["_self", "end", "s"],
         )
         .register_documented(
+            "look_at_lh",
+            |eye: Val<::glam::Vec3>, center: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Quat> = {
+                    {
+                        let output: Val<::glam::Quat> = ::glam::Quat::look_at_lh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_at_rh",
+            |eye: Val<::glam::Vec3>, center: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Quat> = {
+                    {
+                        let output: Val<::glam::Quat> = ::glam::Quat::look_at_rh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_to_lh",
+            |dir: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Quat> = {
+                    {
+                        let output: Val<::glam::Quat> = ::glam::Quat::look_to_lh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a quaterion rotation from a facing direction and an up direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "look_to_rh",
+            |dir: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Quat> = {
+                    {
+                        let output: Val<::glam::Quat> = ::glam::Quat::look_to_rh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a quaterion rotation from facing direction and an up direction.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` and `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Quat>, rhs: Ref<::glam::Quat>| {
+                let output: Val<::glam::Quat> = {
+                    {
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Quat,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Quat>, rhs: Ref<::glam::Vec3>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Quat>, rhs: Ref<::glam::Vec3A>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec3A,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::Quat>, rhs: Val<::glam::Quat>| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::ops::Mul<
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Quat,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -1997,7 +2578,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Val<::glam::Quat>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Quat as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -2014,7 +2595,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Val<::glam::Quat>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Quat as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3A> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -2031,7 +2612,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Val<::glam::Quat>, rhs: f32| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::ops::Mul<
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -2102,7 +2683,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             |_self: Val<::glam::Quat>| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2171,10 +2752,27 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::Quat>, rhs: Ref<::glam::Quat>| {
+                let output: Val<::glam::Quat> = {
+                    {
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::Quat,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::Quat>, rhs: Val<::glam::Quat>| {
                 let output: Val<::glam::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = <::glam::Quat as ::core::ops::Sub<
+                        let output: Val<::glam::Quat> = <::glam::Quat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Quat,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -2301,7 +2899,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Ref<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::Vec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -2318,7 +2916,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Vec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -2335,7 +2933,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: f32| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             f32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -2575,7 +3173,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
+            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
             &["_self", "min", "max"],
         )
         .register_documented(
@@ -2638,7 +3236,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2835,7 +3433,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Ref<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::Vec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -2852,7 +3450,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::Vec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -2869,7 +3467,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: f32| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -2972,7 +3570,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::Vec3>, other: Ref<::glam::Vec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Vec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Vec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -3163,7 +3761,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -3264,7 +3862,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -3279,7 +3877,24 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.",
+            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "max_position",
+            |_self: Val<::glam::Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -3315,7 +3930,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -3330,7 +3945,24 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.",
+            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "min_position",
+            |_self: Val<::glam::Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -3357,7 +3989,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Ref<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::Vec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -3374,7 +4006,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -3391,7 +4023,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: f32| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -3427,7 +4059,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -3468,7 +4100,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n # Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -3655,7 +4287,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Ref<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::Vec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -3672,7 +4304,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::Vec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -3689,7 +4321,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: f32| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             f32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -3718,6 +4350,98 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             },
             " Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.\n [Euclidean division]: f32::rem_euclid",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "rotate_axis",
+            |_self: Val<::glam::Vec3>, axis: Val<::glam::Vec3>, angle: f32| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::rotate_axis(
+                                _self.into_inner(),
+                                axis.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around `axis` by `angle` (in radians).\n The axis must be a unit vector.\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.",
+            &["_self", "axis", "angle"],
+        )
+        .register_documented(
+            "rotate_towards",
+            |_self: Val<::glam::Vec3>, rhs: Val<::glam::Vec3>, max_angle: f32| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::rotate_towards(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                max_angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            &["_self", "rhs", "max_angle"],
+        )
+        .register_documented(
+            "rotate_x",
+            |_self: Val<::glam::Vec3>, angle: f32| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::rotate_x(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the x axis by `angle` (in radians).",
+            &["_self", "angle"],
+        )
+        .register_documented(
+            "rotate_y",
+            |_self: Val<::glam::Vec3>, angle: f32| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::rotate_y(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the y axis by `angle` (in radians).",
+            &["_self", "angle"],
+        )
+        .register_documented(
+            "rotate_z",
+            |_self: Val<::glam::Vec3>, angle: f32| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::rotate_z(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the z axis by `angle` (in radians).",
+            &["_self", "angle"],
         )
         .register_documented(
             "round",
@@ -3777,6 +4501,25 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "slerp",
+            |_self: Val<::glam::Vec3>, rhs: Val<::glam::Vec3>, s: f32| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::slerp(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
             "splat",
             |v: f32| {
                 let output: Val<::glam::Vec3> = {
@@ -3795,7 +4538,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Ref<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::Vec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -3812,7 +4555,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Vec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -3829,7 +4572,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::Vec3>, rhs: f32| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec3> = <::glam::Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             f32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -3852,7 +4595,24 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
+            &["_self"],
+        )
+        .register_documented(
+            "to_vec3a",
+            |_self: Val<::glam::Vec3>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3::to_vec3a(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
             &["_self"],
         )
         .register_documented(
@@ -3949,14 +4709,18 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
 }
 pub(crate) fn register_socket_addr_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::net::SocketAddr,
+        ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::core::net::SocketAddr>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
                 let output: () = {
                     {
-                        let output: () = <::core::net::SocketAddr as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -3970,10 +4734,18 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::core::net::SocketAddr>| {
-                let output: Val<::core::net::SocketAddr> = {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                > = {
                     {
-                        let output: Val<::core::net::SocketAddr> = <::core::net::SocketAddr as ::core::clone::Clone>::clone(
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                        > = <::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3987,11 +4759,18 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::core::net::SocketAddr>, other: Ref<::core::net::SocketAddr>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >,
+                other: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
                 let output: bool = {
                     {
-                        let output: bool = <::core::net::SocketAddr as ::core::cmp::PartialEq<
-                            ::core::net::SocketAddr,
+                        let output: bool = <::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -4004,10 +4783,16 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
         )
         .register_documented(
             "is_ipv4",
-            |_self: Ref<::core::net::SocketAddr>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
                 let output: bool = {
                     {
-                        let output: bool = ::core::net::SocketAddr::is_ipv4(&_self)
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::is_ipv4(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -4019,10 +4804,16 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
         )
         .register_documented(
             "is_ipv6",
-            |_self: Ref<::core::net::SocketAddr>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
                 let output: bool = {
                     {
-                        let output: bool = ::core::net::SocketAddr::is_ipv6(&_self)
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::is_ipv6(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -4034,10 +4825,17 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
         )
         .register_documented(
             "port",
-            |_self: Ref<::core::net::SocketAddr>| {
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
                 let output: u16 = {
                     {
-                        let output: u16 = ::core::net::SocketAddr::port(&_self).into();
+                        let output: u16 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::port(
+                                &_self,
+                            )
+                            .into();
                         output
                     }
                 };
@@ -4048,10 +4846,15 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
         )
         .register_documented(
             "set_port",
-            |mut _self: Mut<::core::net::SocketAddr>, new_port: u16| {
+            |
+                mut _self: Mut<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >,
+                new_port: u16|
+            {
                 let output: () = {
                     {
-                        let output: () = ::core::net::SocketAddr::set_port(
+                        let output: () = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::set_port(
                                 &mut _self,
                                 new_port,
                             )
@@ -4068,7 +4871,7 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::core::net::SocketAddr,
+            ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -4098,7 +4901,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Ref<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Add<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::IVec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -4115,7 +4918,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Add<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::IVec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -4132,7 +4935,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: i32| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Add<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -4296,7 +5099,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::IVec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::IVec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -4307,6 +5110,46 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::IVec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u32,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u32,
+                        > = ::glam::IVec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u32::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -4336,7 +5179,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4479,7 +5322,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Ref<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Div<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::IVec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -4496,7 +5339,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Div<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::IVec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -4513,7 +5356,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: i32| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Div<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -4616,7 +5459,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::IVec2>, other: Ref<::glam::IVec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::IVec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::IVec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -4675,7 +5518,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -4696,6 +5539,24 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::IVec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u32::MAX`].\n See also [`checked_manhattan_distance`][IVec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
@@ -4710,7 +5571,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -4729,6 +5590,23 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::IVec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::IVec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
@@ -4743,7 +5621,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -4762,11 +5640,28 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::IVec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::IVec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::IVec2>, rhs: Ref<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::IVec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -4783,7 +5678,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::IVec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -4800,7 +5695,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: i32| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -4817,7 +5712,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -4883,7 +5778,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Ref<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::IVec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -4900,7 +5795,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::IVec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -4917,7 +5812,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: i32| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -4962,7 +5857,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.",
+            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.\n This can be used to rotate by 90 degree increments, e.g. `[sin(90), cos(90)` = `[1, 0]` or\n `[sin(180), cos(180)]` = `[0, -1]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -5132,7 +6027,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Ref<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::IVec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -5149,7 +6044,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: Val<::glam::IVec2>| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::IVec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -5166,7 +6061,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::IVec2>, rhs: i32| {
                 let output: Val<::glam::IVec2> = {
                     {
-                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec2> = <::glam::IVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -5189,7 +6084,7 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -5366,7 +6261,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Ref<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Add<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::IVec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -5383,7 +6278,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Add<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::IVec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -5400,7 +6295,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: i32| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Add<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -5579,7 +6474,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::IVec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::IVec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -5590,6 +6485,46 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::IVec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u32,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u32,
+                        > = ::glam::IVec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u32::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -5619,7 +6554,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -5780,7 +6715,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Ref<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Div<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::IVec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -5797,7 +6732,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Div<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::IVec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -5814,7 +6749,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: i32| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Div<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -5917,7 +6852,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::IVec3>, other: Ref<::glam::IVec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::IVec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::IVec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -5976,7 +6911,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -5997,6 +6932,24 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::IVec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u32::MAX`].\n See also [`checked_manhattan_distance`][IVec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
@@ -6011,7 +6964,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -6030,6 +6983,23 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::IVec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::IVec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
@@ -6044,7 +7014,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -6063,11 +7033,28 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::IVec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::IVec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::IVec3>, rhs: Ref<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::IVec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -6084,7 +7071,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::IVec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -6101,7 +7088,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: i32| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -6118,7 +7105,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -6150,7 +7137,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Ref<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::IVec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -6167,7 +7154,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::IVec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -6184,7 +7171,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: i32| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -6381,7 +7368,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Ref<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::IVec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -6398,7 +7385,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: Val<::glam::IVec3>| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::IVec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -6415,7 +7402,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::IVec3>, rhs: i32| {
                 let output: Val<::glam::IVec3> = {
                     {
-                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec3> = <::glam::IVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -6438,7 +7425,7 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -6650,7 +7637,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Ref<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Add<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::IVec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -6667,7 +7654,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Add<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::IVec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -6684,7 +7671,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: i32| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Add<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -6848,7 +7835,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::IVec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::IVec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -6859,6 +7846,46 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::IVec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u32,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u32,
+                        > = ::glam::IVec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u32::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -6888,7 +7915,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -7031,7 +8058,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Ref<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Div<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::IVec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -7048,7 +8075,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Div<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::IVec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -7065,7 +8092,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: i32| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Div<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -7168,7 +8195,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::IVec4>, other: Ref<::glam::IVec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::IVec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::IVec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -7209,7 +8236,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -7230,6 +8257,24 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::IVec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u32::MAX`].\n See also [`checked_manhattan_distance`][IVec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
@@ -7244,7 +8289,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -7263,6 +8308,23 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::IVec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::IVec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
@@ -7277,7 +8339,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -7296,11 +8358,28 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::IVec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::IVec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::IVec4>, rhs: Ref<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::IVec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -7317,7 +8396,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::IVec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -7334,7 +8413,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: i32| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -7351,7 +8430,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -7383,7 +8462,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Ref<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::IVec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -7400,7 +8479,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::IVec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -7417,7 +8496,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: i32| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -7614,7 +8693,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Ref<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::IVec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -7631,7 +8710,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: Val<::glam::IVec4>| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::IVec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -7648,7 +8727,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::IVec4>, rhs: i32| {
                 let output: Val<::glam::IVec4> = {
                     {
-                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::IVec4> = <::glam::IVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -7671,7 +8750,7 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -7901,7 +8980,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Ref<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I8Vec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -7918,7 +8997,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I8Vec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -7935,7 +9014,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: i8| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i8,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -8097,7 +9176,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I8Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -8108,6 +9187,46 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::I8Vec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u8,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u8,
+                        > = ::glam::I8Vec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u8::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -8137,7 +9256,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -8280,7 +9399,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Ref<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I8Vec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -8297,7 +9416,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I8Vec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -8314,7 +9433,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: i8| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i8,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -8417,7 +9536,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec2>, other: Ref<::glam::I8Vec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I8Vec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I8Vec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -8476,7 +9595,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -8497,6 +9616,24 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::I8Vec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u8::MAX`].\n See also [`checked_manhattan_distance`][I8Vec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
@@ -8511,7 +9648,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -8530,6 +9667,23 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I8Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I8Vec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
@@ -8544,7 +9698,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -8563,11 +9717,28 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I8Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I8Vec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I8Vec2>, rhs: Ref<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I8Vec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -8584,7 +9755,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I8Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -8601,7 +9772,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: i8| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i8,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -8618,7 +9789,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -8685,7 +9856,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Ref<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I8Vec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -8702,7 +9873,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I8Vec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -8719,7 +9890,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: i8| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i8,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -8764,7 +9935,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.",
+            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.\n This can be used to rotate by 90 degree increments, e.g. `[sin(90), cos(90)` = `[1, 0]` or\n `[sin(180), cos(180)]` = `[0, -1]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -8935,7 +10106,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Ref<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I8Vec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -8952,7 +10123,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: Val<::glam::I8Vec2>| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I8Vec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -8969,7 +10140,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec2>, rhs: i8| {
                 let output: Val<::glam::I8Vec2> = {
                     {
-                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec2> = <::glam::I8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i8,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -8992,7 +10163,7 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -9169,7 +10340,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Ref<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I8Vec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -9186,7 +10357,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I8Vec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -9203,7 +10374,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: i8| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i8,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -9380,7 +10551,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I8Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -9391,6 +10562,46 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::I8Vec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u8,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u8,
+                        > = ::glam::I8Vec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u8::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -9420,7 +10631,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -9581,7 +10792,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Ref<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I8Vec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -9598,7 +10809,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I8Vec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -9615,7 +10826,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: i8| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i8,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -9718,7 +10929,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec3>, other: Ref<::glam::I8Vec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I8Vec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I8Vec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -9777,7 +10988,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -9798,6 +11009,24 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::I8Vec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u8::MAX`].\n See also [`checked_manhattan_distance`][I8Vec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
@@ -9812,7 +11041,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -9831,6 +11060,23 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I8Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I8Vec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
@@ -9845,7 +11091,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -9864,11 +11110,28 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I8Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I8Vec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I8Vec3>, rhs: Ref<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I8Vec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -9885,7 +11148,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I8Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -9902,7 +11165,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: i8| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i8,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -9919,7 +11182,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -9951,7 +11214,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Ref<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I8Vec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -9968,7 +11231,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I8Vec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -9985,7 +11248,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: i8| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i8,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -10183,7 +11446,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Ref<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I8Vec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -10200,7 +11463,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: Val<::glam::I8Vec3>| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I8Vec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -10217,7 +11480,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec3>, rhs: i8| {
                 let output: Val<::glam::I8Vec3> = {
                     {
-                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec3> = <::glam::I8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i8,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -10240,7 +11503,7 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -10452,7 +11715,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Ref<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I8Vec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -10469,7 +11732,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I8Vec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -10486,7 +11749,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: i8| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i8,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -10648,7 +11911,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I8Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -10659,6 +11922,46 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::I8Vec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u8,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u8,
+                        > = ::glam::I8Vec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u8::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -10688,7 +11991,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -10831,7 +12134,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Ref<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I8Vec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -10848,7 +12151,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I8Vec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -10865,7 +12168,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: i8| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i8,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -10968,7 +12271,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I8Vec4>, other: Ref<::glam::I8Vec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I8Vec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I8Vec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -11009,7 +12312,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -11030,6 +12333,24 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::I8Vec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u8::MAX`].\n See also [`checked_manhattan_distance`][I8Vec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
@@ -11044,7 +12365,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -11063,6 +12384,23 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I8Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I8Vec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
@@ -11077,7 +12415,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -11096,11 +12434,28 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I8Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I8Vec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I8Vec4>, rhs: Ref<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I8Vec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -11117,7 +12472,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I8Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -11134,7 +12489,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: i8| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i8,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -11151,7 +12506,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -11183,7 +12538,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Ref<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I8Vec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -11200,7 +12555,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I8Vec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -11217,7 +12572,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: i8| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i8,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -11415,7 +12770,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Ref<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I8Vec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -11432,7 +12787,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: Val<::glam::I8Vec4>| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I8Vec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -11449,7 +12804,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I8Vec4>, rhs: i8| {
                 let output: Val<::glam::I8Vec4> = {
                     {
-                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I8Vec4> = <::glam::I8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i8,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -11472,7 +12827,7 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -11702,7 +13057,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Ref<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I16Vec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -11719,7 +13074,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I16Vec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -11736,7 +13091,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: i16| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i16,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -11904,7 +13259,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I16Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -11915,6 +13270,46 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::I16Vec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u16,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u16,
+                        > = ::glam::I16Vec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u16::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -11944,7 +13339,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -12087,7 +13482,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Ref<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I16Vec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -12104,7 +13499,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I16Vec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -12121,7 +13516,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: i16| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i16,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -12226,7 +13621,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec2>, other: Ref<::glam::I16Vec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I16Vec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I16Vec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -12285,7 +13680,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -12306,6 +13701,24 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::I16Vec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u16::MAX`].\n See also [`checked_manhattan_distance`][I16Vec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
@@ -12320,7 +13733,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -12341,6 +13754,23 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I16Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I16Vec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
@@ -12355,7 +13785,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -12376,11 +13806,28 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I16Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I16Vec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I16Vec2>, rhs: Ref<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I16Vec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -12397,7 +13844,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I16Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -12414,7 +13861,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: i16| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i16,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -12431,7 +13878,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -12498,7 +13945,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Ref<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I16Vec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -12515,7 +13962,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I16Vec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -12532,7 +13979,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: i16| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i16,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -12577,7 +14024,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.",
+            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.\n This can be used to rotate by 90 degree increments, e.g. `[sin(90), cos(90)` = `[1, 0]` or\n `[sin(180), cos(180)]` = `[0, -1]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -12748,7 +14195,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Ref<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I16Vec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -12765,7 +14212,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: Val<::glam::I16Vec2>| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I16Vec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -12782,7 +14229,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec2>, rhs: i16| {
                 let output: Val<::glam::I16Vec2> = {
                     {
-                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec2> = <::glam::I16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i16,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -12805,7 +14252,7 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -12982,7 +14429,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Ref<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I16Vec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -12999,7 +14446,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I16Vec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -13016,7 +14463,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: i16| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i16,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -13201,7 +14648,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I16Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -13212,6 +14659,46 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::I16Vec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u16,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u16,
+                        > = ::glam::I16Vec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u16::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -13241,7 +14728,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -13402,7 +14889,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Ref<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I16Vec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -13419,7 +14906,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I16Vec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -13436,7 +14923,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: i16| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i16,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -13541,7 +15028,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec3>, other: Ref<::glam::I16Vec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I16Vec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I16Vec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -13600,7 +15087,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -13621,6 +15108,24 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::I16Vec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u16::MAX`].\n See also [`checked_manhattan_distance`][I16Vec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
@@ -13635,7 +15140,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -13656,6 +15161,23 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I16Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I16Vec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
@@ -13670,7 +15192,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -13691,11 +15213,28 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I16Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I16Vec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I16Vec3>, rhs: Ref<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I16Vec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -13712,7 +15251,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I16Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -13729,7 +15268,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: i16| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i16,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -13746,7 +15285,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -13778,7 +15317,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Ref<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I16Vec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -13795,7 +15334,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I16Vec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -13812,7 +15351,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: i16| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i16,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -14010,7 +15549,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Ref<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I16Vec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -14027,7 +15566,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: Val<::glam::I16Vec3>| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I16Vec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -14044,7 +15583,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec3>, rhs: i16| {
                 let output: Val<::glam::I16Vec3> = {
                     {
-                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec3> = <::glam::I16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i16,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -14067,7 +15606,7 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -14279,7 +15818,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Ref<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I16Vec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -14296,7 +15835,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I16Vec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -14313,7 +15852,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: i16| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i16,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -14481,7 +16020,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I16Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -14492,6 +16031,46 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::I16Vec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u16,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u16,
+                        > = ::glam::I16Vec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u16::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -14521,7 +16100,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -14664,7 +16243,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Ref<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I16Vec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -14681,7 +16260,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I16Vec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -14698,7 +16277,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: i16| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i16,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -14803,7 +16382,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I16Vec4>, other: Ref<::glam::I16Vec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I16Vec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I16Vec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -14844,7 +16423,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -14865,6 +16444,24 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::I16Vec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u16::MAX`].\n See also [`checked_manhattan_distance`][I16Vec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
@@ -14879,7 +16476,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -14900,6 +16497,23 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I16Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I16Vec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
@@ -14914,7 +16528,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -14935,11 +16549,28 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I16Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I16Vec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I16Vec4>, rhs: Ref<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I16Vec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -14956,7 +16587,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I16Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -14973,7 +16604,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: i16| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i16,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -14990,7 +16621,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -15027,7 +16658,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Ref<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I16Vec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -15044,7 +16675,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I16Vec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -15061,7 +16692,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: i16| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i16,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -15259,7 +16890,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Ref<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I16Vec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -15276,7 +16907,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: Val<::glam::I16Vec4>| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I16Vec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -15293,7 +16924,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I16Vec4>, rhs: i16| {
                 let output: Val<::glam::I16Vec4> = {
                     {
-                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I16Vec4> = <::glam::I16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i16,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -15316,7 +16947,7 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -15546,7 +17177,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Ref<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I64Vec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -15563,7 +17194,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I64Vec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -15580,7 +17211,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: i64| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -15748,7 +17379,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I64Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -15759,6 +17390,46 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::I64Vec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u64,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u64,
+                        > = ::glam::I64Vec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u64::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -15788,7 +17459,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -15931,7 +17602,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Ref<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I64Vec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -15948,7 +17619,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I64Vec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -15965,7 +17636,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: i64| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -16070,7 +17741,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec2>, other: Ref<::glam::I64Vec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I64Vec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I64Vec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -16129,7 +17800,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -16150,6 +17821,24 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::I64Vec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u64::MAX`].\n See also [`checked_manhattan_distance`][I64Vec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
@@ -16164,7 +17853,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -16185,6 +17874,23 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I64Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I64Vec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
@@ -16199,7 +17905,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -16220,11 +17926,28 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I64Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I64Vec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I64Vec2>, rhs: Ref<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I64Vec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -16241,7 +17964,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I64Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -16258,7 +17981,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: i64| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -16275,7 +17998,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -16342,7 +18065,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Ref<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I64Vec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -16359,7 +18082,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I64Vec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -16376,7 +18099,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: i64| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -16421,7 +18144,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.",
+            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.\n This can be used to rotate by 90 degree increments, e.g. `[sin(90), cos(90)` = `[1, 0]` or\n `[sin(180), cos(180)]` = `[0, -1]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -16592,7 +18315,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Ref<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I64Vec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -16609,7 +18332,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: Val<::glam::I64Vec2>| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I64Vec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -16626,7 +18349,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec2>, rhs: i64| {
                 let output: Val<::glam::I64Vec2> = {
                     {
-                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec2> = <::glam::I64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -16649,7 +18372,7 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -16826,7 +18549,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Ref<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I64Vec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -16843,7 +18566,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I64Vec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -16860,7 +18583,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: i64| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -17045,7 +18768,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I64Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -17056,6 +18779,46 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::I64Vec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u64,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u64,
+                        > = ::glam::I64Vec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u64::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -17085,7 +18848,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -17246,7 +19009,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Ref<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I64Vec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -17263,7 +19026,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I64Vec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -17280,7 +19043,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: i64| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -17385,7 +19148,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec3>, other: Ref<::glam::I64Vec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I64Vec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I64Vec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -17444,7 +19207,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -17465,6 +19228,24 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::I64Vec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u64::MAX`].\n See also [`checked_manhattan_distance`][I64Vec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
@@ -17479,7 +19260,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -17500,6 +19281,23 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I64Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I64Vec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
@@ -17514,7 +19312,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -17535,11 +19333,28 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I64Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I64Vec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I64Vec3>, rhs: Ref<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I64Vec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -17556,7 +19371,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I64Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -17573,7 +19388,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: i64| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -17590,7 +19405,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -17622,7 +19437,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Ref<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I64Vec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -17639,7 +19454,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I64Vec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -17656,7 +19471,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: i64| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -17854,7 +19669,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Ref<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I64Vec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -17871,7 +19686,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: Val<::glam::I64Vec3>| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I64Vec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -17888,7 +19703,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec3>, rhs: i64| {
                 let output: Val<::glam::I64Vec3> = {
                     {
-                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec3> = <::glam::I64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -17911,7 +19726,7 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -18123,7 +19938,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Ref<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::I64Vec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -18140,7 +19955,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::I64Vec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -18157,7 +19972,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: i64| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             i64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -18325,7 +20140,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I64Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -18336,6 +20151,46 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::I64Vec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u64,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u64,
+                        > = ::glam::I64Vec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u64::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -18365,7 +20220,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -18508,7 +20363,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Ref<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::I64Vec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -18525,7 +20380,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::I64Vec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -18542,7 +20397,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: i64| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             i64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -18647,7 +20502,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::I64Vec4>, other: Ref<::glam::I64Vec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::I64Vec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::I64Vec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -18688,7 +20543,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -18709,6 +20564,24 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::I64Vec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u64::MAX`].\n See also [`checked_manhattan_distance`][I64Vec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
@@ -18723,7 +20596,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -18744,6 +20617,23 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::I64Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I64Vec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
@@ -18758,7 +20648,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -18779,11 +20669,28 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::I64Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::I64Vec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::I64Vec4>, rhs: Ref<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::I64Vec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -18800,7 +20707,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::I64Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -18817,7 +20724,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: i64| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             i64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -18834,7 +20741,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -18871,7 +20778,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Ref<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::I64Vec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -18888,7 +20795,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::I64Vec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -18905,7 +20812,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: i64| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             i64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -19103,7 +21010,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Ref<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::I64Vec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -19120,7 +21027,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: Val<::glam::I64Vec4>| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::I64Vec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -19137,7 +21044,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::I64Vec4>, rhs: i64| {
                 let output: Val<::glam::I64Vec4> = {
                     {
-                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::I64Vec4> = <::glam::I64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             i64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -19160,7 +21067,7 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -19373,7 +21280,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Ref<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Add<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::UVec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -19390,7 +21297,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Add<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::UVec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -19407,7 +21314,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: u32| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Add<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -19571,7 +21478,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::UVec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::UVec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -19582,6 +21489,46 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::UVec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u32,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u32,
+                        > = ::glam::UVec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u32::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -19611,7 +21558,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -19736,7 +21683,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Ref<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Div<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::UVec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -19753,7 +21700,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Div<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::UVec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -19770,7 +21717,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: u32| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Div<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -19855,7 +21802,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::UVec2>, other: Ref<::glam::UVec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::UVec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::UVec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -19918,6 +21865,24 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::UVec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u32::MAX`].\n See also [`checked_manhattan_distance`][UVec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
@@ -19932,7 +21897,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -19951,6 +21916,23 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::UVec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::UVec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
@@ -19965,7 +21947,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -19984,11 +21966,28 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::UVec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::UVec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::UVec2>, rhs: Ref<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::UVec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -20005,7 +22004,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::UVec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -20022,7 +22021,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: u32| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -20053,7 +22052,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Ref<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::UVec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -20070,7 +22069,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::UVec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -20087,7 +22086,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: u32| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -20231,7 +22230,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Ref<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::UVec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -20248,7 +22247,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: Val<::glam::UVec2>| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::UVec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -20265,7 +22264,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::UVec2>, rhs: u32| {
                 let output: Val<::glam::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec2> = <::glam::UVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -20288,7 +22287,7 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -20430,7 +22429,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Ref<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Add<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::UVec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -20447,7 +22446,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Add<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::UVec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -20464,7 +22463,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: u32| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Add<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -20643,7 +22642,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::UVec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::UVec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -20654,6 +22653,46 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::UVec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u32,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u32,
+                        > = ::glam::UVec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u32::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -20683,7 +22722,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -20826,7 +22865,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Ref<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Div<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::UVec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -20843,7 +22882,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Div<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::UVec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -20860,7 +22899,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: u32| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Div<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -20945,7 +22984,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::UVec3>, other: Ref<::glam::UVec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::UVec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::UVec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -21008,6 +23047,24 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::UVec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u32::MAX`].\n See also [`checked_manhattan_distance`][UVec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
@@ -21022,7 +23079,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -21041,6 +23098,23 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::UVec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::UVec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
@@ -21055,7 +23129,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -21074,11 +23148,28 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::UVec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::UVec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::UVec3>, rhs: Ref<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::UVec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -21095,7 +23186,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::UVec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -21112,7 +23203,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: u32| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -21144,7 +23235,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Ref<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::UVec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -21161,7 +23252,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::UVec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -21178,7 +23269,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: u32| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -21322,7 +23413,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Ref<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::UVec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -21339,7 +23430,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: Val<::glam::UVec3>| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::UVec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -21356,7 +23447,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::UVec3>, rhs: u32| {
                 let output: Val<::glam::UVec3> = {
                     {
-                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec3> = <::glam::UVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -21379,7 +23470,7 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -21556,7 +23647,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Ref<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Add<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::UVec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -21573,7 +23664,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Add<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::UVec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -21590,7 +23681,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: u32| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Add<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -21754,7 +23845,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::UVec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::UVec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -21765,6 +23856,46 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::UVec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u32,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u32,
+                        > = ::glam::UVec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u32::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -21794,7 +23925,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -21919,7 +24050,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Ref<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Div<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::UVec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -21936,7 +24067,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Div<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::UVec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -21953,7 +24084,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: u32| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Div<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -22038,7 +24169,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::UVec4>, other: Ref<::glam::UVec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::UVec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::UVec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -22083,6 +24214,24 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::glam::UVec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u32::MAX`].\n See also [`checked_manhattan_distance`][UVec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
@@ -22097,7 +24246,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -22116,6 +24265,23 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::UVec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::UVec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
@@ -22130,7 +24296,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -22149,11 +24315,28 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::UVec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::UVec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::UVec4>, rhs: Ref<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::UVec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -22170,7 +24353,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::UVec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -22187,7 +24370,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: u32| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -22219,7 +24402,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Ref<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::UVec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -22236,7 +24419,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::UVec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -22253,7 +24436,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: u32| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -22397,7 +24580,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Ref<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::UVec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -22414,7 +24597,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: Val<::glam::UVec4>| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::UVec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -22431,7 +24614,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::UVec4>, rhs: u32| {
                 let output: Val<::glam::UVec4> = {
                     {
-                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::UVec4> = <::glam::UVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -22454,7 +24637,7 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -22649,7 +24832,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Ref<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U8Vec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -22666,7 +24849,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U8Vec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -22683,7 +24866,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: u8| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u8,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -22845,7 +25028,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U8Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -22856,6 +25039,46 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::U8Vec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u8,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u8,
+                        > = ::glam::U8Vec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u8::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -22885,7 +25108,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -23010,7 +25233,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Ref<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U8Vec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -23027,7 +25250,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U8Vec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -23044,7 +25267,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: u8| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u8,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -23129,7 +25352,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec2>, other: Ref<::glam::U8Vec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U8Vec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U8Vec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -23192,6 +25415,24 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::U8Vec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u8::MAX`].\n See also [`checked_manhattan_distance`][U8Vec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
@@ -23206,7 +25447,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -23225,6 +25466,23 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U8Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U8Vec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
@@ -23239,7 +25497,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -23258,11 +25516,28 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U8Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U8Vec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U8Vec2>, rhs: Ref<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U8Vec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -23279,7 +25554,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U8Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -23296,7 +25571,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: u8| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u8,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -23328,7 +25603,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Ref<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U8Vec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -23345,7 +25620,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U8Vec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -23362,7 +25637,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: u8| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u8,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -23507,7 +25782,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Ref<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U8Vec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -23524,7 +25799,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: Val<::glam::U8Vec2>| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U8Vec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -23541,7 +25816,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec2>, rhs: u8| {
                 let output: Val<::glam::U8Vec2> = {
                     {
-                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec2> = <::glam::U8Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u8,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -23564,7 +25839,7 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -23706,7 +25981,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Ref<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U8Vec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -23723,7 +25998,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U8Vec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -23740,7 +26015,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: u8| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u8,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -23917,7 +26192,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U8Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -23928,6 +26203,46 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::U8Vec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u8,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u8,
+                        > = ::glam::U8Vec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u8::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -23957,7 +26272,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -24100,7 +26415,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Ref<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U8Vec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -24117,7 +26432,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U8Vec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -24134,7 +26449,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: u8| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u8,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -24219,7 +26534,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec3>, other: Ref<::glam::U8Vec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U8Vec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U8Vec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -24282,6 +26597,24 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::U8Vec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u8::MAX`].\n See also [`checked_manhattan_distance`][U8Vec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
@@ -24296,7 +26629,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -24315,6 +26648,23 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U8Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U8Vec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
@@ -24329,7 +26679,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -24348,11 +26698,28 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U8Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U8Vec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U8Vec3>, rhs: Ref<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U8Vec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -24369,7 +26736,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U8Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -24386,7 +26753,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: u8| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u8,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -24418,7 +26785,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Ref<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U8Vec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -24435,7 +26802,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U8Vec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -24452,7 +26819,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: u8| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u8,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -24597,7 +26964,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Ref<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U8Vec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -24614,7 +26981,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: Val<::glam::U8Vec3>| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U8Vec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -24631,7 +26998,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec3>, rhs: u8| {
                 let output: Val<::glam::U8Vec3> = {
                     {
-                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec3> = <::glam::U8Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u8,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -24654,7 +27021,7 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -24831,7 +27198,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Ref<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U8Vec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -24848,7 +27215,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U8Vec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -24865,7 +27232,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: u8| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u8,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -25027,7 +27394,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U8Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -25038,6 +27405,46 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::U8Vec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u8,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u8,
+                        > = ::glam::U8Vec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u8::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -25067,7 +27474,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -25192,7 +27599,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Ref<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U8Vec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -25209,7 +27616,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U8Vec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -25226,7 +27633,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: u8| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u8,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -25311,7 +27718,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U8Vec4>, other: Ref<::glam::U8Vec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U8Vec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U8Vec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -25356,6 +27763,24 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::glam::U8Vec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u8::MAX`].\n See also [`checked_manhattan_distance`][U8Vec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
@@ -25370,7 +27795,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -25389,6 +27814,23 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U8Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U8Vec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
@@ -25403,7 +27845,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -25422,11 +27864,28 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U8Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U8Vec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U8Vec4>, rhs: Ref<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U8Vec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -25443,7 +27902,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U8Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -25460,7 +27919,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: u8| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u8,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -25492,7 +27951,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Ref<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U8Vec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -25509,7 +27968,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U8Vec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -25526,7 +27985,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: u8| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u8,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -25671,7 +28130,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Ref<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U8Vec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -25688,7 +28147,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: Val<::glam::U8Vec4>| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U8Vec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -25705,7 +28164,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U8Vec4>, rhs: u8| {
                 let output: Val<::glam::U8Vec4> = {
                     {
-                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U8Vec4> = <::glam::U8Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u8,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -25728,7 +28187,7 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -25923,7 +28382,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Ref<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U16Vec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -25940,7 +28399,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U16Vec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -25957,7 +28416,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: u16| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u16,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -26125,7 +28584,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U16Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -26136,6 +28595,46 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::U16Vec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u16,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u16,
+                        > = ::glam::U16Vec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u16::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -26165,7 +28664,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -26290,7 +28789,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Ref<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U16Vec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -26307,7 +28806,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U16Vec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -26324,7 +28823,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: u16| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u16,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -26411,7 +28910,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec2>, other: Ref<::glam::U16Vec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U16Vec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U16Vec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -26474,6 +28973,24 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::U16Vec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u16::MAX`].\n See also [`checked_manhattan_distance`][U16Vec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
@@ -26488,7 +29005,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -26509,6 +29026,23 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U16Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U16Vec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
@@ -26523,7 +29057,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -26544,11 +29078,28 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U16Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U16Vec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U16Vec2>, rhs: Ref<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U16Vec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -26565,7 +29116,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U16Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -26582,7 +29133,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: u16| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u16,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -26614,7 +29165,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Ref<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U16Vec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -26631,7 +29182,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U16Vec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -26648,7 +29199,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: u16| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u16,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -26793,7 +29344,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Ref<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U16Vec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -26810,7 +29361,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: Val<::glam::U16Vec2>| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U16Vec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -26827,7 +29378,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec2>, rhs: u16| {
                 let output: Val<::glam::U16Vec2> = {
                     {
-                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec2> = <::glam::U16Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u16,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -26850,7 +29401,7 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -26992,7 +29543,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Ref<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U16Vec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -27009,7 +29560,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U16Vec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -27026,7 +29577,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: u16| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u16,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -27211,7 +29762,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U16Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -27222,6 +29773,46 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::U16Vec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u16,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u16,
+                        > = ::glam::U16Vec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u16::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -27251,7 +29842,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -27394,7 +29985,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Ref<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U16Vec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -27411,7 +30002,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U16Vec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -27428,7 +30019,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: u16| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u16,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -27515,7 +30106,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec3>, other: Ref<::glam::U16Vec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U16Vec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U16Vec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -27578,6 +30169,24 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::U16Vec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u16::MAX`].\n See also [`checked_manhattan_distance`][U16Vec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
@@ -27592,7 +30201,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -27613,6 +30222,23 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U16Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U16Vec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
@@ -27627,7 +30253,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -27648,11 +30274,28 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U16Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U16Vec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U16Vec3>, rhs: Ref<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U16Vec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -27669,7 +30312,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U16Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -27686,7 +30329,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: u16| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u16,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -27718,7 +30361,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Ref<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U16Vec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -27735,7 +30378,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U16Vec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -27752,7 +30395,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: u16| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u16,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -27897,7 +30540,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Ref<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U16Vec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -27914,7 +30557,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: Val<::glam::U16Vec3>| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U16Vec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -27931,7 +30574,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec3>, rhs: u16| {
                 let output: Val<::glam::U16Vec3> = {
                     {
-                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec3> = <::glam::U16Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u16,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -27954,7 +30597,7 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -28131,7 +30774,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Ref<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U16Vec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -28148,7 +30791,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U16Vec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -28165,7 +30808,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: u16| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u16,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -28333,7 +30976,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U16Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -28344,6 +30987,46 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::U16Vec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u16,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u16,
+                        > = ::glam::U16Vec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u16::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -28373,7 +31056,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -28498,7 +31181,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Ref<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U16Vec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -28515,7 +31198,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U16Vec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -28532,7 +31215,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: u16| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u16,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -28619,7 +31302,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U16Vec4>, other: Ref<::glam::U16Vec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U16Vec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U16Vec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -28664,6 +31347,24 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::glam::U16Vec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u16::MAX`].\n See also [`checked_manhattan_distance`][U16Vec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
@@ -28678,7 +31379,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -28699,6 +31400,23 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U16Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U16Vec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
@@ -28713,7 +31431,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -28734,11 +31452,28 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U16Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U16Vec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U16Vec4>, rhs: Ref<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U16Vec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -28755,7 +31490,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U16Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -28772,7 +31507,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: u16| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u16,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -28809,7 +31544,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Ref<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U16Vec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -28826,7 +31561,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U16Vec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -28843,7 +31578,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: u16| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u16,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -28988,7 +31723,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Ref<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U16Vec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -29005,7 +31740,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: Val<::glam::U16Vec4>| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U16Vec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -29022,7 +31757,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U16Vec4>, rhs: u16| {
                 let output: Val<::glam::U16Vec4> = {
                     {
-                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U16Vec4> = <::glam::U16Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u16,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -29045,7 +31780,7 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -29240,7 +31975,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Ref<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U64Vec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -29257,7 +31992,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U64Vec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -29274,7 +32009,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: u64| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -29442,7 +32177,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U64Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -29453,6 +32188,46 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::U64Vec2::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u64,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u64,
+                        > = ::glam::U64Vec2::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u64::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -29482,7 +32257,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -29607,7 +32382,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Ref<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U64Vec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -29624,7 +32399,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U64Vec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -29641,7 +32416,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: u64| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -29728,7 +32503,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec2>, other: Ref<::glam::U64Vec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U64Vec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U64Vec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -29791,6 +32566,24 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::U64Vec2::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u64::MAX`].\n See also [`checked_manhattan_distance`][U64Vec2::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
@@ -29805,7 +32598,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -29826,6 +32619,23 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U64Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U64Vec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
@@ -29840,7 +32650,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -29861,11 +32671,28 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U64Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U64Vec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U64Vec2>, rhs: Ref<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U64Vec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -29882,7 +32709,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U64Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -29899,7 +32726,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: u64| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -29931,7 +32758,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Ref<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U64Vec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -29948,7 +32775,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U64Vec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -29965,7 +32792,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: u64| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -30110,7 +32937,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Ref<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U64Vec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -30127,7 +32954,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: Val<::glam::U64Vec2>| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U64Vec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -30144,7 +32971,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec2>, rhs: u64| {
                 let output: Val<::glam::U64Vec2> = {
                     {
-                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec2> = <::glam::U64Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -30167,7 +32994,7 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -30309,7 +33136,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Ref<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U64Vec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -30326,7 +33153,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U64Vec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -30343,7 +33170,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: u64| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -30528,7 +33355,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U64Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -30539,6 +33366,46 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::U64Vec3::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u64,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u64,
+                        > = ::glam::U64Vec3::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u64::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -30568,7 +33435,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -30711,7 +33578,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Ref<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U64Vec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -30728,7 +33595,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U64Vec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -30745,7 +33612,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: u64| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -30832,7 +33699,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec3>, other: Ref<::glam::U64Vec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U64Vec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U64Vec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -30895,6 +33762,24 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::U64Vec3::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u64::MAX`].\n See also [`checked_manhattan_distance`][U64Vec3::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
@@ -30909,7 +33794,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -30930,6 +33815,23 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U64Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U64Vec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
@@ -30944,7 +33846,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -30965,11 +33867,28 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U64Vec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U64Vec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U64Vec3>, rhs: Ref<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U64Vec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -30986,7 +33905,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U64Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -31003,7 +33922,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: u64| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -31035,7 +33954,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Ref<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U64Vec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -31052,7 +33971,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U64Vec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -31069,7 +33988,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: u64| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -31214,7 +34133,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Ref<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U64Vec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -31231,7 +34150,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: Val<::glam::U64Vec3>| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U64Vec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -31248,7 +34167,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec3>, rhs: u64| {
                 let output: Val<::glam::U64Vec3> = {
                     {
-                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec3> = <::glam::U64Vec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -31271,7 +34190,7 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -31448,7 +34367,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Ref<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::U64Vec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -31465,7 +34384,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::U64Vec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -31482,7 +34401,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: u64| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             u64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -31650,7 +34569,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U64Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -31661,6 +34580,46 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "chebyshev_distance",
+            |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::U64Vec4::chebyshev_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [chebyshev distance] between two points.\n [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "checked_manhattan_distance",
+            |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    u64,
+                > = {
+                    {
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            u64,
+                        > = ::glam::U64Vec4::checked_manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n This will returns [`None`] if the result is greater than [`u64::MAX`].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
         )
         .register_documented(
             "clamp",
@@ -31690,7 +34649,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -31815,7 +34774,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Ref<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::U64Vec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -31832,7 +34791,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::U64Vec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -31849,7 +34808,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: u64| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             u64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -31936,7 +34895,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::U64Vec4>, other: Ref<::glam::U64Vec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::U64Vec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::U64Vec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -31981,6 +34940,24 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "manhattan_distance",
+            |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::glam::U64Vec4::manhattan_distance(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the [manhattan distance] between two points.\n # Overflow\n This method may overflow if the result is greater than [`u64::MAX`].\n See also [`checked_manhattan_distance`][U64Vec4::checked_manhattan_distance].\n [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "max",
             |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
@@ -31995,7 +34972,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -32016,6 +34993,23 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "max_position",
+            |_self: Val<::glam::U64Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U64Vec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "min",
             |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
@@ -32030,7 +35024,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -32051,11 +35045,28 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "min_position",
+            |_self: Val<::glam::U64Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::U64Vec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::U64Vec4>, rhs: Ref<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::U64Vec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -32072,7 +35083,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::U64Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -32089,7 +35100,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: u64| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             u64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -32126,7 +35137,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Ref<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::U64Vec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -32143,7 +35154,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::U64Vec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -32160,7 +35171,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: u64| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             u64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -32305,7 +35316,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Ref<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::U64Vec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -32322,7 +35333,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: Val<::glam::U64Vec4>| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::U64Vec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -32339,7 +35350,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::U64Vec4>, rhs: u64| {
                 let output: Val<::glam::U64Vec4> = {
                     {
-                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::U64Vec4> = <::glam::U64Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             u64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -32362,7 +35373,7 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -32593,7 +35604,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Ref<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::Vec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -32610,7 +35621,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Val<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Vec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -32627,7 +35638,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: f32| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Add<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             f32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -32851,7 +35862,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
+            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
             &["_self", "min", "max"],
         )
         .register_documented(
@@ -32914,7 +35925,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -33093,7 +36104,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Ref<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::Vec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -33110,7 +36121,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Val<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::Vec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -33127,7 +36138,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: f32| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Div<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -33230,7 +36241,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::Vec2>, other: Ref<::glam::Vec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Vec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Vec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -33436,7 +36447,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -33537,7 +36548,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -33552,7 +36563,24 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.",
+            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "max_position",
+            |_self: Val<::glam::Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -33588,7 +36616,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -33603,7 +36631,24 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.",
+            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "min_position",
+            |_self: Val<::glam::Vec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -33630,7 +36675,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Ref<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::Vec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -33647,7 +36692,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Val<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -33664,7 +36709,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: f32| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -33700,7 +36745,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -33740,7 +36785,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n # Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -33962,7 +37007,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Ref<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::Vec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -33979,7 +37024,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Val<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::Vec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -33996,7 +37041,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: f32| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             f32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -34041,7 +37086,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.",
+            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.\n This can be used in conjunction with the [`from_angle()`][Self::from_angle()] method, e.g.\n `Vec2::from_angle(PI).rotate(Vec2::Y)` will create the vector `[-1, 0]`\n and rotate [`Vec2::Y`] around it returning `-Vec2::Y`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -34060,7 +37105,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be equal to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
             &["_self", "rhs", "max_angle"],
         )
         .register_documented(
@@ -34139,7 +37184,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Ref<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::Vec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -34156,7 +37201,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: Val<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Vec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -34173,7 +37218,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::Vec2>, rhs: f32| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec2> = <::glam::Vec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             f32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -34211,7 +37256,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -34316,7 +37361,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Ref<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Add<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::Vec3A,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -34333,7 +37378,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Add<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Vec3A,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -34350,7 +37395,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: f32| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Add<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             f32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -34598,7 +37643,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
+            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
             &["_self", "min", "max"],
         )
         .register_documented(
@@ -34661,7 +37706,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -34858,7 +37903,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Ref<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Div<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::Vec3A,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -34875,7 +37920,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Div<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::Vec3A,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -34892,7 +37937,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: f32| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Div<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -34995,7 +38040,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Vec3A>, rhs: Ref<::glam::Vec3A>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Vec3A as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Vec3A,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -35203,7 +38248,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -35304,7 +38349,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -35319,7 +38364,24 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.",
+            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "max_position",
+            |_self: Val<::glam::Vec3A>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec3A::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -35355,7 +38417,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -35370,7 +38432,24 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.",
+            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "min_position",
+            |_self: Val<::glam::Vec3A>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec3A::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -35397,7 +38476,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Ref<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::Vec3A,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -35414,7 +38493,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -35431,7 +38510,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: f32| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -35467,7 +38546,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -35508,7 +38587,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n # Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -35695,7 +38774,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Ref<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Rem<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::Vec3A,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -35712,7 +38791,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Rem<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::Vec3A,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -35729,7 +38808,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: f32| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Rem<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             f32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -35758,6 +38837,98 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             },
             " Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.\n [Euclidean division]: f32::rem_euclid",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "rotate_axis",
+            |_self: Val<::glam::Vec3A>, axis: Val<::glam::Vec3A>, angle: f32| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::rotate_axis(
+                                _self.into_inner(),
+                                axis.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around `axis` by `angle` (in radians).\n The axis must be a unit vector.\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.",
+            &["_self", "axis", "angle"],
+        )
+        .register_documented(
+            "rotate_towards",
+            |_self: Val<::glam::Vec3A>, rhs: Val<::glam::Vec3A>, max_angle: f32| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::rotate_towards(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                max_angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            &["_self", "rhs", "max_angle"],
+        )
+        .register_documented(
+            "rotate_x",
+            |_self: Val<::glam::Vec3A>, angle: f32| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::rotate_x(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the x axis by `angle` (in radians).",
+            &["_self", "angle"],
+        )
+        .register_documented(
+            "rotate_y",
+            |_self: Val<::glam::Vec3A>, angle: f32| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::rotate_y(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the y axis by `angle` (in radians).",
+            &["_self", "angle"],
+        )
+        .register_documented(
+            "rotate_z",
+            |_self: Val<::glam::Vec3A>, angle: f32| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::rotate_z(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the z axis by `angle` (in radians).",
+            &["_self", "angle"],
         )
         .register_documented(
             "round",
@@ -35817,6 +38988,25 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "slerp",
+            |_self: Val<::glam::Vec3A>, rhs: Val<::glam::Vec3A>, s: f32| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::slerp(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
             "splat",
             |v: f32| {
                 let output: Val<::glam::Vec3A> = {
@@ -35835,7 +39025,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Ref<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Sub<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::Vec3A,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -35852,7 +39042,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Sub<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Vec3A,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -35869,7 +39059,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Vec3A>, rhs: f32| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::core::ops::Sub<
+                        let output: Val<::glam::Vec3A> = <::glam::Vec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             f32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -35892,7 +39082,24 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
+            &["_self"],
+        )
+        .register_documented(
+            "to_vec3",
+            |_self: Val<::glam::Vec3A>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3A::to_vec3(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
             &["_self"],
         )
         .register_documented(
@@ -36032,7 +39239,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Ref<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::Vec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -36049,7 +39256,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Vec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -36066,7 +39273,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: f32| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Add<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             f32,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -36254,7 +39461,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
+            " Component-wise clamping of values, similar to [`f32::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
             &["_self", "min", "max"],
         )
         .register_documented(
@@ -36317,7 +39524,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -36496,7 +39703,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Ref<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::Vec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -36513,7 +39720,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::Vec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -36530,7 +39737,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: f32| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Div<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -36633,7 +39840,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::Vec4>, rhs: Ref<::glam::Vec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Vec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Vec4,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -36806,7 +40013,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -36907,7 +40114,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -36922,7 +40129,24 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.",
+            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "max_position",
+            |_self: Val<::glam::Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -36958,7 +40182,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -36973,7 +40197,24 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.",
+            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "min_position",
+            |_self: Val<::glam::Vec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::Vec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -37000,7 +40241,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Ref<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::Vec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -37017,7 +40258,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -37034,7 +40275,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: f32| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -37070,7 +40311,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -37111,7 +40352,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n # Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -37298,7 +40539,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Ref<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::Vec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -37315,7 +40556,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::Vec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -37332,7 +40573,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: f32| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Rem<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             f32,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -37438,7 +40679,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Ref<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::Vec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -37455,7 +40696,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Vec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -37472,7 +40713,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::Vec4>, rhs: f32| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::core::ops::Sub<
+                        let output: Val<::glam::Vec4> = <::glam::Vec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             f32,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -37495,7 +40736,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -37529,7 +40770,7 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.\n Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].\n To truncate to [`Vec3A`] use [`Vec3A::from()`].",
+            " Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.\n Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].\n To truncate to [`Vec3A`] use [`Vec3A::from_vec4()`].",
             &["_self"],
         )
         .register_documented(
@@ -37645,7 +40886,7 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::BVec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::BVec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::BVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -37677,7 +40918,7 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::BVec2>| {
                 let output: Val<::glam::BVec2> = {
                     {
-                        let output: Val<::glam::BVec2> = <::glam::BVec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::BVec2> = <::glam::BVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -37694,7 +40935,7 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::BVec2>, other: Ref<::glam::BVec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::BVec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::BVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::BVec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -37819,7 +41060,7 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::BVec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::BVec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::BVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -37851,7 +41092,7 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::BVec3>| {
                 let output: Val<::glam::BVec3> = {
                     {
-                        let output: Val<::glam::BVec3> = <::glam::BVec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::BVec3> = <::glam::BVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -37868,7 +41109,7 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::BVec3>, other: Ref<::glam::BVec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::BVec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::BVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::BVec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -37994,7 +41235,7 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::BVec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::BVec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::BVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -38026,7 +41267,7 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::BVec4>| {
                 let output: Val<::glam::BVec4> = {
                     {
-                        let output: Val<::glam::BVec4> = <::glam::BVec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::BVec4> = <::glam::BVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -38043,7 +41284,7 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::BVec4>, other: Ref<::glam::BVec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::BVec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::BVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::BVec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -38177,7 +41418,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Ref<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Add<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::DVec2,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -38194,7 +41435,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Val<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Add<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::DVec2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -38211,7 +41452,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: f64| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Add<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             f64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -38443,7 +41684,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Component-wise clamping of values, similar to [`f64::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
+            " Component-wise clamping of values, similar to [`f64::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
             &["_self", "min", "max"],
         )
         .register_documented(
@@ -38506,7 +41747,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -38685,7 +41926,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Ref<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Div<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::DVec2,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -38702,7 +41943,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Val<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Div<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::DVec2,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -38719,7 +41960,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: f64| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Div<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -38822,7 +42063,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Ref<::glam::DVec2>, other: Ref<::glam::DVec2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DVec2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DVec2,
                         >>::eq(&_self, &other)
                             .into();
@@ -39028,7 +42269,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -39129,7 +42370,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -39144,7 +42385,24 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.",
+            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "max_position",
+            |_self: Val<::glam::DVec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::DVec2::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -39180,7 +42438,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -39195,7 +42453,24 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.",
+            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "min_position",
+            |_self: Val<::glam::DVec2>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::DVec2::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -39222,7 +42497,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Ref<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::DVec2,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -39239,7 +42514,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Val<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DVec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -39256,7 +42531,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: f64| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -39292,7 +42567,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -39332,7 +42607,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n # Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -39554,7 +42829,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Ref<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::DVec2,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -39571,7 +42846,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Val<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::DVec2,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -39588,7 +42863,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: f64| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             f64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -39633,7 +42908,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.",
+            " Returns `rhs` rotated by the angle of `self`. If `self` is normalized,\n then this just rotation. This is what you usually want. Otherwise,\n it will be like a rotation with a multiplication by `self`'s length.\n This can be used in conjunction with the [`from_angle()`][Self::from_angle()] method, e.g.\n `DVec2::from_angle(PI).rotate(DVec2::Y)` will create the vector `[-1, 0]`\n and rotate [`DVec2::Y`] around it returning `-DVec2::Y`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -39652,7 +42927,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be equal to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
             &["_self", "rhs", "max_angle"],
         )
         .register_documented(
@@ -39731,7 +43006,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Ref<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::DVec2,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -39748,7 +43023,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: Val<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::DVec2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -39765,7 +43040,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             |_self: Val<::glam::DVec2>, rhs: f64| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec2> = <::glam::DVec2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             f64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -39803,7 +43078,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y]`",
+            " Converts `self` to `[x, y]`",
             &["_self"],
         )
         .register_documented(
@@ -39908,7 +43183,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Ref<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Add<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::DVec3,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -39925,7 +43200,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Add<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::DVec3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -39942,7 +43217,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: f64| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Add<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             f64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -40205,7 +43480,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Component-wise clamping of values, similar to [`f64::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
+            " Component-wise clamping of values, similar to [`f64::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
             &["_self", "min", "max"],
         )
         .register_documented(
@@ -40268,7 +43543,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -40465,7 +43740,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Ref<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Div<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::DVec3,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -40482,7 +43757,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Div<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::DVec3,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -40499,7 +43774,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: f64| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Div<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -40602,7 +43877,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Ref<::glam::DVec3>, other: Ref<::glam::DVec3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DVec3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DVec3,
                         >>::eq(&_self, &other)
                             .into();
@@ -40793,7 +44068,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -40894,7 +44169,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -40909,7 +44184,24 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.",
+            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "max_position",
+            |_self: Val<::glam::DVec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::DVec3::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -40945,7 +44237,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -40960,7 +44252,24 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.",
+            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "min_position",
+            |_self: Val<::glam::DVec3>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::DVec3::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -40987,7 +44296,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Ref<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::DVec3,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -41004,7 +44313,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DVec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -41021,7 +44330,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: f64| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -41057,7 +44366,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -41098,7 +44407,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n # Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -41285,7 +44594,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Ref<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::DVec3,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -41302,7 +44611,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::DVec3,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -41319,7 +44628,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: f64| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             f64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -41348,6 +44657,98 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             },
             " Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.\n [Euclidean division]: f64::rem_euclid",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "rotate_axis",
+            |_self: Val<::glam::DVec3>, axis: Val<::glam::DVec3>, angle: f64| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::rotate_axis(
+                                _self.into_inner(),
+                                axis.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around `axis` by `angle` (in radians).\n The axis must be a unit vector.\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.",
+            &["_self", "axis", "angle"],
+        )
+        .register_documented(
+            "rotate_towards",
+            |_self: Val<::glam::DVec3>, rhs: Val<::glam::DVec3>, max_angle: f64| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::rotate_towards(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                max_angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            &["_self", "rhs", "max_angle"],
+        )
+        .register_documented(
+            "rotate_x",
+            |_self: Val<::glam::DVec3>, angle: f64| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::rotate_x(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the x axis by `angle` (in radians).",
+            &["_self", "angle"],
+        )
+        .register_documented(
+            "rotate_y",
+            |_self: Val<::glam::DVec3>, angle: f64| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::rotate_y(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the y axis by `angle` (in radians).",
+            &["_self", "angle"],
+        )
+        .register_documented(
+            "rotate_z",
+            |_self: Val<::glam::DVec3>, angle: f64| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::rotate_z(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates around the z axis by `angle` (in radians).",
+            &["_self", "angle"],
         )
         .register_documented(
             "round",
@@ -41407,6 +44808,25 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "slerp",
+            |_self: Val<::glam::DVec3>, rhs: Val<::glam::DVec3>, s: f64| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::slerp(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
             "splat",
             |v: f64| {
                 let output: Val<::glam::DVec3> = {
@@ -41425,7 +44845,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Ref<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::DVec3,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -41442,7 +44862,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::DVec3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -41459,7 +44879,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             |_self: Val<::glam::DVec3>, rhs: f64| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec3> = <::glam::DVec3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             f64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -41482,7 +44902,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z]`",
+            " Converts `self` to `[x, y, z]`",
             &["_self"],
         )
         .register_documented(
@@ -41622,7 +45042,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Ref<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Add<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             &::glam::DVec4,
                         >>::add(_self.into_inner(), &rhs)
                             .into();
@@ -41639,7 +45059,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Add<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::DVec4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -41656,7 +45076,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: f64| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Add<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             f64,
                         >>::add(_self.into_inner(), rhs)
                             .into();
@@ -41852,7 +45272,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Component-wise clamping of values, similar to [`f64::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
+            " Component-wise clamping of values, similar to [`f64::clamp`].\n Each element in `min` must be less-or-equal to the corresponding element in `max`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.\n # Panics\n Will panic if `min` is greater than `max` when `glam_assert` is enabled.",
             &["_self", "min", "max"],
         )
         .register_documented(
@@ -41915,7 +45335,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -42094,7 +45514,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Ref<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Div<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             &::glam::DVec4,
                         >>::div(_self.into_inner(), &rhs)
                             .into();
@@ -42111,7 +45531,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Div<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             ::glam::DVec4,
                         >>::div(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -42128,7 +45548,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: f64| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Div<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -42231,7 +45651,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Ref<::glam::DVec4>, other: Ref<::glam::DVec4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DVec4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DVec4,
                         >>::eq(&_self, &other)
                             .into();
@@ -42404,7 +45824,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.",
+            " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -42505,7 +45925,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.",
+            " Returns a vector containing the maximum values for each element of `self` and `rhs`.\n In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -42520,7 +45940,24 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.",
+            " Returns the horizontal maximum of `self`.\n In other words this computes `max(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "max_position",
+            |_self: Val<::glam::DVec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::DVec4::max_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first maximum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -42556,7 +45993,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.",
+            " Returns a vector containing the minimum values for each element of `self` and `rhs`.\n In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.\n NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on\n different SIMD architectures.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -42571,7 +46008,24 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.",
+            " Returns the horizontal minimum of `self`.\n In other words this computes `min(x, y, ..)`.\n NaN propogation does not follow IEEE 754-2008 semantics and may differ on\n different SIMD architectures.",
+            &["_self"],
+        )
+        .register_documented(
+            "min_position",
+            |_self: Val<::glam::DVec4>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::glam::DVec4::min_position(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the index of the first minimum element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -42598,7 +46052,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Ref<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             &::glam::DVec4,
                         >>::mul(_self.into_inner(), &rhs)
                             .into();
@@ -42615,7 +46069,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DVec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -42632,7 +46086,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: f64| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -42668,7 +46122,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -42709,7 +46163,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must be finite and _not_ of length zero, nor very close to zero.\n See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].\n # Panics\n Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -42896,7 +46350,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Ref<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             &::glam::DVec4,
                         >>::rem(_self.into_inner(), &rhs)
                             .into();
@@ -42913,7 +46367,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             ::glam::DVec4,
                         >>::rem(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -42930,7 +46384,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: f64| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Rem<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Rem<
                             f64,
                         >>::rem(_self.into_inner(), rhs)
                             .into();
@@ -43036,7 +46490,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Ref<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             &::glam::DVec4,
                         >>::sub(_self.into_inner(), &rhs)
                             .into();
@@ -43053,7 +46507,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::DVec4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -43070,7 +46524,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             |_self: Val<::glam::DVec4>, rhs: f64| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::core::ops::Sub<
+                        let output: Val<::glam::DVec4> = <::glam::DVec4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             f64,
                         >>::sub(_self.into_inner(), rhs)
                             .into();
@@ -43093,7 +46547,7 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -43245,10 +46699,27 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::Mat2>, rhs: Ref<::glam::Mat2>| {
+                let output: Val<::glam::Mat2> = {
+                    {
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::Mat2,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::Mat2>, rhs: Val<::glam::Mat2>| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Add<
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Mat2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -43298,7 +46769,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             |_self: Ref<::glam::Mat2>| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -43344,7 +46815,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::Mat2>, rhs: f32| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Div<
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -43379,7 +46850,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             |_self: Ref<::glam::Mat2>, rhs: Ref<::glam::Mat2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Mat2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Mat2,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -43576,10 +47047,44 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: Val<::glam::Mat2>, rhs: Ref<::glam::Mat2>| {
+                let output: Val<::glam::Mat2> = {
+                    {
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Mat2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat2>, rhs: Ref<::glam::Vec2>| {
+                let output: Val<::glam::Vec2> = {
+                    {
+                        let output: Val<::glam::Vec2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: Val<::glam::Mat2>, rhs: Val<::glam::Mat2>| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Mat2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -43596,7 +47101,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::Mat2>, rhs: Val<::glam::Vec2>| {
                 let output: Val<::glam::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = <::glam::Mat2 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -43613,7 +47118,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::Mat2>, rhs: f32| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -43684,7 +47189,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::Mat2>| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -43713,10 +47218,27 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::Mat2>, rhs: Ref<::glam::Mat2>| {
+                let output: Val<::glam::Mat2> = {
+                    {
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::Mat2,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::Mat2>, rhs: Val<::glam::Mat2>| {
                 let output: Val<::glam::Mat2> = {
                     {
-                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Sub<
+                        let output: Val<::glam::Mat2> = <::glam::Mat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Mat2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -43836,10 +47358,27 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::Mat3>, rhs: Ref<::glam::Mat3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::Mat3,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::Mat3>, rhs: Val<::glam::Mat3>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Add<
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Mat3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -43889,7 +47428,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Ref<::glam::Mat3>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -43935,7 +47474,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::Mat3>, rhs: f32| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Div<
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -43970,7 +47509,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Ref<::glam::Mat3>, rhs: Ref<::glam::Mat3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Mat3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Mat3,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -44293,11 +47832,153 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "look_at_lh",
+            |eye: Val<::glam::Vec3>, center: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = ::glam::Mat3::look_at_lh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_at_rh",
+            |eye: Val<::glam::Vec3>, center: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = ::glam::Mat3::look_at_rh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_to_lh",
+            |dir: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = ::glam::Mat3::look_to_lh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "look_to_rh",
+            |dir: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = ::glam::Mat3::look_to_rh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3>, rhs: Ref<::glam::Affine2>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Affine2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3>, rhs: Ref<::glam::Mat3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Mat3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3>, rhs: Ref<::glam::Vec3>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3>, rhs: Ref<::glam::Vec3A>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec3A,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::Mat3>, rhs: Val<::glam::Affine2>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Affine2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -44314,7 +47995,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::Mat3>, rhs: Val<::glam::Mat3>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Mat3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -44331,7 +48012,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::Mat3>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Mat3 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -44348,7 +48029,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::Mat3>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Mat3 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3A> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -44365,7 +48046,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::Mat3>, rhs: f32| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -44454,7 +48135,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::Mat3>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -44483,10 +48164,27 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::Mat3>, rhs: Ref<::glam::Mat3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::Mat3,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::Mat3>, rhs: Val<::glam::Mat3>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Sub<
+                        let output: Val<::glam::Mat3> = <::glam::Mat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Mat3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -44661,10 +48359,27 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::Mat3A>, rhs: Ref<::glam::Mat3A>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::Mat3A,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::Mat3A>, rhs: Val<::glam::Mat3A>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Add<
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Mat3A,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -44714,7 +48429,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Mat3A>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -44763,7 +48478,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Mat3A>, rhs: f32| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Div<
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -44798,7 +48513,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Mat3A>, rhs: Ref<::glam::Mat3A>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Mat3A as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Mat3A,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -45121,11 +48836,153 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "look_at_lh",
+            |eye: Val<::glam::Vec3>, center: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = ::glam::Mat3A::look_at_lh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_at_rh",
+            |eye: Val<::glam::Vec3>, center: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = ::glam::Mat3A::look_at_rh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_to_lh",
+            |dir: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = ::glam::Mat3A::look_to_lh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "look_to_rh",
+            |dir: Val<::glam::Vec3>, up: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = ::glam::Mat3A::look_to_rh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3A>, rhs: Ref<::glam::Affine2>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Affine2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3A>, rhs: Ref<::glam::Mat3A>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Mat3A,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3A>, rhs: Ref<::glam::Vec3>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat3A>, rhs: Ref<::glam::Vec3A>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec3A,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::Mat3A>, rhs: Val<::glam::Affine2>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Affine2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -45142,7 +48999,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Mat3A>, rhs: Val<::glam::Mat3A>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Mat3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -45159,7 +49016,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Mat3A>, rhs: Val<::glam::Vec3>| {
                 let output: Val<::glam::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = <::glam::Mat3A as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -45176,7 +49033,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Mat3A>, rhs: Val<::glam::Vec3A>| {
                 let output: Val<::glam::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = <::glam::Mat3A as ::core::ops::Mul<
+                        let output: Val<::glam::Vec3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -45193,7 +49050,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Mat3A>, rhs: f32| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -45282,7 +49139,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Mat3A>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -45314,10 +49171,27 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::Mat3A>, rhs: Ref<::glam::Mat3A>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::Mat3A,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::Mat3A>, rhs: Val<::glam::Mat3A>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Sub<
+                        let output: Val<::glam::Mat3A> = <::glam::Mat3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Mat3A,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -45491,10 +49365,27 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::Mat4>, rhs: Ref<::glam::Mat4>| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::Mat4,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::Mat4>, rhs: Val<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Add<
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::Mat4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -45544,7 +49435,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Ref<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -45590,7 +49481,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::Mat4>, rhs: f32| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Div<
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -45625,7 +49516,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Ref<::glam::Mat4>, rhs: Ref<::glam::Mat4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Mat4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Mat4,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -45733,6 +49624,24 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             },
             " Creates an affine transformation matrix from the given 3x3 linear transformation\n matrix.\n The resulting matrix can be used to transform 3D points and vectors. See\n [`Self::transform_point3()`] and [`Self::transform_vector3()`].",
             &["m"],
+        )
+        .register_documented(
+            "from_mat3_translation",
+            |mat3: Val<::glam::Mat3>, translation: Val<::glam::Vec3>| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = ::glam::Mat4::from_mat3_translation(
+                                mat3.into_inner(),
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transformation matrics from a 3x3 matrix (expressing scale, shear and\n rotation) and a translation vector.\n Equivalent to `Mat4::from_translation(translation) * Mat4::from_mat3(mat3)`",
+            &["mat3", "translation"],
         )
         .register_documented(
             "from_mat3a",
@@ -45895,6 +49804,72 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             &["translation"],
         )
         .register_documented(
+            "frustum_lh",
+            |left: f32, right: f32, bottom: f32, top: f32, z_near: f32, z_far: f32| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = ::glam::Mat4::frustum_lh(
+                                left,
+                                right,
+                                bottom,
+                                top,
+                                z_near,
+                                z_far,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            &["left", "right", "bottom", "top", "z_near", "z_far"],
+        )
+        .register_documented(
+            "frustum_rh",
+            |left: f32, right: f32, bottom: f32, top: f32, z_near: f32, z_far: f32| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = ::glam::Mat4::frustum_rh(
+                                left,
+                                right,
+                                bottom,
+                                top,
+                                z_near,
+                                z_far,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            &["left", "right", "bottom", "top", "z_near", "z_far"],
+        )
+        .register_documented(
+            "frustum_rh_gl",
+            |left: f32, right: f32, bottom: f32, top: f32, z_near: f32, z_far: f32| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = ::glam::Mat4::frustum_rh_gl(
+                                left,
+                                right,
+                                bottom,
+                                top,
+                                z_near,
+                                z_far,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed perspective projection matrix with [-1,1] depth range.\n This is the same as the OpenGL `glFrustum` function.\n See <https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glFrustum.xml>",
+            &["left", "right", "bottom", "top", "z_near", "z_far"],
+        )
+        .register_documented(
             "inverse",
             |_self: Ref<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
@@ -45953,7 +49928,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a focal points and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -45972,7 +49947,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -45991,7 +49966,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.",
+            " Creates a left-handed view matrix using a camera position, a facing direction and an up\n direction\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -46010,15 +49985,66 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.",
+            " Creates a right-handed view matrix using a camera position, a facing direction, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat4>, rhs: Ref<::glam::Affine3A>| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Affine3A,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat4>, rhs: Ref<::glam::Mat4>| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Mat4,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Mat4>, rhs: Ref<::glam::Vec4>| {
+                let output: Val<::glam::Vec4> = {
+                    {
+                        let output: Val<::glam::Vec4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Vec4,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
         )
         .register_documented(
             "mul",
             |_self: Val<::glam::Mat4>, rhs: Val<::glam::Affine3A>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Affine3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -46035,7 +50061,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::Mat4>, rhs: Val<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Mat4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -46052,7 +50078,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::Mat4>, rhs: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
                     {
-                        let output: Val<::glam::Vec4> = <::glam::Mat4 as ::core::ops::Mul<
+                        let output: Val<::glam::Vec4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Vec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -46069,7 +50095,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::Mat4>, rhs: f32| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -46140,7 +50166,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -46407,10 +50433,27 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::Mat4>, rhs: Ref<::glam::Mat4>| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::Mat4,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::Mat4>, rhs: Val<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Sub<
+                        let output: Val<::glam::Mat4> = <::glam::Mat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::Mat4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -46621,10 +50664,27 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::DMat2>, rhs: Ref<::glam::DMat2>| {
+                let output: Val<::glam::DMat2> = {
+                    {
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::DMat2,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::DMat2>, rhs: Val<::glam::DMat2>| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Add<
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::DMat2,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -46674,7 +50734,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             |_self: Ref<::glam::DMat2>| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -46723,7 +50783,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::DMat2>, rhs: f64| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Div<
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -46758,7 +50818,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             |_self: Ref<::glam::DMat2>, rhs: Ref<::glam::DMat2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DMat2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DMat2,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -46919,10 +50979,44 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: Val<::glam::DMat2>, rhs: Ref<::glam::DMat2>| {
+                let output: Val<::glam::DMat2> = {
+                    {
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DMat2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DMat2>, rhs: Ref<::glam::DVec2>| {
+                let output: Val<::glam::DVec2> = {
+                    {
+                        let output: Val<::glam::DVec2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DVec2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: Val<::glam::DMat2>, rhs: Val<::glam::DMat2>| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DMat2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -46939,7 +51033,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::DMat2>, rhs: Val<::glam::DVec2>| {
                 let output: Val<::glam::DVec2> = {
                     {
-                        let output: Val<::glam::DVec2> = <::glam::DMat2 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DVec2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -46956,7 +51050,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::DMat2>, rhs: f64| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -47027,7 +51121,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             |_self: Val<::glam::DMat2>| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -47059,10 +51153,27 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::DMat2>, rhs: Ref<::glam::DMat2>| {
+                let output: Val<::glam::DMat2> = {
+                    {
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::DMat2,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::DMat2>, rhs: Val<::glam::DMat2>| {
                 let output: Val<::glam::DMat2> = {
                     {
-                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Sub<
+                        let output: Val<::glam::DMat2> = <::glam::DMat2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::DMat2,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -47183,10 +51294,27 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::DMat3>, rhs: Ref<::glam::DMat3>| {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::DMat3,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::DMat3>, rhs: Val<::glam::DMat3>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Add<
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::DMat3,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -47236,7 +51364,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Ref<::glam::DMat3>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -47285,7 +51413,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::DMat3>, rhs: f64| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Div<
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -47320,7 +51448,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Ref<::glam::DMat3>, rhs: Ref<::glam::DMat3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DMat3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DMat3,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -47643,11 +51771,144 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "look_at_lh",
+            |
+                eye: Val<::glam::DVec3>,
+                center: Val<::glam::DVec3>,
+                up: Val<::glam::DVec3>|
+            {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = ::glam::DMat3::look_at_lh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_at_rh",
+            |
+                eye: Val<::glam::DVec3>,
+                center: Val<::glam::DVec3>,
+                up: Val<::glam::DVec3>|
+            {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = ::glam::DMat3::look_at_rh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_to_lh",
+            |dir: Val<::glam::DVec3>, up: Val<::glam::DVec3>| {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = ::glam::DMat3::look_to_lh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "look_to_rh",
+            |dir: Val<::glam::DVec3>, up: Val<::glam::DVec3>| {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = ::glam::DMat3::look_to_rh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DMat3>, rhs: Ref<::glam::DAffine2>| {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DAffine2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DMat3>, rhs: Ref<::glam::DMat3>| {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DMat3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DMat3>, rhs: Ref<::glam::DVec3>| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DVec3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::DMat3>, rhs: Val<::glam::DAffine2>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DAffine2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -47664,7 +51925,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::DMat3>, rhs: Val<::glam::DMat3>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DMat3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -47681,7 +51942,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::DMat3>, rhs: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DMat3 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DVec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -47698,7 +51959,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::DMat3>, rhs: f64| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -47769,7 +52030,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             |_self: Val<::glam::DMat3>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -47801,10 +52062,27 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::DMat3>, rhs: Ref<::glam::DMat3>| {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::DMat3,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::DMat3>, rhs: Val<::glam::DMat3>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Sub<
+                        let output: Val<::glam::DMat3> = <::glam::DMat3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::DMat3,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -47979,10 +52257,27 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::DMat4>, rhs: Ref<::glam::DMat4>| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::DMat4,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::DMat4>, rhs: Val<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Add<
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::DMat4,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -48032,7 +52327,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Ref<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -48081,7 +52376,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::DMat4>, rhs: f64| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Div<
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -48116,7 +52411,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Ref<::glam::DMat4>, rhs: Ref<::glam::DMat4>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DMat4 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DMat4,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -48224,6 +52519,24 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             },
             " Creates an affine transformation matrix from the given 3x3 linear transformation\n matrix.\n The resulting matrix can be used to transform 3D points and vectors. See\n [`Self::transform_point3()`] and [`Self::transform_vector3()`].",
             &["m"],
+        )
+        .register_documented(
+            "from_mat3_translation",
+            |mat3: Val<::glam::DMat3>, translation: Val<::glam::DVec3>| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = ::glam::DMat4::from_mat3_translation(
+                                mat3.into_inner(),
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transformation matrics from a 3x3 matrix (expressing scale, shear and\n rotation) and a translation vector.\n Equivalent to `DMat4::from_translation(translation) * DMat4::from_mat3(mat3)`",
+            &["mat3", "translation"],
         )
         .register_documented(
             "from_quat",
@@ -48369,6 +52682,72 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             &["translation"],
         )
         .register_documented(
+            "frustum_lh",
+            |left: f64, right: f64, bottom: f64, top: f64, z_near: f64, z_far: f64| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = ::glam::DMat4::frustum_lh(
+                                left,
+                                right,
+                                bottom,
+                                top,
+                                z_near,
+                                z_far,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            &["left", "right", "bottom", "top", "z_near", "z_far"],
+        )
+        .register_documented(
+            "frustum_rh",
+            |left: f64, right: f64, bottom: f64, top: f64, z_near: f64, z_far: f64| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = ::glam::DMat4::frustum_rh(
+                                left,
+                                right,
+                                bottom,
+                                top,
+                                z_near,
+                                z_far,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            &["left", "right", "bottom", "top", "z_near", "z_far"],
+        )
+        .register_documented(
+            "frustum_rh_gl",
+            |left: f64, right: f64, bottom: f64, top: f64, z_near: f64, z_far: f64| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = ::glam::DMat4::frustum_rh_gl(
+                                left,
+                                right,
+                                bottom,
+                                top,
+                                z_near,
+                                z_far,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed perspective projection matrix with [-1,1] depth range.\n This is the same as the OpenGL `glFrustum` function.\n See <https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glFrustum.xml>",
+            &["left", "right", "bottom", "top", "z_near", "z_far"],
+        )
+        .register_documented(
             "inverse",
             |_self: Ref<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
@@ -48431,7 +52810,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a focal points and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -48454,7 +52833,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -48473,7 +52852,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.",
+            " Creates a left-handed view matrix using a camera position, a facing direction and an up\n direction\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -48492,15 +52871,66 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.",
+            " Creates a right-handed view matrix using a camera position, a facing direction, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DMat4>, rhs: Ref<::glam::DAffine3>| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DAffine3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DMat4>, rhs: Ref<::glam::DMat4>| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DMat4,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DMat4>, rhs: Ref<::glam::DVec4>| {
+                let output: Val<::glam::DVec4> = {
+                    {
+                        let output: Val<::glam::DVec4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DVec4,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
         )
         .register_documented(
             "mul",
             |_self: Val<::glam::DMat4>, rhs: Val<::glam::DAffine3>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DAffine3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -48517,7 +52947,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::DMat4>, rhs: Val<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DMat4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -48534,7 +52964,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::DMat4>, rhs: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
                     {
-                        let output: Val<::glam::DVec4> = <::glam::DMat4 as ::core::ops::Mul<
+                        let output: Val<::glam::DVec4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DVec4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -48551,7 +52981,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::DMat4>, rhs: f64| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -48622,7 +53052,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             |_self: Val<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -48874,10 +53304,27 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::DMat4>, rhs: Ref<::glam::DMat4>| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::DMat4,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::DMat4>, rhs: Val<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Sub<
+                        let output: Val<::glam::DMat4> = <::glam::DMat4 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::DMat4,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -49036,11 +53483,28 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
             &["_self", "rhs", "max_abs_diff"],
         )
         .register_documented(
+            "as_daffine2",
+            |_self: Ref<::glam::Affine2>| {
+                let output: Val<::glam::DAffine2> = {
+                    {
+                        let output: Val<::glam::DAffine2> = ::glam::Affine2::as_daffine2(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Casts all elements of `self` to `f64`.",
+            &["_self"],
+        )
+        .register_documented(
             "clone",
             |_self: Ref<::glam::Affine2>| {
                 let output: Val<::glam::Affine2> = {
                     {
-                        let output: Val<::glam::Affine2> = <::glam::Affine2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Affine2> = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -49057,7 +53521,7 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
             |_self: Ref<::glam::Affine2>, rhs: Ref<::glam::Affine2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Affine2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Affine2,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -49296,10 +53760,61 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: Val<::glam::Affine2>, rhs: Ref<::glam::Affine2>| {
+                let output: Val<::glam::Affine2> = {
+                    {
+                        let output: Val<::glam::Affine2> = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Affine2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Affine2>, rhs: Ref<::glam::Mat3>| {
+                let output: Val<::glam::Mat3> = {
+                    {
+                        let output: Val<::glam::Mat3> = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Mat3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Affine2>, rhs: Ref<::glam::Mat3A>| {
+                let output: Val<::glam::Mat3A> = {
+                    {
+                        let output: Val<::glam::Mat3A> = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Mat3A,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: Val<::glam::Affine2>, rhs: Val<::glam::Affine2>| {
                 let output: Val<::glam::Affine2> = {
                     {
-                        let output: Val<::glam::Affine2> = <::glam::Affine2 as ::core::ops::Mul<
+                        let output: Val<::glam::Affine2> = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Affine2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -49316,7 +53831,7 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
             |_self: Val<::glam::Affine2>, rhs: Val<::glam::Mat3>| {
                 let output: Val<::glam::Mat3> = {
                     {
-                        let output: Val<::glam::Mat3> = <::glam::Affine2 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3> = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Mat3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -49333,7 +53848,7 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
             |_self: Val<::glam::Affine2>, rhs: Val<::glam::Mat3A>| {
                 let output: Val<::glam::Mat3A> = {
                     {
-                        let output: Val<::glam::Mat3A> = <::glam::Affine2 as ::core::ops::Mul<
+                        let output: Val<::glam::Mat3A> = <::glam::Affine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Mat3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -49445,11 +53960,28 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
             &["_self", "rhs", "max_abs_diff"],
         )
         .register_documented(
+            "as_daffine3",
+            |_self: Ref<::glam::Affine3A>| {
+                let output: Val<::glam::DAffine3> = {
+                    {
+                        let output: Val<::glam::DAffine3> = ::glam::Affine3A::as_daffine3(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Casts all elements of `self` to `f64`.",
+            &["_self"],
+        )
+        .register_documented(
             "clone",
             |_self: Ref<::glam::Affine3A>| {
                 let output: Val<::glam::Affine3A> = {
                     {
-                        let output: Val<::glam::Affine3A> = <::glam::Affine3A as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::Affine3A> = <::glam::Affine3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -49466,7 +53998,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::Affine3A>, rhs: Ref<::glam::Affine3A>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::Affine3A as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::Affine3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::Affine3A,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -49839,10 +54371,44 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: Val<::glam::Affine3A>, rhs: Ref<::glam::Affine3A>| {
+                let output: Val<::glam::Affine3A> = {
+                    {
+                        let output: Val<::glam::Affine3A> = <::glam::Affine3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Affine3A,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::Affine3A>, rhs: Ref<::glam::Mat4>| {
+                let output: Val<::glam::Mat4> = {
+                    {
+                        let output: Val<::glam::Mat4> = <::glam::Affine3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::Mat4,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: Val<::glam::Affine3A>, rhs: Val<::glam::Affine3A>| {
                 let output: Val<::glam::Affine3A> = {
                     {
-                        let output: Val<::glam::Affine3A> = <::glam::Affine3A as ::core::ops::Mul<
+                        let output: Val<::glam::Affine3A> = <::glam::Affine3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Affine3A,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -49859,7 +54425,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
             |_self: Val<::glam::Affine3A>, rhs: Val<::glam::Mat4>| {
                 let output: Val<::glam::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = <::glam::Affine3A as ::core::ops::Mul<
+                        let output: Val<::glam::Mat4> = <::glam::Affine3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::Mat4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -50007,11 +54573,28 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
             &["_self", "rhs", "max_abs_diff"],
         )
         .register_documented(
+            "as_affine2",
+            |_self: Ref<::glam::DAffine2>| {
+                let output: Val<::glam::Affine2> = {
+                    {
+                        let output: Val<::glam::Affine2> = ::glam::DAffine2::as_affine2(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Casts all elements of `self` to `f32`.",
+            &["_self"],
+        )
+        .register_documented(
             "clone",
             |_self: Ref<::glam::DAffine2>| {
                 let output: Val<::glam::DAffine2> = {
                     {
-                        let output: Val<::glam::DAffine2> = <::glam::DAffine2 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DAffine2> = <::glam::DAffine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -50028,7 +54611,7 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
             |_self: Ref<::glam::DAffine2>, rhs: Ref<::glam::DAffine2>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DAffine2 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DAffine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DAffine2,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -50250,10 +54833,44 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: Val<::glam::DAffine2>, rhs: Ref<::glam::DAffine2>| {
+                let output: Val<::glam::DAffine2> = {
+                    {
+                        let output: Val<::glam::DAffine2> = <::glam::DAffine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DAffine2,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DAffine2>, rhs: Ref<::glam::DMat3>| {
+                let output: Val<::glam::DMat3> = {
+                    {
+                        let output: Val<::glam::DMat3> = <::glam::DAffine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DMat3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: Val<::glam::DAffine2>, rhs: Val<::glam::DAffine2>| {
                 let output: Val<::glam::DAffine2> = {
                     {
-                        let output: Val<::glam::DAffine2> = <::glam::DAffine2 as ::core::ops::Mul<
+                        let output: Val<::glam::DAffine2> = <::glam::DAffine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DAffine2,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -50270,7 +54887,7 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
             |_self: Val<::glam::DAffine2>, rhs: Val<::glam::DMat3>| {
                 let output: Val<::glam::DMat3> = {
                     {
-                        let output: Val<::glam::DMat3> = <::glam::DAffine2 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat3> = <::glam::DAffine2 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DMat3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -50382,11 +54999,28 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
             &["_self", "rhs", "max_abs_diff"],
         )
         .register_documented(
+            "as_affine3a",
+            |_self: Ref<::glam::DAffine3>| {
+                let output: Val<::glam::Affine3A> = {
+                    {
+                        let output: Val<::glam::Affine3A> = ::glam::DAffine3::as_affine3a(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Casts all elements of `self` to `f32`.",
+            &["_self"],
+        )
+        .register_documented(
             "clone",
             |_self: Ref<::glam::DAffine3>| {
                 let output: Val<::glam::DAffine3> = {
                     {
-                        let output: Val<::glam::DAffine3> = <::glam::DAffine3 as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DAffine3> = <::glam::DAffine3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -50403,7 +55037,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
             |_self: Ref<::glam::DAffine3>, rhs: Ref<::glam::DAffine3>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DAffine3 as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DAffine3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DAffine3,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -50784,10 +55418,44 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: Val<::glam::DAffine3>, rhs: Ref<::glam::DAffine3>| {
+                let output: Val<::glam::DAffine3> = {
+                    {
+                        let output: Val<::glam::DAffine3> = <::glam::DAffine3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DAffine3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DAffine3>, rhs: Ref<::glam::DMat4>| {
+                let output: Val<::glam::DMat4> = {
+                    {
+                        let output: Val<::glam::DMat4> = <::glam::DAffine3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DMat4,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: Val<::glam::DAffine3>, rhs: Val<::glam::DAffine3>| {
                 let output: Val<::glam::DAffine3> = {
                     {
-                        let output: Val<::glam::DAffine3> = <::glam::DAffine3 as ::core::ops::Mul<
+                        let output: Val<::glam::DAffine3> = <::glam::DAffine3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DAffine3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -50804,7 +55472,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
             |_self: Val<::glam::DAffine3>, rhs: Val<::glam::DMat4>| {
                 let output: Val<::glam::DMat4> = {
                     {
-                        let output: Val<::glam::DMat4> = <::glam::DAffine3 as ::core::ops::Mul<
+                        let output: Val<::glam::DMat4> = <::glam::DAffine3 as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DMat4,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -50913,10 +55581,27 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "add",
+            |_self: Val<::glam::DQuat>, rhs: Ref<::glam::DQuat>| {
+                let output: Val<::glam::DQuat> = {
+                    {
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
+                            &::glam::DQuat,
+                        >>::add(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "add",
             |_self: Val<::glam::DQuat>, rhs: Val<::glam::DQuat>| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::ops::Add<
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Add<
                             ::glam::DQuat,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -50968,7 +55653,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             |_self: Ref<::glam::DQuat>| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -51002,7 +55687,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             |_self: Val<::glam::DQuat>, rhs: f64| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::ops::Div<
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Div<
                             f64,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -51037,7 +55722,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             |_self: Ref<::glam::DQuat>, rhs: Ref<::glam::DQuat>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::DQuat as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::DQuat,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -51454,11 +56139,127 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             &["_self", "end", "s"],
         )
         .register_documented(
+            "look_at_lh",
+            |
+                eye: Val<::glam::DVec3>,
+                center: Val<::glam::DVec3>,
+                up: Val<::glam::DVec3>|
+            {
+                let output: Val<::glam::DQuat> = {
+                    {
+                        let output: Val<::glam::DQuat> = ::glam::DQuat::look_at_lh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_at_rh",
+            |
+                eye: Val<::glam::DVec3>,
+                center: Val<::glam::DVec3>,
+                up: Val<::glam::DVec3>|
+            {
+                let output: Val<::glam::DQuat> = {
+                    {
+                        let output: Val<::glam::DQuat> = ::glam::DQuat::look_at_rh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_to_lh",
+            |dir: Val<::glam::DVec3>, up: Val<::glam::DVec3>| {
+                let output: Val<::glam::DQuat> = {
+                    {
+                        let output: Val<::glam::DQuat> = ::glam::DQuat::look_to_lh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a quaterion rotation from a facing direction and an up direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "look_to_rh",
+            |dir: Val<::glam::DVec3>, up: Val<::glam::DVec3>| {
+                let output: Val<::glam::DQuat> = {
+                    {
+                        let output: Val<::glam::DQuat> = ::glam::DQuat::look_to_rh(
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a quaterion rotation from facing direction and an up direction.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` and `up` are not normalized when `glam_assert` is enabled.",
+            &["dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DQuat>, rhs: Ref<::glam::DQuat>| {
+                let output: Val<::glam::DQuat> = {
+                    {
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DQuat,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::glam::DQuat>, rhs: Ref<::glam::DVec3>| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
+                            &::glam::DVec3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul",
             |_self: Val<::glam::DQuat>, rhs: Val<::glam::DQuat>| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::ops::Mul<
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DQuat,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -51475,7 +56276,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             |_self: Val<::glam::DQuat>, rhs: Val<::glam::DVec3>| {
                 let output: Val<::glam::DVec3> = {
                     {
-                        let output: Val<::glam::DVec3> = <::glam::DQuat as ::core::ops::Mul<
+                        let output: Val<::glam::DVec3> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             ::glam::DVec3,
                         >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -51492,7 +56293,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             |_self: Val<::glam::DQuat>, rhs: f64| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::ops::Mul<
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Mul<
                             f64,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -51545,7 +56346,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             |_self: Val<::glam::DQuat>| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::ops::Neg>::neg(
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -51614,10 +56415,27 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
+            |_self: Val<::glam::DQuat>, rhs: Ref<::glam::DQuat>| {
+                let output: Val<::glam::DQuat> = {
+                    {
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
+                            &::glam::DQuat,
+                        >>::sub(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
             |_self: Val<::glam::DQuat>, rhs: Val<::glam::DQuat>| {
                 let output: Val<::glam::DQuat> = {
                     {
-                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::core::ops::Sub<
+                        let output: Val<::glam::DQuat> = <::glam::DQuat as ::bevy_reflect::__macro_exports::auto_register::inventory::core::ops::Sub<
                             ::glam::DQuat,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -51700,57 +56518,60 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
     registry.register_type_data::<::glam::DQuat, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_euler_rot_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::glam::EulerRot>::new(
-        world,
-    )
-    .register_documented(
-        "assert_receiver_is_total_eq",
-        |_self: Ref<::glam::EulerRot>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::glam::EulerRot as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self)
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::glam::EulerRot,
+    >::new(world)
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::glam::EulerRot>| {
+                let output: () = {
+                    {
+                        let output: () = <::glam::EulerRot as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::glam::EulerRot>| {
-            let output: Val<::glam::EulerRot> = {
-                {
-                    let output: Val<::glam::EulerRot> =
-                        <::glam::EulerRot as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::glam::EulerRot>, other: Ref<::glam::EulerRot>| {
-            let output: bool = {
-                {
-                    let output: bool = <::glam::EulerRot as ::core::cmp::PartialEq<
-                        ::glam::EulerRot,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::glam::EulerRot>| {
+                let output: Val<::glam::EulerRot> = {
+                    {
+                        let output: Val<::glam::EulerRot> = <::glam::EulerRot as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::glam::EulerRot>, other: Ref<::glam::EulerRot>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::glam::EulerRot as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::glam::EulerRot,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry.register_type_data::<::glam::EulerRot, bevy_mod_scripting_bindings::MarkAsGenerated>();
@@ -51809,7 +56630,7 @@ pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::BVec3A>| {
                 let output: Val<::glam::BVec3A> = {
                     {
-                        let output: Val<::glam::BVec3A> = <::glam::BVec3A as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::BVec3A> = <::glam::BVec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -51826,7 +56647,7 @@ pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
             |_self: Ref<::glam::BVec3A>, rhs: Ref<::glam::BVec3A>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::BVec3A as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::BVec3A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::BVec3A,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -51970,7 +56791,7 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
             |_self: Ref<::glam::BVec4A>| {
                 let output: Val<::glam::BVec4A> = {
                     {
-                        let output: Val<::glam::BVec4A> = <::glam::BVec4A as ::core::clone::Clone>::clone(
+                        let output: Val<::glam::BVec4A> = <::glam::BVec4A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -51987,7 +56808,7 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
             |_self: Ref<::glam::BVec4A>, rhs: Ref<::glam::BVec4A>| {
                 let output: bool = {
                     {
-                        let output: bool = <::glam::BVec4A as ::core::cmp::PartialEq<
+                        let output: bool = <::glam::BVec4A as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::glam::BVec4A,
                         >>::eq(&_self, &rhs)
                             .into();
@@ -52078,98 +56899,103 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
     registry.register_type_data::<::glam::BVec4A, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_smol_str_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::smol_str::SmolStr>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::smol_str::SmolStr>| {
-            let output: Val<::smol_str::SmolStr> = {
-                {
-                    let output: Val<::smol_str::SmolStr> =
-                        <::smol_str::SmolStr as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::smol_str::SmolStr>, other: Ref<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = <::smol_str::SmolStr as ::core::cmp::PartialEq<
-                        ::smol_str::SmolStr,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "is_empty",
-        |_self: Ref<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "is_heap_allocated",
-        |_self: Ref<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "len",
-        |_self: Ref<::smol_str::SmolStr>| {
-            let output: usize = {
-                {
-                    let output: usize = ::smol_str::SmolStr::len(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "to_string",
-        |_self: Ref<::smol_str::SmolStr>| {
-            let output: ::std::string::String = {
-                {
-                    let output: ::std::string::String =
-                        ::smol_str::SmolStr::to_string(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::smol_str::SmolStr,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::smol_str::SmolStr>| {
+                let output: Val<::smol_str::SmolStr> = {
+                    {
+                        let output: Val<::smol_str::SmolStr> = <::smol_str::SmolStr as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::smol_str::SmolStr>, other: Ref<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::smol_str::SmolStr as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::smol_str::SmolStr,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "is_empty",
+            |_self: Ref<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "is_heap_allocated",
+            |_self: Ref<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "len",
+            |_self: Ref<::smol_str::SmolStr>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::smol_str::SmolStr::len(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "to_string",
+            |_self: Ref<::smol_str::SmolStr>| {
+                let output: ::std::string::String = {
+                    {
+                        let output: ::std::string::String = ::smol_str::SmolStr::to_string(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -52213,7 +57039,7 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
             |_self: Ref<::uuid::Uuid>| {
                 let output: () = {
                     {
-                        let output: () = <::uuid::Uuid as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::uuid::Uuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -52230,7 +57056,7 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
             |_self: Ref<::uuid::Uuid>| {
                 let output: Val<::uuid::Uuid> = {
                     {
-                        let output: Val<::uuid::Uuid> = <::uuid::Uuid as ::core::clone::Clone>::clone(
+                        let output: Val<::uuid::Uuid> = <::uuid::Uuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -52258,10 +57084,27 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
+            |_self: Ref<::uuid::Uuid>, other: Ref<::uuid::NonNilUuid>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::uuid::Uuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::uuid::NonNilUuid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "eq",
             |_self: Ref<::uuid::Uuid>, other: Ref<::uuid::Uuid>| {
                 let output: bool = {
                     {
-                        let output: bool = <::uuid::Uuid as ::core::cmp::PartialEq<
+                        let output: bool = <::uuid::Uuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
                             ::uuid::Uuid,
                         >>::eq(&_self, &other)
                             .into();
@@ -52354,12 +57197,13 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
         .register_documented(
             "get_node_id",
             |_self: Ref<::uuid::Uuid>| {
-                let output: ::core::option::Option<[u8; 6]> = {
+                let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                    [u8; 6],
+                > = {
                     {
-                        let output: ::core::option::Option<[u8; 6]> = ::uuid::Uuid::get_node_id(
-                                &_self,
-                            )
-                            .into();
+                        let output: ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Option<
+                            [u8; 6],
+                        > = ::uuid::Uuid::get_node_id(&_self).into();
                         output
                     }
                 };
@@ -52501,19 +57345,130 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
     let mut registry = registry.write();
     registry.register_type_data::<::uuid::Uuid, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
+pub(crate) fn register_non_nil_uuid_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::uuid::NonNilUuid,
+    >::new(world)
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::uuid::NonNilUuid>| {
+                let output: () = {
+                    {
+                        let output: () = <::uuid::NonNilUuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::uuid::NonNilUuid>| {
+                let output: Val<::uuid::NonNilUuid> = {
+                    {
+                        let output: Val<::uuid::NonNilUuid> = <::uuid::NonNilUuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::uuid::NonNilUuid>, other: Ref<::uuid::NonNilUuid>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::uuid::NonNilUuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::uuid::NonNilUuid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::uuid::NonNilUuid>, other: Ref<::uuid::Uuid>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::uuid::NonNilUuid as ::bevy_reflect::__macro_exports::auto_register::inventory::core::prelude::v1::PartialEq<
+                            ::uuid::Uuid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get",
+            |_self: Val<::uuid::NonNilUuid>| {
+                let output: Val<::uuid::Uuid> = {
+                    {
+                        let output: Val<::uuid::Uuid> = ::uuid::NonNilUuid::get(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the underlying [`Uuid`] value.",
+            &["_self"],
+        )
+        .register_documented(
+            "new_unchecked",
+            |uuid: Val<::uuid::Uuid>| {
+                let output: Val<::uuid::NonNilUuid> = {
+                    {
+                        let output: Val<::uuid::NonNilUuid> = ::uuid::NonNilUuid::new_unchecked(
+                                uuid.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a non-nil without checking whether the value is non-nil. This results in undefined behavior if the value is nil.\n # Safety\n The value must not be nil.",
+            &["uuid"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::uuid::NonNilUuid, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
 impl Plugin for BevyReflectScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_atomic_bool_functions(&mut world);
+        register_atomic_i_8_functions(&mut world);
         register_atomic_i_16_functions(&mut world);
         register_atomic_i_32_functions(&mut world);
         register_atomic_i_64_functions(&mut world);
-        register_atomic_i_8_functions(&mut world);
         register_atomic_isize_functions(&mut world);
+        register_atomic_u_8_functions(&mut world);
         register_atomic_u_16_functions(&mut world);
         register_atomic_u_32_functions(&mut world);
         register_atomic_u_64_functions(&mut world);
-        register_atomic_u_8_functions(&mut world);
         register_atomic_usize_functions(&mut world);
         register_duration_functions(&mut world);
         register_instant_functions(&mut world);
@@ -52572,5 +57527,6 @@ impl Plugin for BevyReflectScriptingPlugin {
         register_b_vec_4_a_functions(&mut world);
         register_smol_str_functions(&mut world);
         register_uuid_functions(&mut world);
+        register_non_nil_uuid_functions(&mut world);
     }
 }

@@ -331,7 +331,11 @@ impl WorkspaceGraph {
                                     .map(|(k, v)| {
                                         (
                                             k.to_string(),
-                                            v.iter().map(|f| f.to_string()).collect::<Vec<_>>(),
+                                            v.iter()
+                                                .map(|(f, enabled_by_shared)| {
+                                                    (f.to_string(), enabled_by_shared)
+                                                })
+                                                .collect::<Vec<_>>(),
                                         )
                                     })
                                     .collect()
@@ -345,7 +349,20 @@ impl WorkspaceGraph {
                     active_features.join("\\n"),
                     active_dependencies
                         .iter()
-                        .map(|(k, v)| format!("{}: [{}]", k, v.join(", ")))
+                        .map(|(k, v)| format!(
+                            "{}: [{}]",
+                            k,
+                            v.iter()
+                                .map(|(f, enabled_by_shared)| format!(
+                                    "{}{}",
+                                    f,
+                                    enabled_by_shared
+                                        .then_some(String::from(" (*shared)"))
+                                        .unwrap_or_default()
+                                ))
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        ))
                         .collect::<Vec<_>>()
                         .join("\\n")
                 );
@@ -555,7 +572,7 @@ impl WorkspaceGraph {
         }
 
         // then compute the active dependency features for each crate
-        let mut active_dependency_features = HashMap::<_, Vec<_>>::new();
+        let mut active_dependency_features = HashMap::<_, Vec<(_, _)>>::new();
         for krate in self
             .workspace
             .all_crates()
@@ -585,12 +602,34 @@ impl WorkspaceGraph {
                             active_dependency_features
                                 .entry((krate.name.clone(), dependency.name.clone()))
                                 .or_default()
-                                .push(feature.clone());
+                                .push((feature.clone(), false));
+                        }
+                    }
+                }
+                // now go through the active features for this crate, and add remaining features enabled by cargo through other crates
+                if let Some(entry) = active_dependency_features
+                    .get_mut(&(krate.name.clone(), dependency.name.clone()))
+                {
+                    // find features on these active deps, that must now be enabled, we show that on the graph with a note
+                    for feat in self
+                        .workspace
+                        .find_crate_opt(&dependency.name)
+                        .iter()
+                        .flat_map(|d| d.active_features.iter())
+                        .flatten()
+                        .filter(|f| !f.is_special_default_enabling_feature())
+                    {
+                        // meh
+                        let val = (feat.clone(), true);
+                        let false_val = (feat.clone(), false);
+                        if !entry.contains(&val) && !entry.contains(&false_val) {
+                            entry.push(val);
                         }
                     }
                 }
             }
         }
+
         // finally remove all enable_default_for_ features not to pollute the output
         // and insert the previously computed active dependency features
         for krate in self.workspace.all_crates_mut() {
