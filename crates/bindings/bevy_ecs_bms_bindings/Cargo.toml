@@ -17,7 +17,7 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_ecs = { version = "0.17.2", features = ["std", "bevy_reflect", "async_executor", "backtrace", "multi_threaded", "reflect_auto_register", "serialize"], default-features = true}
+bevy_ecs = { version = "0.17.2", features = ["std", "async_executor", "multi_threaded", "bevy_reflect", "reflect_auto_register", "backtrace", "serialize"], default-features = true}
 
 
 arrayvec = { version = "^0.7.4", features = ["std"], default-features = false}
@@ -28,7 +28,7 @@ bevy_platform = { version = "^0.17.2", features = ["std", "serialize", "alloc"],
 
 bevy_ptr = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["std", "auto_register", "glam", "uuid", "smol_str", "smallvec", "debug", "auto_register_inventory", "debug_stack"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["std", "auto_register", "glam", "uuid", "smol_str", "auto_register_inventory", "smallvec", "debug", "debug_stack"], default-features = true}
 
 bevy_tasks = { version = "^0.17.2", features = ["async_executor", "multi_threaded", "futures-lite"], default-features = true}
 

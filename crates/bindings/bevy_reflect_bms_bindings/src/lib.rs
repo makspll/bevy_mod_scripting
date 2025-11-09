@@ -15,7 +15,49 @@ pub struct BevyReflectScriptingPlugin;
 pub(crate) fn register_atomic_bool_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
+                >|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\n use std::sync::atomic::AtomicBool;\n let some_bool = AtomicBool::new(true);\n assert_eq!(some_bool.into_inner(), true);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: bool| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicBool::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `AtomicBool`.\n # Examples\n ```\n use std::sync::atomic::AtomicBool;\n let atomic_true = AtomicBool::new(true);\n let atomic_false = AtomicBool::new(false);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -27,7 +69,49 @@ pub(crate) fn register_atomic_bool_functions(world: &mut World) {
 pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
+                >|
+            {
+                let output: i8 = {
+                    {
+                        let output: i8 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI8;\nlet some_var = AtomicI8::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: i8| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI8::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI8;\nlet atomic_forty_two = AtomicI8::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -39,7 +123,49 @@ pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
 pub(crate) fn register_atomic_i_16_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+                >|
+            {
+                let output: i16 = {
+                    {
+                        let output: i16 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet some_var = AtomicI16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: i16| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI16::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet atomic_forty_two = AtomicI16::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -51,7 +177,49 @@ pub(crate) fn register_atomic_i_16_functions(world: &mut World) {
 pub(crate) fn register_atomic_i_32_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+                >|
+            {
+                let output: i32 = {
+                    {
+                        let output: i32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet some_var = AtomicI32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: i32| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI32::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet atomic_forty_two = AtomicI32::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -63,7 +231,49 @@ pub(crate) fn register_atomic_i_32_functions(world: &mut World) {
 pub(crate) fn register_atomic_i_64_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
+                >|
+            {
+                let output: i64 = {
+                    {
+                        let output: i64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet some_var = AtomicI64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: i64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicI64::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet atomic_forty_two = AtomicI64::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -75,7 +285,49 @@ pub(crate) fn register_atomic_i_64_functions(world: &mut World) {
 pub(crate) fn register_atomic_isize_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
+                >|
+            {
+                let output: isize = {
+                    {
+                        let output: isize = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicIsize;\nlet some_var = AtomicIsize::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: isize| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicIsize::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicIsize;\nlet atomic_forty_two = AtomicIsize::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -87,7 +339,49 @@ pub(crate) fn register_atomic_isize_functions(world: &mut World) {
 pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
+                >|
+            {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU8;\nlet some_var = AtomicU8::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: u8| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU8::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU8;\nlet atomic_forty_two = AtomicU8::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -99,7 +393,49 @@ pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
 pub(crate) fn register_atomic_u_16_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+                >|
+            {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet some_var = AtomicU16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: u16| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU16::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet atomic_forty_two = AtomicU16::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -111,7 +447,49 @@ pub(crate) fn register_atomic_u_16_functions(world: &mut World) {
 pub(crate) fn register_atomic_u_32_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+                >|
+            {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet some_var = AtomicU32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: u32| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU32::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet atomic_forty_two = AtomicU32::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -123,7 +501,49 @@ pub(crate) fn register_atomic_u_32_functions(world: &mut World) {
 pub(crate) fn register_atomic_u_64_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
+                >|
+            {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet some_var = AtomicU64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: u64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicU64::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet atomic_forty_two = AtomicU64::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -135,7 +555,49 @@ pub(crate) fn register_atomic_u_64_functions(world: &mut World) {
 pub(crate) fn register_atomic_usize_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "into_inner",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
+                >|
+            {
+                let output: usize = {
+                    {
+                        let output: usize = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize::into_inner(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicUsize;\nlet some_var = AtomicUsize::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |v: usize| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::sync::atomic::AtomicUsize::new(
+                                v,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicUsize;\nlet atomic_forty_two = AtomicUsize::new(42);\n ```",
+            &["v"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -148,6 +610,35 @@ pub(crate) fn register_duration_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
     >::new(world)
+        .register_documented(
+            "abs_diff",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                other: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::abs_diff(
+                                _self.into_inner(),
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the absolute difference between `self` and `other`.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(100, 0).abs_diff(Duration::new(80, 0)), Duration::new(20, 0));\n assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));\n ```",
+            &["_self", "other"],
+        )
         .register_documented(
             "add",
             |
@@ -175,6 +666,132 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "as_micros",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: u128 = {
+                    {
+                        let output: u128 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_micros(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the total number of whole microseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_micros(), 5_730_023);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_millis",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: u128 = {
+                    {
+                        let output: u128 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_millis(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the total number of whole milliseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_millis(), 5_730);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_nanos",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: u128 = {
+                    {
+                        let output: u128 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_nanos(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the total number of nanoseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_nanos(), 5_730_023_852);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_secs",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_secs(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of _whole_ seconds contained by this `Duration`.\n The returned value does not include the fractional (nanosecond) part of the\n duration, which can be obtained using [`subsec_nanos`].\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_secs(), 5);\n ```\n To determine the total number of seconds represented by the `Duration`\n including the fractional part, use [`as_secs_f64`] or [`as_secs_f32`]\n [`as_secs_f64`]: Duration::as_secs_f64\n [`as_secs_f32`]: Duration::as_secs_f32\n [`subsec_nanos`]: Duration::subsec_nanos",
+            &["_self"],
+        )
+        .register_documented(
+            "as_secs_f32",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_secs_f32(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of seconds contained by this `Duration` as `f32`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.as_secs_f32(), 2.7);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_secs_f64",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: f64 = {
+                    {
+                        let output: f64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::as_secs_f64(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of seconds contained by this `Duration` as `f64`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.as_secs_f64(), 2.7);\n ```",
+            &["_self"],
         )
         .register_documented(
             "assert_receiver_is_total_eq",
@@ -249,6 +866,110 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "div_duration_f32",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_duration_f32(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `Duration` and returns `f32`.\n # Examples\n ```\n use std::time::Duration;\n let dur1 = Duration::new(2, 700_000_000);\n let dur2 = Duration::new(5, 400_000_000);\n assert_eq!(dur1.div_duration_f32(dur2), 0.5);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "div_duration_f64",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: f64 = {
+                    {
+                        let output: f64 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_duration_f64(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `Duration` and returns `f64`.\n # Examples\n ```\n use std::time::Duration;\n let dur1 = Duration::new(2, 700_000_000);\n let dur2 = Duration::new(5, 400_000_000);\n assert_eq!(dur1.div_duration_f64(dur2), 0.5);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "div_f32",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_f32(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `f32`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n // note that due to rounding errors result is slightly\n // different from 0.859_872_611\n assert_eq!(dur.div_f32(3.14), Duration::new(0, 859_872_580));\n assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "div_f64",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f64|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::div_f64(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `f64`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.div_f64(3.14), Duration::new(0, 859_872_611));\n assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "eq",
             |
                 _self: Ref<
@@ -273,16 +994,16 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
-            "from_hours",
-            |hours: u64| {
+            "from_micros",
+            |micros: u64| {
                 let output: Val<
                     ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                 > = {
                     {
                         let output: Val<
                             ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
-                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_hours(
-                                hours,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_micros(
+                                micros,
                             )
                             .into();
                         output
@@ -290,20 +1011,20 @@ pub(crate) fn register_duration_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a new `Duration` from the specified number of hours.\n # Panics\n Panics if the given number of hours overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_hours(6);\n assert_eq!(6 * 60 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
-            &["hours"],
+            " Creates a new `Duration` from the specified number of microseconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_micros(1_000_002);\n assert_eq!(1, duration.as_secs());\n assert_eq!(2_000, duration.subsec_nanos());\n ```",
+            &["micros"],
         )
         .register_documented(
-            "from_mins",
-            |mins: u64| {
+            "from_millis",
+            |millis: u64| {
                 let output: Val<
                     ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
                 > = {
                     {
                         let output: Val<
                             ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
-                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_mins(
-                                mins,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_millis(
+                                millis,
                             )
                             .into();
                         output
@@ -311,8 +1032,113 @@ pub(crate) fn register_duration_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a new `Duration` from the specified number of minutes.\n # Panics\n Panics if the given number of minutes overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_mins(10);\n assert_eq!(10 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
-            &["mins"],
+            " Creates a new `Duration` from the specified number of milliseconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(2_569);\n assert_eq!(2, duration.as_secs());\n assert_eq!(569_000_000, duration.subsec_nanos());\n ```",
+            &["millis"],
+        )
+        .register_documented(
+            "from_nanos",
+            |nanos: u64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_nanos(
+                                nanos,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of nanoseconds.\n Note: Using this on the return value of `as_nanos()` might cause unexpected behavior:\n `as_nanos()` returns a u128, and can return values that do not fit in u64, e.g. 585 years.\n Instead, consider using the pattern `Duration::new(d.as_secs(), d.subsec_nanos())`\n if you cannot copy/clone the Duration directly.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_nanos(1_000_000_123);\n assert_eq!(1, duration.as_secs());\n assert_eq!(123, duration.subsec_nanos());\n ```",
+            &["nanos"],
+        )
+        .register_documented(
+            "from_secs",
+            |secs: u64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_secs(
+                                secs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of whole seconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_secs(5);\n assert_eq!(5, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["secs"],
+        )
+        .register_documented(
+            "from_secs_f32",
+            |secs: f32| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_secs_f32(
+                                secs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of seconds represented\n as `f32`.\n # Panics\n This constructor will panic if `secs` is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let res = Duration::from_secs_f32(0.0);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f32(1e-20);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f32(4.2e-7);\n assert_eq!(res, Duration::new(0, 420));\n let res = Duration::from_secs_f32(2.7);\n assert_eq!(res, Duration::new(2, 700_000_048));\n let res = Duration::from_secs_f32(3e10);\n assert_eq!(res, Duration::new(30_000_001_024, 0));\n // subnormal float\n let res = Duration::from_secs_f32(f32::from_bits(1));\n assert_eq!(res, Duration::new(0, 0));\n // conversion uses rounding\n let res = Duration::from_secs_f32(0.999e-9);\n assert_eq!(res, Duration::new(0, 1));\n ```",
+            &["secs"],
+        )
+        .register_documented(
+            "from_secs_f64",
+            |secs: f64| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::from_secs_f64(
+                                secs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of seconds represented\n as `f64`.\n # Panics\n This constructor will panic if `secs` is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let res = Duration::from_secs_f64(0.0);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(1e-20);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(4.2e-7);\n assert_eq!(res, Duration::new(0, 420));\n let res = Duration::from_secs_f64(2.7);\n assert_eq!(res, Duration::new(2, 700_000_000));\n let res = Duration::from_secs_f64(3e10);\n assert_eq!(res, Duration::new(30_000_000_000, 0));\n // subnormal float\n let res = Duration::from_secs_f64(f64::from_bits(1));\n assert_eq!(res, Duration::new(0, 0));\n // conversion uses rounding\n let res = Duration::from_secs_f64(0.999e-9);\n assert_eq!(res, Duration::new(0, 1));\n ```",
+            &["secs"],
+        )
+        .register_documented(
+            "is_zero",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::is_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if this `Duration` spans no time.\n # Examples\n ```\n use std::time::Duration;\n assert!(Duration::ZERO.is_zero());\n assert!(Duration::new(0, 0).is_zero());\n assert!(Duration::from_nanos(0).is_zero());\n assert!(Duration::from_secs(0).is_zero());\n assert!(!Duration::new(1, 1).is_zero());\n assert!(!Duration::from_nanos(1).is_zero());\n assert!(!Duration::from_secs(1).is_zero());\n ```",
+            &["_self"],
         )
         .register_documented(
             "mul",
@@ -338,6 +1164,167 @@ pub(crate) fn register_duration_functions(world: &mut World) {
                 output
             },
             "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_f32",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::mul_f32(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiplies `Duration` by `f32`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.mul_f32(3.14), Duration::new(8, 478_000_641));\n assert_eq!(dur.mul_f32(3.14e5), Duration::new(847_800, 0));\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_f64",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: f64|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::mul_f64(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiplies `Duration` by `f64`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.mul_f64(3.14), Duration::new(8, 478_000_000));\n assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "new",
+            |secs: u64, nanos: u32| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::new(
+                                secs,
+                                nanos,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of whole seconds and\n additional nanoseconds.\n If the number of nanoseconds is greater than 1 billion (the number of\n nanoseconds in a second), then it will carry over into the seconds provided.\n # Panics\n This constructor will panic if the carry from the nanoseconds overflows\n the seconds counter.\n # Examples\n ```\n use std::time::Duration;\n let five_seconds = Duration::new(5, 0);\n ```",
+            &["secs", "nanos"],
+        )
+        .register_documented(
+            "saturating_add",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::saturating_add(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Saturating `Duration` addition. Computes `self + other`, returning [`Duration::MAX`]\n if overflow occurred.\n # Examples\n ```\n #![feature(duration_constants)]\n use std::time::Duration;\n assert_eq!(Duration::new(0, 0).saturating_add(Duration::new(0, 1)), Duration::new(0, 1));\n assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "saturating_mul",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: u32|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::saturating_mul(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Saturating `Duration` multiplication. Computes `self * other`, returning\n [`Duration::MAX`] if overflow occurred.\n # Examples\n ```\n #![feature(duration_constants)]\n use std::time::Duration;\n assert_eq!(Duration::new(0, 500_000_001).saturating_mul(2), Duration::new(1, 2));\n assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "saturating_sub",
+            |
+                _self: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >,
+                rhs: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::saturating_sub(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Saturating `Duration` subtraction. Computes `self - other`, returning [`Duration::ZERO`]\n if the result would be negative or if overflow occurred.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(0, 1).saturating_sub(Duration::new(0, 0)), Duration::new(0, 1));\n assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);\n ```",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -367,6 +1354,69 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "subsec_micros",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::subsec_micros(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the fractional part of this `Duration`, in whole microseconds.\n This method does **not** return the length of the duration when\n represented by microseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one million).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_micros(1_234_567);\n assert_eq!(duration.as_secs(), 1);\n assert_eq!(duration.subsec_micros(), 234_567);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "subsec_millis",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::subsec_millis(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the fractional part of this `Duration`, in whole milliseconds.\n This method does **not** return the length of the duration when\n represented by milliseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one thousand).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(5_432);\n assert_eq!(duration.as_secs(), 5);\n assert_eq!(duration.subsec_millis(), 432);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "subsec_nanos",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                >|
+            {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration::subsec_nanos(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the fractional part of this `Duration`, in nanoseconds.\n This method does **not** return the length of the duration when\n represented by nanoseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one billion).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(5_010);\n assert_eq!(duration.as_secs(), 5);\n assert_eq!(duration.subsec_nanos(), 10_000_000);\n ```",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -437,6 +1487,46 @@ pub(crate) fn register_instant_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "duration_since",
+            |_self: Ref<::std::time::Instant>, earlier: Val<::std::time::Instant>| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::std::time::Instant::duration_since(
+                                &_self,
+                                earlier.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Panics\n Previous Rust versions panicked when `earlier` was later than `self`. Currently this\n method saturates. Future versions may reintroduce the panic in some circumstances.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity\n # Examples\n ```no_run\n use std::time::{Duration, Instant};\n use std::thread::sleep;\n let now = Instant::now();\n sleep(Duration::new(1, 0));\n let new_now = Instant::now();\n println!(\"{:?}\", new_now.duration_since(now));\n println!(\"{:?}\", now.duration_since(new_now)); // 0ns\n ```",
+            &["_self", "earlier"],
+        )
+        .register_documented(
+            "elapsed",
+            |_self: Ref<::std::time::Instant>| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::std::time::Instant::elapsed(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of time elapsed since this instant.\n # Panics\n Previous Rust versions panicked when the current time was earlier than self. Currently this\n method returns a Duration of zero in that case. Future versions may reintroduce the panic.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity\n # Examples\n ```no_run\n use std::thread::sleep;\n use std::time::{Duration, Instant};\n let instant = Instant::now();\n let three_secs = Duration::from_secs(3);\n sleep(three_secs);\n assert!(instant.elapsed() >= three_secs);\n ```",
+            &["_self"],
+        )
+        .register_documented(
             "eq",
             |_self: Ref<::std::time::Instant>, other: Ref<::std::time::Instant>| {
                 let output: bool = {
@@ -452,6 +1542,43 @@ pub(crate) fn register_instant_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "now",
+            || {
+                let output: Val<::std::time::Instant> = {
+                    {
+                        let output: Val<::std::time::Instant> = ::std::time::Instant::now()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns an instant corresponding to \"now\".\n # Examples\n ```\n use std::time::Instant;\n let now = Instant::now();\n ```",
+            &[],
+        )
+        .register_documented(
+            "saturating_duration_since",
+            |_self: Ref<::std::time::Instant>, earlier: Val<::std::time::Instant>| {
+                let output: Val<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_reflect::__macro_exports::auto_register::inventory::core::time::Duration,
+                        > = ::std::time::Instant::saturating_duration_since(
+                                &_self,
+                                earlier.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Examples\n ```no_run\n use std::time::{Duration, Instant};\n use std::thread::sleep;\n let now = Instant::now();\n sleep(Duration::new(1, 0));\n let new_now = Instant::now();\n println!(\"{:?}\", new_now.saturating_duration_since(now));\n println!(\"{:?}\", now.saturating_duration_since(new_now)); // 0ns\n ```",
+            &["_self", "earlier"],
         )
         .register_documented(
             "sub",
@@ -3611,6 +4738,92 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_ipv4",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::is_ipv4(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns [`true`] if the [IP address] in this `SocketAddr` is an\n [`IPv4` address], and [`false`] otherwise.\n [IP address]: IpAddr\n [`IPv4` address]: IpAddr::V4\n # Examples\n ```\n use std::net::{IpAddr, Ipv4Addr, SocketAddr};\n let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);\n assert_eq!(socket.is_ipv4(), true);\n assert_eq!(socket.is_ipv6(), false);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "is_ipv6",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::is_ipv6(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns [`true`] if the [IP address] in this `SocketAddr` is an\n [`IPv6` address], and [`false`] otherwise.\n [IP address]: IpAddr\n [`IPv6` address]: IpAddr::V6\n # Examples\n ```\n use std::net::{IpAddr, Ipv6Addr, SocketAddr};\n let socket = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 65535, 0, 1)), 8080);\n assert_eq!(socket.is_ipv4(), false);\n assert_eq!(socket.is_ipv6(), true);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "port",
+            |
+                _self: Ref<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >|
+            {
+                let output: u16 = {
+                    {
+                        let output: u16 = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::port(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the port number associated with this socket address.\n # Examples\n ```\n use std::net::{IpAddr, Ipv4Addr, SocketAddr};\n let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);\n assert_eq!(socket.port(), 8080);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "set_port",
+            |
+                mut _self: Mut<
+                    ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr,
+                >,
+                new_port: u16|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_reflect::__macro_exports::auto_register::inventory::core::net::SocketAddr::set_port(
+                                &mut _self,
+                                new_port,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Changes the port number associated with this socket address.\n # Examples\n ```\n use std::net::{IpAddr, Ipv4Addr, SocketAddr};\n let mut socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);\n socket.set_port(1025);\n assert_eq!(socket.port(), 1025);\n ```",
+            &["_self", "new_port"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();

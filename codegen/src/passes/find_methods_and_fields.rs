@@ -196,11 +196,15 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, args: &Args) -> b
                         .lookup_stability(fn_did)
                         .map(|stability| match stability.stable_since() {
                             Some(StableSince::Version(rustc_version)) => {
-                                args.rustc_version_is_greater_than_mrsv_target(rustc_version)
+                                !args.rustc_version_is_greater_than_mrsv_target(rustc_version)
                             }
                             _ => false,
                         })
                         .unwrap_or(true);
+
+                    log::info!("function: {}, is_stable_for_target: {is_stable_for_target}, stability: {:?}", ctxt.tcx.item_name(def_id),  ctxt
+                        .tcx
+                        .lookup_stability(fn_did));
 
                     if !is_stable_for_target {
                         log::debug!(

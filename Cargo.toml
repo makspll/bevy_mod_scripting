@@ -66,6 +66,7 @@ core_functions = ["bevy_mod_scripting_functions/core_functions"]
 bevy_a11y_bindings = ["bevy_mod_scripting_functions/bevy_a11y"]
 bevy_animation_bindings = ["bevy_mod_scripting_functions/bevy_animation"]
 bevy_asset_bindings = ["bevy_mod_scripting_functions/bevy_asset"]
+# bevy_camera
 bevy_color_bindings = ["bevy_mod_scripting_functions/bevy_color"]
 bevy_core_pipeline_bindings = [
     "bevy_mod_scripting_functions/bevy_core_pipeline",
@@ -76,17 +77,22 @@ bevy_gltf_bindings = ["bevy_mod_scripting_functions/bevy_gltf"]
 bevy_image_bindings = ["bevy_mod_scripting_functions/bevy_image"]
 bevy_input_bindings = ["bevy_mod_scripting_functions/bevy_input"]
 bevy_input_focus_bindings = ["bevy_mod_scripting_functions/bevy_input_focus"]
+# bevy_light
 bevy_math_bindings = ["bevy_mod_scripting_functions/bevy_math"]
 bevy_mesh_bindings = ["bevy_mod_scripting_functions/bevy_mesh"]
 bevy_pbr_bindings = ["bevy_mod_scripting_functions/bevy_pbr"]
 bevy_picking_bindings = ["bevy_mod_scripting_functions/bevy_picking"]
+# bevy_post_process
 bevy_reflect_bindings = ["bevy_mod_scripting_functions/bevy_reflect"]
 bevy_render_bindings = ["bevy_mod_scripting_functions/bevy_render"]
 bevy_scene_bindings = ["bevy_mod_scripting_functions/bevy_scene"]
 bevy_sprite_bindings = ["bevy_mod_scripting_functions/bevy_sprite"]
+# bevy_sprite_renderer
 bevy_text_bindings = ["bevy_mod_scripting_functions/bevy_text"]
 bevy_time_bindings = ["bevy_mod_scripting_functions/bevy_time"]
 bevy_transform_bindings = ["bevy_mod_scripting_functions/bevy_transform"]
+# bevy_ui
+# bevy_ui_render
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua?/unsafe_lua_modules"]
@@ -244,6 +250,7 @@ bevy = { workspace = true, features = [
     "x11",
     "bevy_ui",
     "default_font",
+    "custom_cursor",
 ] }
 bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
