@@ -251,6 +251,7 @@ bevy = { workspace = true, features = [
     "bevy_ui",
     "default_font",
     "custom_cursor",
+    "debug",
 ] }
 bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
