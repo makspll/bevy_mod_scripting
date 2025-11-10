@@ -208,23 +208,6 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
             },
             " The number of textures in the [`TextureAtlasLayout`]",
             &["_self"],
-        )
-        .register_documented(
-            "new_empty",
-            |dimensions: Val<::bevy_math::UVec2>| {
-                let output: Val<::bevy_image::prelude::TextureAtlasLayout> = {
-                    {
-                        let output: Val<::bevy_image::prelude::TextureAtlasLayout> = ::bevy_image::prelude::TextureAtlasLayout::new_empty(
-                                dimensions.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new empty layout with custom `dimensions`",
-            &["dimensions"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -340,24 +323,6 @@ pub(crate) fn register_image_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "pixel_data_offset",
-            |_self: Ref<::bevy_image::prelude::Image>, coords: Val<::bevy_math::UVec3>| {
-                let output: ::std::option::Option<usize> = {
-                    {
-                        let output: ::std::option::Option<usize> = ::bevy_image::prelude::Image::pixel_data_offset(
-                                &_self,
-                                coords.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Compute the byte offset where the data of a specific pixel is stored\n Returns None if the provided coordinates are out of bounds.\n For 2D textures, Z is the layer number. For 1D textures, Y and Z are ignored.",
-            &["_self", "coords"],
-        )
-        .register_documented(
             "reinterpret_stacked_2d_as_array",
             |mut _self: Mut<::bevy_image::prelude::Image>, layers: u32| {
                 let output: () = {
@@ -374,40 +339,6 @@ pub(crate) fn register_image_functions(world: &mut World) {
             },
             " Takes a 2D image containing vertically stacked images of the same size, and reinterprets\n it as a 2D array texture, where each of the stacked images becomes one layer of the\n array. This is primarily for use with the `texture2DArray` shader uniform type.\n # Panics\n Panics if the texture is not 2D, has more than one layers or is not evenly dividable into\n the `layers`.",
             &["_self", "layers"],
-        )
-        .register_documented(
-            "size",
-            |_self: Ref<::bevy_image::prelude::Image>| {
-                let output: Val<::bevy_math::UVec2> = {
-                    {
-                        let output: Val<::bevy_math::UVec2> = ::bevy_image::prelude::Image::size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of a 2D image.",
-            &["_self"],
-        )
-        .register_documented(
-            "size_f32",
-            |_self: Ref<::bevy_image::prelude::Image>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_image::prelude::Image::size_f32(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of a 2D image as f32.",
-            &["_self"],
         )
         .register_documented(
             "transparent",

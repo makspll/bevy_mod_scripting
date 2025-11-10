@@ -67,21 +67,6 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
         },
         " Returns the [`UntypedAssetId`] for the referenced asset.",
         &["_self"],
-    )
-    .register_documented(
-        "type_id",
-        |_self: Ref<::bevy_asset::prelude::UntypedHandle>| {
-            let output: Val<::core::any::TypeId> = {
-                {
-                    let output: Val<::core::any::TypeId> =
-                        ::bevy_asset::prelude::UntypedHandle::type_id(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns the [`TypeId`] of the referenced [`Asset`].",
-        &["_self"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -127,21 +112,6 @@ pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
         },
         "",
         &["_self", "other"],
-    )
-    .register_documented(
-        "type_id",
-        |_self: Ref<::bevy_asset::UntypedAssetId>| {
-            let output: Val<::core::any::TypeId> = {
-                {
-                    let output: Val<::core::any::TypeId> =
-                        ::bevy_asset::UntypedAssetId::type_id(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns the stored [`TypeId`] of the referenced [`Asset`].",
-        &["_self"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();

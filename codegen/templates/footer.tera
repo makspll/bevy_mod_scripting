@@ -8,6 +8,7 @@
 pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}};
 
 {% for item in items %}
+// {{ item.import_path }}
 #[script_bindings(
     remote,
     name = "{{ item.ident | convert_case(case="snake") }}_functions",
@@ -36,12 +37,13 @@ impl {{item.import_path}} {
         (
             {%- for arg in function.args -%}
                 {%- if arg.proxy_ty is matching("Ref.*")-%}
-                &{% endif -%}
-                {%- if arg.proxy_ty is matching ("Mut.*")-%}
-                &mut {% endif -%}
+                & {{ arg.ident | to_arg_pattern() -}}
+                {%- elif arg.proxy_ty is matching ("Mut.*")-%}
+                &mut {{ arg.ident | to_arg_pattern() -}}
+                {%- elif arg.proxy_ty is matching("Val.*")-%}
+                {{- arg.ident | to_arg_pattern() -}}.into_inner()
+                {%- else -%}
                 {{- arg.ident | to_arg_pattern() -}}
-                {%- if arg.proxy_ty is matching("Val.*")-%}
-                .into_inner()
                 {%- endif -%}, 
             {%- endfor -%}
         ).into();

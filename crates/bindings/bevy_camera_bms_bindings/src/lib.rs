@@ -347,23 +347,6 @@ pub(crate) fn register_camera_functions(world: &mut World) {
         ::bevy_camera::prelude::Camera,
     >::new(world)
         .register_documented(
-            "clip_from_view",
-            |_self: Ref<::bevy_camera::prelude::Camera>| {
-                let output: Val<::bevy_math::Mat4> = {
-                    {
-                        let output: Val<::bevy_math::Mat4> = ::bevy_camera::prelude::Camera::clip_from_view(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The projection matrix computed using this camera's [`Projection`](super::projection::Projection).",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: Ref<::bevy_camera::prelude::Camera>| {
                 let output: Val<::bevy_camera::prelude::Camera> = {
@@ -671,115 +654,22 @@ pub(crate) fn register_frustum_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::primitives::Frustum,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_camera::primitives::Frustum>| {
-                let output: Val<::bevy_camera::primitives::Frustum> = {
-                    {
-                        let output: Val<::bevy_camera::primitives::Frustum> = <::bevy_camera::primitives::Frustum as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_camera::primitives::Frustum>| {
+            let output: Val<::bevy_camera::primitives::Frustum> = {
+                {
+                    let output: Val<::bevy_camera::primitives::Frustum> =
+                        <::bevy_camera::primitives::Frustum as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "contains_aabb",
-            |
-                _self: Ref<::bevy_camera::primitives::Frustum>,
-                aabb: Ref<::bevy_camera::primitives::Aabb>,
-                world_from_local: Ref<::bevy_math::Affine3A>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_camera::primitives::Frustum::contains_aabb(
-                                &_self,
-                                &aabb,
-                                &world_from_local,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Check if the frustum contains the Axis-Aligned Bounding Box (AABB).\n Referenced from: [Frustum Culling](https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling)",
-            &["_self", "aabb", "world_from_local"],
-        )
-        .register_documented(
-            "from_clip_from_world",
-            |clip_from_world: Ref<::bevy_math::Mat4>| {
-                let output: Val<::bevy_camera::primitives::Frustum> = {
-                    {
-                        let output: Val<::bevy_camera::primitives::Frustum> = ::bevy_camera::primitives::Frustum::from_clip_from_world(
-                                &clip_from_world,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns a frustum derived from `clip_from_world`.",
-            &["clip_from_world"],
-        )
-        .register_documented(
-            "from_clip_from_world_custom_far",
-            |
-                clip_from_world: Ref<::bevy_math::Mat4>,
-                view_translation: Ref<::bevy_math::Vec3>,
-                view_backward: Ref<::bevy_math::Vec3>,
-                far: f32|
-            {
-                let output: Val<::bevy_camera::primitives::Frustum> = {
-                    {
-                        let output: Val<::bevy_camera::primitives::Frustum> = ::bevy_camera::primitives::Frustum::from_clip_from_world_custom_far(
-                                &clip_from_world,
-                                &view_translation,
-                                &view_backward,
-                                far,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns a frustum derived from `clip_from_world`,\n but with a custom far plane.",
-            &["clip_from_world", "view_translation", "view_backward", "far"],
-        )
-        .register_documented(
-            "intersects_obb",
-            |
-                _self: Ref<::bevy_camera::primitives::Frustum>,
-                aabb: Ref<::bevy_camera::primitives::Aabb>,
-                world_from_local: Ref<::bevy_math::Affine3A>,
-                intersect_near: bool,
-                intersect_far: bool|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_camera::primitives::Frustum::intersects_obb(
-                                &_self,
-                                &aabb,
-                                &world_from_local,
-                                intersect_near,
-                                intersect_far,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Checks if an Oriented Bounding Box (obb) intersects the frustum.",
-            &["_self", "aabb", "world_from_local", "intersect_near", "intersect_far"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -792,25 +682,6 @@ pub(crate) fn register_visible_entities_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::visibility::VisibleEntities,
     >::new(world)
-    .register_documented(
-        "clear",
-        |mut _self: Mut<::bevy_camera::visibility::VisibleEntities>,
-         type_id: Val<::std::any::TypeId>| {
-            let output: () = {
-                {
-                    let output: () = ::bevy_camera::visibility::VisibleEntities::clear(
-                        &mut _self,
-                        type_id.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "type_id"],
-    )
     .register_documented(
         "clear_all",
         |mut _self: Mut<::bevy_camera::visibility::VisibleEntities>| {
@@ -843,65 +714,6 @@ pub(crate) fn register_visible_entities_functions(world: &mut World) {
         },
         "",
         &["_self"],
-    )
-    .register_documented(
-        "is_empty",
-        |_self: Ref<::bevy_camera::visibility::VisibleEntities>,
-         type_id: Val<::std::any::TypeId>| {
-            let output: bool = {
-                {
-                    let output: bool = ::bevy_camera::visibility::VisibleEntities::is_empty(
-                        &_self,
-                        type_id.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "type_id"],
-    )
-    .register_documented(
-        "len",
-        |_self: Ref<::bevy_camera::visibility::VisibleEntities>,
-         type_id: Val<::std::any::TypeId>| {
-            let output: usize = {
-                {
-                    let output: usize = ::bevy_camera::visibility::VisibleEntities::len(
-                        &_self,
-                        type_id.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "type_id"],
-    )
-    .register_documented(
-        "push",
-        |mut _self: Mut<::bevy_camera::visibility::VisibleEntities>,
-         entity: Val<::bevy_ecs::entity::Entity>,
-         type_id: Val<::std::any::TypeId>| {
-            let output: () = {
-                {
-                    let output: () = ::bevy_camera::visibility::VisibleEntities::push(
-                        &mut _self,
-                        entity.into_inner(),
-                        type_id.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "entity", "type_id"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -915,24 +727,6 @@ pub(crate) fn register_viewport_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::Viewport,
     >::new(world)
-        .register_documented(
-            "clamp_to_size",
-            |mut _self: Mut<::bevy_camera::Viewport>, size: Val<::bevy_math::UVec2>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_camera::Viewport::clamp_to_size(
-                                &mut _self,
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Cut the viewport rectangle so that it lies inside a rectangle of the\n given size.\n If either of the viewport's position coordinates lies outside the given\n dimensions, it will be moved just inside first. If either of the given\n dimensions is zero, the position and size of the viewport rectangle will\n both be set to zero in that dimension.",
-            &["_self", "size"],
-        )
         .register_documented(
             "clone",
             |_self: Ref<::bevy_camera::Viewport>| {
@@ -1459,76 +1253,6 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
         },
         "",
         &["_self", "other"],
-    )
-    .register_documented(
-        "from_min_max",
-        |minimum: Val<::bevy_math::Vec3>, maximum: Val<::bevy_math::Vec3>| {
-            let output: Val<::bevy_camera::primitives::Aabb> = {
-                {
-                    let output: Val<::bevy_camera::primitives::Aabb> =
-                        ::bevy_camera::primitives::Aabb::from_min_max(
-                            minimum.into_inner(),
-                            maximum.into_inner(),
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["minimum", "maximum"],
-    )
-    .register_documented(
-        "max",
-        |_self: Ref<::bevy_camera::primitives::Aabb>| {
-            let output: Val<::bevy_math::Vec3A> = {
-                {
-                    let output: Val<::bevy_math::Vec3A> =
-                        ::bevy_camera::primitives::Aabb::max(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "min",
-        |_self: Ref<::bevy_camera::primitives::Aabb>| {
-            let output: Val<::bevy_math::Vec3A> = {
-                {
-                    let output: Val<::bevy_math::Vec3A> =
-                        ::bevy_camera::primitives::Aabb::min(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "relative_radius",
-        |_self: Ref<::bevy_camera::primitives::Aabb>,
-         p_normal: Ref<::bevy_math::Vec3A>,
-         world_from_local: Ref<::bevy_math::Mat3A>| {
-            let output: f32 = {
-                {
-                    let output: f32 = ::bevy_camera::primitives::Aabb::relative_radius(
-                        &_self,
-                        &p_normal,
-                        &world_from_local,
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        " Calculate the relative radius of the AABB with respect to a plane",
-        &["_self", "p_normal", "world_from_local"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();

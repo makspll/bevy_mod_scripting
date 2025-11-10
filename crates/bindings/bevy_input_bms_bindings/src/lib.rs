@@ -17,23 +17,6 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         ::bevy_input::gamepad::Gamepad,
     >::new(world)
         .register_documented(
-            "dpad",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::dpad(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the directional pad as a [`Vec2`].",
-            &["_self"],
-        )
-        .register_documented(
             "just_pressed",
             |
                 _self: Ref<::bevy_input::gamepad::Gamepad>,
@@ -76,23 +59,6 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
             &["_self", "button_type"],
         )
         .register_documented(
-            "left_stick",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::left_stick(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the left stick as a [`Vec2`].",
-            &["_self"],
-        )
-        .register_documented(
             "pressed",
             |
                 _self: Ref<::bevy_input::gamepad::Gamepad>,
@@ -128,23 +94,6 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
                 output
             },
             " Returns the USB product ID as assigned by the [vendor], if available.\n [vendor]: Self::vendor_id",
-            &["_self"],
-        )
-        .register_documented(
-            "right_stick",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::right_stick(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the right stick as a [`Vec2`].",
             &["_self"],
         )
         .register_documented(

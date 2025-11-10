@@ -585,27 +585,6 @@ pub(crate) fn register_temporal_jitter_functions(world: &mut World) {
         },
         "",
         &["_self"],
-    )
-    .register_documented(
-        "jitter_projection",
-        |_self: Ref<::bevy_render::camera::TemporalJitter>,
-         mut clip_from_view: Mut<::bevy_math::Mat4>,
-         view_size: Val<::bevy_math::Vec2>| {
-            let output: () = {
-                {
-                    let output: () = ::bevy_render::camera::TemporalJitter::jitter_projection(
-                        &_self,
-                        &mut clip_from_view,
-                        view_size.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "clip_from_view", "view_size"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();

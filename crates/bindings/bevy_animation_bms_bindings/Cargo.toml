@@ -42,7 +42,7 @@ bevy_time = { version = "^0.17.2", features = ["std", "bevy_reflect"], default-f
 
 bevy_transform = { version = "^0.17.2", features = ["std", "async_executor", "alloc", "bevy_log", "bevy-support", "bevy_reflect"], default-features = true}
 
-bevy_utils = { version = "^0.17.2", features = ["debug", "parallel"], default-features = true}
+bevy_utils = { version = "^0.17.2", features = ["parallel", "debug"], default-features = true}
 
 blake3 = { version = "^1.0", features = [], default-features = true}
 

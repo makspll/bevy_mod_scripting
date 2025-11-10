@@ -397,7 +397,7 @@ impl IntoMluaError for InteropError {
 }
 #[cfg(test)]
 mod test {
-    use ::bevy_asset::{AssetId, AssetIndex, Handle};
+    use ::bevy_asset::Handle;
     use bevy_mod_scripting_asset::LanguageExtensions;
     use mlua::Value;
 
@@ -407,8 +407,8 @@ mod test {
     fn test_reload_doesnt_overwrite_old_context() {
         let lua = Lua::new();
         let mut old_ctxt = LuaContext(lua.clone());
-        let handle = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
-        let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle);
+        let handle = Handle::default();
+        let context_key = ScriptAttachment::EntityScript(Entity::from_raw_u32(1).unwrap(), handle);
         let world_id = WorldId::new().unwrap();
         LuaScriptingPlugin::set_world_local_config(
             world_id,

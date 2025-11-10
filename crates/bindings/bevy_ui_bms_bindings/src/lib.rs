@@ -722,40 +722,6 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
             &["_self", "other"],
         )
         .register_documented(
-            "logical_size",
-            |_self: Ref<::bevy_ui::prelude::ComputedUiRenderTargetInfo>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::prelude::ComputedUiRenderTargetInfo::logical_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of the target camera's viewport in logical pixels.",
-            &["_self"],
-        )
-        .register_documented(
-            "physical_size",
-            |_self: Ref<::bevy_ui::prelude::ComputedUiRenderTargetInfo>| {
-                let output: Val<::bevy_math::UVec2> = {
-                    {
-                        let output: Val<::bevy_math::UVec2> = ::bevy_ui::prelude::ComputedUiRenderTargetInfo::physical_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of the target camera's viewport in physical pixels.",
-            &["_self"],
-        )
-        .register_documented(
             "scale_factor",
             |_self: Ref<::bevy_ui::prelude::ComputedUiRenderTargetInfo>| {
                 let output: f32 = {
@@ -783,24 +749,7 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
 pub(crate) fn register_content_size_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::measurement::ContentSize,
-    >::new(world)
-        .register_documented(
-            "fixed_size",
-            |size: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::measurement::ContentSize> = {
-                    {
-                        let output: Val<::bevy_ui::measurement::ContentSize> = ::bevy_ui::measurement::ContentSize::fixed_size(
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a `ContentSize` with a `Measure` that always returns given `size` argument, regardless of the UI layout's constraints.",
-            &["size"],
-        );
+    >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1105,9 +1054,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "border",
             |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
+                let output: Val<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::prelude::ComputedNode::border(
+                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_ui::prelude::ComputedNode::border(
                                 &_self,
                             )
                             .into();
@@ -1154,34 +1103,11 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "contains_point",
-            |
-                _self: Ref<::bevy_ui::prelude::ComputedNode>,
-                transform: Val<::bevy_ui::ui_transform::UiGlobalTransform>,
-                point: Val<::bevy_math::Vec2>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_ui::prelude::ComputedNode::contains_point(
-                                &_self,
-                                transform.into_inner(),
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "transform", "point"],
-        )
-        .register_documented(
             "content_inset",
             |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
+                let output: Val<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::prelude::ComputedNode::content_inset(
+                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_ui::prelude::ComputedNode::content_inset(
                                 &_self,
                             )
                             .into();
@@ -1191,23 +1117,6 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
                 output
             },
             " Returns the combined inset on each edge including both padding and border thickness in physical pixels.",
-            &["_self"],
-        )
-        .register_documented(
-            "content_size",
-            |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::prelude::ComputedNode::content_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The calculated node content size as width and height in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
             &["_self"],
         )
         .register_documented(
@@ -1333,28 +1242,11 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "outlined_node_size",
-            |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::prelude::ComputedNode::outlined_node_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of the node when including its outline.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
             "padding",
             |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
+                let output: Val<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::prelude::ComputedNode::padding(
+                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_ui::prelude::ComputedNode::padding(
                                 &_self,
                             )
                             .into();
@@ -1390,23 +1282,6 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
             &["_self", "overflow", "overflow_clip_margin"],
         )
         .register_documented(
-            "size",
-            |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::prelude::ComputedNode::size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The calculated node size as width and height in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
             "stack_index",
             |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
                 let output: u32 = {
@@ -1421,23 +1296,6 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
                 output
             },
             " The order of the node in the UI layout.\n Nodes with a higher stack index are drawn on top of and receive interactions before nodes with lower stack indices.\n Automatically calculated in [`UiSystems::Stack`](super::UiSystems::Stack).",
-            &["_self"],
-        )
-        .register_documented(
-            "unrounded_size",
-            |_self: Ref<::bevy_ui::prelude::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::prelude::ComputedNode::unrounded_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The calculated node size as width and height in physical pixels before rounding.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
             &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -1594,21 +1452,6 @@ pub(crate) fn register_image_node_size_functions(world: &mut World) {
         },
         "",
         &["_self"],
-    )
-    .register_documented(
-        "size",
-        |_self: Ref<::bevy_ui::widget::ImageNodeSize>| {
-            let output: Val<::bevy_math::UVec2> = {
-                {
-                    let output: Val<::bevy_math::UVec2> =
-                        ::bevy_ui::widget::ImageNodeSize::size(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " The size of the image's texture",
-        &["_self"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -1650,21 +1493,6 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::prelude::UiPosition,
     >::new(world)
-    .register_documented(
-        "anchor",
-        |anchor: Val<::bevy_math::Vec2>| {
-            let output: Val<::bevy_ui::prelude::UiPosition> = {
-                {
-                    let output: Val<::bevy_ui::prelude::UiPosition> =
-                        ::bevy_ui::prelude::UiPosition::anchor(anchor.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Position at the given normalized anchor point",
-        &["anchor"],
-    )
     .register_documented(
         "at",
         |_self: Val<::bevy_ui::prelude::UiPosition>,
@@ -1865,56 +1693,6 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         &["x", "y"],
     )
     .register_documented(
-        "new",
-        |anchor: Val<::bevy_math::Vec2>,
-         x: Val<::bevy_ui::prelude::Val>,
-         y: Val<::bevy_ui::prelude::Val>| {
-            let output: Val<::bevy_ui::prelude::UiPosition> = {
-                {
-                    let output: Val<::bevy_ui::prelude::UiPosition> =
-                        ::bevy_ui::prelude::UiPosition::new(
-                            anchor.into_inner(),
-                            x.into_inner(),
-                            y.into_inner(),
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new position",
-        &["anchor", "x", "y"],
-    )
-    .register_documented(
-        "resolve",
-        |_self: Val<::bevy_ui::prelude::UiPosition>,
-         scale_factor: f32,
-         physical_size: Val<::bevy_math::Vec2>,
-         physical_target_size: Val<::bevy_math::Vec2>| {
-            let output: Val<::bevy_math::Vec2> = {
-                {
-                    let output: Val<::bevy_math::Vec2> = ::bevy_ui::prelude::UiPosition::resolve(
-                        _self.into_inner(),
-                        scale_factor,
-                        physical_size.into_inner(),
-                        physical_target_size.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        " Resolves the `Position` into physical coordinates.",
-        &[
-            "_self",
-            "scale_factor",
-            "physical_size",
-            "physical_target_size",
-        ],
-    )
-    .register_documented(
         "right",
         |x: Val<::bevy_ui::prelude::Val>, y: Val<::bevy_ui::prelude::Val>| {
             let output: Val<::bevy_ui::prelude::UiPosition> = {
@@ -1976,25 +1754,6 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         },
         " Position relative to the top-right corner",
         &["x", "y"],
-    )
-    .register_documented(
-        "with_anchor",
-        |_self: Val<::bevy_ui::prelude::UiPosition>, anchor: Val<::bevy_math::Vec2>| {
-            let output: Val<::bevy_ui::prelude::UiPosition> = {
-                {
-                    let output: Val<::bevy_ui::prelude::UiPosition> =
-                        ::bevy_ui::prelude::UiPosition::with_anchor(
-                            _self.into_inner(),
-                            anchor.into_inner(),
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Creates a position from self with the given `anchor` point",
-        &["_self", "anchor"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -2048,7 +1807,7 @@ pub(crate) fn register_val_functions(world: &mut World) {
                 let output: Val<::bevy_ui::prelude::Val> = {
                     {
                         let output: Val<::bevy_ui::prelude::Val> = <::bevy_ui::prelude::Val as ::std::clone::Clone>::clone(
-                                &_self.into_inner(),
+                                &_self,
                             )
                             .into();
                         output
@@ -2083,7 +1842,7 @@ pub(crate) fn register_val_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_ui::prelude::Val as ::std::cmp::PartialEq<
                             ::bevy_ui::prelude::Val,
-                        >>::eq(&_self.into_inner(), &other.into_inner())
+                        >>::eq(&_self, &other)
                             .into();
                         output
                     }
@@ -2590,38 +2349,6 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
         },
         "",
         &["_self", "other"],
-    )
-    .register_documented(
-        "resolve",
-        |_self: Val<::bevy_ui::gradients::RadialGradientShape>,
-         position: Val<::bevy_math::Vec2>,
-         scale_factor: f32,
-         physical_size: Val<::bevy_math::Vec2>,
-         physical_target_size: Val<::bevy_math::Vec2>| {
-            let output: Val<::bevy_math::Vec2> = {
-                {
-                    let output: Val<::bevy_math::Vec2> =
-                        ::bevy_ui::gradients::RadialGradientShape::resolve(
-                            _self.into_inner(),
-                            position.into_inner(),
-                            scale_factor,
-                            physical_size.into_inner(),
-                            physical_target_size.into_inner(),
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Resolve the physical dimensions of the end shape of the radial gradient",
-        &[
-            "_self",
-            "position",
-            "scale_factor",
-            "physical_size",
-            "physical_target_size",
-        ],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -2895,122 +2622,84 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ui_transform::Val2,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ui::ui_transform::Val2>| {
-                let output: Val<::bevy_ui::ui_transform::Val2> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::Val2> = <::bevy_ui::ui_transform::Val2 as ::std::clone::Clone>::clone(
-                                &_self.into_inner(),
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ui::ui_transform::Val2>| {
+            let output: Val<::bevy_ui::ui_transform::Val2> = {
+                {
+                    let output: Val<::bevy_ui::ui_transform::Val2> =
+                        <::bevy_ui::ui_transform::Val2 as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_ui::ui_transform::Val2>,
-                other: Ref<::bevy_ui::ui_transform::Val2>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::ui_transform::Val2 as ::std::cmp::PartialEq<
-                            ::bevy_ui::ui_transform::Val2,
-                        >>::eq(&_self.into_inner(), &other.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "new",
-            |x: Val<::bevy_ui::prelude::Val>, y: Val<::bevy_ui::prelude::Val>| {
-                let output: Val<::bevy_ui::ui_transform::Val2> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::Val2> = ::bevy_ui::ui_transform::Val2::new(
-                                x.into_inner(),
-                                y.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`Val2`]",
-            &["x", "y"],
-        )
-        .register_documented(
-            "percent",
-            |x: f32, y: f32| {
-                let output: Val<::bevy_ui::ui_transform::Val2> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::Val2> = ::bevy_ui::ui_transform::Val2::percent(
-                                x,
-                                y,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`Val2`] where both components are percentage values",
-            &["x", "y"],
-        )
-        .register_documented(
-            "px",
-            |x: f32, y: f32| {
-                let output: Val<::bevy_ui::ui_transform::Val2> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::Val2> = ::bevy_ui::ui_transform::Val2::px(
-                                x,
-                                y,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`Val2`] where both components are in logical pixels",
-            &["x", "y"],
-        )
-        .register_documented(
-            "resolve",
-            |
-                _self: Ref<::bevy_ui::ui_transform::Val2>,
-                scale_factor: f32,
-                base_size: Val<::bevy_math::Vec2>,
-                viewport_size: Val<::bevy_math::Vec2>|
-            {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ui_transform::Val2::resolve(
-                                &_self.into_inner(),
-                                scale_factor,
-                                base_size.into_inner(),
-                                viewport_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolves this [`Val2`] from the given `scale_factor`, `parent_size`,\n and `viewport_size`.\n Component values of [`Val::Auto`] are resolved to 0.",
-            &["_self", "scale_factor", "base_size", "viewport_size"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_ui::ui_transform::Val2>, other: Ref<::bevy_ui::ui_transform::Val2>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::ui_transform::Val2 as ::std::cmp::PartialEq<
+                        ::bevy_ui::ui_transform::Val2,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "new",
+        |x: Val<::bevy_ui::prelude::Val>, y: Val<::bevy_ui::prelude::Val>| {
+            let output: Val<::bevy_ui::ui_transform::Val2> = {
+                {
+                    let output: Val<::bevy_ui::ui_transform::Val2> =
+                        ::bevy_ui::ui_transform::Val2::new(x.into_inner(), y.into_inner()).into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates a new [`Val2`]",
+        &["x", "y"],
+    )
+    .register_documented(
+        "percent",
+        |x: f32, y: f32| {
+            let output: Val<::bevy_ui::ui_transform::Val2> = {
+                {
+                    let output: Val<::bevy_ui::ui_transform::Val2> =
+                        ::bevy_ui::ui_transform::Val2::percent(x, y).into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates a new [`Val2`] where both components are percentage values",
+        &["x", "y"],
+    )
+    .register_documented(
+        "px",
+        |x: f32, y: f32| {
+            let output: Val<::bevy_ui::ui_transform::Val2> = {
+                {
+                    let output: Val<::bevy_ui::ui_transform::Val2> =
+                        ::bevy_ui::ui_transform::Val2::px(x, y).into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates a new [`Val2`] where both components are in logical pixels",
+        &["x", "y"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -3023,119 +2712,77 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ui_transform::UiTransform,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ui::ui_transform::UiTransform>| {
-                let output: Val<::bevy_ui::ui_transform::UiTransform> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::UiTransform> = <::bevy_ui::ui_transform::UiTransform as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "compute_affine",
-            |
-                _self: Ref<::bevy_ui::ui_transform::UiTransform>,
-                scale_factor: f32,
-                base_size: Val<::bevy_math::Vec2>,
-                target_size: Val<::bevy_math::Vec2>|
-            {
-                let output: Val<::bevy_math::Affine2> = {
-                    {
-                        let output: Val<::bevy_math::Affine2> = ::bevy_ui::ui_transform::UiTransform::compute_affine(
-                                &_self,
-                                scale_factor,
-                                base_size.into_inner(),
-                                target_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolves the translation from the given `scale_factor`, `base_value`, and `target_size`\n and returns a 2d affine transform from the resolved translation, and the `UiTransform`'s rotation, and scale.",
-            &["_self", "scale_factor", "base_size", "target_size"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_ui::ui_transform::UiTransform>,
-                other: Ref<::bevy_ui::ui_transform::UiTransform>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::ui_transform::UiTransform as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ui::ui_transform::UiTransform>| {
+            let output: Val<::bevy_ui::ui_transform::UiTransform> = {
+                {
+                    let output: Val<::bevy_ui::ui_transform::UiTransform> =
+                        <::bevy_ui::ui_transform::UiTransform as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_ui::ui_transform::UiTransform>,
+         other: Ref<::bevy_ui::ui_transform::UiTransform>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui::ui_transform::UiTransform as ::std::cmp::PartialEq<
                             ::bevy_ui::ui_transform::UiTransform,
                         >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "from_rotation",
+        |rotation: Val<::bevy_math::Rot2>| {
+            let output: Val<::bevy_ui::ui_transform::UiTransform> = {
+                {
+                    let output: Val<::bevy_ui::ui_transform::UiTransform> =
+                        ::bevy_ui::ui_transform::UiTransform::from_rotation(rotation.into_inner())
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "from_rotation",
-            |rotation: Val<::bevy_math::Rot2>| {
-                let output: Val<::bevy_ui::ui_transform::UiTransform> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::UiTransform> = ::bevy_ui::ui_transform::UiTransform::from_rotation(
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a UI transform representing a rotation.",
-            &["rotation"],
-        )
-        .register_documented(
-            "from_scale",
-            |scale: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::ui_transform::UiTransform> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::UiTransform> = ::bevy_ui::ui_transform::UiTransform::from_scale(
-                                scale.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a UI transform representing a scaling.",
-            &["scale"],
-        )
-        .register_documented(
-            "from_translation",
-            |translation: Val<::bevy_ui::ui_transform::Val2>| {
-                let output: Val<::bevy_ui::ui_transform::UiTransform> = {
-                    {
-                        let output: Val<::bevy_ui::ui_transform::UiTransform> = ::bevy_ui::ui_transform::UiTransform::from_translation(
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a UI transform representing a responsive translation.",
-            &["translation"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        " Creates a UI transform representing a rotation.",
+        &["rotation"],
+    )
+    .register_documented(
+        "from_translation",
+        |translation: Val<::bevy_ui::ui_transform::Val2>| {
+            let output: Val<::bevy_ui::ui_transform::UiTransform> = {
+                {
+                    let output: Val<::bevy_ui::ui_transform::UiTransform> =
+                        ::bevy_ui::ui_transform::UiTransform::from_translation(
+                            translation.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates a UI transform representing a responsive translation.",
+        &["translation"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -3728,56 +3375,6 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
             },
             " Sets the radii to logical pixel values.",
             &["top_left", "top_right", "bottom_right", "bottom_left"],
-        )
-        .register_documented(
-            "resolve",
-            |
-                _self: Ref<::bevy_ui::prelude::BorderRadius>,
-                scale_factor: f32,
-                node_size: Val<::bevy_math::Vec2>,
-                viewport_size: Val<::bevy_math::Vec2>|
-            {
-                let output: Val<::bevy_ui::prelude::ResolvedBorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::prelude::ResolvedBorderRadius> = ::bevy_ui::prelude::BorderRadius::resolve(
-                                &_self,
-                                scale_factor,
-                                node_size.into_inner(),
-                                viewport_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the border radii for the corners from the given context values.\n Returns the radii of the each corner in physical pixels.",
-            &["_self", "scale_factor", "node_size", "viewport_size"],
-        )
-        .register_documented(
-            "resolve_single_corner",
-            |
-                radius: Val<::bevy_ui::prelude::Val>,
-                scale_factor: f32,
-                min_length: f32,
-                viewport_size: Val<::bevy_math::Vec2>|
-            {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_ui::prelude::BorderRadius::resolve_single_corner(
-                                radius.into_inner(),
-                                scale_factor,
-                                min_length,
-                                viewport_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the border radius for a single corner from the given context values.\n Returns the radius of the corner in physical pixels.",
-            &["radius", "scale_factor", "min_length", "viewport_size"],
         )
         .register_documented(
             "right",

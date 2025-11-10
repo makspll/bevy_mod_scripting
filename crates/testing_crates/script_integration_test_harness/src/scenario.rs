@@ -9,17 +9,13 @@ use ::{
     bevy_app::App,
     bevy_asset::{AssetEvent, Handle, LoadState},
     bevy_ecs::{
-        entity::Entity,
-        event::{Event, EventCursor, Events},
-        schedule::ScheduleLabel,
-        system::Command,
-        system::IntoSystem,
-        world::World,
+        entity::Entity, schedule::ScheduleLabel, system::Command, system::IntoSystem, world::World,
     },
 };
 use anyhow::{Context, Error, anyhow};
-use bevy_app::{DynEq, FixedUpdate, Last, PostUpdate, Startup, Update};
+use bevy_app::{FixedUpdate, Last, PostUpdate, Startup, Update};
 use bevy_asset::{AssetServer, Assets};
+use bevy_ecs::message::{Message, MessageCursor, Messages};
 use bevy_log::info;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
@@ -157,19 +153,19 @@ pub struct ScenarioContext {
 #[derive(Debug, Clone, Default)]
 pub struct InterestingEventWatcher {
     pub events: Vec<(String, usize)>,
-    pub asset_event_cursor: EventCursor<AssetEvent<ScriptAsset>>,
-    pub script_attached_events_cursor: EventCursor<ScriptAttachedEvent>,
-    pub script_detached_events_cursor: EventCursor<ScriptDetachedEvent>,
-    pub script_response_cursor: EventCursor<ScriptCallbackResponseEvent>,
+    pub asset_event_cursor: MessageCursor<AssetEvent<ScriptAsset>>,
+    pub script_attached_events_cursor: MessageCursor<ScriptAttachedEvent>,
+    pub script_detached_events_cursor: MessageCursor<ScriptDetachedEvent>,
+    pub script_response_cursor: MessageCursor<ScriptCallbackResponseEvent>,
     pub script_responses_queue: VecDeque<ScriptCallbackResponseEvent>,
 }
 
 impl InterestingEventWatcher {
     pub fn log_events(&mut self, step_no: usize, world: &World) {
-        let asset_events = world.resource::<Events<AssetEvent<ScriptAsset>>>();
-        let script_attached_events = world.resource::<Events<ScriptAttachedEvent>>();
-        let script_detached_events = world.resource::<Events<ScriptDetachedEvent>>();
-        let script_responses = world.resource::<Events<ScriptCallbackResponseEvent>>();
+        let asset_events = world.resource::<Messages<AssetEvent<ScriptAsset>>>();
+        let script_attached_events = world.resource::<Messages<ScriptAttachedEvent>>();
+        let script_detached_events = world.resource::<Messages<ScriptDetachedEvent>>();
+        let script_responses = world.resource::<Messages<ScriptCallbackResponseEvent>>();
         let mut tracked_with_id = Vec::default();
         for (event, id) in self.asset_event_cursor.read_with_id(asset_events) {
             tracked_with_id.push((id.id, format!("AssetEvent : {event:?}")));
@@ -295,26 +291,6 @@ impl ScheduleLabel for ScenarioSchedule {
             ScenarioSchedule::Last => Last.dyn_clone(),
         }
     }
-
-    fn as_dyn_eq(&self) -> &dyn DynEq {
-        match self {
-            ScenarioSchedule::Startup => Startup.as_dyn_eq(),
-            ScenarioSchedule::Update => Update.as_dyn_eq(),
-            ScenarioSchedule::FixedUpdate => FixedUpdate.as_dyn_eq(),
-            ScenarioSchedule::PostUpdate => PostUpdate.as_dyn_eq(),
-            ScenarioSchedule::Last => Last.as_dyn_eq(),
-        }
-    }
-
-    fn dyn_hash(&self, state: &mut dyn ::core::hash::Hasher) {
-        match self {
-            ScenarioSchedule::Startup => Startup.dyn_hash(state),
-            ScenarioSchedule::Update => Update.dyn_hash(state),
-            ScenarioSchedule::FixedUpdate => FixedUpdate.dyn_hash(state),
-            ScenarioSchedule::PostUpdate => PostUpdate.dyn_hash(state),
-            ScenarioSchedule::Last => Last.dyn_hash(state),
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -432,7 +408,7 @@ impl ScenarioStep {
 
     /// Will execute the app update loop until an event of type `T` is received or we timeout.
     pub fn execute_until_event<
-        T: Event + Clone,
+        T: Message + Clone,
         E,
         F: Fn(&T) -> bool,
         G: Fn(&World) -> Option<E>,
@@ -442,11 +418,11 @@ impl ScenarioStep {
         filter: F,
         early_exit: G,
     ) -> Result<Result<Vec<T>, E>, Error> {
-        let mut event_cursor = EventCursor::<T>::default();
+        let mut event_cursor = MessageCursor::<T>::default();
         loop {
             {
                 let world = app.world_mut();
-                let events = world.resource::<Events<T>>();
+                let events = world.resource::<Messages<T>>();
 
                 let events = event_cursor
                     .read(events)
@@ -636,7 +612,7 @@ impl ScenarioStep {
                 );
             }
             ScenarioStep::EmitScriptCallbackEvent { event } => {
-                app.world_mut().send_event(event.clone());
+                app.world_mut().write_message(event.clone());
             }
             ScenarioStep::AssertCallbackSuccess {
                 label,
@@ -690,7 +666,7 @@ impl ScenarioStep {
                     .iter_mut()
                     .find_map(|(name, handle)| {
                         if handle.id() == script.id() {
-                            *handle = handle.clone_weak();
+                            *handle = handle.clone();
                             Some(name.clone())
                         } else {
                             None

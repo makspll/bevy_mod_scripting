@@ -3,15 +3,13 @@
 use std::time::Duration;
 
 use bevy::{
+    asset::RenderAssetUsages,
     diagnostic::LogDiagnosticsPlugin,
     image::ImageSampler,
     log::LogPlugin,
     prelude::*,
     reflect::Reflect,
-    render::{
-        render_asset::RenderAssetUsages,
-        render_resource::{Extent3d, TextureDimension, TextureFormat},
-    },
+    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin, make_layer};
@@ -28,6 +26,7 @@ fn console_app(app: &mut App) -> &mut App {
             level: bevy::log::Level::INFO,
             filter: "error,game_of_life=info".to_owned(),
             custom_layer: make_layer,
+            ..Default::default()
         }),
         ConsolePlugin,
     ))
@@ -276,21 +275,21 @@ callback_labels!(
 );
 
 /// Sends events allowing scripts to drive update logic
-pub fn send_on_update(mut events: EventWriter<ScriptCallbackEvent>) {
-    events.send(ScriptCallbackEvent::new_for_all_scripts(OnUpdate, vec![]));
+pub fn send_on_update(mut events: MessageWriter<ScriptCallbackEvent>) {
+    events.write(ScriptCallbackEvent::new_for_all_scripts(OnUpdate, vec![]));
 }
 
 pub fn send_on_click(
     buttons: Res<ButtonInput<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
-    mut events: EventWriter<ScriptCallbackEvent>,
+    mut events: MessageWriter<ScriptCallbackEvent>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         let window = q_windows.single();
         let pos = window.unwrap().cursor_position().unwrap_or_default();
         let x = pos.x as u32;
         let y = pos.y as u32;
-        events.send(ScriptCallbackEvent::new_for_all_scripts(
+        events.write(ScriptCallbackEvent::new_for_all_scripts(
             OnClick,
             vec![
                 ScriptValue::Integer(x as i64),

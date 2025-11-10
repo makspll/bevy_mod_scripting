@@ -48,12 +48,12 @@ fn add_logging(app: &mut App) {
         });
 }
 
-pub fn info_on_asset_event<T: Asset>() -> impl FnMut(EventReader<AssetEvent<T>>) {
+pub fn info_on_asset_event<T: Asset>() -> impl FnMut(MessageReader<AssetEvent<T>>) {
     // The events need to be consumed, so that there are no false positives on subsequent
     // calls of the run condition. Simply checking `is_empty` would not be enough.
     // PERF: note that `count` is efficient (not actually looping/iterating),
     // due to Bevy having a specialized implementation for events.
-    move |mut reader: EventReader<AssetEvent<T>>| {
+    move |mut reader: MessageReader<AssetEvent<T>>| {
         for event in reader.read() {
             match event {
                 AssetEvent::Modified { .. } => (),

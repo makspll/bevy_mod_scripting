@@ -393,25 +393,6 @@ pub(crate) fn register_tilemap_chunk_functions(world: &mut World) {
         ::bevy_sprite_render::TilemapChunk,
     >::new(world)
     .register_documented(
-        "calculate_tile_transform",
-        |_self: Ref<::bevy_sprite_render::TilemapChunk>, position: Val<::bevy_math::UVec2>| {
-            let output: Val<::bevy_transform::components::Transform> = {
-                {
-                    let output: Val<::bevy_transform::components::Transform> =
-                        ::bevy_sprite_render::TilemapChunk::calculate_tile_transform(
-                            &_self,
-                            position.into_inner(),
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "position"],
-    )
-    .register_documented(
         "clone",
         |_self: Ref<::bevy_sprite_render::TilemapChunk>| {
             let output: Val<::bevy_sprite_render::TilemapChunk> = {

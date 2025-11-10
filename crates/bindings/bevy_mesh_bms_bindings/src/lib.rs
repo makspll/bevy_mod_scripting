@@ -290,81 +290,6 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "rotate_by",
-            |
-                mut _self: Mut<::bevy_mesh::prelude::Mesh>,
-                rotation: Val<::bevy_math::Quat>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::prelude::Mesh::rotate_by(
-                                &mut _self,
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Rotates the vertex positions, normals, and tangents of the mesh in place by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "rotation"],
-        )
-        .register_documented(
-            "rotated_by",
-            |_self: Val<::bevy_mesh::prelude::Mesh>, rotation: Val<::bevy_math::Quat>| {
-                let output: Val<::bevy_mesh::prelude::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::rotated_by(
-                                _self.into_inner(),
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Rotates the vertex positions, normals, and tangents of the mesh by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "rotation"],
-        )
-        .register_documented(
-            "scale_by",
-            |mut _self: Mut<::bevy_mesh::prelude::Mesh>, scale: Val<::bevy_math::Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::prelude::Mesh::scale_by(
-                                &mut _self,
-                                scale.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Scales the vertex positions, normals, and tangents of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "scale"],
-        )
-        .register_documented(
-            "scaled_by",
-            |_self: Val<::bevy_mesh::prelude::Mesh>, scale: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_mesh::prelude::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::scaled_by(
-                                _self.into_inner(),
-                                scale.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Scales the vertex positions, normals, and tangents of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "scale"],
-        )
-        .register_documented(
             "set_morph_target_names",
             |
                 mut _self: Mut<::bevy_mesh::prelude::Mesh>,
@@ -426,48 +351,6 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
             },
             " Transforms the vertex positions, normals, and tangents of the mesh by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.",
             &["_self", "transform"],
-        )
-        .register_documented(
-            "translate_by",
-            |
-                mut _self: Mut<::bevy_mesh::prelude::Mesh>,
-                translation: Val<::bevy_math::Vec3>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_mesh::prelude::Mesh::translate_by(
-                                &mut _self,
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Translates the vertex positions of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "translation"],
-        )
-        .register_documented(
-            "translated_by",
-            |
-                _self: Val<::bevy_mesh::prelude::Mesh>,
-                translation: Val<::bevy_math::Vec3>|
-            {
-                let output: Val<::bevy_mesh::prelude::Mesh> = {
-                    {
-                        let output: Val<::bevy_mesh::prelude::Mesh> = ::bevy_mesh::prelude::Mesh::translated_by(
-                                _self.into_inner(),
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Translates the vertex positions of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
-            &["_self", "translation"],
         )
         .register_documented(
             "with_computed_area_weighted_normals",
@@ -1560,31 +1443,6 @@ pub(crate) fn register_triangle_2_d_mesh_builder_functions(world: &mut World) {
             },
             "",
             &["_self"],
-        )
-        .register_documented(
-            "new",
-            |
-                a: Val<::bevy_math::Vec2>,
-                b: Val<::bevy_math::Vec2>,
-                c: Val<::bevy_math::Vec2>|
-            {
-                let output: Val<::bevy_mesh::primitives::Triangle2dMeshBuilder> = {
-                    {
-                        let output: Val<
-                            ::bevy_mesh::primitives::Triangle2dMeshBuilder,
-                        > = ::bevy_mesh::primitives::Triangle2dMeshBuilder::new(
-                                a.into_inner(),
-                                b.into_inner(),
-                                c.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`Triangle2dMeshBuilder`] from the points `a`, `b`, and `c`.",
-            &["a", "b", "c"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -2296,41 +2154,6 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
             &["length"],
         )
         .register_documented(
-            "from_size",
-            |size: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> = {
-                    {
-                        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> = ::bevy_mesh::primitives::PlaneMeshBuilder::from_size(
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`PlaneMeshBuilder`] from the given size, with the normal pointing upwards.",
-            &["size"],
-        )
-        .register_documented(
-            "new",
-            |normal: Val<::bevy_math::Dir3>, size: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> = {
-                    {
-                        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> = ::bevy_mesh::primitives::PlaneMeshBuilder::new(
-                                normal.into_inner(),
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`PlaneMeshBuilder`] from a given normal and size.",
-            &["normal", "size"],
-        )
-        .register_documented(
             "normal",
             |
                 _self: Val<::bevy_mesh::primitives::PlaneMeshBuilder>,
@@ -2397,68 +2220,6 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_mesh::primitives::PlaneMeshBuilder,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_polyline_3_d_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::primitives::dim3::polyline3d::Polyline3dMeshBuilder,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::primitives::dim3::polyline3d::Polyline3dMeshBuilder>| {
-                let output: Val<::primitives::dim3::polyline3d::Polyline3dMeshBuilder> = {
-                    {
-                        let output: Val<
-                            ::primitives::dim3::polyline3d::Polyline3dMeshBuilder,
-                        > = <::primitives::dim3::polyline3d::Polyline3dMeshBuilder as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::primitives::dim3::polyline3d::Polyline3dMeshBuilder,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_segment_3_d_mesh_builder_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::primitives::dim3::segment3d::Segment3dMeshBuilder,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::primitives::dim3::segment3d::Segment3dMeshBuilder>| {
-                let output: Val<::primitives::dim3::segment3d::Segment3dMeshBuilder> = {
-                    {
-                        let output: Val<
-                            ::primitives::dim3::segment3d::Segment3dMeshBuilder,
-                        > = <::primitives::dim3::segment3d::Segment3dMeshBuilder as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::primitives::dim3::segment3d::Segment3dMeshBuilder,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -2786,8 +2547,6 @@ impl Plugin for BevyMeshScriptingPlugin {
         register_cylinder_anchor_functions(&mut world);
         register_cylinder_mesh_builder_functions(&mut world);
         register_plane_mesh_builder_functions(&mut world);
-        register_polyline_3_d_mesh_builder_functions(&mut world);
-        register_segment_3_d_mesh_builder_functions(&mut world);
         register_sphere_kind_functions(&mut world);
         register_sphere_mesh_builder_functions(&mut world);
         register_tetrahedron_mesh_builder_functions(&mut world);

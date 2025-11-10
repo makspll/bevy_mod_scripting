@@ -53,6 +53,14 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                         }))
                 .then(|| self_ty.def().unwrap())
             })
+            .filter(|t| {
+                if ctxt.path_finder.find_import_paths_no_fallback(*t).is_none() {
+                    debug!("Skipping type: {t:?}, as it has no public path available");
+                    false
+                } else {
+                    true
+                }
+            })
             .inspect(|impl_| debug!("On type: {:?}", tcx.item_name(*impl_)))
             .map(|did| (did, ReflectType::default()));
 

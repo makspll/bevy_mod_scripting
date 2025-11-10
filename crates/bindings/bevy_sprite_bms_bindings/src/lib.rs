@@ -130,21 +130,6 @@ pub(crate) fn register_sprite_functions(world: &mut World) {
         },
         "",
         &["_self"],
-    )
-    .register_documented(
-        "sized",
-        |custom_size: Val<::bevy_math::Vec2>| {
-            let output: Val<::bevy_sprite::prelude::Sprite> = {
-                {
-                    let output: Val<::bevy_sprite::prelude::Sprite> =
-                        ::bevy_sprite::prelude::Sprite::sized(custom_size.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a Sprite with a custom size",
-        &["custom_size"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -527,23 +512,6 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Anchor,
     >::new(world)
-        .register_documented(
-            "as_vec",
-            |_self: Ref<::bevy_sprite::Anchor>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_sprite::Anchor::as_vec(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: Ref<::bevy_sprite::Anchor>| {
