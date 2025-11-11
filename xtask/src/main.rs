@@ -1200,7 +1200,7 @@ impl Xtasks {
         let codegen_app_settings = main_workspace_app_settings
             .clone()
             .with_workspace_dir(api_gen_dir.clone());
-            // .with_toolchain(codegen_toolchain.clone()); // don't think it's needed, the rust toolchain file sorts that out
+        // .with_toolchain(codegen_toolchain.clone()); // don't think it's needed, the rust toolchain file sorts that out
 
         let bevy_repo_app_settings = main_workspace_app_settings
             .clone()
@@ -2014,7 +2014,7 @@ impl Xtasks {
         if cfg!(target_os = "linux") {
             let sudo = if !is_root::is_root() { "sudo" } else { "" };
             let install_cmd = format!(
-                "{sudo} apt-get update && {sudo} apt-get install --no-install-recommends -y libasound2-dev libudev-dev"
+                "{sudo} apt-get update && {sudo} apt-get install --no-install-recommends -y libasound2-dev libudev-dev libwayland-dev"
             );
             Self::run_system_command(
                 &app_settings,
