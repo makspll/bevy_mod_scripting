@@ -22,7 +22,7 @@ use bevy_ecs::{
     system::{RunSystemError, SystemIn, SystemStateFlags},
     world::DeferredWorld,
 };
-use bevy_log::{debug, error, info, warn_once};
+use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, InteropError, IntoScript, ReflectAccessId, ReflectReference,
@@ -155,11 +155,8 @@ impl ScriptSystemBuilder {
             {
                 for default_set in other.default_system_sets() {
                     if is_before {
-                        info!("before {default_set:?}");
                         system_config = system_config.before(*default_set);
                     } else {
-                        info!("before {default_set:?}");
-                        info!("after {default_set:?}");
                         system_config = system_config.after(*default_set);
                     }
                 }
@@ -260,7 +257,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     }
 
     fn flags(&self) -> SystemStateFlags {
-        if self.is_exclusive() {
+        println!("flags");
+        if self.exclusive {
             SystemStateFlags::NON_SEND | SystemStateFlags::EXCLUSIVE
         } else {
             SystemStateFlags::empty()
