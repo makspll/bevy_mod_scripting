@@ -41,7 +41,7 @@ digraph {
   node_16 [label="on_test_post_update"];
   node_17 [label="custom_system_a"];
   node_18 [label="custom_system_b"];
-  node_19 [label="SystemSet AssetEvents"];
+  node_19 [label="SystemSet AssetEventSystems"];
   node_20 [label="SystemSet GarbageCollection"];
   node_21 [label="SystemSet ListeningPhase"];
   node_22 [label="SystemSet MachineStartPhase"];
