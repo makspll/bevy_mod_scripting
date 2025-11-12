@@ -15,8 +15,9 @@ jobs:
     env:
       DIFF_ARTIFACT: bindings.diff
       PR_EVENT: event-bindings.json
+      EVENT_FILE: event.json
     steps:
-    - name: Download Benchmark Results
+    - name: Download Diff Results
       uses: dawidd6/action-download-artifact@v6
       with:
         name: ${{ env.DIFF_ARTIFACT }}
@@ -31,13 +32,48 @@ jobs:
       with:
         script: |
           let fs = require('fs');
-          let prEvent = JSON.parse(fs.readFileSync(process.env.PR_EVENT, {encoding: 'utf8'}));
+          let prEvent = JSON.parse(fs.readFileSync(process.env.EVENT_FILE, {encoding: 'utf8'}));
           core.exportVariable("PR_HEAD", prEvent.pull_request.head.ref);
           core.exportVariable("PR_BASE", prEvent.pull_request.base.ref);
           core.exportVariable("PR_BASE_SHA", prEvent.pull_request.base.sha);
           core.exportVariable("PR_NUMBER", prEvent.number);
           core.exportVariable("HEAD_REPO", prEvent.pull_request.head.repo.full_name);
           core.exportVariable("HEAD_REPO_URL", prEvent.pull_request.head.repo.git_url);
+
+    - name: Build Collapsible Diff Comment
+      id: build_comment
+      continue-on-error: true
+      shell: bash
+      run: |
+        echo '### 🔍 Binding Differences Detected' > comment.md
+        echo '' >> comment.md
+        echo '> The following changes were detected in generated bindings:' >> comment.md
+        echo '' >> comment.md
+
+        # Build collapsible sections per file
+        awk '
+          /^diff --git/ {
+            if (file != "") print "</pre></details>" >> "comment.md"
+            file=$4
+            gsub(/^a\//, "", file)
+            print "<details><summary>" file "</summary><pre>" >> "comment.md"
+            next
+          }
+          { print $0 >> "comment.md" }
+          END { if (file != "") print "</pre></details>" >> "comment.md" }
+        ' "${{ env.DIFF_ARTIFACT }}"
+
+    - name: Add or Update PR Comment with Diff
+      id: pr_comment
+      continue-on-error: true
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ env.PR_NUMBER }}
+        body-path: comment.md
+        edit-mode: replace
+        token: ${{ secrets.GITHUB_TOKEN }}
+        comment-identifier: bindings-diff
+
     - name: Fail PR With URL
       uses: actions/github-script@v6
       with:

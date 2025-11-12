@@ -32,7 +32,7 @@ jobs:
       run: |
         if [[ -n $(git status --porcelain) ]]; then
           echo "changes=true" >> "$GITHUB_OUTPUT"
-          git diff > bindings.diff
+          git diff --text > bindings.diff
           echo "Diff created:"
           cat bindings.diff
         else
