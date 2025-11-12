@@ -2,6 +2,7 @@ use std::{
     borrow::{Borrow, Cow},
     collections::VecDeque,
     fmt::Display,
+    hash::Hash,
 };
 
 use cargo_metadata::{
@@ -222,6 +223,43 @@ impl Ord for CrateDependency {
     }
 }
 
+/// A feature activation descriptor within a crate
+#[derive(Debug, Clone, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct LocalActivatedFeature {
+    pub feature: FeatureName,
+    pub activated_via_other_crate: bool,
+}
+
+impl PartialEq for LocalActivatedFeature {
+    fn eq(&self, other: &Self) -> bool {
+        self.feature == other.feature
+    }
+}
+
+impl Ord for LocalActivatedFeature {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match self.feature.cmp(&other.feature) {
+            core::cmp::Ordering::Equal => {}
+            ord => return ord,
+        }
+        self.activated_via_other_crate
+            .cmp(&other.activated_via_other_crate)
+    }
+}
+
+impl PartialOrd for LocalActivatedFeature {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Hash for LocalActivatedFeature {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.feature.hash(state);
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Crate {
@@ -232,7 +270,7 @@ pub struct Crate {
     pub version: Version,
     pub in_workspace: Option<bool>,
     pub active_features: Option<IndexSet<FeatureName>>,
-    pub active_dependency_features: Option<IndexMap<CrateName, Vec<(FeatureName, bool)>>>,
+    pub active_dependency_features: Option<IndexMap<CrateName, Vec<LocalActivatedFeature>>>,
     pub is_enabled: Option<bool>,
 }
 

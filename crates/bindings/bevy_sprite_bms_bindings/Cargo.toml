@@ -22,31 +22,31 @@ bevy_sprite = { version = "0.17.2", features = ["bevy_picking", "bevy_window", "
 
 bevy_app = { version = "^0.17.2", features = ["bevy_reflect", "reflect_auto_register", "std", "error_panic_hook"], default-features = true}
 
-bevy_asset = { version = "^0.17.2", features = ["notify-debouncer-full", "watch", "multi_threaded", "file_watcher"], default-features = true}
+bevy_asset = { version = "^0.17.2", features = ["watch", "file_watcher", "multi_threaded", "notify-debouncer-full"], default-features = true}
 
 bevy_camera = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_color = { version = "^0.17.2", features = ["wgpu-types", "alloc", "std", "bevy_reflect", "encase"], default-features = true}
+bevy_color = { version = "^0.17.2", features = ["wgpu-types", "bevy_reflect", "encase", "std", "alloc"], default-features = true}
 
 bevy_derive = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_ecs = { version = "^0.17.2", features = ["std", "async_executor", "multi_threaded", "bevy_reflect", "reflect_auto_register", "backtrace", "serialize"], default-features = true}
+bevy_ecs = { version = "^0.17.2", features = ["std", "serialize", "async_executor", "bevy_reflect", "reflect_auto_register", "multi_threaded", "backtrace"], default-features = true}
 
-bevy_image = { version = "^0.17.2", features = ["hdr", "ktx2", "png", "zstd", "zstd_rust", "bevy_reflect"], default-features = true}
+bevy_image = { version = "^0.17.2", features = ["zstd", "hdr", "png", "bevy_reflect", "zstd_rust", "ktx2"], default-features = true}
 
-bevy_math = { version = "^0.17.2", features = ["alloc", "std", "rand", "curve", "bevy_reflect"], default-features = true}
+bevy_math = { version = "^0.17.2", features = ["std", "rand", "curve", "bevy_reflect", "alloc"], default-features = true}
 
 bevy_mesh = { version = "^0.17.2", features = [], default-features = true}
 
 bevy_picking = { version = "^0.17.2", features = ["bevy_mesh_picking_backend"], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["glam", "uuid", "smol_str", "auto_register", "auto_register_inventory", "std", "smallvec", "debug", "debug_stack"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["glam", "auto_register", "debug_stack", "std", "uuid", "smol_str", "smallvec", "auto_register_inventory", "debug"], default-features = true}
 
 bevy_text = { version = "^0.17.2", features = ["default_font"], default-features = true}
 
-bevy_transform = { version = "^0.17.2", features = ["std", "async_executor", "alloc", "bevy_log", "bevy-support", "bevy_reflect"], default-features = true}
+bevy_transform = { version = "^0.17.2", features = ["bevy_log", "bevy_reflect", "std", "alloc", "bevy-support", "async_executor"], default-features = true}
 
-bevy_window = { version = "^0.17.2", features = ["bevy_image", "bevy_asset", "custom_cursor", "std", "bevy_reflect"], default-features = true}
+bevy_window = { version = "^0.17.2", features = ["std", "custom_cursor", "bevy_asset", "bevy_image", "bevy_reflect"], default-features = true}
 
 radsort = { version = "^0.1", features = [], default-features = true}
 

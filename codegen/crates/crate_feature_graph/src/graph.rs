@@ -4,7 +4,7 @@ use indexmap::{IndexMap, IndexSet};
 use log::error;
 use petgraph::Directed;
 
-use crate::{CrateName, DependencyKind, Feature, FeatureName, Workspace};
+use crate::{CrateName, DependencyKind, Feature, FeatureName, LocalActivatedFeature, Workspace};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DependsOn {
@@ -328,16 +328,7 @@ impl WorkspaceGraph {
                             .as_ref()
                             .map(|m| {
                                 m.iter()
-                                    .map(|(k, v)| {
-                                        (
-                                            k.to_string(),
-                                            v.iter()
-                                                .map(|(f, enabled_by_shared)| {
-                                                    (f.to_string(), enabled_by_shared)
-                                                })
-                                                .collect::<Vec<_>>(),
-                                        )
-                                    })
+                                    .map(|(k, v)| (k.to_string(), v.iter().collect::<Vec<_>>()))
                                     .collect()
                             })
                             .unwrap_or_default(),
@@ -353,12 +344,10 @@ impl WorkspaceGraph {
                             "{}: [{}]",
                             k,
                             v.iter()
-                                .map(|(f, enabled_by_shared)| format!(
+                                .map(|f| format!(
                                     "{}{}",
-                                    f,
-                                    enabled_by_shared
-                                        .then_some(String::from(" (*shared)"))
-                                        .unwrap_or_default()
+                                    f.feature,
+                                    if f.activated_via_other_crate { String::from(" (*shared)") } else { Default::default() }
                                 ))
                                 .collect::<Vec<_>>()
                                 .join(", ")
@@ -437,6 +426,7 @@ impl WorkspaceGraph {
                 f.sort()
             }
             if let Some(m) = krate.active_dependency_features.as_mut() {
+                m.sort_keys();
                 for v in m.values_mut() {
                     v.sort();
                 }
@@ -572,7 +562,7 @@ impl WorkspaceGraph {
         }
 
         // then compute the active dependency features for each crate
-        let mut active_dependency_features = HashMap::<_, Vec<(_, _)>>::new();
+        let mut active_dependency_features = HashMap::<_, Vec<_>>::new();
         for krate in self
             .workspace
             .all_crates()
@@ -602,7 +592,10 @@ impl WorkspaceGraph {
                             active_dependency_features
                                 .entry((krate.name.clone(), dependency.name.clone()))
                                 .or_default()
-                                .push((feature.clone(), false));
+                                .push(LocalActivatedFeature {
+                                    feature: feature.clone(),
+                                    activated_via_other_crate: false,
+                                });
                         }
                     }
                 }
@@ -620,11 +613,11 @@ impl WorkspaceGraph {
                         .filter(|f| !f.is_special_default_enabling_feature())
                     {
                         // meh
-                        let val = (feat.clone(), true);
-                        let false_val = (feat.clone(), false);
-                        if !entry.contains(&val) && !entry.contains(&false_val) {
-                            entry.push(val);
-                        }
+                        let val = LocalActivatedFeature {
+                            feature: feat.clone(),
+                            activated_via_other_crate: true,
+                        };
+                        entry.push(val);
                     }
                 }
             }
@@ -642,6 +635,16 @@ impl WorkspaceGraph {
             if let Some(krate) = self.workspace.find_crate_mut(&in_crate, || format!(
                 "package from workspace manifest: `{in_crate}` was not found in the parsed workspace list. While setting active dependency features."
             )) {
+                // remove duplicates, but keep the "lowest" activation level to show
+                let mut feature_set = HashSet::<LocalActivatedFeature>::with_capacity(features.len());
+                for mut feat in features.into_iter() {
+                    if let Some(existing) = feature_set.get(&feat) {
+                        feat.activated_via_other_crate = existing.activated_via_other_crate && feat.activated_via_other_crate;
+                    } 
+                    feature_set.insert(feat);
+                }
+                let features = feature_set.into_iter().collect();
+
                 match krate.active_dependency_features.as_mut() {
                     Some(map) => {
                         map.insert(dependency, features);

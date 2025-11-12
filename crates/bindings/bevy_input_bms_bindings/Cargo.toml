@@ -20,14 +20,14 @@ bevy_mod_scripting_derive = { workspace = true }
 bevy_input = { version = "0.17.2", features = ["std", "bevy_reflect", "smol_str"], default-features = true}
 
 
-bevy_app = { version = "^0.17.2", features = ["std", "bevy_reflect", "reflect_auto_register", "error_panic_hook"], default-features = true}
+bevy_app = { version = "^0.17.2", features = ["std", "bevy_reflect", "error_panic_hook", "reflect_auto_register"], default-features = true}
 
-bevy_ecs = { version = "^0.17.2", features = ["std", "bevy_reflect", "async_executor", "multi_threaded", "reflect_auto_register", "backtrace", "serialize"], default-features = true}
+bevy_ecs = { version = "^0.17.2", features = ["std", "multi_threaded", "async_executor", "backtrace", "bevy_reflect", "serialize", "reflect_auto_register"], default-features = true}
 
-bevy_math = { version = "^0.17.2", features = ["std", "bevy_reflect", "alloc", "rand", "curve"], default-features = true}
+bevy_math = { version = "^0.17.2", features = ["std", "bevy_reflect", "curve", "alloc", "rand"], default-features = true}
 
-bevy_platform = { version = "^0.17.2", features = ["std", "alloc", "serialize"], default-features = true}
+bevy_platform = { version = "^0.17.2", features = ["serialize", "std", "alloc"], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["std", "smol_str", "glam", "uuid", "auto_register", "auto_register_inventory", "smallvec", "debug", "debug_stack"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["uuid", "debug_stack", "smol_str", "glam", "std", "auto_register_inventory", "debug", "auto_register", "smallvec"], default-features = true}
 
 

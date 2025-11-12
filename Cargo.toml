@@ -198,6 +198,7 @@ bevy_utils = { version = "0.17", default-features = false, features = ["std"] }
 glam = { version = "0.30.7", default-features = false }
 uuid = { version = "1.13", default-features = false }
 smol_str = { version = "0.2.0", default-features = false }
+nonmax = { version = "0.5.5", default-features = false, features = ["std"] }
 
 # other
 serde_json = { version = "1.0", default-features = false }

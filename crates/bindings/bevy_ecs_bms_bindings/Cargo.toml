@@ -24,13 +24,13 @@ arrayvec = { version = "^0.7.4", features = ["std"], default-features = false}
 
 bevy_ecs_macros = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_platform = { version = "^0.17.2", features = ["std", "serialize", "alloc"], default-features = true}
+bevy_platform = { version = "^0.17.2", features = ["alloc", "std", "serialize"], default-features = true}
 
 bevy_ptr = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["std", "auto_register", "glam", "uuid", "smol_str", "auto_register_inventory", "smallvec", "debug", "debug_stack"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["glam", "std", "auto_register", "debug_stack", "uuid", "smallvec", "smol_str", "debug", "auto_register_inventory"], default-features = true}
 
-bevy_tasks = { version = "^0.17.2", features = ["async_executor", "multi_threaded", "futures-lite"], default-features = true}
+bevy_tasks = { version = "^0.17.2", features = ["multi_threaded", "futures-lite", "async_executor"], default-features = true}
 
 bevy_utils = { version = "^0.17.2", features = ["parallel", "std", "debug"], default-features = true}
 
@@ -38,7 +38,7 @@ bitflags = { version = "^2.3", features = ["std"], default-features = false}
 
 bumpalo = { version = "^3", features = [], default-features = true}
 
-concurrent-queue = { version = "^2.5.0", features = ["std", "std"], default-features = false}
+concurrent-queue = { version = "^2.5.0", features = ["std"], default-features = false}
 
 fixedbitset = { version = "^0.5", features = ["std"], default-features = false}
 

@@ -22,15 +22,15 @@ bevy_image = { version = "0.17.2", features = ["hdr", "ktx2", "png", "zstd", "zs
 
 bevy_app = { version = "^0.17.2", features = ["bevy_reflect", "reflect_auto_register", "std", "error_panic_hook"], default-features = true}
 
-bevy_asset = { version = "^0.17.2", features = ["notify-debouncer-full", "watch", "multi_threaded", "file_watcher"], default-features = true}
+bevy_asset = { version = "^0.17.2", features = ["notify-debouncer-full", "multi_threaded", "file_watcher", "watch"], default-features = true}
 
-bevy_color = { version = "^0.17.2", features = ["wgpu-types", "alloc", "std", "bevy_reflect", "encase"], default-features = true}
+bevy_color = { version = "^0.17.2", features = ["bevy_reflect", "wgpu-types", "alloc", "encase", "std"], default-features = true}
 
-bevy_math = { version = "^0.17.2", features = ["bevy_reflect", "alloc", "std", "rand", "curve"], default-features = true}
+bevy_math = { version = "^0.17.2", features = ["alloc", "curve", "std", "rand", "bevy_reflect"], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["glam", "uuid", "smol_str", "auto_register", "auto_register_inventory", "std", "smallvec", "debug", "debug_stack"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["uuid", "smallvec", "debug", "auto_register_inventory", "smol_str", "std", "debug_stack", "glam", "auto_register"], default-features = true}
 
-bevy_utils = { version = "^0.17.2", features = ["parallel", "debug"], default-features = true}
+bevy_utils = { version = "^0.17.2", features = ["debug", "parallel"], default-features = true}
 
 bitflags = { version = "^2.3", features = [], default-features = true}
 
@@ -42,7 +42,7 @@ guillotiere = { version = "^0.6.0", features = [], default-features = true}
 
 half = { version = "^2.4.1", features = [], default-features = true}
 
-image = { version = "^0.25.2", features = ["hdr", "png"], default-features = false}
+image = { version = "^0.25.2", features = ["png", "hdr"], default-features = false}
 
 ktx2 = { version = "^0.4.0", features = [], default-features = true}
 
