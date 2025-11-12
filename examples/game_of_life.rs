@@ -18,7 +18,6 @@ use bevy_mod_scripting_bindings::AllocatorDiagnosticPlugin;
 use clap::Parser;
 
 // CONSOLE SETUP
-
 fn console_app(app: &mut App) -> &mut App {
     // forward logs to the console
     app.add_plugins((
@@ -114,7 +113,6 @@ pub enum GameOfLifeCommand {
 // ------------- GAME OF LIFE
 fn game_of_life_app(app: &mut App) -> &mut App {
     app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
-        // .add_plugins(BMSPlugin.set(LuaScriptingPlugin::default().enable_context_sharing()))
         .add_plugins(BMSPlugin)
         .register_type::<LifeState>()
         .register_type::<Settings>()
@@ -176,6 +174,7 @@ pub fn register_script_functions(app: &mut App) -> &mut App {
     app
 }
 
+// drawing based on https://github.com/bevyengine/bevy/blob/main/examples/2d/cpu_draw.rs
 pub fn init_game_of_life_state(
     mut commands: Commands,
     mut assets: ResMut<Assets<Image>>,
@@ -194,18 +193,11 @@ pub fn init_game_of_life_state(
     );
 
     image.sampler = ImageSampler::nearest();
+    let handle = assets.add(image);
 
     commands.spawn(Camera2d);
     commands
-        .spawn(Sprite {
-            image: assets.add(image),
-            custom_size: Some(Vec2::new(
-                settings.display_grid_dimensions.0 as f32,
-                settings.display_grid_dimensions.1 as f32,
-            )),
-            color: Color::srgb(1.0, 0.388, 0.278), // TOMATO
-            ..Default::default()
-        })
+        .spawn(Sprite::from_image(handle))
         .insert(LifeState {
             cells: vec![
                 0u8;

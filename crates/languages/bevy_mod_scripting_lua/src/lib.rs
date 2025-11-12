@@ -355,6 +355,7 @@ pub fn lua_handler(
     let out = handler
         .call::<LuaScriptValue>(input)
         .map_err(IntoInteropError::to_bms_error)?;
+
     Ok(out.into())
 }
 

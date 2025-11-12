@@ -166,7 +166,8 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
                         // removed
                     }
                     Some(Err(err)) => {
-                        _ = world.write_message(ScriptErrorEvent::new(err));
+                        _ = world
+                            .write_message(ScriptErrorEvent::new(err.with_language(P::LANGUAGE)));
                         // removed
                     }
                     None => {
@@ -528,9 +529,10 @@ impl<P: IntoScriptPluginParams> MachineState<P> for ContextAssigned<P> {
             Ok(_) => {}
             Err(_) => {
                 drop(contexts_guard);
-                _ = world.write_message(ScriptErrorEvent::new(ScriptError::from(
-                    InteropError::str("no context policy matched"),
-                )))
+                _ = world.write_message(ScriptErrorEvent::new(
+                    ScriptError::from(InteropError::str("no context policy matched"))
+                        .with_language(P::LANGUAGE),
+                ))
             }
         }
         Box::new(ready(Ok(

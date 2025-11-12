@@ -84,11 +84,17 @@ pub fn filter_script_attachments<P: IntoScriptPluginParams>(
     mut events: LoadedWithHandles<ScriptAttachedEvent>,
     mut filtered: MessageWriter<ForPlugin<ScriptAttachedEvent, P>>,
 ) {
-    let mut batch = events.get_loaded().map(|(mut a, b)| {
-        trace!("dispatching script attachment event for: {a:?}");
-        *a.0.script_mut() = b.0;
-        ForPlugin::new(a)
-    });
+    let mut batch = events
+        .get_loaded()
+        .filter(|(_, _, l)| *l == P::LANGUAGE)
+        .map(|(mut a, b, _)| {
+            trace!(
+                "dispatching script attachment event for: {a:?}, language: {}",
+                P::LANGUAGE
+            );
+            *a.0.script_mut() = b.0;
+            ForPlugin::new(a)
+        });
 
     if let Some(next) = batch.next() {
         filtered.write_batch(std::iter::once(next).chain(batch));

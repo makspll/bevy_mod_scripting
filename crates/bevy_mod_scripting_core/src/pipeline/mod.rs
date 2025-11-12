@@ -12,7 +12,7 @@ use bevy_ecs::{
     world::World,
 };
 use bevy_log::debug;
-use bevy_mod_scripting_asset::ScriptAsset;
+use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::WorldGuard;
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_platform::collections::HashSet;
@@ -160,7 +160,7 @@ pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone> {
     assets: ResMut<'w, Assets<ScriptAsset>>,
     asset_server: Res<'w, AssetServer>,
     fresh_events: MessageReader<'w, 's, T>,
-    loaded_with_handles: Local<'s, VecDeque<(T, StrongScriptHandle)>>,
+    loaded_with_handles: Local<'s, VecDeque<(T, StrongScriptHandle, Language)>>,
     loading: Local<'s, VecDeque<T>>,
 }
 
@@ -170,7 +170,7 @@ impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
     ///
     /// This uses a [`EventReader<T>`] underneath, meaning if you don't call this method once every frame (or every other frame).
     /// You may miss events.
-    pub fn get_loaded(&mut self) -> impl Iterator<Item = (T, StrongScriptHandle)> {
+    pub fn get_loaded(&mut self) -> impl Iterator<Item = (T, StrongScriptHandle, Language)> {
         // first get all of the fresh_events
         self.loading.extend(self.fresh_events.read().cloned());
         // now process the loading queue
@@ -180,7 +180,8 @@ impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
                 Some(LoadState::Loaded) | None => { // none in case this is added in memory and not through asset server
                     let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
                     if let Some(strong) = strong {
-                        self.loaded_with_handles.push_front((e.clone(), strong));
+                        let lang = strong.get(&self.assets).language.clone();
+                        self.loaded_with_handles.push_front((e.clone(), strong, lang));
                     }
                     false
                 }
