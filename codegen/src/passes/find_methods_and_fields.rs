@@ -202,10 +202,6 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, args: &Args) -> b
                         })
                         .unwrap_or(true);
 
-                    log::info!("function: {}, is_stable_for_target: {is_stable_for_target}, stability: {:?}", ctxt.tcx.item_name(def_id),  ctxt
-                        .tcx
-                        .lookup_stability(fn_did));
-
                     if !is_stable_for_target {
                         log::debug!(
                             "Skipping unstable function: `{}` on type: `{}`, msrv target: {:?}",
