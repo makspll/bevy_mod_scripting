@@ -19,7 +19,7 @@ pub const CARGO_VERBOSE: &str = "CARGO_VERBOSE";
 pub const WORKSPACE_GRAPH_FILE_ENV: &str = "WORKSPACE_GRAPH_FILE";
 
 pub fn fetch_target_directory(metadata: &Metadata) -> Utf8PathBuf {
-    let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
+    let plugin_subdir = format!("plugin-{}", crate::CHANNEL);
     metadata.target_directory.join(plugin_subdir)
 }
 
@@ -197,7 +197,7 @@ pub fn driver_main<T: RustcPlugin>(plugin: T) {
         // the driver directly without having to pass --sysroot or anything
         let mut args: Vec<String> = orig_args.clone();
         if !have_sys_root_arg {
-            args.extend(["--sysroot".into(), sys_root]);
+            args.extend(["--sysroot".into(), sys_root.clone()]);
         };
 
         // On a given invocation of rustc, we have to decide whether to act as rustc,
@@ -215,16 +215,15 @@ pub fn driver_main<T: RustcPlugin>(plugin: T) {
 
         let run_plugin = !normal_rustc && is_target_crate;
 
+        // TODO: this is dangerous
+        // ignore all lints that could break the comp in crates that we don't care about
+        // args.extend([String::from("--cap-lints"), String::from("warn")]);
         if run_plugin {
-            // TODO: this is dangerous
-            args.extend([String::from("--cap-lints"), String::from("warn")]);
             log::debug!("Running plugin on crate: {crate_being_built}");
             let plugin_args: T::Args =
                 serde_json::from_str(&env::var(PLUGIN_ARGS).unwrap()).unwrap();
             plugin.run(args, plugin_args);
         } else {
-            // ignore all lints that could break the comp in crates that we don't care about
-            args.extend([String::from("--cap-lints"), String::from("warn")]);
             log::debug!(
                 "Running normal Rust. Relevant variables:\
 normal_rustc={normal_rustc}, \

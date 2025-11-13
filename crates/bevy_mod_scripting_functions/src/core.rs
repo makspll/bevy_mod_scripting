@@ -35,6 +35,8 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_animation_bms_bindings::BevyAnimationScriptingPlugin);
     #[cfg(feature = "bevy_asset")]
     app.add_plugins(bevy_asset_bms_bindings::BevyAssetScriptingPlugin);
+    #[cfg(feature = "bevy_camera")]
+    app.add_plugins(bevy_camera_bms_bindings::BevyCameraScriptingPlugin);
     #[cfg(feature = "bevy_color")]
     app.add_plugins(bevy_color_bms_bindings::BevyColorScriptingPlugin);
     #[cfg(feature = "bevy_core_pipeline")]
@@ -51,6 +53,8 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_input_bms_bindings::BevyInputScriptingPlugin);
     #[cfg(feature = "bevy_input_focus")]
     app.add_plugins(bevy_input_focus_bms_bindings::BevyInputFocusScriptingPlugin);
+    #[cfg(feature = "bevy_light")]
+    app.add_plugins(bevy_light_bms_bindings::BevyLightScriptingPlugin);
     #[cfg(feature = "bevy_math")]
     app.add_plugins(bevy_math_bms_bindings::BevyMathScriptingPlugin);
     #[cfg(feature = "bevy_mesh")]
@@ -59,6 +63,8 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_pbr_bms_bindings::BevyPbrScriptingPlugin);
     #[cfg(feature = "bevy_picking")]
     app.add_plugins(bevy_picking_bms_bindings::BevyPickingScriptingPlugin);
+    #[cfg(feature = "bevy_post_process")]
+    app.add_plugins(bevy_post_process_bms_bindings::BevyPostProcessScriptingPlugin);
     #[cfg(feature = "bevy_reflect")]
     app.add_plugins(bevy_reflect_bms_bindings::BevyReflectScriptingPlugin);
     #[cfg(feature = "bevy_render")]
@@ -67,12 +73,18 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_scene_bms_bindings::BevySceneScriptingPlugin);
     #[cfg(feature = "bevy_sprite")]
     app.add_plugins(bevy_sprite_bms_bindings::BevySpriteScriptingPlugin);
+    #[cfg(feature = "bevy_sprite_render")]
+    app.add_plugins(bevy_sprite_renderer_bms_bindings::BevySpriteRendererScriptingPlugin);
     #[cfg(feature = "bevy_text")]
     app.add_plugins(bevy_text_bms_bindings::BevyTextScriptingPlugin);
     #[cfg(feature = "bevy_time")]
     app.add_plugins(bevy_time_bms_bindings::BevyTimeScriptingPlugin);
     #[cfg(feature = "bevy_transform")]
     app.add_plugins(bevy_transform_bms_bindings::BevyTransformScriptingPlugin);
+    #[cfg(feature = "bevy_ui")]
+    app.add_plugins(bevy_ui_bms_bindings::BevyUiScriptingPlugin);
+    #[cfg(feature = "bevy_ui_render")]
+    app.add_plugins(bevy_ui_renderer_bms_bindings::BevyUiRendererScriptingPlugin);
 }
 
 #[script_bindings(

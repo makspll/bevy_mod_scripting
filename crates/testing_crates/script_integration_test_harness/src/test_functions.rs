@@ -79,7 +79,7 @@ pub fn register_test_functions(world: &mut App) {
                         let mut allocator = allocator.write();
 
                         ReflectReference::new_allocated(
-                            c.unwrap_or(Entity::from_raw(9999)),
+                            c.unwrap_or(Entity::from_raw_u32(9999).unwrap()),
                             &mut allocator,
                         )
                     })

@@ -267,7 +267,7 @@ impl SimpleEnum {
 }
 
 pub(crate) const TEST_COMPONENT_ID_START: usize = 20;
-pub(crate) const TEST_ENTITY_ID_START: u32 = 0;
+pub(crate) const TEST_ENTITY_ID_START: u32 = 1;
 
 pub trait GetTestComponentId {
     fn test_component_id() -> ComponentId;
@@ -292,7 +292,7 @@ macro_rules! impl_test_component_ids {
 
             impl GetTestEntityId for $comp_type {
                 fn test_entity_id() -> Entity {
-                    Entity::from_raw(TEST_ENTITY_ID_START + $comp_id)
+                    Entity::from_raw_u32(TEST_ENTITY_ID_START + $comp_id).unwrap()
                 }
             }
         )*
@@ -306,13 +306,17 @@ macro_rules! impl_test_component_ids {
 
         pub(crate) fn init_all_components(world: &mut World, registry: &mut TypeRegistry) {
             $(
+                // world
+                //     .components()
+                //     .iter_registered()
+                //     .for_each(|c| println!("--> {:?}", c));
                 world.register_component::<$comp_type>();
                 registry.register::<$comp_type>();
                 let registered_id = world.component_id::<$comp_type>().unwrap().index();
                 assert_eq!(registered_id, TEST_COMPONENT_ID_START + $comp_id, "Test setup failed. Did you register components before running setup_world?: {}", stringify!($comp_type));
                 let entity = world.spawn(<$comp_type>::init()).id();
                 assert_eq!(entity.index(), TEST_ENTITY_ID_START + $comp_id, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
-                assert_eq!(entity.generation(), 1, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
+                assert_eq!(entity.generation(), bevy_ecs::entity::EntityGeneration::FIRST, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
             )*
             $(
                 world.insert_resource::<$res_type>(<$res_type>::init());
@@ -338,8 +342,8 @@ macro_rules! impl_test_component_ids {
     };
 }
 
-impl_test_component_ids!(
-    [   TestComponent => 0,
+impl_test_component_ids!([
+        TestComponent => 0,
         CompWithFromWorld => 1,
         CompWithDefault => 2,
         CompWithDefaultAndComponentData => 3,
@@ -361,6 +365,21 @@ impl_test_component_ids!(
 fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init: F) {
     let type_registry = world.get_resource_or_init::<AppTypeRegistry>().clone();
     let mut type_registry_guard = type_registry.0.write();
+
+    // bevy now spawns an ineternal component `bevy_ecs::event::EventWrapperComponent<bevy_ecs::archetype::ArchetypeCreated>`
+    // when an entity with a component is inserted :shrug:, make that happen early
+    #[derive(Component)]
+    pub struct Dummy;
+    world.register_component::<Dummy>();
+    world.spawn((Dummy,));
+
+    if world.components().len() > TEST_COMPONENT_ID_START {
+        panic!("world has more components than the first test component ID requires")
+    }
+
+    if world.entities().len() > TEST_ENTITY_ID_START {
+        panic!("world has more entities than the first test component ID requires")
+    }
 
     while world.components().len() < TEST_COMPONENT_ID_START {
         unsafe {

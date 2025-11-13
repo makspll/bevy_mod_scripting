@@ -724,7 +724,7 @@ variadics_please::all_tuples!(impl_script_function, 0, 13, T);
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy_asset::{AssetId, Handle};
+    use bevy_asset::Handle;
     use bevy_ecs::{prelude::Component, world::World};
     use bevy_mod_scripting_script::ScriptAttachment;
 
@@ -734,7 +734,7 @@ mod test {
             ThreadWorldContainer
                 .set_context(crate::ThreadScriptContext {
                     world,
-                    attachment: ScriptAttachment::StaticScript(Handle::Weak(AssetId::invalid())),
+                    attachment: ScriptAttachment::StaticScript(Handle::default()),
                 })
                 .unwrap();
             f()

@@ -12,6 +12,9 @@ bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_diagnostic = { workspace = true, default-features = false, features = [] }
 bevy_reflect = { workspace = true, default-features = false, features = [] }
 bevy_time = { workspace = true, default-features = false, features = [] }
+bevy_utils = { workspace = true, default-features = false, features = [
+    "debug",
+] }
 
 
 [lib]

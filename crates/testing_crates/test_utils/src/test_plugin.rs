@@ -62,8 +62,12 @@ macro_rules! make_test_plugin {
 
         #[derive(Default, std::fmt::Debug)]
         struct TestRuntime {
-            pub invocations:
-                parking_lot::Mutex<Vec<(Option<Entity>, Option<$ident::script::ScriptId>)>>,
+            pub invocations: parking_lot::Mutex<
+                Vec<(
+                    Option<Entity>,
+                    Option<bevy_asset::AssetId<bevy_mod_scripting_asset::ScriptAsset>>,
+                )>,
+            >,
         }
 
         #[derive(Default, std::fmt::Debug, Clone)]

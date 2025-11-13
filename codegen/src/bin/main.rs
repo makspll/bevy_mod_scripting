@@ -29,6 +29,13 @@ fn main() {
 
     info!("Using RUST_LOG: {:?}", env::var("RUST_LOG"));
 
+    info!(
+        "MSRV target: {}",
+        args.mrsv_target()
+            .map(|t| t.to_string())
+            .unwrap_or(String::from("unset"))
+    );
+
     info!("Computing crate metadata");
     let metadata = cargo_metadata::MetadataCommand::new()
         .no_deps()

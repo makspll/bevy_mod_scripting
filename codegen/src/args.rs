@@ -1,5 +1,6 @@
 use cargo_metadata::camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
+use rustc_hir::RustcVersion;
 use serde::{Deserialize, Serialize};
 
 #[derive(Parser, Deserialize, Serialize)]
@@ -74,6 +75,43 @@ pub struct Args {
         value_delimiter = ','
     )]
     pub exclude_crates: Option<Vec<String>>,
+
+    #[arg(
+        global = true,
+        short,
+        long,
+        help = "The rust version to consider when looking at stability tags etc",
+        default_value = "1.88.0"
+    )]
+    pub minimum_supported_rust_version_target: Option<String>,
+}
+
+impl Args {
+    /// Returns false if the minimum rustc target is not specified, or specified but smaller than the given version
+    pub fn rustc_version_is_greater_than_mrsv_target(&self, version: RustcVersion) -> bool {
+        match self.mrsv_target() {
+            Some(mrsv) => version > mrsv,
+            None => false,
+        }
+    }
+
+    pub fn mrsv_target(&self) -> Option<RustcVersion> {
+        match &self.minimum_supported_rust_version_target {
+            Some(ver) => {
+                // Ignore any suffixes such as "-dev" or "-nightly".
+                let mut components = ver.split('-').next().unwrap().splitn(3, '.');
+                let major = components.next()?.parse().ok()?;
+                let minor = components.next()?.parse().ok()?;
+                let patch = components.next().unwrap_or("0").parse().ok()?;
+                Some(RustcVersion {
+                    major,
+                    minor,
+                    patch,
+                })
+            }
+            None => None,
+        }
+    }
 }
 
 #[derive(clap::Args, Debug, Clone, Default, Serialize, Deserialize)]

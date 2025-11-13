@@ -50,7 +50,7 @@ impl crate::driver::RustcPlugin for BevyAnalyzer {
 
         // make cargo chatty as well
         if args.verbose.get_log_level_int() >= 3 {
-            cmd.arg("-v");
+            cmd.arg("-vv");
         } else {
             cmd.arg("-q");
         }
@@ -74,7 +74,7 @@ impl crate::driver::RustcPlugin for BevyAnalyzer {
             .map(|a| a.to_string_lossy())
             .collect::<Vec<_>>()
             .join(" ");
-        log::debug!("Running: \n{all_env} {bin_name} {args}",);
+        log::debug!("Running cargo build command: \n{all_env} {bin_name} {args}",);
     }
 }
 

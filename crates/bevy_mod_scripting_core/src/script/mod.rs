@@ -8,17 +8,16 @@ use std::{
 use crate::event::{ScriptAttachedEvent, ScriptDetachedEvent};
 
 use ::{
-    bevy_asset::{AssetId, Handle},
+    bevy_asset::Handle,
     bevy_ecs::{
-        component::HookContext, entity::Entity, prelude::ReflectComponent, resource::Resource,
-        world::DeferredWorld,
+        entity::Entity, prelude::ReflectComponent, resource::Resource, world::DeferredWorld,
     },
     bevy_reflect::Reflect,
 };
 
 mod context_key;
 mod script_context;
-use bevy_ecs::component::Component;
+use bevy_ecs::{component::Component, lifecycle::HookContext};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -28,7 +27,7 @@ pub use script_context::*;
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
 /// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
-pub type ScriptId = AssetId<ScriptAsset>;
+pub type ScriptId = Handle<ScriptAsset>;
 
 #[derive(Component, Reflect, Clone, Default, Debug)]
 #[reflect(Component)]
@@ -67,7 +66,7 @@ impl ScriptComponent {
     pub fn on_remove(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
         trace!("on remove hook for script components: {context_keys:?}");
-        world.send_event_batch(context_keys.into_iter().map(ScriptDetachedEvent));
+        world.write_message_batch(context_keys.into_iter().map(ScriptDetachedEvent));
     }
 
     /// the lifecycle hook called when a script component is added to an entity, emits an appropriate event so we can handle
@@ -75,29 +74,27 @@ impl ScriptComponent {
     pub fn on_add(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
         trace!("on add hook for script components: {context_keys:?}");
-        world.send_event_batch(context_keys.into_iter().map(ScriptAttachedEvent));
+        world.write_message_batch(context_keys.into_iter().map(ScriptAttachedEvent));
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use bevy_ecs::{event::Events, world::World};
+    use bevy_ecs::{message::Messages, world::World};
 
     use super::*;
 
     #[test]
     fn test_component_add() {
         let mut world = World::new();
-        world.init_resource::<Events<ScriptAttachedEvent>>();
+        world.init_resource::<Messages<ScriptAttachedEvent>>();
         // spawn new script component
-        let entity = world
-            .spawn(ScriptComponent::new([Handle::Weak(AssetId::invalid())]))
-            .id();
+        let entity = world.spawn(ScriptComponent::new([Handle::default()])).id();
 
         // check that the event was sent
-        let mut events = world.resource_mut::<Events<ScriptAttachedEvent>>();
+        let mut events = world.resource_mut::<Messages<ScriptAttachedEvent>>();
         assert_eq!(
-            ScriptAttachment::EntityScript(entity, Handle::Weak(AssetId::invalid())),
+            ScriptAttachment::EntityScript(entity, Handle::default()),
             events.drain().next().unwrap().0
         );
     }

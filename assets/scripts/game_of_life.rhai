@@ -40,11 +40,11 @@ fn on_click(x,y) {
     let dimensions = settings.physical_grid_dimensions;
     let screen = settings.display_grid_dimensions;
 
-    let dimension_x = dimensions["_0"];
-    let dimension_y = dimensions["_1"];
+    let dimension_x = dimensions[0];
+    let dimension_y = dimensions[1];
 
-    let screen_x = screen["_0"];
-    let screen_y = screen["_1"];
+    let screen_x = screen[0];
+    let screen_y = screen[1];
 
     let cell_width = screen_x / dimension_x;
     let cell_height = screen_y / dimension_y;
@@ -77,8 +77,8 @@ fn on_update() {
     // note that here we do not make use of RhaiProxyable and just go off pure reflection
     let settings = world.get_resource.call(Settings);
     let dimensions = settings.physical_grid_dimensions;
-    let dimension_x = dimensions["_0"];
-    let dimension_y = dimensions["_1"];
+    let dimension_x = dimensions[0];
+    let dimension_y = dimensions[1];
     
     // primitives are passed by value to rhai, keep a hold of old state but turn 255's into 1's
     let prev_state = [];

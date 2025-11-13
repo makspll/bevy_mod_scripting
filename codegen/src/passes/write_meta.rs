@@ -51,7 +51,7 @@ pub(crate) fn write_meta(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
                     k.to_string(),
                     Dependency {
                         version: d.version.to_string(),
-                        features: features.iter().map(|f| f.to_string()).collect(),
+                        features: features.iter().map(|f| f.feature.to_string()).collect(),
                     },
                 ),
                 None => todo!(),

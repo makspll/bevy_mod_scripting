@@ -334,75 +334,6 @@ pub(crate) fn register_animation_graph_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_animation_transitions_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_animation::transition::AnimationTransitions,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_animation::transition::AnimationTransitions>| {
-                let output: Val<::bevy_animation::transition::AnimationTransitions> = {
-                    {
-                        let output: Val<
-                            ::bevy_animation::transition::AnimationTransitions,
-                        > = <::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone_from",
-            |
-                mut _self: Mut<::bevy_animation::transition::AnimationTransitions>,
-                source: Ref<::bevy_animation::transition::AnimationTransitions>|
-            {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone_from(
-                                &mut _self,
-                                &source,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "source"],
-        )
-        .register_documented(
-            "new",
-            || {
-                let output: Val<::bevy_animation::transition::AnimationTransitions> = {
-                    {
-                        let output: Val<
-                            ::bevy_animation::transition::AnimationTransitions,
-                        > = ::bevy_animation::transition::AnimationTransitions::new()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`AnimationTransitions`] component, ready to be added to\n an entity with an [`AnimationPlayer`].",
-            &[],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_animation::transition::AnimationTransitions,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_animation_target_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::AnimationTargetId,
@@ -880,6 +811,75 @@ pub(crate) fn register_threaded_animation_graph_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_animation_transitions_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_animation::transition::AnimationTransitions,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::transition::AnimationTransitions>| {
+                let output: Val<::bevy_animation::transition::AnimationTransitions> = {
+                    {
+                        let output: Val<
+                            ::bevy_animation::transition::AnimationTransitions,
+                        > = <::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone_from",
+            |
+                mut _self: Mut<::bevy_animation::transition::AnimationTransitions>,
+                source: Ref<::bevy_animation::transition::AnimationTransitions>|
+            {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone_from(
+                                &mut _self,
+                                &source,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "source"],
+        )
+        .register_documented(
+            "new",
+            || {
+                let output: Val<::bevy_animation::transition::AnimationTransitions> = {
+                    {
+                        let output: Val<
+                            ::bevy_animation::transition::AnimationTransitions,
+                        > = ::bevy_animation::transition::AnimationTransitions::new()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`AnimationTransitions`] component, ready to be added to\n an entity with an [`AnimationPlayer`].",
+            &[],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_animation::transition::AnimationTransitions,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_animation_transition_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::transition::AnimationTransition,
@@ -920,7 +920,6 @@ impl Plugin for BevyAnimationScriptingPlugin {
         register_animation_clip_functions(&mut world);
         register_animation_player_functions(&mut world);
         register_animation_graph_functions(&mut world);
-        register_animation_transitions_functions(&mut world);
         register_animation_target_id_functions(&mut world);
         register_animation_target_functions(&mut world);
         register_repeat_animation_functions(&mut world);
@@ -929,6 +928,7 @@ impl Plugin for BevyAnimationScriptingPlugin {
         register_cubic_rotation_curve_functions(&mut world);
         register_animation_graph_node_functions(&mut world);
         register_threaded_animation_graph_functions(&mut world);
+        register_animation_transitions_functions(&mut world);
         register_animation_transition_functions(&mut world);
     }
 }

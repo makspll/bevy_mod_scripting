@@ -336,9 +336,9 @@ pub struct BMSScriptingInfrastructurePlugin {
 
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ScriptErrorEvent>()
-            .add_event::<ScriptCallbackEvent>()
-            .add_event::<ScriptCallbackResponseEvent>()
+        app.add_message::<ScriptErrorEvent>()
+            .add_message::<ScriptCallbackEvent>()
+            .add_message::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()

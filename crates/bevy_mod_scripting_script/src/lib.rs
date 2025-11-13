@@ -59,18 +59,6 @@ impl ScriptAttachment {
         }
     }
 
-    /// Downcasts any script handles into weak handles.
-    pub fn into_weak(self) -> Self {
-        match self {
-            ScriptAttachment::EntityScript(entity, script) => {
-                ScriptAttachment::EntityScript(entity, script.clone_weak())
-            }
-            ScriptAttachment::StaticScript(script) => {
-                ScriptAttachment::StaticScript(script.clone_weak())
-            }
-        }
-    }
-
     /// Returns true if the attachment is a static script.
     pub fn is_static(&self) -> bool {
         matches!(self, ScriptAttachment::StaticScript(_))

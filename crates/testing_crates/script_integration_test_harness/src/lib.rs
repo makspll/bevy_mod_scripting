@@ -9,7 +9,7 @@ use std::{
 
 use ::{
     bevy_app::{App, Plugin, PostUpdate, Startup, Update},
-    bevy_asset::{AssetPath, AssetServer, Handle, LoadState},
+    bevy_asset::{AssetPath, AssetServer, LoadState},
     bevy_ecs::{
         component::Component, resource::Resource, schedule::IntoScheduleConfigs, system::Command,
         world::FromWorld,
@@ -204,7 +204,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     let plugin = make_test_lua_plugin();
     run_plugin_benchmark(
         plugin,
-        script_id,
+        script_id.to_string(),
         label,
         criterion,
         |ctxt, _runtime, label, criterion| {
@@ -235,7 +235,7 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     let plugin = make_test_rhai_plugin();
     run_plugin_benchmark(
         plugin,
-        script_id,
+        script_id.to_string(),
         label,
         criterion,
         |ctxt, runtime, label, criterion| {
@@ -318,7 +318,7 @@ where
         .clone();
     let guard = WorldGuard::new_exclusive(app.world_mut());
 
-    let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id));
+    let context_key = ScriptAttachment::EntityScript(entity, script_handle.clone());
 
     let script_contexts = script_contexts.read();
     let ctxt_arc = script_contexts.get_context(&context_key).unwrap();
@@ -332,7 +332,7 @@ where
         ThreadWorldContainer
             .set_context(ThreadScriptContext {
                 world: guard.clone(),
-                attachment: ScriptAttachment::StaticScript(Handle::Weak(script_id)),
+                attachment: ScriptAttachment::StaticScript(script_handle),
             })
             .map_err(|e| format!("{e:#?}"))?;
         // Pass the locked context to the closure for benchmarking its Lua (or generic) part

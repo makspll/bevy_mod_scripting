@@ -43,6 +43,7 @@ use ::{
         PartialReflect, TypeRegistryArc, std_traits::ReflectDefault,
     },
 };
+use bevy_asset::AssetPath;
 use bevy_ecs::{
     component::Mutable,
     hierarchy::{ChildOf, Children},
@@ -906,7 +907,10 @@ impl WorldAccessGuard<'_> {
     }
 
     /// Loads a script from the given asset path with default settings.
-    pub fn load_script_asset(&self, asset_path: &str) -> Result<Handle<ScriptAsset>, InteropError> {
+    pub fn load_script_asset<'a>(
+        &self,
+        asset_path: impl Into<AssetPath<'a>>,
+    ) -> Result<Handle<ScriptAsset>, InteropError> {
         self.with_resource(|r: &AssetServer| r.load(asset_path))
     }
 
@@ -1337,7 +1341,7 @@ impl WorldAccessGuard<'_> {
     /// Sends AppExit event to the world with success status
     pub fn exit(&self) -> Result<(), InteropError> {
         self.with_global_access(|world| {
-            world.send_event(AppExit::Success);
+            world.write_message(AppExit::Success);
         })
     }
 }

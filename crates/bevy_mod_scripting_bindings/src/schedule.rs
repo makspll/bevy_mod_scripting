@@ -201,7 +201,7 @@ mod tests {
         bevy_app::{App, Plugin, Update},
         bevy_ecs::{
             entity::Entity,
-            schedule::{NodeId, Schedules},
+            schedule::{NodeId, Schedules, SystemKey},
             system::IntoSystem,
         },
         std::{cell::OnceCell, rc::Rc},
@@ -236,7 +236,7 @@ mod tests {
     #[test]
     fn test_reflect_system_names() {
         let system = IntoSystem::into_system(test_system_generic::<String>);
-        let system = ReflectSystem::from_system(&system, NodeId::Set(0));
+        let system = ReflectSystem::from_system(&system, SystemKey::default());
 
         assert_eq!(system.identifier(), "test_system_generic");
         assert_eq!(
@@ -245,7 +245,7 @@ mod tests {
         );
 
         let system = IntoSystem::into_system(test_system);
-        let system = ReflectSystem::from_system(&system, NodeId::Set(0));
+        let system = ReflectSystem::from_system(&system, SystemKey::default());
 
         assert_eq!(system.identifier(), "test_system");
         assert_eq!(
@@ -314,16 +314,24 @@ mod tests {
 
         let resolve_name = |node_id: NodeId| {
             let out = {
-                // try systems
-                if let Some(system) = graph.get_system_at(node_id) {
-                    system.name().clone().to_string()
-                } else if let Some(system_set) = graph.get_set_at(node_id) {
-                    format!("{system_set:?}").to_string()
+                let name = match node_id {
+                    NodeId::System(system_key) => graph
+                        .systems
+                        .get(system_key)
+                        .map(|system| system.system.name().clone().to_string()),
+                    NodeId::Set(system_set_key) => graph
+                        .system_sets
+                        .get(system_set_key)
+                        .map(|set| format!("{set:?}").to_string()),
+                };
+
+                if let Some(name) = name {
+                    name
                 } else {
                     // try schedule systems
                     let mut default = format!("{node_id:?}").to_string();
                     for (system_node, system) in schedule.systems().unwrap() {
-                        if node_id == system_node {
+                        if node_id == NodeId::System(system_node) {
                             default = system.name().clone().to_string();
                         }
                     }

@@ -15,7 +15,7 @@ use bevy_mod_scripting_script::ScriptAttachment;
 
 use crate::scenario::{SCENARIO_SELF_LANGUAGE_NAME, ScenarioContext, ScenarioStep};
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
 pub enum ScenarioSchedule {
     Startup,
     Update,
@@ -214,11 +214,11 @@ impl ScenarioStepSerialized {
             ScenarioRecipients::AllScripts => Recipients::AllScripts,
             ScenarioRecipients::AllContexts => Recipients::AllContexts,
             ScenarioRecipients::EntityScript { entity, script } => Recipients::ScriptEntity(
-                context.get_script_handle(&script)?.id(),
+                context.get_script_handle(&script)?,
                 context.get_entity(&entity)?,
             ),
             ScenarioRecipients::StaticScript { script } => {
-                Recipients::StaticScript(context.get_script_handle(&script)?.id())
+                Recipients::StaticScript(context.get_script_handle(&script)?)
             }
         })
     }

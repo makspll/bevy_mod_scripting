@@ -2131,7 +2131,7 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
                 };
                 output
             },
-            " Construct a new [`Oklcha`] color from (l, c, h) components, with the default alpha (1.0).\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.0]\n * `chroma` - Chroma channel. [0.0, 1.0]\n * `hue` - Hue channel. [0.0, 360.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            " Construct a new [`Oklcha`] color from (l, c, h) components, with the default alpha (1.0).\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.0]\n * `chroma` - Chroma channel. [0.0, 1.0]\n * `hue` - Hue channel. [0.0, 360.0]",
             &["lightness", "chroma", "hue"],
         )
         .register_documented(

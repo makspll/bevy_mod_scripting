@@ -66,6 +66,13 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         let tera = crate::configure_tera(tcx.crate_name(LOCAL_CRATE).as_str(), &templates_dir);
 
         info!("Using meta directories: {meta_dirs:?}");
+
+        let mut graph = WorkspaceGraph::deserialize(&PathBuf::from(
+            std::env::var(WORKSPACE_GRAPH_FILE_ENV).unwrap(),
+        ))
+        .unwrap();
+        graph.stable_sort();
+
         let mut ctxt = crate::BevyCtxt::new(
             tcx,
             &meta_dirs,
@@ -77,10 +84,7 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
                 tera.render(&TemplateKind::ImportProcessor.to_string(), &ctxt)
                     .unwrap()
             })),
-            WorkspaceGraph::deserialize(&PathBuf::from(
-                std::env::var(WORKSPACE_GRAPH_FILE_ENV).unwrap(),
-            ))
-            .unwrap(),
+            graph,
         );
 
         trace!("Running all passes");

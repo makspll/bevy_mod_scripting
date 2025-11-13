@@ -5,6 +5,7 @@ use crate::{
 };
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{FromReflect, Reflect};
+use nonmax::NonMaxU32;
 use std::{
     any::TypeId,
     ffi::OsString,
@@ -114,6 +115,28 @@ macro_rules! impl_from_stringlike {
 }
 
 impl_from_stringlike!(String, PathBuf, OsString);
+
+impl FromScript for NonMaxU32 {
+    type This<'w> = Self;
+
+    fn from_script(
+        value: ScriptValue,
+        _world: WorldGuard<'_>,
+    ) -> Result<Self::This<'_>, InteropError>
+    where
+        Self: Sized,
+    {
+        match value {
+            ScriptValue::Integer(i) if i != 0 => Ok(unsafe { NonMaxU32::new_unchecked(i as u32) }),
+            ScriptValue::Float(f) if f != 0.0 => Ok(unsafe { NonMaxU32::new_unchecked(f as u32) }),
+            // ScriptValue::Reference(r) => r.downcast::<Self>(world),
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<Self>(),
+                value,
+            )),
+        }
+    }
+}
 
 #[profiling::all_functions]
 impl FromScript for char {

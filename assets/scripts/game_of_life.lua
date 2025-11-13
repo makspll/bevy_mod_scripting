@@ -2,7 +2,6 @@ LifeState = world.get_type_by_name("LifeState")
 Settings = world.get_type_by_name("Settings")
 
 info("Lua: The game_of_life.lua script just got loaded")
-
 math.randomseed(os.time())
 
 function fetch_life_state()
@@ -37,11 +36,11 @@ function on_click(x, y)
     local dimensions = settings.physical_grid_dimensions
     local screen = settings.display_grid_dimensions
 
-    local dimension_x = dimensions._1
-    local dimension_y = dimensions._2
+    local dimension_x = dimensions[1]
+    local dimension_y = dimensions[2]
 
-    local screen_x = screen._1
-    local screen_y = screen._2
+    local screen_x = screen[1]
+    local screen_y = screen[2]
 
     local cell_width = screen_x / dimension_x
     local cell_height = screen_y / dimension_y
@@ -78,8 +77,8 @@ function on_update()
     local cells = fetch_life_state().cells
     local settings = world.get_resource(Settings)
     local dimensions = settings.physical_grid_dimensions
-    local dimension_x = dimensions._1
-    local dimension_y = dimensions._2
+    local dimension_x = dimensions[1]
+    local dimension_y = dimensions[2]
 
     -- primitives are passed by value to lua, keep a hold of old state but turn 255's into 1's
     local prev_state = {}

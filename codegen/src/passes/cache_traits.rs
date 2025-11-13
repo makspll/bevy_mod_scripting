@@ -10,7 +10,7 @@ use crate::{
 
 fn dump_traits(tcx: &TyCtxt) -> String {
     let mut buffer = String::new();
-    for t in tcx.all_traits() {
+    for t in tcx.all_traits_including_private() {
         buffer.push_str(&tcx.def_path_str(t));
         buffer.push_str(", ");
     }
@@ -21,7 +21,7 @@ fn dump_traits(tcx: &TyCtxt) -> String {
 pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
     let tcx = &ctxt.tcx;
 
-    for trait_did in tcx.all_traits() {
+    for trait_did in tcx.all_traits_including_private() {
         let def_path_str = tcx.def_path_str(trait_did);
         if DEF_PATHS_REFLECT.contains(&def_path_str.as_str()) {
             trace!("found Reflect trait def id: {trait_did:?}");

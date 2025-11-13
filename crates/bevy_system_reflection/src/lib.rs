@@ -11,6 +11,7 @@ use ::{
     bevy_platform::collections::{HashMap, HashSet},
     bevy_reflect::Reflect,
 };
+use bevy_ecs::schedule::SystemKey;
 use bevy_log::warn;
 use dot_writer::{Attributes, DotWriter};
 
@@ -47,12 +48,12 @@ impl ReflectSystem {
     /// Creates a reflect system from a system specification
     pub fn from_system<In: SystemInput + 'static, Out: 'static>(
         system: &dyn System<In = In, Out = Out>,
-        node_id: NodeId,
+        node_id: SystemKey,
     ) -> Self {
         ReflectSystem {
-            name: system.name().clone(),
+            name: system.name().into(),
             type_id: system.type_id(),
-            node_id: ReflectNodeId(node_id),
+            node_id: ReflectNodeId(NodeId::System(node_id)),
             default_system_sets: system.default_system_sets(),
         }
     }
@@ -257,17 +258,17 @@ pub fn schedule_to_reflect_graph(schedule: &Schedule) -> ReflectSystemGraph {
 
     let mut nodes = Vec::new();
     let mut covered_nodes = HashSet::new();
-    for (node_id, system_set, _) in graph.system_sets() {
-        covered_nodes.insert(node_id);
+    for (node_id, system_set, _) in graph.system_sets.iter() {
+        covered_nodes.insert(NodeId::Set(node_id));
         nodes.push(ReflectSystemGraphNode::SystemSet(
-            ReflectSystemSet::from_set(system_set, node_id),
+            ReflectSystemSet::from_set(system_set, NodeId::Set(node_id)),
         ));
     }
 
     // for some reason the graph doesn't contain these
     if let Ok(systems) = schedule.systems() {
         for (node_id, system) in systems {
-            covered_nodes.insert(node_id);
+            covered_nodes.insert(NodeId::System(node_id));
             nodes.push(ReflectSystemGraphNode::System(ReflectSystem::from_system(
                 system.as_ref(),
                 node_id,

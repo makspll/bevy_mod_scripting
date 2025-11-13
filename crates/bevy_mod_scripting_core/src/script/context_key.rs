@@ -1,7 +1,7 @@
 use std::fmt;
 
+use bevy_asset::AssetId;
 use bevy_ecs::entity::Entity;
-use bevy_mod_scripting_display::DisplayProxy;
 
 use super::*;
 use crate::ScriptAsset;
@@ -11,11 +11,11 @@ impl From<ScriptAttachment> for ContextKey {
         match val {
             ScriptAttachment::EntityScript(entity, script) => ContextKey {
                 entity: Some(entity),
-                script: Some(script),
+                script: Some(script.id()),
             },
             ScriptAttachment::StaticScript(script) => ContextKey {
                 entity: None,
-                script: Some(script),
+                script: Some(script.id()),
             },
         }
     }
@@ -30,7 +30,7 @@ pub struct ContextKey {
     pub entity: Option<Entity>,
     /// Script ID if there is one.
     /// Can be empty if the script is not driven by an asset.
-    pub script: Option<Handle<ScriptAsset>>,
+    pub script: Option<AssetId<ScriptAsset>>,
 }
 
 impl fmt::Display for ContextKey {
@@ -38,7 +38,7 @@ impl fmt::Display for ContextKey {
         // write!(f, "context ")?;
         let mut empty = true;
         if let Some(script_id) = &self.script {
-            write!(f, "script {}", script_id.display())?;
+            write!(f, "script {script_id}")?;
             empty = false;
         }
         if let Some(id) = self.entity {
@@ -56,7 +56,7 @@ impl ContextKey {
     /// Creates an invalid context key, which should never exist.
     pub const INVALID: Self = Self {
         entity: Some(Entity::PLACEHOLDER),
-        script: Some(Handle::Weak(AssetId::invalid())),
+        script: Some(AssetId::invalid()),
     };
 
     /// Creates a shared context key, which is used for shared contexts
@@ -78,17 +78,5 @@ impl ContextKey {
             entity: self.entity.or(other.entity),
             script: self.script.or(other.script),
         }
-    }
-
-    /// If a script handle is present and is strong, convert it to a weak
-    /// handle.
-    pub fn into_weak(mut self) -> Self {
-        if let Some(script) = &self.script
-            && script.is_strong()
-        {
-            self.script = Some(script.clone_weak());
-        }
-
-        self
     }
 }
