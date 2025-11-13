@@ -17,22 +17,22 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_ecs = { version = "0.17.2", features = ["std", "async_executor", "multi_threaded", "bevy_reflect", "reflect_auto_register", "backtrace", "serialize"], default-features = true}
+bevy_ecs = { version = "0.17.2", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
 
 
 arrayvec = { version = "^0.7.4", features = ["std"], default-features = false}
 
 bevy_ecs_macros = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_platform = { version = "^0.17.2", features = ["alloc", "std", "serialize"], default-features = true}
+bevy_platform = { version = "^0.17.2", features = ["alloc", "serialize", "std"], default-features = true}
 
 bevy_ptr = { version = "^0.17.2", features = [], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["glam", "std", "auto_register", "debug_stack", "uuid", "smallvec", "smol_str", "debug", "auto_register_inventory"], default-features = true}
+bevy_reflect = { version = "^0.17.2", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
 
-bevy_tasks = { version = "^0.17.2", features = ["multi_threaded", "futures-lite", "async_executor"], default-features = true}
+bevy_tasks = { version = "^0.17.2", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
 
-bevy_utils = { version = "^0.17.2", features = ["parallel", "std", "debug"], default-features = true}
+bevy_utils = { version = "^0.17.2", features = ["debug", "parallel", "std"], default-features = true}
 
 bitflags = { version = "^2.3", features = ["std"], default-features = false}
 
@@ -42,7 +42,7 @@ concurrent-queue = { version = "^2.5.0", features = ["std"], default-features = 
 
 fixedbitset = { version = "^0.5", features = ["std"], default-features = false}
 
-indexmap = { version = "^2.5.0", features = ["std", "serde"], default-features = false}
+indexmap = { version = "^2.5.0", features = ["serde", "std"], default-features = false}
 
 log = { version = "^0.4", features = ["std"], default-features = false}
 
