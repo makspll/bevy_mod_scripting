@@ -37,8 +37,8 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         let mut meta_dirs = Vec::default();
         let mut templates_dir = None;
         // add all relevant meta dirs to the context
+        meta_dirs.push(self.args.output.to_owned());
         if let crate::Command::Generate {
-            output,
             meta,
             meta_output,
             templates,
@@ -49,7 +49,6 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
             if let Some(meta_output) = meta_output {
                 meta_dirs.push(meta_output.to_owned())
             };
-            meta_dirs.push(output.to_owned());
             meta.iter()
                 .flatten()
                 .for_each(|m| meta_dirs.push(m.to_owned()));

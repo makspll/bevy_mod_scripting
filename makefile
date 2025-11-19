@@ -63,10 +63,10 @@ clean_bevy:
 	cd ${BEVY_PATH} && cargo clean
 
 generate_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bms_lua": true}' --features ${GEN_BEVY_FEATURES} -vv
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --features ${GEN_BEVY_FEATURES} -vv
 
 collect_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} --template-args '{ "self_is_bms_lua": true}'
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH}
 
 deletion_confirmation:
 	@echo -n "This action will delete ALL files in directories: '${GENERATED_SRC_PATH}' amd ${OUTPUT_PATH} (y/N) "

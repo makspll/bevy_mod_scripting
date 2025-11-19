@@ -1,6 +1,6 @@
 use std::{
-    collections::{HashMap, HashSet},
-    ffi::{OsStr, OsString},
+    collections::HashMap,
+    ffi::OsString,
     io::Write,
     path::{Path, PathBuf},
     process::{Command, Output},
@@ -14,293 +14,11 @@ use json_comments::StripComments;
 use log::*;
 use serde::{Deserialize, Serialize};
 use strum::{IntoEnumIterator, VariantNames};
-use xtask::{BindingCrate, Meta};
-
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    PartialEq,
-    Eq,
-    Hash,
-    PartialOrd,
-    Ord,
-    strum::EnumString,
-    strum::EnumIter,
-    strum::Display,
-    strum::VariantNames,
-    strum::VariantArray,
-)]
-#[strum(serialize_all = "snake_case")]
-enum Feature {
-    // bindings
-    CoreFunctions,
-    BevyEcsBindings,
-    BevyInputBindings,
-    BevyMathBindings,
-    BevyReflectBindings,
-    BevyTimeBindings,
-    BevyTransformBindings,
-    BevyColorBindings,
-    BevyCorePipelineBindings,
-    BevyA11yBindings,
-    BevyAnimationBindings,
-    BevyAssetBindings,
-    BevyGizmosBindings,
-    BevyGltfBindings,
-    BevyImageBindings,
-    BevyInputFocusBindings,
-    BevyMeshBindings,
-    BevyPbrBindings,
-    BevyPickingBindings,
-    BevyRenderBindings,
-    BevySceneBindings,
-    BevySpriteBindings,
-    BevyTextBindings,
-
-    // Ladfile
-    LuaLanguageServerFiles,
-
-    // Lua
-    Lua51,
-    Lua52,
-    Lua53,
-    Lua54,
-    Luajit,
-    Luajit52,
-    Luau,
-    UnsafeLuaModules,
-    MluaSerialize,
-    MluaMacros,
-    MluaAsync,
-    // Rhai,
-    Rhai,
-    // Rune
-    // Rune,
-
-    // Profiling
-    ProfileWithTracy,
-}
-
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum::EnumIter)]
-enum FeatureGroup {
-    LuaExclusive,
-    RhaiExclusive,
-    // RuneExclusive,
-    ForExternalCrate,
-    BMSFeature,
-    BMSFeatureNotInPowerset,
-}
-
-impl FeatureGroup {
-    fn default_feature(self) -> Feature {
-        match self {
-            FeatureGroup::LuaExclusive => Feature::Lua54,
-            FeatureGroup::RhaiExclusive => Feature::Rhai,
-            // FeatureGroup::RuneExclusive => Feature::Rune,
-            _ => panic!("No default feature for non-exclusive group"),
-        }
-    }
-
-    fn is_exclusive(self) -> bool {
-        matches!(
-            self,
-            FeatureGroup::LuaExclusive | FeatureGroup::RhaiExclusive // | FeatureGroup::RuneExclusive
-        )
-    }
-}
-
-trait IntoFeatureGroup {
-    fn to_feature_group(self) -> FeatureGroup;
-}
-
-impl IntoFeatureGroup for Feature {
-    fn to_feature_group(self) -> FeatureGroup {
-        match self {
-            Feature::Lua51
-            | Feature::Lua52
-            | Feature::Lua53
-            | Feature::Lua54
-            | Feature::Luajit
-            | Feature::Luajit52
-            | Feature::Luau => FeatureGroup::LuaExclusive,
-            Feature::Rhai => FeatureGroup::RhaiExclusive,
-            // Feature::Rune => FeatureGroup::RuneExclusive,
-            Feature::MluaAsync
-            | Feature::MluaMacros
-            | Feature::MluaSerialize
-            | Feature::UnsafeLuaModules => FeatureGroup::ForExternalCrate,
-            Feature::BevyEcsBindings
-            | Feature::BevyInputBindings
-            | Feature::BevyMathBindings
-            | Feature::BevyReflectBindings
-            | Feature::BevyTimeBindings
-            | Feature::BevyTransformBindings
-            | Feature::BevyColorBindings
-            | Feature::BevyCorePipelineBindings
-            | Feature::BevyA11yBindings
-            | Feature::BevyAnimationBindings
-            | Feature::BevyAssetBindings
-            | Feature::BevyGizmosBindings
-            | Feature::BevyGltfBindings
-            | Feature::BevyImageBindings
-            | Feature::BevyInputFocusBindings
-            | Feature::BevyMeshBindings
-            | Feature::BevyPbrBindings
-            | Feature::BevyPickingBindings
-            | Feature::BevyRenderBindings
-            | Feature::BevySceneBindings
-            | Feature::BevySpriteBindings
-            | Feature::BevyTextBindings => FeatureGroup::BMSFeatureNotInPowerset,
-            Feature::CoreFunctions
-            | Feature::ProfileWithTracy
-            | Feature::LuaLanguageServerFiles => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct Features(HashSet<Feature>);
-
-impl Default for Features {
-    fn default() -> Self {
-        // should be kept up to date with the default feature + lua54 on top of anything that is handy to run locally every time
-        Features::new(vec![
-            Feature::Lua54,
-            Feature::Rhai,
-            Feature::CoreFunctions,
-            Feature::BevyEcsBindings,
-            Feature::BevyInputBindings,
-            Feature::BevyMathBindings,
-            Feature::BevyReflectBindings,
-            Feature::BevyTimeBindings,
-            Feature::BevyTransformBindings,
-            Feature::BevyColorBindings,
-            Feature::BevyCorePipelineBindings,
-            Feature::LuaLanguageServerFiles,
-        ])
-    }
-}
-
-impl Features {
-    fn new<I: IntoIterator<Item = Feature>>(features: I) -> Self {
-        Self(features.into_iter().collect())
-    }
-
-    /// Returns all features except the exclusive ones which are not the default
-    fn all_features() -> Self {
-        // remove exclusive features which are not the default
-        Self(
-            <Feature as strum::VariantArray>::VARIANTS
-                .iter()
-                .filter(|f| {
-                    let group = f.to_feature_group();
-                    (!group.is_exclusive()) || (**f == group.default_feature())
-                })
-                .cloned()
-                .collect(),
-        )
-    }
-
-    fn display_no_default(self) -> String {
-        let default_features = Self::default().0;
-
-        let excluded_default_features = default_features
-            .difference(&self.0)
-            .map(|f| format!("-{f}"))
-            .collect::<Vec<_>>();
-
-        let excluded_non_powerset_features = self
-            .0
-            .iter()
-            .filter(|f| matches!(f.to_feature_group(), FeatureGroup::BMSFeatureNotInPowerset))
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>();
-
-        let mut features = self
-            .0
-            .into_iter()
-            .filter(|f| {
-                !default_features.contains(f)
-                    && !excluded_non_powerset_features.contains(&f.to_string())
-            })
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>();
-
-        features.sort();
-        excluded_default_features
-            .into_iter()
-            .chain(features)
-            .chain(std::iter::once(format!(
-                "+{} bindings",
-                excluded_non_powerset_features.len()
-            )))
-            .collect::<Vec<_>>()
-            .join(",")
-    }
-
-    fn without(self, feature: Feature) -> Self {
-        Self(self.0.into_iter().filter(|f| *f != feature).collect())
-    }
-
-    fn to_cargo_args(&self) -> Vec<String> {
-        if self.0.is_empty() {
-            vec![]
-        } else {
-            vec![
-                "--no-default-features".to_owned(),
-                "--features".to_owned(),
-                self.to_string(),
-            ]
-        }
-    }
-
-    fn to_placeholder() -> clap::builder::Str {
-        format!("[{}]", Feature::VARIANTS.join("|")).into()
-    }
-
-    fn split_by_group(&self) -> HashMap<FeatureGroup, Vec<Feature>> {
-        let mut groups = HashMap::new();
-        for feature in &self.0 {
-            let group = feature.to_feature_group();
-            groups.entry(group).or_insert_with(Vec::new).push(*feature);
-        }
-        groups
-    }
-}
-
-impl std::fmt::Display for Features {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // exclude default features
-        for (i, feature) in self.0.iter().sorted().enumerate() {
-            if i > 0 {
-                write!(f, ",")?;
-            }
-            write!(f, "{feature}")?;
-        }
-        std::result::Result::Ok(())
-    }
-}
-
-impl From<String> for Features {
-    fn from(s: String) -> Self {
-        if s.is_empty() {
-            return Self::new(vec![]);
-        }
-
-        let features = s
-            .trim()
-            .split(',')
-            .map(|f| {
-                Feature::from_str(f).unwrap_or_else(|_| {
-                    eprintln!("Unknown feature: '{f}'");
-                    std::process::exit(1);
-                })
-            })
-            .collect();
-        Self(features)
-    }
-}
+use xtask::{
+    BindingCrate, Feature, FeatureGroup, Features, GlobalArgs, Meta, codegen_crate_dir,
+    main_workspace_cargo_metadata, prepare_codegen, read_rust_toolchain, relative_workspace_dir,
+    run_system_command, run_workspace_command, workspace_dir,
+};
 
 /// Enumerates the binaries available in the project and their paths
 #[derive(
@@ -439,12 +157,18 @@ impl App {
             Xtasks::Codegen {
                 output_dir,
                 bevy_features,
+                list_only,
             } => {
-                cmd.arg("codegen")
+                let cmd = cmd
+                    .arg("codegen")
                     .arg("--output-dir")
                     .arg(output_dir)
                     .arg("--bevy-features")
                     .arg(bevy_features.join(","));
+
+                if list_only {
+                    cmd.arg("--list-only");
+                }
             }
             Xtasks::Example { example } => {
                 cmd.arg("example").arg(example);
@@ -517,88 +241,6 @@ impl App {
     }
 }
 
-#[derive(Debug, Parser, Clone)]
-struct GlobalArgs {
-    #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value=Features::default().to_string(),required = false)]
-    features: Features,
-
-    #[clap(
-        long,
-        global = true,
-        default_value = "false",
-        help = "Enable coverage collection for cargo commands"
-    )]
-    coverage: bool,
-
-    #[clap(skip)]
-    override_workspace_dir: Option<PathBuf>,
-
-    #[clap(skip)]
-    override_toolchain: Option<String>,
-
-    #[clap(
-        long,
-        short,
-        global = true,
-        value_name = "PROFILE",
-        help = "The cargo profile to use for commands that support it"
-    )]
-    profile: Option<String>,
-
-    #[clap(
-        long,
-        global = true,
-        value_name = "JOBS",
-        help = "The number of parallel jobs to run at most"
-    )]
-    jobs: Option<usize>,
-}
-
-impl GlobalArgs {
-    pub fn with_max_jobs(self, jobs: usize) -> Self {
-        Self {
-            jobs: Some(jobs),
-            ..self
-        }
-    }
-
-    pub fn with_coverage(self) -> Self {
-        Self {
-            coverage: true,
-            ..self
-        }
-    }
-
-    pub fn without_coverage(self) -> Self {
-        Self {
-            coverage: false,
-            ..self
-        }
-    }
-
-    pub fn with_workspace_dir(self, dir: PathBuf) -> Self {
-        Self {
-            override_workspace_dir: Some(dir),
-            ..self
-        }
-    }
-
-    pub fn with_toolchain(self, toolchain: String) -> Self {
-        Self {
-            override_toolchain: Some(toolchain),
-            ..self
-        }
-    }
-
-    pub fn with_features(self, features: Features) -> Self {
-        Self { features, ..self }
-    }
-
-    pub fn with_profile(self, profile: Option<String>) -> Self {
-        Self { profile, ..self }
-    }
-}
-
 #[derive(
     Debug,
     Clone,
@@ -646,10 +288,6 @@ impl Macro {
     pub fn to_placeholder() -> clap::builder::Str {
         format!("[{}]", Macro::VARIANTS.join("|")).into()
     }
-}
-#[derive(Debug, Clone, serde::Serialize)]
-struct CodegenTemplateArgs {
-    self_is_bms_lua: bool,
 }
 
 fn fetch_default_bevy_features() -> String {
@@ -754,6 +392,10 @@ enum Xtasks {
             help = "The features to enable for the bevy crate"
         )]
         bevy_features: Vec<String>,
+
+        /// If set will not generate but instead print out type and debug information from the bevy crate
+        #[clap(long)]
+        list_only: bool,
     },
     /// Build the main workspace, and then run all tests
     Test {
@@ -869,7 +511,14 @@ impl Xtasks {
             Xtasks::Codegen {
                 output_dir,
                 bevy_features,
-            } => Self::codegen(app_settings, output_dir, bevy_features),
+                list_only,
+            } => {
+                if list_only {
+                    Self::codegen_list(app_settings, output_dir, bevy_features)
+                } else {
+                    Self::codegen(app_settings, output_dir, bevy_features)
+                }
+            }
             Xtasks::Install { binary } => Self::install(app_settings, binary),
             Xtasks::Bencher { publish } => Self::bencher(app_settings, publish),
             Xtasks::Bench {
@@ -884,176 +533,12 @@ impl Xtasks {
         Ok("".into())
     }
 
-    /// Reads the metadata from the main workspace
-    fn main_workspace_cargo_metadata() -> Result<cargo_metadata::Metadata> {
-        let cargo_manifest_path = std::env::var("MAIN_CARGO_MANIFEST_PATH").unwrap();
-        let path = PathBuf::from(cargo_manifest_path);
-        let parent_dir = path.parent().unwrap().parent().unwrap().join("Cargo.toml");
-        let mut cmd = cargo_metadata::MetadataCommand::new();
-        cmd.manifest_path(parent_dir.to_string_lossy().to_string());
-        let out = cmd.exec()?;
-        Ok(out)
-    }
-
-    fn workspace_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
-        if let Some(dir) = &app_settings.override_workspace_dir {
-            return Ok(dir.into());
-        }
-
-        let metadata = Self::main_workspace_cargo_metadata()?;
-        let workspace_root = metadata.workspace_root;
-        Ok(workspace_root.into())
-    }
-
-    fn codegen_crate_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
-        let workspace_dir = Self::workspace_dir(app_settings)?;
-        Ok(workspace_dir.join("codegen"))
-    }
-
-    fn relative_workspace_dir<P: AsRef<Path>>(
-        app_settings: &GlobalArgs,
-        dir: P,
-    ) -> Result<std::path::PathBuf> {
-        let workspace_dir = Self::workspace_dir(app_settings)?;
-        Ok(workspace_dir.join(dir))
-    }
-
     fn append_rustflags(flag: &str) {
         let rustflags = std::env::var("RUSTFLAGS").unwrap_or_default();
         let mut flags = rustflags.split(' ').collect::<Vec<_>>();
         flags.push(flag);
         let flags = flags.join(" ");
         unsafe { std::env::set_var("RUSTFLAGS", flags) };
-    }
-
-    fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
-        app_settings: &GlobalArgs,
-        command: &str,
-        context: &str,
-        add_args: I,
-        dir: Option<&Path>,
-        capture_streams_in_output: bool,
-    ) -> Result<Output> {
-        info!("Running system command: {command}");
-
-        let working_dir = match dir {
-            Some(d) => Self::relative_workspace_dir(app_settings, d)?,
-            None => Self::workspace_dir(app_settings)?,
-        };
-
-        let mut cmd = Command::new(command);
-        cmd.args(add_args).current_dir(working_dir);
-
-        if !capture_streams_in_output {
-            cmd.stdout(std::process::Stdio::inherit())
-                .stderr(std::process::Stdio::inherit());
-        }
-
-        info!("Using command: {cmd:?}");
-
-        let output = cmd.output();
-        if capture_streams_in_output {
-            info!("Command status: {:?}", output.as_ref().map(|o| o.status));
-        } else {
-            info!("Command output: {output:?}");
-        }
-
-        let output = output.with_context(|| context.to_owned())?;
-        match output.status.code() {
-            Some(0) => Ok(output),
-            _ => bail!(
-                "{} failed with exit code: {}",
-                context,
-                output.status.code().unwrap_or(-1)
-            ),
-        }
-    }
-
-    fn run_workspace_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
-        app_settings: &GlobalArgs,
-        command: &str,
-        context: &str,
-        add_args: I,
-        dir: Option<&Path>,
-        capture_streams_in_output: bool,
-    ) -> Result<Output> {
-        let coverage_mode = if app_settings.coverage {
-            "with coverage"
-        } else {
-            Default::default()
-        };
-
-        info!("Running workspace command {coverage_mode}: {command}");
-
-        let mut args = vec![];
-
-        if let Some(ref toolchain) = app_settings.override_toolchain {
-            args.push(format!("+{toolchain}"));
-        }
-
-        args.push(command.to_owned());
-
-        if command != "fmt" && command != "bms-codegen" && command != "install" {
-            // fmt doesn't care about features, workspaces or profiles
-            if command != "run" {
-                args.push("--workspace".to_owned());
-
-                if let Some(profile) = app_settings.profile.as_ref() {
-                    let use_profile = if profile == "ephemeral-build" && app_settings.coverage {
-                        // use special profile for coverage as it needs debug information
-                        // but also don't want it too slow
-                        "ephemeral-coverage"
-                    } else {
-                        profile
-                    };
-
-                    if !app_settings.coverage {
-                        args.push("--profile".to_owned());
-                        args.push(use_profile.to_owned());
-                    }
-
-                    if let Some(jobs) = app_settings.jobs {
-                        args.push("--jobs".to_owned());
-                        args.push(jobs.to_string());
-                    }
-                }
-            }
-
-            args.extend(app_settings.features.to_cargo_args());
-        }
-
-        args.extend(add_args.into_iter().map(|s| {
-            s.as_ref()
-                .to_str()
-                .expect("invalid command argument")
-                .to_owned()
-        }));
-
-        let working_dir = match dir {
-            Some(d) => Self::relative_workspace_dir(app_settings, d)?,
-            None => Self::workspace_dir(app_settings)?,
-        };
-
-        let mut cmd = Command::new("cargo");
-        cmd.args(args).current_dir(working_dir);
-
-        if !capture_streams_in_output {
-            cmd.stdout(std::process::Stdio::inherit())
-                .stderr(std::process::Stdio::inherit());
-        }
-
-        info!("Using command: {cmd:?}");
-
-        let output = cmd.output().with_context(|| context.to_owned())?;
-        match output.status.code() {
-            Some(0) => Ok(output),
-            _ => bail!(
-                "{} failed with exit code: {}. Features: {}. output {output:?}",
-                context,
-                output.status.code().unwrap_or(-1),
-                app_settings.features
-            ),
-        }
     }
 
     fn build(timings: bool, app_settings: GlobalArgs) -> Result<()> {
@@ -1063,7 +548,7 @@ impl Xtasks {
             args.push("--timings");
         }
 
-        Self::run_workspace_command(
+        run_workspace_command(
             &app_settings,
             "build",
             "Failed to build workspace",
@@ -1088,7 +573,7 @@ impl Xtasks {
             clippy_args.extend(vec!["--", "-D", "warnings"]);
         }
 
-        Self::run_workspace_command(
+        run_workspace_command(
             &app_settings,
             "clippy",
             "Failed to run clippy",
@@ -1102,7 +587,7 @@ impl Xtasks {
         }
 
         // run cargo fmt checks
-        Self::run_workspace_command(
+        run_workspace_command(
             &app_settings,
             "fmt",
             "Failed to run cargo fmt",
@@ -1115,12 +600,12 @@ impl Xtasks {
     }
 
     fn check_codegen_workspace(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
-        let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
+        let toolchain = read_rust_toolchain(&codegen_crate_dir(&app_settings)?);
 
         // set the working directory to the codegen crate
         let app_settings = app_settings
             .clone()
-            .with_workspace_dir(Self::codegen_crate_dir(&app_settings)?)
+            .with_workspace_dir(codegen_crate_dir(&app_settings)?)
             .with_toolchain(toolchain)
             .with_features(Features::new(vec![])); // TODO: support features for codegen crate if any
 
@@ -1134,7 +619,7 @@ impl Xtasks {
             clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
         }
 
-        Self::run_workspace_command(
+        run_workspace_command(
             &app_settings,
             "clippy",
             "Failed to run clippy on codegen crate",
@@ -1148,29 +633,32 @@ impl Xtasks {
         Ok(())
     }
 
-    /// reads rust-toolchain.toml file at the given directory and returns the toolchain string
-    fn read_rust_toolchain(path: &Path) -> String {
-        let rust_toolchain_path = path.join("rust-toolchain.toml");
-
-        let rust_toolchain = std::fs::read_to_string(rust_toolchain_path)
-            .expect("Could not read rust_toolchain.toml");
-
-        // parse the toml file
-        let toml: toml::Value =
-            toml::from_str(&rust_toolchain).expect("Could not parse rust_toolchain.toml");
-
-        let toolchain = toml
-            .get("toolchain")
-            .expect("Could not find toolchain in rust_toolchain.toml");
-        let channel = toolchain
-            .get("channel")
-            .expect("Could not find channel in rust_toolchain.toml");
-        let channel = channel
-            .as_str()
-            .expect("Channel in rust_toolchain.toml is not a string");
-
-        // set the toolchain
-        channel.to_string()
+    fn codegen_list(
+        app_settings: GlobalArgs,
+        output_dir: PathBuf,
+        bevy_features: Vec<String>,
+    ) -> Result<()> {
+        let settings = prepare_codegen(app_settings, Some(output_dir), bevy_features)?;
+        run_workspace_command(
+            &settings.bevy_repo_app_settings,
+            "bms-codegen",
+            "Failed to run bms-codegen generate",
+            vec![
+                "list-types",
+                "--bms-bindings-path",
+                settings.bms_bindings_path.to_str().unwrap(),
+                "--output",
+                settings.output_dir.to_str().unwrap(),
+                "--template-args",
+                settings.template_args.as_str(),
+                "--features",
+                settings.bevy_features.join(",").as_str(),
+                "-v",
+            ],
+            Some(&settings.bevy_dir),
+            false,
+        )?;
+        Ok(())
     }
 
     fn codegen(
@@ -1178,151 +666,52 @@ impl Xtasks {
         output_dir: PathBuf,
         bevy_features: Vec<String>,
     ) -> Result<()> {
-        let main_workspace_app_settings = app_settings;
-        let output_dir = Self::relative_workspace_dir(&main_workspace_app_settings, output_dir)?;
-        let bevy_dir =
-            Self::relative_workspace_dir(&main_workspace_app_settings, "target/codegen/bevy")?;
-        let bevy_target_dir = bevy_dir.join("target");
-        // clear the bevy target dir if it exists
-        info!("Clearing bevy target dir: {bevy_target_dir:?}");
-        if bevy_target_dir.exists() {
-            std::fs::remove_dir_all(&bevy_target_dir)?;
-        }
+        let settings = prepare_codegen(app_settings, Some(output_dir), bevy_features)?;
 
-        info!("Cleaning output dir: {output_dir:?}");
-        // safety measure
-        if output_dir.exists() && output_dir.to_string_lossy().contains("target") {
-            std::fs::remove_dir_all(&output_dir)?;
-        }
-
-        let api_gen_dir = Self::codegen_crate_dir(&main_workspace_app_settings)?;
-        let codegen_toolchain = Self::read_rust_toolchain(&api_gen_dir);
-        let codegen_app_settings = main_workspace_app_settings
-            .clone()
-            .with_workspace_dir(api_gen_dir.clone());
-        // .with_toolchain(codegen_toolchain.clone()); // don't think it's needed, the rust toolchain file sorts that out
-
-        let bevy_repo_app_settings = main_workspace_app_settings
-            .clone()
-            .with_workspace_dir(bevy_dir.clone())
-            .with_toolchain(codegen_toolchain.clone());
-
-        // run cargo install
-        log::info!("Running bevy_api_gen against toolchain: {codegen_toolchain}");
-        Self::run_system_command(
-            &codegen_app_settings,
-            "cargo",
-            "Failed to install bevy_api_gen",
-            vec!["install", "--path", "."],
-            None,
-            false,
-        )?;
-
-        let metadata = Self::main_workspace_cargo_metadata()?;
-
-        let bevy_version = metadata
-            .packages
-            .iter()
-            .filter_map(|p| (p.name.as_str() == "bevy").then_some(&p.version))
-            .max()
-            .expect("could not find bevy package in metadata");
-
-        log::info!("Using bevy version {bevy_version}");
-        // create directories if they don't already exist
-        std::fs::create_dir_all(&bevy_dir)?;
-        std::fs::create_dir_all(&output_dir)?;
-
-        // git clone bevy repo
-        let _ = Self::run_system_command(
-            &bevy_repo_app_settings,
-            "git",
-            "Failed to clone bevy repo",
-            vec![
-                "clone",
-                "https://github.com/bevyengine/bevy",
-                "--branch",
-                format!("v{bevy_version}").as_str(),
-                "--depth",
-                "1",
-                ".",
-            ],
-            None,
-            false,
-        );
-
-        // fetch the tags
-        Self::run_system_command(
-            &bevy_repo_app_settings,
-            "git",
-            "Failed to fetch bevy tags",
-            vec!["fetch", "--tags"],
-            Some(&bevy_dir),
-            false,
-        )?;
-
-        // checkout the version tag
-        Self::run_system_command(
-            &bevy_repo_app_settings,
-            "git",
-            "Failed to checkout bevy tag",
-            vec!["checkout", format!("v{bevy_version}").as_str()],
-            Some(&bevy_dir),
-            false,
-        )?;
-
-        // run bevy_api_gen
-        let template_args = CodegenTemplateArgs {
-            self_is_bms_lua: true,
-        };
-
-        let template_args = serde_json::to_string(&template_args)?;
-        let bms_bindings_path = Self::workspace_dir(&main_workspace_app_settings)?
-            .join("crates/bevy_mod_scripting_bindings")
-            .to_path_buf();
-
-        Self::run_workspace_command(
-            &bevy_repo_app_settings,
+        run_workspace_command(
+            &settings.bevy_repo_app_settings,
             "bms-codegen",
             "Failed to run bms-codegen generate",
             vec![
                 "generate",
                 "--bms-bindings-path",
-                bms_bindings_path.to_str().unwrap(),
+                settings.bms_bindings_path.to_str().unwrap(),
                 "--output",
-                output_dir.to_str().unwrap(),
+                settings.output_dir.to_str().unwrap(),
                 "--template-args",
-                template_args.as_str(),
+                settings.template_args.as_str(),
                 "--features",
-                bevy_features.join(",").as_str(),
+                settings.bevy_features.join(",").as_str(),
                 "-v",
             ],
-            Some(&bevy_dir),
+            Some(&settings.bevy_dir),
             false,
         )?;
 
         // collect
-        Self::run_workspace_command(
-            &bevy_repo_app_settings,
+        run_workspace_command(
+            &settings.bevy_repo_app_settings,
             "bms-codegen",
             "Failed to run bms-codegen generate",
             vec![
                 "collect",
                 "--bms-bindings-path",
-                bms_bindings_path.to_str().unwrap(),
+                settings.bms_bindings_path.to_str().unwrap(),
                 "--output",
-                output_dir.to_str().unwrap(),
+                settings.output_dir.to_str().unwrap(),
                 "--template-args",
-                template_args.as_str(),
+                settings.template_args.as_str(),
                 "-v",
             ],
-            Some(&bevy_dir),
+            Some(&settings.bevy_dir),
             false,
         )?;
 
         // now expand the macros and replace the files in place
         // by running cargo expand --features crate_name and capturing the output
 
-        let generated_crates = (std::fs::read_dir(&output_dir)?).collect::<Result<Vec<_>, _>>()?;
+        let generated_crates =
+            (std::fs::read_dir(&settings.output_dir)?).collect::<Result<Vec<_>, _>>()?;
         let crate_names = generated_crates
             .iter()
             .filter(|s| {
@@ -1337,7 +726,7 @@ impl Xtasks {
             // finally, generate the bindings crate code and move the code in there
 
             // get the version from the bevy workspace manifest
-            let manifest = Self::main_workspace_cargo_metadata()?;
+            let manifest = main_workspace_cargo_metadata()?;
             let version = manifest
                 .packages
                 .iter()
@@ -1351,7 +740,7 @@ impl Xtasks {
                 .expect("Could not find bevy_mod_scripting package in metadata");
 
             // find features in the corresponding meta file <crate>.json under "features" key
-            let meta_path = output_dir.join(format!("{entry}.json"));
+            let meta_path = settings.output_dir.join(format!("{entry}.json"));
             let meta: Meta = serde_json::from_reader(
                 std::fs::File::open(&meta_path)
                     .with_context(|| format!("opening meta file {meta_path:?}"))?,
@@ -1364,8 +753,8 @@ impl Xtasks {
                 meta.version,
                 meta.dependencies,
             );
-            let path = Self::relative_workspace_dir(
-                &main_workspace_app_settings,
+            let path = relative_workspace_dir(
+                &settings.main_workspace_app_settings,
                 format!("crates/bindings/{entry}_bms_bindings/"),
             )?;
             krate.generate_in_dir(&path)?;
@@ -1380,15 +769,16 @@ impl Xtasks {
                     dest_path.parent().unwrap()
                 )
             })?;
-            std::fs::copy(output_dir.join(format!("{entry}.rs")), &dest_path).with_context(
-                || format!("copying generated binding file to bindings crate: {dest_path:?}"),
-            )?;
+            std::fs::copy(settings.output_dir.join(format!("{entry}.rs")), &dest_path)
+                .with_context(|| {
+                    format!("copying generated binding file to bindings crate: {dest_path:?}")
+                })?;
 
             // finally expand the macros inside
 
             let args = vec![String::from("expand")];
-            let expand_cmd = Self::run_system_command(
-                &main_workspace_app_settings,
+            let expand_cmd = run_system_command(
+                &settings.main_workspace_app_settings,
                 "cargo",
                 "pre-expanding generated code",
                 args,
@@ -1446,9 +836,9 @@ impl Xtasks {
 
         // copy the `<workspace>/assets/bindings.lad.json` file to it's path in the book
         let ladfile_path =
-            Self::relative_workspace_dir(&app_settings, "assets/definitions/bindings.lad.json")?;
+            relative_workspace_dir(&app_settings, "assets/definitions/bindings.lad.json")?;
         let destination_path =
-            Self::relative_workspace_dir(&app_settings, "docs/src/ladfiles/bindings.lad.json")?;
+            relative_workspace_dir(&app_settings, "docs/src/ladfiles/bindings.lad.json")?;
 
         info!("Copying generated ladfile from: {ladfile_path:?} to: {destination_path:?}");
         std::fs::create_dir_all(destination_path.parent().unwrap())?;
@@ -1457,7 +847,7 @@ impl Xtasks {
 
         if !no_rust_docs {
             info!("Building rust docs");
-            let metadata = Self::main_workspace_cargo_metadata()?;
+            let metadata = main_workspace_cargo_metadata()?;
 
             let package = metadata
                 .packages
@@ -1499,7 +889,7 @@ impl Xtasks {
             if open {
                 args.push("--open");
             }
-            Self::run_workspace_command(
+            run_workspace_command(
                 &app_settings,
                 "doc",
                 "Failed to build crates.io docs",
@@ -1513,7 +903,7 @@ impl Xtasks {
         info!("Building mdbook docs");
         let args = if !open { vec!["build"] } else { vec!["serve"] };
 
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "mdbook",
             "Failed to build or serve mdbook docs",
@@ -1549,7 +939,7 @@ impl Xtasks {
             vec![]
         };
 
-        let output = Self::run_workspace_command(
+        let output = run_workspace_command(
             // run with just lua54
             &app_settings.with_features(features),
             "bench",
@@ -1566,7 +956,7 @@ impl Xtasks {
     fn bencher(app_settings: GlobalArgs, publish: bool) -> Result<()> {
         // // first of all figure out which branch we're on
         // // run // git rev-parse --abbrev-ref HEAD
-        let workspace_dir = Self::workspace_dir(&app_settings).unwrap();
+        let workspace_dir = workspace_dir(&app_settings).unwrap();
         let command = Command::new("git")
             .args(["rev-parse", "--abbrev-ref", "HEAD"])
             .current_dir(workspace_dir.clone())
@@ -1832,7 +1222,7 @@ impl Xtasks {
             test_args.push("--no-fail-fast".to_owned())
         }
 
-        Self::run_workspace_command(
+        run_workspace_command(
             &app_settings,
             "test",
             "Failed to run tests",
@@ -1843,7 +1233,7 @@ impl Xtasks {
 
         // generate coverage report and lcov file
         if app_settings.coverage {
-            Self::run_system_command(
+            run_system_command(
                 &app_settings,
                 "grcov",
                 "Generating html coverage report",
@@ -1866,7 +1256,7 @@ impl Xtasks {
                 false,
             )?;
 
-            Self::run_system_command(
+            run_system_command(
                 &app_settings,
                 "grcov",
                 "Failed to generate coverage report",
@@ -2016,7 +1406,7 @@ impl Xtasks {
             let install_cmd = format!(
                 "{sudo} apt-get update && {sudo} apt-get install --no-install-recommends -y libasound2-dev libudev-dev libwayland-dev"
             );
-            Self::run_system_command(
+            run_system_command(
                 &app_settings,
                 "sh",
                 "Failed to install Linux dependencies",
@@ -2029,7 +1419,7 @@ impl Xtasks {
         // install bencher
         // linux curl --proto '=https' --tlsv1.2 -sSfL https://bencher.dev/download/install-cli.sh | sh
         // windows irm https://bencher.dev/download/install-cli.ps1 | iex
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "cargo",
             "Failed to install bencher",
@@ -2047,7 +1437,7 @@ impl Xtasks {
             false,
         )?;
         // install cargo mdbook
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "cargo",
             "Failed to install mdbook",
@@ -2057,7 +1447,7 @@ impl Xtasks {
         )?;
 
         // install mdbook-mermaid
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "cargo",
             "Failed to install mdbook",
@@ -2067,7 +1457,7 @@ impl Xtasks {
         )?;
 
         // install grcov
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "cargo",
             "Failed to install grcov",
@@ -2077,7 +1467,7 @@ impl Xtasks {
         )?;
 
         // install cargo expand
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "cargo",
             "Failed to install cargo expand",
@@ -2087,8 +1477,8 @@ impl Xtasks {
         )?;
 
         // install nightly toolchaing for bevy api gen
-        let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
-        Self::run_system_command(
+        let toolchain = read_rust_toolchain(&codegen_crate_dir(&app_settings)?);
+        run_system_command(
             &app_settings,
             "rustup",
             "Failed to install nightly toolchain",
@@ -2108,7 +1498,7 @@ impl Xtasks {
         ];
 
         // install components for the stable and nightly toolchains
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "rustup",
             "Failed to install rust components",
@@ -2118,7 +1508,7 @@ impl Xtasks {
         )?;
 
         // add components on nightly toolchain
-        Self::run_system_command(
+        run_system_command(
             &app_settings,
             "rustup",
             "Failed to install nightly components",
@@ -2135,7 +1525,7 @@ impl Xtasks {
             let vscode_settings = include_str!("../templates/settings.json.tera");
             let mut tera = tera::Tera::default();
             let mut context = tera::Context::new();
-            let workspace_dir = Self::workspace_dir(&app_settings)?;
+            let workspace_dir = workspace_dir(&app_settings)?;
             let json_workspace_dir = serde_json::to_string(&workspace_dir)?; // make sure this works as a json string
             context.insert("dir", &json_workspace_dir.trim_matches('\"'));
 
@@ -2143,7 +1533,7 @@ impl Xtasks {
             let templated_settings_json =
                 Self::read_json_with_comments(templated_settings.as_bytes())
                     .with_context(|| "reading templated vscode settings")?;
-            let vscode_dir = Self::relative_workspace_dir(&app_settings, ".vscode")?;
+            let vscode_dir = relative_workspace_dir(&app_settings, ".vscode")?;
             std::fs::create_dir_all(&vscode_dir)?;
             let vscode_settings_path = vscode_dir.join("settings.json");
 
@@ -2198,12 +1588,12 @@ impl Xtasks {
         // path = "examples/docgen.rs"
         // required-features = []
 
-        // let metadata = Self::main_workspace_cargo_metadata()?;
+        // let metadata = main_workspace_cargo_metadata()?;
         // let metadata = &metadata.root_package().unwrap().targets;
         // println!("{metadata:#?}");
 
         // run the example
-        Self::run_workspace_command(
+        run_workspace_command(
             &app_settings,
             "run",
             "Failed to run example",
@@ -2217,8 +1607,8 @@ impl Xtasks {
 
     fn install(app_settings: GlobalArgs, binary: Binary) -> std::result::Result<(), Error> {
         // run cargo install --path
-        let binary_path = Self::relative_workspace_dir(&app_settings, binary.path())?;
-        Self::run_system_command(
+        let binary_path = relative_workspace_dir(&app_settings, binary.path())?;
+        run_system_command(
             &app_settings,
             "cargo",
             "Failed to install binary",

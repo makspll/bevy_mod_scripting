@@ -6,8 +6,8 @@ use crate::{Args, BevyCtxt};
 pub(crate) fn crawl_paths(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
     ctxt.path_finder.crawl_crate(LOCAL_CRATE);
 
-    // for c in ctxt.tcx.crates(()) {
-    //     ctxt.path_finder.crawl_crate(*c);
-    // }
+    for c in ctxt.tcx.crates(()) {
+        ctxt.path_finder.crawl_crate(*c);
+    }
     true
 }

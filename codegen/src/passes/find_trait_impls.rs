@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use log::trace;
 use rustc_hir::def_id::DefId;
 use rustc_infer::{
@@ -79,8 +77,7 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
             }
         }
 
-        assert!(type_ctxt.trait_impls.is_none(), "trait impls already set!");
-        type_ctxt.trait_impls = Some(HashMap::from_iter(impls));
+        type_ctxt.trait_impls.extend(impls);
     }
     true
 }

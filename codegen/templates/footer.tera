@@ -1,10 +1,3 @@
-{% if args.self_is_bms_lua %}
-{% set bms_lua_path="crate" %}
-{% else %}
-{% set bms_lua_path="bevy_mod_scripting::lua"%}
-{% endif %}
-
-
 pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}};
 
 {% for item in items %}

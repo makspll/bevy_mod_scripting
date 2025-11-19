@@ -27,6 +27,10 @@ use serde::{Deserialize, Serialize};
 ///
 /// 5.Generates code using Tera templates given the data gathered from the analysis
 pub struct Args {
+    /// the output and artifact directory
+    #[arg(global = true, short, long, default_value = compute_default_dir(), value_name = "DIR")]
+    pub output: Utf8PathBuf,
+
     #[command(subcommand)]
     pub cmd: Command,
 
@@ -198,10 +202,6 @@ pub enum Command {
     ListTemplates,
     /// Crawls current workspace/crate and generates wrappers for Reflect types using templates
     Generate {
-        /// the output and artifact directory
-        #[arg(short, long, default_value = compute_default_dir(), value_name = "DIR")]
-        output: Utf8PathBuf,
-
         /// The directory in which to look for templates, if unspecified will use built-in templates
         #[arg(short, long, value_name = "DIR")]
         templates: Option<Utf8PathBuf>,

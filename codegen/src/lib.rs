@@ -17,6 +17,7 @@ extern crate rustc_trait_selection;
 
 mod args;
 mod callback;
+mod candidate;
 mod context;
 mod import_path;
 mod meta;

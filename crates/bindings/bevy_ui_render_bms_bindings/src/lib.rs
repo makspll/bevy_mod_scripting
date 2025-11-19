@@ -1,27 +1,30 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyUiRenderScriptingPlugin;
 pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui_render::prelude::BoxShadowSamples,
+        ::bevy_ui_render::BoxShadowSamples,
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui_render::prelude::BoxShadowSamples>| {
+            |_self: Ref<::bevy_ui_render::BoxShadowSamples>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_ui_render::prelude::BoxShadowSamples as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_ui_render::BoxShadowSamples as ::std::cmp::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -35,10 +38,10 @@ pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui_render::prelude::BoxShadowSamples>| {
-                let output: Val<::bevy_ui_render::prelude::BoxShadowSamples> = {
+            |_self: Ref<::bevy_ui_render::BoxShadowSamples>| {
+                let output: Val<::bevy_ui_render::BoxShadowSamples> = {
                     {
-                        let output: Val<::bevy_ui_render::prelude::BoxShadowSamples> = <::bevy_ui_render::prelude::BoxShadowSamples as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_ui_render::BoxShadowSamples> = <::bevy_ui_render::BoxShadowSamples as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -53,13 +56,13 @@ pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui_render::prelude::BoxShadowSamples>,
-                other: Ref<::bevy_ui_render::prelude::BoxShadowSamples>|
+                _self: Ref<::bevy_ui_render::BoxShadowSamples>,
+                other: Ref<::bevy_ui_render::BoxShadowSamples>|
             {
                 let output: bool = {
                     {
-                        let output: bool = <::bevy_ui_render::prelude::BoxShadowSamples as ::std::cmp::PartialEq<
-                            ::bevy_ui_render::prelude::BoxShadowSamples,
+                        let output: bool = <::bevy_ui_render::BoxShadowSamples as ::std::cmp::PartialEq<
+                            ::bevy_ui_render::BoxShadowSamples,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -74,20 +77,20 @@ pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_ui_render::prelude::BoxShadowSamples,
+            ::bevy_ui_render::BoxShadowSamples,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui_render::prelude::UiAntiAlias,
+        ::bevy_ui_render::UiAntiAlias,
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui_render::prelude::UiAntiAlias>| {
+            |_self: Ref<::bevy_ui_render::UiAntiAlias>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_ui_render::prelude::UiAntiAlias as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_ui_render::UiAntiAlias as ::std::cmp::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -101,10 +104,10 @@ pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui_render::prelude::UiAntiAlias>| {
-                let output: Val<::bevy_ui_render::prelude::UiAntiAlias> = {
+            |_self: Ref<::bevy_ui_render::UiAntiAlias>| {
+                let output: Val<::bevy_ui_render::UiAntiAlias> = {
                     {
-                        let output: Val<::bevy_ui_render::prelude::UiAntiAlias> = <::bevy_ui_render::prelude::UiAntiAlias as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_ui_render::UiAntiAlias> = <::bevy_ui_render::UiAntiAlias as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -119,13 +122,13 @@ pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui_render::prelude::UiAntiAlias>,
-                other: Ref<::bevy_ui_render::prelude::UiAntiAlias>|
+                _self: Ref<::bevy_ui_render::UiAntiAlias>,
+                other: Ref<::bevy_ui_render::UiAntiAlias>|
             {
                 let output: bool = {
                     {
-                        let output: bool = <::bevy_ui_render::prelude::UiAntiAlias as ::std::cmp::PartialEq<
-                            ::bevy_ui_render::prelude::UiAntiAlias,
+                        let output: bool = <::bevy_ui_render::UiAntiAlias as ::std::cmp::PartialEq<
+                            ::bevy_ui_render::UiAntiAlias,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -140,7 +143,7 @@ pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_ui_render::prelude::UiAntiAlias,
+            ::bevy_ui_render::UiAntiAlias,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }

@@ -2,14 +2,12 @@ use std::{borrow::Cow, convert::identity, panic};
 
 use log::{trace, warn};
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
-use rustc_middle::ty::{
-    AdtDef, FieldDef, GenericArg, GenericParamDefKind, TraitRef, Ty, TyKind, TypingEnv,
-};
+use rustc_middle::ty::{AdtDef, GenericArg, GenericParamDefKind, TraitRef, Ty, TyKind, TypingEnv};
 use rustc_span::Symbol;
 
 use crate::{
-    Arg, Args, BevyCtxt, Field, Function, FunctionContext, Item, Output, ReflectType,
-    TemplateContext, Variant,
+    Arg, Args, BevyCtxt, Field, Function, Item, Output, TemplateContext, Variant,
+    candidate::{FunctionCandidate, VariantCandidate},
 };
 /// Converts the BevyCtxt into simpler data that can be used in templates directly,
 /// Clears the BevyCtxt by clearing data structures after it uses them.
@@ -23,11 +21,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     let display_diagnostic = tcx.get_diagnostic_item(Symbol::intern("Display")).unwrap();
 
     for (reflect_ty_did, ty_ctxt) in ctxt.reflect_types.drain(..).collect::<Vec<_>>().into_iter() {
-        let fn_ctxts = ty_ctxt
-            .valid_functions
-            .as_ref()
-            .expect("Missing function context for a type, were all the passes run correctly?");
-
+        let fn_ctxts = &ty_ctxt.functions;
         let has_static_methods = fn_ctxts.iter().any(|fn_ctxt| !fn_ctxt.has_self);
 
         let mut functions = process_functions(ctxt, fn_ctxts);
@@ -45,24 +39,25 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
                 )
         });
 
-        let variant = ty_ctxt.variant_data.as_ref().unwrap();
+        let def = &ty_ctxt.def;
 
-        let is_tuple_struct = variant.is_struct()
-            && variant
+        let is_tuple_struct = def.is_struct()
+            && def
                 .all_fields()
                 .next()
                 .is_some_and(|f| f.name.as_str().chars().all(|c| c.is_numeric()));
 
-        let variants = variant
-            .variants()
+        let variants = ty_ctxt
+            .variants
             .iter()
             .map(|variant| Variant {
-                docstrings: docstrings(ctxt.tcx.get_all_attrs(variant.def_id)),
-                name: variant.name.to_ident_string().into(),
-                fields: process_fields(ctxt, variant.fields.iter(), &ty_ctxt),
+                docstrings: docstrings(ctxt.tcx.get_all_attrs(variant.def.def_id)),
+                name: variant.def.name.to_ident_string().into(),
+                fields: process_fields(ctxt, variant),
             })
             .collect::<Vec<_>>();
-        let trait_impls = ty_ctxt.trait_impls.as_ref().unwrap();
+
+        let trait_impls = ty_ctxt.trait_impls;
         let item = Item {
             ident: tcx.item_name(reflect_ty_did).to_ident_string(),
             import_path: import_path(ctxt, reflect_ty_did),
@@ -103,68 +98,69 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     true
 }
 
-pub(crate) fn process_fields<'f, I: Iterator<Item = &'f FieldDef>>(
-    ctxt: &BevyCtxt,
-    fields: I,
-    ty_ctxt: &ReflectType,
+pub(crate) fn process_fields<'ctx>(
+    ctxt: &BevyCtxt<'ctx>,
+    variant: &VariantCandidate<'ctx>,
 ) -> Vec<Field> {
-    fields
+    variant
+        .fields
+        .iter()
         .map(|field| Field {
             docstrings: docstrings(ctxt.tcx.get_all_attrs(field.did)),
             ident: field.name.to_ident_string(),
             ty: ty_to_string(ctxt, ctxt.tcx.type_of(field.did).skip_binder(), false),
-            reflection_strategy: *ty_ctxt
-                .get_field_reflection_strat(field.did)
-                .unwrap_or_else(|| panic!("{ty_ctxt:#?}")),
+            reflection_strategy: field.reflection_strategy,
         })
         .collect()
 }
 
-pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec<Function> {
+pub(crate) fn process_functions<'tcx>(
+    ctxt: &BevyCtxt<'tcx>,
+    fns: &[FunctionCandidate<'tcx>],
+) -> Vec<Function> {
     fns.iter()
         .map(|fn_ctxt| {
-            let fn_sig = ctxt.tcx.fn_sig(fn_ctxt.def_id).skip_binder().skip_binder();
             let args = ctxt
                 .tcx
-                .fn_arg_idents(fn_ctxt.def_id)
+                .fn_arg_idents(fn_ctxt.did)
                 .iter()
-                .zip(fn_sig.inputs())
+                .zip(fn_ctxt.sig.inputs())
                 .enumerate()
                 .map(|(idx, (ident, ty))| {
                     let normalized_ty = ctxt.tcx.normalize_erasing_regions(
-                        TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.def_id),
+                        TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.did),
                         *ty,
                     );
                     Arg {
                         ident: ident.map(|s| s.to_string()).unwrap_or(format!("arg_{idx}")),
                         ty: ty_to_string(ctxt, normalized_ty, false),
                         proxy_ty: ty_to_string(ctxt, normalized_ty, true),
-                        reflection_strategy: fn_ctxt.reflection_strategies[idx],
+                        reflection_strategy: fn_ctxt.arguments[idx].reflection_strategy,
                     }
                 })
                 .collect();
 
             let out_ty = ctxt.tcx.normalize_erasing_regions(
-                TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.def_id),
-                fn_sig.output(),
+                TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.did),
+                fn_ctxt.sig.output(),
             );
 
             let output = Output {
                 ty: ty_to_string(ctxt, out_ty, false),
                 proxy_ty: ty_to_string(ctxt, out_ty, true),
-                reflection_strategy: *fn_ctxt.reflection_strategies.last().unwrap(),
+                reflection_strategy: fn_ctxt.ret.reflection_strategy,
             };
 
             let is_unsafe = fn_ctxt.is_unsafe;
 
             Function {
                 is_unsafe,
-                ident: ctxt.tcx.item_name(fn_ctxt.def_id).to_ident_string(),
+                ident: ctxt.tcx.item_name(fn_ctxt.did).to_ident_string(),
                 args,
                 output,
                 has_self: fn_ctxt.has_self,
-                docstrings: docstrings(ctxt.tcx.get_all_attrs(fn_ctxt.def_id)),
-                from_trait_path: fn_ctxt.trait_and_impl_did.map(|(_, impl_did)| {
+                docstrings: docstrings(ctxt.tcx.get_all_attrs(fn_ctxt.did)),
+                from_trait_path: fn_ctxt.kind.as_trait_fn().map(|(_, impl_did)| {
                     let trait_ref = ctxt.tcx.impl_trait_ref(impl_did).skip_binder();
 
                     trait_ref_to_string(ctxt, trait_ref)

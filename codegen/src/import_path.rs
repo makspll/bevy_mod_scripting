@@ -65,7 +65,11 @@ impl<'tcx> ImportPathFinder<'tcx> {
         self.crawl_module(
             crate_num.as_def_id(),
             &[ImportPathElement::Crate(crate_num)],
-        )
+        );
+        // sort by length of path, shortest wins
+        self.cache.iter_mut().for_each(|(_, paths)| {
+            paths.sort_by_key(|a| a.len());
+        });
     }
 
     fn crawl_module(&mut self, did: DefId, frontier: &[ImportPathElement]) {
@@ -97,10 +101,11 @@ impl<'tcx> ImportPathFinder<'tcx> {
             // skip non local items, i.e. don't go crawling serde
             if !did.is_local() {
                 trace!("Skipping non-local child {:?}", child.ident);
-                continue;
+                // continue;
             }
 
-            let rename = (child.ident != self.tcx.item_ident(did)).then_some(child.ident.as_str());
+            let rename = (Some(child.ident.name) != self.tcx.opt_item_name(did))
+                .then_some(child.ident.as_str());
 
             self.crawl_item(did, frontier, rename);
         }
@@ -175,7 +180,11 @@ impl<'tcx> ImportPathFinder<'tcx> {
             .iter()
             .map(|elem| match elem {
                 ImportPathElement::Rename(_, name) => name.to_owned(),
-                ImportPathElement::Item(did) => self.tcx.item_name(*did).to_ident_string(),
+                ImportPathElement::Item(did) => self
+                    .tcx
+                    .opt_item_name(*did)
+                    .expect("missing item name")
+                    .to_ident_string(),
                 ImportPathElement::Crate(crate_num) => {
                     self.tcx.crate_name(*crate_num).to_ident_string()
                 }
