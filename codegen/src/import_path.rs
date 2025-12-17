@@ -71,6 +71,7 @@ impl<'tcx> ImportPathFinder<'tcx> {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn crawled_items_in_crate(&self, krate: CrateNum) -> impl Iterator<Item = DefId> {
         self.cache
             .keys()
@@ -88,7 +89,7 @@ impl<'tcx> ImportPathFinder<'tcx> {
             let not_in_workspace = !graph
                 .all_enabled_workspace_crates()
                 .iter()
-                .any(|c| c.as_ref() == crate_name.as_str());
+                .any(|c| c.to_string().as_str() == crate_name.as_str());
 
             let is_not_local_crate = if &LOCAL_CRATE != crate_num && !is_std_or_core {
                 10
