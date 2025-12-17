@@ -137,7 +137,7 @@ pub(crate) fn register_sprite_functions(world: &mut World) {
         )
         .register_documented(
             "sized",
-            |custom_size: Val<::glam::Vec2>| {
+            |custom_size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_sprite::Sprite> = {
                     {
                         let output: Val<::bevy_sprite::Sprite> = ::bevy_sprite::Sprite::sized(
@@ -532,9 +532,9 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
         .register_documented(
             "as_vec",
             |_self: Ref<::bevy_sprite::Anchor>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_sprite::Anchor::as_vec(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_sprite::Anchor::as_vec(
                                 &_self,
                             )
                             .into();

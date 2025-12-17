@@ -726,9 +726,9 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
         .register_documented(
             "logical_size",
             |_self: Ref<::bevy_ui::ComputedUiRenderTargetInfo>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::ComputedUiRenderTargetInfo::logical_size(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedUiRenderTargetInfo::logical_size(
                                 &_self,
                             )
                             .into();
@@ -743,9 +743,9 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
         .register_documented(
             "physical_size",
             |_self: Ref<::bevy_ui::ComputedUiRenderTargetInfo>| {
-                let output: Val<::glam::UVec2> = {
+                let output: Val<::bevy_math::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = ::bevy_ui::ComputedUiRenderTargetInfo::physical_size(
+                        let output: Val<::bevy_math::UVec2> = ::bevy_ui::ComputedUiRenderTargetInfo::physical_size(
                                 &_self,
                             )
                             .into();
@@ -788,7 +788,7 @@ pub(crate) fn register_content_size_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "fixed_size",
-            |size: Val<::glam::Vec2>| {
+            |size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_ui::ContentSize> = {
                     {
                         let output: Val<::bevy_ui::ContentSize> = ::bevy_ui::ContentSize::fixed_size(
@@ -1103,9 +1103,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "border",
             |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+                let output: Val<::bevy_ui::prelude::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_ui::ComputedNode::border(
+                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::border(
                                 &_self,
                             )
                             .into();
@@ -1156,7 +1156,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
             |
                 _self: Ref<::bevy_ui::ComputedNode>,
                 transform: Val<::bevy_ui::UiGlobalTransform>,
-                point: Val<::glam::Vec2>|
+                point: Val<::bevy_math::Vec2>|
             {
                 let output: bool = {
                     {
@@ -1177,9 +1177,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "content_inset",
             |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+                let output: Val<::bevy_ui::prelude::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_ui::ComputedNode::content_inset(
+                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::content_inset(
                                 &_self,
                             )
                             .into();
@@ -1194,9 +1194,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "content_size",
             |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::ComputedNode::content_size(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::content_size(
                                 &_self,
                             )
                             .into();
@@ -1324,9 +1324,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "outlined_node_size",
             |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::ComputedNode::outlined_node_size(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::outlined_node_size(
                                 &_self,
                             )
                             .into();
@@ -1341,9 +1341,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "padding",
             |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+                let output: Val<::bevy_ui::prelude::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_ui::ComputedNode::padding(
+                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::padding(
                                 &_self,
                             )
                             .into();
@@ -1381,9 +1381,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "size",
             |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::ComputedNode::size(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::size(
                                 &_self,
                             )
                             .into();
@@ -1413,9 +1413,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "unrounded_size",
             |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::ComputedNode::unrounded_size(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::unrounded_size(
                                 &_self,
                             )
                             .into();
@@ -1588,9 +1588,9 @@ pub(crate) fn register_image_node_size_functions(world: &mut World) {
         .register_documented(
             "size",
             |_self: Ref<::bevy_ui::widget::ImageNodeSize>| {
-                let output: Val<::glam::UVec2> = {
+                let output: Val<::bevy_math::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = ::bevy_ui::widget::ImageNodeSize::size(
+                        let output: Val<::bevy_math::UVec2> = ::bevy_ui::widget::ImageNodeSize::size(
                                 &_self,
                             )
                             .into();
@@ -1645,7 +1645,7 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "anchor",
-            |anchor: Val<::glam::Vec2>| {
+            |anchor: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_ui::UiPosition> = {
                     {
                         let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::anchor(
@@ -1883,7 +1883,11 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |anchor: Val<::glam::Vec2>, x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
+            |
+                anchor: Val<::bevy_math::Vec2>,
+                x: Val<::bevy_ui::Val>,
+                y: Val<::bevy_ui::Val>|
+            {
                 let output: Val<::bevy_ui::UiPosition> = {
                     {
                         let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::new(
@@ -1905,12 +1909,12 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
             |
                 _self: Val<::bevy_ui::UiPosition>,
                 scale_factor: f32,
-                physical_size: Val<::glam::Vec2>,
-                physical_target_size: Val<::glam::Vec2>|
+                physical_size: Val<::bevy_math::Vec2>,
+                physical_target_size: Val<::bevy_math::Vec2>|
             {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::UiPosition::resolve(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::UiPosition::resolve(
                                 _self.into_inner(),
                                 scale_factor,
                                 physical_size.into_inner(),
@@ -1999,7 +2003,7 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "with_anchor",
-            |_self: Val<::bevy_ui::UiPosition>, anchor: Val<::glam::Vec2>| {
+            |_self: Val<::bevy_ui::UiPosition>, anchor: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_ui::UiPosition> = {
                     {
                         let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::with_anchor(
@@ -2621,14 +2625,14 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
             "resolve",
             |
                 _self: Val<::bevy_ui::RadialGradientShape>,
-                position: Val<::glam::Vec2>,
+                position: Val<::bevy_math::Vec2>,
                 scale_factor: f32,
-                physical_size: Val<::glam::Vec2>,
-                physical_target_size: Val<::glam::Vec2>|
+                physical_size: Val<::bevy_math::Vec2>,
+                physical_target_size: Val<::bevy_math::Vec2>|
             {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
                                 _self.into_inner(),
                                 position.into_inner(),
                                 scale_factor,
@@ -3010,12 +3014,12 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
             |
                 _self: Ref<::bevy_ui::Val2>,
                 scale_factor: f32,
-                base_size: Val<::glam::Vec2>,
-                viewport_size: Val<::glam::Vec2>|
+                base_size: Val<::bevy_math::Vec2>,
+                viewport_size: Val<::bevy_math::Vec2>|
             {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_ui::Val2::resolve(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::Val2::resolve(
                                 &_self,
                                 scale_factor,
                                 base_size.into_inner(),
@@ -3064,12 +3068,12 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
             |
                 _self: Ref<::bevy_ui::UiTransform>,
                 scale_factor: f32,
-                base_size: Val<::glam::Vec2>,
-                target_size: Val<::glam::Vec2>|
+                base_size: Val<::bevy_math::Vec2>,
+                target_size: Val<::bevy_math::Vec2>|
             {
-                let output: Val<::glam::Affine2> = {
+                let output: Val<::bevy_math::Affine2> = {
                     {
-                        let output: Val<::glam::Affine2> = ::bevy_ui::UiTransform::compute_affine(
+                        let output: Val<::bevy_math::Affine2> = ::bevy_ui::UiTransform::compute_affine(
                                 &_self,
                                 scale_factor,
                                 base_size.into_inner(),
@@ -3120,7 +3124,7 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_scale",
-            |scale: Val<::glam::Vec2>| {
+            |scale: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_ui::UiTransform> = {
                     {
                         let output: Val<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_scale(
@@ -3739,8 +3743,8 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
             |
                 _self: Ref<::bevy_ui::BorderRadius>,
                 scale_factor: f32,
-                node_size: Val<::glam::Vec2>,
-                viewport_size: Val<::glam::Vec2>|
+                node_size: Val<::bevy_math::Vec2>,
+                viewport_size: Val<::bevy_math::Vec2>|
             {
                 let output: Val<::bevy_ui::ResolvedBorderRadius> = {
                     {
@@ -3765,7 +3769,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 radius: Val<::bevy_ui::Val>,
                 scale_factor: f32,
                 min_length: f32,
-                viewport_size: Val<::glam::Vec2>|
+                viewport_size: Val<::bevy_math::Vec2>|
             {
                 let output: f32 = {
                     {

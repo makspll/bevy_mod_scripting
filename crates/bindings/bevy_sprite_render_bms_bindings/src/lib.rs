@@ -398,7 +398,7 @@ pub(crate) fn register_tilemap_chunk_functions(world: &mut World) {
             "calculate_tile_transform",
             |
                 _self: Ref<::bevy_sprite_render::TilemapChunk>,
-                position: Val<::glam::UVec2>|
+                position: Val<::bevy_math::UVec2>|
             {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {

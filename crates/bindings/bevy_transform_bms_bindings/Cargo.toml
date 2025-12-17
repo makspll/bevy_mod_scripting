@@ -17,19 +17,19 @@ categories.workspace = true
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_transform = { version = "0.17.2", features = ["alloc", "async_executor", "bevy-support", "bevy_log", "bevy_reflect", "std"], default-features = true}
+bevy_transform = { version = "0.17.3", features = ["alloc", "async_executor", "bevy-support", "bevy_log", "bevy_reflect", "std"], default-features = true}
 
 
-bevy_app = { version = "^0.17.2", features = ["bevy_reflect", "error_panic_hook", "reflect_auto_register", "std"], default-features = true}
+bevy_app = { version = "^0.17.3", features = ["bevy_reflect", "error_panic_hook", "reflect_auto_register", "std"], default-features = true}
 
-bevy_ecs = { version = "^0.17.2", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
+bevy_ecs = { version = "^0.17.3", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
 
-bevy_math = { version = "^0.17.2", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
+bevy_math = { version = "^0.17.3", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
-bevy_reflect = { version = "^0.17.2", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
+bevy_reflect = { version = "^0.17.3", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
 
-bevy_tasks = { version = "^0.17.2", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
+bevy_tasks = { version = "^0.17.3", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
 
-bevy_utils = { version = "^0.17.2", features = ["debug", "parallel"], default-features = true}
+bevy_utils = { version = "^0.17.3", features = ["debug", "parallel"], default-features = true}
 
 

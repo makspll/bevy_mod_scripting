@@ -22,9 +22,9 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         .register_documented(
             "affine",
             |_self: Ref<::bevy_transform::components::GlobalTransform>| {
-                let output: Val<::glam::Affine3A> = {
+                let output: Val<::bevy_math::Affine3A> = {
                     {
-                        let output: Val<::glam::Affine3A> = ::bevy_transform::components::GlobalTransform::affine(
+                        let output: Val<::bevy_math::Affine3A> = ::bevy_transform::components::GlobalTransform::affine(
                                 &_self,
                             )
                             .into();
@@ -160,7 +160,7 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_rotation",
-            |rotation: Val<::glam::Quat>| {
+            |rotation: Val<::bevy_math::Quat>| {
                 let output: Val<::bevy_transform::components::GlobalTransform> = {
                     {
                         let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_rotation(
@@ -177,7 +177,7 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_scale",
-            |scale: Val<::glam::Vec3>| {
+            |scale: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_transform::components::GlobalTransform> = {
                     {
                         let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_scale(
@@ -194,7 +194,7 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_translation",
-            |translation: Val<::glam::Vec3>| {
+            |translation: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_transform::components::GlobalTransform> = {
                     {
                         let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_translation(
@@ -249,6 +249,26 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
             "mul",
             |
                 _self: Val<::bevy_transform::components::GlobalTransform>,
+                value: Val<::bevy_math::Vec3>|
+            {
+                let output: Val<::bevy_math::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::Vec3> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
+                            ::bevy_math::Vec3,
+                        >>::mul(_self.into_inner(), value.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "value"],
+        )
+        .register_documented(
+            "mul",
+            |
+                _self: Val<::bevy_transform::components::GlobalTransform>,
                 global_transform: Val<::bevy_transform::components::GlobalTransform>|
             {
                 let output: Val<::bevy_transform::components::GlobalTransform> = {
@@ -286,26 +306,6 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
             &["_self", "transform"],
         )
         .register_documented(
-            "mul",
-            |
-                _self: Val<::bevy_transform::components::GlobalTransform>,
-                value: Val<::glam::Vec3>|
-            {
-                let output: Val<::glam::Vec3> = {
-                    {
-                        let output: Val<::glam::Vec3> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
-                            ::glam::Vec3,
-                        >>::mul(_self.into_inner(), value.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "value"],
-        )
-        .register_documented(
             "mul_transform",
             |
                 _self: Ref<::bevy_transform::components::GlobalTransform>,
@@ -330,7 +330,7 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
             "radius_vec3a",
             |
                 _self: Ref<::bevy_transform::components::GlobalTransform>,
-                extents: Val<::glam::Vec3A>|
+                extents: Val<::bevy_math::Vec3A>|
             {
                 let output: f32 = {
                     {
@@ -388,9 +388,9 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         .register_documented(
             "rotation",
             |_self: Ref<::bevy_transform::components::GlobalTransform>| {
-                let output: Val<::glam::Quat> = {
+                let output: Val<::bevy_math::Quat> = {
                     {
-                        let output: Val<::glam::Quat> = ::bevy_transform::components::GlobalTransform::rotation(
+                        let output: Val<::bevy_math::Quat> = ::bevy_transform::components::GlobalTransform::rotation(
                                 &_self,
                             )
                             .into();
@@ -405,9 +405,9 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         .register_documented(
             "scale",
             |_self: Ref<::bevy_transform::components::GlobalTransform>| {
-                let output: Val<::glam::Vec3> = {
+                let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = ::bevy_transform::components::GlobalTransform::scale(
+                        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::GlobalTransform::scale(
                                 &_self,
                             )
                             .into();
@@ -439,9 +439,9 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         .register_documented(
             "to_matrix",
             |_self: Ref<::bevy_transform::components::GlobalTransform>| {
-                let output: Val<::glam::Mat4> = {
+                let output: Val<::bevy_math::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = ::bevy_transform::components::GlobalTransform::to_matrix(
+                        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::GlobalTransform::to_matrix(
                                 &_self,
                             )
                             .into();
@@ -457,11 +457,11 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
             "transform_point",
             |
                 _self: Ref<::bevy_transform::components::GlobalTransform>,
-                point: Val<::glam::Vec3>|
+                point: Val<::bevy_math::Vec3>|
             {
-                let output: Val<::glam::Vec3> = {
+                let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = ::bevy_transform::components::GlobalTransform::transform_point(
+                        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::GlobalTransform::transform_point(
                                 &_self,
                                 point.into_inner(),
                             )
@@ -477,9 +477,9 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         .register_documented(
             "translation",
             |_self: Ref<::bevy_transform::components::GlobalTransform>| {
-                let output: Val<::glam::Vec3> = {
+                let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = ::bevy_transform::components::GlobalTransform::translation(
+                        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::GlobalTransform::translation(
                                 &_self,
                             )
                             .into();
@@ -494,9 +494,9 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
         .register_documented(
             "translation_vec3a",
             |_self: Ref<::bevy_transform::components::GlobalTransform>| {
-                let output: Val<::glam::Vec3A> = {
+                let output: Val<::bevy_math::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = ::bevy_transform::components::GlobalTransform::translation_vec3a(
+                        let output: Val<::bevy_math::Vec3A> = ::bevy_transform::components::GlobalTransform::translation_vec3a(
                                 &_self,
                             )
                             .into();
@@ -574,9 +574,9 @@ pub(crate) fn register_transform_functions(world: &mut World) {
         .register_documented(
             "compute_affine",
             |_self: Ref<::bevy_transform::components::Transform>| {
-                let output: Val<::glam::Affine3A> = {
+                let output: Val<::bevy_math::Affine3A> = {
                     {
-                        let output: Val<::glam::Affine3A> = ::bevy_transform::components::Transform::compute_affine(
+                        let output: Val<::bevy_math::Affine3A> = ::bevy_transform::components::Transform::compute_affine(
                                 &_self,
                             )
                             .into();
@@ -661,7 +661,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_matrix",
-            |world_from_local: Val<::glam::Mat4>| {
+            |world_from_local: Val<::bevy_math::Mat4>| {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {
                         let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_matrix(
@@ -678,7 +678,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_rotation",
-            |rotation: Val<::glam::Quat>| {
+            |rotation: Val<::bevy_math::Quat>| {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {
                         let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_rotation(
@@ -695,7 +695,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_scale",
-            |scale: Val<::glam::Vec3>| {
+            |scale: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {
                         let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_scale(
@@ -712,7 +712,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_translation",
-            |translation: Val<::glam::Vec3>| {
+            |translation: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {
                         let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_translation(
@@ -835,6 +835,26 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "mul",
             |
                 _self: Val<::bevy_transform::components::Transform>,
+                value: Val<::bevy_math::Vec3>|
+            {
+                let output: Val<::bevy_math::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::Vec3> = <::bevy_transform::components::Transform as ::core::ops::Mul<
+                            ::bevy_math::Vec3,
+                        >>::mul(_self.into_inner(), value.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "value"],
+        )
+        .register_documented(
+            "mul",
+            |
+                _self: Val<::bevy_transform::components::Transform>,
                 global_transform: Val<::bevy_transform::components::GlobalTransform>|
             {
                 let output: Val<::bevy_transform::components::GlobalTransform> = {
@@ -870,26 +890,6 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             },
             "",
             &["_self", "transform"],
-        )
-        .register_documented(
-            "mul",
-            |
-                _self: Val<::bevy_transform::components::Transform>,
-                value: Val<::glam::Vec3>|
-            {
-                let output: Val<::glam::Vec3> = {
-                    {
-                        let output: Val<::glam::Vec3> = <::bevy_transform::components::Transform as ::core::ops::Mul<
-                            ::glam::Vec3,
-                        >>::mul(_self.into_inner(), value.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "value"],
         )
         .register_documented(
             "mul_transform",
@@ -933,7 +933,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "rotate",
             |
                 mut _self: Mut<::bevy_transform::components::Transform>,
-                rotation: Val<::glam::Quat>|
+                rotation: Val<::bevy_math::Quat>|
             {
                 let output: () = {
                     {
@@ -954,8 +954,8 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "rotate_around",
             |
                 mut _self: Mut<::bevy_transform::components::Transform>,
-                point: Val<::glam::Vec3>,
-                rotation: Val<::glam::Quat>|
+                point: Val<::bevy_math::Vec3>,
+                rotation: Val<::bevy_math::Quat>|
             {
                 let output: () = {
                     {
@@ -1000,7 +1000,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "rotate_local",
             |
                 mut _self: Mut<::bevy_transform::components::Transform>,
-                rotation: Val<::glam::Quat>|
+                rotation: Val<::bevy_math::Quat>|
             {
                 let output: () = {
                     {
@@ -1168,9 +1168,9 @@ pub(crate) fn register_transform_functions(world: &mut World) {
         .register_documented(
             "to_matrix",
             |_self: Ref<::bevy_transform::components::Transform>| {
-                let output: Val<::glam::Mat4> = {
+                let output: Val<::bevy_math::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = ::bevy_transform::components::Transform::to_matrix(
+                        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::Transform::to_matrix(
                                 &_self,
                             )
                             .into();
@@ -1186,11 +1186,11 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "transform_point",
             |
                 _self: Ref<::bevy_transform::components::Transform>,
-                point: Val<::glam::Vec3>|
+                point: Val<::bevy_math::Vec3>|
             {
-                let output: Val<::glam::Vec3> = {
+                let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::glam::Vec3> = ::bevy_transform::components::Transform::transform_point(
+                        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::Transform::transform_point(
                                 &_self,
                                 point.into_inner(),
                             )
@@ -1207,8 +1207,8 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "translate_around",
             |
                 mut _self: Mut<::bevy_transform::components::Transform>,
-                point: Val<::glam::Vec3>,
-                rotation: Val<::glam::Quat>|
+                point: Val<::bevy_math::Vec3>,
+                rotation: Val<::bevy_math::Quat>|
             {
                 let output: () = {
                     {
@@ -1247,7 +1247,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "with_rotation",
             |
                 _self: Val<::bevy_transform::components::Transform>,
-                rotation: Val<::glam::Quat>|
+                rotation: Val<::bevy_math::Quat>|
             {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {
@@ -1268,7 +1268,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "with_scale",
             |
                 _self: Val<::bevy_transform::components::Transform>,
-                scale: Val<::glam::Vec3>|
+                scale: Val<::bevy_math::Vec3>|
             {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {
@@ -1289,7 +1289,7 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             "with_translation",
             |
                 _self: Val<::bevy_transform::components::Transform>,
-                translation: Val<::glam::Vec3>|
+                translation: Val<::bevy_math::Vec3>|
             {
                 let output: Val<::bevy_transform::components::Transform> = {
                     {

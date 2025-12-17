@@ -212,7 +212,7 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         )
         .register_documented(
             "new_empty",
-            |dimensions: Val<::glam::UVec2>| {
+            |dimensions: Val<::bevy_math::UVec2>| {
                 let output: Val<::bevy_image::TextureAtlasLayout> = {
                     {
                         let output: Val<::bevy_image::TextureAtlasLayout> = ::bevy_image::TextureAtlasLayout::new_empty(
@@ -336,7 +336,7 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "pixel_data_offset",
-            |_self: Ref<::bevy_image::Image>, coords: Val<::glam::UVec3>| {
+            |_self: Ref<::bevy_image::Image>, coords: Val<::bevy_math::UVec3>| {
                 let output: ::std::option::Option<usize> = {
                     {
                         let output: ::std::option::Option<usize> = ::bevy_image::Image::pixel_data_offset(
@@ -373,9 +373,9 @@ pub(crate) fn register_image_functions(world: &mut World) {
         .register_documented(
             "size",
             |_self: Ref<::bevy_image::Image>| {
-                let output: Val<::glam::UVec2> = {
+                let output: Val<::bevy_math::UVec2> = {
                     {
-                        let output: Val<::glam::UVec2> = ::bevy_image::Image::size(
+                        let output: Val<::bevy_math::UVec2> = ::bevy_image::Image::size(
                                 &_self,
                             )
                             .into();
@@ -390,9 +390,9 @@ pub(crate) fn register_image_functions(world: &mut World) {
         .register_documented(
             "size_f32",
             |_self: Ref<::bevy_image::Image>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_image::Image::size_f32(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_image::Image::size_f32(
                                 &_self,
                             )
                             .into();

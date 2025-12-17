@@ -590,8 +590,8 @@ pub(crate) fn register_temporal_jitter_functions(world: &mut World) {
             "jitter_projection",
             |
                 _self: Ref<::bevy_render::camera::TemporalJitter>,
-                mut clip_from_view: Mut<::glam::Mat4>,
-                view_size: Val<::glam::Vec2>|
+                mut clip_from_view: Mut<::bevy_math::Mat4>,
+                view_size: Val<::bevy_math::Vec2>|
             {
                 let output: () = {
                     {

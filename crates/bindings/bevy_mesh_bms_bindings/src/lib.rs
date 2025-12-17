@@ -281,7 +281,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "rotate_by",
-            |mut _self: Mut<::bevy_mesh::Mesh>, rotation: Val<::glam::Quat>| {
+            |mut _self: Mut<::bevy_mesh::Mesh>, rotation: Val<::bevy_math::Quat>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_mesh::Mesh::rotate_by(
@@ -299,7 +299,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "rotated_by",
-            |_self: Val<::bevy_mesh::Mesh>, rotation: Val<::glam::Quat>| {
+            |_self: Val<::bevy_mesh::Mesh>, rotation: Val<::bevy_math::Quat>| {
                 let output: Val<::bevy_mesh::Mesh> = {
                     {
                         let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::rotated_by(
@@ -317,7 +317,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "scale_by",
-            |mut _self: Mut<::bevy_mesh::Mesh>, scale: Val<::glam::Vec3>| {
+            |mut _self: Mut<::bevy_mesh::Mesh>, scale: Val<::bevy_math::Vec3>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_mesh::Mesh::scale_by(
@@ -335,7 +335,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "scaled_by",
-            |_self: Val<::bevy_mesh::Mesh>, scale: Val<::glam::Vec3>| {
+            |_self: Val<::bevy_mesh::Mesh>, scale: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_mesh::Mesh> = {
                     {
                         let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::scaled_by(
@@ -416,7 +416,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "translate_by",
-            |mut _self: Mut<::bevy_mesh::Mesh>, translation: Val<::glam::Vec3>| {
+            |mut _self: Mut<::bevy_mesh::Mesh>, translation: Val<::bevy_math::Vec3>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_mesh::Mesh::translate_by(
@@ -434,7 +434,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "translated_by",
-            |_self: Val<::bevy_mesh::Mesh>, translation: Val<::glam::Vec3>| {
+            |_self: Val<::bevy_mesh::Mesh>, translation: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_mesh::Mesh> = {
                     {
                         let output: Val<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::translated_by(
@@ -1514,7 +1514,11 @@ pub(crate) fn register_triangle_2_d_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |a: Val<::glam::Vec2>, b: Val<::glam::Vec2>, c: Val<::glam::Vec2>| {
+            |
+                a: Val<::bevy_math::Vec2>,
+                b: Val<::bevy_math::Vec2>,
+                c: Val<::bevy_math::Vec2>|
+            {
                 let output: Val<::bevy_mesh::Triangle2dMeshBuilder> = {
                     {
                         let output: Val<::bevy_mesh::Triangle2dMeshBuilder> = ::bevy_mesh::Triangle2dMeshBuilder::new(
@@ -2226,7 +2230,7 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "from_size",
-            |size: Val<::glam::Vec2>| {
+            |size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_mesh::PlaneMeshBuilder> = {
                     {
                         let output: Val<::bevy_mesh::PlaneMeshBuilder> = ::bevy_mesh::PlaneMeshBuilder::from_size(
@@ -2243,7 +2247,7 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |normal: Val<::bevy_math::Dir3>, size: Val<::glam::Vec2>| {
+            |normal: Val<::bevy_math::Dir3>, size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_mesh::PlaneMeshBuilder> = {
                     {
                         let output: Val<::bevy_mesh::PlaneMeshBuilder> = ::bevy_mesh::PlaneMeshBuilder::new(

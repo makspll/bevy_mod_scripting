@@ -353,9 +353,9 @@ pub(crate) fn register_camera_functions(world: &mut World) {
         .register_documented(
             "clip_from_view",
             |_self: Ref<::bevy_camera::Camera>| {
-                let output: Val<::glam::Mat4> = {
+                let output: Val<::bevy_math::Mat4> = {
                     {
-                        let output: Val<::glam::Mat4> = ::bevy_camera::Camera::clip_from_view(
+                        let output: Val<::bevy_math::Mat4> = ::bevy_camera::Camera::clip_from_view(
                                 &_self,
                             )
                             .into();
@@ -692,7 +692,7 @@ pub(crate) fn register_frustum_functions(world: &mut World) {
             |
                 _self: Ref<::bevy_camera::primitives::Frustum>,
                 aabb: Ref<::bevy_camera::primitives::Aabb>,
-                world_from_local: Ref<::glam::Affine3A>|
+                world_from_local: Ref<::bevy_math::Affine3A>|
             {
                 let output: bool = {
                     {
@@ -712,7 +712,7 @@ pub(crate) fn register_frustum_functions(world: &mut World) {
         )
         .register_documented(
             "from_clip_from_world",
-            |clip_from_world: Ref<::glam::Mat4>| {
+            |clip_from_world: Ref<::bevy_math::Mat4>| {
                 let output: Val<::bevy_camera::primitives::Frustum> = {
                     {
                         let output: Val<::bevy_camera::primitives::Frustum> = ::bevy_camera::primitives::Frustum::from_clip_from_world(
@@ -730,9 +730,9 @@ pub(crate) fn register_frustum_functions(world: &mut World) {
         .register_documented(
             "from_clip_from_world_custom_far",
             |
-                clip_from_world: Ref<::glam::Mat4>,
-                view_translation: Ref<::glam::Vec3>,
-                view_backward: Ref<::glam::Vec3>,
+                clip_from_world: Ref<::bevy_math::Mat4>,
+                view_translation: Ref<::bevy_math::Vec3>,
+                view_backward: Ref<::bevy_math::Vec3>,
                 far: f32|
             {
                 let output: Val<::bevy_camera::primitives::Frustum> = {
@@ -757,7 +757,7 @@ pub(crate) fn register_frustum_functions(world: &mut World) {
             |
                 _self: Ref<::bevy_camera::primitives::Frustum>,
                 aabb: Ref<::bevy_camera::primitives::Aabb>,
-                world_from_local: Ref<::glam::Affine3A>,
+                world_from_local: Ref<::bevy_math::Affine3A>,
                 intersect_near: bool,
                 intersect_far: bool|
             {
@@ -925,7 +925,7 @@ pub(crate) fn register_viewport_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clamp_to_size",
-            |mut _self: Mut<::bevy_camera::Viewport>, size: Val<::glam::UVec2>| {
+            |mut _self: Mut<::bevy_camera::Viewport>, size: Val<::bevy_math::UVec2>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_camera::Viewport::clamp_to_size(
@@ -1477,7 +1477,7 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
         )
         .register_documented(
             "from_min_max",
-            |minimum: Val<::glam::Vec3>, maximum: Val<::glam::Vec3>| {
+            |minimum: Val<::bevy_math::Vec3>, maximum: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_camera::primitives::Aabb> = {
                     {
                         let output: Val<::bevy_camera::primitives::Aabb> = ::bevy_camera::primitives::Aabb::from_min_max(
@@ -1496,9 +1496,9 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
         .register_documented(
             "max",
             |_self: Ref<::bevy_camera::primitives::Aabb>| {
-                let output: Val<::glam::Vec3A> = {
+                let output: Val<::bevy_math::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = ::bevy_camera::primitives::Aabb::max(
+                        let output: Val<::bevy_math::Vec3A> = ::bevy_camera::primitives::Aabb::max(
                                 &_self,
                             )
                             .into();
@@ -1513,9 +1513,9 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
         .register_documented(
             "min",
             |_self: Ref<::bevy_camera::primitives::Aabb>| {
-                let output: Val<::glam::Vec3A> = {
+                let output: Val<::bevy_math::Vec3A> = {
                     {
-                        let output: Val<::glam::Vec3A> = ::bevy_camera::primitives::Aabb::min(
+                        let output: Val<::bevy_math::Vec3A> = ::bevy_camera::primitives::Aabb::min(
                                 &_self,
                             )
                             .into();
@@ -1531,8 +1531,8 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
             "relative_radius",
             |
                 _self: Ref<::bevy_camera::primitives::Aabb>,
-                p_normal: Ref<::glam::Vec3A>,
-                world_from_local: Ref<::glam::Mat3A>|
+                p_normal: Ref<::bevy_math::Vec3A>,
+                world_from_local: Ref<::bevy_math::Mat3A>|
             {
                 let output: f32 = {
                     {

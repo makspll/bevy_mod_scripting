@@ -22,9 +22,9 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         .register_documented(
             "dpad",
             |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_input::gamepad::Gamepad::dpad(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::dpad(
                                 &_self,
                             )
                             .into();
@@ -81,9 +81,9 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         .register_documented(
             "left_stick",
             |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_input::gamepad::Gamepad::left_stick(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::left_stick(
                                 &_self,
                             )
                             .into();
@@ -136,9 +136,9 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         .register_documented(
             "right_stick",
             |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::glam::Vec2> = {
+                let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::glam::Vec2> = ::bevy_input::gamepad::Gamepad::right_stick(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::right_stick(
                                 &_self,
                             )
                             .into();
