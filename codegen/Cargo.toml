@@ -62,6 +62,7 @@ syn = { version = "2", features = ["parsing"], default-features = false }
 itertools = "0.12"
 chrono = "0.4"
 pretty_assertions = "1.3"
+regex = "1"
 
 [dependencies]
 crate_feature_graph = { workspace = true, features = ["dot_parser", "serde"] }
@@ -81,6 +82,7 @@ serde = { workspace = true, features = ["std"] }
 prettyplease = { workspace = true }
 convert_case = { workspace = true }
 chrono = { workspace = true }
+regex = { workspace = true }
 
 [build-dependencies]
 toml = "0.8"

@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -24,11 +24,10 @@ pub(crate) fn register_animation_node_type_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::graph::AnimationNodeType>| {
                 let output: Val<::bevy_animation::graph::AnimationNodeType> = {
                     {
-                        let output: Val<::bevy_animation::graph::AnimationNodeType> = <::bevy_animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::graph::AnimationNodeType = <::bevy_animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -54,10 +53,9 @@ pub(crate) fn register_animation_graph_handle_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_animation::graph::AnimationGraphHandle as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -70,11 +68,10 @@ pub(crate) fn register_animation_graph_handle_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::graph::AnimationGraphHandle>| {
                 let output: Val<::bevy_animation::graph::AnimationGraphHandle> = {
                     {
-                        let output: Val<::bevy_animation::graph::AnimationGraphHandle> = <::bevy_animation::graph::AnimationGraphHandle as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::graph::AnimationGraphHandle = <::bevy_animation::graph::AnimationGraphHandle as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -92,9 +89,8 @@ pub(crate) fn register_animation_graph_handle_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_animation::graph::AnimationGraphHandle as ::std::cmp::PartialEq<
                             ::bevy_animation::graph::AnimationGraphHandle,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -131,11 +127,10 @@ pub(crate) fn register_animation_clip_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::AnimationClip>| {
                 let output: Val<::bevy_animation::AnimationClip> = {
                     {
-                        let output: Val<::bevy_animation::AnimationClip> = <::bevy_animation::AnimationClip as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::AnimationClip = <::bevy_animation::AnimationClip as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -149,10 +144,9 @@ pub(crate) fn register_animation_clip_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_animation::AnimationClip::duration(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -166,11 +160,10 @@ pub(crate) fn register_animation_clip_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_animation::AnimationClip::set_duration(
-                                &mut _self,
-                                duration_sec,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(duration_sec),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -196,10 +189,9 @@ pub(crate) fn register_animation_player_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_animation::AnimationPlayer::all_finished(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -213,10 +205,9 @@ pub(crate) fn register_animation_player_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_animation::AnimationPlayer::all_paused(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -229,11 +220,10 @@ pub(crate) fn register_animation_player_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::AnimationPlayer>| {
                 let output: Val<::bevy_animation::AnimationPlayer> = {
                     {
-                        let output: Val<::bevy_animation::AnimationPlayer> = <::bevy_animation::AnimationPlayer as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::AnimationPlayer = <::bevy_animation::AnimationPlayer as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -250,11 +240,10 @@ pub(crate) fn register_animation_player_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_animation::AnimationPlayer as ::std::clone::Clone>::clone_from(
-                                &mut _self,
-                                &source,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(source),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -284,12 +273,11 @@ pub(crate) fn register_animation_graph_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_animation::graph::AnimationGraph::add_target_to_mask_group(
-                                &mut _self,
-                                target.into_inner(),
-                                mask_group,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(target),
+                            safe_transmute(mask_group),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -302,11 +290,10 @@ pub(crate) fn register_animation_graph_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::graph::AnimationGraph>| {
                 let output: Val<::bevy_animation::graph::AnimationGraph> = {
                     {
-                        let output: Val<::bevy_animation::graph::AnimationGraph> = <::bevy_animation::graph::AnimationGraph as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::graph::AnimationGraph = <::bevy_animation::graph::AnimationGraph as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -319,9 +306,8 @@ pub(crate) fn register_animation_graph_functions(world: &mut World) {
             || {
                 let output: Val<::bevy_animation::graph::AnimationGraph> = {
                     {
-                        let output: Val<::bevy_animation::graph::AnimationGraph> = ::bevy_animation::graph::AnimationGraph::new()
-                            .into();
-                        output
+                        let output: ::bevy_animation::graph::AnimationGraph = ::bevy_animation::graph::AnimationGraph::new();
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -347,10 +333,9 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_animation::AnimationTargetId as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -363,11 +348,10 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::AnimationTargetId>| {
                 let output: Val<::bevy_animation::AnimationTargetId> = {
                     {
-                        let output: Val<::bevy_animation::AnimationTargetId> = <::bevy_animation::AnimationTargetId as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::AnimationTargetId = <::bevy_animation::AnimationTargetId as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -385,9 +369,8 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_animation::AnimationTargetId as ::std::cmp::PartialEq<
                             ::bevy_animation::AnimationTargetId,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -400,11 +383,10 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
             |name: Ref<::bevy_ecs::name::Name>| {
                 let output: Val<::bevy_animation::AnimationTargetId> = {
                     {
-                        let output: Val<::bevy_animation::AnimationTargetId> = ::bevy_animation::AnimationTargetId::from_name(
-                                &name,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::AnimationTargetId = ::bevy_animation::AnimationTargetId::from_name(
+                            safe_transmute(name),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -429,11 +411,10 @@ pub(crate) fn register_animation_target_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::AnimationTarget>| {
                 let output: Val<::bevy_animation::AnimationTarget> = {
                     {
-                        let output: Val<::bevy_animation::AnimationTarget> = <::bevy_animation::AnimationTarget as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::AnimationTarget = <::bevy_animation::AnimationTarget as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -459,10 +440,9 @@ pub(crate) fn register_repeat_animation_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_animation::RepeatAnimation as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -475,11 +455,10 @@ pub(crate) fn register_repeat_animation_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::RepeatAnimation>| {
                 let output: Val<::bevy_animation::RepeatAnimation> = {
                     {
-                        let output: Val<::bevy_animation::RepeatAnimation> = <::bevy_animation::RepeatAnimation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::RepeatAnimation = <::bevy_animation::RepeatAnimation as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -497,9 +476,8 @@ pub(crate) fn register_repeat_animation_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_animation::RepeatAnimation as ::std::cmp::PartialEq<
                             ::bevy_animation::RepeatAnimation,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -524,11 +502,10 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::ActiveAnimation>| {
                 let output: Val<::bevy_animation::ActiveAnimation> = {
                     {
-                        let output: Val<::bevy_animation::ActiveAnimation> = <::bevy_animation::ActiveAnimation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::ActiveAnimation = <::bevy_animation::ActiveAnimation as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -542,10 +519,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: u32 = {
                     {
                         let output: u32 = ::bevy_animation::ActiveAnimation::completions(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -559,10 +535,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_animation::ActiveAnimation::elapsed(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -576,10 +551,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_animation::ActiveAnimation::is_finished(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -593,10 +567,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_animation::ActiveAnimation::is_paused(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -610,10 +583,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_animation::ActiveAnimation::is_playback_reversed(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -626,11 +598,10 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::ActiveAnimation>| {
                 let output: Val<::bevy_animation::RepeatAnimation> = {
                     {
-                        let output: Val<::bevy_animation::RepeatAnimation> = ::bevy_animation::ActiveAnimation::repeat_mode(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::RepeatAnimation = ::bevy_animation::ActiveAnimation::repeat_mode(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -644,10 +615,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_animation::ActiveAnimation::replay(
-                                &mut _self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -661,10 +631,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_animation::ActiveAnimation::seek_time(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -678,10 +647,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_animation::ActiveAnimation::speed(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -695,10 +663,9 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_animation::ActiveAnimation::weight(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -723,11 +690,10 @@ pub(crate) fn register_weights_curve_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::gltf_curves::WeightsCurve>| {
                 let output: Val<::bevy_animation::gltf_curves::WeightsCurve> = {
                     {
-                        let output: Val<::bevy_animation::gltf_curves::WeightsCurve> = <::bevy_animation::gltf_curves::WeightsCurve as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::gltf_curves::WeightsCurve = <::bevy_animation::gltf_curves::WeightsCurve as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -752,13 +718,10 @@ pub(crate) fn register_cubic_rotation_curve_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::gltf_curves::CubicRotationCurve>| {
                 let output: Val<::bevy_animation::gltf_curves::CubicRotationCurve> = {
                     {
-                        let output: Val<
-                            ::bevy_animation::gltf_curves::CubicRotationCurve,
-                        > = <::bevy_animation::gltf_curves::CubicRotationCurve as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::gltf_curves::CubicRotationCurve = <::bevy_animation::gltf_curves::CubicRotationCurve as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -783,11 +746,10 @@ pub(crate) fn register_animation_graph_node_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::graph::AnimationGraphNode>| {
                 let output: Val<::bevy_animation::graph::AnimationGraphNode> = {
                     {
-                        let output: Val<::bevy_animation::graph::AnimationGraphNode> = <::bevy_animation::graph::AnimationGraphNode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::graph::AnimationGraphNode = <::bevy_animation::graph::AnimationGraphNode as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -824,13 +786,10 @@ pub(crate) fn register_animation_transitions_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::transition::AnimationTransitions>| {
                 let output: Val<::bevy_animation::transition::AnimationTransitions> = {
                     {
-                        let output: Val<
-                            ::bevy_animation::transition::AnimationTransitions,
-                        > = <::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::transition::AnimationTransitions = <::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -847,11 +806,10 @@ pub(crate) fn register_animation_transitions_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone_from(
-                                &mut _self,
-                                &source,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(source),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -864,11 +822,8 @@ pub(crate) fn register_animation_transitions_functions(world: &mut World) {
             || {
                 let output: Val<::bevy_animation::transition::AnimationTransitions> = {
                     {
-                        let output: Val<
-                            ::bevy_animation::transition::AnimationTransitions,
-                        > = ::bevy_animation::transition::AnimationTransitions::new()
-                            .into();
-                        output
+                        let output: ::bevy_animation::transition::AnimationTransitions = ::bevy_animation::transition::AnimationTransitions::new();
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -893,13 +848,10 @@ pub(crate) fn register_animation_transition_functions(world: &mut World) {
             |_self: Ref<::bevy_animation::transition::AnimationTransition>| {
                 let output: Val<::bevy_animation::transition::AnimationTransition> = {
                     {
-                        let output: Val<
-                            ::bevy_animation::transition::AnimationTransition,
-                        > = <::bevy_animation::transition::AnimationTransition as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_animation::transition::AnimationTransition = <::bevy_animation::transition::AnimationTransition as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output

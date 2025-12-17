@@ -613,10 +613,11 @@ impl Xtasks {
         if ide_mode {
             clippy_args.push("--message-format=json");
         }
+        clippy_args.extend(["--all-targets", "--examples"]);
 
         let keep_going = std::env::var(XTASK_KEEP_GOING).is_ok();
         if !keep_going {
-            clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+            clippy_args.extend(vec!["--", "-D", "warnings"]);
         }
 
         run_workspace_command(
@@ -653,7 +654,6 @@ impl Xtasks {
                 settings.template_args.as_str(),
                 "--features",
                 settings.bevy_features.join(",").as_str(),
-                "-v",
             ],
             Some(&settings.bevy_dir),
             false,
@@ -682,7 +682,6 @@ impl Xtasks {
                 settings.template_args.as_str(),
                 "--features",
                 settings.bevy_features.join(",").as_str(),
-                "-v",
             ],
             Some(&settings.bevy_dir),
             false,

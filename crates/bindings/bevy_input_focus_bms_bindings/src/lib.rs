@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -25,10 +25,9 @@ pub(crate) fn register_input_focus_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::InputFocus::clear(
-                                &mut _self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -41,11 +40,10 @@ pub(crate) fn register_input_focus_functions(world: &mut World) {
             |_self: Ref<::bevy_input_focus::InputFocus>| {
                 let output: Val<::bevy_input_focus::InputFocus> = {
                     {
-                        let output: Val<::bevy_input_focus::InputFocus> = <::bevy_input_focus::InputFocus as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::InputFocus = <::bevy_input_focus::InputFocus as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -58,11 +56,10 @@ pub(crate) fn register_input_focus_functions(world: &mut World) {
             |entity: Val<::bevy_ecs::entity::Entity>| {
                 let output: Val<::bevy_input_focus::InputFocus> = {
                     {
-                        let output: Val<::bevy_input_focus::InputFocus> = ::bevy_input_focus::InputFocus::from_entity(
-                                entity.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::InputFocus = ::bevy_input_focus::InputFocus::from_entity(
+                            safe_transmute(entity),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -79,11 +76,10 @@ pub(crate) fn register_input_focus_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::InputFocus::set(
-                                &mut _self,
-                                entity.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(entity),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -108,11 +104,10 @@ pub(crate) fn register_input_focus_visible_functions(world: &mut World) {
             |_self: Ref<::bevy_input_focus::InputFocusVisible>| {
                 let output: Val<::bevy_input_focus::InputFocusVisible> = {
                     {
-                        let output: Val<::bevy_input_focus::InputFocusVisible> = <::bevy_input_focus::InputFocusVisible as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::InputFocusVisible = <::bevy_input_focus::InputFocusVisible as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -137,11 +132,10 @@ pub(crate) fn register_auto_focus_functions(world: &mut World) {
             |_self: Ref<::bevy_input_focus::AutoFocus>| {
                 let output: Val<::bevy_input_focus::AutoFocus> = {
                     {
-                        let output: Val<::bevy_input_focus::AutoFocus> = <::bevy_input_focus::AutoFocus as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::AutoFocus = <::bevy_input_focus::AutoFocus as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -174,13 +168,12 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::directional_navigation::DirectionalNavigationMap::add_edge(
-                                &mut _self,
-                                a.into_inner(),
-                                b.into_inner(),
-                                direction.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(direction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -201,13 +194,12 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::directional_navigation::DirectionalNavigationMap::add_symmetrical_edge(
-                                &mut _self,
-                                a.into_inner(),
-                                b.into_inner(),
-                                direction.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(direction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -225,10 +217,9 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::directional_navigation::DirectionalNavigationMap::clear(
-                                &mut _self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -247,13 +238,10 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
                     ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
                 > = {
                     {
-                        let output: Val<
-                            ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
-                        > = <::bevy_input_focus::directional_navigation::DirectionalNavigationMap as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::directional_navigation::DirectionalNavigationMap = <::bevy_input_focus::directional_navigation::DirectionalNavigationMap as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -275,9 +263,8 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_input_focus::directional_navigation::DirectionalNavigationMap as ::core::cmp::PartialEq<
                             ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -296,11 +283,10 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::directional_navigation::DirectionalNavigationMap::remove(
-                                &mut _self,
-                                entity.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(entity),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -319,11 +305,10 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::directional_navigation::DirectionalNavigationMap::remove_multiple(
-                                &mut _self,
-                                entities.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(entities),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -350,13 +335,10 @@ pub(crate) fn register_nav_neighbors_functions(world: &mut World) {
                     ::bevy_input_focus::directional_navigation::NavNeighbors,
                 > = {
                     {
-                        let output: Val<
-                            ::bevy_input_focus::directional_navigation::NavNeighbors,
-                        > = <::bevy_input_focus::directional_navigation::NavNeighbors as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::directional_navigation::NavNeighbors = <::bevy_input_focus::directional_navigation::NavNeighbors as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -374,9 +356,8 @@ pub(crate) fn register_nav_neighbors_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_input_focus::directional_navigation::NavNeighbors as ::core::cmp::PartialEq<
                             ::bevy_input_focus::directional_navigation::NavNeighbors,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -394,12 +375,11 @@ pub(crate) fn register_nav_neighbors_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_input_focus::directional_navigation::NavNeighbors::set(
-                                &mut _self,
-                                octant.into_inner(),
-                                entity.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(octant),
+                            safe_transmute(entity),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -425,10 +405,9 @@ pub(crate) fn register_tab_index_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_input_focus::tab_navigation::TabIndex as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -441,11 +420,10 @@ pub(crate) fn register_tab_index_functions(world: &mut World) {
             |_self: Ref<::bevy_input_focus::tab_navigation::TabIndex>| {
                 let output: Val<::bevy_input_focus::tab_navigation::TabIndex> = {
                     {
-                        let output: Val<::bevy_input_focus::tab_navigation::TabIndex> = <::bevy_input_focus::tab_navigation::TabIndex as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::tab_navigation::TabIndex = <::bevy_input_focus::tab_navigation::TabIndex as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -463,9 +441,8 @@ pub(crate) fn register_tab_index_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_input_focus::tab_navigation::TabIndex as ::core::cmp::PartialEq<
                             ::bevy_input_focus::tab_navigation::TabIndex,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -490,11 +467,10 @@ pub(crate) fn register_tab_group_functions(world: &mut World) {
             |_self: Ref<::bevy_input_focus::tab_navigation::TabGroup>| {
                 let output: Val<::bevy_input_focus::tab_navigation::TabGroup> = {
                     {
-                        let output: Val<::bevy_input_focus::tab_navigation::TabGroup> = <::bevy_input_focus::tab_navigation::TabGroup as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::tab_navigation::TabGroup = <::bevy_input_focus::tab_navigation::TabGroup as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -507,9 +483,8 @@ pub(crate) fn register_tab_group_functions(world: &mut World) {
             || {
                 let output: Val<::bevy_input_focus::tab_navigation::TabGroup> = {
                     {
-                        let output: Val<::bevy_input_focus::tab_navigation::TabGroup> = ::bevy_input_focus::tab_navigation::TabGroup::modal()
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::tab_navigation::TabGroup = ::bevy_input_focus::tab_navigation::TabGroup::modal();
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -522,11 +497,10 @@ pub(crate) fn register_tab_group_functions(world: &mut World) {
             |order: i32| {
                 let output: Val<::bevy_input_focus::tab_navigation::TabGroup> = {
                     {
-                        let output: Val<::bevy_input_focus::tab_navigation::TabGroup> = ::bevy_input_focus::tab_navigation::TabGroup::new(
-                                order,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_input_focus::tab_navigation::TabGroup = ::bevy_input_focus::tab_navigation::TabGroup::new(
+                            safe_transmute(order),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output

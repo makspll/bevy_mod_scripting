@@ -21,7 +21,7 @@ impl {{item.import_path}} {
         : {{ arg.proxy_ty -}},
         {%- endfor -%}
     ) -> {{ function.output.proxy_ty }} {
-        let output: {{ function.output.proxy_ty }} =
+        let output: {{ function.output.ty }} =
         {%- if function.from_trait_path -%}
         {{- function_call_expression(type=item.import_path, trait=function.from_trait_path, function=function.ident) -}}
         {%- else -%}
@@ -29,18 +29,10 @@ impl {{item.import_path}} {
         {%- endif -%}
         (
             {%- for arg in function.args -%}
-                {%- if arg.proxy_ty is matching("Ref.*")-%}
-                & {{ arg.ident | to_arg_pattern() -}}
-                {%- elif arg.proxy_ty is matching ("Mut.*")-%}
-                &mut {{ arg.ident | to_arg_pattern() -}}
-                {%- elif arg.proxy_ty is matching("Val.*")-%}
-                {{- arg.ident | to_arg_pattern() -}}.into_inner()
-                {%- else -%}
-                {{- arg.ident | to_arg_pattern() -}}
-                {%- endif -%}, 
+                safe_transmute({{arg.ident | to_arg_pattern() }}),
             {%- endfor -%}
-        ).into();
-        output
+        );
+        safe_transmute(output)
     }
 {% endfor %}     
 }

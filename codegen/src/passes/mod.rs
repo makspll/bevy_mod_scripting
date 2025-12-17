@@ -1,6 +1,6 @@
 use crate::{Args, BevyCtxt};
 
-mod cache_traits;
+mod cache_items;
 mod codegen;
 mod crawl_paths;
 mod find_methods_and_fields;
@@ -28,10 +28,10 @@ pub(crate) const FIND_METHODS_AND_FIELDS: Pass = Pass {
     cb: find_methods_and_fields::find_methods_and_fields,
 };
 
-pub(crate) const CACHE_TRAITS: Pass = Pass {
-    name: "Cache traits",
-    description: "Searching for necessary traits",
-    cb: cache_traits::cache_traits,
+pub(crate) const CACHE_ITEMS: Pass = Pass {
+    name: "Cache items",
+    description: "Searching for necessary traits and items",
+    cb: cache_items::cache_items,
 };
 
 pub(crate) const WRITE_META: Pass = Pass {
@@ -65,7 +65,7 @@ pub(crate) const CRAWL_PATHS: Pass = Pass {
 };
 
 pub(crate) const ALL_PASSES: [Pass; 8] = [
-    CACHE_TRAITS,
+    CACHE_ITEMS,
     CRAWL_PATHS, // paths needed in the reflect type finder step
     FIND_REFLECT_TYPES,
     FIND_TRAIT_IMPLS, // we have to do this before meta as we still filter some things here

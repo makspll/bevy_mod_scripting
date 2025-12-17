@@ -31,13 +31,13 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         // filter out types which have impls both ways
         let retaining = type_impl_of_trait(
             tcx,
-            ctxt.cached_traits.bms_from_script.unwrap(),
+            ctxt.cached_traits.bms_types.from_script,
             reflect_ty_did,
         )
         .is_empty()
             || type_impl_of_trait(
                 tcx,
-                ctxt.cached_traits.bms_into_script.unwrap(),
+                ctxt.cached_traits.bms_types.into_script,
                 reflect_ty_did,
             )
             .is_empty();

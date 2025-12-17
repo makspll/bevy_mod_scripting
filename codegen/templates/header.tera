@@ -4,7 +4,7 @@
 
 use bevy_mod_scripting_bindings::{
     ReflectReference, 
-    function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
+    function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}, glue::safe_transmute}
 };
 use bevy_ecs::{prelude::*};
 use bevy_app::{App, Plugin};

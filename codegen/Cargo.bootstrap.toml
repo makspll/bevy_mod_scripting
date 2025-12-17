@@ -5,13 +5,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+# {{ANALYZED_CRATE}}
 bevy_mod_scripting_bindings = { path = "{{BMS_BINDINGS_PATH}}" }
-bevy_reflect = { version = "0.17", features = [
-    "smol_str",
-    "glam",
-    "petgraph",
-    "smallvec",
-    "uuid",
-] }
+
+# bevy_reflect = { version = "0.17", features = [
+#     "smol_str",
+#     "glam",
+#     "petgraph",
+#     "smallvec",
+#     "uuid",
+# ] }
 
 [workspace]

@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -24,11 +24,10 @@ pub(crate) fn register_gltf_extras_functions(world: &mut World) {
             |_self: Ref<::bevy_gltf::GltfExtras>| {
                 let output: Val<::bevy_gltf::GltfExtras> = {
                     {
-                        let output: Val<::bevy_gltf::GltfExtras> = <::bevy_gltf::GltfExtras as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_gltf::GltfExtras = <::bevy_gltf::GltfExtras as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -53,11 +52,10 @@ pub(crate) fn register_gltf_scene_extras_functions(world: &mut World) {
             |_self: Ref<::bevy_gltf::GltfSceneExtras>| {
                 let output: Val<::bevy_gltf::GltfSceneExtras> = {
                     {
-                        let output: Val<::bevy_gltf::GltfSceneExtras> = <::bevy_gltf::GltfSceneExtras as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_gltf::GltfSceneExtras = <::bevy_gltf::GltfSceneExtras as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -82,11 +80,10 @@ pub(crate) fn register_gltf_mesh_extras_functions(world: &mut World) {
             |_self: Ref<::bevy_gltf::GltfMeshExtras>| {
                 let output: Val<::bevy_gltf::GltfMeshExtras> = {
                     {
-                        let output: Val<::bevy_gltf::GltfMeshExtras> = <::bevy_gltf::GltfMeshExtras as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_gltf::GltfMeshExtras = <::bevy_gltf::GltfMeshExtras as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -111,11 +108,10 @@ pub(crate) fn register_gltf_mesh_name_functions(world: &mut World) {
             |_self: Ref<::bevy_gltf::GltfMeshName>| {
                 let output: Val<::bevy_gltf::GltfMeshName> = {
                     {
-                        let output: Val<::bevy_gltf::GltfMeshName> = <::bevy_gltf::GltfMeshName as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_gltf::GltfMeshName = <::bevy_gltf::GltfMeshName as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -140,11 +136,10 @@ pub(crate) fn register_gltf_material_extras_functions(world: &mut World) {
             |_self: Ref<::bevy_gltf::GltfMaterialExtras>| {
                 let output: Val<::bevy_gltf::GltfMaterialExtras> = {
                     {
-                        let output: Val<::bevy_gltf::GltfMaterialExtras> = <::bevy_gltf::GltfMaterialExtras as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_gltf::GltfMaterialExtras = <::bevy_gltf::GltfMaterialExtras as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -169,11 +164,10 @@ pub(crate) fn register_gltf_material_name_functions(world: &mut World) {
             |_self: Ref<::bevy_gltf::GltfMaterialName>| {
                 let output: Val<::bevy_gltf::GltfMaterialName> = {
                     {
-                        let output: Val<::bevy_gltf::GltfMaterialName> = <::bevy_gltf::GltfMaterialName as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_gltf::GltfMaterialName = <::bevy_gltf::GltfMaterialName as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output

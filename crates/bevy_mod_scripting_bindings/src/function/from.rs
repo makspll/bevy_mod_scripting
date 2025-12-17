@@ -183,6 +183,7 @@ impl FromScript for ReflectReference {
 /// This can be used to retrieve a value out of a [`ScriptValue::Reference`] corresponding to the type `T`.
 /// You can also use this to return values from a script function to be allocated directly as a [`ScriptValue::Reference`].
 #[derive(Reflect)]
+#[repr(transparent)]
 pub struct Val<T>(pub T);
 
 #[profiling::all_functions]
@@ -253,6 +254,7 @@ impl<T: FromReflect> FromScript for Val<T> {
 ///
 /// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
 /// The script function calling mechanism will take care of releasing all accesses claimed during the function call.
+#[repr(transparent)]
 pub struct Ref<'w, T>(pub &'w T);
 
 impl<T> Deref for Ref<'_, T> {
@@ -314,6 +316,7 @@ impl<'a, T> From<&'a T> for Ref<'a, T> {
 ///
 /// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
 /// The [`ScriptFunction`] calling mechanism will take care of releasing all accesses claimed during the function call.
+#[repr(transparent)]
 pub struct Mut<'w, T>(pub &'w mut T);
 
 impl<T> Deref for Mut<'_, T> {

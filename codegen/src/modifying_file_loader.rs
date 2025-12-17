@@ -27,23 +27,16 @@ impl FileLoader for ModifyingFileLoader {
             );
             RealFileLoader.read_file(path).map(|mut f| {
                 // we make it pub so in case we are re-exporting this crate we won't run into private re-export issues
-                for (crate_, excluded_files) in &[
-                    ("bevy_reflect", vec!["crates/bevy_reflect/src/lib.rs"]),
-                    ("bevy_mod_scripting_bindings", vec![]),
-                ] {
-                    if !f.contains(&format!("extern crate {crate_}"))
-                        && !excluded_files
-                            .iter()
-                            .any(|s| path.to_str().unwrap().contains(s))
-                    {
-                        if f.contains(&format!("pub use {crate_}")) {
+                for krate in &["bevy_mod_scripting_bindings"] {
+                    if !f.contains(&format!("extern crate {krate}")) {
+                        if f.contains(&format!("pub use {krate}")) {
                             f.push_str(&format!(
-                                "#[allow(unused_extern_crates)] pub extern crate {crate_};"
+                                "#[allow(unused_extern_crates)] pub extern crate {krate};"
                             ));
                         } else {
                             // this causes issues in proc macros so let's make it private where we can
                             f.push_str(&format!(
-                                "#[allow(unused_extern_crates)] extern crate {crate_};"
+                                "#[allow(unused_extern_crates)] extern crate {krate};"
                             ));
                         }
                     }

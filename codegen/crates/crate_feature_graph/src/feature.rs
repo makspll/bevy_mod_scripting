@@ -17,6 +17,12 @@ use log::error;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CrateName(pub(crate) String);
 
+impl AsRef<str> for CrateName {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 impl<'a, T: Borrow<Package>> From<&'a T> for CrateName {
     fn from(pkg: &'a T) -> Self {
         CrateName(pkg.borrow().name.clone())
