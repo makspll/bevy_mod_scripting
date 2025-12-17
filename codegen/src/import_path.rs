@@ -1,8 +1,9 @@
-use indexmap::IndexMap;
+use crate_feature_graph::WorkspaceGraph;
+use indexmap::{IndexMap, IndexSet};
 use log::trace;
 use rustc_hir::{
     def::DefKind,
-    def_id::{CrateNum, DefId},
+    def_id::{CrateNum, DefId, LOCAL_CRATE},
 };
 use rustc_middle::ty::TyCtxt;
 
@@ -42,6 +43,7 @@ impl std::fmt::Debug for ImportPathElement {
 pub(crate) struct ImportPathFinder<'tcx> {
     pub(crate) tcx: TyCtxt<'tcx>,
     pub(crate) cache: IndexMap<DefId, Vec<Vec<ImportPathElement>>>,
+    pub(crate) crawled_crates: IndexSet<CrateNum>,
     pub(crate) include_private_paths: bool,
     pub(crate) import_path_processor: Option<Box<dyn Fn(&str) -> String>>,
 }
@@ -58,18 +60,59 @@ impl<'tcx> ImportPathFinder<'tcx> {
             cache: Default::default(),
             include_private_paths,
             import_path_processor,
+            crawled_crates: Default::default(),
         }
     }
 
-    pub(crate) fn crawl_crate(&mut self, crate_num: CrateNum) {
-        self.crawl_module(
-            crate_num.as_def_id(),
-            &[ImportPathElement::Crate(crate_num)],
-        );
-        // sort by length of path, shortest wins
-        self.cache.iter_mut().for_each(|(_, paths)| {
-            paths.sort_by_key(|a| a.len());
-        });
+    /// Sort the import paths according to some heuristics, so best ones are first
+    pub(crate) fn stable_sort(&mut self, graph: &WorkspaceGraph) {
+        for (_, values) in &mut self.cache {
+            values.sort_by_cached_key(|k| Self::path_score(k, graph, self.tcx));
+        }
+    }
+
+    pub(crate) fn crawled_items_in_crate(&self, krate: CrateNum) -> impl Iterator<Item = DefId> {
+        self.cache
+            .keys()
+            .filter_map(move |i| (i.krate == krate).then_some(*i))
+    }
+
+    /// Higher is worse
+    fn path_score(path: &[ImportPathElement], graph: &WorkspaceGraph, tcx: TyCtxt) -> usize {
+        let length_score = path.len();
+        // crate proximity score
+        let mut crate_proximity_score = 0;
+        if let Some(ImportPathElement::Crate(crate_num)) = path.first() {
+            let crate_name = tcx.crate_name(*crate_num);
+            let is_std_or_core = crate_name.as_str() == "std" || crate_name.as_str() == "core";
+            let not_in_workspace = !graph
+                .all_enabled_workspace_crates()
+                .iter()
+                .any(|c| c.as_ref() == crate_name.as_str());
+
+            let is_not_local_crate = if &LOCAL_CRATE != crate_num && !is_std_or_core {
+                10
+            } else {
+                0
+            };
+            let is_not_in_workspace = if not_in_workspace && !is_std_or_core {
+                10
+            } else {
+                0
+            };
+            crate_proximity_score = is_not_local_crate + is_not_in_workspace;
+        }
+        length_score + crate_proximity_score
+    }
+
+    pub(crate) fn ensure_crate_crawled(&mut self, crate_num: CrateNum) {
+        if !self.crawled_crates.contains(&crate_num) {
+            self.crawl_module(
+                crate_num.as_def_id(),
+                &[ImportPathElement::Crate(crate_num)],
+            );
+            self.crawled_crates.insert(crate_num);
+        }
     }
 
     fn crawl_module(&mut self, did: DefId, frontier: &[ImportPathElement]) {
