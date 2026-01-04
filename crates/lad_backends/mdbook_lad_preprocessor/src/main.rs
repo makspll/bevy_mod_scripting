@@ -4,9 +4,8 @@ use std::{env, fs::File, io, process::exit};
 use clap::{Arg, Command};
 use env_logger::Builder;
 use log::LevelFilter;
-use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use mdbook_lad_preprocessor::LADPreprocessor;
-
+use mdbook_preprocessor::Preprocessor;
 // use mdbook_lad_preprocessor::LADPreprocessor;
 
 fn init_logger() {
@@ -52,13 +51,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         };
 
-        if LADPreprocessor.supports_renderer(renderer) {
+        if LADPreprocessor.supports_renderer(renderer)? {
             exit(0)
         } else {
             exit(1)
         }
     } else {
-        let (ctx, book) = CmdPreprocessor::parse_input(io::stdin())?;
+        let (ctx, book) = mdbook_preprocessor::parse_input(io::stdin())?;
         let processed_book = LADPreprocessor.run(&ctx, book)?;
         serde_json::to_writer(io::stdout(), &processed_book)?;
         exit(0)

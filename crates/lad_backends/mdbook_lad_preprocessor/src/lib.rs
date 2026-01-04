@@ -3,9 +3,10 @@
 
 use std::sync::OnceLock;
 
-use mdbook::{
-    errors::Error,
-    preprocess::{Preprocessor, PreprocessorContext},
+use mdbook_preprocessor::{
+    Preprocessor, PreprocessorContext,
+    book::{Book, BookItem, Chapter},
+    errors::{self, Error},
 };
 use sections::{Section, SectionData};
 mod argument_visitor;
@@ -29,7 +30,7 @@ pub struct LADPreprocessor;
 
 impl LADPreprocessor {
     /// Checks if a chapter is a LAD file.
-    fn is_lad_file(chapter: &mdbook::book::Chapter) -> bool {
+    fn is_lad_file(chapter: &Chapter) -> bool {
         chapter
             .source_path
             .as_ref()
@@ -44,10 +45,10 @@ impl LADPreprocessor {
     /// and `chapter_index` is the index of the chapter among its siblings.
     fn process_lad_chapter(
         _context: &PreprocessorContext,
-        chapter: &mdbook::book::Chapter,
-        parent: Option<&mdbook::book::Chapter>,
+        chapter: &Chapter,
+        parent: Option<&Chapter>,
         chapter_index: usize,
-    ) -> Result<mdbook::book::Chapter, Error> {
+    ) -> Result<Chapter, Error> {
         let chapter_title = chapter.name.trim_end_matches(".lad.json").to_owned();
         let ladfile = ladfile::parse_lad_file(&chapter.content)
             .map_err(|e| Error::new(e).context("Failed to parse LAD file"))?;
@@ -84,29 +85,25 @@ impl Preprocessor for LADPreprocessor {
         "lad-preprocessor"
     }
 
-    fn run(
-        &self,
-        context: &mdbook::preprocess::PreprocessorContext,
-        mut book: mdbook::book::Book,
-    ) -> mdbook::errors::Result<mdbook::book::Book> {
+    fn run(&self, context: &PreprocessorContext, mut book: Book) -> errors::Result<Book> {
         let mut errors = Vec::new();
         let options = Options::from(context);
 
         log::debug!("Options: {options:?}");
         OPTIONS
             .set(options)
-            .map_err(|_| mdbook::errors::Error::msg("could not initialize options"))?;
+            .map_err(|_| errors::Error::msg("could not initialize options"))?;
 
         // first replace children in parents
         book.for_each_mut(|item| {
-            if let mdbook::BookItem::Chapter(parent) = item {
+            if let BookItem::Chapter(parent) = item {
                 // First, collect the indices and new chapters for LAD file chapters.
-                let replacements: Vec<(usize, mdbook::book::Chapter)> = parent
+                let replacements: Vec<(usize, Chapter)> = parent
                     .sub_items
                     .iter()
                     .enumerate()
                     .filter_map(|(idx, item)| {
-                        if let mdbook::BookItem::Chapter(chapter) = item
+                        if let BookItem::Chapter(chapter) = item
                             && LADPreprocessor::is_lad_file(chapter)
                         {
                             match LADPreprocessor::process_lad_chapter(
@@ -128,7 +125,7 @@ impl Preprocessor for LADPreprocessor {
 
                 // Then, apply the replacements.
                 for (idx, new_chapter) in replacements {
-                    if let mdbook::BookItem::Chapter(chapter) = &mut parent.sub_items[idx] {
+                    if let BookItem::Chapter(chapter) = &mut parent.sub_items[idx] {
                         *chapter = new_chapter;
                     }
                 }
@@ -137,7 +134,7 @@ impl Preprocessor for LADPreprocessor {
 
         // then try match items themselves
         book.for_each_mut(|item| {
-            if let mdbook::BookItem::Chapter(chapter) = item {
+            if let BookItem::Chapter(chapter) = item {
                 if !LADPreprocessor::is_lad_file(chapter) {
                     return;
                 }
@@ -148,7 +145,7 @@ impl Preprocessor for LADPreprocessor {
                     chapter
                         .number
                         .clone()
-                        .and_then(|n| n.0.last().map(|v| (*v) as usize))
+                        .and_then(|n| n.last().map(|v| (*v) as usize))
                         .unwrap_or_default(),
                 ) {
                     Ok(new_chapter) => new_chapter,
