@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -24,11 +24,10 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::UntypedHandle>| {
                 let output: Val<::bevy_asset::UntypedHandle> = {
                     {
-                        let output: Val<::bevy_asset::UntypedHandle> = <::bevy_asset::UntypedHandle as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::UntypedHandle = <::bevy_asset::UntypedHandle as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -46,9 +45,8 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_asset::UntypedHandle as ::core::cmp::PartialEq<
                             ::bevy_asset::UntypedHandle,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -61,11 +59,10 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::UntypedHandle>| {
                 let output: Val<::bevy_asset::UntypedAssetId> = {
                     {
-                        let output: Val<::bevy_asset::UntypedAssetId> = ::bevy_asset::UntypedHandle::id(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::UntypedAssetId = ::bevy_asset::UntypedHandle::id(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -78,11 +75,10 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::UntypedHandle>| {
                 let output: Val<::core::any::TypeId> = {
                     {
-                        let output: Val<::core::any::TypeId> = ::bevy_asset::UntypedHandle::type_id(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::core::any::TypeId = ::bevy_asset::UntypedHandle::type_id(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -107,11 +103,10 @@ pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::UntypedAssetId>| {
                 let output: Val<::bevy_asset::UntypedAssetId> = {
                     {
-                        let output: Val<::bevy_asset::UntypedAssetId> = <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::UntypedAssetId = <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -129,9 +124,8 @@ pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
                             ::bevy_asset::UntypedAssetId,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -144,11 +138,10 @@ pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::UntypedAssetId>| {
                 let output: Val<::core::any::TypeId> = {
                     {
-                        let output: Val<::core::any::TypeId> = ::bevy_asset::UntypedAssetId::type_id(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::core::any::TypeId = ::bevy_asset::UntypedAssetId::type_id(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -174,10 +167,9 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_asset::AssetIndex as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -190,11 +182,10 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::AssetIndex>| {
                 let output: Val<::bevy_asset::AssetIndex> = {
                     {
-                        let output: Val<::bevy_asset::AssetIndex> = <::bevy_asset::AssetIndex as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::AssetIndex = <::bevy_asset::AssetIndex as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -209,9 +200,8 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_asset::AssetIndex as ::core::cmp::PartialEq<
                             ::bevy_asset::AssetIndex,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -224,11 +214,10 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
             |bits: u64| {
                 let output: Val<::bevy_asset::AssetIndex> = {
                     {
-                        let output: Val<::bevy_asset::AssetIndex> = ::bevy_asset::AssetIndex::from_bits(
-                                bits,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::AssetIndex = ::bevy_asset::AssetIndex::from_bits(
+                            safe_transmute(bits),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -242,10 +231,9 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
                 let output: u64 = {
                     {
                         let output: u64 = ::bevy_asset::AssetIndex::to_bits(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -270,9 +258,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             || {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::all()
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::all();
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -286,10 +273,9 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_asset::RenderAssetUsages as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -302,9 +288,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::RenderAssetUsages>| {
                 let output: u8 = {
                     {
-                        let output: u8 = ::bevy_asset::RenderAssetUsages::bits(&_self)
-                            .into();
-                        output
+                        let output: u8 = ::bevy_asset::RenderAssetUsages::bits(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -317,11 +304,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             |_self: Ref<::bevy_asset::RenderAssetUsages>| {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = <::bevy_asset::RenderAssetUsages as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = <::bevy_asset::RenderAssetUsages as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -334,11 +320,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             |_self: Val<::bevy_asset::RenderAssetUsages>| {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::complement(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::complement(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -355,11 +340,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::contains(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -375,12 +359,11 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::difference(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::difference(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -393,9 +376,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             || {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::empty()
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::empty();
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -413,9 +395,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_asset::RenderAssetUsages as ::core::cmp::PartialEq<
                             ::bevy_asset::RenderAssetUsages,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -428,11 +409,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             |bits: u8| {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::from_bits_retain(
-                                bits,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::from_bits_retain(
+                            safe_transmute(bits),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -445,11 +425,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             |bits: u8| {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::from_bits_truncate(
-                                bits,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::from_bits_truncate(
+                            safe_transmute(bits),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -466,11 +445,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::insert(
-                                &mut _self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -486,12 +464,11 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::intersection(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::intersection(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -508,11 +485,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::intersects(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -526,10 +502,9 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::is_all(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -543,10 +518,9 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::is_empty(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -563,11 +537,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::remove(
-                                &mut _self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -585,12 +558,11 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::set(
-                                &mut _self,
-                                other.into_inner(),
-                                value,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -606,11 +578,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = <::bevy_asset::RenderAssetUsages as ::core::ops::Sub<
+                        let output: ::bevy_asset::RenderAssetUsages = <::bevy_asset::RenderAssetUsages as ::core::ops::Sub<
                             ::bevy_asset::RenderAssetUsages,
-                        >>::sub(_self.into_inner(), other.into_inner())
-                            .into();
-                        output
+                        >>::sub(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -626,12 +597,11 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::symmetric_difference(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::symmetric_difference(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -648,11 +618,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::toggle(
-                                &mut _self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -668,12 +637,11 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             {
                 let output: Val<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::union(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_asset::RenderAssetUsages = ::bevy_asset::RenderAssetUsages::union(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output

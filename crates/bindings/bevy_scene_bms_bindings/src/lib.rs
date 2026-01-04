@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -25,10 +25,9 @@ pub(crate) fn register_dynamic_scene_root_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_scene::DynamicSceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -41,11 +40,10 @@ pub(crate) fn register_dynamic_scene_root_functions(world: &mut World) {
             |_self: Ref<::bevy_scene::DynamicSceneRoot>| {
                 let output: Val<::bevy_scene::DynamicSceneRoot> = {
                     {
-                        let output: Val<::bevy_scene::DynamicSceneRoot> = <::bevy_scene::DynamicSceneRoot as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_scene::DynamicSceneRoot = <::bevy_scene::DynamicSceneRoot as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -63,9 +61,8 @@ pub(crate) fn register_dynamic_scene_root_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_scene::DynamicSceneRoot as ::std::cmp::PartialEq<
                             ::bevy_scene::DynamicSceneRoot,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -91,10 +88,9 @@ pub(crate) fn register_scene_root_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_scene::SceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -107,11 +103,10 @@ pub(crate) fn register_scene_root_functions(world: &mut World) {
             |_self: Ref<::bevy_scene::SceneRoot>| {
                 let output: Val<::bevy_scene::SceneRoot> = {
                     {
-                        let output: Val<::bevy_scene::SceneRoot> = <::bevy_scene::SceneRoot as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_scene::SceneRoot = <::bevy_scene::SceneRoot as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -126,9 +121,8 @@ pub(crate) fn register_scene_root_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_scene::SceneRoot as ::std::cmp::PartialEq<
                             ::bevy_scene::SceneRoot,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -154,10 +148,9 @@ pub(crate) fn register_scene_instance_ready_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_scene::SceneInstanceReady as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -170,11 +163,10 @@ pub(crate) fn register_scene_instance_ready_functions(world: &mut World) {
             |_self: Ref<::bevy_scene::SceneInstanceReady>| {
                 let output: Val<::bevy_scene::SceneInstanceReady> = {
                     {
-                        let output: Val<::bevy_scene::SceneInstanceReady> = <::bevy_scene::SceneInstanceReady as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_scene::SceneInstanceReady = <::bevy_scene::SceneInstanceReady as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -192,9 +184,8 @@ pub(crate) fn register_scene_instance_ready_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_scene::SceneInstanceReady as ::std::cmp::PartialEq<
                             ::bevy_scene::SceneInstanceReady,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -220,10 +211,9 @@ pub(crate) fn register_instance_id_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_scene::InstanceId as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -236,11 +226,10 @@ pub(crate) fn register_instance_id_functions(world: &mut World) {
             |_self: Ref<::bevy_scene::InstanceId>| {
                 let output: Val<::bevy_scene::InstanceId> = {
                     {
-                        let output: Val<::bevy_scene::InstanceId> = <::bevy_scene::InstanceId as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_scene::InstanceId = <::bevy_scene::InstanceId as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -255,9 +244,8 @@ pub(crate) fn register_instance_id_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_scene::InstanceId as ::std::cmp::PartialEq<
                             ::bevy_scene::InstanceId,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output

@@ -4,7 +4,7 @@ use cargo_metadata::camino::Utf8PathBuf;
 use crate_feature_graph::WorkspaceGraph;
 use indexmap::IndexMap;
 use log::debug;
-use rustc_hir::def_id::DefId;
+use rustc_hir::def_id::{CrateNum, DefId, DefIndex};
 use rustc_middle::ty::{AdtDef, TyCtxt};
 use serde::Serialize;
 
@@ -15,7 +15,7 @@ pub(crate) struct BevyCtxt<'tcx> {
     pub(crate) meta_loader: MetaLoader,
     pub(crate) reflect_types: IndexMap<DefId, GenerationCandidate<'tcx, AdtDef<'tcx>>>,
     pub(crate) excluded_reflect_types: Vec<GenerationCandidate<'tcx, Option<AdtDef<'tcx>>>>,
-    pub(crate) cached_traits: CachedTraits,
+    pub(crate) cached_traits: CachedItems,
     pub(crate) path_finder: ImportPathFinder<'tcx>,
     pub(crate) workspace: WorkspaceGraph,
 
@@ -65,11 +65,25 @@ pub(crate) const DEF_PATHS_BMS_FROM_SCRIPT: [&str; 2] =
 pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] =
     ["bevy_mod_scripting_bindings::IntoScript", "IntoScript"];
 
-pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
-    ["bevy_reflect::PartialReflect", "reflect::PartialReflect"];
+pub(crate) const DEF_PATHS_REFLECT: [&str; 2] = [
+    "bevy_reflect::reflect::PartialReflect",
+    "reflect::PartialReflect",
+];
 pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
-    "bevy_reflect::GetTypeRegistration",
+    "bevy_reflect::type_registry::GetTypeRegistration",
     "type_registry::GetTypeRegistration",
+];
+pub(crate) const DEF_PATHS_BMS_REF_WRAPPER: [&str; 2] = [
+    "bevy_mod_scripting_bindings::Ref",
+    "bevy_mod_scripting_bindings::function::Ref",
+];
+pub(crate) const DEF_PATHS_BMS_MUT_WRAPPER: [&str; 2] = [
+    "bevy_mod_scripting_bindings::Mut",
+    "bevy_mod_scripting_bindings::function::Mut",
+];
+pub(crate) const DEF_PATHS_BMS_VAL_WRAPPER: [&str; 2] = [
+    "bevy_mod_scripting_bindings::Val",
+    "bevy_mod_scripting_bindings::function::Val",
 ];
 
 /// A collection of traits which we search for in the codebase, some are included purely for the methods they provide,
@@ -95,42 +109,65 @@ pub(crate) const STD_OR_CORE_TRAITS: [&str; 13] = [
     "cmp::PartialOrd",
 ];
 
+pub(crate) struct BmsTypes {
+    #[allow(dead_code)]
+    pub bindings_crate: CrateNum,
+    pub into_script: DefId,
+    pub from_script: DefId,
+    pub ref_wrapper: DefId,
+    pub val_wrapper: DefId,
+    pub mut_wrapper: DefId,
+}
+
+pub(crate) struct BevyTypes {
+    #[allow(dead_code)]
+    pub reflect_crate: CrateNum,
+    pub reflect: DefId,
+    #[allow(dead_code)]
+    pub get_type_registration: DefId,
+}
+
+impl Default for BevyTypes {
+    fn default() -> Self {
+        Self {
+            reflect_crate: INVALID_CRATE_NUM,
+            reflect: INVALID_DEF_ID,
+            get_type_registration: INVALID_DEF_ID,
+        }
+    }
+}
+
+const INVALID_CRATE_NUM: CrateNum = CrateNum::from_u16(u16::MAX);
+const INVALID_DEF_ID: DefId = DefId {
+    index: DefIndex::from_u16(u16::MAX),
+    krate: INVALID_CRATE_NUM,
+};
+
+impl Default for BmsTypes {
+    fn default() -> Self {
+        Self {
+            bindings_crate: INVALID_CRATE_NUM,
+            into_script: INVALID_DEF_ID,
+            from_script: INVALID_DEF_ID,
+            ref_wrapper: INVALID_DEF_ID,
+            val_wrapper: INVALID_DEF_ID,
+            mut_wrapper: INVALID_DEF_ID,
+        }
+    }
+}
+
 /// A collection of common traits stored for quick access.
 #[derive(Default)]
-pub(crate) struct CachedTraits {
-    pub(crate) bms_into_script: Option<DefId>,
-    pub(crate) bms_from_script: Option<DefId>,
-    pub(crate) bevy_reflect_reflect: Option<DefId>,
-    pub(crate) bevy_reflect_get_type_registration: Option<DefId>,
+pub(crate) struct CachedItems {
+    pub(crate) bms_types: BmsTypes,
+    pub(crate) bevy_types: BevyTypes,
     /// Map from def_path_str to DefId of common std traits we work with
     /// these are the only trait impls from which we generate methods
     pub(crate) std_only_traits: HashMap<String, DefId>,
     pub(crate) std_or_core_traits: HashMap<String, DefId>,
 }
 
-impl CachedTraits {
-    pub(crate) fn missing_bms_traits(&self) -> Vec<&'static str> {
-        let mut missing = Vec::new();
-        if self.bms_into_script.is_none() {
-            missing.extend(DEF_PATHS_BMS_INTO_SCRIPT);
-        }
-        if self.bms_from_script.is_none() {
-            missing.extend(DEF_PATHS_BMS_FROM_SCRIPT);
-        }
-        missing
-    }
-
-    pub(crate) fn missing_bevy_traits(&self) -> Vec<&'static str> {
-        let mut missing = Vec::new();
-        if self.bevy_reflect_reflect.is_none() {
-            missing.extend(DEF_PATHS_REFLECT);
-        }
-        if self.bevy_reflect_get_type_registration.is_none() {
-            missing.extend(DEF_PATHS_GET_TYPE_REGISTRATION);
-        }
-        missing
-    }
-
+impl CachedItems {
     pub(crate) fn missing_std_traits(&self) -> Vec<String> {
         let mut missing = Vec::new();
         for trait_name in STD_ONLY_TRAITS {

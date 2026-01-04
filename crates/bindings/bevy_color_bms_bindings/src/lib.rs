@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -24,11 +24,10 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Color>| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = <::bevy_color::Color as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = <::bevy_color::Color as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -43,9 +42,8 @@ pub(crate) fn register_color_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Color as ::core::cmp::PartialEq<
                             ::bevy_color::Color,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -58,13 +56,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |hue: f32, saturation: f32, lightness: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::hsl(
-                                hue,
-                                saturation,
-                                lightness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::hsl(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(lightness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -77,14 +74,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |hue: f32, saturation: f32, lightness: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::hsla(
-                                hue,
-                                saturation,
-                                lightness,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::hsla(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(lightness),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -97,13 +93,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |hue: f32, saturation: f32, value: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::hsv(
-                                hue,
-                                saturation,
-                                value,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::hsv(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -116,14 +111,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |hue: f32, saturation: f32, value: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::hsva(
-                                hue,
-                                saturation,
-                                value,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::hsva(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(value),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -136,13 +130,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |hue: f32, whiteness: f32, blackness: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::hwb(
-                                hue,
-                                whiteness,
-                                blackness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::hwb(
+                            safe_transmute(hue),
+                            safe_transmute(whiteness),
+                            safe_transmute(blackness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -155,14 +148,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |hue: f32, whiteness: f32, blackness: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::hwba(
-                                hue,
-                                whiteness,
-                                blackness,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::hwba(
+                            safe_transmute(hue),
+                            safe_transmute(whiteness),
+                            safe_transmute(blackness),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -175,13 +167,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::lab(
-                                lightness,
-                                a,
-                                b,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::lab(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -194,14 +185,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::laba(
-                                lightness,
-                                a,
-                                b,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::laba(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -214,13 +204,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::lch(
-                                lightness,
-                                chroma,
-                                hue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::lch(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -233,14 +222,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::lcha(
-                                lightness,
-                                chroma,
-                                hue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::lcha(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -253,13 +241,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::linear_rgb(
-                                red,
-                                green,
-                                blue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::linear_rgb(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -272,14 +259,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::linear_rgba(
-                                red,
-                                green,
-                                blue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::linear_rgba(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -292,13 +278,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::oklab(
-                                lightness,
-                                a,
-                                b,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::oklab(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -311,14 +296,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::oklaba(
-                                lightness,
-                                a,
-                                b,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::oklaba(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -331,13 +315,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::oklch(
-                                lightness,
-                                chroma,
-                                hue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::oklch(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -350,14 +333,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::oklcha(
-                                lightness,
-                                chroma,
-                                hue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::oklcha(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -370,13 +352,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::srgb(
-                                red,
-                                green,
-                                blue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::srgb(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -389,11 +370,10 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |array: [f32; 3]| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::srgb_from_array(
-                                array,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::srgb_from_array(
+                            safe_transmute(array),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -406,13 +386,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |red: u8, green: u8, blue: u8| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::srgb_u8(
-                                red,
-                                green,
-                                blue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::srgb_u8(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -425,14 +404,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::srgba(
-                                red,
-                                green,
-                                blue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::srgba(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -445,14 +423,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |red: u8, green: u8, blue: u8, alpha: u8| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::srgba_u8(
-                                red,
-                                green,
-                                blue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::srgba_u8(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -465,11 +442,10 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Color>| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = ::bevy_color::Color::to_linear(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = ::bevy_color::Color::to_linear(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -482,11 +458,10 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Color>| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Color::to_srgba(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Color::to_srgba(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -499,13 +474,12 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |x: f32, y: f32, z: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::xyz(
-                                x,
-                                y,
-                                z,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::xyz(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -518,14 +492,13 @@ pub(crate) fn register_color_functions(world: &mut World) {
             |x: f32, y: f32, z: f32, alpha: f32| {
                 let output: Val<::bevy_color::Color> = {
                     {
-                        let output: Val<::bevy_color::Color> = ::bevy_color::Color::xyza(
-                                x,
-                                y,
-                                z,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Color = ::bevy_color::Color::xyza(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -550,11 +523,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>, rhs: Val<::bevy_color::Srgba>| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Add<
+                        let output: ::bevy_color::Srgba = <::bevy_color::Srgba as ::core::ops::Add<
                             ::bevy_color::Srgba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::add(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -567,11 +539,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Srgba>| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = <::bevy_color::Srgba as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -584,11 +555,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>, rhs: f32| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Div<
+                        let output: ::bevy_color::Srgba = <::bevy_color::Srgba as ::core::ops::Div<
                             f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::div(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -603,9 +573,8 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Srgba as ::core::cmp::PartialEq<
                             ::bevy_color::Srgba,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -618,9 +587,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |value: f32| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_color::Srgba::gamma_function(value)
-                            .into();
-                        output
+                        let output: f32 = ::bevy_color::Srgba::gamma_function(
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -634,10 +604,9 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_color::Srgba::gamma_function_inverse(
-                                value,
-                            )
-                            .into();
-                        output
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -650,11 +619,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>, rhs: f32| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Mul<
+                        let output: ::bevy_color::Srgba = <::bevy_color::Srgba as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -667,11 +635,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = <::bevy_color::Srgba as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -684,14 +651,13 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32, alpha: f32| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Srgba::new(
-                                red,
-                                green,
-                                blue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Srgba::new(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -704,13 +670,12 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Srgba::rgb(
-                                red,
-                                green,
-                                blue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Srgba::rgb(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -723,13 +688,12 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |r: u8, g: u8, b: u8| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Srgba::rgb_u8(
-                                r,
-                                g,
-                                b,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Srgba::rgb_u8(
+                            safe_transmute(r),
+                            safe_transmute(g),
+                            safe_transmute(b),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -742,14 +706,13 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |r: u8, g: u8, b: u8, a: u8| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Srgba::rgba_u8(
-                                r,
-                                g,
-                                b,
-                                a,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Srgba::rgba_u8(
+                            safe_transmute(r),
+                            safe_transmute(g),
+                            safe_transmute(b),
+                            safe_transmute(a),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -762,11 +725,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>, rhs: Val<::bevy_color::Srgba>| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Sub<
+                        let output: ::bevy_color::Srgba = <::bevy_color::Srgba as ::core::ops::Sub<
                             ::bevy_color::Srgba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::sub(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -780,10 +742,9 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
                 let output: ::std::string::String = {
                     {
                         let output: ::std::string::String = ::bevy_color::Srgba::to_hex(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -796,12 +757,11 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>, blue: f32| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Srgba::with_blue(
-                                _self.into_inner(),
-                                blue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Srgba::with_blue(
+                            safe_transmute(_self),
+                            safe_transmute(blue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -814,12 +774,11 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>, green: f32| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Srgba::with_green(
-                                _self.into_inner(),
-                                green,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Srgba::with_green(
+                            safe_transmute(_self),
+                            safe_transmute(green),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -832,12 +791,11 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Srgba>, red: f32| {
                 let output: Val<::bevy_color::Srgba> = {
                     {
-                        let output: Val<::bevy_color::Srgba> = ::bevy_color::Srgba::with_red(
-                                _self.into_inner(),
-                                red,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Srgba = ::bevy_color::Srgba::with_red(
+                            safe_transmute(_self),
+                            safe_transmute(red),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -862,11 +820,10 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>, rhs: Val<::bevy_color::LinearRgba>| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Add<
+                        let output: ::bevy_color::LinearRgba = <::bevy_color::LinearRgba as ::core::ops::Add<
                             ::bevy_color::LinearRgba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::add(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -879,9 +836,10 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Ref<::bevy_color::LinearRgba>| {
                 let output: u32 = {
                     {
-                        let output: u32 = ::bevy_color::LinearRgba::as_u32(&_self)
-                            .into();
-                        output
+                        let output: u32 = ::bevy_color::LinearRgba::as_u32(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -894,11 +852,10 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Ref<::bevy_color::LinearRgba>| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = <::bevy_color::LinearRgba as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -911,11 +868,10 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>, rhs: f32| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Div<
+                        let output: ::bevy_color::LinearRgba = <::bevy_color::LinearRgba as ::core::ops::Div<
                             f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::div(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -930,9 +886,8 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::LinearRgba as ::core::cmp::PartialEq<
                             ::bevy_color::LinearRgba,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -945,11 +900,10 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>, rhs: f32| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Mul<
+                        let output: ::bevy_color::LinearRgba = <::bevy_color::LinearRgba as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -962,11 +916,10 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = <::bevy_color::LinearRgba as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -979,14 +932,13 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32, alpha: f32| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::new(
-                                red,
-                                green,
-                                blue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = ::bevy_color::LinearRgba::new(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -999,13 +951,12 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |red: f32, green: f32, blue: f32| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::rgb(
-                                red,
-                                green,
-                                blue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = ::bevy_color::LinearRgba::rgb(
+                            safe_transmute(red),
+                            safe_transmute(green),
+                            safe_transmute(blue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1018,11 +969,10 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>, rhs: Val<::bevy_color::LinearRgba>| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Sub<
+                        let output: ::bevy_color::LinearRgba = <::bevy_color::LinearRgba as ::core::ops::Sub<
                             ::bevy_color::LinearRgba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::sub(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1035,12 +985,11 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>, blue: f32| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::with_blue(
-                                _self.into_inner(),
-                                blue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = ::bevy_color::LinearRgba::with_blue(
+                            safe_transmute(_self),
+                            safe_transmute(blue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1053,12 +1002,11 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>, green: f32| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::with_green(
-                                _self.into_inner(),
-                                green,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = ::bevy_color::LinearRgba::with_green(
+                            safe_transmute(_self),
+                            safe_transmute(green),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1071,12 +1019,11 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             |_self: Val<::bevy_color::LinearRgba>, red: f32| {
                 let output: Val<::bevy_color::LinearRgba> = {
                     {
-                        let output: Val<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::with_red(
-                                _self.into_inner(),
-                                red,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::LinearRgba = ::bevy_color::LinearRgba::with_red(
+                            safe_transmute(_self),
+                            safe_transmute(red),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1101,11 +1048,10 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Hsla>| {
                 let output: Val<::bevy_color::Hsla> = {
                     {
-                        let output: Val<::bevy_color::Hsla> = <::bevy_color::Hsla as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsla = <::bevy_color::Hsla as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1120,9 +1066,8 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Hsla as ::core::cmp::PartialEq<
                             ::bevy_color::Hsla,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1135,13 +1080,12 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
             |hue: f32, saturation: f32, lightness: f32| {
                 let output: Val<::bevy_color::Hsla> = {
                     {
-                        let output: Val<::bevy_color::Hsla> = ::bevy_color::Hsla::hsl(
-                                hue,
-                                saturation,
-                                lightness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsla = ::bevy_color::Hsla::hsl(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(lightness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1154,14 +1098,13 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
             |hue: f32, saturation: f32, lightness: f32, alpha: f32| {
                 let output: Val<::bevy_color::Hsla> = {
                     {
-                        let output: Val<::bevy_color::Hsla> = ::bevy_color::Hsla::new(
-                                hue,
-                                saturation,
-                                lightness,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsla = ::bevy_color::Hsla::new(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(lightness),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1174,11 +1117,10 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
             |index: u32| {
                 let output: Val<::bevy_color::Hsla> = {
                     {
-                        let output: Val<::bevy_color::Hsla> = ::bevy_color::Hsla::sequential_dispersed(
-                                index,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsla = ::bevy_color::Hsla::sequential_dispersed(
+                            safe_transmute(index),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1191,12 +1133,11 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
             |_self: Val<::bevy_color::Hsla>, lightness: f32| {
                 let output: Val<::bevy_color::Hsla> = {
                     {
-                        let output: Val<::bevy_color::Hsla> = ::bevy_color::Hsla::with_lightness(
-                                _self.into_inner(),
-                                lightness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsla = ::bevy_color::Hsla::with_lightness(
+                            safe_transmute(_self),
+                            safe_transmute(lightness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1209,12 +1150,11 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
             |_self: Val<::bevy_color::Hsla>, saturation: f32| {
                 let output: Val<::bevy_color::Hsla> = {
                     {
-                        let output: Val<::bevy_color::Hsla> = ::bevy_color::Hsla::with_saturation(
-                                _self.into_inner(),
-                                saturation,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsla = ::bevy_color::Hsla::with_saturation(
+                            safe_transmute(_self),
+                            safe_transmute(saturation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1239,11 +1179,10 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Hsva>| {
                 let output: Val<::bevy_color::Hsva> = {
                     {
-                        let output: Val<::bevy_color::Hsva> = <::bevy_color::Hsva as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsva = <::bevy_color::Hsva as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1258,9 +1197,8 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Hsva as ::core::cmp::PartialEq<
                             ::bevy_color::Hsva,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1273,13 +1211,12 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
             |hue: f32, saturation: f32, value: f32| {
                 let output: Val<::bevy_color::Hsva> = {
                     {
-                        let output: Val<::bevy_color::Hsva> = ::bevy_color::Hsva::hsv(
-                                hue,
-                                saturation,
-                                value,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsva = ::bevy_color::Hsva::hsv(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1292,14 +1229,13 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
             |hue: f32, saturation: f32, value: f32, alpha: f32| {
                 let output: Val<::bevy_color::Hsva> = {
                     {
-                        let output: Val<::bevy_color::Hsva> = ::bevy_color::Hsva::new(
-                                hue,
-                                saturation,
-                                value,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsva = ::bevy_color::Hsva::new(
+                            safe_transmute(hue),
+                            safe_transmute(saturation),
+                            safe_transmute(value),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1312,12 +1248,11 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
             |_self: Val<::bevy_color::Hsva>, saturation: f32| {
                 let output: Val<::bevy_color::Hsva> = {
                     {
-                        let output: Val<::bevy_color::Hsva> = ::bevy_color::Hsva::with_saturation(
-                                _self.into_inner(),
-                                saturation,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsva = ::bevy_color::Hsva::with_saturation(
+                            safe_transmute(_self),
+                            safe_transmute(saturation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1330,12 +1265,11 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
             |_self: Val<::bevy_color::Hsva>, value: f32| {
                 let output: Val<::bevy_color::Hsva> = {
                     {
-                        let output: Val<::bevy_color::Hsva> = ::bevy_color::Hsva::with_value(
-                                _self.into_inner(),
-                                value,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hsva = ::bevy_color::Hsva::with_value(
+                            safe_transmute(_self),
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1360,11 +1294,10 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Hwba>| {
                 let output: Val<::bevy_color::Hwba> = {
                     {
-                        let output: Val<::bevy_color::Hwba> = <::bevy_color::Hwba as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hwba = <::bevy_color::Hwba as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1379,9 +1312,8 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Hwba as ::core::cmp::PartialEq<
                             ::bevy_color::Hwba,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1394,13 +1326,12 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
             |hue: f32, whiteness: f32, blackness: f32| {
                 let output: Val<::bevy_color::Hwba> = {
                     {
-                        let output: Val<::bevy_color::Hwba> = ::bevy_color::Hwba::hwb(
-                                hue,
-                                whiteness,
-                                blackness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hwba = ::bevy_color::Hwba::hwb(
+                            safe_transmute(hue),
+                            safe_transmute(whiteness),
+                            safe_transmute(blackness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1413,14 +1344,13 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
             |hue: f32, whiteness: f32, blackness: f32, alpha: f32| {
                 let output: Val<::bevy_color::Hwba> = {
                     {
-                        let output: Val<::bevy_color::Hwba> = ::bevy_color::Hwba::new(
-                                hue,
-                                whiteness,
-                                blackness,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hwba = ::bevy_color::Hwba::new(
+                            safe_transmute(hue),
+                            safe_transmute(whiteness),
+                            safe_transmute(blackness),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1433,12 +1363,11 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Hwba>, blackness: f32| {
                 let output: Val<::bevy_color::Hwba> = {
                     {
-                        let output: Val<::bevy_color::Hwba> = ::bevy_color::Hwba::with_blackness(
-                                _self.into_inner(),
-                                blackness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hwba = ::bevy_color::Hwba::with_blackness(
+                            safe_transmute(_self),
+                            safe_transmute(blackness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1451,12 +1380,11 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Hwba>, whiteness: f32| {
                 let output: Val<::bevy_color::Hwba> = {
                     {
-                        let output: Val<::bevy_color::Hwba> = ::bevy_color::Hwba::with_whiteness(
-                                _self.into_inner(),
-                                whiteness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Hwba = ::bevy_color::Hwba::with_whiteness(
+                            safe_transmute(_self),
+                            safe_transmute(whiteness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1481,11 +1409,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Laba>, rhs: Val<::bevy_color::Laba>| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Add<
+                        let output: ::bevy_color::Laba = <::bevy_color::Laba as ::core::ops::Add<
                             ::bevy_color::Laba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::add(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1498,11 +1425,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Laba>| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = <::bevy_color::Laba as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Laba = <::bevy_color::Laba as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1515,11 +1441,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Laba>, rhs: f32| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Div<
+                        let output: ::bevy_color::Laba = <::bevy_color::Laba as ::core::ops::Div<
                             f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::div(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1534,9 +1459,8 @@ pub(crate) fn register_laba_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Laba as ::core::cmp::PartialEq<
                             ::bevy_color::Laba,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1549,13 +1473,12 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = ::bevy_color::Laba::lab(
-                                lightness,
-                                a,
-                                b,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Laba = ::bevy_color::Laba::lab(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1568,11 +1491,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Laba>, rhs: f32| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Mul<
+                        let output: ::bevy_color::Laba = <::bevy_color::Laba as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1585,11 +1507,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Laba>| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Laba = <::bevy_color::Laba as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1602,14 +1523,13 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32, alpha: f32| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = ::bevy_color::Laba::new(
-                                lightness,
-                                a,
-                                b,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Laba = ::bevy_color::Laba::new(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1622,11 +1542,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Laba>, rhs: Val<::bevy_color::Laba>| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Sub<
+                        let output: ::bevy_color::Laba = <::bevy_color::Laba as ::core::ops::Sub<
                             ::bevy_color::Laba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::sub(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1639,12 +1558,11 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Laba>, lightness: f32| {
                 let output: Val<::bevy_color::Laba> = {
                     {
-                        let output: Val<::bevy_color::Laba> = ::bevy_color::Laba::with_lightness(
-                                _self.into_inner(),
-                                lightness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Laba = ::bevy_color::Laba::with_lightness(
+                            safe_transmute(_self),
+                            safe_transmute(lightness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1669,11 +1587,10 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Lcha>| {
                 let output: Val<::bevy_color::Lcha> = {
                     {
-                        let output: Val<::bevy_color::Lcha> = <::bevy_color::Lcha as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Lcha = <::bevy_color::Lcha as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1688,9 +1605,8 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Lcha as ::core::cmp::PartialEq<
                             ::bevy_color::Lcha,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1703,13 +1619,12 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32| {
                 let output: Val<::bevy_color::Lcha> = {
                     {
-                        let output: Val<::bevy_color::Lcha> = ::bevy_color::Lcha::lch(
-                                lightness,
-                                chroma,
-                                hue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Lcha = ::bevy_color::Lcha::lch(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1722,14 +1637,13 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32, alpha: f32| {
                 let output: Val<::bevy_color::Lcha> = {
                     {
-                        let output: Val<::bevy_color::Lcha> = ::bevy_color::Lcha::new(
-                                lightness,
-                                chroma,
-                                hue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Lcha = ::bevy_color::Lcha::new(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1742,11 +1656,10 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
             |index: u32| {
                 let output: Val<::bevy_color::Lcha> = {
                     {
-                        let output: Val<::bevy_color::Lcha> = ::bevy_color::Lcha::sequential_dispersed(
-                                index,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Lcha = ::bevy_color::Lcha::sequential_dispersed(
+                            safe_transmute(index),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1759,12 +1672,11 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
             |_self: Val<::bevy_color::Lcha>, chroma: f32| {
                 let output: Val<::bevy_color::Lcha> = {
                     {
-                        let output: Val<::bevy_color::Lcha> = ::bevy_color::Lcha::with_chroma(
-                                _self.into_inner(),
-                                chroma,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Lcha = ::bevy_color::Lcha::with_chroma(
+                            safe_transmute(_self),
+                            safe_transmute(chroma),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1777,12 +1689,11 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
             |_self: Val<::bevy_color::Lcha>, lightness: f32| {
                 let output: Val<::bevy_color::Lcha> = {
                     {
-                        let output: Val<::bevy_color::Lcha> = ::bevy_color::Lcha::with_lightness(
-                                _self.into_inner(),
-                                lightness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Lcha = ::bevy_color::Lcha::with_lightness(
+                            safe_transmute(_self),
+                            safe_transmute(lightness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1807,11 +1718,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>, rhs: Val<::bevy_color::Oklaba>| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Add<
+                        let output: ::bevy_color::Oklaba = <::bevy_color::Oklaba as ::core::ops::Add<
                             ::bevy_color::Oklaba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::add(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1824,11 +1734,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Oklaba>| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklaba = <::bevy_color::Oklaba as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1841,11 +1750,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>, rhs: f32| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Div<
+                        let output: ::bevy_color::Oklaba = <::bevy_color::Oklaba as ::core::ops::Div<
                             f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::div(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1860,9 +1768,8 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Oklaba as ::core::cmp::PartialEq<
                             ::bevy_color::Oklaba,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1875,13 +1782,12 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = ::bevy_color::Oklaba::lab(
-                                lightness,
-                                a,
-                                b,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklaba = ::bevy_color::Oklaba::lab(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1894,11 +1800,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>, rhs: f32| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Mul<
+                        let output: ::bevy_color::Oklaba = <::bevy_color::Oklaba as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1911,11 +1816,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklaba = <::bevy_color::Oklaba as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1928,14 +1832,13 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |lightness: f32, a: f32, b: f32, alpha: f32| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = ::bevy_color::Oklaba::new(
-                                lightness,
-                                a,
-                                b,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklaba = ::bevy_color::Oklaba::new(
+                            safe_transmute(lightness),
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1948,11 +1851,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>, rhs: Val<::bevy_color::Oklaba>| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Sub<
+                        let output: ::bevy_color::Oklaba = <::bevy_color::Oklaba as ::core::ops::Sub<
                             ::bevy_color::Oklaba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::sub(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1965,12 +1867,11 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>, a: f32| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = ::bevy_color::Oklaba::with_a(
-                                _self.into_inner(),
-                                a,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklaba = ::bevy_color::Oklaba::with_a(
+                            safe_transmute(_self),
+                            safe_transmute(a),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1983,12 +1884,11 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>, b: f32| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = ::bevy_color::Oklaba::with_b(
-                                _self.into_inner(),
-                                b,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklaba = ::bevy_color::Oklaba::with_b(
+                            safe_transmute(_self),
+                            safe_transmute(b),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2001,12 +1901,11 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklaba>, lightness: f32| {
                 let output: Val<::bevy_color::Oklaba> = {
                     {
-                        let output: Val<::bevy_color::Oklaba> = ::bevy_color::Oklaba::with_lightness(
-                                _self.into_inner(),
-                                lightness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklaba = ::bevy_color::Oklaba::with_lightness(
+                            safe_transmute(_self),
+                            safe_transmute(lightness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2031,11 +1930,10 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Oklcha>| {
                 let output: Val<::bevy_color::Oklcha> = {
                     {
-                        let output: Val<::bevy_color::Oklcha> = <::bevy_color::Oklcha as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklcha = <::bevy_color::Oklcha as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2050,9 +1948,8 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Oklcha as ::core::cmp::PartialEq<
                             ::bevy_color::Oklcha,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2065,13 +1962,12 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32| {
                 let output: Val<::bevy_color::Oklcha> = {
                     {
-                        let output: Val<::bevy_color::Oklcha> = ::bevy_color::Oklcha::lch(
-                                lightness,
-                                chroma,
-                                hue,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklcha = ::bevy_color::Oklcha::lch(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2084,14 +1980,13 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
             |lightness: f32, chroma: f32, hue: f32, alpha: f32| {
                 let output: Val<::bevy_color::Oklcha> = {
                     {
-                        let output: Val<::bevy_color::Oklcha> = ::bevy_color::Oklcha::new(
-                                lightness,
-                                chroma,
-                                hue,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklcha = ::bevy_color::Oklcha::new(
+                            safe_transmute(lightness),
+                            safe_transmute(chroma),
+                            safe_transmute(hue),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2104,11 +1999,10 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
             |index: u32| {
                 let output: Val<::bevy_color::Oklcha> = {
                     {
-                        let output: Val<::bevy_color::Oklcha> = ::bevy_color::Oklcha::sequential_dispersed(
-                                index,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklcha = ::bevy_color::Oklcha::sequential_dispersed(
+                            safe_transmute(index),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2121,12 +2015,11 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklcha>, chroma: f32| {
                 let output: Val<::bevy_color::Oklcha> = {
                     {
-                        let output: Val<::bevy_color::Oklcha> = ::bevy_color::Oklcha::with_chroma(
-                                _self.into_inner(),
-                                chroma,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklcha = ::bevy_color::Oklcha::with_chroma(
+                            safe_transmute(_self),
+                            safe_transmute(chroma),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2139,12 +2032,11 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
             |_self: Val<::bevy_color::Oklcha>, lightness: f32| {
                 let output: Val<::bevy_color::Oklcha> = {
                     {
-                        let output: Val<::bevy_color::Oklcha> = ::bevy_color::Oklcha::with_lightness(
-                                _self.into_inner(),
-                                lightness,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Oklcha = ::bevy_color::Oklcha::with_lightness(
+                            safe_transmute(_self),
+                            safe_transmute(lightness),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2169,11 +2061,10 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>, rhs: Val<::bevy_color::Xyza>| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Add<
+                        let output: ::bevy_color::Xyza = <::bevy_color::Xyza as ::core::ops::Add<
                             ::bevy_color::Xyza,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::add(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2186,11 +2077,10 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Ref<::bevy_color::Xyza>| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Xyza = <::bevy_color::Xyza as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2203,11 +2093,10 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>, rhs: f32| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Div<
+                        let output: ::bevy_color::Xyza = <::bevy_color::Xyza as ::core::ops::Div<
                             f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::div(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2222,9 +2111,8 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_color::Xyza as ::core::cmp::PartialEq<
                             ::bevy_color::Xyza,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2237,11 +2125,10 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>, rhs: f32| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Mul<
+                        let output: ::bevy_color::Xyza = <::bevy_color::Xyza as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2254,11 +2141,10 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Xyza = <::bevy_color::Xyza as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2271,14 +2157,13 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |x: f32, y: f32, z: f32, alpha: f32| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = ::bevy_color::Xyza::new(
-                                x,
-                                y,
-                                z,
-                                alpha,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Xyza = ::bevy_color::Xyza::new(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                            safe_transmute(alpha),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2291,11 +2176,10 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>, rhs: Val<::bevy_color::Xyza>| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Sub<
+                        let output: ::bevy_color::Xyza = <::bevy_color::Xyza as ::core::ops::Sub<
                             ::bevy_color::Xyza,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::sub(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2308,12 +2192,11 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>, x: f32| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = ::bevy_color::Xyza::with_x(
-                                _self.into_inner(),
-                                x,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Xyza = ::bevy_color::Xyza::with_x(
+                            safe_transmute(_self),
+                            safe_transmute(x),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2326,12 +2209,11 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>, y: f32| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = ::bevy_color::Xyza::with_y(
-                                _self.into_inner(),
-                                y,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Xyza = ::bevy_color::Xyza::with_y(
+                            safe_transmute(_self),
+                            safe_transmute(y),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2344,12 +2226,11 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |_self: Val<::bevy_color::Xyza>, z: f32| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = ::bevy_color::Xyza::with_z(
-                                _self.into_inner(),
-                                z,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Xyza = ::bevy_color::Xyza::with_z(
+                            safe_transmute(_self),
+                            safe_transmute(z),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2362,13 +2243,12 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             |x: f32, y: f32, z: f32| {
                 let output: Val<::bevy_color::Xyza> = {
                     {
-                        let output: Val<::bevy_color::Xyza> = ::bevy_color::Xyza::xyz(
-                                x,
-                                y,
-                                z,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_color::Xyza = ::bevy_color::Xyza::xyz(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output

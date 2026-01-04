@@ -3,7 +3,7 @@ use std::{
     io::Write,
 };
 
-use log::info;
+use log::debug;
 use rustc_hir::def_id::LOCAL_CRATE;
 use tera::Context;
 
@@ -20,7 +20,7 @@ pub(crate) fn codegen(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
 
     // perform code gen using templates
     fs::create_dir_all(&args.output).unwrap();
-    info!("Writing code files to : {}", args.output);
+    debug!("Writing code files to : {}", args.output);
 
     let template_data = ctxt.template_context.as_ref().unwrap();
     let mut context = Context::from_serialize(template_data).unwrap();

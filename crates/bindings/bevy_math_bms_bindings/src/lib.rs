@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -24,11 +24,10 @@ pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
             |_self: Ref<::bevy_math::AspectRatio>| {
                 let output: Val<::bevy_math::AspectRatio> = {
                     {
-                        let output: Val<::bevy_math::AspectRatio> = <::bevy_math::AspectRatio as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::AspectRatio = <::bevy_math::AspectRatio as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -43,9 +42,8 @@ pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::AspectRatio as ::core::cmp::PartialEq<
                             ::bevy_math::AspectRatio,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -58,11 +56,10 @@ pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
             |_self: Ref<::bevy_math::AspectRatio>| {
                 let output: Val<::bevy_math::AspectRatio> = {
                     {
-                        let output: Val<::bevy_math::AspectRatio> = ::bevy_math::AspectRatio::inverse(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::AspectRatio = ::bevy_math::AspectRatio::inverse(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -75,9 +72,10 @@ pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
             |_self: Ref<::bevy_math::AspectRatio>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::AspectRatio::is_landscape(&_self)
-                            .into();
-                        output
+                        let output: bool = ::bevy_math::AspectRatio::is_landscape(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -90,9 +88,10 @@ pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
             |_self: Ref<::bevy_math::AspectRatio>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::AspectRatio::is_portrait(&_self)
-                            .into();
-                        output
+                        let output: bool = ::bevy_math::AspectRatio::is_portrait(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -105,9 +104,10 @@ pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
             |_self: Ref<::bevy_math::AspectRatio>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::AspectRatio::is_square(&_self)
-                            .into();
-                        output
+                        let output: bool = ::bevy_math::AspectRatio::is_square(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -120,8 +120,10 @@ pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
             |_self: Ref<::bevy_math::AspectRatio>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::AspectRatio::ratio(&_self).into();
-                        output
+                        let output: f32 = ::bevy_math::AspectRatio::ratio(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -147,10 +149,9 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_math::CompassOctant as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -163,11 +164,10 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
             |_self: Ref<::bevy_math::CompassOctant>| {
                 let output: Val<::bevy_math::CompassOctant> = {
                     {
-                        let output: Val<::bevy_math::CompassOctant> = <::bevy_math::CompassOctant as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::CompassOctant = <::bevy_math::CompassOctant as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -185,9 +185,8 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::CompassOctant as ::core::cmp::PartialEq<
                             ::bevy_math::CompassOctant,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -200,11 +199,10 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
             |_self: Val<::bevy_math::CompassOctant>| {
                 let output: Val<::bevy_math::CompassOctant> = {
                     {
-                        let output: Val<::bevy_math::CompassOctant> = <::bevy_math::CompassOctant as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::CompassOctant = <::bevy_math::CompassOctant as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -217,11 +215,10 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
             |_self: Ref<::bevy_math::CompassOctant>| {
                 let output: Val<::bevy_math::CompassOctant> = {
                     {
-                        let output: Val<::bevy_math::CompassOctant> = ::bevy_math::CompassOctant::opposite(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::CompassOctant = ::bevy_math::CompassOctant::opposite(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -235,10 +232,9 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
                 let output: usize = {
                     {
                         let output: usize = ::bevy_math::CompassOctant::to_index(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -264,10 +260,9 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_math::CompassQuadrant as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -280,11 +275,10 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
             |_self: Ref<::bevy_math::CompassQuadrant>| {
                 let output: Val<::bevy_math::CompassQuadrant> = {
                     {
-                        let output: Val<::bevy_math::CompassQuadrant> = <::bevy_math::CompassQuadrant as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::CompassQuadrant = <::bevy_math::CompassQuadrant as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -302,9 +296,8 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::CompassQuadrant as ::core::cmp::PartialEq<
                             ::bevy_math::CompassQuadrant,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -317,11 +310,10 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
             |_self: Val<::bevy_math::CompassQuadrant>| {
                 let output: Val<::bevy_math::CompassQuadrant> = {
                     {
-                        let output: Val<::bevy_math::CompassQuadrant> = <::bevy_math::CompassQuadrant as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::CompassQuadrant = <::bevy_math::CompassQuadrant as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -334,11 +326,10 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
             |_self: Ref<::bevy_math::CompassQuadrant>| {
                 let output: Val<::bevy_math::CompassQuadrant> = {
                     {
-                        let output: Val<::bevy_math::CompassQuadrant> = ::bevy_math::CompassQuadrant::opposite(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::CompassQuadrant = ::bevy_math::CompassQuadrant::opposite(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -352,10 +343,9 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
                 let output: usize = {
                     {
                         let output: usize = ::bevy_math::CompassQuadrant::to_index(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -380,11 +370,10 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry2d>| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = <::bevy_math::Isometry2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry2d = <::bevy_math::Isometry2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -399,9 +388,8 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Isometry2d as ::core::cmp::PartialEq<
                             ::bevy_math::Isometry2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -414,11 +402,10 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |rotation: Val<::bevy_math::Rot2>| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::from_rotation(
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry2d = ::bevy_math::Isometry2d::from_rotation(
+                            safe_transmute(rotation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -431,11 +418,10 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |translation: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::from_translation(
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry2d = ::bevy_math::Isometry2d::from_translation(
+                            safe_transmute(translation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -448,12 +434,11 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |x: f32, y: f32| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::from_xy(
-                                x,
-                                y,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry2d = ::bevy_math::Isometry2d::from_xy(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -466,11 +451,10 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry2d>| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::inverse(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry2d = ::bevy_math::Isometry2d::inverse(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -483,12 +467,11 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry2d>, rhs: Val<::bevy_math::Isometry2d>| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::inverse_mul(
-                                &_self,
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry2d = ::bevy_math::Isometry2d::inverse_mul(
+                            safe_transmute(_self),
+                            safe_transmute(rhs),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -501,12 +484,11 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry2d>, point: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Isometry2d::inverse_transform_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::Isometry2d::inverse_transform_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -519,11 +501,10 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::Isometry2d>, rhs: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = <::bevy_math::Isometry2d as ::core::ops::Mul<
+                        let output: ::bevy_math::Dir2 = <::bevy_math::Isometry2d as ::core::ops::Mul<
                             ::bevy_math::Dir2,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -536,11 +517,10 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::Isometry2d>, rhs: Val<::bevy_math::Isometry2d>| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = <::bevy_math::Isometry2d as ::core::ops::Mul<
+                        let output: ::bevy_math::Isometry2d = <::bevy_math::Isometry2d as ::core::ops::Mul<
                             ::bevy_math::Isometry2d,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -553,11 +533,10 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::Isometry2d>, rhs: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = <::bevy_math::Isometry2d as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec2 = <::bevy_math::Isometry2d as ::core::ops::Mul<
                             ::bevy_math::Vec2,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -570,12 +549,11 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |translation: Val<::bevy_math::Vec2>, rotation: Val<::bevy_math::Rot2>| {
                 let output: Val<::bevy_math::Isometry2d> = {
                     {
-                        let output: Val<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::new(
-                                translation.into_inner(),
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry2d = ::bevy_math::Isometry2d::new(
+                            safe_transmute(translation),
+                            safe_transmute(rotation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -588,12 +566,11 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry2d>, point: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Isometry2d::transform_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::Isometry2d::transform_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -618,11 +595,10 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry3d>| {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = <::bevy_math::Isometry3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry3d = <::bevy_math::Isometry3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -637,9 +613,8 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Isometry3d as ::core::cmp::PartialEq<
                             ::bevy_math::Isometry3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -652,11 +627,10 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |rotation: Val<::bevy_math::Quat>| {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = ::bevy_math::Isometry3d::from_rotation(
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry3d = ::bevy_math::Isometry3d::from_rotation(
+                            safe_transmute(rotation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -669,13 +643,12 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |x: f32, y: f32, z: f32| {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = ::bevy_math::Isometry3d::from_xyz(
-                                x,
-                                y,
-                                z,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry3d = ::bevy_math::Isometry3d::from_xyz(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -688,11 +661,10 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry3d>| {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = ::bevy_math::Isometry3d::inverse(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry3d = ::bevy_math::Isometry3d::inverse(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -705,12 +677,11 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Isometry3d>, rhs: Val<::bevy_math::Isometry3d>| {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = ::bevy_math::Isometry3d::inverse_mul(
-                                &_self,
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry3d = ::bevy_math::Isometry3d::inverse_mul(
+                            safe_transmute(_self),
+                            safe_transmute(rhs),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -723,11 +694,10 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::Isometry3d>, rhs: Val<::bevy_math::Dir3>| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = <::bevy_math::Isometry3d as ::core::ops::Mul<
+                        let output: ::bevy_math::Dir3 = <::bevy_math::Isometry3d as ::core::ops::Mul<
                             ::bevy_math::Dir3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -740,11 +710,10 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::Isometry3d>, rhs: Val<::bevy_math::Isometry3d>| {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = <::bevy_math::Isometry3d as ::core::ops::Mul<
+                        let output: ::bevy_math::Isometry3d = <::bevy_math::Isometry3d as ::core::ops::Mul<
                             ::bevy_math::Isometry3d,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -757,11 +726,10 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::Isometry3d>, rhs: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = <::bevy_math::Isometry3d as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec3 = <::bevy_math::Isometry3d as ::core::ops::Mul<
                             ::bevy_math::Vec3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -774,11 +742,10 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::Isometry3d>, rhs: Val<::bevy_math::Vec3A>| {
                 let output: Val<::bevy_math::Vec3A> = {
                     {
-                        let output: Val<::bevy_math::Vec3A> = <::bevy_math::Isometry3d as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec3A = <::bevy_math::Isometry3d as ::core::ops::Mul<
                             ::bevy_math::Vec3A,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -803,11 +770,10 @@ pub(crate) fn register_ray_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Ray2d>| {
                 let output: Val<::bevy_math::Ray2d> = {
                     {
-                        let output: Val<::bevy_math::Ray2d> = <::bevy_math::Ray2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Ray2d = <::bevy_math::Ray2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -822,9 +788,8 @@ pub(crate) fn register_ray_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Ray2d as ::core::cmp::PartialEq<
                             ::bevy_math::Ray2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -837,12 +802,11 @@ pub(crate) fn register_ray_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Ray2d>, distance: f32| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Ray2d::get_point(
-                                &_self,
-                                distance,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::Ray2d::get_point(
+                            safe_transmute(_self),
+                            safe_transmute(distance),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -860,12 +824,11 @@ pub(crate) fn register_ray_2_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::Ray2d::intersect_plane(
-                                &_self,
-                                plane_origin.into_inner(),
-                                plane.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(plane_origin),
+                            safe_transmute(plane),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -878,12 +841,11 @@ pub(crate) fn register_ray_2_d_functions(world: &mut World) {
             |origin: Val<::bevy_math::Vec2>, direction: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Ray2d> = {
                     {
-                        let output: Val<::bevy_math::Ray2d> = ::bevy_math::Ray2d::new(
-                                origin.into_inner(),
-                                direction.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Ray2d = ::bevy_math::Ray2d::new(
+                            safe_transmute(origin),
+                            safe_transmute(direction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -908,11 +870,10 @@ pub(crate) fn register_ray_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Ray3d>| {
                 let output: Val<::bevy_math::Ray3d> = {
                     {
-                        let output: Val<::bevy_math::Ray3d> = <::bevy_math::Ray3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Ray3d = <::bevy_math::Ray3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -927,9 +888,8 @@ pub(crate) fn register_ray_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Ray3d as ::core::cmp::PartialEq<
                             ::bevy_math::Ray3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -942,12 +902,11 @@ pub(crate) fn register_ray_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Ray3d>, distance: f32| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::Ray3d::get_point(
-                                &_self,
-                                distance,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::Ray3d::get_point(
+                            safe_transmute(_self),
+                            safe_transmute(distance),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -965,12 +924,11 @@ pub(crate) fn register_ray_3_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::Ray3d::intersect_plane(
-                                &_self,
-                                plane_origin.into_inner(),
-                                plane.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(plane_origin),
+                            safe_transmute(plane),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -983,12 +941,11 @@ pub(crate) fn register_ray_3_d_functions(world: &mut World) {
             |origin: Val<::bevy_math::Vec3>, direction: Val<::bevy_math::Dir3>| {
                 let output: Val<::bevy_math::Ray3d> = {
                     {
-                        let output: Val<::bevy_math::Ray3d> = ::bevy_math::Ray3d::new(
-                                origin.into_inner(),
-                                direction.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Ray3d = ::bevy_math::Ray3d::new(
+                            safe_transmute(origin),
+                            safe_transmute(direction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1014,11 +971,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::Rot2::angle_to(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1032,10 +988,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::Rot2::as_degrees(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1049,10 +1004,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::Rot2::as_radians(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1066,10 +1020,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::Rot2::as_turn_fraction(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1082,11 +1035,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rot2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = <::bevy_math::Rot2 as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = <::bevy_math::Rot2 as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1099,11 +1051,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |degrees: f32| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::degrees(
-                                degrees,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::degrees(
+                            safe_transmute(degrees),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1118,9 +1069,8 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Rot2 as ::core::cmp::PartialEq<
                             ::bevy_math::Rot2,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1133,11 +1083,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::fast_renormalize(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::fast_renormalize(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1150,12 +1099,11 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |sin: f32, cos: f32| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::from_sin_cos(
-                                sin,
-                                cos,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::from_sin_cos(
+                            safe_transmute(sin),
+                            safe_transmute(cos),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1168,11 +1116,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::inverse(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::inverse(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1186,10 +1133,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::Rot2::is_finite(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1202,9 +1148,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::Rot2::is_nan(_self.into_inner())
-                            .into();
-                        output
+                        let output: bool = ::bevy_math::Rot2::is_nan(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1218,10 +1165,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::Rot2::is_near_identity(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1235,10 +1181,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::Rot2::is_normalized(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1251,9 +1196,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::length(_self.into_inner())
-                            .into();
-                        output
+                        let output: f32 = ::bevy_math::Rot2::length(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1267,10 +1213,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::Rot2::length_recip(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1284,10 +1229,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::Rot2::length_squared(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1300,11 +1244,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>, direction: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = <::bevy_math::Rot2 as ::core::ops::Mul<
+                        let output: ::bevy_math::Dir2 = <::bevy_math::Rot2 as ::core::ops::Mul<
                             ::bevy_math::Dir2,
-                        >>::mul(_self.into_inner(), direction.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(direction));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1317,11 +1260,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>, rhs: Val<::bevy_math::Rot2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = <::bevy_math::Rot2 as ::core::ops::Mul<
+                        let output: ::bevy_math::Rot2 = <::bevy_math::Rot2 as ::core::ops::Mul<
                             ::bevy_math::Rot2,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1334,11 +1276,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>, rhs: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = <::bevy_math::Rot2 as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec2 = <::bevy_math::Rot2 as ::core::ops::Mul<
                             ::bevy_math::Vec2,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1351,13 +1292,12 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>, end: Val<::bevy_math::Rot2>, s: f32| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::nlerp(
-                                _self.into_inner(),
-                                end.into_inner(),
-                                s,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::nlerp(
+                            safe_transmute(_self),
+                            safe_transmute(end),
+                            safe_transmute(s),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1370,11 +1310,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::normalize(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::normalize(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1387,11 +1326,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |radians: f32| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::radians(
-                                radians,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::radians(
+                            safe_transmute(radians),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1405,10 +1343,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: (f32, f32) = {
                     {
                         let output: (f32, f32) = ::bevy_math::Rot2::sin_cos(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1421,13 +1358,12 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Rot2>, end: Val<::bevy_math::Rot2>, s: f32| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::slerp(
-                                _self.into_inner(),
-                                end.into_inner(),
-                                s,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::slerp(
+                            safe_transmute(_self),
+                            safe_transmute(end),
+                            safe_transmute(s),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1440,11 +1376,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |fraction: f32| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Rot2::turn_fraction(
-                                fraction,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Rot2::turn_fraction(
+                            safe_transmute(fraction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1469,11 +1404,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Dir2::as_vec2(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::Dir2::as_vec2(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1486,11 +1420,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = <::bevy_math::Dir2 as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = <::bevy_math::Dir2 as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1505,9 +1438,8 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Dir2 as ::core::cmp::PartialEq<
                             ::bevy_math::Dir2,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1520,11 +1452,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = ::bevy_math::Dir2::fast_renormalize(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = ::bevy_math::Dir2::fast_renormalize(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1537,12 +1468,11 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |x: f32, y: f32| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = ::bevy_math::Dir2::from_xy_unchecked(
-                                x,
-                                y,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = ::bevy_math::Dir2::from_xy_unchecked(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1555,11 +1485,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>, rhs: f32| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = <::bevy_math::Dir2 as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec2 = <::bevy_math::Dir2 as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1572,11 +1501,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = <::bevy_math::Dir2 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = <::bevy_math::Dir2 as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1589,11 +1517,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |value: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = ::bevy_math::Dir2::new_unchecked(
-                                value.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = ::bevy_math::Dir2::new_unchecked(
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1606,12 +1533,11 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>, other: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Dir2::rotation_from(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Dir2::rotation_from(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1624,11 +1550,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Dir2::rotation_from_x(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Dir2::rotation_from_x(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1641,11 +1566,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Dir2::rotation_from_y(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Dir2::rotation_from_y(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1658,12 +1582,11 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>, other: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Dir2::rotation_to(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Dir2::rotation_to(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1676,11 +1599,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Dir2::rotation_to_x(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Dir2::rotation_to_x(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1693,11 +1615,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>| {
                 let output: Val<::bevy_math::Rot2> = {
                     {
-                        let output: Val<::bevy_math::Rot2> = ::bevy_math::Dir2::rotation_to_y(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rot2 = ::bevy_math::Dir2::rotation_to_y(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1710,13 +1631,12 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir2>, rhs: Val<::bevy_math::Dir2>, s: f32| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = ::bevy_math::Dir2::slerp(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                                s,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = ::bevy_math::Dir2::slerp(
+                            safe_transmute(_self),
+                            safe_transmute(rhs),
+                            safe_transmute(s),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1741,11 +1661,10 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir3>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::Dir3::as_vec3(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::Dir3::as_vec3(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1758,11 +1677,10 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir3>| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = <::bevy_math::Dir3 as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3 = <::bevy_math::Dir3 as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1777,9 +1695,8 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Dir3 as ::core::cmp::PartialEq<
                             ::bevy_math::Dir3,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1792,11 +1709,10 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3>| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = ::bevy_math::Dir3::fast_renormalize(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3 = ::bevy_math::Dir3::fast_renormalize(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1809,13 +1725,12 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |x: f32, y: f32, z: f32| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = ::bevy_math::Dir3::from_xyz_unchecked(
-                                x,
-                                y,
-                                z,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3 = ::bevy_math::Dir3::from_xyz_unchecked(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1828,11 +1743,10 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3>, rhs: f32| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = <::bevy_math::Dir3 as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec3 = <::bevy_math::Dir3 as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1845,11 +1759,10 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3>| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = <::bevy_math::Dir3 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3 = <::bevy_math::Dir3 as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1862,11 +1775,10 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |value: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = ::bevy_math::Dir3::new_unchecked(
-                                value.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3 = ::bevy_math::Dir3::new_unchecked(
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1879,13 +1791,12 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3>, rhs: Val<::bevy_math::Dir3>, s: f32| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = ::bevy_math::Dir3::slerp(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                                s,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3 = ::bevy_math::Dir3::slerp(
+                            safe_transmute(_self),
+                            safe_transmute(rhs),
+                            safe_transmute(s),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1910,11 +1821,10 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir3A>| {
                 let output: Val<::bevy_math::Vec3A> = {
                     {
-                        let output: Val<::bevy_math::Vec3A> = ::bevy_math::Dir3A::as_vec3a(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3A = ::bevy_math::Dir3A::as_vec3a(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1927,11 +1837,10 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir3A>| {
                 let output: Val<::bevy_math::Dir3A> = {
                     {
-                        let output: Val<::bevy_math::Dir3A> = <::bevy_math::Dir3A as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3A = <::bevy_math::Dir3A as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1946,9 +1855,8 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Dir3A as ::core::cmp::PartialEq<
                             ::bevy_math::Dir3A,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1961,11 +1869,10 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3A>| {
                 let output: Val<::bevy_math::Dir3A> = {
                     {
-                        let output: Val<::bevy_math::Dir3A> = ::bevy_math::Dir3A::fast_renormalize(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3A = ::bevy_math::Dir3A::fast_renormalize(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1978,13 +1885,12 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |x: f32, y: f32, z: f32| {
                 let output: Val<::bevy_math::Dir3A> = {
                     {
-                        let output: Val<::bevy_math::Dir3A> = ::bevy_math::Dir3A::from_xyz_unchecked(
-                                x,
-                                y,
-                                z,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3A = ::bevy_math::Dir3A::from_xyz_unchecked(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -1997,11 +1903,10 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3A>, rhs: f32| {
                 let output: Val<::bevy_math::Vec3A> = {
                     {
-                        let output: Val<::bevy_math::Vec3A> = <::bevy_math::Dir3A as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec3A = <::bevy_math::Dir3A as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2014,11 +1919,10 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3A>| {
                 let output: Val<::bevy_math::Dir3A> = {
                     {
-                        let output: Val<::bevy_math::Dir3A> = <::bevy_math::Dir3A as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3A = <::bevy_math::Dir3A as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2031,11 +1935,10 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |value: Val<::bevy_math::Vec3A>| {
                 let output: Val<::bevy_math::Dir3A> = {
                     {
-                        let output: Val<::bevy_math::Dir3A> = ::bevy_math::Dir3A::new_unchecked(
-                                value.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3A = ::bevy_math::Dir3A::new_unchecked(
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2048,13 +1951,12 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir3A>, rhs: Val<::bevy_math::Dir3A>, s: f32| {
                 let output: Val<::bevy_math::Dir3A> = {
                     {
-                        let output: Val<::bevy_math::Dir3A> = ::bevy_math::Dir3A::slerp(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                                s,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3A = ::bevy_math::Dir3A::slerp(
+                            safe_transmute(_self),
+                            safe_transmute(rhs),
+                            safe_transmute(s),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2079,11 +1981,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::IRect::as_rect(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::IRect::as_rect(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2096,11 +1997,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::IRect::as_urect(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::IRect::as_urect(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2114,10 +2014,9 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_math::IRect as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2130,11 +2029,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::IVec2> = {
                     {
-                        let output: Val<::bevy_math::IVec2> = ::bevy_math::IRect::center(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IVec2 = ::bevy_math::IRect::center(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2147,11 +2045,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = <::bevy_math::IRect as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = <::bevy_math::IRect as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2165,11 +2062,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::IRect::contains(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2184,9 +2080,8 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::IRect as ::core::cmp::PartialEq<
                             ::bevy_math::IRect,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2199,12 +2094,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |origin: Val<::bevy_math::IVec2>, half_size: Val<::bevy_math::IVec2>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::from_center_half_size(
-                                origin.into_inner(),
-                                half_size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::from_center_half_size(
+                            safe_transmute(origin),
+                            safe_transmute(half_size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2217,12 +2111,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |origin: Val<::bevy_math::IVec2>, size: Val<::bevy_math::IVec2>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::from_center_size(
-                                origin.into_inner(),
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::from_center_size(
+                            safe_transmute(origin),
+                            safe_transmute(size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2235,12 +2128,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |p0: Val<::bevy_math::IVec2>, p1: Val<::bevy_math::IVec2>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::from_corners(
-                                p0.into_inner(),
-                                p1.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::from_corners(
+                            safe_transmute(p0),
+                            safe_transmute(p1),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2253,11 +2145,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::IVec2> = {
                     {
-                        let output: Val<::bevy_math::IVec2> = ::bevy_math::IRect::half_size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IVec2 = ::bevy_math::IRect::half_size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2270,8 +2161,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: i32 = {
                     {
-                        let output: i32 = ::bevy_math::IRect::height(&_self).into();
-                        output
+                        let output: i32 = ::bevy_math::IRect::height(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2284,12 +2177,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>, expansion: i32| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::inflate(
-                                &_self,
-                                expansion,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::inflate(
+                            safe_transmute(_self),
+                            safe_transmute(expansion),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2302,12 +2194,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>, other: Val<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::intersect(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::intersect(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2320,8 +2211,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::IRect::is_empty(&_self).into();
-                        output
+                        let output: bool = ::bevy_math::IRect::is_empty(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2334,14 +2227,13 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |x0: i32, y0: i32, x1: i32, y1: i32| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::new(
-                                x0,
-                                y0,
-                                x1,
-                                y1,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::new(
+                            safe_transmute(x0),
+                            safe_transmute(y0),
+                            safe_transmute(x1),
+                            safe_transmute(y1),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2354,11 +2246,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::IVec2> = {
                     {
-                        let output: Val<::bevy_math::IVec2> = ::bevy_math::IRect::size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IVec2 = ::bevy_math::IRect::size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2371,12 +2262,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>, other: Val<::bevy_math::IRect>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::union(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::union(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2389,12 +2279,11 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>, other: Val<::bevy_math::IVec2>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::IRect::union_point(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::IRect::union_point(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2407,8 +2296,10 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::IRect>| {
                 let output: i32 = {
                     {
-                        let output: i32 = ::bevy_math::IRect::width(&_self).into();
-                        output
+                        let output: i32 = ::bevy_math::IRect::width(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2433,11 +2324,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::Rect::as_irect(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::Rect::as_irect(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2450,11 +2340,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::Rect::as_urect(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::Rect::as_urect(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2467,11 +2356,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Rect::center(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::Rect::center(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2484,11 +2372,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = <::bevy_math::Rect as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = <::bevy_math::Rect as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2502,11 +2389,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::Rect::contains(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2521,9 +2407,8 @@ pub(crate) fn register_rect_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Rect as ::core::cmp::PartialEq<
                             ::bevy_math::Rect,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2536,12 +2421,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |origin: Val<::bevy_math::Vec2>, half_size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::from_center_half_size(
-                                origin.into_inner(),
-                                half_size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::from_center_half_size(
+                            safe_transmute(origin),
+                            safe_transmute(half_size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2554,12 +2438,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |origin: Val<::bevy_math::Vec2>, size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::from_center_size(
-                                origin.into_inner(),
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::from_center_size(
+                            safe_transmute(origin),
+                            safe_transmute(size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2572,12 +2455,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |p0: Val<::bevy_math::Vec2>, p1: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::from_corners(
-                                p0.into_inner(),
-                                p1.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::from_corners(
+                            safe_transmute(p0),
+                            safe_transmute(p1),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2590,11 +2472,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Rect::half_size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::Rect::half_size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2607,8 +2488,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rect::height(&_self).into();
-                        output
+                        let output: f32 = ::bevy_math::Rect::height(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2621,12 +2504,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>, expansion: f32| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::inflate(
-                                &_self,
-                                expansion,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::inflate(
+                            safe_transmute(_self),
+                            safe_transmute(expansion),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2639,12 +2521,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>, other: Val<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::intersect(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::intersect(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2657,8 +2538,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::Rect::is_empty(&_self).into();
-                        output
+                        let output: bool = ::bevy_math::Rect::is_empty(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2671,14 +2554,13 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |x0: f32, y0: f32, x1: f32, y1: f32| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::new(
-                                x0,
-                                y0,
-                                x1,
-                                y1,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::new(
+                            safe_transmute(x0),
+                            safe_transmute(y0),
+                            safe_transmute(x1),
+                            safe_transmute(y1),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2691,12 +2573,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>, other: Val<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::normalize(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::normalize(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2709,11 +2590,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Rect::size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::Rect::size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2726,12 +2606,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>, other: Val<::bevy_math::Rect>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::union(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::union(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2744,12 +2623,11 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>, other: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::Rect::union_point(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::Rect::union_point(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2762,8 +2640,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Rect>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rect::width(&_self).into();
-                        output
+                        let output: f32 = ::bevy_math::Rect::width(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2788,11 +2668,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: Val<::bevy_math::IRect> = {
                     {
-                        let output: Val<::bevy_math::IRect> = ::bevy_math::URect::as_irect(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::IRect = ::bevy_math::URect::as_irect(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2805,11 +2684,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: Val<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_math::URect::as_rect(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Rect = ::bevy_math::URect::as_rect(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2823,10 +2701,9 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_math::URect as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2839,11 +2716,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: Val<::bevy_math::UVec2> = {
                     {
-                        let output: Val<::bevy_math::UVec2> = ::bevy_math::URect::center(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::UVec2 = ::bevy_math::URect::center(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2856,11 +2732,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = <::bevy_math::URect as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = <::bevy_math::URect as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2874,11 +2749,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::URect::contains(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2893,9 +2767,8 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::URect as ::core::cmp::PartialEq<
                             ::bevy_math::URect,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2908,12 +2781,11 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |origin: Val<::bevy_math::UVec2>, half_size: Val<::bevy_math::UVec2>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::from_center_half_size(
-                                origin.into_inner(),
-                                half_size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::from_center_half_size(
+                            safe_transmute(origin),
+                            safe_transmute(half_size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2926,12 +2798,11 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |origin: Val<::bevy_math::UVec2>, size: Val<::bevy_math::UVec2>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::from_center_size(
-                                origin.into_inner(),
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::from_center_size(
+                            safe_transmute(origin),
+                            safe_transmute(size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2944,12 +2815,11 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |p0: Val<::bevy_math::UVec2>, p1: Val<::bevy_math::UVec2>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::from_corners(
-                                p0.into_inner(),
-                                p1.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::from_corners(
+                            safe_transmute(p0),
+                            safe_transmute(p1),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2962,11 +2832,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: Val<::bevy_math::UVec2> = {
                     {
-                        let output: Val<::bevy_math::UVec2> = ::bevy_math::URect::half_size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::UVec2 = ::bevy_math::URect::half_size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2979,8 +2848,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: u32 = {
                     {
-                        let output: u32 = ::bevy_math::URect::height(&_self).into();
-                        output
+                        let output: u32 = ::bevy_math::URect::height(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -2993,12 +2864,11 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>, expansion: i32| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::inflate(
-                                &_self,
-                                expansion,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::inflate(
+                            safe_transmute(_self),
+                            safe_transmute(expansion),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3011,12 +2881,11 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>, other: Val<::bevy_math::URect>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::intersect(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::intersect(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3029,8 +2898,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::URect::is_empty(&_self).into();
-                        output
+                        let output: bool = ::bevy_math::URect::is_empty(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3043,14 +2914,13 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |x0: u32, y0: u32, x1: u32, y1: u32| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::new(
-                                x0,
-                                y0,
-                                x1,
-                                y1,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::new(
+                            safe_transmute(x0),
+                            safe_transmute(y0),
+                            safe_transmute(x1),
+                            safe_transmute(y1),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3063,11 +2933,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: Val<::bevy_math::UVec2> = {
                     {
-                        let output: Val<::bevy_math::UVec2> = ::bevy_math::URect::size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::UVec2 = ::bevy_math::URect::size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3080,12 +2949,11 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>, other: Val<::bevy_math::URect>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::union(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::union(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3098,12 +2966,11 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>, other: Val<::bevy_math::UVec2>| {
                 let output: Val<::bevy_math::URect> = {
                     {
-                        let output: Val<::bevy_math::URect> = ::bevy_math::URect::union_point(
-                                &_self,
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::URect = ::bevy_math::URect::union_point(
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3116,8 +2983,10 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
             |_self: Ref<::bevy_math::URect>| {
                 let output: u32 = {
                     {
-                        let output: u32 = ::bevy_math::URect::width(&_self).into();
-                        output
+                        let output: u32 = ::bevy_math::URect::width(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3154,11 +3023,10 @@ pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::Aabb2d>| {
                 let output: Val<::bevy_math::bounding::BoundingCircle> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingCircle> = ::bevy_math::bounding::Aabb2d::bounding_circle(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingCircle = ::bevy_math::bounding::Aabb2d::bounding_circle(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3171,11 +3039,10 @@ pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::Aabb2d>| {
                 let output: Val<::bevy_math::bounding::Aabb2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::Aabb2d> = <::bevy_math::bounding::Aabb2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::Aabb2d = <::bevy_math::bounding::Aabb2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3188,12 +3055,11 @@ pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::Aabb2d>, point: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::bounding::Aabb2d::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::bounding::Aabb2d::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3211,9 +3077,8 @@ pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::bounding::Aabb2d as ::core::cmp::PartialEq<
                             ::bevy_math::bounding::Aabb2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3226,12 +3091,11 @@ pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
             |center: Val<::bevy_math::Vec2>, half_size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::bounding::Aabb2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::Aabb2d> = ::bevy_math::bounding::Aabb2d::new(
-                                center.into_inner(),
-                                half_size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::Aabb2d = ::bevy_math::bounding::Aabb2d::new(
+                            safe_transmute(center),
+                            safe_transmute(half_size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3256,11 +3120,10 @@ pub(crate) fn register_bounding_circle_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::BoundingCircle>| {
                 let output: Val<::bevy_math::bounding::Aabb2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::Aabb2d> = ::bevy_math::bounding::BoundingCircle::aabb_2d(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::Aabb2d = ::bevy_math::bounding::BoundingCircle::aabb_2d(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3273,11 +3136,10 @@ pub(crate) fn register_bounding_circle_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::BoundingCircle>| {
                 let output: Val<::bevy_math::bounding::BoundingCircle> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingCircle> = <::bevy_math::bounding::BoundingCircle as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingCircle = <::bevy_math::bounding::BoundingCircle as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3293,12 +3155,11 @@ pub(crate) fn register_bounding_circle_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::bounding::BoundingCircle::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::bounding::BoundingCircle::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3316,9 +3177,8 @@ pub(crate) fn register_bounding_circle_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::bounding::BoundingCircle as ::core::cmp::PartialEq<
                             ::bevy_math::bounding::BoundingCircle,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3331,12 +3191,11 @@ pub(crate) fn register_bounding_circle_functions(world: &mut World) {
             |center: Val<::bevy_math::Vec2>, radius: f32| {
                 let output: Val<::bevy_math::bounding::BoundingCircle> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingCircle> = ::bevy_math::bounding::BoundingCircle::new(
-                                center.into_inner(),
-                                radius,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingCircle = ::bevy_math::bounding::BoundingCircle::new(
+                            safe_transmute(center),
+                            safe_transmute(radius),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3350,10 +3209,9 @@ pub(crate) fn register_bounding_circle_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::bounding::BoundingCircle::radius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3378,11 +3236,10 @@ pub(crate) fn register_circle_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Circle>| {
                 let output: Val<::bevy_math::primitives::Circle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Circle> = <::bevy_math::primitives::Circle as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Circle = <::bevy_math::primitives::Circle as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3395,12 +3252,11 @@ pub(crate) fn register_circle_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Circle>, point: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Circle::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Circle::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3414,10 +3270,9 @@ pub(crate) fn register_circle_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Circle::diameter(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3435,9 +3290,8 @@ pub(crate) fn register_circle_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Circle as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Circle,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3450,11 +3304,10 @@ pub(crate) fn register_circle_functions(world: &mut World) {
             |radius: f32| {
                 let output: Val<::bevy_math::primitives::Circle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::Circle::new(
-                                radius,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Circle = ::bevy_math::primitives::Circle::new(
+                            safe_transmute(radius),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3479,11 +3332,10 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Annulus>| {
                 let output: Val<::bevy_math::primitives::Annulus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Annulus> = <::bevy_math::primitives::Annulus as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Annulus = <::bevy_math::primitives::Annulus as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3499,12 +3351,11 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Annulus::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Annulus::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3518,10 +3369,9 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Annulus::diameter(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3539,9 +3389,8 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Annulus as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Annulus,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3554,12 +3403,11 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
             |inner_radius: f32, outer_radius: f32| {
                 let output: Val<::bevy_math::primitives::Annulus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Annulus> = ::bevy_math::primitives::Annulus::new(
-                                inner_radius,
-                                outer_radius,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Annulus = ::bevy_math::primitives::Annulus::new(
+                            safe_transmute(inner_radius),
+                            safe_transmute(outer_radius),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3573,10 +3421,9 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Annulus::thickness(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3601,9 +3448,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::primitives::Arc2d::angle(&_self)
-                            .into();
-                        output
+                        let output: f32 = ::bevy_math::primitives::Arc2d::angle(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3616,9 +3464,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::primitives::Arc2d::apothem(&_self)
-                            .into();
-                        output
+                        let output: f32 = ::bevy_math::primitives::Arc2d::apothem(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3632,10 +3481,9 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Arc2d::chord_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3648,11 +3496,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Arc2d::chord_midpoint(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Arc2d::chord_midpoint(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3665,11 +3512,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: Val<::bevy_math::primitives::Arc2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Arc2d> = <::bevy_math::primitives::Arc2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Arc2d = <::bevy_math::primitives::Arc2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3687,9 +3533,8 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Arc2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Arc2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3702,12 +3547,11 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::Arc2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Arc2d> = ::bevy_math::primitives::Arc2d::from_degrees(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Arc2d = ::bevy_math::primitives::Arc2d::from_degrees(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3720,12 +3564,11 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::Arc2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Arc2d> = ::bevy_math::primitives::Arc2d::from_radians(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Arc2d = ::bevy_math::primitives::Arc2d::from_radians(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3738,12 +3581,11 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |radius: f32, fraction: f32| {
                 let output: Val<::bevy_math::primitives::Arc2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Arc2d> = ::bevy_math::primitives::Arc2d::from_turns(
-                                radius,
-                                fraction,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Arc2d = ::bevy_math::primitives::Arc2d::from_turns(
+                            safe_transmute(radius),
+                            safe_transmute(fraction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3757,10 +3599,9 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Arc2d::half_chord_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3774,10 +3615,9 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Arc2d::is_major(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3791,10 +3631,9 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Arc2d::is_minor(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3807,11 +3646,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Arc2d::left_endpoint(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Arc2d::left_endpoint(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3824,9 +3662,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::primitives::Arc2d::length(&_self)
-                            .into();
-                        output
+                        let output: f32 = ::bevy_math::primitives::Arc2d::length(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3839,11 +3678,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Arc2d::midpoint(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Arc2d::midpoint(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3856,12 +3694,11 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |radius: f32, half_angle: f32| {
                 let output: Val<::bevy_math::primitives::Arc2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Arc2d> = ::bevy_math::primitives::Arc2d::new(
-                                radius,
-                                half_angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Arc2d = ::bevy_math::primitives::Arc2d::new(
+                            safe_transmute(radius),
+                            safe_transmute(half_angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3874,11 +3711,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Arc2d::right_endpoint(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Arc2d::right_endpoint(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3891,9 +3727,10 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Arc2d>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::primitives::Arc2d::sagitta(&_self)
-                            .into();
-                        output
+                        let output: f32 = ::bevy_math::primitives::Arc2d::sagitta(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3918,11 +3755,10 @@ pub(crate) fn register_capsule_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Capsule2d>| {
                 let output: Val<::bevy_math::primitives::Capsule2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Capsule2d> = <::bevy_math::primitives::Capsule2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Capsule2d = <::bevy_math::primitives::Capsule2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3940,9 +3776,8 @@ pub(crate) fn register_capsule_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Capsule2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Capsule2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3955,12 +3790,11 @@ pub(crate) fn register_capsule_2_d_functions(world: &mut World) {
             |radius: f32, length: f32| {
                 let output: Val<::bevy_math::primitives::Capsule2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Capsule2d> = ::bevy_math::primitives::Capsule2d::new(
-                                radius,
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Capsule2d = ::bevy_math::primitives::Capsule2d::new(
+                            safe_transmute(radius),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -3973,11 +3807,10 @@ pub(crate) fn register_capsule_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Capsule2d>| {
                 let output: Val<::bevy_math::primitives::Rectangle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rectangle> = ::bevy_math::primitives::Capsule2d::to_inner_rectangle(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rectangle = ::bevy_math::primitives::Capsule2d::to_inner_rectangle(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4003,10 +3836,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::angle(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4020,10 +3852,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::apothem(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4037,10 +3868,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::arc_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4054,10 +3884,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::chord_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4070,11 +3899,10 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::CircularSector>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::CircularSector::chord_midpoint(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::CircularSector::chord_midpoint(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4087,11 +3915,10 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::CircularSector>| {
                 let output: Val<::bevy_math::primitives::CircularSector> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSector> = <::bevy_math::primitives::CircularSector as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSector = <::bevy_math::primitives::CircularSector as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4109,9 +3936,8 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::CircularSector as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::CircularSector,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4124,12 +3950,11 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSector> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSector> = ::bevy_math::primitives::CircularSector::from_degrees(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSector = ::bevy_math::primitives::CircularSector::from_degrees(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4142,12 +3967,11 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSector> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSector> = ::bevy_math::primitives::CircularSector::from_radians(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSector = ::bevy_math::primitives::CircularSector::from_radians(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4160,12 +3984,11 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
             |radius: f32, fraction: f32| {
                 let output: Val<::bevy_math::primitives::CircularSector> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSector> = ::bevy_math::primitives::CircularSector::from_turns(
-                                radius,
-                                fraction,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSector = ::bevy_math::primitives::CircularSector::from_turns(
+                            safe_transmute(radius),
+                            safe_transmute(fraction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4179,10 +4002,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::half_angle(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4196,10 +4018,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::half_chord_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4212,12 +4033,11 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSector> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSector> = ::bevy_math::primitives::CircularSector::new(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSector = ::bevy_math::primitives::CircularSector::new(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4231,10 +4051,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::radius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4248,10 +4067,9 @@ pub(crate) fn register_circular_sector_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSector::sagitta(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4277,10 +4095,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::angle(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4294,10 +4111,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::apothem(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4311,10 +4127,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::arc_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4328,10 +4143,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::chord_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4344,11 +4158,10 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::CircularSegment>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::CircularSegment::chord_midpoint(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::CircularSegment::chord_midpoint(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4361,11 +4174,10 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::CircularSegment>| {
                 let output: Val<::bevy_math::primitives::CircularSegment> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSegment> = <::bevy_math::primitives::CircularSegment as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSegment = <::bevy_math::primitives::CircularSegment as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4383,9 +4195,8 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::CircularSegment as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::CircularSegment,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4398,12 +4209,11 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSegment> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSegment> = ::bevy_math::primitives::CircularSegment::from_degrees(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSegment = ::bevy_math::primitives::CircularSegment::from_degrees(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4416,12 +4226,11 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSegment> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSegment> = ::bevy_math::primitives::CircularSegment::from_radians(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSegment = ::bevy_math::primitives::CircularSegment::from_radians(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4434,12 +4243,11 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
             |radius: f32, fraction: f32| {
                 let output: Val<::bevy_math::primitives::CircularSegment> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSegment> = ::bevy_math::primitives::CircularSegment::from_turns(
-                                radius,
-                                fraction,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSegment = ::bevy_math::primitives::CircularSegment::from_turns(
+                            safe_transmute(radius),
+                            safe_transmute(fraction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4453,10 +4261,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::half_angle(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4470,10 +4277,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::half_chord_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4486,12 +4292,11 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
             |radius: f32, angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSegment> = {
                     {
-                        let output: Val<::bevy_math::primitives::CircularSegment> = ::bevy_math::primitives::CircularSegment::new(
-                                radius,
-                                angle,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::CircularSegment = ::bevy_math::primitives::CircularSegment::new(
+                            safe_transmute(radius),
+                            safe_transmute(angle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4505,10 +4310,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::radius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4522,10 +4326,9 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::CircularSegment::sagitta(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4550,11 +4353,10 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Ellipse>| {
                 let output: Val<::bevy_math::primitives::Ellipse> = {
                     {
-                        let output: Val<::bevy_math::primitives::Ellipse> = <::bevy_math::primitives::Ellipse as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Ellipse = <::bevy_math::primitives::Ellipse as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4568,10 +4370,9 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Ellipse::eccentricity(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4589,9 +4390,8 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Ellipse as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Ellipse,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4605,10 +4405,9 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Ellipse::focal_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4621,11 +4420,10 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
             |size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::primitives::Ellipse> = {
                     {
-                        let output: Val<::bevy_math::primitives::Ellipse> = ::bevy_math::primitives::Ellipse::from_size(
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Ellipse = ::bevy_math::primitives::Ellipse::from_size(
+                            safe_transmute(size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4638,12 +4436,11 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
             |half_width: f32, half_height: f32| {
                 let output: Val<::bevy_math::primitives::Ellipse> = {
                     {
-                        let output: Val<::bevy_math::primitives::Ellipse> = ::bevy_math::primitives::Ellipse::new(
-                                half_width,
-                                half_height,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Ellipse = ::bevy_math::primitives::Ellipse::new(
+                            safe_transmute(half_width),
+                            safe_transmute(half_height),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4657,10 +4454,9 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Ellipse::semi_major(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4674,10 +4470,9 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Ellipse::semi_minor(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4702,11 +4497,10 @@ pub(crate) fn register_line_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Line2d>| {
                 let output: Val<::bevy_math::primitives::Line2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Line2d> = <::bevy_math::primitives::Line2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Line2d = <::bevy_math::primitives::Line2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4724,9 +4518,8 @@ pub(crate) fn register_line_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Line2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Line2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4751,11 +4544,10 @@ pub(crate) fn register_plane_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Plane2d>| {
                 let output: Val<::bevy_math::primitives::Plane2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Plane2d> = <::bevy_math::primitives::Plane2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Plane2d = <::bevy_math::primitives::Plane2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4773,9 +4565,8 @@ pub(crate) fn register_plane_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Plane2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Plane2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4788,11 +4579,10 @@ pub(crate) fn register_plane_2_d_functions(world: &mut World) {
             |normal: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::primitives::Plane2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Plane2d> = ::bevy_math::primitives::Plane2d::new(
-                                normal.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Plane2d = ::bevy_math::primitives::Plane2d::new(
+                            safe_transmute(normal),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4817,11 +4607,10 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Rectangle>| {
                 let output: Val<::bevy_math::primitives::Rectangle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rectangle> = <::bevy_math::primitives::Rectangle as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rectangle = <::bevy_math::primitives::Rectangle as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4837,12 +4626,11 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Rectangle::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Rectangle::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4860,9 +4648,8 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Rectangle as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Rectangle,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4875,12 +4662,11 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
             |point1: Val<::bevy_math::Vec2>, point2: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::primitives::Rectangle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rectangle> = ::bevy_math::primitives::Rectangle::from_corners(
-                                point1.into_inner(),
-                                point2.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rectangle = ::bevy_math::primitives::Rectangle::from_corners(
+                            safe_transmute(point1),
+                            safe_transmute(point2),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4893,11 +4679,10 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
             |length: f32| {
                 let output: Val<::bevy_math::primitives::Rectangle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rectangle> = ::bevy_math::primitives::Rectangle::from_length(
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rectangle = ::bevy_math::primitives::Rectangle::from_length(
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4910,11 +4695,10 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
             |size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::primitives::Rectangle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rectangle> = ::bevy_math::primitives::Rectangle::from_size(
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rectangle = ::bevy_math::primitives::Rectangle::from_size(
+                            safe_transmute(size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4927,12 +4711,11 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
             |width: f32, height: f32| {
                 let output: Val<::bevy_math::primitives::Rectangle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rectangle> = ::bevy_math::primitives::Rectangle::new(
-                                width,
-                                height,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rectangle = ::bevy_math::primitives::Rectangle::new(
+                            safe_transmute(width),
+                            safe_transmute(height),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4945,11 +4728,10 @@ pub(crate) fn register_rectangle_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Rectangle>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Rectangle::size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Rectangle::size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4975,10 +4757,9 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::RegularPolygon::circumradius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -4991,11 +4772,10 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::RegularPolygon>| {
                 let output: Val<::bevy_math::primitives::RegularPolygon> = {
                     {
-                        let output: Val<::bevy_math::primitives::RegularPolygon> = <::bevy_math::primitives::RegularPolygon as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::RegularPolygon = <::bevy_math::primitives::RegularPolygon as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5013,9 +4793,8 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::RegularPolygon as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::RegularPolygon,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5029,10 +4808,9 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::RegularPolygon::external_angle_degrees(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5046,10 +4824,9 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::RegularPolygon::external_angle_radians(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5063,10 +4840,9 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::RegularPolygon::inradius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5080,10 +4856,9 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::RegularPolygon::internal_angle_degrees(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5097,10 +4872,9 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::RegularPolygon::internal_angle_radians(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5113,12 +4887,11 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
             |circumradius: f32, sides: u32| {
                 let output: Val<::bevy_math::primitives::RegularPolygon> = {
                     {
-                        let output: Val<::bevy_math::primitives::RegularPolygon> = ::bevy_math::primitives::RegularPolygon::new(
-                                circumradius,
-                                sides,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::RegularPolygon = ::bevy_math::primitives::RegularPolygon::new(
+                            safe_transmute(circumradius),
+                            safe_transmute(sides),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5132,10 +4905,9 @@ pub(crate) fn register_regular_polygon_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::RegularPolygon::side_length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5161,10 +4933,9 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Rhombus::circumradius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5177,11 +4948,10 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Rhombus>| {
                 let output: Val<::bevy_math::primitives::Rhombus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rhombus> = <::bevy_math::primitives::Rhombus as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rhombus = <::bevy_math::primitives::Rhombus as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5197,12 +4967,11 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Rhombus::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Rhombus::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5220,9 +4989,8 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Rhombus as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Rhombus,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5235,11 +5003,10 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
             |inradius: f32| {
                 let output: Val<::bevy_math::primitives::Rhombus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rhombus> = ::bevy_math::primitives::Rhombus::from_inradius(
-                                inradius,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rhombus = ::bevy_math::primitives::Rhombus::from_inradius(
+                            safe_transmute(inradius),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5252,11 +5019,10 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
             |side: f32| {
                 let output: Val<::bevy_math::primitives::Rhombus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rhombus> = ::bevy_math::primitives::Rhombus::from_side(
-                                side,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rhombus = ::bevy_math::primitives::Rhombus::from_side(
+                            safe_transmute(side),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5270,10 +5036,9 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Rhombus::inradius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5286,12 +5051,11 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
             |horizontal_diagonal: f32, vertical_diagonal: f32| {
                 let output: Val<::bevy_math::primitives::Rhombus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Rhombus> = ::bevy_math::primitives::Rhombus::new(
-                                horizontal_diagonal,
-                                vertical_diagonal,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Rhombus = ::bevy_math::primitives::Rhombus::new(
+                            safe_transmute(horizontal_diagonal),
+                            safe_transmute(vertical_diagonal),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5304,9 +5068,10 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Rhombus>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::primitives::Rhombus::side(&_self)
-                            .into();
-                        output
+                        let output: f32 = ::bevy_math::primitives::Rhombus::side(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5331,11 +5096,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Segment2d::center(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Segment2d::center(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5348,11 +5112,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::centered(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::centered(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5365,11 +5128,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = <::bevy_math::primitives::Segment2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = <::bevy_math::primitives::Segment2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5385,12 +5147,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Segment2d::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Segment2d::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5403,11 +5164,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = ::bevy_math::primitives::Segment2d::direction(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = ::bevy_math::primitives::Segment2d::direction(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5425,9 +5185,8 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Segment2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Segment2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5440,12 +5199,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |direction: Val<::bevy_math::Dir2>, length: f32| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::from_direction_and_length(
-                                direction.into_inner(),
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::from_direction_and_length(
+                            safe_transmute(direction),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5458,12 +5216,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |ray: Val<::bevy_math::Ray2d>, length: f32| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::from_ray_and_length(
-                                ray.into_inner(),
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::from_ray_and_length(
+                            safe_transmute(ray),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5476,11 +5233,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |scaled_direction: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::from_scaled_direction(
-                                scaled_direction.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::from_scaled_direction(
+                            safe_transmute(scaled_direction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5493,11 +5249,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = ::bevy_math::primitives::Segment2d::left_normal(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = ::bevy_math::primitives::Segment2d::left_normal(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5511,10 +5266,9 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Segment2d::length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5528,10 +5282,9 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Segment2d::length_squared(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5544,12 +5297,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |point1: Val<::bevy_math::Vec2>, point2: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::new(
-                                point1.into_inner(),
-                                point2.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::new(
+                            safe_transmute(point1),
+                            safe_transmute(point2),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5562,11 +5314,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Segment2d::point1(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Segment2d::point1(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5579,11 +5330,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Segment2d::point2(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Segment2d::point2(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5596,12 +5346,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>, length: f32| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::resized(
-                                &_self,
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::resized(
+                            safe_transmute(_self),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5615,10 +5364,9 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_math::primitives::Segment2d::reverse(
-                                &mut _self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5631,11 +5379,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::reversed(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::reversed(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5648,11 +5395,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Dir2> = {
                     {
-                        let output: Val<::bevy_math::Dir2> = ::bevy_math::primitives::Segment2d::right_normal(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir2 = ::bevy_math::primitives::Segment2d::right_normal(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5668,12 +5414,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::rotated(
-                                &_self,
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::rotated(
+                            safe_transmute(_self),
+                            safe_transmute(rotation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5690,13 +5435,12 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::rotated_around(
-                                &_self,
-                                rotation.into_inner(),
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::rotated_around(
+                            safe_transmute(_self),
+                            safe_transmute(rotation),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5712,12 +5456,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::rotated_around_center(
-                                &_self,
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::rotated_around_center(
+                            safe_transmute(_self),
+                            safe_transmute(rotation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5730,11 +5473,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Segment2d::scaled_direction(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Segment2d::scaled_direction(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5747,11 +5489,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Segment2d::scaled_left_normal(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Segment2d::scaled_left_normal(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5764,11 +5505,10 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::primitives::Segment2d::scaled_right_normal(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::primitives::Segment2d::scaled_right_normal(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5784,12 +5524,11 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::translated(
-                                &_self,
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment2d = ::bevy_math::primitives::Segment2d::translated(
+                            safe_transmute(_self),
+                            safe_transmute(translation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5814,11 +5553,10 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Triangle2d>| {
                 let output: Val<::bevy_math::primitives::Triangle2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Triangle2d> = <::bevy_math::primitives::Triangle2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Triangle2d = <::bevy_math::primitives::Triangle2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5836,9 +5574,8 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Triangle2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Triangle2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5852,10 +5589,9 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Triangle2d::is_acute(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5869,10 +5605,9 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Triangle2d::is_degenerate(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5886,10 +5621,9 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Triangle2d::is_obtuse(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5906,13 +5640,12 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Triangle2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Triangle2d> = ::bevy_math::primitives::Triangle2d::new(
-                                a.into_inner(),
-                                b.into_inner(),
-                                c.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Triangle2d = ::bevy_math::primitives::Triangle2d::new(
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(c),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5926,10 +5659,9 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_math::primitives::Triangle2d::reverse(
-                                &mut _self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5942,11 +5674,10 @@ pub(crate) fn register_triangle_2_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::primitives::Triangle2d>| {
                 let output: Val<::bevy_math::primitives::Triangle2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Triangle2d> = ::bevy_math::primitives::Triangle2d::reversed(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Triangle2d = ::bevy_math::primitives::Triangle2d::reversed(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5971,11 +5702,10 @@ pub(crate) fn register_convex_polygon_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::ConvexPolygon>| {
                 let output: Val<::bevy_math::primitives::ConvexPolygon> = {
                     {
-                        let output: Val<::bevy_math::primitives::ConvexPolygon> = <::bevy_math::primitives::ConvexPolygon as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::ConvexPolygon = <::bevy_math::primitives::ConvexPolygon as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -5993,9 +5723,8 @@ pub(crate) fn register_convex_polygon_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::ConvexPolygon as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::ConvexPolygon,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6020,11 +5749,10 @@ pub(crate) fn register_polygon_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Polygon>| {
                 let output: Val<::bevy_math::primitives::Polygon> = {
                     {
-                        let output: Val<::bevy_math::primitives::Polygon> = <::bevy_math::primitives::Polygon as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Polygon = <::bevy_math::primitives::Polygon as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6042,9 +5770,8 @@ pub(crate) fn register_polygon_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Polygon as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Polygon,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6058,10 +5785,9 @@ pub(crate) fn register_polygon_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Polygon::is_simple(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6086,11 +5812,10 @@ pub(crate) fn register_polyline_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Polyline2d>| {
                 let output: Val<::bevy_math::primitives::Polyline2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Polyline2d> = <::bevy_math::primitives::Polyline2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Polyline2d = <::bevy_math::primitives::Polyline2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6108,9 +5833,8 @@ pub(crate) fn register_polyline_2_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Polyline2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Polyline2d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6127,13 +5851,12 @@ pub(crate) fn register_polyline_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Polyline2d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Polyline2d> = ::bevy_math::primitives::Polyline2d::with_subdivisions(
-                                start.into_inner(),
-                                end.into_inner(),
-                                subdivisions,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Polyline2d = ::bevy_math::primitives::Polyline2d::with_subdivisions(
+                            safe_transmute(start),
+                            safe_transmute(end),
+                            safe_transmute(subdivisions),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6158,11 +5881,10 @@ pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::Aabb3d>| {
                 let output: Val<::bevy_math::bounding::BoundingSphere> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingSphere> = ::bevy_math::bounding::Aabb3d::bounding_sphere(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingSphere = ::bevy_math::bounding::Aabb3d::bounding_sphere(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6175,11 +5897,10 @@ pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::Aabb3d>| {
                 let output: Val<::bevy_math::bounding::Aabb3d> = {
                     {
-                        let output: Val<::bevy_math::bounding::Aabb3d> = <::bevy_math::bounding::Aabb3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::Aabb3d = <::bevy_math::bounding::Aabb3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6197,9 +5918,8 @@ pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::bounding::Aabb3d as ::core::cmp::PartialEq<
                             ::bevy_math::bounding::Aabb3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6224,11 +5944,10 @@ pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
                 let output: Val<::bevy_math::bounding::Aabb3d> = {
                     {
-                        let output: Val<::bevy_math::bounding::Aabb3d> = ::bevy_math::bounding::BoundingSphere::aabb_3d(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::Aabb3d = ::bevy_math::bounding::BoundingSphere::aabb_3d(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6241,11 +5960,10 @@ pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
                 let output: Val<::bevy_math::bounding::BoundingSphere> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingSphere> = <::bevy_math::bounding::BoundingSphere as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingSphere = <::bevy_math::bounding::BoundingSphere as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6263,9 +5981,8 @@ pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::bounding::BoundingSphere as ::core::cmp::PartialEq<
                             ::bevy_math::bounding::BoundingSphere,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6279,10 +5996,9 @@ pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::bounding::BoundingSphere::radius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6307,11 +6023,10 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Sphere>| {
                 let output: Val<::bevy_math::primitives::Sphere> = {
                     {
-                        let output: Val<::bevy_math::primitives::Sphere> = <::bevy_math::primitives::Sphere as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Sphere = <::bevy_math::primitives::Sphere as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6324,12 +6039,11 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Sphere>, point: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Sphere::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Sphere::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6343,10 +6057,9 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Sphere::diameter(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6364,9 +6077,8 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Sphere as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Sphere,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6379,11 +6091,10 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
             |radius: f32| {
                 let output: Val<::bevy_math::primitives::Sphere> = {
                     {
-                        let output: Val<::bevy_math::primitives::Sphere> = ::bevy_math::primitives::Sphere::new(
-                                radius,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Sphere = ::bevy_math::primitives::Sphere::new(
+                            safe_transmute(radius),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6408,11 +6119,10 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Cuboid>| {
                 let output: Val<::bevy_math::primitives::Cuboid> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cuboid> = <::bevy_math::primitives::Cuboid as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cuboid = <::bevy_math::primitives::Cuboid as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6425,12 +6135,11 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Cuboid>, point: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Cuboid::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Cuboid::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6448,9 +6157,8 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Cuboid as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Cuboid,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6463,12 +6171,11 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             |point1: Val<::bevy_math::Vec3>, point2: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::primitives::Cuboid> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_corners(
-                                point1.into_inner(),
-                                point2.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cuboid = ::bevy_math::primitives::Cuboid::from_corners(
+                            safe_transmute(point1),
+                            safe_transmute(point2),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6481,11 +6188,10 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             |length: f32| {
                 let output: Val<::bevy_math::primitives::Cuboid> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_length(
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cuboid = ::bevy_math::primitives::Cuboid::from_length(
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6498,11 +6204,10 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             |size: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::primitives::Cuboid> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_size(
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cuboid = ::bevy_math::primitives::Cuboid::from_size(
+                            safe_transmute(size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6515,13 +6220,12 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             |x_length: f32, y_length: f32, z_length: f32| {
                 let output: Val<::bevy_math::primitives::Cuboid> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::new(
-                                x_length,
-                                y_length,
-                                z_length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cuboid = ::bevy_math::primitives::Cuboid::new(
+                            safe_transmute(x_length),
+                            safe_transmute(y_length),
+                            safe_transmute(z_length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6534,11 +6238,10 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Cuboid>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Cuboid::size(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Cuboid::size(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6563,11 +6266,10 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Cylinder>| {
                 let output: Val<::bevy_math::primitives::Circle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::Cylinder::base(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Circle = ::bevy_math::primitives::Cylinder::base(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6581,10 +6283,9 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Cylinder::base_area(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6597,11 +6298,10 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Cylinder>| {
                 let output: Val<::bevy_math::primitives::Cylinder> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cylinder> = <::bevy_math::primitives::Cylinder as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cylinder = <::bevy_math::primitives::Cylinder as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6619,9 +6319,8 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Cylinder as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Cylinder,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6635,10 +6334,9 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Cylinder::lateral_area(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6651,12 +6349,11 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
             |radius: f32, height: f32| {
                 let output: Val<::bevy_math::primitives::Cylinder> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cylinder> = ::bevy_math::primitives::Cylinder::new(
-                                radius,
-                                height,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cylinder = ::bevy_math::primitives::Cylinder::new(
+                            safe_transmute(radius),
+                            safe_transmute(height),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6681,11 +6378,10 @@ pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Capsule3d>| {
                 let output: Val<::bevy_math::primitives::Capsule3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Capsule3d> = <::bevy_math::primitives::Capsule3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Capsule3d = <::bevy_math::primitives::Capsule3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6703,9 +6399,8 @@ pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Capsule3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Capsule3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6718,12 +6413,11 @@ pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
             |radius: f32, length: f32| {
                 let output: Val<::bevy_math::primitives::Capsule3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Capsule3d> = ::bevy_math::primitives::Capsule3d::new(
-                                radius,
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Capsule3d = ::bevy_math::primitives::Capsule3d::new(
+                            safe_transmute(radius),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6736,11 +6430,10 @@ pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Capsule3d>| {
                 let output: Val<::bevy_math::primitives::Cylinder> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cylinder> = ::bevy_math::primitives::Capsule3d::to_cylinder(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cylinder = ::bevy_math::primitives::Capsule3d::to_cylinder(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6765,11 +6458,10 @@ pub(crate) fn register_cone_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Cone>| {
                 let output: Val<::bevy_math::primitives::Circle> = {
                     {
-                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::Cone::base(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Circle = ::bevy_math::primitives::Cone::base(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6783,10 +6475,9 @@ pub(crate) fn register_cone_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Cone::base_area(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6799,11 +6490,10 @@ pub(crate) fn register_cone_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Cone>| {
                 let output: Val<::bevy_math::primitives::Cone> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cone> = <::bevy_math::primitives::Cone as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cone = <::bevy_math::primitives::Cone as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6821,9 +6511,8 @@ pub(crate) fn register_cone_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Cone as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Cone,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6837,10 +6526,9 @@ pub(crate) fn register_cone_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Cone::lateral_area(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6853,12 +6541,11 @@ pub(crate) fn register_cone_functions(world: &mut World) {
             |radius: f32, height: f32| {
                 let output: Val<::bevy_math::primitives::Cone> = {
                     {
-                        let output: Val<::bevy_math::primitives::Cone> = ::bevy_math::primitives::Cone::new(
-                                radius,
-                                height,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Cone = ::bevy_math::primitives::Cone::new(
+                            safe_transmute(radius),
+                            safe_transmute(height),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6872,10 +6559,9 @@ pub(crate) fn register_cone_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Cone::slant_height(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6900,11 +6586,10 @@ pub(crate) fn register_conical_frustum_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
                 let output: Val<::bevy_math::primitives::ConicalFrustum> = {
                     {
-                        let output: Val<::bevy_math::primitives::ConicalFrustum> = <::bevy_math::primitives::ConicalFrustum as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::ConicalFrustum = <::bevy_math::primitives::ConicalFrustum as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6922,9 +6607,8 @@ pub(crate) fn register_conical_frustum_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::ConicalFrustum as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::ConicalFrustum,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6949,11 +6633,10 @@ pub(crate) fn register_infinite_plane_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::InfinitePlane3d>| {
                 let output: Val<::bevy_math::primitives::InfinitePlane3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::InfinitePlane3d> = <::bevy_math::primitives::InfinitePlane3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::InfinitePlane3d = <::bevy_math::primitives::InfinitePlane3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6971,9 +6654,8 @@ pub(crate) fn register_infinite_plane_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::InfinitePlane3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::InfinitePlane3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -6989,12 +6671,11 @@ pub(crate) fn register_infinite_plane_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = ::bevy_math::primitives::InfinitePlane3d::isometry_from_xy(
-                                &_self,
-                                origin.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry3d = ::bevy_math::primitives::InfinitePlane3d::isometry_from_xy(
+                            safe_transmute(_self),
+                            safe_transmute(origin),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7010,12 +6691,11 @@ pub(crate) fn register_infinite_plane_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Isometry3d> = {
                     {
-                        let output: Val<::bevy_math::Isometry3d> = ::bevy_math::primitives::InfinitePlane3d::isometry_into_xy(
-                                &_self,
-                                origin.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Isometry3d = ::bevy_math::primitives::InfinitePlane3d::isometry_into_xy(
+                            safe_transmute(_self),
+                            safe_transmute(origin),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7040,11 +6720,10 @@ pub(crate) fn register_line_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Line3d>| {
                 let output: Val<::bevy_math::primitives::Line3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Line3d> = <::bevy_math::primitives::Line3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Line3d = <::bevy_math::primitives::Line3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7062,9 +6741,8 @@ pub(crate) fn register_line_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Line3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Line3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7089,11 +6767,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Segment3d::center(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Segment3d::center(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7106,11 +6783,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::centered(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::centered(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7123,11 +6799,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = <::bevy_math::primitives::Segment3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = <::bevy_math::primitives::Segment3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7143,12 +6818,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Segment3d::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Segment3d::closest_point(
+                            safe_transmute(_self),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7161,11 +6835,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::Dir3> = {
                     {
-                        let output: Val<::bevy_math::Dir3> = ::bevy_math::primitives::Segment3d::direction(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir3 = ::bevy_math::primitives::Segment3d::direction(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7183,9 +6856,8 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Segment3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Segment3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7198,12 +6870,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |direction: Val<::bevy_math::Dir3>, length: f32| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::from_direction_and_length(
-                                direction.into_inner(),
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::from_direction_and_length(
+                            safe_transmute(direction),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7216,12 +6887,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |ray: Val<::bevy_math::Ray3d>, length: f32| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::from_ray_and_length(
-                                ray.into_inner(),
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::from_ray_and_length(
+                            safe_transmute(ray),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7234,11 +6904,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |scaled_direction: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::from_scaled_direction(
-                                scaled_direction.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::from_scaled_direction(
+                            safe_transmute(scaled_direction),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7252,10 +6921,9 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Segment3d::length(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7269,10 +6937,9 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Segment3d::length_squared(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7285,12 +6952,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |point1: Val<::bevy_math::Vec3>, point2: Val<::bevy_math::Vec3>| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::new(
-                                point1.into_inner(),
-                                point2.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::new(
+                            safe_transmute(point1),
+                            safe_transmute(point2),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7303,11 +6969,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Segment3d::point1(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Segment3d::point1(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7320,11 +6985,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Segment3d::point2(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Segment3d::point2(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7337,12 +7001,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>, length: f32| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::resized(
-                                &_self,
-                                length,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::resized(
+                            safe_transmute(_self),
+                            safe_transmute(length),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7356,10 +7019,9 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_math::primitives::Segment3d::reverse(
-                                &mut _self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7372,11 +7034,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::reversed(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::reversed(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7392,12 +7053,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::rotated(
-                                &_self,
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::rotated(
+                            safe_transmute(_self),
+                            safe_transmute(rotation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7414,13 +7074,12 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::rotated_around(
-                                &_self,
-                                rotation.into_inner(),
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::rotated_around(
+                            safe_transmute(_self),
+                            safe_transmute(rotation),
+                            safe_transmute(point),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7436,12 +7095,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::rotated_around_center(
-                                &_self,
-                                rotation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::rotated_around_center(
+                            safe_transmute(_self),
+                            safe_transmute(rotation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7454,11 +7112,10 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Segment3d>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Segment3d::scaled_direction(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Segment3d::scaled_direction(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7474,12 +7131,11 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Segment3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::translated(
-                                &_self,
-                                translation.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Segment3d = ::bevy_math::primitives::Segment3d::translated(
+                            safe_transmute(_self),
+                            safe_transmute(translation),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7504,11 +7160,10 @@ pub(crate) fn register_torus_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Torus>| {
                 let output: Val<::bevy_math::primitives::Torus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Torus> = <::bevy_math::primitives::Torus as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Torus = <::bevy_math::primitives::Torus as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7526,9 +7181,8 @@ pub(crate) fn register_torus_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Torus as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Torus,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7542,10 +7196,9 @@ pub(crate) fn register_torus_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Torus::inner_radius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7558,12 +7211,11 @@ pub(crate) fn register_torus_functions(world: &mut World) {
             |inner_radius: f32, outer_radius: f32| {
                 let output: Val<::bevy_math::primitives::Torus> = {
                     {
-                        let output: Val<::bevy_math::primitives::Torus> = ::bevy_math::primitives::Torus::new(
-                                inner_radius,
-                                outer_radius,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Torus = ::bevy_math::primitives::Torus::new(
+                            safe_transmute(inner_radius),
+                            safe_transmute(outer_radius),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7577,10 +7229,9 @@ pub(crate) fn register_torus_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Torus::outer_radius(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7605,11 +7256,10 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Triangle3d>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Triangle3d::centroid(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Triangle3d::centroid(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7622,11 +7272,10 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Triangle3d>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Triangle3d::circumcenter(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Triangle3d::circumcenter(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7639,11 +7288,10 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Triangle3d>| {
                 let output: Val<::bevy_math::primitives::Triangle3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Triangle3d> = <::bevy_math::primitives::Triangle3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Triangle3d = <::bevy_math::primitives::Triangle3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7661,9 +7309,8 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Triangle3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Triangle3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7677,10 +7324,9 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Triangle3d::is_acute(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7694,10 +7340,9 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Triangle3d::is_degenerate(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7711,10 +7356,9 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::primitives::Triangle3d::is_obtuse(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7731,13 +7375,12 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Triangle3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Triangle3d> = ::bevy_math::primitives::Triangle3d::new(
-                                a.into_inner(),
-                                b.into_inner(),
-                                c.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Triangle3d = ::bevy_math::primitives::Triangle3d::new(
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(c),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7751,10 +7394,9 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_math::primitives::Triangle3d::reverse(
-                                &mut _self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7767,11 +7409,10 @@ pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
             |_self: Val<::bevy_math::primitives::Triangle3d>| {
                 let output: Val<::bevy_math::primitives::Triangle3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Triangle3d> = ::bevy_math::primitives::Triangle3d::reversed(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Triangle3d = ::bevy_math::primitives::Triangle3d::reversed(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7796,11 +7437,10 @@ pub(crate) fn register_polyline_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Polyline3d>| {
                 let output: Val<::bevy_math::primitives::Polyline3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Polyline3d> = <::bevy_math::primitives::Polyline3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Polyline3d = <::bevy_math::primitives::Polyline3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7818,9 +7458,8 @@ pub(crate) fn register_polyline_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Polyline3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Polyline3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7837,13 +7476,12 @@ pub(crate) fn register_polyline_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Polyline3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Polyline3d> = ::bevy_math::primitives::Polyline3d::with_subdivisions(
-                                start.into_inner(),
-                                end.into_inner(),
-                                subdivisions,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Polyline3d = ::bevy_math::primitives::Polyline3d::with_subdivisions(
+                            safe_transmute(start),
+                            safe_transmute(end),
+                            safe_transmute(subdivisions),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7872,11 +7510,10 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast2d::aabb_intersection_at(
-                                &_self,
-                                &aabb,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(aabb),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7893,11 +7530,10 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast2d::circle_intersection_at(
-                                &_self,
-                                &circle,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(circle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7910,11 +7546,10 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::RayCast2d>| {
                 let output: Val<::bevy_math::bounding::RayCast2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::RayCast2d> = <::bevy_math::bounding::RayCast2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::RayCast2d = <::bevy_math::bounding::RayCast2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7927,11 +7562,10 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::RayCast2d>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_math::bounding::RayCast2d::direction_recip(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec2 = ::bevy_math::bounding::RayCast2d::direction_recip(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7944,12 +7578,11 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
             |ray: Val<::bevy_math::Ray2d>, max: f32| {
                 let output: Val<::bevy_math::bounding::RayCast2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::RayCast2d> = ::bevy_math::bounding::RayCast2d::from_ray(
-                                ray.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::RayCast2d = ::bevy_math::bounding::RayCast2d::from_ray(
+                            safe_transmute(ray),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -7966,13 +7599,12 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::bounding::RayCast2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::RayCast2d> = ::bevy_math::bounding::RayCast2d::new(
-                                origin.into_inner(),
-                                direction.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::RayCast2d = ::bevy_math::bounding::RayCast2d::new(
+                            safe_transmute(origin),
+                            safe_transmute(direction),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8001,11 +7633,10 @@ pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::AabbCast2d::aabb_collision_at(
-                                &_self,
-                                aabb.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(aabb),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8018,11 +7649,10 @@ pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::AabbCast2d>| {
                 let output: Val<::bevy_math::bounding::AabbCast2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::AabbCast2d> = <::bevy_math::bounding::AabbCast2d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::AabbCast2d = <::bevy_math::bounding::AabbCast2d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8039,13 +7669,12 @@ pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::bounding::AabbCast2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::AabbCast2d> = ::bevy_math::bounding::AabbCast2d::from_ray(
-                                aabb.into_inner(),
-                                ray.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::AabbCast2d = ::bevy_math::bounding::AabbCast2d::from_ray(
+                            safe_transmute(aabb),
+                            safe_transmute(ray),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8063,14 +7692,13 @@ pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::bounding::AabbCast2d> = {
                     {
-                        let output: Val<::bevy_math::bounding::AabbCast2d> = ::bevy_math::bounding::AabbCast2d::new(
-                                aabb.into_inner(),
-                                origin.into_inner(),
-                                direction.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::AabbCast2d = ::bevy_math::bounding::AabbCast2d::new(
+                            safe_transmute(aabb),
+                            safe_transmute(origin),
+                            safe_transmute(direction),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8099,11 +7727,10 @@ pub(crate) fn register_bounding_circle_cast_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::BoundingCircleCast::circle_collision_at(
-                                &_self,
-                                circle.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(circle),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8116,11 +7743,10 @@ pub(crate) fn register_bounding_circle_cast_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::BoundingCircleCast>| {
                 let output: Val<::bevy_math::bounding::BoundingCircleCast> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingCircleCast> = <::bevy_math::bounding::BoundingCircleCast as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingCircleCast = <::bevy_math::bounding::BoundingCircleCast as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8137,13 +7763,12 @@ pub(crate) fn register_bounding_circle_cast_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::bounding::BoundingCircleCast> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingCircleCast> = ::bevy_math::bounding::BoundingCircleCast::from_ray(
-                                circle.into_inner(),
-                                ray.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingCircleCast = ::bevy_math::bounding::BoundingCircleCast::from_ray(
+                            safe_transmute(circle),
+                            safe_transmute(ray),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8161,14 +7786,13 @@ pub(crate) fn register_bounding_circle_cast_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::bounding::BoundingCircleCast> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingCircleCast> = ::bevy_math::bounding::BoundingCircleCast::new(
-                                circle.into_inner(),
-                                origin.into_inner(),
-                                direction.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingCircleCast = ::bevy_math::bounding::BoundingCircleCast::new(
+                            safe_transmute(circle),
+                            safe_transmute(origin),
+                            safe_transmute(direction),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8197,11 +7821,10 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast3d::aabb_intersection_at(
-                                &_self,
-                                &aabb,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(aabb),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8214,11 +7837,10 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::RayCast3d>| {
                 let output: Val<::bevy_math::bounding::RayCast3d> = {
                     {
-                        let output: Val<::bevy_math::bounding::RayCast3d> = <::bevy_math::bounding::RayCast3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::RayCast3d = <::bevy_math::bounding::RayCast3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8231,11 +7853,10 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::RayCast3d>| {
                 let output: Val<::bevy_math::Vec3A> = {
                     {
-                        let output: Val<::bevy_math::Vec3A> = ::bevy_math::bounding::RayCast3d::direction_recip(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3A = ::bevy_math::bounding::RayCast3d::direction_recip(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8248,12 +7869,11 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
             |ray: Val<::bevy_math::Ray3d>, max: f32| {
                 let output: Val<::bevy_math::bounding::RayCast3d> = {
                     {
-                        let output: Val<::bevy_math::bounding::RayCast3d> = ::bevy_math::bounding::RayCast3d::from_ray(
-                                ray.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::RayCast3d = ::bevy_math::bounding::RayCast3d::from_ray(
+                            safe_transmute(ray),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8270,11 +7890,10 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast3d::sphere_intersection_at(
-                                &_self,
-                                &sphere,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(sphere),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8303,11 +7922,10 @@ pub(crate) fn register_aabb_cast_3_d_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::AabbCast3d::aabb_collision_at(
-                                &_self,
-                                aabb.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(aabb),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8320,11 +7938,10 @@ pub(crate) fn register_aabb_cast_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::AabbCast3d>| {
                 let output: Val<::bevy_math::bounding::AabbCast3d> = {
                     {
-                        let output: Val<::bevy_math::bounding::AabbCast3d> = <::bevy_math::bounding::AabbCast3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::AabbCast3d = <::bevy_math::bounding::AabbCast3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8341,13 +7958,12 @@ pub(crate) fn register_aabb_cast_3_d_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::bounding::AabbCast3d> = {
                     {
-                        let output: Val<::bevy_math::bounding::AabbCast3d> = ::bevy_math::bounding::AabbCast3d::from_ray(
-                                aabb.into_inner(),
-                                ray.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::AabbCast3d = ::bevy_math::bounding::AabbCast3d::from_ray(
+                            safe_transmute(aabb),
+                            safe_transmute(ray),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8372,11 +7988,10 @@ pub(crate) fn register_bounding_sphere_cast_functions(world: &mut World) {
             |_self: Ref<::bevy_math::bounding::BoundingSphereCast>| {
                 let output: Val<::bevy_math::bounding::BoundingSphereCast> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingSphereCast> = <::bevy_math::bounding::BoundingSphereCast as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingSphereCast = <::bevy_math::bounding::BoundingSphereCast as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8393,13 +8008,12 @@ pub(crate) fn register_bounding_sphere_cast_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::bounding::BoundingSphereCast> = {
                     {
-                        let output: Val<::bevy_math::bounding::BoundingSphereCast> = ::bevy_math::bounding::BoundingSphereCast::from_ray(
-                                sphere.into_inner(),
-                                ray.into_inner(),
-                                max,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::bounding::BoundingSphereCast = ::bevy_math::bounding::BoundingSphereCast::from_ray(
+                            safe_transmute(sphere),
+                            safe_transmute(ray),
+                            safe_transmute(max),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8416,11 +8030,10 @@ pub(crate) fn register_bounding_sphere_cast_functions(world: &mut World) {
                 let output: ::core::option::Option<f32> = {
                     {
                         let output: ::core::option::Option<f32> = ::bevy_math::bounding::BoundingSphereCast::sphere_collision_at(
-                                &_self,
-                                sphere.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(sphere),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8446,11 +8059,10 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::curve::Interval::clamp(
-                                _self.into_inner(),
-                                value,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8463,11 +8075,10 @@ pub(crate) fn register_interval_functions(world: &mut World) {
             |_self: Ref<::bevy_math::curve::Interval>| {
                 let output: Val<::bevy_math::curve::Interval> = {
                     {
-                        let output: Val<::bevy_math::curve::Interval> = <::bevy_math::curve::Interval as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::curve::Interval = <::bevy_math::curve::Interval as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8481,11 +8092,10 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::curve::Interval::contains(
-                                _self.into_inner(),
-                                item,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(item),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8502,11 +8112,10 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::curve::Interval::contains_interval(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                            safe_transmute(other),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8520,10 +8129,9 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::curve::Interval::end(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8541,9 +8149,8 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::curve::Interval as ::core::cmp::PartialEq<
                             ::bevy_math::curve::Interval,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8557,10 +8164,9 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::curve::Interval::has_finite_end(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8574,10 +8180,9 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::curve::Interval::has_finite_start(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8591,10 +8196,9 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_math::curve::Interval::is_bounded(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8608,10 +8212,9 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::curve::Interval::length(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8625,10 +8228,9 @@ pub(crate) fn register_interval_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::curve::Interval::start(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8653,11 +8255,10 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir4>| {
                 let output: Val<::bevy_math::Vec4> = {
                     {
-                        let output: Val<::bevy_math::Vec4> = ::bevy_math::Dir4::as_vec4(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec4 = ::bevy_math::Dir4::as_vec4(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8670,11 +8271,10 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
             |_self: Ref<::bevy_math::Dir4>| {
                 let output: Val<::bevy_math::Dir4> = {
                     {
-                        let output: Val<::bevy_math::Dir4> = <::bevy_math::Dir4 as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir4 = <::bevy_math::Dir4 as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8689,9 +8289,8 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::Dir4 as ::core::cmp::PartialEq<
                             ::bevy_math::Dir4,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8704,11 +8303,10 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir4>| {
                 let output: Val<::bevy_math::Dir4> = {
                     {
-                        let output: Val<::bevy_math::Dir4> = ::bevy_math::Dir4::fast_renormalize(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir4 = ::bevy_math::Dir4::fast_renormalize(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8721,14 +8319,13 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
             |x: f32, y: f32, z: f32, w: f32| {
                 let output: Val<::bevy_math::Dir4> = {
                     {
-                        let output: Val<::bevy_math::Dir4> = ::bevy_math::Dir4::from_xyzw_unchecked(
-                                x,
-                                y,
-                                z,
-                                w,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir4 = ::bevy_math::Dir4::from_xyzw_unchecked(
+                            safe_transmute(x),
+                            safe_transmute(y),
+                            safe_transmute(z),
+                            safe_transmute(w),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8741,11 +8338,10 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir4>, rhs: f32| {
                 let output: Val<::bevy_math::Vec4> = {
                     {
-                        let output: Val<::bevy_math::Vec4> = <::bevy_math::Dir4 as ::core::ops::Mul<
+                        let output: ::bevy_math::Vec4 = <::bevy_math::Dir4 as ::core::ops::Mul<
                             f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
+                        >>::mul(safe_transmute(_self), safe_transmute(rhs));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8758,11 +8354,10 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
             |_self: Val<::bevy_math::Dir4>| {
                 let output: Val<::bevy_math::Dir4> = {
                     {
-                        let output: Val<::bevy_math::Dir4> = <::bevy_math::Dir4 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir4 = <::bevy_math::Dir4 as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8775,11 +8370,10 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
             |value: Val<::bevy_math::Vec4>| {
                 let output: Val<::bevy_math::Dir4> = {
                     {
-                        let output: Val<::bevy_math::Dir4> = ::bevy_math::Dir4::new_unchecked(
-                                value.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Dir4 = ::bevy_math::Dir4::new_unchecked(
+                            safe_transmute(value),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8804,11 +8398,10 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
             |_self: Ref<::bevy_math::FloatOrd>| {
                 let output: Val<::bevy_math::FloatOrd> = {
                     {
-                        let output: Val<::bevy_math::FloatOrd> = <::bevy_math::FloatOrd as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::FloatOrd = <::bevy_math::FloatOrd as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8823,9 +8416,8 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::FloatOrd as ::core::cmp::PartialEq<
                             ::bevy_math::FloatOrd,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8840,9 +8432,8 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::FloatOrd as ::core::cmp::PartialOrd<
                             ::bevy_math::FloatOrd,
-                        >>::ge(&_self, &other)
-                            .into();
-                        output
+                        >>::ge(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8857,9 +8448,8 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::FloatOrd as ::core::cmp::PartialOrd<
                             ::bevy_math::FloatOrd,
-                        >>::gt(&_self, &other)
-                            .into();
-                        output
+                        >>::gt(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8874,9 +8464,8 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::FloatOrd as ::core::cmp::PartialOrd<
                             ::bevy_math::FloatOrd,
-                        >>::le(&_self, &other)
-                            .into();
-                        output
+                        >>::le(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8891,9 +8480,8 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::FloatOrd as ::core::cmp::PartialOrd<
                             ::bevy_math::FloatOrd,
-                        >>::lt(&_self, &other)
-                            .into();
-                        output
+                        >>::lt(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8906,11 +8494,10 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
             |_self: Val<::bevy_math::FloatOrd>| {
                 let output: Val<::bevy_math::FloatOrd> = {
                     {
-                        let output: Val<::bevy_math::FloatOrd> = <::bevy_math::FloatOrd as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::FloatOrd = <::bevy_math::FloatOrd as ::core::ops::Neg>::neg(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8935,11 +8522,10 @@ pub(crate) fn register_plane_3_d_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Plane3d>| {
                 let output: Val<::bevy_math::primitives::Plane3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Plane3d> = <::bevy_math::primitives::Plane3d as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Plane3d = <::bevy_math::primitives::Plane3d as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8957,9 +8543,8 @@ pub(crate) fn register_plane_3_d_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Plane3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Plane3d,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -8972,12 +8557,11 @@ pub(crate) fn register_plane_3_d_functions(world: &mut World) {
             |normal: Val<::bevy_math::Vec3>, half_size: Val<::bevy_math::Vec2>| {
                 let output: Val<::bevy_math::primitives::Plane3d> = {
                     {
-                        let output: Val<::bevy_math::primitives::Plane3d> = ::bevy_math::primitives::Plane3d::new(
-                                normal.into_inner(),
-                                half_size.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Plane3d = ::bevy_math::primitives::Plane3d::new(
+                            safe_transmute(normal),
+                            safe_transmute(half_size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9002,11 +8586,10 @@ pub(crate) fn register_tetrahedron_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Tetrahedron>| {
                 let output: Val<::bevy_math::Vec3> = {
                     {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Tetrahedron::centroid(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::Vec3 = ::bevy_math::primitives::Tetrahedron::centroid(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9019,11 +8602,10 @@ pub(crate) fn register_tetrahedron_functions(world: &mut World) {
             |_self: Ref<::bevy_math::primitives::Tetrahedron>| {
                 let output: Val<::bevy_math::primitives::Tetrahedron> = {
                     {
-                        let output: Val<::bevy_math::primitives::Tetrahedron> = <::bevy_math::primitives::Tetrahedron as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Tetrahedron = <::bevy_math::primitives::Tetrahedron as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9041,9 +8623,8 @@ pub(crate) fn register_tetrahedron_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::primitives::Tetrahedron as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Tetrahedron,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9061,14 +8642,13 @@ pub(crate) fn register_tetrahedron_functions(world: &mut World) {
             {
                 let output: Val<::bevy_math::primitives::Tetrahedron> = {
                     {
-                        let output: Val<::bevy_math::primitives::Tetrahedron> = ::bevy_math::primitives::Tetrahedron::new(
-                                a.into_inner(),
-                                b.into_inner(),
-                                c.into_inner(),
-                                d.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::primitives::Tetrahedron = ::bevy_math::primitives::Tetrahedron::new(
+                            safe_transmute(a),
+                            safe_transmute(b),
+                            safe_transmute(c),
+                            safe_transmute(d),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9082,10 +8662,9 @@ pub(crate) fn register_tetrahedron_functions(world: &mut World) {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_math::primitives::Tetrahedron::signed_volume(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9110,11 +8689,10 @@ pub(crate) fn register_ease_function_functions(world: &mut World) {
             |_self: Ref<::bevy_math::curve::EaseFunction>| {
                 let output: Val<::bevy_math::curve::EaseFunction> = {
                     {
-                        let output: Val<::bevy_math::curve::EaseFunction> = <::bevy_math::curve::EaseFunction as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::curve::EaseFunction = <::bevy_math::curve::EaseFunction as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9132,9 +8710,8 @@ pub(crate) fn register_ease_function_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::curve::EaseFunction as ::core::cmp::PartialEq<
                             ::bevy_math::curve::EaseFunction,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9160,10 +8737,9 @@ pub(crate) fn register_jump_at_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_math::curve::JumpAt as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9176,11 +8752,10 @@ pub(crate) fn register_jump_at_functions(world: &mut World) {
             |_self: Ref<::bevy_math::curve::JumpAt>| {
                 let output: Val<::bevy_math::curve::JumpAt> = {
                     {
-                        let output: Val<::bevy_math::curve::JumpAt> = <::bevy_math::curve::JumpAt as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_math::curve::JumpAt = <::bevy_math::curve::JumpAt as ::core::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -9198,9 +8773,8 @@ pub(crate) fn register_jump_at_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_math::curve::JumpAt as ::core::cmp::PartialEq<
                             ::bevy_math::curve::JumpAt,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output

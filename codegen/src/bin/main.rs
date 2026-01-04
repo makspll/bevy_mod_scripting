@@ -9,14 +9,15 @@ use std::{
 };
 
 use bevy_mod_scripting_codegen::{driver::*, *};
-use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
+use cargo_metadata::camino::Utf8PathBuf;
 use clap::Parser;
-use crate_feature_graph::{Workspace, WorkspaceGraph};
-use log::{debug, error, info};
+use crate_feature_graph::{Crate, Workspace, WorkspaceGraph};
+use log::{debug, error};
 use strum::VariantNames;
 use tera::Context;
 
 const BOOTSTRAP_DEPS: [&str; 2] = ["bevy_reflect", "bevy_mod_scripting_bindings"];
+// const INJECT_DEPS: [&str; 1] = ["bevy_mod_scripting_bindings"];
 
 fn main() {
     // parse this here to early exit on wrong args
@@ -27,21 +28,23 @@ fn main() {
     }
     pretty_env_logger::init();
 
-    info!("Using RUST_LOG: {:?}", env::var("RUST_LOG"));
+    debug!("Using RUST_LOG: {:?}", env::var("RUST_LOG"));
 
-    info!(
+    debug!(
         "MSRV target: {}",
         args.mrsv_target()
             .map(|t| t.to_string())
             .unwrap_or(String::from("unset"))
     );
 
-    info!("Computing crate metadata");
+    debug!("Computing crate metadata");
     let metadata = cargo_metadata::MetadataCommand::new()
         .no_deps()
         .other_options(["--all-features".to_string(), "--offline".to_string()])
         .exec()
         .unwrap();
+
+    let root_crate = &metadata.root_package().unwrap().name;
 
     let crates = metadata
         .workspace_packages()
@@ -49,19 +52,19 @@ fn main() {
         .map(|p| p.name.to_owned())
         .collect::<Vec<_>>();
 
-    info!("Computing active features");
+    debug!("Computing active features");
     let include_crates = if !args.cmd.is_collect() {
         let workspace = Workspace::from(&metadata);
         let mut graph = WorkspaceGraph::from(workspace);
-        info!("Using workspace graph: \n{}", graph.to_dot());
+        debug!("Using workspace graph: \n{}", graph.to_dot());
 
-        info!(
+        debug!(
             "Computing all transitive dependencies for enabled top-level features: {}. using default features: {}",
             args.features.join(","),
             !args.no_default_features
         );
 
-        graph.calculate_enabled_features_and_dependencies_parse(args.features, None);
+        graph.calculate_enabled_features_and_dependencies_parse(args.features.clone(), None);
 
         let mut dependencies = graph
             .workspace
@@ -76,13 +79,13 @@ fn main() {
 
         if let Some(excluded_crates) = &args.exclude_crates {
             dependencies.retain(|c| !excluded_crates.contains(c));
-            info!("Excluding crates: {excluded_crates:?}");
+            debug!("Excluding crates: {excluded_crates:?}");
         }
 
         let graph_path =
             PathBuf::from(fetch_target_directory(&metadata).join("workspace_graph.dot"));
         graph.serialize(&graph_path).unwrap();
-        info!("Serialized workspace graph to: {}", graph_path.display());
+        debug!("Serialized workspace graph to: {}", graph_path.display());
         unsafe { std::env::set_var(WORKSPACE_GRAPH_FILE_ENV, graph_path) };
 
         Some(dependencies)
@@ -93,7 +96,7 @@ fn main() {
     let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
     let plugin_target_dir = metadata.target_directory.join(plugin_subdir);
 
-    info!("Computing workspace metadata");
+    debug!("Computing workspace metadata");
 
     // inform the deps about the workspace crates, this is going to be useful when working with meta files as we will be able to
     // know when to panic if a crate is not found
@@ -129,7 +132,7 @@ fn main() {
             api_name,
         } => {
             let tera = configure_tera("no_crate", &templates);
-            info!("Collecting from: {output}");
+            debug!("Collecting from: {output}");
             if !output.is_dir() {
                 panic!("Output is not a directory");
             }
@@ -168,7 +171,7 @@ fn main() {
             tera.render_to(&TemplateKind::SharedModule.to_string(), &context, &mut file)
                 .expect("Failed to render mod.rs");
             file.flush().unwrap();
-            log::info!("Succesfully generated mod.rs");
+            log::debug!("Succesfully generated mod.rs");
 
             // put json of Collect context into stdout
             std::io::stdout()
@@ -183,45 +186,40 @@ fn main() {
 
     debug!("Bootstrap directory: {}", &temp_dir.as_path().display());
 
-    write_bootstrap_files(args.bms_bindings_path, temp_dir.as_path());
+    write_bootstrap_files(
+        args.bms_bindings_path,
+        root_crate,
+        &PathBuf::from("."),
+        args.features.iter().map(|s| s.as_str()),
+        temp_dir.as_path(),
+    );
 
-    let bootstrap_rlibs = build_bootstrap(temp_dir.as_path(), &plugin_target_dir.join("bootstrap"));
-
-    if bootstrap_rlibs.len() == BOOTSTRAP_DEPS.len() {
-        let extern_args = bootstrap_rlibs
-            .iter()
-            .map(|(key, val)| format!("--extern {key}={val}",))
-            .collect::<Vec<_>>()
-            .join(" ");
-
-        debug!("bootstrap paths: {bootstrap_rlibs:?}");
-        unsafe {
-            env::set_var(
-                "RUSTFLAGS",
-                format!(
-                    "{} {} -L dependency={}",
-                    env::var("RUSTFLAGS").unwrap_or("".to_owned()),
-                    extern_args,
-                    bootstrap_rlibs.iter().next().unwrap().1.parent().unwrap()
-                ),
-            )
-        };
-    } else {
-        panic!("Could not find all bootstrap rlibs, found: {bootstrap_rlibs:?}");
-    }
+    let bootstrap_rlibs = build_bootstrap(temp_dir.as_path());
 
     debug!("Running bevy_api_gen main cargo command");
-
-    debug!("RUSTFLAGS={}", env::var("RUSTFLAGS").unwrap_or_default());
 
     // disable incremental compilation
     unsafe { env::set_var("CARGO_INCREMENTAL", "0") };
 
-    driver::cli_main(
-        BevyAnalyzer,
-        workspace_meta.include_crates.unwrap_or_default(),
-        &metadata,
-    );
+    let analyzer = BevyAnalyzer {
+        args: crate::Args::parse_from(std::env::args().skip(1)),
+        payload: Payload {
+            bootstrap_rlibs: bootstrap_rlibs
+                .into_iter()
+                .map(|(a, b)| (a, b.to_string()))
+                .collect(),
+            include_crates: workspace_meta.include_crates.unwrap_or_default(),
+            bootstrap_deps_path: temp_dir
+                .join("target")
+                .join("debug")
+                .join("deps")
+                .to_str()
+                .unwrap()
+                .to_string(),
+        },
+    };
+
+    driver::cli_main(analyzer, &metadata);
 
     // just making sure the temp dir lives until everything is done
     drop(temp_dir);
@@ -229,22 +227,8 @@ fn main() {
 
 /// Build bootstrap files if they don't exist
 /// use cached ones otherwise
-fn build_bootstrap(
-    temp_dir: &Path,
-    cache_dir: &Utf8Path,
-) -> HashMap<String, cargo_metadata::camino::Utf8PathBuf> {
+fn build_bootstrap(temp_dir: &Path) -> HashMap<String, cargo_metadata::camino::Utf8PathBuf> {
     debug!("Building bootstrapping crate");
-
-    // first check cache
-    if cache_dir.exists() {
-        let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
-        for entry in std::fs::read_dir(cache_dir).unwrap() {
-            let entry = entry.unwrap();
-            let artifact = entry.path();
-            process_artifact(artifact.try_into().unwrap(), &mut bootstrap_rlibs);
-        }
-        return bootstrap_rlibs;
-    }
 
     // run build command
     let mut cmd = Command::new("cargo")
@@ -255,15 +239,13 @@ fn build_bootstrap(
         .spawn()
         .unwrap();
 
-    info!(
+    debug!(
         "cd {} && cargo build --message-format=json",
         temp_dir.display()
     );
 
     let reader = std::io::BufReader::new(cmd.stdout.take().unwrap());
     let err_reader = std::io::BufReader::new(cmd.stderr.take().unwrap());
-
-    std::fs::create_dir_all(cache_dir).unwrap();
 
     let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
     for msg in cargo_metadata::Message::parse_stream(reader) {
@@ -280,48 +262,69 @@ fn build_bootstrap(
                     }
                 }
                 cargo_metadata::Message::TextLine(t) => {
-                    info!("{t}");
+                    debug!("{t}");
                 }
                 cargo_metadata::Message::CompilerMessage(msg) => {
-                    info!("{msg}");
+                    debug!("{msg}");
                 }
                 _ => {}
             }
         }
     }
+
+    let fail = match cmd.wait() {
+        Ok(status) => {
+            if !status.success() {
+                true
+                // panic!("Building bootstrap crate returned a failure status code, {}",);
+            } else {
+                false
+            }
+        }
+        Err(_) => {
+            // panic!("Failed to wait on cargo build process: {e}");
+            true
+        }
+    };
+
     for msg in err_reader.lines() {
         if let Ok(line) = msg {
-            info!("{line}");
+            if fail {
+                println!("{line}");
+            }
         } else {
             panic!("Failed to read cargo stderr");
         }
     }
 
-    // cache bootstrap artifacts
-    if let Some(artifact) = bootstrap_rlibs.values().next() {
-        let deps_dir = artifact.parent().unwrap();
-
-        for dir in std::fs::read_dir(deps_dir).unwrap() {
-            let dir = dir.unwrap();
-            let path = dir.path();
-
-            let dest = cache_dir.join(path.file_name().unwrap().to_str().unwrap());
-            std::fs::copy(path, dest).unwrap();
-        }
+    if fail {
+        panic!("failed to build bootstrap crate");
     }
-    match cmd.wait() {
-        Ok(status) => {
-            if !status.success() {
-                panic!("Building bootstrap crate returned a failure status code");
-            }
-        }
-        Err(e) => {
-            panic!("Failed to wait on cargo build process: {e}");
-        }
-    }
+
+    let include_list: [&'static str; 13] = [
+        "bevy_reflect",
+        "bevy_mod_scripting_bindings",
+        "bevy_ptr",
+        "bevy_utils",
+        "bevy_reflect_derive",
+        "bevy_platform",
+        "bevy_utils",
+        "serde",
+        "serde_core",
+        "glam",
+        "uuid",
+        "smallvec",
+        "hashbrown",
+    ];
+    // for c in exclude_list {
+    //     bootstrap_rlibs.remove(c);
+    // }
+    bootstrap_rlibs.retain(|k, _| include_list.contains(&k.as_str()));
 
     bootstrap_rlibs
 }
+
+const LINKABLE_EXTENSIONS: [&str; 3] = ["rlib", "so", "dll"];
 
 /// Process artifact and add it to the bootstrap rlibs if it's is for a bootstrap dependency and an rlib
 fn process_artifact(
@@ -332,8 +335,9 @@ fn process_artifact(
     let lib_name = file_name.split('-').next().unwrap().strip_prefix("lib");
 
     if let Some(lib_name) = lib_name
-        && BOOTSTRAP_DEPS.contains(&lib_name)
-        && artifact.extension().is_some_and(|ext| ext == "rlib")
+        && artifact
+            .extension()
+            .is_some_and(|ext| LINKABLE_EXTENSIONS.contains(&ext))
     {
         bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
     }
@@ -361,17 +365,46 @@ fn find_bootstrap_dir() -> PathBuf {
     path
 }
 
+impl CrateRef {
+    pub fn into_toml_key_val(self) -> String {
+        match self {
+            CrateRef::Path(p) => format!("path = \"{p}\""),
+            CrateRef::Version(v) => format!("version = \"{v}\""),
+        }
+    }
+}
+
 /// Generate bootstrapping crate files
-fn write_bootstrap_files(bms_bindings_path: Utf8PathBuf, path: &Path) {
-    const BMS_BINDINGS_PATH_PLACEHOLDER: &str = "{{BMS_BINDINGS_PATH}}";
+fn write_bootstrap_files<'a>(
+    bms_bindings_path: Utf8PathBuf,
+    dependencies: HashMap<Crate>,
+    path: &Path,
+) {
+    // const BMS_BINDINGS_PATH_PLACEHOLDER: &str = "{{BMS_BINDINGS_PATH}}";
+    const DEPENDENCIES_PATH_PLACEHOLDER: &str = "{{DEPENDENCIES}}";
 
     // write manifest file 'Cargo.toml'
     let mut manifest_content =
         String::from_utf8(include_bytes!("../../Cargo.bootstrap.toml").to_vec())
             .expect("Could not read manifest template as utf8");
 
-    manifest_content =
-        manifest_content.replace(BMS_BINDINGS_PATH_PLACEHOLDER, bms_bindings_path.as_str());
+    let dependencies = dependencies
+        .into_iter()
+        .map(|krate, (version, features)| format!("{} = {{ {}}}", krate.into_toml_key_val(),));
+
+    manifest_content = manifest_content
+        .replace(DEPENDENCIES_PATH_PLACEHOLDER, bms_bindings_path.as_str())
+        .replace(
+            ANALYSED_CRATE_PATH_PLACEHOLDER,
+            &format!(
+                "{analysed_crate_name} = {{ path = \"{}\", features = [{}]}}",
+                analysed_crate_path.to_string_lossy(),
+                analysed_crate_features
+                    .map(|f| format!("\"{f}\""))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ),
+        );
 
     let manifest_path = path.join("Cargo.toml");
 

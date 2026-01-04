@@ -3,6 +3,8 @@
 pub mod arg_meta;
 pub mod from;
 pub mod from_ref;
+#[doc(hidden)]
+pub mod glue;
 pub mod into;
 pub mod into_ref;
 pub mod magic_functions;

@@ -227,7 +227,7 @@ impl WorkspaceGraph {
 
         // finally filter out nodes we don't want to show but connect edges
         if !only_show_crates.is_empty() {
-            log::info!("Filtering to only show crates: {only_show_crates:?}");
+            log::debug!("Filtering to only show crates: {only_show_crates:?}");
             let only_show_crates: HashSet<_> = only_show_crates
                 .into_iter()
                 .map(|s| s.to_string())
@@ -237,14 +237,14 @@ impl WorkspaceGraph {
                 .filter(|c| !only_show_crates.contains(&c.to_string()))
                 .collect();
 
-            log::info!(
+            log::debug!(
                 "Removing and interconnecting {} nodes, out of {}",
                 to_remove.len(),
                 visualiser_graph.node_count()
             );
 
             for n in to_remove {
-                log::info!("Removing node {n}");
+                log::debug!("Removing node {n}");
                 let node_index =
                     match visualiser_graph.find_node_by_opt(|node| node.contains(&n.to_string())) {
                         Some(n) => n,
@@ -408,7 +408,7 @@ impl WorkspaceGraph {
             }
         }
 
-        log::info!("Parsed features map: {features_map:?}");
+        log::debug!("Parsed features map: {features_map:?}");
         self.calculate_enabled_features_and_dependencies(features_map, false);
     }
 
@@ -454,7 +454,7 @@ impl WorkspaceGraph {
 
         open_set.extend(enabled_crates.keys().cloned());
 
-        log::info!("Starting feature calculation with open set: {open_set:?}");
+        log::debug!("Starting feature calculation with open set: {open_set:?}");
 
         while let Some(krate) = open_set.pop_front() {
             log::trace!("Processing crate `{krate}`");

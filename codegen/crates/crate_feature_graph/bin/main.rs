@@ -48,7 +48,7 @@ pub fn main() -> std::io::Result<()> {
     let mut graph = WorkspaceGraph::from(workspace);
 
     let root = args.root_package;
-    log::info!(
+    log::debug!(
         "Calculating features for root: {:?} with features: {:?}, default features: {}",
         root,
         args.features,

@@ -169,6 +169,8 @@ impl FieldCandidate {
 #[derive(Debug, Clone)]
 pub enum GenerationExclusionNote {
     Reason(String),
+    #[allow(dead_code)]
+    Section(&'static str),
 }
 
 impl std::fmt::Display for GenerationExclusionNote {
@@ -176,6 +178,7 @@ impl std::fmt::Display for GenerationExclusionNote {
         f.write_str("Excluded: ")?;
         match self {
             GenerationExclusionNote::Reason(reason) => f.write_str(reason.as_str())?,
+            GenerationExclusionNote::Section(section) => f.write_str(section)?,
         }
         Ok(())
     }
@@ -353,14 +356,14 @@ impl<'n, 'tcx> AnnotationContextCollector<'n, 'tcx> {
     }
 
     pub fn annotate_field(&mut self, ctxt: &str, field: &'n FieldCandidate) {
-        let ctxt = format!("{ctxt}::{}", field.friendly_name(self.ctxt));
+        let ctxt = format!("{ctxt} {} (field)", field.friendly_name(self.ctxt));
         for note in &field.notes {
             self.notes_with_context.push((ctxt.to_string(), note))
         }
     }
 
     fn annotate_function(&mut self, ctxt: &str, function: &'n FunctionCandidate<'tcx>) {
-        let ctxt = format!("{ctxt}::{}", function.friendly_name(self.ctxt));
+        let ctxt = format!("{ctxt} fn {}", function.friendly_name(self.ctxt));
 
         for note in &function.notes {
             self.notes_with_context.push((ctxt.to_string(), note))
@@ -374,7 +377,7 @@ impl<'n, 'tcx> AnnotationContextCollector<'n, 'tcx> {
     }
 
     fn annotate_arg(&mut self, ctxt: &str, arg: &'n FunctionArgCandidate) {
-        let ctxt = format!("{ctxt}::{}", arg.friendly_name(self.ctxt));
+        let ctxt = format!("{ctxt} {} (arg)", arg.friendly_name(self.ctxt));
 
         for note in &arg.notes {
             self.notes_with_context.push((ctxt.to_string(), note))

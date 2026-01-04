@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -25,10 +25,9 @@ pub(crate) fn register_justify_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_text::Justify as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -41,11 +40,10 @@ pub(crate) fn register_justify_functions(world: &mut World) {
             |_self: Ref<::bevy_text::Justify>| {
                 let output: Val<::bevy_text::Justify> = {
                     {
-                        let output: Val<::bevy_text::Justify> = <::bevy_text::Justify as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::Justify = <::bevy_text::Justify as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -60,9 +58,8 @@ pub(crate) fn register_justify_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_text::Justify as ::std::cmp::PartialEq<
                             ::bevy_text::Justify,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -88,10 +85,9 @@ pub(crate) fn register_line_break_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_text::LineBreak as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -104,11 +100,10 @@ pub(crate) fn register_line_break_functions(world: &mut World) {
             |_self: Ref<::bevy_text::LineBreak>| {
                 let output: Val<::bevy_text::LineBreak> = {
                     {
-                        let output: Val<::bevy_text::LineBreak> = <::bevy_text::LineBreak as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::LineBreak = <::bevy_text::LineBreak as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -123,9 +118,8 @@ pub(crate) fn register_line_break_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_text::LineBreak as ::std::cmp::PartialEq<
                             ::bevy_text::LineBreak,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -150,11 +144,10 @@ pub(crate) fn register_text_color_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextColor>| {
                 let output: Val<::bevy_text::TextColor> = {
                     {
-                        let output: Val<::bevy_text::TextColor> = <::bevy_text::TextColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextColor = <::bevy_text::TextColor as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -169,9 +162,8 @@ pub(crate) fn register_text_color_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_text::TextColor as ::std::cmp::PartialEq<
                             ::bevy_text::TextColor,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -196,11 +188,10 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextFont>| {
                 let output: Val<::bevy_text::TextFont> = {
                     {
-                        let output: Val<::bevy_text::TextFont> = <::bevy_text::TextFont as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextFont = <::bevy_text::TextFont as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -215,9 +206,8 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_text::TextFont as ::std::cmp::PartialEq<
                             ::bevy_text::TextFont,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -230,11 +220,10 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
             |font_size: f32| {
                 let output: Val<::bevy_text::TextFont> = {
                     {
-                        let output: Val<::bevy_text::TextFont> = ::bevy_text::TextFont::from_font_size(
-                                font_size,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextFont = ::bevy_text::TextFont::from_font_size(
+                            safe_transmute(font_size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -247,12 +236,11 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
             |_self: Val<::bevy_text::TextFont>, font_size: f32| {
                 let output: Val<::bevy_text::TextFont> = {
                     {
-                        let output: Val<::bevy_text::TextFont> = ::bevy_text::TextFont::with_font_size(
-                                _self.into_inner(),
-                                font_size,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextFont = ::bevy_text::TextFont::with_font_size(
+                            safe_transmute(_self),
+                            safe_transmute(font_size),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -268,12 +256,11 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
             {
                 let output: Val<::bevy_text::TextFont> = {
                     {
-                        let output: Val<::bevy_text::TextFont> = ::bevy_text::TextFont::with_font_smoothing(
-                                _self.into_inner(),
-                                font_smoothing.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextFont = ::bevy_text::TextFont::with_font_smoothing(
+                            safe_transmute(_self),
+                            safe_transmute(font_smoothing),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -289,12 +276,11 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
             {
                 let output: Val<::bevy_text::TextFont> = {
                     {
-                        let output: Val<::bevy_text::TextFont> = ::bevy_text::TextFont::with_line_height(
-                                _self.into_inner(),
-                                line_height.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextFont = ::bevy_text::TextFont::with_line_height(
+                            safe_transmute(_self),
+                            safe_transmute(line_height),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -319,11 +305,10 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextLayout>| {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = <::bevy_text::TextLayout as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = <::bevy_text::TextLayout as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -336,12 +321,11 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             |justify: Val<::bevy_text::Justify>, linebreak: Val<::bevy_text::LineBreak>| {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = ::bevy_text::TextLayout::new(
-                                justify.into_inner(),
-                                linebreak.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = ::bevy_text::TextLayout::new(
+                            safe_transmute(justify),
+                            safe_transmute(linebreak),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -354,11 +338,10 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             |justify: Val<::bevy_text::Justify>| {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = ::bevy_text::TextLayout::new_with_justify(
-                                justify.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = ::bevy_text::TextLayout::new_with_justify(
+                            safe_transmute(justify),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -371,11 +354,10 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             |linebreak: Val<::bevy_text::LineBreak>| {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = ::bevy_text::TextLayout::new_with_linebreak(
-                                linebreak.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = ::bevy_text::TextLayout::new_with_linebreak(
+                            safe_transmute(linebreak),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -388,9 +370,8 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             || {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = ::bevy_text::TextLayout::new_with_no_wrap()
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = ::bevy_text::TextLayout::new_with_no_wrap();
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -403,12 +384,11 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             |_self: Val<::bevy_text::TextLayout>, justify: Val<::bevy_text::Justify>| {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = ::bevy_text::TextLayout::with_justify(
-                                _self.into_inner(),
-                                justify.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = ::bevy_text::TextLayout::with_justify(
+                            safe_transmute(_self),
+                            safe_transmute(justify),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -424,12 +404,11 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = ::bevy_text::TextLayout::with_linebreak(
-                                _self.into_inner(),
-                                linebreak.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = ::bevy_text::TextLayout::with_linebreak(
+                            safe_transmute(_self),
+                            safe_transmute(linebreak),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -442,11 +421,10 @@ pub(crate) fn register_text_layout_functions(world: &mut World) {
             |_self: Val<::bevy_text::TextLayout>| {
                 let output: Val<::bevy_text::TextLayout> = {
                     {
-                        let output: Val<::bevy_text::TextLayout> = ::bevy_text::TextLayout::with_no_wrap(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayout = ::bevy_text::TextLayout::with_no_wrap(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -471,11 +449,10 @@ pub(crate) fn register_text_span_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextSpan>| {
                 let output: Val<::bevy_text::TextSpan> = {
                     {
-                        let output: Val<::bevy_text::TextSpan> = <::bevy_text::TextSpan as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextSpan = <::bevy_text::TextSpan as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -500,11 +477,10 @@ pub(crate) fn register_text_bounds_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextBounds>| {
                 let output: Val<::bevy_text::TextBounds> = {
                     {
-                        let output: Val<::bevy_text::TextBounds> = <::bevy_text::TextBounds as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextBounds = <::bevy_text::TextBounds as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -517,12 +493,11 @@ pub(crate) fn register_text_bounds_functions(world: &mut World) {
             |width: f32, height: f32| {
                 let output: Val<::bevy_text::TextBounds> = {
                     {
-                        let output: Val<::bevy_text::TextBounds> = ::bevy_text::TextBounds::new(
-                                width,
-                                height,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextBounds = ::bevy_text::TextBounds::new(
+                            safe_transmute(width),
+                            safe_transmute(height),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -535,11 +510,10 @@ pub(crate) fn register_text_bounds_functions(world: &mut World) {
             |width: f32| {
                 let output: Val<::bevy_text::TextBounds> = {
                     {
-                        let output: Val<::bevy_text::TextBounds> = ::bevy_text::TextBounds::new_horizontal(
-                                width,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextBounds = ::bevy_text::TextBounds::new_horizontal(
+                            safe_transmute(width),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -552,11 +526,10 @@ pub(crate) fn register_text_bounds_functions(world: &mut World) {
             |height: f32| {
                 let output: Val<::bevy_text::TextBounds> = {
                     {
-                        let output: Val<::bevy_text::TextBounds> = ::bevy_text::TextBounds::new_vertical(
-                                height,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextBounds = ::bevy_text::TextBounds::new_vertical(
+                            safe_transmute(height),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -582,10 +555,9 @@ pub(crate) fn register_font_smoothing_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_text::FontSmoothing as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -598,11 +570,10 @@ pub(crate) fn register_font_smoothing_functions(world: &mut World) {
             |_self: Ref<::bevy_text::FontSmoothing>| {
                 let output: Val<::bevy_text::FontSmoothing> = {
                     {
-                        let output: Val<::bevy_text::FontSmoothing> = <::bevy_text::FontSmoothing as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::FontSmoothing = <::bevy_text::FontSmoothing as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -620,9 +591,8 @@ pub(crate) fn register_font_smoothing_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_text::FontSmoothing as ::std::cmp::PartialEq<
                             ::bevy_text::FontSmoothing,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -647,11 +617,10 @@ pub(crate) fn register_glyph_atlas_location_functions(world: &mut World) {
             |_self: Ref<::bevy_text::GlyphAtlasLocation>| {
                 let output: Val<::bevy_text::GlyphAtlasLocation> = {
                     {
-                        let output: Val<::bevy_text::GlyphAtlasLocation> = <::bevy_text::GlyphAtlasLocation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::GlyphAtlasLocation = <::bevy_text::GlyphAtlasLocation as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -676,11 +645,10 @@ pub(crate) fn register_glyph_atlas_info_functions(world: &mut World) {
             |_self: Ref<::bevy_text::GlyphAtlasInfo>| {
                 let output: Val<::bevy_text::GlyphAtlasInfo> = {
                     {
-                        let output: Val<::bevy_text::GlyphAtlasInfo> = <::bevy_text::GlyphAtlasInfo as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::GlyphAtlasInfo = <::bevy_text::GlyphAtlasInfo as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -705,11 +673,10 @@ pub(crate) fn register_positioned_glyph_functions(world: &mut World) {
             |_self: Ref<::bevy_text::PositionedGlyph>| {
                 let output: Val<::bevy_text::PositionedGlyph> = {
                     {
-                        let output: Val<::bevy_text::PositionedGlyph> = <::bevy_text::PositionedGlyph as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::PositionedGlyph = <::bevy_text::PositionedGlyph as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -734,11 +701,10 @@ pub(crate) fn register_computed_text_block_functions(world: &mut World) {
             |_self: Ref<::bevy_text::ComputedTextBlock>| {
                 let output: Val<::bevy_text::ComputedTextBlock> = {
                     {
-                        let output: Val<::bevy_text::ComputedTextBlock> = <::bevy_text::ComputedTextBlock as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::ComputedTextBlock = <::bevy_text::ComputedTextBlock as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -752,10 +718,9 @@ pub(crate) fn register_computed_text_block_functions(world: &mut World) {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_text::ComputedTextBlock::needs_rerender(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -780,11 +745,10 @@ pub(crate) fn register_text_entity_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextEntity>| {
                 let output: Val<::bevy_text::TextEntity> = {
                     {
-                        let output: Val<::bevy_text::TextEntity> = <::bevy_text::TextEntity as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextEntity = <::bevy_text::TextEntity as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -809,11 +773,10 @@ pub(crate) fn register_text_layout_info_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextLayoutInfo>| {
                 let output: Val<::bevy_text::TextLayoutInfo> = {
                     {
-                        let output: Val<::bevy_text::TextLayoutInfo> = <::bevy_text::TextLayoutInfo as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextLayoutInfo = <::bevy_text::TextLayoutInfo as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -838,11 +801,10 @@ pub(crate) fn register_line_height_functions(world: &mut World) {
             |_self: Ref<::bevy_text::LineHeight>| {
                 let output: Val<::bevy_text::LineHeight> = {
                     {
-                        let output: Val<::bevy_text::LineHeight> = <::bevy_text::LineHeight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::LineHeight = <::bevy_text::LineHeight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -857,9 +819,8 @@ pub(crate) fn register_line_height_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_text::LineHeight as ::std::cmp::PartialEq<
                             ::bevy_text::LineHeight,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -884,11 +845,10 @@ pub(crate) fn register_text_background_color_functions(world: &mut World) {
             |_self: Ref<::bevy_text::TextBackgroundColor>| {
                 let output: Val<::bevy_text::TextBackgroundColor> = {
                     {
-                        let output: Val<::bevy_text::TextBackgroundColor> = <::bevy_text::TextBackgroundColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_text::TextBackgroundColor = <::bevy_text::TextBackgroundColor as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -906,9 +866,8 @@ pub(crate) fn register_text_background_color_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_text::TextBackgroundColor as ::std::cmp::PartialEq<
                             ::bevy_text::TextBackgroundColor,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output

@@ -8,7 +8,7 @@ use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
         from::{Ref, Mut, Val},
-        namespace::NamespaceBuilder,
+        namespace::NamespaceBuilder, glue::safe_transmute,
     },
 };
 use bevy_ecs::prelude::*;
@@ -24,11 +24,10 @@ pub(crate) fn register_clustered_decal_functions(world: &mut World) {
             |_self: Ref<::bevy_light::ClusteredDecal>| {
                 let output: Val<::bevy_light::ClusteredDecal> = {
                     {
-                        let output: Val<::bevy_light::ClusteredDecal> = <::bevy_light::ClusteredDecal as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::ClusteredDecal = <::bevy_light::ClusteredDecal as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -53,11 +52,10 @@ pub(crate) fn register_ambient_light_functions(world: &mut World) {
             |_self: Ref<::bevy_light::AmbientLight>| {
                 let output: Val<::bevy_light::AmbientLight> = {
                     {
-                        let output: Val<::bevy_light::AmbientLight> = <::bevy_light::AmbientLight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::AmbientLight = <::bevy_light::AmbientLight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -82,11 +80,10 @@ pub(crate) fn register_environment_map_light_functions(world: &mut World) {
             |_self: Ref<::bevy_light::EnvironmentMapLight>| {
                 let output: Val<::bevy_light::EnvironmentMapLight> = {
                     {
-                        let output: Val<::bevy_light::EnvironmentMapLight> = <::bevy_light::EnvironmentMapLight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::EnvironmentMapLight = <::bevy_light::EnvironmentMapLight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -111,11 +108,10 @@ pub(crate) fn register_generated_environment_map_light_functions(world: &mut Wor
             |_self: Ref<::bevy_light::GeneratedEnvironmentMapLight>| {
                 let output: Val<::bevy_light::GeneratedEnvironmentMapLight> = {
                     {
-                        let output: Val<::bevy_light::GeneratedEnvironmentMapLight> = <::bevy_light::GeneratedEnvironmentMapLight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::GeneratedEnvironmentMapLight = <::bevy_light::GeneratedEnvironmentMapLight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -140,11 +136,10 @@ pub(crate) fn register_irradiance_volume_functions(world: &mut World) {
             |_self: Ref<::bevy_light::IrradianceVolume>| {
                 let output: Val<::bevy_light::IrradianceVolume> = {
                     {
-                        let output: Val<::bevy_light::IrradianceVolume> = <::bevy_light::IrradianceVolume as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::IrradianceVolume = <::bevy_light::IrradianceVolume as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -169,11 +164,10 @@ pub(crate) fn register_light_probe_functions(world: &mut World) {
             |_self: Ref<::bevy_light::LightProbe>| {
                 let output: Val<::bevy_light::LightProbe> = {
                     {
-                        let output: Val<::bevy_light::LightProbe> = <::bevy_light::LightProbe as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::LightProbe = <::bevy_light::LightProbe as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -186,9 +180,8 @@ pub(crate) fn register_light_probe_functions(world: &mut World) {
             || {
                 let output: Val<::bevy_light::LightProbe> = {
                     {
-                        let output: Val<::bevy_light::LightProbe> = ::bevy_light::LightProbe::new()
-                            .into();
-                        output
+                        let output: ::bevy_light::LightProbe = ::bevy_light::LightProbe::new();
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -213,11 +206,10 @@ pub(crate) fn register_fog_volume_functions(world: &mut World) {
             |_self: Ref<::bevy_light::FogVolume>| {
                 let output: Val<::bevy_light::FogVolume> = {
                     {
-                        let output: Val<::bevy_light::FogVolume> = <::bevy_light::FogVolume as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::FogVolume = <::bevy_light::FogVolume as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -242,11 +234,10 @@ pub(crate) fn register_volumetric_fog_functions(world: &mut World) {
             |_self: Ref<::bevy_light::VolumetricFog>| {
                 let output: Val<::bevy_light::VolumetricFog> = {
                     {
-                        let output: Val<::bevy_light::VolumetricFog> = <::bevy_light::VolumetricFog as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::VolumetricFog = <::bevy_light::VolumetricFog as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -271,11 +262,10 @@ pub(crate) fn register_volumetric_light_functions(world: &mut World) {
             |_self: Ref<::bevy_light::VolumetricLight>| {
                 let output: Val<::bevy_light::VolumetricLight> = {
                     {
-                        let output: Val<::bevy_light::VolumetricLight> = <::bevy_light::VolumetricLight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::VolumetricLight = <::bevy_light::VolumetricLight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -300,11 +290,10 @@ pub(crate) fn register_cascade_shadow_config_functions(world: &mut World) {
             |_self: Ref<::bevy_light::CascadeShadowConfig>| {
                 let output: Val<::bevy_light::CascadeShadowConfig> = {
                     {
-                        let output: Val<::bevy_light::CascadeShadowConfig> = <::bevy_light::CascadeShadowConfig as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::CascadeShadowConfig = <::bevy_light::CascadeShadowConfig as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -329,11 +318,10 @@ pub(crate) fn register_cascades_functions(world: &mut World) {
             |_self: Ref<::bevy_light::Cascades>| {
                 let output: Val<::bevy_light::Cascades> = {
                     {
-                        let output: Val<::bevy_light::Cascades> = <::bevy_light::Cascades as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::Cascades = <::bevy_light::Cascades as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -358,11 +346,10 @@ pub(crate) fn register_point_light_functions(world: &mut World) {
             |_self: Ref<::bevy_light::PointLight>| {
                 let output: Val<::bevy_light::PointLight> = {
                     {
-                        let output: Val<::bevy_light::PointLight> = <::bevy_light::PointLight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::PointLight = <::bevy_light::PointLight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -387,11 +374,10 @@ pub(crate) fn register_point_light_shadow_map_functions(world: &mut World) {
             |_self: Ref<::bevy_light::PointLightShadowMap>| {
                 let output: Val<::bevy_light::PointLightShadowMap> = {
                     {
-                        let output: Val<::bevy_light::PointLightShadowMap> = <::bevy_light::PointLightShadowMap as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::PointLightShadowMap = <::bevy_light::PointLightShadowMap as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -416,11 +402,10 @@ pub(crate) fn register_point_light_texture_functions(world: &mut World) {
             |_self: Ref<::bevy_light::PointLightTexture>| {
                 let output: Val<::bevy_light::PointLightTexture> = {
                     {
-                        let output: Val<::bevy_light::PointLightTexture> = <::bevy_light::PointLightTexture as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::PointLightTexture = <::bevy_light::PointLightTexture as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -445,11 +430,10 @@ pub(crate) fn register_spot_light_functions(world: &mut World) {
             |_self: Ref<::bevy_light::SpotLight>| {
                 let output: Val<::bevy_light::SpotLight> = {
                     {
-                        let output: Val<::bevy_light::SpotLight> = <::bevy_light::SpotLight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::SpotLight = <::bevy_light::SpotLight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -474,11 +458,10 @@ pub(crate) fn register_spot_light_texture_functions(world: &mut World) {
             |_self: Ref<::bevy_light::SpotLightTexture>| {
                 let output: Val<::bevy_light::SpotLightTexture> = {
                     {
-                        let output: Val<::bevy_light::SpotLightTexture> = <::bevy_light::SpotLightTexture as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::SpotLightTexture = <::bevy_light::SpotLightTexture as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -503,11 +486,10 @@ pub(crate) fn register_directional_light_functions(world: &mut World) {
             |_self: Ref<::bevy_light::DirectionalLight>| {
                 let output: Val<::bevy_light::DirectionalLight> = {
                     {
-                        let output: Val<::bevy_light::DirectionalLight> = <::bevy_light::DirectionalLight as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::DirectionalLight = <::bevy_light::DirectionalLight as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -532,11 +514,10 @@ pub(crate) fn register_directional_light_shadow_map_functions(world: &mut World)
             |_self: Ref<::bevy_light::DirectionalLightShadowMap>| {
                 let output: Val<::bevy_light::DirectionalLightShadowMap> = {
                     {
-                        let output: Val<::bevy_light::DirectionalLightShadowMap> = <::bevy_light::DirectionalLightShadowMap as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::DirectionalLightShadowMap = <::bevy_light::DirectionalLightShadowMap as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -561,11 +542,10 @@ pub(crate) fn register_directional_light_texture_functions(world: &mut World) {
             |_self: Ref<::bevy_light::DirectionalLightTexture>| {
                 let output: Val<::bevy_light::DirectionalLightTexture> = {
                     {
-                        let output: Val<::bevy_light::DirectionalLightTexture> = <::bevy_light::DirectionalLightTexture as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::DirectionalLightTexture = <::bevy_light::DirectionalLightTexture as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -590,11 +570,10 @@ pub(crate) fn register_not_shadow_caster_functions(world: &mut World) {
             |_self: Ref<::bevy_light::NotShadowCaster>| {
                 let output: Val<::bevy_light::NotShadowCaster> = {
                     {
-                        let output: Val<::bevy_light::NotShadowCaster> = <::bevy_light::NotShadowCaster as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::NotShadowCaster = <::bevy_light::NotShadowCaster as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -612,9 +591,8 @@ pub(crate) fn register_not_shadow_caster_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_light::NotShadowCaster as ::std::cmp::PartialEq<
                             ::bevy_light::NotShadowCaster,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -664,10 +642,9 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = <::bevy_light::ShadowFilteringMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -680,11 +657,10 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
             |_self: Ref<::bevy_light::ShadowFilteringMethod>| {
                 let output: Val<::bevy_light::ShadowFilteringMethod> = {
                     {
-                        let output: Val<::bevy_light::ShadowFilteringMethod> = <::bevy_light::ShadowFilteringMethod as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::ShadowFilteringMethod = <::bevy_light::ShadowFilteringMethod as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -702,9 +678,8 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
                     {
                         let output: bool = <::bevy_light::ShadowFilteringMethod as ::std::cmp::PartialEq<
                             ::bevy_light::ShadowFilteringMethod,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
+                        >>::eq(safe_transmute(_self), safe_transmute(other));
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -729,11 +704,10 @@ pub(crate) fn register_cluster_far_z_mode_functions(world: &mut World) {
             |_self: Ref<::bevy_light::cluster::ClusterFarZMode>| {
                 let output: Val<::bevy_light::cluster::ClusterFarZMode> = {
                     {
-                        let output: Val<::bevy_light::cluster::ClusterFarZMode> = <::bevy_light::cluster::ClusterFarZMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::cluster::ClusterFarZMode = <::bevy_light::cluster::ClusterFarZMode as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -758,11 +732,10 @@ pub(crate) fn register_cluster_z_config_functions(world: &mut World) {
             |_self: Ref<::bevy_light::cluster::ClusterZConfig>| {
                 let output: Val<::bevy_light::cluster::ClusterZConfig> = {
                     {
-                        let output: Val<::bevy_light::cluster::ClusterZConfig> = <::bevy_light::cluster::ClusterZConfig as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::cluster::ClusterZConfig = <::bevy_light::cluster::ClusterZConfig as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -787,11 +760,10 @@ pub(crate) fn register_cluster_config_functions(world: &mut World) {
             |_self: Ref<::bevy_light::cluster::ClusterConfig>| {
                 let output: Val<::bevy_light::cluster::ClusterConfig> = {
                     {
-                        let output: Val<::bevy_light::cluster::ClusterConfig> = <::bevy_light::cluster::ClusterConfig as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::cluster::ClusterConfig = <::bevy_light::cluster::ClusterConfig as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output
@@ -816,11 +788,10 @@ pub(crate) fn register_cascade_functions(world: &mut World) {
             |_self: Ref<::bevy_light::cascade::Cascade>| {
                 let output: Val<::bevy_light::cascade::Cascade> = {
                     {
-                        let output: Val<::bevy_light::cascade::Cascade> = <::bevy_light::cascade::Cascade as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
+                        let output: ::bevy_light::cascade::Cascade = <::bevy_light::cascade::Cascade as ::std::clone::Clone>::clone(
+                            safe_transmute(_self),
+                        );
+                        safe_transmute(output)
                     }
                 };
                 output

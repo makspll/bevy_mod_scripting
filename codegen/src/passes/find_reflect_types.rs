@@ -3,7 +3,7 @@ use rustc_hir::def_id::LOCAL_CRATE;
 use rustc_middle::ty::AdtDef;
 
 use crate::{
-    Args, BevyCtxt, DEF_PATHS_REFLECT,
+    Args, BevyCtxt,
     candidate::{Annotated, GenerationCandidate, GenerationExclusionNote},
 };
 
@@ -16,27 +16,46 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
         _ => return true,
     };
 
-    for trait_did in tcx.all_local_trait_impls(()).keys() {
-        // we want to find the canonical `Reflect` trait's implemenations across crates, so let's check all impls and choose those
-        // whose def_path is equal to what we know the Reflect trait's is
+    let reflect_ref = ctxt.cached_traits.bevy_types.reflect;
+    let reflect_impls = tcx.trait_impls_of(reflect_ref);
+    // let sess = ctxt.tcx.sess;
+    // let source_map = sess.source_map();
+    // log::info!(
+    //     "found impls: {:?}",
+    //     reflect_impls.non_blanket_impls().iter().map(|impl_| sess
+    //         .source_map()
+    //         .span_to_location_info(ctxt.tcx.def_span(impl_.)))
+    // );
 
-        let def_path_str = tcx.def_path_str(trait_did);
-
-        if !DEF_PATHS_REFLECT.contains(&def_path_str.as_str()) {
-            continue;
-        }
-
-        // this returns non-local impls as well
-        let reflect_trait_impls = tcx.trait_impls_of(trait_did);
-
-        // blanket impls are implementations on generics directly, i.e. `impl From<T> for T`
-        // non blanket impls may also contain generics but those will be contained within another type i.e. `impl Default for Vec<T>`
-        // ignore anything with a generic, so blanket_impls are out for now
-        // we also make sure to only work over types and impls directly in the local crate
-        let (reflect_adts_did, excluded_candidates): (Vec<_>, Vec<_>) = reflect_trait_impls
+    // blanket impls are implementations on generics directly, i.e. `impl From<T> for T`
+    // non blanket impls may also contain generics but those will be contained within another type i.e. `impl Default for Vec<T>`
+    // ignore anything with a generic, so blanket_impls are out for now
+    // we also make sure to only work over types and impls directly in the local crate
+    // log::info!(
+    //     "reflect_crate: {:?}, {:?}",
+    //     ctxt.cached_traits.bevy_types.reflect_crate,
+    //     ctxt.tcx
+    //         .def_path(ctxt.cached_traits.bevy_types.reflect_crate.as_def_id())
+    // );
+    // log::info!(
+    //     "local_crate: {:?}, {:?}",
+    //     ctxt.cached_traits.bevy_types.reflect_crate,
+    //     ctxt.tcx.def_path(LOCAL_CRATE.as_def_id())
+    // );
+    let (reflect_adts_did, excluded_candidates): (Vec<_>, Vec<_>) =
+        reflect_impls
             .non_blanket_impls()
             .iter()
             .flat_map(|(self_ty, impl_dids)| impl_dids.iter().zip(std::iter::repeat(self_ty)))
+            // .inspect(|(impl_did, _)| {
+            //     log::info!(
+            //         "in crate: {LOCAL_CRATE:?}, found impl: \n{impl_did:?}\n{:?}\nis_local: {}\n",
+            //         source_map.span_to_diagnostic_string(tcx.def_span(*impl_did)),
+            //         impl_did.is_local()
+            //     )
+            // })
+            // non local impls are not relevant, we only care about what a crate implements, we don't want to include in the excluded set either, as these aren't even considered
+            .filter(|(impl_did, _)| impl_did.is_local())
             .map(|(impl_did, self_ty)| {
                 let mut early_candidate = GenerationCandidate::<Option<AdtDef>>::default();
 
@@ -50,12 +69,6 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                 };
 
                 early_candidate.did = Some(did);
-
-                if !impl_did.is_local() {
-                    return Err(early_candidate.with_note(GenerationExclusionNote::Reason(
-                        format!("impl block {impl_did:?}, is not local"),
-                    )));
-                }
 
                 let generics = tcx.generics_of(*impl_did);
                 if generics.count() > 0 {
@@ -110,16 +123,15 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                 Ok(early_candidate.promote(adt))
             })
             .partition_result();
-        ctxt.reflect_types
-            .extend(reflect_adts_did.into_iter().map(|a| (a.def.did(), a)));
-        ctxt.excluded_reflect_types.extend(excluded_candidates);
-    }
+    ctxt.reflect_types
+        .extend(reflect_adts_did.into_iter().map(|a| (a.def.did(), a)));
+    ctxt.excluded_reflect_types.extend(excluded_candidates);
 
     ctxt.reflect_types
         .sort_by_cached_key(|did, _| tcx.item_name(*did));
 
-    log::info!("Found: {} types", ctxt.reflect_types.len());
-    log::info!("Excluded: {} types", ctxt.excluded_reflect_types.len());
+    log::debug!("Found: {} types", ctxt.reflect_types.len());
+    log::debug!("Excluded: {} types", ctxt.excluded_reflect_types.len());
 
     true
 }

@@ -1,30 +1,16 @@
 use std::{borrow::Cow, process::Command};
 
-use cargo_metadata::camino::Utf8Path;
 use serde::{Serialize, de::DeserializeOwned};
 
-/// Specification of a set of crates.
-pub enum CrateFilter {
-    /// Every crate in the workspace and all transitive dependencies.
-    AllCrates,
-    /// Just crates in the workspace.
-    OnlyWorkspace,
-}
-
-/// Arguments from your plugin to the rustc_plugin framework.
-pub struct RustcPluginArgs<Args> {
-    /// Whatever CLI arguments you want to pass along.
-    pub args: Args,
-
-    /// Which crates you want to run the plugin on.
-    pub filter: CrateFilter,
+#[derive(Debug)]
+pub enum RunMode {
+    NormalRustc,
+    Plugin,
+    Skip,
 }
 
 /// Interface between your plugin and the rustc_plugin framework.
-pub trait RustcPlugin: Sized {
-    /// Command-line arguments passed by the user.
-    type Args: Serialize + DeserializeOwned;
-
+pub trait RustcPlugin: Sized + Serialize + DeserializeOwned {
     /// Returns the version of your plugin.
     ///
     /// A sensible default is your plugin's Cargo version:
@@ -32,24 +18,31 @@ pub trait RustcPlugin: Sized {
     /// ```ignore
     /// env!("CARGO_PKG_VERSION").into()
     /// ```
-    fn version(&self) -> Cow<'static, str>;
+    fn version() -> Cow<'static, str>;
 
     /// Returns the name of your driver binary as it's installed in the filesystem.
     ///
     /// Should be just the filename, not the full path.
     fn driver_name(&self) -> Cow<'static, str>;
 
-    /// Parses and returns the CLI arguments for the plugin.
-    fn args(&self, target_dir: &Utf8Path) -> RustcPluginArgs<Self::Args>;
-
     /// Optionally modify the `cargo` command that launches rustc.
     /// For example, you could pass a `--feature` flag here.
-    fn modify_cargo(&self, _cargo: &mut Command, _args: &Self::Args) {}
+    fn modify_cargo(&self, _cargo: &mut Command) {}
+
+    fn modify_rustc(&self, _compiler_args: &mut Vec<String>) {}
 
     /// Executes the plugin with a set of compiler and plugin args.
-    fn run(self, compiler_args: Vec<String>, plugin_args: Self::Args);
+    fn run(self, crate_name: &str, compiler_args: Vec<String>, is_not_build_invocation: bool);
+
+    /// To be used after the PAYLOAD is initialized
+    fn initialize_from_env() -> Self {
+        serde_json::from_str(&std::env::var(PLUGIN_PAYLOAD).unwrap()).unwrap()
+    }
+
+    /// persists the plugin in the process environment for children to be able to call [`Self::initialize_from_env`]
+    fn serialize_to_env(&self) {
+        unsafe { std::env::set_var(PLUGIN_PAYLOAD, serde_json::to_string(&self).unwrap()) }
+    }
 }
 
-/// The name of the environment variable shared between the CLI and the driver.
-/// Must not conflict with any other env var used by Cargo.
-pub const PLUGIN_ARGS: &str = "PLUGIN_ARGS";
+pub const PLUGIN_PAYLOAD: &str = "PLUGIN_PAYLOAD";

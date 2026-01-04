@@ -284,6 +284,7 @@ impl WorkspaceMeta {
 
     /// Returns true if the given crate is in the workspace and if the plugin will run on it
     pub fn is_workspace_and_included_crate(&self, crate_name: &str) -> bool {
+        // TODO: temp
         self.include_crates
             .as_ref()
             .map(|include_crates| include_crates.contains(&crate_name.to_owned()))
