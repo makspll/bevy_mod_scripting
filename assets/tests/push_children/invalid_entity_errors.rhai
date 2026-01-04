@@ -1,4 +1,4 @@
-let fake_entity = Entity.from_raw.call(9999);
+let fake_entity = _make_invalid_entity.call();
 
 assert_throws(||{
     world.push_children.call(fake_entity, [fake_entity]);

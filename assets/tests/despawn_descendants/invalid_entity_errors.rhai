@@ -1,3 +1,3 @@
 assert_throws(||{
-    world.despawn_recursive.call(Entity.from_raw.call(9999));
+    world.despawn_recursive.call(_make_invalid_entity.call());
 }, "Missing or invalid entity")

@@ -505,8 +505,8 @@ mod tests {
         assert!(script_context.contains(&context_key2));
         let mut residents = script_context.residents(&context_key2).collect::<Vec<_>>();
         residents.sort_by_key(|r| r.0.entity());
-        assert_eq!(residents[0].0, context_key);
-        assert_eq!(residents[1].0, context_key2);
+        assert_eq!(residents[0].0, context_key2);
+        assert_eq!(residents[1].0, context_key);
         assert_eq!(residents.len(), 2);
         assert_eq!(script_context.residents_len(&context_key2), 2);
     }

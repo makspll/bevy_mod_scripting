@@ -1,3 +1,3 @@
-local entity = Entity.from_raw(9999);
+local entity = _make_invalid_entity();
 -- does not throw
 entity:eq(entity);

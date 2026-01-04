@@ -425,7 +425,7 @@ mod test {
     };
     use parking_lot::Mutex;
     use test_utils::make_test_plugin;
-    use uuid::uuid;
+    use uuid::{Uuid, uuid};
 
     use super::FORBIDDEN_KEYWORDS;
     use crate::{
@@ -574,11 +574,11 @@ mod test {
 
     fn recipients_to_asset_ids(
         recipients: &[(ScriptAttachment, Arc<Mutex<TestContext>>)],
-    ) -> Vec<(usize, String)> {
+    ) -> Vec<(Uuid, String)> {
         recipients
             .iter()
             .map(|(attachment, context)| {
-                if let AssetId::Index { index, .. } = attachment.script().id() {
+                if let AssetId::Uuid { uuid } = attachment.script().id() {
                     let locked = context.lock();
                     let first_invocation_string =
                         if let Some(ScriptValue::String(s)) = locked.invocations.first() {
@@ -586,10 +586,7 @@ mod test {
                         } else {
                             panic!("Expected first invocation to be a string")
                         };
-                    (
-                        index.to_bits() as usize,
-                        first_invocation_string.to_string(),
-                    )
+                    (uuid, first_invocation_string.to_string())
                 } else {
                     panic!(
                         "Expected AssetId::Index, got {:?}",
@@ -612,12 +609,30 @@ mod test {
         assert_eq!(
             id_context_pairs,
             vec![
-                (0, "a".to_string()),
-                (1, "a".to_string()),
-                (2, "b".to_string()),
-                (3, "b".to_string()),
-                (4, "c".to_string()),
-                (5, "d".to_string()),
+                (
+                    uuid!("163f1128-62f9-456f-9b76-a326fbe86fa8"),
+                    "a".to_string()
+                ),
+                (
+                    uuid!("263f1128-62f9-456f-9b76-a326fbe86fa8"),
+                    "a".to_string()
+                ),
+                (
+                    uuid!("363f1128-62f9-456f-9b76-a326fbe86fa8"),
+                    "b".to_string()
+                ),
+                (
+                    uuid!("463f1128-62f9-456f-9b76-a326fbe86fa8"),
+                    "b".to_string()
+                ),
+                (
+                    uuid!("563f1128-62f9-456f-9b76-a326fbe86fa8"),
+                    "c".to_string()
+                ),
+                (
+                    uuid!("663f1128-62f9-456f-9b76-a326fbe86fa8"),
+                    "d".to_string()
+                ),
             ]
         );
     }
@@ -635,15 +650,31 @@ mod test {
 
         // we can't just use equality here because the order of contexts is not guaranteed
         assert!(
-            id_context_pairs.contains(&(0, "a".to_string()))
-                || id_context_pairs.contains(&(1, "a".to_string()))
+            id_context_pairs.contains(&(
+                uuid!("163f1128-62f9-456f-9b76-a326fbe86fa8"),
+                "a".to_string()
+            )) || id_context_pairs.contains(&(
+                uuid!("263f1128-62f9-456f-9b76-a326fbe86fa8"),
+                "a".to_string()
+            ))
         );
         assert!(
-            id_context_pairs.contains(&(2, "b".to_string()))
-                || id_context_pairs.contains(&(3, "b".to_string()))
+            id_context_pairs.contains(&(
+                uuid!("363f1128-62f9-456f-9b76-a326fbe86fa8"),
+                "b".to_string()
+            )) || id_context_pairs.contains(&(
+                uuid!("463f1128-62f9-456f-9b76-a326fbe86fa8"),
+                "b".to_string()
+            ))
         );
-        assert!(id_context_pairs.contains(&(4, "c".to_string())));
-        assert!(id_context_pairs.contains(&(5, "d".to_string())));
+        assert!(id_context_pairs.contains(&(
+            uuid!("563f1128-62f9-456f-9b76-a326fbe86fa8"),
+            "c".to_string()
+        )));
+        assert!(id_context_pairs.contains(&(
+            uuid!("663f1128-62f9-456f-9b76-a326fbe86fa8"),
+            "d".to_string()
+        )));
     }
 
     #[test]
@@ -660,7 +691,13 @@ mod test {
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);
-        assert_eq!(id_context_pairs, vec![(0, "a".to_string())]);
+        assert_eq!(
+            id_context_pairs,
+            vec![(
+                uuid!("163f1128-62f9-456f-9b76-a326fbe86fa8"),
+                "a".to_string()
+            )]
+        );
     }
 
     #[test]
@@ -674,6 +711,12 @@ mod test {
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);
-        assert_eq!(id_context_pairs, vec![(4, "c".to_string())]);
+        assert_eq!(
+            id_context_pairs,
+            vec![(
+                uuid!("563f1128-62f9-456f-9b76-a326fbe86fa8"),
+                "c".to_string()
+            )]
+        );
     }
 }

@@ -112,6 +112,33 @@ pub fn register_test_functions(world: &mut App) {
         );
 
     NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
+        .register("_make_invalid_entity", |s: FunctionCallContext| {
+            let world = s.world().unwrap();
+
+            let entity = Entity::from_raw_u32(u32::MAX - 2).unwrap();
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated(entity, &mut allocator)
+        })
+        .register("_make_placeholder_entity", |s: FunctionCallContext| {
+            let world = s.world().unwrap();
+
+            let entity = Entity::PLACEHOLDER;
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated(entity, &mut allocator)
+        })
+        .register(
+            "_entity_from_index",
+            |s: FunctionCallContext, index: u32| {
+                let world = s.world().unwrap();
+
+                let entity = Entity::from_raw_u32(index).unwrap();
+                let allocator = world.allocator();
+                let mut allocator = allocator.write();
+                ReflectReference::new_allocated(entity, &mut allocator)
+            },
+        )
         .register("global_hello_world", || Ok("hi!"))
         .register("random", |start: Option<u32>, end: Option<u32>| {
             let start = start.unwrap_or(0);
