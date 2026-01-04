@@ -122,6 +122,13 @@ jobs:
       - name: Checkout
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: actions/checkout@v4
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
       - uses: actions-rs/toolchain@v1
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         with:
