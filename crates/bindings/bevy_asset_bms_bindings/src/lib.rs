@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAssetScriptingPlugin;
 pub(crate) fn register_untyped_handle_functions(world: &mut World) {
@@ -102,60 +99,54 @@ pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_asset::UntypedAssetId,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_asset::UntypedAssetId>| {
-                let output: Val<::bevy_asset::UntypedAssetId> = {
-                    {
-                        let output: Val<::bevy_asset::UntypedAssetId> = <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_asset::UntypedAssetId>| {
+            let output: Val<::bevy_asset::UntypedAssetId> = {
+                {
+                    let output: Val<::bevy_asset::UntypedAssetId> =
+                        <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_asset::UntypedAssetId>,
-                other: Ref<::bevy_asset::UntypedAssetId>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
-                            ::bevy_asset::UntypedAssetId,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "type_id",
-            |_self: Ref<::bevy_asset::UntypedAssetId>| {
-                let output: Val<::core::any::TypeId> = {
-                    {
-                        let output: Val<::core::any::TypeId> = ::bevy_asset::UntypedAssetId::type_id(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the stored [`TypeId`] of the referenced [`Asset`].",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_asset::UntypedAssetId>, other: Ref<::bevy_asset::UntypedAssetId>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
+                        ::bevy_asset::UntypedAssetId,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "type_id",
+        |_self: Ref<::bevy_asset::UntypedAssetId>| {
+            let output: Val<::core::any::TypeId> = {
+                {
+                    let output: Val<::core::any::TypeId> =
+                        ::bevy_asset::UntypedAssetId::type_id(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the stored [`TypeId`] of the referenced [`Asset`].",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

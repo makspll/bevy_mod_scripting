@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyColorScriptingPlugin;
 pub(crate) fn register_color_functions(world: &mut World) {
@@ -536,10 +533,7 @@ pub(crate) fn register_color_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Color,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Color, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_srgba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -848,10 +842,7 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Srgba,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Srgba, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_linear_rgba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1225,10 +1216,7 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Hsla,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Hsla, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_hsva_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1346,10 +1334,7 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Hsva,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Hsva, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_hwba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1467,10 +1452,7 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Hwba,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Hwba, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_laba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1655,10 +1637,7 @@ pub(crate) fn register_laba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Laba,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Laba, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_lcha_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1793,10 +1772,7 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Lcha,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Lcha, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_oklaba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2017,10 +1993,7 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Oklaba,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Oklaba, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_oklcha_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2155,10 +2128,7 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Oklcha,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Oklcha, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_xyza_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2379,10 +2349,7 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_color::Xyza,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_color::Xyza, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 impl Plugin for BevyColorScriptingPlugin {
     fn build(&self, app: &mut App) {
