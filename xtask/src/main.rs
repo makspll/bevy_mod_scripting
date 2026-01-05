@@ -1233,51 +1233,51 @@ impl Xtasks {
 
         // generate coverage report and lcov file
         // if app_settings.coverage {
-            // run_system_command(
-            //     &app_settings,
-            //     "grcov",
-            //     "Generating html coverage report",
-            //     vec![
-            //         ".",
-            //         "--binary-path",
-            //         "./target/debug/deps/",
-            //         "-s",
-            //         ".",
-            //         "-t",
-            //         "html",
-            //         "--branch",
-            //         "--ignore-not-existing",
-            //         "--ignore",
-            //         "**/bevy_bindings/**",
-            //         "-o",
-            //         "target/coverage/html",
-            //     ],
-            //     None,
-            //     false,
-            // )?;
+        // run_system_command(
+        //     &app_settings,
+        //     "grcov",
+        //     "Generating html coverage report",
+        //     vec![
+        //         ".",
+        //         "--binary-path",
+        //         "./target/debug/deps/",
+        //         "-s",
+        //         ".",
+        //         "-t",
+        //         "html",
+        //         "--branch",
+        //         "--ignore-not-existing",
+        //         "--ignore",
+        //         "**/bevy_bindings/**",
+        //         "-o",
+        //         "target/coverage/html",
+        //     ],
+        //     None,
+        //     false,
+        // )?;
 
-            // run_system_command(
-            //     &app_settings,
-            //     "grcov",
-            //     "Failed to generate coverage report",
-            //     vec![
-            //         ".",
-            //         "--binary-path",
-            //         "./target/debug/deps/",
-            //         "-s",
-            //         ".",
-            //         "-t",
-            //         "lcov",
-            //         "--branch",
-            //         "--ignore-not-existing",
-            //         "--ignore",
-            //         "**/bevy_bindings/**",
-            //         "-o",
-            //         "target/coverage/lcov.info",
-            //     ],
-            //     None,
-            //     false,
-            // )?;
+        // run_system_command(
+        //     &app_settings,
+        //     "grcov",
+        //     "Failed to generate coverage report",
+        //     vec![
+        //         ".",
+        //         "--binary-path",
+        //         "./target/debug/deps/",
+        //         "-s",
+        //         ".",
+        //         "-t",
+        //         "lcov",
+        //         "--branch",
+        //         "--ignore-not-existing",
+        //         "--ignore",
+        //         "**/bevy_bindings/**",
+        //         "-o",
+        //         "target/coverage/lcov.info",
+        //     ],
+        //     None,
+        //     false,
+        // )?;
         // }
         Ok(())
     }
@@ -1424,8 +1424,8 @@ impl Xtasks {
                 "install",
                 "--git",
                 "https://github.com/bencherdev/bencher",
-                "--branch",
-                "main",
+                "--tag",
+                "v0.5.7",
                 "--locked",
                 "--force",
                 "bencher_cli",
