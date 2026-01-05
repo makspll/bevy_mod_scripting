@@ -456,9 +456,9 @@ struct CiMatrixRow {
 
 impl Xtasks {
     fn run(self, app_settings: GlobalArgs) -> Result<String> {
-        if app_settings.coverage {
-            Self::set_cargo_coverage_settings();
-        }
+        // if app_settings.coverage {
+        //     Self::set_cargo_coverage_settings();
+        // }
 
         match self {
             Xtasks::Build { timings } => Self::build(timings, app_settings),
@@ -533,13 +533,13 @@ impl Xtasks {
         Ok("".into())
     }
 
-    fn append_rustflags(flag: &str) {
-        let rustflags = std::env::var("RUSTFLAGS").unwrap_or_default();
-        let mut flags = rustflags.split(' ').collect::<Vec<_>>();
-        flags.push(flag);
-        let flags = flags.join(" ");
-        unsafe { std::env::set_var("RUSTFLAGS", flags) };
-    }
+    // fn append_rustflags(flag: &str) {
+    //     let rustflags = std::env::var("RUSTFLAGS").unwrap_or_default();
+    //     let mut flags = rustflags.split(' ').collect::<Vec<_>>();
+    //     flags.push(flag);
+    //     let flags = flags.join(" ");
+    //     unsafe { std::env::set_var("RUSTFLAGS", flags) };
+    // }
 
     fn build(timings: bool, app_settings: GlobalArgs) -> Result<()> {
         // build workspace using the given features
@@ -1190,18 +1190,18 @@ impl Xtasks {
         Ok(())
     }
 
-    fn set_cargo_coverage_settings() {
-        // This makes local dev hell
-        // std::env::set_var("CARGO_INCREMENTAL", "0");
-        Self::append_rustflags("-Cinstrument-coverage");
+    // fn set_cargo_coverage_settings() {
+    //     // This makes local dev hell
+    //     // std::env::set_var("CARGO_INCREMENTAL", "0");
+    //     Self::append_rustflags("-Cinstrument-coverage");
 
-        let target_dir =
-            std::env::var("MAIN_CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
-        let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
-        let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
+    //     let target_dir =
+    //         std::env::var("MAIN_CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
+    //     let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
+    //     let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
 
-        unsafe { std::env::set_var("LLVM_PROFILE_FILE", coverage_file) };
-    }
+    //     unsafe { std::env::set_var("LLVM_PROFILE_FILE", coverage_file) };
+    // }
 
     fn test(app_settings: GlobalArgs, package: Option<String>, name: Option<String>) -> Result<()> {
         // run cargo test with instrumentation
@@ -1315,10 +1315,7 @@ impl Xtasks {
             .clone()
             .with_features(Features::all_features().without(Feature::ProfileWithTracy))
             .with_profile(
-                app_settings
-                    .profile
-                    .clone()
-                    .or(Some("ephemeral-build".to_owned())),
+                app_settings.profile.clone(), // .or(Some("ephemeral-build".to_owned())),
             );
 
         for feature_set in powersets.iter_mut() {
