@@ -12,21 +12,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon.svg">
-        <link rel="shortcut icon" href="../favicon.png">
-        <link rel="stylesheet" href="../css/variables.css">
-        <link rel="stylesheet" href="../css/general.css">
-        <link rel="stylesheet" href="../css/chrome.css">
-        <link rel="stylesheet" href="../css/print.css" media="print">
+        <link rel="icon" href="../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../css/general-2459343d.css">
+        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="../fonts/fonts.css">
+        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
-        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
-        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -36,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex.js";
+            window.path_to_searchindex_js = "../searchindex-6ece2901.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc.js"></script>
+        <script src="../toc-ceb9ebec.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -53,7 +52,7 @@
             </div>
         </div>
     </div>
-    <div id="body-container">
+    <div id="mdbook-body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -82,12 +81,12 @@
             html.classList.add("js");
         </script>
 
-        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
             let sidebar = null;
-            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -102,39 +101,39 @@
             }
         </script>
 
-        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
                 <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <div id="page-wrapper" class="page-wrapper">
+        <div id="mdbook-page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
-                            <i class="fa fa-bars"></i>
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
                         </label>
-                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
-                            <i class="fa fa-paint-brush"></i>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
                         </button>
-                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
-                            <i class="fa fa-search"></i>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
                         </button>
                     </div>
 
@@ -142,128 +141,133 @@
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
-                            <i id="print-button" class="fa fa-print"></i>
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
-                            <i id="git-repository-button" class="fa fa-github"></i>
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
                         <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
-                            <i id="git-edit-button" class="fa fa-edit"></i>
+                            <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
                     </div>
                 </div>
 
-                <div id="search-wrapper" class="hidden">
-                    <form id="searchbar-outer" class="searchbar-outer">
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
                         <div class="search-wrapper">
-                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
                             <div class="spinner-wrapper">
-                                <i class="fa fa-spinner fa-spin"></i>
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
                             </div>
                         </div>
                     </form>
-                    <div id="searchresults-outer" class="searchresults-outer hidden">
-                        <div id="searchresults-header" class="searchresults-header"></div>
-                        <ul id="searchresults">
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
                         </ul>
                     </div>
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
                 <script>
-                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
-                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
-                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
                         link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
                     });
                 </script>
 
-                <div id="content" class="content">
+                <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="types"><a class="header" href="#types">Types</a></h1>
 <h2 id="available-types"><a class="header" href="#available-types">Available Types</a></h2>
 <p>All registered reflect-able types which can be constructed and directly manipulated by scripts.</p>
-<div class="table-wrapper"><table><thead><tr><th>Type</th><th>Summary</th></tr></thead><tbody>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Type</th><th>Summary</th></tr>
+</thead>
+<tbody>
 <tr><td><a href="././types/world.html"><code>World</code></a></td><td>The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bev...</td></tr>
-<tr><td><a href="././types/scriptcomponentregistration.html"><code>ScriptComponentRegistration</code></a></td><td>A reference to a component type's reflection registration.   In general think of this as a handle t...</td></tr>
+<tr><td><a href="././types/scriptcomponentregistration.html"><code>ScriptComponentRegistration</code></a></td><td>A reference to a component type’s reflection registration.   In general think of this as a handle t...</td></tr>
 <tr><td><a href="././types/scriptquerybuilder.html"><code>ScriptQueryBuilder</code></a></td><td>The query builder is used to build ECS queries which retrieve spefific components filtered by speci...</td></tr>
 <tr><td><a href="././types/scriptqueryresult.html"><code>ScriptQueryResult</code></a></td><td>A result from a query.</td></tr>
-<tr><td><a href="././types/scriptresourceregistration.html"><code>ScriptResourceRegistration</code></a></td><td>A reference to a resource type's reflection registration.   In general think of this as a handle to...</td></tr>
+<tr><td><a href="././types/scriptresourceregistration.html"><code>ScriptResourceRegistration</code></a></td><td>A reference to a resource type’s reflection registration.   In general think of this as a handle to...</td></tr>
 <tr><td><a href="././types/scripttyperegistration.html"><code>ScriptTypeRegistration</code></a></td><td>A reference to a type which is not a `Resource` or `Component`.   In general think of this as a han...</td></tr>
 <tr><td><a href="././types/scriptsystembuilder.html"><code>ScriptSystemBuilder</code></a></td><td>A builder for systems living in scripts</td></tr>
-<tr><td><a href="././types/scriptattachment.html"><code>ScriptAttachment</code></a></td><td>Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.</td></tr>
+<tr><td><a href="././types/scriptattachment.html"><code>ScriptAttachment</code></a></td><td>Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]’s depending on the context policy used.</td></tr>
 <tr><td><a href="././types/reflectschedule.html"><code>ReflectSchedule</code></a></td><td>A reflectable schedule.</td></tr>
 <tr><td><a href="././types/reflectsystem.html"><code>ReflectSystem</code></a></td><td>A reflectable system.</td></tr>
-<tr><td><a href="././types/handlescriptasset.html"><code>Handle&lt;ScriptAsset&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
+<tr><td><a href="././types/handlescriptasset.html"><code>Handle&lt;ScriptAsset&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
 <tr><td><a href="././types/reflectreference.html"><code>ReflectReference</code></a></td><td>A reference to a reflectable type</td></tr>
 <tr><td><a href="././types/color.html"><code>Color</code></a></td><td>An enumerated type that can represent any of the color types in this crate.   This is useful when y...</td></tr>
 <tr><td><a href="././types/hsla.html"><code>Hsla</code></a></td><td>Color in Hue-Saturation-Lightness (HSL) color space with alpha.  Further information on this color ...</td></tr>
 <tr><td><a href="././types/hsva.html"><code>Hsva</code></a></td><td>Color in Hue-Saturation-Value (HSV) color space with alpha.  Further information on this color mode...</td></tr>
 <tr><td><a href="././types/hwba.html"><code>Hwba</code></a></td><td>Color in Hue-Whiteness-Blackness (HWB) color space with alpha.  Further information on this color m...</td></tr>
-<tr><td><a href="././types/laba.html"><code>Laba</code></a></td><td>Color in LAB color space, with alpha  <div>  </div></td></tr>
-<tr><td><a href="././types/lcha.html"><code>Lcha</code></a></td><td>Color in LCH color space, with alpha  <div>  </div></td></tr>
-<tr><td><a href="././types/linearrgba.html"><code>LinearRgba</code></a></td><td>Linear RGB color with alpha.  <div>  </div></td></tr>
-<tr><td><a href="././types/oklaba.html"><code>Oklaba</code></a></td><td>Color in Oklab color space, with alpha  <div>  </div></td></tr>
-<tr><td><a href="././types/oklcha.html"><code>Oklcha</code></a></td><td>Color in Oklch color space, with alpha  <div>  </div></td></tr>
-<tr><td><a href="././types/srgba.html"><code>Srgba</code></a></td><td>Non-linear standard RGB with alpha.  <div>  </div></td></tr>
-<tr><td><a href="././types/xyza.html"><code>Xyza</code></a></td><td>[CIE 1931](https://en.wikipedia.org/wiki/CIE_1931_color_space) color space, also known as XYZ, with an alpha channel.  <div>  </div></td></tr>
-<tr><td><a href="././types/autoexposurecompensationcurve.html"><code>AutoExposureCompensationCurve</code></a></td><td>An auto exposure compensation curve.  This curve is used to map the average log luminance of a scen...</td></tr>
-<tr><td><a href="././types/autoexposure.html"><code>AutoExposure</code></a></td><td>Component that enables auto exposure for an HDR-enabled 2d or 3d camera.   Auto exposure adjusts th...</td></tr>
-<tr><td><a href="././types/bloom.html"><code>Bloom</code></a></td><td>Applies a bloom effect to an HDR-enabled 2d or 3d camera.   Bloom emulates an effect found in real ...</td></tr>
-<tr><td><a href="././types/bloomcompositemode.html"><code>BloomCompositeMode</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/bloomprefilter.html"><code>BloomPrefilter</code></a></td><td>Applies a threshold filter to the input image to extract the brightest  regions before blurring the...</td></tr>
-<tr><td><a href="././types/contrastadaptivesharpening.html"><code>ContrastAdaptiveSharpening</code></a></td><td>Applies a contrast adaptive sharpening (CAS) filter to the camera.   CAS is usually used in combina...</td></tr>
-<tr><td><a href="././types/denoisecas.html"><code>DenoiseCas</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/camera2d.html"><code>Camera2d</code></a></td><td>A 2D camera component. Enables the 2D render graph for a [`Camera`].</td></tr>
-<tr><td><a href="././types/camera3d.html"><code>Camera3d</code></a></td><td>A 3D camera component. Enables the main 3D render graph for a [`Camera`].   The camera coordinate space is right-handed X-right, Y-up, Z-back.  This means "forward" is -Z.</td></tr>
-<tr><td><a href="././types/camera3ddepthloadop.html"><code>Camera3dDepthLoadOp</code></a></td><td>The depth clear operation to perform for the main 3d pass.</td></tr>
-<tr><td><a href="././types/camera3ddepthtextureusage.html"><code>Camera3dDepthTextureUsage</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/screenspacetransmissionquality.html"><code>ScreenSpaceTransmissionQuality</code></a></td><td>The quality of the screen space transmission blur effect, applied to whatever's “behind” transm...</td></tr>
-<tr><td><a href="././types/depthoffield.html"><code>DepthOfField</code></a></td><td>A component that enables a [depth of field] postprocessing effect when attached to a [`Camera3d`], ...</td></tr>
-<tr><td><a href="././types/depthoffieldmode.html"><code>DepthOfFieldMode</code></a></td><td>Controls the appearance of the effect.</td></tr>
-<tr><td><a href="././types/fxaa.html"><code>Fxaa</code></a></td><td>A component for enabling Fast Approximate Anti-Aliasing (FXAA)  for a [`bevy_render::camera::Camera`].</td></tr>
-<tr><td><a href="././types/sensitivity.html"><code>Sensitivity</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/motionblur.html"><code>MotionBlur</code></a></td><td>A component that enables and configures motion blur when added to a camera.   Motion blur is an eff...</td></tr>
+<tr><td><a href="././types/laba.html"><code>Laba</code></a></td><td>Color in LAB color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/lcha.html"><code>Lcha</code></a></td><td>Color in LCH color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/linearrgba.html"><code>LinearRgba</code></a></td><td>Linear RGB color with alpha.  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/oklaba.html"><code>Oklaba</code></a></td><td>Color in Oklab color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/oklcha.html"><code>Oklcha</code></a></td><td>Color in Oklch color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/srgba.html"><code>Srgba</code></a></td><td>Non-linear standard RGB with alpha.  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/xyza.html"><code>Xyza</code></a></td><td>[CIE 1931](https://en.wikipedia.org/wiki/CIE_1931_color_space) color space, also known as XYZ, with an alpha channel.  
+<div>  </div>
+</td></tr>
 <tr><td><a href="././types/orderindependenttransparencysettings.html"><code>OrderIndependentTransparencySettings</code></a></td><td>Used to identify which camera will use OIT to render transparent meshes  and to configure OIT.</td></tr>
-<tr><td><a href="././types/chromaticaberration.html"><code>ChromaticAberration</code></a></td><td>Adds colored fringes to the edges of objects in the scene.   [Chromatic aberration] simulates the effect when lenses fail to focus all  colors of light toward a single point. It causes rainbow-colored streaks to  appear, which are especially apparent on the edges of objects. Chromatic  aberration is commonly used for collision effects, especially in horror  games.   Bevy's implementation is based on that of *Inside* ([Gjøl &amp; Svendsen 2016]...</td></tr>
-<tr><td><a href="././types/depthprepass.html"><code>DepthPrepass</code></a></td><td>If added to a [`crate::prelude::Camera3d`] then depth values will be copied to a separate texture available to the main pass.</td></tr>
-<tr><td><a href="././types/motionvectorprepass.html"><code>MotionVectorPrepass</code></a></td><td>If added to a [`crate::prelude::Camera3d`] then screen space motion vectors will be copied to a separate texture available to the main pass.</td></tr>
-<tr><td><a href="././types/normalprepass.html"><code>NormalPrepass</code></a></td><td>If added to a [`crate::prelude::Camera3d`] then vertex world normals will be copied to a separate texture available to the main pass.  Normals will have normal map textures already applied.</td></tr>
+<tr><td><a href="././types/depthprepass.html"><code>DepthPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then depth values will be copied to a separate texture available to the main pass.</td></tr>
+<tr><td><a href="././types/motionvectorprepass.html"><code>MotionVectorPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then screen space motion vectors will be copied to a separate texture available to the main pass.</td></tr>
+<tr><td><a href="././types/normalprepass.html"><code>NormalPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then vertex world normals will be copied to a separate texture available to the main pass.  Normals will have normal map textures already applied.</td></tr>
 <tr><td><a href="././types/skybox.html"><code>Skybox</code></a></td><td>Adds a skybox to a 3D camera, based on a cubemap texture.   Note that this component does not (curr...</td></tr>
-<tr><td><a href="././types/smaa.html"><code>Smaa</code></a></td><td>A component for enabling Subpixel Morphological Anti-Aliasing (SMAA)  for a [`bevy_render::camera::Camera`].</td></tr>
-<tr><td><a href="././types/smaapreset.html"><code>SmaaPreset</code></a></td><td>A preset quality level for SMAA.   Higher values are slower but result in a higher-quality image.  ...</td></tr>
-<tr><td><a href="././types/temporalantialiasing.html"><code>TemporalAntiAliasing</code></a></td><td>Component to apply temporal anti-aliasing to a 3D perspective camera.   Temporal anti-aliasing (TAA...</td></tr>
 <tr><td><a href="././types/debanddither.html"><code>DebandDither</code></a></td><td>Enables a debanding shader that applies dithering to mitigate color banding in the final image for ...</td></tr>
 <tr><td><a href="././types/tonemapping.html"><code>Tonemapping</code></a></td><td>Optionally enables a tonemapping shader that attempts to map linear input stimulus into a perceptua...</td></tr>
-<tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`].   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`]...</td></tr>
+<tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`](crate::world::World).   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`](crate::world::World::register_component)...</td></tr>
 <tr><td><a href="././types/componentticks.html"><code>ComponentTicks</code></a></td><td>Records when a component or resource was added and when it was last mutably dereferenced (or added)...</td></tr>
 <tr><td><a href="././types/tick.html"><code>Tick</code></a></td><td>A value that tracks when a system ran relative to other systems.  This is used to power change dete...</td></tr>
 <tr><td><a href="././types/entity.html"><code>Entity</code></a></td><td>Lightweight identifier of an [entity](crate::entity).   The identifier is implemented using a [gene...</td></tr>
+<tr><td><a href="././types/entitygeneration.html"><code>EntityGeneration</code></a></td><td>This tracks different versions or generations of an [`EntityRow`].  Importantly, this can wrap, meaning each generation is not necessarily unique per [`EntityRow`]...</td></tr>
+<tr><td><a href="././types/entityrow.html"><code>EntityRow</code></a></td><td>This represents the row or “index” of an [`Entity`] within the [`Entities`] table.  This is a light...</td></tr>
 <tr><td><a href="././types/entityhash.html"><code>EntityHash</code></a></td><td>A [`BuildHasher`] that results in a [`EntityHasher`].</td></tr>
 <tr><td><a href="././types/entityhashset.html"><code>EntityHashSet</code></a></td><td>A [`HashSet`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/defaultqueryfilters.html"><code>DefaultQueryFilters</code></a></td><td>Default query filters work by excluding entities with certain components from most queries.   If a ...</td></tr>
 <tr><td><a href="././types/disabled.html"><code>Disabled</code></a></td><td>A marker component for disabled entities.   Semantically, this component is used to mark entities t...</td></tr>
-<tr><td><a href="././types/childof.html"><code>ChildOf</code></a></td><td>Stores the parent entity of this child entity with this component.   This is a [`Relationship`] component, and creates the canonical  "parent / child" hierarchy. This is the "source of truth" component, and it pairs with  the [`Children`]...</td></tr>
-<tr><td><a href="././types/children.html"><code>Children</code></a></td><td>Tracks which entities are children of this parent entity.   A [`RelationshipTarget`] collection component that is populated  with entities that "target" this entity with the [`ChildOf`]...</td></tr>
-<tr><td><a href="././types/identifier.html"><code>Identifier</code></a></td><td>A unified identifier for all entity and similar IDs.   Has the same size as a `u64` integer, but th...</td></tr>
-<tr><td><a href="././types/name.html"><code>Name</code></a></td><td>Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r...</td></tr>
+<tr><td><a href="././types/internal.html"><code>Internal</code></a></td><td>A marker component for internal entities.   This component is used to mark entities as being intern...</td></tr>
+<tr><td><a href="././types/childof.html"><code>ChildOf</code></a></td><td>Stores the parent entity of this child entity with this component.   This is a [`Relationship`] component, and creates the canonical  “parent / child” hierarchy. This is the “source of truth” component, and it pairs with  the [`Children`]...</td></tr>
+<tr><td><a href="././types/children.html"><code>Children</code></a></td><td>Tracks which entities are children of this parent entity.   A [`RelationshipTarget`] collection component that is populated  with entities that “target” this entity with the [`ChildOf`]...</td></tr>
+<tr><td><a href="././types/add.html"><code>Add</code></a></td><td>Trigger emitted when a component is inserted onto an entity that does not already have that  compon...</td></tr>
+<tr><td><a href="././types/despawn.html"><code>Despawn</code></a></td><td>[`EntityEvent`] emitted for each component on an entity when it is despawned.  See [`ComponentHooks::on_despawn`](`crate::lifecycle::ComponentHooks::on_...</td></tr>
+<tr><td><a href="././types/insert.html"><code>Insert</code></a></td><td>Trigger emitted when a component is inserted, regardless of whether or not the entity already  had ...</td></tr>
+<tr><td><a href="././types/remove.html"><code>Remove</code></a></td><td>Trigger emitted when a component is removed from an entity, and runs before the component is  remov...</td></tr>
 <tr><td><a href="././types/removedcomponententity.html"><code>RemovedComponentEntity</code></a></td><td>Wrapper around [`Entity`] for [`RemovedComponents`].  Internally, `RemovedComponents` uses these as...</td></tr>
-<tr><td><a href="././types/buttonstate.html"><code>ButtonState</code></a></td><td>The current "press" state of an element</td></tr>
+<tr><td><a href="././types/replace.html"><code>Replace</code></a></td><td>Trigger emitted when a component is removed from an entity, regardless  of whether or not it is lat...</td></tr>
+<tr><td><a href="././types/name.html"><code>Name</code></a></td><td>Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r...</td></tr>
+<tr><td><a href="././types/buttonstate.html"><code>ButtonState</code></a></td><td>The current “press” state of an element</td></tr>
 <tr><td><a href="././types/axissettings.html"><code>AxisSettings</code></a></td><td>Settings for a [`GamepadAxis`].   It is used inside the [`GamepadSettings`] to define the sensitivi...</td></tr>
 <tr><td><a href="././types/buttonaxissettings.html"><code>ButtonAxisSettings</code></a></td><td>Settings for a [`GamepadButton`].   It is used inside the [`GamepadSettings`] to define the sensiti...</td></tr>
 <tr><td><a href="././types/buttonsettings.html"><code>ButtonSettings</code></a></td><td>Manages settings for gamepad buttons.   It is used inside [`GamepadSettings`] to define the threshold for a [`GamepadButton`]...</td></tr>
-<tr><td><a href="././types/gamepad.html"><code>Gamepad</code></a></td><td>Stores a connected gamepad's metadata such as the name and its [`GamepadButton`] and [`GamepadAxis`...</td></tr>
+<tr><td><a href="././types/gamepad.html"><code>Gamepad</code></a></td><td>Stores a connected gamepad’s metadata such as the name and its [`GamepadButton`] and [`GamepadAxis`...</td></tr>
 <tr><td><a href="././types/gamepadaxis.html"><code>GamepadAxis</code></a></td><td>Represents gamepad input types that are mapped in the range [-1.0, 1.0].   ## Usage   This is used to determine which axis has changed its value when receiving a  gamepad axis event. It is also used in the [`Gamepad`]...</td></tr>
 <tr><td><a href="././types/gamepadaxischangedevent.html"><code>GamepadAxisChangedEvent</code></a></td><td>[`GamepadAxis`] event triggered by an analog state change.</td></tr>
 <tr><td><a href="././types/gamepadbutton.html"><code>GamepadButton</code></a></td><td>Represents gamepad input types that are mapped in the range [0.0, 1.0].   ## Usage   This is used to determine which button has changed its value when receiving gamepad button events.  It is also used in the [`Gamepad`]...</td></tr>
 <tr><td><a href="././types/gamepadbuttonchangedevent.html"><code>GamepadButtonChangedEvent</code></a></td><td>[`GamepadButton`] event triggered by an analog state change.</td></tr>
 <tr><td><a href="././types/gamepadbuttonstatechangedevent.html"><code>GamepadButtonStateChangedEvent</code></a></td><td>[`GamepadButton`] event triggered by a digital state change.</td></tr>
 <tr><td><a href="././types/gamepadconnection.html"><code>GamepadConnection</code></a></td><td>The connection status of a gamepad.</td></tr>
-<tr><td><a href="././types/gamepadconnectionevent.html"><code>GamepadConnectionEvent</code></a></td><td>A Gamepad connection event. Created when a connection to a gamepad  is established and when a gamep...</td></tr>
+<tr><td><a href="././types/gamepadconnectionevent.html"><code>GamepadConnectionEvent</code></a></td><td>A [`Gamepad`] connection event. Created when a connection to a gamepad  is established and when a gamepad is disconnected.</td></tr>
 <tr><td><a href="././types/gamepadevent.html"><code>GamepadEvent</code></a></td><td>A gamepad event.   This event type is used over the [`GamepadConnectionEvent`],  [`GamepadButtonChangedEvent`...</td></tr>
 <tr><td><a href="././types/gamepadinput.html"><code>GamepadInput</code></a></td><td>Encapsulation over [`GamepadAxis`] and [`GamepadButton`].</td></tr>
-<tr><td><a href="././types/gamepadrumbleintensity.html"><code>GamepadRumbleIntensity</code></a></td><td>The intensity at which a gamepad's force-feedback motors may rumble.</td></tr>
+<tr><td><a href="././types/gamepadrumbleintensity.html"><code>GamepadRumbleIntensity</code></a></td><td>The intensity at which a gamepad’s force-feedback motors may rumble.</td></tr>
 <tr><td><a href="././types/gamepadrumblerequest.html"><code>GamepadRumbleRequest</code></a></td><td>An event that controls force-feedback rumbling of a [`Gamepad`] [`entity`](Entity).   # Notes   Doe...</td></tr>
 <tr><td><a href="././types/gamepadsettings.html"><code>GamepadSettings</code></a></td><td>Gamepad settings component.   ## Usage   It is used to create a `bevy` component that stores the se...</td></tr>
 <tr><td><a href="././types/rawgamepadaxischangedevent.html"><code>RawGamepadAxisChangedEvent</code></a></td><td>[`GamepadAxis`] changed event unfiltered by [`GamepadSettings`].</td></tr>
@@ -273,7 +277,7 @@
 <tr><td><a href="././types/pangesture.html"><code>PanGesture</code></a></td><td>Pan gesture.   ## Platform-specific   - On **`iOS`**, must be enabled first</td></tr>
 <tr><td><a href="././types/pinchgesture.html"><code>PinchGesture</code></a></td><td>Two-finger pinch gesture, often used for magnifications.   Positive delta values indicate magnifica...</td></tr>
 <tr><td><a href="././types/rotationgesture.html"><code>RotationGesture</code></a></td><td>Two-finger rotation gesture.   Positive delta values indicate rotation counterclockwise and  negati...</td></tr>
-<tr><td><a href="././types/key.html"><code>Key</code></a></td><td>The logical key code of a [`KeyboardInput`].   ## Technical   Its values map 1 to 1 to winit's Key.</td></tr>
+<tr><td><a href="././types/key.html"><code>Key</code></a></td><td>The logical key code of a [`KeyboardInput`].   This contains the actual value that is produced by pressing the key. This is  useful when you need the actual letters, and for symbols like `+` and `-`  when implementing zoom, as they can be in different locations depending on  the keyboard layout.   In many cases you want the key location instead, for example when  implementing WASD controls so the keys are located the same place on QWERTY  and other layouts. In that case use [`KeyCode`]...</td></tr>
 <tr><td><a href="././types/keycode.html"><code>KeyCode</code></a></td><td>The key code of a [`KeyboardInput`].   ## Usage   It is used as the generic `T` value of an [`ButtonInput`...</td></tr>
 <tr><td><a href="././types/keyboardfocuslost.html"><code>KeyboardFocusLost</code></a></td><td>Gets generated from `bevy_winit::winit_runner`   Used for clearing all cached states to avoid havin...</td></tr>
 <tr><td><a href="././types/keyboardinput.html"><code>KeyboardInput</code></a></td><td>A keyboard input event.   This event is the translated version of the `WindowEvent::KeyboardInput` ...</td></tr>
@@ -308,7 +312,8 @@
 <tr><td><a href="././types/dir2.html"><code>Dir2</code></a></td><td>A normalized vector pointing in a direction in 2D space</td></tr>
 <tr><td><a href="././types/dir3.html"><code>Dir3</code></a></td><td>A normalized vector pointing in a direction in 3D space</td></tr>
 <tr><td><a href="././types/dir3a.html"><code>Dir3A</code></a></td><td>A normalized SIMD vector pointing in a direction in 3D space.   This type stores a 16 byte aligned [`Vec3A`]...</td></tr>
-<tr><td><a href="././types/floatord.html"><code>FloatOrd</code></a></td><td>A wrapper for floats that implements [`Ord`], [`Eq`], and [`Hash`] traits.   This is a work around for the fact that the IEEE 754-2008 standard,  implemented by Rust's [`f32`]...</td></tr>
+<tr><td><a href="././types/dir4.html"><code>Dir4</code></a></td><td>A normalized vector pointing in a direction in 4D space</td></tr>
+<tr><td><a href="././types/floatord.html"><code>FloatOrd</code></a></td><td>A wrapper for floats that implements [`Ord`], [`Eq`], and [`Hash`] traits.   This is a work around for the fact that the IEEE 754-2008 standard,  implemented by Rust’s [`f32`]...</td></tr>
 <tr><td><a href="././types/isometry2d.html"><code>Isometry2d</code></a></td><td>An isometry in two dimensions, representing a rotation followed by a translation.  This can often b...</td></tr>
 <tr><td><a href="././types/isometry3d.html"><code>Isometry3d</code></a></td><td>An isometry in three dimensions, representing a rotation followed by a translation.  This can often...</td></tr>
 <tr><td><a href="././types/annulus.html"><code>Annulus</code></a></td><td>A primitive shape formed by the region between two circles, also known as a ring.</td></tr>
@@ -317,9 +322,12 @@
 <tr><td><a href="././types/circle.html"><code>Circle</code></a></td><td>A circle primitive, representing the set of points some distance from the origin</td></tr>
 <tr><td><a href="././types/circularsector.html"><code>CircularSector</code></a></td><td>A primitive representing a circular sector: a pie slice of a circle.   The segment is positioned so...</td></tr>
 <tr><td><a href="././types/circularsegment.html"><code>CircularSegment</code></a></td><td>A primitive representing a circular segment:  the area enclosed by the arc of a circle and its chor...</td></tr>
+<tr><td><a href="././types/convexpolygon.html"><code>ConvexPolygon</code></a></td><td>A convex polygon with `N` vertices.</td></tr>
 <tr><td><a href="././types/ellipse.html"><code>Ellipse</code></a></td><td>An ellipse primitive, which is like a circle, but the width and height can be different</td></tr>
 <tr><td><a href="././types/line2d.html"><code>Line2d</code></a></td><td>An infinite line going through the origin along a direction in 2D space.   For a finite line: [`Segment2d`]...</td></tr>
 <tr><td><a href="././types/plane2d.html"><code>Plane2d</code></a></td><td>An unbounded plane in 2D space. It forms a separating surface through the origin,  stretching infin...</td></tr>
+<tr><td><a href="././types/polygon.html"><code>Polygon</code></a></td><td>A polygon with N vertices.</td></tr>
+<tr><td><a href="././types/polyline2d.html"><code>Polyline2d</code></a></td><td>A series of connected line segments in 2D space.</td></tr>
 <tr><td><a href="././types/rectangle.html"><code>Rectangle</code></a></td><td>A rectangle primitive, which is like a square, except that the width and height can be different</td></tr>
 <tr><td><a href="././types/regularpolygon.html"><code>RegularPolygon</code></a></td><td>A polygon centered on the origin where all vertices lie on a circle, equally far apart.</td></tr>
 <tr><td><a href="././types/rhombus.html"><code>Rhombus</code></a></td><td>A rhombus primitive, also known as a diamond shape.  A four sided polygon, centered on the origin, ...</td></tr>
@@ -333,6 +341,7 @@
 <tr><td><a href="././types/infiniteplane3d.html"><code>InfinitePlane3d</code></a></td><td>An unbounded plane in 3D space. It forms a separating surface through the origin,  stretching infin...</td></tr>
 <tr><td><a href="././types/line3d.html"><code>Line3d</code></a></td><td>An infinite line going through the origin along a direction in 3D space.   For a finite line: [`Segment3d`]...</td></tr>
 <tr><td><a href="././types/plane3d.html"><code>Plane3d</code></a></td><td>A bounded plane in 3D space. It forms a surface starting from the origin with a defined height and ...</td></tr>
+<tr><td><a href="././types/polyline3d.html"><code>Polyline3d</code></a></td><td>A series of connected line segments in 3D space.</td></tr>
 <tr><td><a href="././types/segment3d.html"><code>Segment3d</code></a></td><td>A line segment defined by two endpoints in 3D space.</td></tr>
 <tr><td><a href="././types/sphere.html"><code>Sphere</code></a></td><td>A sphere primitive, representing the set of all points some distance from the origin</td></tr>
 <tr><td><a href="././types/tetrahedron.html"><code>Tetrahedron</code></a></td><td>A tetrahedron primitive.</td></tr>
@@ -343,14 +352,14 @@
 <tr><td><a href="././types/irect.html"><code>IRect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
 <tr><td><a href="././types/rect.html"><code>Rect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
 <tr><td><a href="././types/urect.html"><code>URect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
-<tr><td><a href="././types/rot2.html"><code>Rot2</code></a></td><td>A counterclockwise 2D rotation.   # Example   ```  # use approx::assert_relative_eq;  # use bevy_math::{Rot2, Vec2};  use std::f32::consts::PI;   // Create rotations from radians or degrees  let rotation1 = Rot2::radians(PI / 2.0);  let rotation2 = Rot2::degrees(45.0);   // Get the angle back as radians or degrees  assert_eq!(rotation1.as_degrees(), 90.0);  assert_eq!(rotation2.as_radians(), PI / 4.0);   // "Add" rotations together using `*`  #[cfg(feature = "approx")]  assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));   // Rotate vectors  #[cfg(feature = "approx")]  assert_...</td></tr>
+<tr><td><a href="././types/rot2.html"><code>Rot2</code></a></td><td>A 2D rotation.   # Example   ```  # use approx::assert_relative_eq;  # use bevy_math::{Rot2, Vec2};  use std::f32::consts::PI;   // Create rotations from counterclockwise angles in radians or degrees  let rotation1 = Rot2::radians(PI / 2.0);  let rotation2 = Rot2::degrees(45.0);   // Get the angle back as radians or degrees  assert_eq!(rotation1.as_degrees(), 90.0);  assert_eq!(rotation2.as_radians(), PI / 4.0);   // “Add” rotations together using `*`  #[cfg(feature = “approx”)]  assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));   // Rotate vectors  #[cfg(feature = “approx”)]  assert_...</td></tr>
 <tr><td><a href="././types/instant.html"><code>Instant</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/fixed.html"><code>Fixed</code></a></td><td>The fixed timestep game clock following virtual time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<Fixed>#impl-Time<Fixed>`]...</td></tr>
-<tr><td><a href="././types/real.html"><code>Real</code></a></td><td>Real time clock representing elapsed wall clock time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<Real>#impl-Time<Real>`]...</td></tr>
+<tr><td><a href="././types/fixed.html"><code>Fixed</code></a></td><td>The fixed timestep game clock following virtual time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<fixed>#impl-Time<fixed>`]...</fixed></fixed></td></tr>
+<tr><td><a href="././types/real.html"><code>Real</code></a></td><td>Real time clock representing elapsed wall clock time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<real>#impl-Time<real>`]...</real></real></td></tr>
 <tr><td><a href="././types/stopwatch.html"><code>Stopwatch</code></a></td><td>A Stopwatch is a struct that tracks elapsed time when started.   Note that in order to advance the ...</td></tr>
-<tr><td><a href="././types/timer.html"><code>Timer</code></a></td><td>Tracks elapsed time. Enters the finished state once `duration` is reached.   Non repeating timers w...</td></tr>
+<tr><td><a href="././types/timer.html"><code>Timer</code></a></td><td>Tracks elapsed time. Enters the finished state once `duration` is reached.   Note that in order to ...</td></tr>
 <tr><td><a href="././types/timermode.html"><code>TimerMode</code></a></td><td>Specifies [`Timer`] behavior.</td></tr>
-<tr><td><a href="././types/virtual.html"><code>Virtual</code></a></td><td>The virtual game clock representing game time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<Virtual>#impl-Time<Virtual>`].**...</td></tr>
+<tr><td><a href="././types/virtual.html"><code>Virtual</code></a></td><td>The virtual game clock representing game time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<virtual>#impl-Time<virtual>`].**...</virtual></virtual></td></tr>
 <tr><td><a href="././types/globaltransform.html"><code>GlobalTransform</code></a></td><td>[`GlobalTransform`] is an affine transformation from entity-local coordinates to worldspace coordinates.   You cannot directly mutate [`GlobalTransform`]...</td></tr>
 <tr><td><a href="././types/transform.html"><code>Transform</code></a></td><td>Describe the position of an entity. If the entity has a parent, the position is relative  to its pa...</td></tr>
 <tr><td><a href="././types/transformtreechanged.html"><code>TransformTreeChanged</code></a></td><td>An optimization for transform propagation. This ZST marker component uses change detection to  mark...</td></tr>
@@ -420,6 +429,7 @@
 <tr><td><a href="././types/vec3a.html"><code>Vec3A</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/vec4.html"><code>Vec4</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/smolstr.html"><code>SmolStr</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonniluuid.html"><code>NonNilUuid</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/uuid.html"><code>Uuid</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/bool.html"><code>Bool</code></a></td><td>A boolean value</td></tr>
 <tr><td><a href="././types/char.html"><code>Char</code></a></td><td>An 8-bit character</td></tr>
@@ -445,31 +455,81 @@
 <tr><td><a href="././types/u64.html"><code>U64</code></a></td><td>An unsigned 64-bit integer</td></tr>
 <tr><td><a href="././types/u8.html"><code>U8</code></a></td><td>An unsigned 8-bit integer</td></tr>
 <tr><td><a href="././types/usize.html"><code>Usize</code></a></td><td>An unsigned pointer-sized integer</td></tr>
+<tr><td><a href="././types/accessibilityrequested.html"><code>AccessibilityRequested</code></a></td><td>Tracks whether an assistive technology has requested accessibility  information.   This type is a [`Resource`]...</td></tr>
+<tr><td><a href="././types/accessibilitysystems.html"><code>AccessibilitySystems</code></a></td><td>A system set relating to accessibility.   Helps run accessibility updates all at once.</td></tr>
+<tr><td><a href="././types/manageaccessibilityupdates.html"><code>ManageAccessibilityUpdates</code></a></td><td>Determines whether Bevy’s ECS updates the accessibility tree.   This [`Resource`] tells Bevy internals whether it should be handling  `AccessKit` updates (`true`), or if something else is doing that (`false`).   It defaults to `true`. So, by default, Bevy is configured to maintain the  `AccessKit` tree.   Set to `false` in cases where an external GUI library is sending  accessibility updates instead. When this option is set inconsistently with  that requirement, the external library and ECS will generate conflicting  updates.   [`Resource`]...</td></tr>
 <tr><td><a href="././types/assetindex.html"><code>AssetIndex</code></a></td><td>A generational runtime-only identifier for a specific [`Asset`] stored in [`Assets`]. This is optim...</td></tr>
-<tr><td><a href="././types/assetpath.html"><code>AssetPath</code></a></td><td>Represents a path to an asset in a "virtual filesystem".   Asset paths consist of three main parts:...</td></tr>
+<tr><td><a href="././types/untypedhandle.html"><code>UntypedHandle</code></a></td><td>An untyped variant of [`Handle`], which internally stores the [`Asset`] type information at runtime...</td></tr>
+<tr><td><a href="././types/untypedassetid.html"><code>UntypedAssetId</code></a></td><td>An “untyped” / “generic-less” [`Asset`] identifier that behaves much like [`AssetId`], but stores t...</td></tr>
+<tr><td><a href="././types/assetpath.html"><code>AssetPath</code></a></td><td>Represents a path to an asset in a “virtual filesystem”.   Asset paths consist of three main parts:...</td></tr>
 <tr><td><a href="././types/renderassetusages.html"><code>RenderAssetUsages</code></a></td><td>Defines where the asset will be used.   If an asset is set to the `RENDER_WORLD` but not the `MAIN_WORLD`...</td></tr>
-<tr><td><a href="././types/deferredprepass.html"><code>DeferredPrepass</code></a></td><td>If added to a [`crate::prelude::Camera3d`] then deferred materials will be rendered to the deferred gbuffer texture and will be available to subsequent passes.  Note the default deferred lighting plugin also requires `DepthPrepass` to work correctly.</td></tr>
-<tr><td><a href="././types/systemidmarker.html"><code>SystemIdMarker</code></a></td><td>Marker [`Component`](bevy_ecs::component::Component) for identifying [`SystemId`] [`Entity`]s.</td></tr>
-<tr><td><a href="././types/onadd.html"><code>OnAdd</code></a></td><td>Trigger emitted when a component is inserted onto an entity that does not already have that  compon...</td></tr>
-<tr><td><a href="././types/ondespawn.html"><code>OnDespawn</code></a></td><td>Trigger emitted for each component on an entity when it is despawned.  See [`crate::component::ComponentHooks::on_despawn`] for more information.</td></tr>
-<tr><td><a href="././types/oninsert.html"><code>OnInsert</code></a></td><td>Trigger emitted when a component is inserted, regardless of whether or not the entity already  had ...</td></tr>
-<tr><td><a href="././types/onremove.html"><code>OnRemove</code></a></td><td>Trigger emitted when a component is removed from an entity, and runs before the component is  remov...</td></tr>
-<tr><td><a href="././types/onreplace.html"><code>OnReplace</code></a></td><td>Trigger emitted when a component is inserted onto an entity that already has that component.  Runs ...</td></tr>
-<tr><td><a href="././types/image.html"><code>Image</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/camera.html"><code>Camera</code></a></td><td>The defining [`Component`] for camera entities,  storing information about how and what to render through this camera.   The [`Camera`]...</td></tr>
+<tr><td><a href="././types/cameramaintextureusages.html"><code>CameraMainTextureUsages</code></a></td><td>This component lets you control the [`TextureUsages`] field of the main texture generated for the camera</td></tr>
+<tr><td><a href="././types/exposure.html"><code>Exposure</code></a></td><td>How much energy a [`Camera3d`](crate::Camera3d) absorbs from incoming light.   <a href="https://en&#92;.wikipedia&#92;.org/wiki/Exposure&#92;_&#92;(photography&#92;)">https://en\.wikipedia\.org/wiki/Exposure\_\(photography\)</a></td></tr>
+<tr><td><a href="././types/imagerendertarget.html"><code>ImageRenderTarget</code></a></td><td>A render target that renders to an [`Image`].</td></tr>
+<tr><td><a href="././types/mainpassresolutionoverride.html"><code>MainPassResolutionOverride</code></a></td><td>Override the resolution a 3d camera’s main pass is rendered at.   Does not affect post processing. ...</td></tr>
+<tr><td><a href="././types/manualtextureviewhandle.html"><code>ManualTextureViewHandle</code></a></td><td>A unique id that corresponds to a specific `ManualTextureView` in the `ManualTextureViews` collecti...</td></tr>
+<tr><td><a href="././types/normalizedrendertarget.html"><code>NormalizedRenderTarget</code></a></td><td>Normalized version of the render target.   Once we have this we shouldn’t need to resolve it down a...</td></tr>
+<tr><td><a href="././types/rendertarget.html"><code>RenderTarget</code></a></td><td>The “target” that a [`Camera`] will render to. For example, this could be a `Window`  swapchain or an [`Image`]...</td></tr>
+<tr><td><a href="././types/subcameraview.html"><code>SubCameraView</code></a></td><td>Settings to define a camera sub view.   When [`Camera::sub_camera_view`] is `Some`, only the sub-section of the  image defined by `size` and `offset` (relative to the `full_size` of the  whole image) is projected to the cameras viewport.   Take the example of the following multi-monitor setup:  ```css  ┌───┬───┐  │ A │ B │  ├───┼───┤  │ C │ D │  └───┴───┘  ```  If each monitor is 1920x1080, the whole image will have a resolution of  3840x2160. For each monitor we can use a single camera with a viewport of  the same size as the monitor it corresponds to. To ensure that the image is  cohesive, we can use a different sub view on each camera:  - Camera A: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,0  - Camera B: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 1920,0  - Camera C: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,1080  - Camera D: `full_size` = 3840x2160, `size` = 1920x1080, `offset` =    1920,1080   However since only the ratio between the values is important, they could all  be divided by 120 and still produce the same image. Camera D would for  example have the following values:  `full_size` = 32x18, `size` = 16x9, `offset` = 16,9</td></tr>
+<tr><td><a href="././types/viewport.html"><code>Viewport</code></a></td><td>Render viewport configuration for the [`Camera`] component.   The viewport defines the area on the render target to which the camera renders its image.  You can overlay multiple cameras in a single window using viewports to create effects like  split screen, minimaps, and character viewers.</td></tr>
+<tr><td><a href="././types/clearcolor.html"><code>ClearColor</code></a></td><td>A [`Resource`] that stores the default color that cameras use to clear the screen between frames.   This color appears as the “background” color for simple apps,  when there are portions of the screen with nothing rendered.   Individual cameras may use [`Camera.clear_color`]...</td></tr>
+<tr><td><a href="././types/clearcolorconfig.html"><code>ClearColorConfig</code></a></td><td>For a camera, specifies the color used to clear the viewport  [before rendering](crate::camera::Camera::clear_color)  or when [writing to the final render target texture](crate::camera::Camera::output_mode)...</td></tr>
+<tr><td><a href="././types/camera2d.html"><code>Camera2d</code></a></td><td>A 2D camera component. Enables the 2D render graph for a [`Camera`].</td></tr>
+<tr><td><a href="././types/camera3d.html"><code>Camera3d</code></a></td><td>A 3D camera component. Enables the main 3D render graph for a [`Camera`].   The camera coordinate space is right-handed X-right, Y-up, Z-back.  This means “forward” is -Z.</td></tr>
+<tr><td><a href="././types/camera3ddepthloadop.html"><code>Camera3dDepthLoadOp</code></a></td><td>The depth clear operation to perform for the main 3d pass.</td></tr>
+<tr><td><a href="././types/camera3ddepthtextureusage.html"><code>Camera3dDepthTextureUsage</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/screenspacetransmissionquality.html"><code>ScreenSpaceTransmissionQuality</code></a></td><td>The quality of the screen space transmission blur effect, applied to whatever’s “behind” transm...</td></tr>
+<tr><td><a href="././types/aabb.html"><code>Aabb</code></a></td><td>An axis-aligned bounding box, defined by:  - a center,  - the distances from the center to each fac...</td></tr>
+<tr><td><a href="././types/cascadesfrusta.html"><code>CascadesFrusta</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/cubemapfrusta.html"><code>CubemapFrusta</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/cubemaplayout.html"><code>CubemapLayout</code></a></td><td>Cubemap layout defines the order of images in a packed cubemap image.</td></tr>
+<tr><td><a href="././types/frustum.html"><code>Frustum</code></a></td><td>A region of 3D space defined by the intersection of 6 [`HalfSpace`]s.   Frustums are typically an apex-truncated square pyramid (a pyramid without the top) or a cuboid.   Half spaces are ordered left, right, top, bottom, near, far. The normal vectors  of the half-spaces point towards the interior of the frustum.   A frustum component is used on an entity with a [`Camera`]...</td></tr>
+<tr><td><a href="././types/customprojection.html"><code>CustomProjection</code></a></td><td>Holds a dynamic [`CameraProjection`] trait object. Use [`Projection::custom()`] to construct a  cus...</td></tr>
+<tr><td><a href="././types/orthographicprojection.html"><code>OrthographicProjection</code></a></td><td>Project a 3D space onto a 2D surface using parallel lines, i.e., unlike [`PerspectiveProjection`],  the size of objects remains the same regardless of their distance to the camera.   The volume contained in the projection is called the *view frustum*. Since the viewport is rectangular  and projection lines are parallel, the view frustum takes the shape of a cuboid.   Note that the scale of the projection and the apparent size of objects are inversely proportional.  As the size of the projection increases, the size of objects decreases.   # Examples   Configure the orthographic projection to one world unit per 100 window pixels:   ```  # use bevy_camera::{OrthographicProjection, Projection, ScalingMode};  let projection = Projection::Orthographic(OrthographicProjection {      scaling_mode: ScalingMode::WindowSize,      scale: 0.01,      ..OrthographicProjection::default_2d()  });  ```</td></tr>
+<tr><td><a href="././types/perspectiveprojection.html"><code>PerspectiveProjection</code></a></td><td>A 3D camera projection in which distant objects appear smaller than close objects.</td></tr>
+<tr><td><a href="././types/projection.html"><code>Projection</code></a></td><td>Component that defines how to compute a [`Camera`]’s projection matrix.   Common projections, like perspective and orthographic, are provided out of the box to handle the  majority of use cases. Custom projections can be added using the [`CameraProjection`]...</td></tr>
+<tr><td><a href="././types/scalingmode.html"><code>ScalingMode</code></a></td><td>Scaling mode for [`OrthographicProjection`].   The effect of these scaling modes are combined with the [`OrthographicProjection::scale`]...</td></tr>
+<tr><td><a href="././types/cascadesvisibleentities.html"><code>CascadesVisibleEntities</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/cubemapvisibleentities.html"><code>CubemapVisibleEntities</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/inheritedvisibility.html"><code>InheritedVisibility</code></a></td><td>Whether or not an entity is visible in the hierarchy.  This will not be accurate until [`VisibilityPropagate`]...</td></tr>
+<tr><td><a href="././types/nofrustumculling.html"><code>NoFrustumCulling</code></a></td><td>Use this component to opt-out of built-in frustum culling for entities, see  [`Frustum`].   It can be used for example:  - when a [`Mesh`]...</td></tr>
+<tr><td><a href="././types/viewvisibility.html"><code>ViewVisibility</code></a></td><td>Algorithmically-computed indication of whether an entity is visible and should be extracted for ren...</td></tr>
+<tr><td><a href="././types/visibility.html"><code>Visibility</code></a></td><td>User indication of whether an entity is visible. Propagates down the entity hierarchy.   If an enti...</td></tr>
+<tr><td><a href="././types/visibilityclass.html"><code>VisibilityClass</code></a></td><td>A bucket into which we group entities for the purposes of visibility.   Bevy’s various rendering su...</td></tr>
+<tr><td><a href="././types/visibleentities.html"><code>VisibleEntities</code></a></td><td>Collection of entities visible from the current view.   This component contains all entities which ...</td></tr>
+<tr><td><a href="././types/visiblemeshentities.html"><code>VisibleMeshEntities</code></a></td><td>Collection of mesh entities visible for 3D lighting.   This component contains all mesh entities vi...</td></tr>
+<tr><td><a href="././types/visibilityrange.html"><code>VisibilityRange</code></a></td><td>Specifies the range of distances that this entity must be from the camera in  order to be rendered....</td></tr>
+<tr><td><a href="././types/renderlayers.html"><code>RenderLayers</code></a></td><td>Defines which rendering layers an entity belongs to.   A camera renders an entity only when their r...</td></tr>
+<tr><td><a href="././types/deferredprepass.html"><code>DeferredPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then deferred materials will be rendered to the deferred gbuffer texture and will be available to subsequent passes.  Note the default deferred lighting plugin also requires `DepthPrepass` to work correctly.</td></tr>
+<tr><td><a href="././types/observedby.html"><code>ObservedBy</code></a></td><td>Tracks a list of entity observers for the [`Entity`] [`ObservedBy`] is added to.</td></tr>
+<tr><td><a href="././types/image.html"><code>Image</code></a></td><td>An image, optimized for usage in rendering.   ## Remote Inspection   To transmit an [`Image`] between two running Bevy apps, e.g. through BRP, use [`SerializedImage`](crate::SerializedImage)...</td></tr>
 <tr><td><a href="././types/textureatlas.html"><code>TextureAtlas</code></a></td><td>An index into a [`TextureAtlasLayout`], which corresponds to a specific section of a texture.   It stores a handle to [`TextureAtlasLayout`]...</td></tr>
 <tr><td><a href="././types/textureatlaslayout.html"><code>TextureAtlasLayout</code></a></td><td>Stores a map used to lookup the position of a texture in a [`TextureAtlas`].  This can be used to either use and look up a specific section of a texture, or animate frame-by-frame as a sprite sheet.   Optionally it can store a mapping from sub texture handles to the related area index (see  [`TextureAtlasBuilder`]...</td></tr>
+<tr><td><a href="././types/inputfocus.html"><code>InputFocus</code></a></td><td>Resource representing which entity has input focus, if any. Input events (other than pointer-like i...</td></tr>
+<tr><td><a href="././types/inputfocusvisible.html"><code>InputFocusVisible</code></a></td><td>Resource representing whether the input focus indicator should be visible on UI elements.   Note th...</td></tr>
+<tr><td><a href="././types/autofocus.html"><code>AutoFocus</code></a></td><td>Indicates that this widget should automatically receive [`InputFocus`].   This can be useful for things like dialog boxes, the first text input in a form,  or the first button in a game menu.   The focus is swapped when this component is added  or an entity with this component is spawned.</td></tr>
+<tr><td><a href="././types/directionalnavigationmap.html"><code>DirectionalNavigationMap</code></a></td><td>A resource that stores the traversable graph of focusable entities.   Each entity can have up to 8 ...</td></tr>
+<tr><td><a href="././types/navneighbors.html"><code>NavNeighbors</code></a></td><td>The up-to-eight neighbors of a focusable entity, one for each [`CompassOctant`].</td></tr>
+<tr><td><a href="././types/tabgroup.html"><code>TabGroup</code></a></td><td>A component used to mark a tree of entities as containing tabbable elements.</td></tr>
+<tr><td><a href="././types/tabindex.html"><code>TabIndex</code></a></td><td>A component which indicates that an entity wants to participate in tab navigation.   Note that you ...</td></tr>
 <tr><td><a href="././types/affine3.html"><code>Affine3</code></a></td><td>Reduced-size version of `glam::Affine3A` for use when storage has  significant performance impact. ...</td></tr>
+<tr><td><a href="././types/mesh2d.html"><code>Mesh2d</code></a></td><td>A component for 2D meshes. Requires a [`MeshMaterial2d`] to be rendered, commonly using a [`ColorMaterial`...</td></tr>
+<tr><td><a href="././types/mesh3d.html"><code>Mesh3d</code></a></td><td>A component for 3D meshes. Requires a [`MeshMaterial3d`] to be rendered, commonly using a [`StandardMaterial`...</td></tr>
+<tr><td><a href="././types/meshtag.html"><code>MeshTag</code></a></td><td>A component that stores an arbitrary index used to identify the mesh instance when rendering.</td></tr>
 <tr><td><a href="././types/indices.html"><code>Indices</code></a></td><td>An array of indices into the [`VertexAttributeValues`](super::VertexAttributeValues) for a mesh.   It describes the order in which the vertex attributes should be joined into faces.</td></tr>
-<tr><td><a href="././types/mesh.html"><code>Mesh</code></a></td><td>A 3D object made out of vertices representing triangles, lines, or points,  with "attribute" values...</td></tr>
-<tr><td><a href="././types/meshmorphweights.html"><code>MeshMorphWeights</code></a></td><td>Control a specific [`Mesh`] instance's [morph targets]. These control the weights of  specific "mes...</td></tr>
-<tr><td><a href="././types/morphweights.html"><code>MorphWeights</code></a></td><td>Controls the [morph targets] for all child `Mesh3d` entities. In most cases, [`MorphWeights`] shoul...</td></tr>
+<tr><td><a href="././types/mesh.html"><code>Mesh</code></a></td><td>A 3D object made out of vertices representing triangles, lines, or points,  with “attribute” values...</td></tr>
+<tr><td><a href="././types/meshmorphweights.html"><code>MeshMorphWeights</code></a></td><td>Control a specific [`Mesh`] instance’s [morph targets]. These control the weights of  specific “mes...</td></tr>
+<tr><td><a href="././types/morphweights.html"><code>MorphWeights</code></a></td><td>Controls the [morph targets] for all child [`Mesh3d`](crate::Mesh3d) entities. In most cases, [`MorphWeights`]...</td></tr>
 <tr><td><a href="././types/annulusmeshbuilder.html"><code>AnnulusMeshBuilder</code></a></td><td>A builder for creating a [`Mesh`] with an [`Annulus`] shape.</td></tr>
 <tr><td><a href="././types/capsule2dmeshbuilder.html"><code>Capsule2dMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Capsule2d`] shape.</td></tr>
 <tr><td><a href="././types/circlemeshbuilder.html"><code>CircleMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Circle`] shape.</td></tr>
 <tr><td><a href="././types/circularmeshuvmode.html"><code>CircularMeshUvMode</code></a></td><td>Specifies how to generate UV-mappings for the [`CircularSector`] and [`CircularSegment`] shapes.   ...</td></tr>
 <tr><td><a href="././types/circularsectormeshbuilder.html"><code>CircularSectorMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`CircularSector`] shape.   The resulting mesh will h...</td></tr>
 <tr><td><a href="././types/circularsegmentmeshbuilder.html"><code>CircularSegmentMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`CircularSegment`] shape.   The resulting mesh will ...</td></tr>
+<tr><td><a href="././types/convexpolygonmeshbuilder.html"><code>ConvexPolygonMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`ConvexPolygon`] shape.   You must verify that the `vertices`...</td></tr>
 <tr><td><a href="././types/ellipsemeshbuilder.html"><code>EllipseMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with an [`Ellipse`] shape.</td></tr>
+<tr><td><a href="././types/polyline2dmeshbuilder.html"><code>Polyline2dMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Polyline2d`] shape.</td></tr>
 <tr><td><a href="././types/rectanglemeshbuilder.html"><code>RectangleMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Rectangle`] shape.</td></tr>
 <tr><td><a href="././types/regularpolygonmeshbuilder.html"><code>RegularPolygonMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`RegularPolygon`] shape.</td></tr>
 <tr><td><a href="././types/rhombusmeshbuilder.html"><code>RhombusMeshBuilder</code></a></td><td>A builder for creating a [`Mesh`] with an [`Rhombus`] shape.</td></tr>
@@ -483,6 +543,8 @@
 <tr><td><a href="././types/cylinderanchor.html"><code>CylinderAnchor</code></a></td><td>Anchoring options for [`CylinderMeshBuilder`]</td></tr>
 <tr><td><a href="././types/cylindermeshbuilder.html"><code>CylinderMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Cylinder`] shape.</td></tr>
 <tr><td><a href="././types/planemeshbuilder.html"><code>PlaneMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Plane3d`] shape.</td></tr>
+<tr><td><a href="././types/polyline3dmeshbuilder.html"><code>Polyline3dMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Polyline3d`] shape.</td></tr>
+<tr><td><a href="././types/segment3dmeshbuilder.html"><code>Segment3dMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Segment3d`] shape.</td></tr>
 <tr><td><a href="././types/spherekind.html"><code>SphereKind</code></a></td><td>A type of sphere mesh.</td></tr>
 <tr><td><a href="././types/spheremeshbuilder.html"><code>SphereMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with an [`Sphere`] shape.</td></tr>
 <tr><td><a href="././types/tetrahedronmeshbuilder.html"><code>TetrahedronMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Tetrahedron`] shape.</td></tr>
@@ -495,106 +557,151 @@
 <tr><td><a href="././types/functionreturninfo.html"><code>FunctionReturnInfo</code></a></td><td>Information about a function return value.</td></tr>
 <tr><td><a href="././types/interoperror.html"><code>InteropError</code></a></td><td>An error occurring when converting between rust and a script context.</td></tr>
 <tr><td><a href="././types/namespace.html"><code>Namespace</code></a></td><td>A namespace for functions</td></tr>
+<tr><td><a href="././types/locationcontext.html"><code>LocationContext</code></a></td><td>Describes a location within a script</td></tr>
 <tr><td><a href="././types/dynamiccomponent.html"><code>DynamicComponent</code></a></td><td>A dynamic script component</td></tr>
+<tr><td><a href="././types/scripterror.html"><code>ScriptError</code></a></td><td>An error with an optional script Context</td></tr>
+<tr><td><a href="././types/callbacklabel.html"><code>CallbackLabel</code></a></td><td>A string which disallows common invalid characters in callback labels,  particularly at the start o...</td></tr>
 <tr><td><a href="././types/scriptcomponent.html"><code>ScriptComponent</code></a></td><td>A component which identifies the scripts existing on an entity.   Event handlers search for compone...</td></tr>
-<tr><td><a href="././types/alphamode.html"><code>AlphaMode</code></a></td><td>Sets how a material's base color alpha channel is used for transparency.</td></tr>
-<tr><td><a href="././types/camera.html"><code>Camera</code></a></td><td>The defining [`Component`] for camera entities,  storing information about how and what to render through this camera.   The [`Camera`]...</td></tr>
-<tr><td><a href="././types/cameramaintextureusages.html"><code>CameraMainTextureUsages</code></a></td><td>This component lets you control the [`TextureUsages`] field of the main texture generated for the camera</td></tr>
-<tr><td><a href="././types/camerarendergraph.html"><code>CameraRenderGraph</code></a></td><td>Configures the [`RenderGraph`](crate::render_graph::RenderGraph) name assigned to be run for a given [`Camera`] entity.</td></tr>
-<tr><td><a href="././types/exposure.html"><code>Exposure</code></a></td><td>How much energy a `Camera3d` absorbs from incoming light.   <a href="https://en%5C.wikipedia%5C.org/wiki/Exposure%5C_%5C(photography%5C)">https://en\.wikipedia\.org/wiki/Exposure\_\(photography\)</a></td></tr>
-<tr><td><a href="././types/imagerendertarget.html"><code>ImageRenderTarget</code></a></td><td>A render target that renders to an [`Image`].</td></tr>
+<tr><td><a href="././types/contextkey.html"><code>ContextKey</code></a></td><td>The key for a context. The context key is used for:  - Identifying the script itself, uniquely.  - ...</td></tr>
+<tr><td><a href="././types/pickable.html"><code>Pickable</code></a></td><td>An optional component that marks an entity as usable by a backend, and overrides default  picking b...</td></tr>
+<tr><td><a href="././types/pickingsettings.html"><code>PickingSettings</code></a></td><td>Controls the behavior of picking   ## Custom initialization  ```  # use bevy_app::App;  # use bevy_picking::{PickingSettings, PickingPlugin};  App::new()      .insert_resource(PickingSettings {          is_enabled: true,          is_input_enabled: false,          is_hover_enabled: true,          is_window_picking_enabled: false,      })      // or DefaultPlugins      .add_plugins(PickingPlugin);  `...</td></tr>
+<tr><td><a href="././types/hitdata.html"><code>HitData</code></a></td><td>Holds data from a successful pointer hit test. See [`HitData::depth`] for important details.</td></tr>
+<tr><td><a href="././types/pointerhits.html"><code>PointerHits</code></a></td><td>A message produced by a picking backend after it has run its hit tests, describing the entities  un...</td></tr>
+<tr><td><a href="././types/rayid.html"><code>RayId</code></a></td><td>Identifies a ray constructed from some (pointer, camera) combination. A pointer can be over  multip...</td></tr>
+<tr><td><a href="././types/cancel.html"><code>Cancel</code></a></td><td>Fires when a pointer is canceled, and its current interaction state is dropped.</td></tr>
+<tr><td><a href="././types/click.html"><code>Click</code></a></td><td>Fires when a pointer sends a pointer pressed event followed by a pointer released event, with the s...</td></tr>
+<tr><td><a href="././types/drag.html"><code>Drag</code></a></td><td>Fires while the [target entity](EntityEvent::event_target) is being dragged.</td></tr>
+<tr><td><a href="././types/dragdrop.html"><code>DragDrop</code></a></td><td>Fires when a pointer drops the `dropped` entity onto the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/dragend.html"><code>DragEnd</code></a></td><td>Fires when a pointer is dragging the [target entity](EntityEvent::event_target) and a pointer released event is received.</td></tr>
+<tr><td><a href="././types/dragenter.html"><code>DragEnter</code></a></td><td>Fires when a pointer dragging the `dragged` entity enters the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/dragentry.html"><code>DragEntry</code></a></td><td>Dragging state.</td></tr>
+<tr><td><a href="././types/dragleave.html"><code>DragLeave</code></a></td><td>Fires when a pointer dragging the `dragged` entity leaves the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/dragover.html"><code>DragOver</code></a></td><td>Fires while the `dragged` entity is being dragged over the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/dragstart.html"><code>DragStart</code></a></td><td>Fires when the [target entity](EntityEvent::event_target) receives a pointer pressed event followed by a pointer move event.</td></tr>
+<tr><td><a href="././types/move.html"><code>Move</code></a></td><td>Fires while a pointer is moving over the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/out.html"><code>Out</code></a></td><td>Fires when a pointer crosses out of the bounds of the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/over.html"><code>Over</code></a></td><td>Fires when a pointer crosses into the bounds of the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/press.html"><code>Press</code></a></td><td>Fires when a pointer button is pressed over the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/release.html"><code>Release</code></a></td><td>Fires when a pointer button is released over the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/scroll.html"><code>Scroll</code></a></td><td>Fires while a pointer is scrolling over the [target entity](EntityEvent::event_target).</td></tr>
+<tr><td><a href="././types/directlyhovered.html"><code>DirectlyHovered</code></a></td><td>A component that allows users to use regular Bevy change detection to determine when the pointer  i...</td></tr>
+<tr><td><a href="././types/hovered.html"><code>Hovered</code></a></td><td>A component that allows users to use regular Bevy change detection to determine when the pointer  e...</td></tr>
+<tr><td><a href="././types/pickinginteraction.html"><code>PickingInteraction</code></a></td><td>A component that aggregates picking interaction state of this entity across all pointers.   Unlike ...</td></tr>
+<tr><td><a href="././types/pointerinputsettings.html"><code>PointerInputSettings</code></a></td><td>Settings for enabling and disabling updating mouse and touch inputs for picking   ## Custom initial...</td></tr>
+<tr><td><a href="././types/location.html"><code>Location</code></a></td><td>The location of a pointer, including the current [`NormalizedRenderTarget`], and the x/y  position of the pointer on this render target.   Note that:  - a pointer can move freely between render targets  - a pointer is not associated with a [`Camera`]...</td></tr>
+<tr><td><a href="././types/pointeraction.html"><code>PointerAction</code></a></td><td>Event sent to drive a pointer.</td></tr>
+<tr><td><a href="././types/pointerbutton.html"><code>PointerButton</code></a></td><td>The button that was just pressed or released</td></tr>
+<tr><td><a href="././types/pointerid.html"><code>PointerId</code></a></td><td>Identifies a unique pointer entity. `Mouse` and `Touch` pointers are automatically spawned.   This ...</td></tr>
+<tr><td><a href="././types/pointerinput.html"><code>PointerInput</code></a></td><td>An input event effecting a pointer.</td></tr>
+<tr><td><a href="././types/pointerinteraction.html"><code>PointerInteraction</code></a></td><td>Holds a list of entities this pointer is currently interacting with, sorted from nearest to  farthe...</td></tr>
+<tr><td><a href="././types/pointerlocation.html"><code>PointerLocation</code></a></td><td>Component that tracks a pointer’s current [`Location`].</td></tr>
+<tr><td><a href="././types/pointerpress.html"><code>PointerPress</code></a></td><td>Tracks the state of the pointer’s buttons in response to [`PointerInput`] events.</td></tr>
+<tr><td><a href="././types/pressdirection.html"><code>PressDirection</code></a></td><td>The stage of the pointer button press event</td></tr>
+<tr><td><a href="././types/alphamode.html"><code>AlphaMode</code></a></td><td>Sets how a material’s base color alpha channel is used for transparency.</td></tr>
+<tr><td><a href="././types/camerarendergraph.html"><code>CameraRenderGraph</code></a></td><td>Configures the [`RenderGraph`] name assigned to be run for a given [`Camera`] entity.</td></tr>
 <tr><td><a href="././types/mipbias.html"><code>MipBias</code></a></td><td>Camera component specifying a mip bias to apply when sampling from material textures.   Often used ...</td></tr>
-<tr><td><a href="././types/rendertarget.html"><code>RenderTarget</code></a></td><td>The "target" that a [`Camera`] will render to. For example, this could be a [`Window`]  swapchain o...</td></tr>
-<tr><td><a href="././types/subcameraview.html"><code>SubCameraView</code></a></td><td>Settings to define a camera sub view.   When [`Camera::sub_camera_view`] is `Some`, only the sub-section of the  image defined by `size` and `offset` (relative to the `full_size` of the  whole image) is projected to the cameras viewport.   Take the example of the following multi-monitor setup:  ```css  ┌───┬───┐  │ A │ B │  ├───┼───┤  │ C │ D │  └───┴───┘  ```  If each monitor is 1920x1080, the whole image will have a resolution of  3840x2160. For each monitor we can use a single camera with a viewport of  the same size as the monitor it corresponds to. To ensure that the image is  cohesive, we can use a different sub view on each camera:  - Camera A: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,0  - Camera B: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 1920,0  - Camera C: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,1080  - Camera D: `full_size` = 3840x2160, `size` = 1920x1080, `offset` =    1920,1080   However since only the ratio between the values is important, they could all  be divided by 120 and still produce the same image. Camera D would for  example have the following values:  `full_size` = 32x18, `size` = 16x9, `offset` = 16,9</td></tr>
-<tr><td><a href="././types/temporaljitter.html"><code>TemporalJitter</code></a></td><td>A subpixel offset to jitter a perspective camera's frustum by.   Useful for temporal rendering tech...</td></tr>
-<tr><td><a href="././types/viewport.html"><code>Viewport</code></a></td><td>Render viewport configuration for the [`Camera`] component.   The viewport defines the area on the render target to which the camera renders its image.  You can overlay multiple cameras in a single window using viewports to create effects like  split screen, minimaps, and character viewers.</td></tr>
-<tr><td><a href="././types/clearcolor.html"><code>ClearColor</code></a></td><td>A [`Resource`] that stores the color that is used to clear the screen between frames.   This color appears as the "background" color for simple apps,  when there are portions of the screen with nothing rendered.</td></tr>
-<tr><td><a href="././types/clearcolorconfig.html"><code>ClearColorConfig</code></a></td><td>For a camera, specifies the color used to clear the viewport before rendering.</td></tr>
-<tr><td><a href="././types/manualtextureviewhandle.html"><code>ManualTextureViewHandle</code></a></td><td>A unique id that corresponds to a specific [`ManualTextureView`] in the [`ManualTextureViews`] coll...</td></tr>
-<tr><td><a href="././types/customprojection.html"><code>CustomProjection</code></a></td><td>Holds a dynamic [`CameraProjection`] trait object. Use [`Projection::custom()`] to construct a  cus...</td></tr>
-<tr><td><a href="././types/orthographicprojection.html"><code>OrthographicProjection</code></a></td><td>Project a 3D space onto a 2D surface using parallel lines, i.e., unlike [`PerspectiveProjection`],  the size of objects remains the same regardless of their distance to the camera.   The volume contained in the projection is called the *view frustum*. Since the viewport is rectangular  and projection lines are parallel, the view frustum takes the shape of a cuboid.   Note that the scale of the projection and the apparent size of objects are inversely proportional.  As the size of the projection increases, the size of objects decreases.   # Examples   Configure the orthographic projection to one world unit per 100 window pixels:   ```  # use bevy_render::camera::{OrthographicProjection, Projection, ScalingMode};  let projection = Projection::Orthographic(OrthographicProjection {      scaling_mode: ScalingMode::WindowSize,      scale: 0.01,      ..OrthographicProjection::default_2d()  });  ```</td></tr>
-<tr><td><a href="././types/perspectiveprojection.html"><code>PerspectiveProjection</code></a></td><td>A 3D camera projection in which distant objects appear smaller than close objects.</td></tr>
-<tr><td><a href="././types/projection.html"><code>Projection</code></a></td><td>Component that defines how to compute a [`Camera`]'s projection matrix.   Common projections, like perspective and orthographic, are provided out of the box to handle the  majority of use cases. Custom projections can be added using the [`CameraProjection`]...</td></tr>
-<tr><td><a href="././types/scalingmode.html"><code>ScalingMode</code></a></td><td>Scaling mode for [`OrthographicProjection`].   The effect of these scaling modes are combined with the [`OrthographicProjection::scale`]...</td></tr>
-<tr><td><a href="././types/occlusionculling.html"><code>OcclusionCulling</code></a></td><td>Add this component to a view in order to enable experimental GPU occlusion  culling.   *Bevy's occlusion culling is currently marked as experimental.*...</td></tr>
+<tr><td><a href="././types/temporaljitter.html"><code>TemporalJitter</code></a></td><td>A subpixel offset to jitter a perspective camera’s frustum by.   Useful for temporal rendering tech...</td></tr>
+<tr><td><a href="././types/occlusionculling.html"><code>OcclusionCulling</code></a></td><td>Add this component to a view in order to enable experimental GPU occlusion  culling.   *Bevy’s occlusion culling is currently marked as experimental.*...</td></tr>
 <tr><td><a href="././types/globalsuniform.html"><code>GlobalsUniform</code></a></td><td>Contains global values useful when writing shaders.  Currently only contains values related to time...</td></tr>
-<tr><td><a href="././types/mesh2d.html"><code>Mesh2d</code></a></td><td>A component for 2D meshes. Requires a [`MeshMaterial2d`] to be rendered, commonly using a [`ColorMaterial`...</td></tr>
-<tr><td><a href="././types/mesh3d.html"><code>Mesh3d</code></a></td><td>A component for 3D meshes. Requires a [`MeshMaterial3d`] to be rendered, commonly using a [`StandardMaterial`...</td></tr>
-<tr><td><a href="././types/aabb.html"><code>Aabb</code></a></td><td>An axis-aligned bounding box, defined by:  - a center,  - the distances from the center to each fac...</td></tr>
-<tr><td><a href="././types/cascadesfrusta.html"><code>CascadesFrusta</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/cubemapfrusta.html"><code>CubemapFrusta</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/frustum.html"><code>Frustum</code></a></td><td>A region of 3D space defined by the intersection of 6 [`HalfSpace`]s.   Frustums are typically an apex-truncated square pyramid (a pyramid without the top) or a cuboid.   Half spaces are ordered left, right, top, bottom, near, far. The normal vectors  of the half-spaces point towards the interior of the frustum.   A frustum component is used on an entity with a [`Camera`]...</td></tr>
+<tr><td><a href="././types/readbackcomplete.html"><code>ReadbackComplete</code></a></td><td>An event that is triggered when a gpu readback is complete.   The event contains the data as a `Vec<u8>`...</u8></td></tr>
 <tr><td><a href="././types/shaderstoragebuffer.html"><code>ShaderStorageBuffer</code></a></td><td>A storage buffer that is prepared as a [`RenderAsset`] and uploaded to the GPU.</td></tr>
+<tr><td><a href="././types/mainentity.html"><code>MainEntity</code></a></td><td>Component added on the render world entities to keep track of the corresponding main world entity. ...</td></tr>
+<tr><td><a href="././types/renderentity.html"><code>RenderEntity</code></a></td><td>Component added on the main world entities that are synced to the Render World in order to keep tra...</td></tr>
 <tr><td><a href="././types/synctorenderworld.html"><code>SyncToRenderWorld</code></a></td><td>Marker component that indicates that its entity needs to be synchronized to the render world.   Thi...</td></tr>
+<tr><td><a href="././types/temporaryrenderentity.html"><code>TemporaryRenderEntity</code></a></td><td>Marker component that indicates that its entity needs to be despawned at the end of the frame.</td></tr>
 <tr><td><a href="././types/colorgrading.html"><code>ColorGrading</code></a></td><td>Configures filmic color grading parameters to adjust the image appearance.   Color grading is appli...</td></tr>
 <tr><td><a href="././types/colorgradingglobal.html"><code>ColorGradingGlobal</code></a></td><td>Filmic color grading values applied to the image as a whole (as opposed to  individual sections, li...</td></tr>
 <tr><td><a href="././types/colorgradingsection.html"><code>ColorGradingSection</code></a></td><td>A section of color grading values that can be selectively applied to  shadows, midtones, and highli...</td></tr>
-<tr><td><a href="././types/msaa.html"><code>Msaa</code></a></td><td>Component for configuring the number of samples for [Multi-Sample Anti-Aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing)  for a [`Camera`](crate::camera::Camera)...</td></tr>
-<tr><td><a href="././types/inheritedvisibility.html"><code>InheritedVisibility</code></a></td><td>Whether or not an entity is visible in the hierarchy.  This will not be accurate until [`VisibilityPropagate`]...</td></tr>
-<tr><td><a href="././types/nofrustumculling.html"><code>NoFrustumCulling</code></a></td><td>Use this component to opt-out of built-in frustum culling for entities, see  [`Frustum`].   It can be used for example:  - when a [`Mesh`]...</td></tr>
-<tr><td><a href="././types/viewvisibility.html"><code>ViewVisibility</code></a></td><td>Algorithmically-computed indication of whether an entity is visible and should be extracted for ren...</td></tr>
-<tr><td><a href="././types/visibility.html"><code>Visibility</code></a></td><td>User indication of whether an entity is visible. Propagates down the entity hierarchy.   If an enti...</td></tr>
-<tr><td><a href="././types/visibilityclass.html"><code>VisibilityClass</code></a></td><td>A bucket into which we group entities for the purposes of visibility.   Bevy's various rendering su...</td></tr>
-<tr><td><a href="././types/visibleentities.html"><code>VisibleEntities</code></a></td><td>Collection of entities visible from the current view.   This component contains all entities which ...</td></tr>
-<tr><td><a href="././types/visibilityrange.html"><code>VisibilityRange</code></a></td><td>Specifies the range of distances that this entity must be from the camera in  order to be rendered....</td></tr>
-<tr><td><a href="././types/renderlayers.html"><code>RenderLayers</code></a></td><td>Describes which rendering layers an entity belongs to.   Cameras with this component will only rend...</td></tr>
+<tr><td><a href="././types/hdr.html"><code>Hdr</code></a></td><td>If this component is added to a camera, the camera will use an intermediate “high dynamic range” re...</td></tr>
+<tr><td><a href="././types/msaa.html"><code>Msaa</code></a></td><td>Component for configuring the number of samples for [Multi-Sample Anti-Aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing)  for a [`Camera`](bevy_camera::Camera)...</td></tr>
+<tr><td><a href="././types/rendervisibleentities.html"><code>RenderVisibleEntities</code></a></td><td>Collection of entities visible from the current view.   This component is extracted from [`VisibleEntities`]...</td></tr>
 <tr><td><a href="././types/screenshot.html"><code>Screenshot</code></a></td><td>A component that signals to the renderer to capture a screenshot this frame.   This component shoul...</td></tr>
 <tr><td><a href="././types/screenshotcaptured.html"><code>ScreenshotCaptured</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/colormaterial.html"><code>ColorMaterial</code></a></td><td>A [2d material](Material2d) that renders [2d meshes](crate::Mesh2d) with a texture tinted by a unif...</td></tr>
-<tr><td><a href="././types/alphamode2d.html"><code>AlphaMode2d</code></a></td><td>Sets how a 2d material's base color alpha channel is used for transparency.  Currently, this only w...</td></tr>
-<tr><td><a href="././types/anchor.html"><code>Anchor</code></a></td><td>How a sprite is positioned relative to its [`Transform`].  It defaults to `Anchor::Center`.</td></tr>
+<tr><td><a href="././types/anchor.html"><code>Anchor</code></a></td><td>Normalized (relative to its size) offset of a 2d renderable entity from its [`Transform`].</td></tr>
 <tr><td><a href="././types/scalingmode.html"><code>ScalingMode</code></a></td><td>Represents various modes for proportional scaling of a texture.   Can be used in [`SpriteImageMode::Scale`]...</td></tr>
 <tr><td><a href="././types/sprite.html"><code>Sprite</code></a></td><td>Describes a sprite to be rendered to a 2D camera</td></tr>
 <tr><td><a href="././types/spriteimagemode.html"><code>SpriteImageMode</code></a></td><td>Controls how the image is altered when scaled.</td></tr>
+<tr><td><a href="././types/text2d.html"><code>Text2d</code></a></td><td>The top-level 2D text component.   Adding `Text2d` to an entity will pull in required components fo...</td></tr>
+<tr><td><a href="././types/text2dshadow.html"><code>Text2dShadow</code></a></td><td>Adds a shadow behind `Text2d` text   Use `TextShadow` for text drawn with `bevy_ui`</td></tr>
 <tr><td><a href="././types/borderrect.html"><code>BorderRect</code></a></td><td>Defines the extents of the border of a rectangle.   This struct is used to represent thickness or o...</td></tr>
 <tr><td><a href="././types/slicescalemode.html"><code>SliceScaleMode</code></a></td><td>Defines how a texture slice scales when resized</td></tr>
 <tr><td><a href="././types/textureslicer.html"><code>TextureSlicer</code></a></td><td>Slices a texture using the **9-slicing** technique. This allows to reuse an image at various sizes ...</td></tr>
+<tr><td><a href="././types/colormaterial.html"><code>ColorMaterial</code></a></td><td>A [2d material](Material2d) that renders [2d meshes](crate::Mesh2d) with a texture tinted by a unif...</td></tr>
+<tr><td><a href="././types/alphamode2d.html"><code>AlphaMode2d</code></a></td><td>Sets how a 2d material’s base color alpha channel is used for transparency.  Currently, this only w...</td></tr>
+<tr><td><a href="././types/mesh2dwireframe.html"><code>Mesh2dWireframe</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nowireframe2d.html"><code>NoWireframe2d</code></a></td><td>Disables wireframe rendering for any entity it is attached to.  It will ignore the [`Wireframe2dConfig`]...</td></tr>
+<tr><td><a href="././types/wireframe2d.html"><code>Wireframe2d</code></a></td><td>Enables wireframe rendering for any entity it is attached to.  It will ignore the [`Wireframe2dConfig`]...</td></tr>
+<tr><td><a href="././types/wireframe2dcolor.html"><code>Wireframe2dColor</code></a></td><td>Sets the color of the [`Wireframe2d`] of the entity it is attached to.   If this component is present but there’s no [`Wireframe2d`]...</td></tr>
+<tr><td><a href="././types/wireframe2dconfig.html"><code>Wireframe2dConfig</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/wireframe2dmaterial.html"><code>Wireframe2dMaterial</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/tiledata.html"><code>TileData</code></a></td><td>Data for a single tile in the tilemap chunk.</td></tr>
+<tr><td><a href="././types/tilemapchunk.html"><code>TilemapChunk</code></a></td><td>A component representing a chunk of a tilemap.  Each chunk is a rectangular section of tiles that i...</td></tr>
+<tr><td><a href="././types/tilemapchunkmeshcache.html"><code>TilemapChunkMeshCache</code></a></td><td>A resource storing the meshes for each tilemap chunk size.</td></tr>
+<tr><td><a href="././types/tilemapchunktiledata.html"><code>TilemapChunkTileData</code></a></td><td>Component storing the data of tiles within a chunk.  Each index corresponds to a specific tile in t...</td></tr>
+<tr><td><a href="././types/edge.html"><code>Edge</code></a></td><td>An edge in the graph</td></tr>
+<tr><td><a href="././types/reflectnodeid.html"><code>ReflectNodeId</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/reflectsystemgraph.html"><code>ReflectSystemGraph</code></a></td><td>A graph of systems and system sets for a single schedule</td></tr>
+<tr><td><a href="././types/reflectsystemgraphnode.html"><code>ReflectSystemGraphNode</code></a></td><td>A node in the reflectable system graph</td></tr>
+<tr><td><a href="././types/reflectsystemset.html"><code>ReflectSystemSet</code></a></td><td>A reflectable system set.</td></tr>
 <tr><td><a href="././types/reflectableschedulelabel.html"><code>ReflectableScheduleLabel</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/textbounds.html"><code>TextBounds</code></a></td><td>The maximum width and height of text. The text will wrap according to the specified size.   Charact...</td></tr>
 <tr><td><a href="././types/glyphatlasinfo.html"><code>GlyphAtlasInfo</code></a></td><td>Information about a glyph in an atlas.   Rasterized glyphs are stored as rectangles  in one or more...</td></tr>
 <tr><td><a href="././types/glyphatlaslocation.html"><code>GlyphAtlasLocation</code></a></td><td>The location of a glyph in an atlas,  and how it should be positioned when placed.   Used in [`GlyphAtlasInfo`]...</td></tr>
 <tr><td><a href="././types/positionedglyph.html"><code>PositionedGlyph</code></a></td><td>A glyph of a font, typically representing a single character, positioned in screen space.   Contain...</td></tr>
 <tr><td><a href="././types/textlayoutinfo.html"><code>TextLayoutInfo</code></a></td><td>Render information for a corresponding text block.   Contains scaled glyphs and their size. Generat...</td></tr>
-<tr><td><a href="././types/text2d.html"><code>Text2d</code></a></td><td>The top-level 2D text component.   Adding `Text2d` to an entity will pull in required components fo...</td></tr>
 <tr><td><a href="././types/computedtextblock.html"><code>ComputedTextBlock</code></a></td><td>Computed information for a text block.   See [`TextLayout`].   Automatically updated by 2d and UI text systems.</td></tr>
 <tr><td><a href="././types/fontsmoothing.html"><code>FontSmoothing</code></a></td><td>Determines which antialiasing method to use when rendering text. By default, text is  rendered with...</td></tr>
-<tr><td><a href="././types/justifytext.html"><code>JustifyText</code></a></td><td>Describes the horizontal alignment of multiple lines of text relative to each other.   This only af...</td></tr>
+<tr><td><a href="././types/justify.html"><code>Justify</code></a></td><td>Describes the horizontal alignment of multiple lines of text relative to each other.   This only af...</td></tr>
 <tr><td><a href="././types/linebreak.html"><code>LineBreak</code></a></td><td>Determines how lines will be broken when preventing text from running out of bounds.</td></tr>
 <tr><td><a href="././types/lineheight.html"><code>LineHeight</code></a></td><td>Specifies the height of each line of text for `Text` and `Text2d`   Default is 1.2x the font size</td></tr>
+<tr><td><a href="././types/textbackgroundcolor.html"><code>TextBackgroundColor</code></a></td><td>The background color of the text for this section.</td></tr>
 <tr><td><a href="././types/textcolor.html"><code>TextColor</code></a></td><td>The color of the text for this section.</td></tr>
 <tr><td><a href="././types/textentity.html"><code>TextEntity</code></a></td><td>A sub-entity of a [`ComputedTextBlock`].   Returned by [`ComputedTextBlock::entities`].</td></tr>
-<tr><td><a href="././types/textfont.html"><code>TextFont</code></a></td><td>`TextFont` determines the style of a text span within a [`ComputedTextBlock`], specifically  the font face, the font size, and the color.</td></tr>
+<tr><td><a href="././types/textfont.html"><code>TextFont</code></a></td><td>`TextFont` determines the style of a text span within a [`ComputedTextBlock`], specifically  the font face, the font size, the line height, and the antialiasing method.</td></tr>
 <tr><td><a href="././types/textlayout.html"><code>TextLayout</code></a></td><td>Component with text format settings for a block of text.   A block of text is composed of text span...</td></tr>
-<tr><td><a href="././types/textspan.html"><code>TextSpan</code></a></td><td>A span of text in a tree of spans.   `TextSpan` is only valid as a child of an entity with [`TextLayout`]...</td></tr>
+<tr><td><a href="././types/textspan.html"><code>TextSpan</code></a></td><td>A span of text in a tree of spans.   A `TextSpan` is only valid when it exists as a child of a pare...</td></tr>
 <tr><td><a href="././types/uiscale.html"><code>UiScale</code></a></td><td>The current scale of the UI.   A multiplier to fixed-sized ui values.  **Note:** This will only aff...</td></tr>
 <tr><td><a href="././types/focuspolicy.html"><code>FocusPolicy</code></a></td><td>Describes whether the node should block interactions with lower nodes</td></tr>
 <tr><td><a href="././types/interaction.html"><code>Interaction</code></a></td><td>Describes what type of input interaction has occurred for a UI node.   This is commonly queried wit...</td></tr>
-<tr><td><a href="././types/relativecursorposition.html"><code>RelativeCursorPosition</code></a></td><td>A component storing the position of the mouse relative to the node, (0., 0.) being the top-left cor...</td></tr>
+<tr><td><a href="././types/relativecursorposition.html"><code>RelativeCursorPosition</code></a></td><td>A component storing the position of the mouse relative to the node, (0., 0.) being the center and (...</td></tr>
+<tr><td><a href="././types/uiposition.html"><code>UiPosition</code></a></td><td>Responsive position relative to a UI node.</td></tr>
 <tr><td><a href="././types/uirect.html"><code>UiRect</code></a></td><td>A type which is commonly used to define margins, paddings and borders.   # Examples   ## Margin   A...</td></tr>
 <tr><td><a href="././types/val.html"><code>Val</code></a></td><td>Represents the possible value types for layout properties.   This enum allows specifying values for...</td></tr>
+<tr><td><a href="././types/angularcolorstop.html"><code>AngularColorStop</code></a></td><td>An angular color stop for a conic gradient</td></tr>
+<tr><td><a href="././types/backgroundgradient.html"><code>BackgroundGradient</code></a></td><td>A UI node that displays a gradient</td></tr>
+<tr><td><a href="././types/bordergradient.html"><code>BorderGradient</code></a></td><td>A UI node border that displays a gradient</td></tr>
+<tr><td><a href="././types/colorstop.html"><code>ColorStop</code></a></td><td>A color stop for a gradient</td></tr>
+<tr><td><a href="././types/conicgradient.html"><code>ConicGradient</code></a></td><td>A conic gradient   <a href="https://developer&#92;.mozilla&#92;.org/en&#92;-US/docs/Web/CSS/gradient/conic&#92;-gradient">https://developer\.mozilla\.org/en\-US/docs/Web/CSS/gradient/conic\-gradient</a></td></tr>
+<tr><td><a href="././types/gradient.html"><code>Gradient</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/interpolationcolorspace.html"><code>InterpolationColorSpace</code></a></td><td>The color space used for interpolation.</td></tr>
+<tr><td><a href="././types/lineargradient.html"><code>LinearGradient</code></a></td><td>A linear gradient   <a href="https://developer&#92;.mozilla&#92;.org/en&#92;-US/docs/Web/CSS/gradient/linear&#92;-gradient">https://developer\.mozilla\.org/en\-US/docs/Web/CSS/gradient/linear\-gradient</a></td></tr>
+<tr><td><a href="././types/radialgradient.html"><code>RadialGradient</code></a></td><td>A radial gradient   <a href="https://developer&#92;.mozilla&#92;.org/en&#92;-US/docs/Web/CSS/gradient/radial&#92;-gradient">https://developer\.mozilla\.org/en\-US/docs/Web/CSS/gradient/radial\-gradient</a></td></tr>
+<tr><td><a href="././types/radialgradientshape.html"><code>RadialGradientShape</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/contentsize.html"><code>ContentSize</code></a></td><td>A node with a `ContentSize` component is a node where its size  is based on its content.</td></tr>
 <tr><td><a href="././types/aligncontent.html"><code>AlignContent</code></a></td><td>Used to control how items are distributed.  - For Flexbox containers, controls alignment of lines i...</td></tr>
-<tr><td><a href="././types/alignitems.html"><code>AlignItems</code></a></td><td>Used to control how each individual item is aligned by default within the space they're given.  - F...</td></tr>
-<tr><td><a href="././types/alignself.html"><code>AlignSelf</code></a></td><td>Used to control how the specified item is aligned within the space it's given.  - For Flexbox items...</td></tr>
-<tr><td><a href="././types/backgroundcolor.html"><code>BackgroundColor</code></a></td><td>The background color of the node   This serves as the "fill" color.</td></tr>
+<tr><td><a href="././types/alignitems.html"><code>AlignItems</code></a></td><td>Used to control how each individual item is aligned by default within the space they’re given.  - F...</td></tr>
+<tr><td><a href="././types/alignself.html"><code>AlignSelf</code></a></td><td>Used to control how the specified item is aligned within the space it’s given.  - For Flexbox items...</td></tr>
+<tr><td><a href="././types/backgroundcolor.html"><code>BackgroundColor</code></a></td><td>The background color of the node   This serves as the “fill” color.</td></tr>
 <tr><td><a href="././types/bordercolor.html"><code>BorderColor</code></a></td><td>The border color of the UI node.</td></tr>
 <tr><td><a href="././types/borderradius.html"><code>BorderRadius</code></a></td><td>Used to add rounded corners to a UI node. You can set a UI node to have uniformly  rounded corners ...</td></tr>
 <tr><td><a href="././types/boxshadow.html"><code>BoxShadow</code></a></td><td>List of shadows to draw for a [`Node`].   Draw order is determined implicitly from the vector of [`ShadowStyle`...</td></tr>
-<tr><td><a href="././types/boxshadowsamples.html"><code>BoxShadowSamples</code></a></td><td>Number of shadow samples.  A larger value will result in higher quality shadows.  Default is 4, val...</td></tr>
-<tr><td><a href="././types/boxsizing.html"><code>BoxSizing</code></a></td><td>Which part of a Node's box length styles like width and height control   See: &lt;https://developer.mo...</td></tr>
+<tr><td><a href="././types/boxsizing.html"><code>BoxSizing</code></a></td><td>Which part of a Node’s box length styles like width and height control   See: &lt;https://developer.mo...</td></tr>
 <tr><td><a href="././types/calculatedclip.html"><code>CalculatedClip</code></a></td><td>The calculated clip of the node</td></tr>
 <tr><td><a href="././types/computednode.html"><code>ComputedNode</code></a></td><td>Provides the computed size and layout properties of the node.   Fields in this struct are public bu...</td></tr>
-<tr><td><a href="././types/computednodetarget.html"><code>ComputedNodeTarget</code></a></td><td>Derived information about the camera target for this UI node.</td></tr>
+<tr><td><a href="././types/computeduirendertargetinfo.html"><code>ComputedUiRenderTargetInfo</code></a></td><td>Derived information about the render target for this UI node.</td></tr>
+<tr><td><a href="././types/computeduitargetcamera.html"><code>ComputedUiTargetCamera</code></a></td><td>Derived information about the camera target for this UI node.   Updated in [`UiSystems::Prepare`](crate::UiSystems::Prepare) by [`propagate_ui_target_cameras`](crate::update::propagate_ui_target_cameras)...</td></tr>
 <tr><td><a href="././types/display.html"><code>Display</code></a></td><td>Defines the layout model used by this node.   Part of the [`Node`] component.</td></tr>
 <tr><td><a href="././types/flexdirection.html"><code>FlexDirection</code></a></td><td>Defines how flexbox items are ordered within a flexbox</td></tr>
 <tr><td><a href="././types/flexwrap.html"><code>FlexWrap</code></a></td><td>Defines if flexbox items appear on a single line or on multiple lines</td></tr>
+<tr><td><a href="././types/globalzindex.html"><code>GlobalZIndex</code></a></td><td>`GlobalZIndex` allows a [`Node`] entity anywhere in the UI hierarchy to escape the implicit draw ordering of the UI’s layout tree and  be rendered above or below other UI nodes.  Nodes with a `GlobalZIndex` of greater than 0 will be drawn on top of nodes without a `GlobalZIndex` or nodes with a lower `GlobalZIndex`.  Nodes with a `GlobalZIndex` of less than 0 will be drawn below nodes without a `GlobalZIndex` or nodes with a greater `GlobalZIndex`.   If two Nodes have the same `GlobalZIndex`, the node with the greater [`ZIndex`]...</td></tr>
 <tr><td><a href="././types/gridautoflow.html"><code>GridAutoFlow</code></a></td><td>Controls whether grid items are placed row-wise or column-wise as well as whether the sparse or den...</td></tr>
 <tr><td><a href="././types/gridplacement.html"><code>GridPlacement</code></a></td><td>Represents the position of a grid item in a single axis.   There are 3 fields which may be set:    ...</td></tr>
-<tr><td><a href="././types/gridtrack.html"><code>GridTrack</code></a></td><td>A [`GridTrack`] is a Row or Column of a CSS Grid. This struct specifies what size the track should be.  See below for the different "track sizing functions" you can specify.</td></tr>
+<tr><td><a href="././types/gridtrack.html"><code>GridTrack</code></a></td><td>A [`GridTrack`] is a Row or Column of a CSS Grid. This struct specifies what size the track should be.  See below for the different “track sizing functions” you can specify.</td></tr>
 <tr><td><a href="././types/gridtrackrepetition.html"><code>GridTrackRepetition</code></a></td><td>How many times to repeat a repeated grid track   &lt;https://developer.mozilla.org/en-US/docs/Web/CSS/...</td></tr>
 <tr><td><a href="././types/justifycontent.html"><code>JustifyContent</code></a></td><td>Used to control how items are distributed.  - For Flexbox containers, controls alignment of items i...</td></tr>
-<tr><td><a href="././types/justifyitems.html"><code>JustifyItems</code></a></td><td>Used to control how each individual item is aligned by default within the space they're given.  - F...</td></tr>
-<tr><td><a href="././types/justifyself.html"><code>JustifySelf</code></a></td><td>Used to control how the specified item is aligned within the space it's given.  - For Flexbox items...</td></tr>
+<tr><td><a href="././types/justifyitems.html"><code>JustifyItems</code></a></td><td>Used to control how each individual item is aligned by default within the space they’re given.  - F...</td></tr>
+<tr><td><a href="././types/justifyself.html"><code>JustifySelf</code></a></td><td>Used to control how the specified item is aligned within the space it’s given.  - For children of f...</td></tr>
+<tr><td><a href="././types/layoutconfig.html"><code>LayoutConfig</code></a></td><td>This component can be added to any UI node to modify its layout behavior.</td></tr>
 <tr><td><a href="././types/maxtracksizingfunction.html"><code>MaxTrackSizingFunction</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/mintracksizingfunction.html"><code>MinTrackSizingFunction</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/node.html"><code>Node</code></a></td><td>The base component for UI entities. It describes UI layout and style properties.   When defining ne...</td></tr>
@@ -606,50 +713,60 @@
 <tr><td><a href="././types/positiontype.html"><code>PositionType</code></a></td><td>The strategy used to position this node</td></tr>
 <tr><td><a href="././types/repeatedgridtrack.html"><code>RepeatedGridTrack</code></a></td><td>Represents a *possibly* repeated [`GridTrack`].   The repetition parameter can either be:    - The integer `1`, in which case the track is non-repeated.    - a `u16` count to repeat the track N times.    - A `GridTrackRepetition::AutoFit` or `GridTrackRepetition::AutoFill`.   Note: that in the common case you want a non-repeating track (repetition count 1), you may use the constructor methods on [`GridTrack`]...</td></tr>
 <tr><td><a href="././types/resolvedborderradius.html"><code>ResolvedBorderRadius</code></a></td><td>Represents the resolved border radius values for a UI node.   The values are in physical pixels.</td></tr>
-<tr><td><a href="././types/scrollposition.html"><code>ScrollPosition</code></a></td><td>The scroll position of the node.   Updating the values of `ScrollPosition` will reposition the chil...</td></tr>
+<tr><td><a href="././types/scrollposition.html"><code>ScrollPosition</code></a></td><td>The scroll position of the node. Values are in logical pixels, increasing from top-left to bottom-r...</td></tr>
 <tr><td><a href="././types/shadowstyle.html"><code>ShadowStyle</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/textshadow.html"><code>TextShadow</code></a></td><td>Adds a shadow behind text</td></tr>
-<tr><td><a href="././types/uiantialias.html"><code>UiAntiAlias</code></a></td><td>Marker for controlling whether Ui is rendered with or without anti-aliasing  in a camera. By defaul...</td></tr>
-<tr><td><a href="././types/uitargetcamera.html"><code>UiTargetCamera</code></a></td><td>Indicates that this root [`Node`] entity should be rendered to a specific camera.   UI then will be laid out respecting the camera's viewport and scale factor, and  rendered to this camera's [`bevy_render::camera::RenderTarget`]...</td></tr>
-<tr><td><a href="././types/zindex.html"><code>ZIndex</code></a></td><td>Indicates that this [`Node`] entity's front-to-back ordering is not controlled solely  by its location in the UI hierarchy. A node with a higher z-index will appear on top  of sibling nodes with a lower z-index.   UI nodes that have the same z-index will appear according to the order in which they  appear in the UI hierarchy. In such a case, the last node to be added to its parent  will appear in front of its siblings.   Nodes without this component will be treated as if they had a value of [`ZIndex(0)`]...</td></tr>
+<tr><td><a href="././types/uitargetcamera.html"><code>UiTargetCamera</code></a></td><td>Indicates that this root [`Node`] entity should be rendered to a specific camera.   UI then will be laid out respecting the camera’s viewport and scale factor, and  rendered to this camera’s [`bevy_camera::RenderTarget`]...</td></tr>
+<tr><td><a href="././types/zindex.html"><code>ZIndex</code></a></td><td>Indicates that this [`Node`] entity’s front-to-back ordering is not controlled solely  by its location in the UI hierarchy. A node with a higher z-index will appear on top  of sibling nodes with a lower z-index.   UI nodes that have the same z-index will appear according to the order in which they  appear in the UI hierarchy. In such a case, the last node to be added to its parent  will appear in front of its siblings.   Nodes without this component will be treated as if they had a value of  <code>[ZIndex]...</code></td></tr>
+<tr><td><a href="././types/uiglobaltransform.html"><code>UiGlobalTransform</code></a></td><td>Absolute 2D transform for UI nodes   [`UiGlobalTransform`]s are updated from [`UiTransform`] and [`Node`](crate::ui_node::Node)...</td></tr>
+<tr><td><a href="././types/uitransform.html"><code>UiTransform</code></a></td><td>Relative 2D transform for UI nodes   [`UiGlobalTransform`] is automatically inserted whenever [`UiTransform`...</td></tr>
+<tr><td><a href="././types/val2.html"><code>Val2</code></a></td><td>A pair of [`Val`]s used to represent a 2-dimensional size or offset.</td></tr>
 <tr><td><a href="././types/button.html"><code>Button</code></a></td><td>Marker struct for buttons</td></tr>
 <tr><td><a href="././types/imagenode.html"><code>ImageNode</code></a></td><td>A UI Node that renders an image.</td></tr>
-<tr><td><a href="././types/imagenodesize.html"><code>ImageNodeSize</code></a></td><td>The size of the image's texture   This component is updated automatically by [`update_image_content_size_system`]...</td></tr>
+<tr><td><a href="././types/imagenodesize.html"><code>ImageNodeSize</code></a></td><td>The size of the image’s texture   This component is updated automatically by [`update_image_content_size_system`]...</td></tr>
 <tr><td><a href="././types/nodeimagemode.html"><code>NodeImageMode</code></a></td><td>Controls how the image is altered to fit within the layout and how the layout algorithm determines ...</td></tr>
 <tr><td><a href="././types/label.html"><code>Label</code></a></td><td>Marker struct for labels</td></tr>
-<tr><td><a href="././types/text.html"><code>Text</code></a></td><td>The top-level UI text component.   Adding [`Text`] to an entity will pull in required components for setting up a UI text node.   The string in this component is the first 'text span' in a hierarchy of text spans that are collected into  a [`ComputedTextBlock`]...</td></tr>
+<tr><td><a href="././types/text.html"><code>Text</code></a></td><td>The top-level UI text component.   Adding [`Text`] to an entity will pull in required components for setting up a UI text node.   The string in this component is the first ‘text span’ in a hierarchy of text spans that are collected into  a [`ComputedTextBlock`]...</td></tr>
 <tr><td><a href="././types/textnodeflags.html"><code>TextNodeFlags</code></a></td><td>UI text system flags.   Used internally by [`measure_text_system`] and [`text_system`] to schedule text for processing.</td></tr>
+<tr><td><a href="././types/textshadow.html"><code>TextShadow</code></a></td><td>Adds a shadow behind text   Use the `Text2dShadow` component for `Text2d` shadows</td></tr>
+<tr><td><a href="././types/viewportnode.html"><code>ViewportNode</code></a></td><td>Component used to render a [`Camera::target`]  to a node.   # See Also   [`update_viewport_render_target_size`...</td></tr>
+<tr><td><a href="././types/cursoricon.html"><code>CursorIcon</code></a></td><td>Insert into a window entity to set the cursor for that window.</td></tr>
+<tr><td><a href="././types/customcursor.html"><code>CustomCursor</code></a></td><td>Custom cursor image data.</td></tr>
+<tr><td><a href="././types/customcursorimage.html"><code>CustomCursorImage</code></a></td><td>A custom cursor created from an image.</td></tr>
+<tr><td><a href="././types/customcursorurl.html"><code>CustomCursorUrl</code></a></td><td>A custom cursor created from a URL. Note that this currently only works on the web.</td></tr>
+<tr><td><a href="././types/systemcursoricon.html"><code>SystemCursorIcon</code></a></td><td>The icon to display for a window.   Examples of all of these cursors can be found [here](https://www.w3schools.com/cssref/playit.php?filename=playcss_cursor&amp;preval=crosshair).  This `enum` is simply a copy of a similar `enum` found in [`winit`](https://docs.rs/winit/latest/winit/window/enum.CursorIcon.html)...</td></tr>
 <tr><td><a href="././types/applifecycle.html"><code>AppLifecycle</code></a></td><td>Application lifetime events</td></tr>
-<tr><td><a href="././types/cursorentered.html"><code>CursorEntered</code></a></td><td>An event that is sent whenever the user's cursor enters a window.</td></tr>
-<tr><td><a href="././types/cursorleft.html"><code>CursorLeft</code></a></td><td>An event that is sent whenever the user's cursor leaves a window.</td></tr>
+<tr><td><a href="././types/cursorentered.html"><code>CursorEntered</code></a></td><td>An event that is sent whenever the user’s cursor enters a window.</td></tr>
+<tr><td><a href="././types/cursorleft.html"><code>CursorLeft</code></a></td><td>An event that is sent whenever the user’s cursor leaves a window.</td></tr>
 <tr><td><a href="././types/cursormoved.html"><code>CursorMoved</code></a></td><td>An event reporting that the mouse cursor has moved inside a window.   The event is sent only if the...</td></tr>
 <tr><td><a href="././types/filedraganddrop.html"><code>FileDragAndDrop</code></a></td><td>Events related to files being dragged and dropped on a window.</td></tr>
 <tr><td><a href="././types/ime.html"><code>Ime</code></a></td><td>An Input Method Editor event.   This event is the translated version of the `WindowEvent::Ime` from...</td></tr>
-<tr><td><a href="././types/requestredraw.html"><code>RequestRedraw</code></a></td><td>An event that indicates all of the application's windows should be redrawn,  even if their control ...</td></tr>
-<tr><td><a href="././types/windowbackendscalefactorchanged.html"><code>WindowBackendScaleFactorChanged</code></a></td><td>An event that indicates a window's OS-reported scale factor has changed.</td></tr>
+<tr><td><a href="././types/requestredraw.html"><code>RequestRedraw</code></a></td><td>An event that indicates all of the application’s windows should be redrawn,  even if their control ...</td></tr>
+<tr><td><a href="././types/windowbackendscalefactorchanged.html"><code>WindowBackendScaleFactorChanged</code></a></td><td>An event that indicates a window’s OS-reported scale factor has changed.</td></tr>
 <tr><td><a href="././types/windowcloserequested.html"><code>WindowCloseRequested</code></a></td><td>An event that is sent whenever the operating systems requests that a window  be closed. This will b...</td></tr>
 <tr><td><a href="././types/windowclosed.html"><code>WindowClosed</code></a></td><td>An event that is sent whenever a window is closed. This will be sent when  the window entity loses ...</td></tr>
 <tr><td><a href="././types/windowclosing.html"><code>WindowClosing</code></a></td><td>An event that is sent whenever a window is closing. This will be sent when  after a [`WindowCloseRequested`]...</td></tr>
 <tr><td><a href="././types/windowcreated.html"><code>WindowCreated</code></a></td><td>An event that is sent whenever a new window is created.   To create a new window, spawn an entity w...</td></tr>
 <tr><td><a href="././types/windowdestroyed.html"><code>WindowDestroyed</code></a></td><td>An event that is sent whenever a window is destroyed by the underlying window system.   Note that i...</td></tr>
-<tr><td><a href="././types/windowevent.html"><code>WindowEvent</code></a></td><td>Wraps all `bevy_window` and `bevy_input` events in a common enum.   Read these events with `EventReader<WindowEvent>`...</td></tr>
+<tr><td><a href="././types/windowevent.html"><code>WindowEvent</code></a></td><td>Wraps all `bevy_window` and `bevy_input` events in a common enum.   Read these events with `MessageReader<windowevent>`...</windowevent></td></tr>
 <tr><td><a href="././types/windowfocused.html"><code>WindowFocused</code></a></td><td>An event that indicates a window has received or lost focus.</td></tr>
 <tr><td><a href="././types/windowmoved.html"><code>WindowMoved</code></a></td><td>An event that is sent when a window is repositioned in physical pixels.</td></tr>
 <tr><td><a href="././types/windowoccluded.html"><code>WindowOccluded</code></a></td><td>The window has been occluded (completely hidden from view).   This is different to window visibilit...</td></tr>
-<tr><td><a href="././types/windowresized.html"><code>WindowResized</code></a></td><td>A window event that is sent whenever a window's logical size has changed.</td></tr>
-<tr><td><a href="././types/windowscalefactorchanged.html"><code>WindowScaleFactorChanged</code></a></td><td>An event that indicates a window's scale factor has changed.</td></tr>
+<tr><td><a href="././types/windowresized.html"><code>WindowResized</code></a></td><td>A window event that is sent whenever a window’s logical size has changed.</td></tr>
+<tr><td><a href="././types/windowscalefactorchanged.html"><code>WindowScaleFactorChanged</code></a></td><td>An event that indicates a window’s scale factor has changed.</td></tr>
 <tr><td><a href="././types/windowthemechanged.html"><code>WindowThemeChanged</code></a></td><td>An event sent when the system theme changes for a window.   This event is only sent when the window...</td></tr>
-<tr><td><a href="././types/monitor.html"><code>Monitor</code></a></td><td>Represents an available monitor as reported by the user's operating system, which can be used  to q...</td></tr>
+<tr><td><a href="././types/monitor.html"><code>Monitor</code></a></td><td>Represents an available monitor as reported by the user’s operating system, which can be used  to q...</td></tr>
+<tr><td><a href="././types/primarymonitor.html"><code>PrimaryMonitor</code></a></td><td>A marker component for the primary monitor</td></tr>
 <tr><td><a href="././types/videomode.html"><code>VideoMode</code></a></td><td>Represents a video mode that a monitor supports</td></tr>
-<tr><td><a href="././types/systemcursoricon.html"><code>SystemCursorIcon</code></a></td><td>The icon to display for a window.   Examples of all of these cursors can be found [here](https://www.w3schools.com/cssref/playit.php?filename=playcss_cursor&amp;preval=crosshair).  This `enum` is simply a copy of a similar `enum` found in [`winit`](https://docs.rs/winit/latest/winit/window/enum.CursorIcon.html)...</td></tr>
 <tr><td><a href="././types/compositealphamode.html"><code>CompositeAlphaMode</code></a></td><td>Specifies how the alpha channel of the textures should be handled during compositing, for a [`Window`]...</td></tr>
-<tr><td><a href="././types/cursorgrabmode.html"><code>CursorGrabMode</code></a></td><td>Defines if and how the cursor is grabbed by a [`Window`].   ## Platform-specific   - **`Windows`** doesn't support [`CursorGrabMode::Locked`]...</td></tr>
+<tr><td><a href="././types/cursorgrabmode.html"><code>CursorGrabMode</code></a></td><td>Defines if and how the cursor is grabbed by a [`Window`].   ## Platform-specific   - **`macOS`** doesn’t support [`CursorGrabMode::Confined`]...</td></tr>
 <tr><td><a href="././types/cursoroptions.html"><code>CursorOptions</code></a></td><td>Cursor data for a [`Window`].</td></tr>
 <tr><td><a href="././types/enabledbuttons.html"><code>EnabledButtons</code></a></td><td>Specifies which [`Window`] control buttons should be enabled.   ## Platform-specific   **`iOS`**, **`Android`**, and the **`Web`** do not have window control buttons.   On some **`Linux`** environments these values have no effect.</td></tr>
-<tr><td><a href="././types/internalwindowstate.html"><code>InternalWindowState</code></a></td><td>Stores internal [`Window`] state that isn't directly accessible.</td></tr>
+<tr><td><a href="././types/internalwindowstate.html"><code>InternalWindowState</code></a></td><td>Stores internal [`Window`] state that isn’t directly accessible.</td></tr>
 <tr><td><a href="././types/monitorselection.html"><code>MonitorSelection</code></a></td><td>References a screen monitor.   Used when centering a [`Window`] on a monitor.</td></tr>
+<tr><td><a href="././types/normalizedwindowref.html"><code>NormalizedWindowRef</code></a></td><td>A flattened representation of a window reference for equality/hashing purposes.   For most purposes...</td></tr>
 <tr><td><a href="././types/presentmode.html"><code>PresentMode</code></a></td><td>Presentation mode for a [`Window`].   The presentation mode specifies when a frame is presented to the window. The [`Fifo`]...</td></tr>
 <tr><td><a href="././types/primarywindow.html"><code>PrimaryWindow</code></a></td><td>Marker [`Component`] for the window considered the primary window.   Currently this is assumed to only exist on 1 entity at a time.   [`WindowPlugin`](crate::WindowPlugin)...</td></tr>
+<tr><td><a href="././types/screenedge.html"><code>ScreenEdge</code></a></td><td>The edges of a screen. Corresponds to [`winit::platform::ios::ScreenEdge`].   # Platform-specific   - Only used on iOS.   [`winit::platform::ios::ScreenEdge`]...</td></tr>
 <tr><td><a href="././types/videomodeselection.html"><code>VideoModeSelection</code></a></td><td>References an exclusive fullscreen video mode.   Used when setting [`WindowMode::Fullscreen`] on a window.</td></tr>
 <tr><td><a href="././types/window.html"><code>Window</code></a></td><td>The defining [`Component`] for window entities,  storing information about how it should appear and behave.   Each window corresponds to an entity, and is uniquely identified by the value of their [`Entity`]...</td></tr>
 <tr><td><a href="././types/windowlevel.html"><code>WindowLevel</code></a></td><td>Specifies where a [`Window`] should appear relative to other overlapping windows (on top or under) .   Levels are groups of windows with respect to their z-position.   The relative ordering between windows in different window levels is fixed.  The z-order of windows within the same window level may change dynamically on user interaction.   ## Platform-specific   - **iOS / Android / Web / Wayland:** Unsupported.</td></tr>
@@ -659,30 +776,36 @@
 <tr><td><a href="././types/windowresizeconstraints.html"><code>WindowResizeConstraints</code></a></td><td>The size limits on a [`Window`].   These values are measured in logical pixels (see [`WindowResolution`...</td></tr>
 <tr><td><a href="././types/windowresolution.html"><code>WindowResolution</code></a></td><td>Controls the size of a [`Window`]   ## Physical, logical and requested sizes   There are three sizes associated with a window:  - the physical size,    which represents the actual height and width in physical pixels    the window occupies on the monitor,  - the logical size,    which represents the size that should be used to scale elements    inside the window, measured in logical pixels,  - the requested size,    measured in logical pixels, which is the value submitted    to the API when creating the window, or requesting that it be resized.   ## Scale factor   The reason logical size and physical size are separated and can be different  is to account for the cases where:  - several monitors have different pixel densities,  - the user has set up a pixel density preference in its operating system,  - the Bevy `App` has specified a specific scale factor between both.   The factor between physical size and logical size can be retrieved with  [`WindowResolution::scale_factor`]...</td></tr>
 <tr><td><a href="././types/windowtheme.html"><code>WindowTheme</code></a></td><td>The [`Window`] theme variant to use.</td></tr>
-<tr><td><a href="././types/cursoricon.html"><code>CursorIcon</code></a></td><td>Insert into a window entity to set the cursor for that window.</td></tr>
+<tr><td><a href="././types/wakeup.html"><code>WakeUp</code></a></td><td>The default event that can be used to wake the window loop  Wakes up the loop if in wait state</td></tr>
+<tr><td><a href="././types/nonzeroi128.html"><code>NonZeroI128</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzeroi16.html"><code>NonZeroI16</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzeroi32.html"><code>NonZeroI32</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzeroi64.html"><code>NonZeroI64</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzeroi8.html"><code>NonZeroI8</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzeroisize.html"><code>NonZeroIsize</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzerou128.html"><code>NonZeroU128</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzerou16.html"><code>NonZeroU16</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzerou32.html"><code>NonZeroU32</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzerou64.html"><code>NonZeroU64</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzerou8.html"><code>NonZeroU8</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonzerousize.html"><code>NonZeroUsize</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/cow.html"><code>Cow</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/handle().html"><code>Handle&lt;Unknown&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
-<tr><td><a href="././types/handleautoexposurecompensationcurve.html"><code>Handle&lt;AutoExposureCompensationCurve&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
-<tr><td><a href="././types/handleimage.html"><code>Handle&lt;Image&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
-<tr><td><a href="././types/handletextureatlaslayout.html"><code>Handle&lt;TextureAtlasLayout&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
-<tr><td><a href="././types/handlemesh.html"><code>Handle&lt;Mesh&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
-<tr><td><a href="././types/handleshaderstoragebuffer.html"><code>Handle&lt;ShaderStorageBuffer&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
-<tr><td><a href="././types/handlecolormaterial.html"><code>Handle&lt;ColorMaterial&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
-<tr><td><a href="././types/assetid().html"><code>AssetId&lt;Unknown&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
-<tr><td><a href="././types/assetidautoexposurecompensationcurve.html"><code>AssetId&lt;AutoExposureCompensationCurve&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
+<tr><td><a href="././types/handle().html"><code>Handle&lt;Unknown&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handleimage.html"><code>Handle&lt;Image&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handletextureatlaslayout.html"><code>Handle&lt;TextureAtlasLayout&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handlemesh.html"><code>Handle&lt;Mesh&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handleshaderstoragebuffer.html"><code>Handle&lt;ShaderStorageBuffer&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handlecolormaterial.html"><code>Handle&lt;ColorMaterial&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handlewireframe2dmaterial.html"><code>Handle&lt;Wireframe2dMaterial&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
 <tr><td><a href="././types/assetidimage.html"><code>AssetId&lt;Image&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidtextureatlaslayout.html"><code>AssetId&lt;TextureAtlasLayout&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
-<tr><td><a href="././types/assetidmesh.html"><code>AssetId&lt;Mesh&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidscriptasset.html"><code>AssetId&lt;ScriptAsset&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
-<tr><td><a href="././types/assetidshaderstoragebuffer.html"><code>AssetId&lt;ShaderStorageBuffer&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
-<tr><td><a href="././types/assetidcolormaterial.html"><code>AssetId&lt;ColorMaterial&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
+<tr><td><a href="././types/entityhashmapnavneighbors.html"><code>EntityHashMap&lt;NavNeighbors&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/axisgamepadinput.html"><code>Axis&lt;GamepadInput&gt;</code></a></td><td>Stores the position data of the input devices of type `T`.   The values are stored as `f32`s, using...</td></tr>
-<tr><td><a href="././types/buttoninputgamepadbutton.html"><code>ButtonInput&lt;GamepadButton&gt;</code></a></td><td>A "press-able" input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
+<tr><td><a href="././types/buttoninputgamepadbutton.html"><code>ButtonInput&lt;GamepadButton&gt;</code></a></td><td>A “press-able” input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
 <tr><td><a href="././types/arc.html"><code>Arc</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/meshmaterial2dcolormaterial.html"><code>MeshMaterial2d&lt;ColorMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_render::mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_math::primitives::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<Mesh>&gt;,      mut materials: ResMut&lt;Assets<ColorMaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</td></tr>
+<tr><td><a href="././types/arc.html"><code>Arc</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/meshmaterial2dcolormaterial.html"><code>MeshMaterial2d&lt;ColorMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_math::primitives::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
 <tr><td><a href="././types/time().html"><code>Time&lt;Unknown&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
 <tr><td><a href="././types/timefixed.html"><code>Time&lt;Fixed&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
 <tr><td><a href="././types/timereal.html"><code>Time&lt;Real&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
@@ -691,18 +814,20 @@
 <tr><td><a href="././types/rangeinclusive.html"><code>RangeInclusive</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetentity.html"><code>HashSet&lt;Entity&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetgamepadbutton.html"><code>HashSet&lt;GamepadButton&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-</tbody></table>
+</tbody>
+</table>
 </div>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                             <a rel="prev" href="../core_bindings/functions/system_builder.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <i class="fa fa-angle-left"></i>
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
                             <a rel="next prefetch" href="../core_bindings/types/world.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
                         <div style="clear: both"></div>
@@ -712,16 +837,21 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                     <a rel="prev" href="../core_bindings/functions/system_builder.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <i class="fa fa-angle-left"></i>
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
                     <a rel="next prefetch" href="../core_bindings/types/world.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
 
         </div>
 
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
 
 
 
@@ -730,18 +860,18 @@
         </script>
 
 
-        <script src="../elasticlunr.min.js"></script>
-        <script src="../mark.min.js"></script>
-        <script src="../searcher.js"></script>
+        <script src="../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../mark-09e88c2c.min.js"></script>
+        <script src="../searcher-c2a407aa.js"></script>
 
-        <script src="../clipboard.min.js"></script>
-        <script src="../highlight.js"></script>
-        <script src="../book.js"></script>
+        <script src="../clipboard-1626706a.min.js"></script>
+        <script src="../highlight-abc7f01d.js"></script>
+        <script src="../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block.js"></script>
-        <script src="../mermaid.min.js"></script>
-        <script src="../mermaid-init.js"></script>
+        <script src="../multi-code-block-02be4b76.js"></script>
+        <script src="../mermaid-eefea253.min.js"></script>
+        <script src="../mermaid-init-ccf746f1.js"></script>
 
 
 
