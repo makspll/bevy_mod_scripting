@@ -1,4 +1,4 @@
-#![feature(rustc_private, let_chains)]
+#![feature(rustc_private)]
 #![deny(rustc::internal)]
 
 extern crate rustc_ast;
@@ -17,6 +17,7 @@ extern crate rustc_trait_selection;
 
 mod args;
 mod callback;
+mod candidate;
 mod context;
 mod import_path;
 mod meta;
@@ -39,3 +40,6 @@ pub use template::{
     Collect, Crate, TEMPLATE_DIR, TemplateKind, configure_tera, extend_context_with_args,
 };
 pub mod driver;
+
+/// The rustc toolchain this crate was built with and needs to work with
+pub const CHANNEL: &str = env!("RUSTC_CHANNEL");

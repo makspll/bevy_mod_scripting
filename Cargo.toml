@@ -66,6 +66,7 @@ core_functions = ["bevy_mod_scripting_functions/core_functions"]
 bevy_a11y_bindings = ["bevy_mod_scripting_functions/bevy_a11y"]
 bevy_animation_bindings = ["bevy_mod_scripting_functions/bevy_animation"]
 bevy_asset_bindings = ["bevy_mod_scripting_functions/bevy_asset"]
+bevy_camera_bindings = ["bevy_mod_scripting_functions/bevy_camera"]
 bevy_color_bindings = ["bevy_mod_scripting_functions/bevy_color"]
 bevy_core_pipeline_bindings = [
     "bevy_mod_scripting_functions/bevy_core_pipeline",
@@ -76,17 +77,24 @@ bevy_gltf_bindings = ["bevy_mod_scripting_functions/bevy_gltf"]
 bevy_image_bindings = ["bevy_mod_scripting_functions/bevy_image"]
 bevy_input_bindings = ["bevy_mod_scripting_functions/bevy_input"]
 bevy_input_focus_bindings = ["bevy_mod_scripting_functions/bevy_input_focus"]
+bevy_light_bindings = ["bevy_mod_scripting_functions/bevy_light"]
 bevy_math_bindings = ["bevy_mod_scripting_functions/bevy_math"]
 bevy_mesh_bindings = ["bevy_mod_scripting_functions/bevy_mesh"]
 bevy_pbr_bindings = ["bevy_mod_scripting_functions/bevy_pbr"]
 bevy_picking_bindings = ["bevy_mod_scripting_functions/bevy_picking"]
+bevy_post_process_bindings = ["bevy_mod_scripting_functions/bevy_post_process"]
 bevy_reflect_bindings = ["bevy_mod_scripting_functions/bevy_reflect"]
 bevy_render_bindings = ["bevy_mod_scripting_functions/bevy_render"]
 bevy_scene_bindings = ["bevy_mod_scripting_functions/bevy_scene"]
 bevy_sprite_bindings = ["bevy_mod_scripting_functions/bevy_sprite"]
+bevy_sprite_render_bindings = [
+    "bevy_mod_scripting_functions/bevy_sprite_render",
+]
 bevy_text_bindings = ["bevy_mod_scripting_functions/bevy_text"]
 bevy_time_bindings = ["bevy_mod_scripting_functions/bevy_time"]
 bevy_transform_bindings = ["bevy_mod_scripting_functions/bevy_transform"]
+bevy_ui_bindings = ["bevy_mod_scripting_functions/bevy_ui"]
+bevy_ui_render_bindings = ["bevy_mod_scripting_functions/bevy_ui_render"]
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua?/unsafe_lua_modules"]
@@ -140,54 +148,57 @@ bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "
 
 # bevy
 
-bevy = { version = "0.16.0", default-features = false }
-bevy_math = { version = "0.16.0", default-features = false, features = ["std"] }
-bevy_transform = { version = "0.16.0", default-features = false }
-bevy_reflect = { version = "0.16.0", default-features = false }
-bevy_ecs = { version = "0.16.0", default-features = false }
-bevy_asset = { version = "0.16.0", default-features = false }
-bevy_app = { version = "0.16.0", default-features = false }
-bevy_log = { version = "0.16.0", default-features = false }
-bevy_internal = { version = "0.16.0", default-features = false }
-bevy_diagnostic = { version = "0.16.0", default-features = false }
-bevy_platform = { version = "0.16.0", default-features = false }
-bevy_time = { version = "0.16.0", default-features = false }
-bevy_input = { version = "0.16.0", default-features = false }
-bevy_a11y = { version = "0.16.0", default-features = false, features = [
-    "std",
-    "bevy_reflect",
-] }
-bevy_animation = { version = "0.16.0", default-features = false }
-bevy_color = { version = "0.16.0", default-features = false, features = [
-    "std",
-    "bevy_reflect",
-] }
-bevy_core_pipeline = { version = "0.16.0", default-features = false }
-bevy_gizmos = { version = "0.16.0", default-features = false }
-bevy_gltf = { version = "0.16.0", default-features = false }
-bevy_image = { version = "0.16.0", default-features = false, features = [
-    "bevy_reflect",
-] }
-bevy_input_focus = { version = "0.16.0", default-features = false, features = [
-    "std",
-    "bevy_reflect",
-] }
-bevy_mesh = { version = "0.16.0", default-features = false }
-bevy_pbr = { version = "0.16.0", default-features = false }
-bevy_picking = { version = "0.16.0", default-features = false }
-bevy_render = { version = "0.16.0", default-features = false }
-bevy_scene = { version = "0.16.0", default-features = false }
-bevy_sprite = { version = "0.16.0", default-features = false }
-bevy_text = { version = "0.16.0", default-features = false }
-bevy_window = { version = "0.16.0", default-features = false, features = [
-    "bevy_reflect",
-    "std",
-] }
-bevy_winit = { version = "0.16.0", default-features = false }
 
-glam = { version = "0.29.3", default-features = false }
-uuid = { version = "1.11", default-features = false }
+bevy = { version = "0.17", default-features = false }
+bevy_math = { version = "0.17", default-features = false, features = ["std"] }
+bevy_transform = { version = "0.17", default-features = false }
+bevy_reflect = { version = "0.17", default-features = false }
+bevy_ecs = { version = "0.17", default-features = false }
+bevy_asset = { version = "0.17", default-features = false }
+bevy_app = { version = "0.17", default-features = false }
+bevy_log = { version = "0.17", default-features = false }
+bevy_internal = { version = "0.17", default-features = false }
+bevy_diagnostic = { version = "0.17", default-features = false }
+bevy_platform = { version = "0.17", default-features = false }
+bevy_time = { version = "0.17", default-features = false }
+bevy_input = { version = "0.17", default-features = false }
+bevy_a11y = { version = "0.17", default-features = false, features = [
+    "std",
+    "bevy_reflect",
+] }
+bevy_animation = { version = "0.17", default-features = false }
+bevy_color = { version = "0.17", default-features = false, features = [
+    "std",
+    "bevy_reflect",
+] }
+bevy_core_pipeline = { version = "0.17", default-features = false }
+bevy_gizmos = { version = "0.17", default-features = false }
+bevy_gltf = { version = "0.17", default-features = false }
+bevy_image = { version = "0.17", default-features = false, features = [
+    "bevy_reflect",
+] }
+bevy_input_focus = { version = "0.17", default-features = false, features = [
+    "std",
+    "bevy_reflect",
+] }
+bevy_mesh = { version = "0.17", default-features = false }
+bevy_pbr = { version = "0.17", default-features = false }
+bevy_picking = { version = "0.17", default-features = false }
+bevy_render = { version = "0.17", default-features = false }
+bevy_scene = { version = "0.17", default-features = false }
+bevy_sprite = { version = "0.17", default-features = false }
+bevy_text = { version = "0.17", default-features = false }
+bevy_window = { version = "0.17", default-features = false, features = [
+    "bevy_reflect",
+    "std",
+] }
+bevy_winit = { version = "0.17", default-features = false }
+bevy_utils = { version = "0.17", default-features = false, features = ["std"] }
+
+glam = { version = "0.30.7", default-features = false }
+uuid = { version = "1.13", default-features = false }
 smol_str = { version = "0.2.0", default-features = false }
+nonmax = { version = "0.5", default-features = false, features = ["std"] }
 
 # other
 serde_json = { version = "1.0", default-features = false }
@@ -204,8 +215,8 @@ rhai = { version = "1.21", default-features = false }
 mlua = { version = "0.10", default-features = false }
 log = { version = "0.4", default-features = false }
 env_logger = { version = "0.11", default-features = false }
-clap = { version = "4", default-features = false }
-mdbook = { version = "0.4", default-features = false }
+clap = { version = "4", default-features = false, features = ["std"] }
+mdbook-preprocessor = { version = "0.5", default-features = false }
 quote = { version = "1.0", default-features = false }
 syn = { version = "2.0", default-features = false }
 proc-macro2 = { version = "1.0", default-features = false }
@@ -224,7 +235,7 @@ pretty_assertions = { version = "1.4", default-features = false, features = [
 manifest-dir-macros = { version = "0.1.18", default-features = false }
 assert_cmd = { version = "2.1", default-features = false }
 tokio = { version = "1", default-features = false }
-bevy_console = { version = "0.14", default-features = false }
+bevy_console = { version = "0.16", default-features = false }
 tracing-tracy = { version = "0.11", default-features = false }
 libtest-mimic = { version = "0.8", default-features = false }
 criterion = { version = "0.5", default-features = false }
@@ -238,10 +249,13 @@ bevy = { workspace = true, features = [
     "bevy_asset",
     "bevy_core_pipeline",
     "bevy_sprite",
+    "bevy_sprite_render",
     "bevy_state",
     "x11",
     "bevy_ui",
     "default_font",
+    "custom_cursor",
+    "debug",
 ] }
 bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }

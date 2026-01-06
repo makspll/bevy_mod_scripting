@@ -17,41 +17,21 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_math = { version = "0.16.1", features = [
-    "std",
-    "rand",
-    "curve",
-    "alloc",
-    "bevy_reflect",
-], default-features = true }
+bevy_math = { version = "0.17.3", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
 
-bevy_reflect = { version = "^0.16.1", features = [
-    "std",
-], default-features = false }
+bevy_reflect = { version = "^0.17.3", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
 
-derive_more = { version = "^1", features = ["std"], default-features = false }
+derive_more = { version = "^2", features = ["std"], default-features = false}
 
-glam = { version = "^0.29.3", features = [
-    "std",
-    "rand",
-], default-features = false }
+glam = { version = "^0.30.1", features = ["rand", "std"], default-features = false}
 
-itertools = { version = "^0.14.0", features = [
-    "use_std",
-    "use_alloc",
-], default-features = false }
+itertools = { version = "^0.14.0", features = ["use_alloc", "use_std"], default-features = false}
 
-rand = { version = "^0.8", features = [
-    "std",
-    "alloc",
-], default-features = false }
+rand = { version = "^0.9", features = ["alloc", "std"], default-features = false}
 
-rand_distr = { version = "^0.4.3", features = [
-    "std",
-    "alloc",
-], default-features = false }
+rand_distr = { version = "^0.5", features = ["alloc", "std"], default-features = false}
 
-smallvec = { version = "^1.11", features = [], default-features = true }
+variadics_please = { version = "^1.1", features = [], default-features = true}
 
-variadics_please = { version = "^1.1", features = [], default-features = true }
+

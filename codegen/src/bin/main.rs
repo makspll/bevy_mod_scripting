@@ -29,6 +29,13 @@ fn main() {
 
     info!("Using RUST_LOG: {:?}", env::var("RUST_LOG"));
 
+    info!(
+        "MSRV target: {}",
+        args.mrsv_target()
+            .map(|t| t.to_string())
+            .unwrap_or(String::from("unset"))
+    );
+
     info!("Computing crate metadata");
     let metadata = cargo_metadata::MetadataCommand::new()
         .no_deps()
@@ -43,7 +50,7 @@ fn main() {
         .collect::<Vec<_>>();
 
     info!("Computing active features");
-    let include_crates = if args.cmd.is_generate() {
+    let include_crates = if !args.cmd.is_collect() {
         let workspace = Workspace::from(&metadata);
         let mut graph = WorkspaceGraph::from(workspace);
         info!("Using workspace graph: \n{}", graph.to_dot());

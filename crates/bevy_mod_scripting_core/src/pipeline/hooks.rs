@@ -23,7 +23,10 @@ impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnLoa
         let emit_responses = P::readonly_configuration(world_id).emit_responses;
         let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
-
+        bevy_log::trace!(
+            "Running on_script_loaded hook for script: {}",
+            ctxt.attachment
+        );
         RunScriptCallback::<P>::new(
             ctxt.attachment.clone(),
             OnScriptLoaded::into_callback_label(),
@@ -49,7 +52,10 @@ impl<P: IntoScriptPluginParams> TransitionListener<UnloadingInitialized<P>>
         let emit_responses = P::readonly_configuration(world_id).emit_responses;
         let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
-
+        bevy_log::trace!(
+            "Running on_script_unloaded hook for script: {}",
+            ctxt.attachment
+        );
         let v = RunScriptCallback::<P>::new(
             ctxt.attachment.clone(),
             OnScriptUnloaded::into_callback_label(),
@@ -76,6 +82,11 @@ impl<P: IntoScriptPluginParams> TransitionListener<ReloadingInitialized<P>>
         let emit_responses = P::readonly_configuration(world_id).emit_responses;
         let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
+
+        bevy_log::trace!(
+            "Running on_script_unloaded for reload hook for script: {}",
+            ctxt.attachment
+        );
 
         let v = RunScriptCallback::<P>::new(
             ctxt.attachment.clone(),
@@ -105,6 +116,11 @@ impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnRel
         if state.is_new_context {
             return Ok(());
         }
+
+        bevy_log::trace!(
+            "Running on_script_reloaded hook for script: {}",
+            ctxt.attachment
+        );
 
         let unload_state = ctxt.get_first_typed::<ScriptValue>(UNLOADED_SCRIPT_STATE_KEY);
         let unload_state = unload_state.unwrap_or(ScriptValue::Unit);

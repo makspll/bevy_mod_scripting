@@ -7,6 +7,7 @@ use std::{
 
 use cargo_metadata::camino::Utf8PathBuf;
 use chrono::NaiveDateTime;
+use indexmap::IndexMap;
 use log::trace;
 use rustc_hir::def_id::DefPathHash;
 use serde::{Deserialize, Serialize, Serializer};
@@ -38,7 +39,7 @@ pub struct Meta {
     pub(crate) version: String,
 
     /// a map of crate names to the features that crate was compiled with
-    pub(crate) dependencies: HashMap<String, Dependency>,
+    pub(crate) dependencies: IndexMap<String, Dependency>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

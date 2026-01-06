@@ -60,9 +60,16 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         self
     }
 
+    fn handle_error(res: &Result<ScriptValue, ScriptError>, guard: WorldGuard) {
+        if let Err(err) = res {
+            send_script_errors(guard, [err]);
+        }
+    }
+
     /// Run the command on the given context.
     ///
     /// Assumes this context matches the attachment for the command.
+    /// Does not send the error as a message, this needs to be done explicitly by the caller.
     pub fn run_with_context(
         self,
         guard: WorldGuard,
@@ -109,6 +116,8 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     }
 
     /// Equivalent to [`Self::run`], but usable in the case where you already have [`ScriptContext`] and [`ScriptCallbacks`] resources available.
+    ///
+    /// Does not send the error as a message, this needs to be done explicitly by the caller.
     pub fn run_with_contexts(
         self,
         guard: WorldGuard,
@@ -125,7 +134,6 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
                 )
                 .with_script(self.attachment.script().display())
                 .with_language(P::LANGUAGE);
-                send_script_errors(guard, [&err]);
                 return Err(err);
             }
         };
@@ -135,19 +143,22 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
 
     /// Equivalent to running the command, but also returns the result of the callback.
     ///
-    /// The returned errors will NOT be sent as events or printed
-    pub fn run(self, world: &mut World) -> Result<ScriptValue, ScriptError> {
+    /// The returned errors will NOT be sent as events or printed unless send errors is set to true
+    pub fn run(self, world: &mut World, send_errors: bool) -> Result<ScriptValue, ScriptError> {
         let script_contexts = world.get_resource_or_init::<ScriptContext<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
-        self.run_with_contexts(guard, script_contexts, script_callbacks)
+        let res = self.run_with_contexts(guard.clone(), script_contexts, script_callbacks);
+        if send_errors && res.is_err() {
+            Self::handle_error(&res, guard);
+        }
+        res
     }
 }
 
 impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
     fn apply(self, world: &mut World) {
-        // Internals handle this.
-        let _ = self.run(world);
+        let _ = self.run(world, true);
     }
 }
 
@@ -175,14 +186,14 @@ impl<P: IntoScriptPluginParams> DetachScript<P> {
 
 impl<P: IntoScriptPluginParams> Command for AttachScript<P> {
     fn apply(self, world: &mut World) {
-        world.send_event(self.0);
+        world.write_message(self.0);
         RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
     }
 }
 
 impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
     fn apply(self, world: &mut World) {
-        world.send_event(self.0);
+        world.write_message(self.0);
         RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
     }
 }

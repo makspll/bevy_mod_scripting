@@ -14,29 +14,30 @@ use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyGltfScriptingPlugin;
 pub(crate) fn register_gltf_extras_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_gltf::prelude::GltfExtras,
+        ::bevy_gltf::GltfExtras,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_gltf::prelude::GltfExtras>| {
-            let output: Val<::bevy_gltf::prelude::GltfExtras> = {
-                {
-                    let output: Val<::bevy_gltf::prelude::GltfExtras> =
-                        <::bevy_gltf::prelude::GltfExtras as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_gltf::GltfExtras>| {
+                let output: Val<::bevy_gltf::GltfExtras> = {
+                    {
+                        let output: Val<::bevy_gltf::GltfExtras> = <::bevy_gltf::GltfExtras as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_gltf::prelude::GltfExtras,
+            ::bevy_gltf::GltfExtras,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -93,6 +94,35 @@ pub(crate) fn register_gltf_mesh_extras_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gltf::GltfMeshExtras,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_gltf_mesh_name_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_gltf::GltfMeshName,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_gltf::GltfMeshName>| {
+                let output: Val<::bevy_gltf::GltfMeshName> = {
+                    {
+                        let output: Val<::bevy_gltf::GltfMeshName> = <::bevy_gltf::GltfMeshName as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_gltf::GltfMeshName,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -158,6 +188,7 @@ impl Plugin for BevyGltfScriptingPlugin {
         register_gltf_extras_functions(&mut world);
         register_gltf_scene_extras_functions(&mut world);
         register_gltf_mesh_extras_functions(&mut world);
+        register_gltf_mesh_name_functions(&mut world);
         register_gltf_material_extras_functions(&mut world);
         register_gltf_material_name_functions(&mut world);
     }

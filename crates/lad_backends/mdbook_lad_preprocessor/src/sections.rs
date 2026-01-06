@@ -4,7 +4,7 @@ use ladfile::{
     LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadInstance, LadTypeDefinition,
     LadTypeId, LadTypeLayout, LadVisitable, ReflectionPrimitiveKind,
 };
-use mdbook::book::{Chapter, SectionNumber};
+use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
 use crate::{
     argument_visitor::MarkdownArgumentVisitor,
@@ -119,7 +119,7 @@ impl<'a> Section<'a> {
             parent_number.push(index as u32);
             parent_number
         } else {
-            SectionNumber(vec![index as u32])
+            SectionNumber::new(vec![index as u32])
         };
 
         let mut chapter = Chapter {
@@ -137,7 +137,7 @@ impl<'a> Section<'a> {
             .into_iter()
             .enumerate()
             .map(|(i, c)| c.into_chapter(Some(&chapter), i))
-            .map(mdbook::BookItem::Chapter)
+            .map(BookItem::Chapter)
             .collect();
 
         chapter

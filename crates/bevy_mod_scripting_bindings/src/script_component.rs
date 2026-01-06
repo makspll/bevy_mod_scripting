@@ -165,6 +165,6 @@ mod test {
             .get_info(info.registration.component_id)
             .unwrap();
 
-        assert_eq!(component.name(), "ScriptTest");
+        assert_eq!(component.name(), "ScriptTest".into());
     }
 }

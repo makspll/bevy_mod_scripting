@@ -7,10 +7,9 @@ use crate::{
 
 use ::{
     bevy_ecs::{
-        archetype::{ArchetypeComponentId, ArchetypeGeneration},
         component::{ComponentId, Tick},
         entity::Entity,
-        query::{Access, FilteredAccess, FilteredAccessSet, QueryState},
+        query::{FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
         schedule::SystemSet,
         system::{System, SystemParamValidationError},
@@ -18,13 +17,12 @@ use ::{
     },
     bevy_reflect::Reflect,
 };
-use bevy_app::DynEq;
 use bevy_ecs::{
     schedule::{InternedSystemSet, IntoScheduleConfigs, Schedule, Schedules},
-    system::SystemIn,
+    system::{RunSystemError, SystemIn, SystemStateFlags},
     world::DeferredWorld,
 };
-use bevy_log::{debug, error, info, warn_once};
+use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, InteropError, IntoScript, ReflectAccessId, ReflectReference,
@@ -33,6 +31,7 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
+use bevy_utils::prelude::DebugName;
 use std::{
     any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData, ops::Deref,
 };
@@ -61,14 +60,6 @@ impl ScriptSystemSet {
 impl SystemSet for ScriptSystemSet {
     fn dyn_clone(&self) -> Box<dyn SystemSet> {
         Box::new(self.clone())
-    }
-
-    fn as_dyn_eq(&self) -> &dyn DynEq {
-        self
-    }
-
-    fn dyn_hash(&self, mut state: &mut dyn ::core::hash::Hasher) {
-        self.hash(&mut state);
     }
 }
 
@@ -164,11 +155,8 @@ impl ScriptSystemBuilder {
             {
                 for default_set in other.default_system_sets() {
                     if is_before {
-                        info!("before {default_set:?}");
                         system_config = system_config.before(*default_set);
                     } else {
-                        info!("before {default_set:?}");
-                        info!("after {default_set:?}");
                         system_config = system_config.after(*default_set);
                     }
                 }
@@ -227,25 +215,10 @@ pub enum ScriptSystemParam {
 
 /// A system specified, created, and added by a script
 pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
-    name: Cow<'static, str>,
+    name: DebugName,
     exclusive: bool,
-    /// The set of component accesses for this system. This is used to determine
-    /// - soundness issues (e.g. multiple [`SystemParam`]s mutably accessing the same component)
-    /// - ambiguities in the schedule (e.g. two systems that have some sort of conflicting access)
-    pub(crate) component_access_set: FilteredAccessSet<ComponentId>,
-    /// This [`Access`] is used to determine which systems can run in parallel with each other
-    /// in the multithreaded executor.
-    ///
-    /// We use a [`ArchetypeComponentId`] as it is more precise than just checking [`ComponentId`]:
-    /// for example if you have one system with `Query<&mut T, With<A>>` and one system with `Query<&mut T, With<B>>`
-    /// they conflict if you just look at the [`ComponentId`] of `T`; but if there are no archetypes with
-    /// both `A`, `B` and `T` then in practice there's no risk of conflict. By using [`ArchetypeComponentId`]
-    /// we can be more precise because we can check if the existing archetypes of the [`World`]
-    /// cause a conflict
-    pub(crate) archetype_component_access: Access<ArchetypeComponentId>,
     pub(crate) last_run: Tick,
     target_attachment: ScriptAttachment,
-    archetype_generation: ArchetypeGeneration,
     system_param_descriptors: Vec<ScriptSystemParamDescriptor>,
     state: Option<ScriptSystemState<P>>,
     _marker: std::marker::PhantomData<fn() -> P>,
@@ -264,53 +237,43 @@ impl<P: IntoScriptPluginParams> bevy_ecs::system::IntoSystem<(), (), IsDynamicSc
         Self::System {
             name: builder.name.to_string().into(),
             exclusive: builder.is_exclusive,
-            archetype_generation: ArchetypeGeneration::initial(),
             system_param_descriptors: builder.system_params,
             last_run: Default::default(),
             target_attachment: builder.attachment,
             state: None,
-            component_access_set: Default::default(),
-            archetype_component_access: Default::default(),
             _marker: Default::default(),
         }
     }
 }
 
-#[profiling::all_functions]
+// #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     type In = ();
 
     type Out = ();
 
-    fn name(&self) -> std::borrow::Cow<'static, str> {
+    fn name(&self) -> DebugName {
         self.name.clone()
     }
 
-    fn component_access(&self) -> &Access<ComponentId> {
-        self.component_access_set.combined_access()
+    fn flags(&self) -> SystemStateFlags {
+        println!("flags");
+        if self.exclusive {
+            SystemStateFlags::NON_SEND | SystemStateFlags::EXCLUSIVE
+        } else {
+            SystemStateFlags::empty()
+        }
     }
 
-    fn archetype_component_access(&self) -> &Access<ArchetypeComponentId> {
-        &self.archetype_component_access
-    }
-
-    fn is_send(&self) -> bool {
-        !self.is_exclusive()
-    }
-
-    fn is_exclusive(&self) -> bool {
-        self.exclusive
-    }
-
-    fn has_deferred(&self) -> bool {
-        false
-    }
+    // fn component_access(&self) -> &Access {
+    //     self.component_access_set.combined_access()
+    // }
 
     unsafe fn run_unsafe(
         &mut self,
         _input: SystemIn<'_, Self>,
         world: UnsafeWorldCell,
-    ) -> Self::Out {
+    ) -> Result<Self::Out, RunSystemError> {
         let _change_tick = world.increment_change_tick();
 
         #[allow(
@@ -411,9 +374,11 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 self.target_attachment
             );
         }
+
+        Ok(())
     }
 
-    fn initialize(&mut self, world: &mut World) {
+    fn initialize(&mut self, world: &mut World) -> FilteredAccessSet {
         // we need to register all the:
         // - resources, simple just need the component ID's
         // - queries, more difficult the queries need to be built, and archetype access registered on top of component access
@@ -421,6 +386,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         // start with resources
         let mut subset = HashSet::default();
         let mut system_params = Vec::with_capacity(self.system_param_descriptors.len());
+        let mut component_access_set = FilteredAccessSet::new();
         for param in &self.system_param_descriptors {
             match param {
                 ScriptSystemParamDescriptor::Res(res) => {
@@ -433,10 +399,10 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     };
                     system_params.push(system_param);
 
-                    let mut access = FilteredAccess::<ComponentId>::matches_nothing();
+                    let mut access = FilteredAccess::matches_nothing();
 
                     access.add_resource_write(component_id);
-                    self.component_access_set.add(access);
+                    component_access_set.add(access);
                     let raid = ReflectAccessId::for_component_id(component_id);
                     #[allow(
                         clippy::panic,
@@ -456,8 +422,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     let query = query.as_query_state::<Entity>(world);
 
                     // Safety: we are not removing
-                    self.component_access_set
-                        .add(query.component_access().clone());
+                    component_access_set.add(query.component_access().clone());
 
                     let new_raids = get_all_access_ids(query.component_access().access())
                         .into_iter()
@@ -496,37 +461,13 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             system_params,
             script_contexts: world.get_resource_or_init::<ScriptContext<P>>().clone(),
             script_callbacks: world.get_resource_or_init::<ScriptCallbacks<P>>().clone(),
-        })
+        });
+
+        component_access_set
     }
 
-    fn update_archetype_component_access(&mut self, world: UnsafeWorldCell) {
-        let archetypes = world.archetypes();
-
-        let old_generation =
-            std::mem::replace(&mut self.archetype_generation, archetypes.generation());
-
-        if let Some(state) = &mut self.state {
-            for archetype in &archetypes[old_generation..] {
-                for param in &mut state.system_params {
-                    if let ScriptSystemParam::EntityQuery { query, .. } = param {
-                        // SAFETY: The assertion above ensures that the param_state was initialized from `world`.
-                        unsafe {
-                            query.new_archetype(archetype, &mut self.archetype_component_access)
-                        };
-                    }
-                }
-            }
-        }
-    }
-
-    fn check_change_tick(&mut self, change_tick: Tick) {
-        let last_run = &mut self.last_run;
-        let this_run = change_tick;
-
-        let age = this_run.get().wrapping_sub(last_run.get());
-        if age > Tick::MAX.get() {
-            *last_run = Tick::new(this_run.get().wrapping_sub(Tick::MAX.get()));
-        }
+    fn check_change_tick(&mut self, change_tick: bevy_ecs::component::CheckChangeTicks) {
+        self.last_run.check_tick(change_tick);
     }
 
     fn get_last_run(&self) -> Tick {
@@ -558,7 +499,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
     fn validate_param(&mut self, world: &World) -> Result<(), SystemParamValidationError> {
         let world_cell = world.as_unsafe_world_cell_readonly();
-        self.update_archetype_component_access(world_cell);
         // SAFETY:
         // - We have exclusive access to the entire world.
         // - `update_archetype_component_access` has been called.
@@ -666,7 +606,7 @@ impl ManageScriptSystems for WorldGuard<'_> {
 mod test {
     use ::{
         bevy_app::{App, MainScheduleOrder, Plugin, Update},
-        bevy_asset::{AssetId, AssetPlugin, Handle},
+        bevy_asset::{AssetPlugin, Handle},
         bevy_diagnostic::DiagnosticsPlugin,
         bevy_ecs::{
             entity::Entity,
@@ -727,7 +667,7 @@ mod test {
         // now dynamically add script system via builder, without a matching script
         let mut builder = ScriptSystemBuilder::new(
             "test".into(),
-            ScriptAttachment::StaticScript(Handle::Weak(AssetId::invalid())),
+            ScriptAttachment::StaticScript(Handle::default()),
         );
         builder.before_system(test_system);
 

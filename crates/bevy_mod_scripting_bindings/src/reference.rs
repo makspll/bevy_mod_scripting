@@ -17,7 +17,6 @@ use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
 };
 use bevy_reflect::{Access, OffsetAccess, ReflectRef, TypeRegistry};
-use core::alloc;
 use std::{
     any::{Any, TypeId},
     fmt::Debug,
@@ -323,8 +322,8 @@ impl ReflectReference {
         // Safety: The caller guarantees exclusive access to the asset through the WorldGuard,
         // and we've validated that the type_id matches the ReflectAsset type data.
         // The UnsafeWorldCell is valid for the lifetime 'w of the WorldGuard.
-        let asset = unsafe { reflect_asset.get_unchecked_mut(world_cell, handle.clone()) }
-            .ok_or_else(|| {
+        let asset =
+            unsafe { reflect_asset.get_unchecked_mut(world_cell, handle) }.ok_or_else(|| {
                 InteropError::unsupported_operation(
                     Some(self.base.type_id),
                     None,

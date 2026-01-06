@@ -1,5 +1,8 @@
 //! Contains the logic for handling script callback events
-use bevy_ecs::world::WorldId;
+use bevy_ecs::{
+    message::{MessageCursor, Messages},
+    world::WorldId,
+};
 use bevy_mod_scripting_bindings::{
     InteropError, ScriptValue, ThreadScriptContext, ThreadWorldContainer, WorldAccessGuard,
     WorldGuard,
@@ -15,13 +18,10 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
         ScriptErrorEvent,
     },
-    extractors::WithWorldGuard,
     script::ScriptContext,
 };
 use {
     bevy_ecs::{
-        event::EventCursor,
-        event::Events,
         system::{Local, SystemState},
         world::{Mut, World},
     },
@@ -90,14 +90,14 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
 #[allow(deprecated)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
-    state: &mut EventHandlerSystemState,
+    state: &mut SystemState<Local<MessageCursor<ScriptCallbackEvent>>>,
 ) {
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
         let script_context = world.get_resource_or_init::<ScriptContext<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let (event_cursor, mut guard) = state.get_mut(world);
-        let (guard, _) = guard.get_mut();
+        let event_cursor = state.get_mut(world);
+        let guard = WorldAccessGuard::new_exclusive(world);
         event_handler_inner::<P>(
             L::into_callback_label(),
             event_cursor,
@@ -108,22 +108,17 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     }
 }
 
-type EventHandlerSystemState<'w, 's> = SystemState<(
-    Local<'s, EventCursor<ScriptCallbackEvent>>,
-    WithWorldGuard<'w, 's, ()>,
-)>;
-
 #[profiling::function]
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut event_cursor: Local<EventCursor<ScriptCallbackEvent>>,
+    mut event_cursor: Local<MessageCursor<ScriptCallbackEvent>>,
     script_context: ScriptContext<P>,
     script_callbacks: ScriptCallbacks<P>,
     guard: WorldAccessGuard,
 ) {
     let mut errors = Vec::default();
-    let events = guard.with_resource(|events: &Events<ScriptCallbackEvent>| {
+    let events = guard.with_resource(|events: &Messages<ScriptCallbackEvent>| {
         event_cursor
             .read(events)
             .filter(|e| e.label == callback_label)
@@ -195,8 +190,8 @@ fn collect_errors(call_result: Result<ScriptValue, ScriptError>, errors: &mut Ve
 
 /// Sends a callback response event to the world
 pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackResponseEvent) {
-    let err = world.with_resource_mut(|mut events: Mut<Events<ScriptCallbackResponseEvent>>| {
-        events.send(response);
+    let err = world.with_resource_mut(|mut events: Mut<Messages<ScriptCallbackResponseEvent>>| {
+        events.write(response);
     });
 
     if let Err(err) = err {
@@ -213,9 +208,9 @@ pub fn send_script_errors<'e>(
     errors: impl IntoIterator<Item = &'e ScriptError>,
 ) {
     let iter = errors.into_iter();
-    let err = world.with_resource_mut(|mut error_events: Mut<Events<ScriptErrorEvent>>| {
+    let err = world.with_resource_mut(|mut error_events: Mut<Messages<ScriptErrorEvent>>| {
         for error in iter {
-            error_events.send(ScriptErrorEvent {
+            error_events.write(ScriptErrorEvent {
                 error: error.clone(),
             });
         }
@@ -232,10 +227,10 @@ pub fn send_script_errors<'e>(
 /// A system which receives all script errors and logs them to console
 pub fn script_error_logger(
     world: &mut World,
-    mut errors_cursor: Local<EventCursor<ScriptErrorEvent>>,
+    mut errors_cursor: Local<MessageCursor<ScriptErrorEvent>>,
 ) {
     let guard = WorldGuard::new_exclusive(world);
-    let errors = guard.with_resource(|events: &Events<ScriptErrorEvent>| {
+    let errors = guard.with_resource(|events: &Messages<ScriptErrorEvent>| {
         errors_cursor
             .read(events)
             .map(|e| e.error.clone())

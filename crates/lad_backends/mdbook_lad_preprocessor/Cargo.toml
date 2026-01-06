@@ -16,7 +16,7 @@ categories.workspace = true
 env_logger = { workspace = true }
 clap = { workspace = true }
 ladfile = { workspace = true }
-mdbook = { workspace = true, features = ["search"] }
+mdbook-preprocessor = { workspace = true }
 log = { workspace = true }
 serde_json = { workspace = true, features = ["std"] }
 regex = { workspace = true }

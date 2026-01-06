@@ -14,14 +14,14 @@ use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyImageScriptingPlugin;
 pub(crate) fn register_texture_atlas_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_image::prelude::TextureAtlas,
+        ::bevy_image::TextureAtlas,
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_image::prelude::TextureAtlas>| {
+            |_self: Ref<::bevy_image::TextureAtlas>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_image::prelude::TextureAtlas as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_image::TextureAtlas as ::std::cmp::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -35,10 +35,10 @@ pub(crate) fn register_texture_atlas_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_image::prelude::TextureAtlas>| {
-                let output: Val<::bevy_image::prelude::TextureAtlas> = {
+            |_self: Ref<::bevy_image::TextureAtlas>| {
+                let output: Val<::bevy_image::TextureAtlas> = {
                     {
-                        let output: Val<::bevy_image::prelude::TextureAtlas> = <::bevy_image::prelude::TextureAtlas as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_image::TextureAtlas> = <::bevy_image::TextureAtlas as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -53,13 +53,13 @@ pub(crate) fn register_texture_atlas_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_image::prelude::TextureAtlas>,
-                other: Ref<::bevy_image::prelude::TextureAtlas>|
+                _self: Ref<::bevy_image::TextureAtlas>,
+                other: Ref<::bevy_image::TextureAtlas>|
             {
                 let output: bool = {
                     {
-                        let output: bool = <::bevy_image::prelude::TextureAtlas as ::std::cmp::PartialEq<
-                            ::bevy_image::prelude::TextureAtlas,
+                        let output: bool = <::bevy_image::TextureAtlas as ::std::cmp::PartialEq<
+                            ::bevy_image::TextureAtlas,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -69,28 +69,46 @@ pub(crate) fn register_texture_atlas_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "with_index",
+            |_self: Val<::bevy_image::TextureAtlas>, index: usize| {
+                let output: Val<::bevy_image::TextureAtlas> = {
+                    {
+                        let output: Val<::bevy_image::TextureAtlas> = ::bevy_image::TextureAtlas::with_index(
+                                _self.into_inner(),
+                                index,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns this [`TextureAtlas`] with the specified index.",
+            &["_self", "index"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_image::prelude::TextureAtlas,
+            ::bevy_image::TextureAtlas,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_image::prelude::TextureAtlasLayout,
+        ::bevy_image::TextureAtlasLayout,
     >::new(world)
         .register_documented(
             "add_texture",
             |
-                mut _self: Mut<::bevy_image::prelude::TextureAtlasLayout>,
+                mut _self: Mut<::bevy_image::TextureAtlasLayout>,
                 rect: Val<::bevy_math::URect>|
             {
                 let output: usize = {
                     {
-                        let output: usize = ::bevy_image::prelude::TextureAtlasLayout::add_texture(
+                        let output: usize = ::bevy_image::TextureAtlasLayout::add_texture(
                                 &mut _self,
                                 rect.into_inner(),
                             )
@@ -105,10 +123,10 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         )
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_image::prelude::TextureAtlasLayout>| {
+            |_self: Ref<::bevy_image::TextureAtlasLayout>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_image::prelude::TextureAtlasLayout as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_image::TextureAtlasLayout as ::std::cmp::Eq>::assert_receiver_is_total_eq(
                                 &_self,
                             )
                             .into();
@@ -122,10 +140,10 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_image::prelude::TextureAtlasLayout>| {
-                let output: Val<::bevy_image::prelude::TextureAtlasLayout> = {
+            |_self: Ref<::bevy_image::TextureAtlasLayout>| {
+                let output: Val<::bevy_image::TextureAtlasLayout> = {
                     {
-                        let output: Val<::bevy_image::prelude::TextureAtlasLayout> = <::bevy_image::prelude::TextureAtlasLayout as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_image::TextureAtlasLayout> = <::bevy_image::TextureAtlasLayout as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -140,13 +158,13 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_image::prelude::TextureAtlasLayout>,
-                other: Ref<::bevy_image::prelude::TextureAtlasLayout>|
+                _self: Ref<::bevy_image::TextureAtlasLayout>,
+                other: Ref<::bevy_image::TextureAtlasLayout>|
             {
                 let output: bool = {
                     {
-                        let output: bool = <::bevy_image::prelude::TextureAtlasLayout as ::std::cmp::PartialEq<
-                            ::bevy_image::prelude::TextureAtlasLayout,
+                        let output: bool = <::bevy_image::TextureAtlasLayout as ::std::cmp::PartialEq<
+                            ::bevy_image::TextureAtlasLayout,
                         >>::eq(&_self, &other)
                             .into();
                         output
@@ -159,10 +177,10 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         )
         .register_documented(
             "is_empty",
-            |_self: Ref<::bevy_image::prelude::TextureAtlasLayout>| {
+            |_self: Ref<::bevy_image::TextureAtlasLayout>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_image::prelude::TextureAtlasLayout::is_empty(
+                        let output: bool = ::bevy_image::TextureAtlasLayout::is_empty(
                                 &_self,
                             )
                             .into();
@@ -176,12 +194,10 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         )
         .register_documented(
             "len",
-            |_self: Ref<::bevy_image::prelude::TextureAtlasLayout>| {
+            |_self: Ref<::bevy_image::TextureAtlasLayout>| {
                 let output: usize = {
                     {
-                        let output: usize = ::bevy_image::prelude::TextureAtlasLayout::len(
-                                &_self,
-                            )
+                        let output: usize = ::bevy_image::TextureAtlasLayout::len(&_self)
                             .into();
                         output
                     }
@@ -194,9 +210,9 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         .register_documented(
             "new_empty",
             |dimensions: Val<::bevy_math::UVec2>| {
-                let output: Val<::bevy_image::prelude::TextureAtlasLayout> = {
+                let output: Val<::bevy_image::TextureAtlasLayout> = {
                     {
-                        let output: Val<::bevy_image::prelude::TextureAtlasLayout> = ::bevy_image::prelude::TextureAtlasLayout::new_empty(
+                        let output: Val<::bevy_image::TextureAtlasLayout> = ::bevy_image::TextureAtlasLayout::new_empty(
                                 dimensions.into_inner(),
                             )
                             .into();
@@ -212,20 +228,20 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_image::prelude::TextureAtlasLayout,
+            ::bevy_image::TextureAtlasLayout,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
 pub(crate) fn register_image_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_image::prelude::Image,
+        ::bevy_image::Image,
     >::new(world)
         .register_documented(
             "aspect_ratio",
-            |_self: Ref<::bevy_image::prelude::Image>| {
+            |_self: Ref<::bevy_image::Image>| {
                 let output: Val<::bevy_math::AspectRatio> = {
                     {
-                        let output: Val<::bevy_math::AspectRatio> = ::bevy_image::prelude::Image::aspect_ratio(
+                        let output: Val<::bevy_math::AspectRatio> = ::bevy_image::Image::aspect_ratio(
                                 &_self,
                             )
                             .into();
@@ -239,10 +255,10 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_image::prelude::Image>| {
-                let output: Val<::bevy_image::prelude::Image> = {
+            |_self: Ref<::bevy_image::Image>| {
+                let output: Val<::bevy_image::Image> = {
                     {
-                        let output: Val<::bevy_image::prelude::Image> = <::bevy_image::prelude::Image as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_image::Image> = <::bevy_image::Image as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -257,9 +273,9 @@ pub(crate) fn register_image_functions(world: &mut World) {
         .register_documented(
             "default_uninit",
             || {
-                let output: Val<::bevy_image::prelude::Image> = {
+                let output: Val<::bevy_image::Image> = {
                     {
-                        let output: Val<::bevy_image::prelude::Image> = ::bevy_image::prelude::Image::default_uninit()
+                        let output: Val<::bevy_image::Image> = ::bevy_image::Image::default_uninit()
                             .into();
                         output
                     }
@@ -270,12 +286,28 @@ pub(crate) fn register_image_functions(world: &mut World) {
             &[],
         )
         .register_documented(
+            "eq",
+            |_self: Ref<::bevy_image::Image>, other: Ref<::bevy_image::Image>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::Image as ::std::cmp::PartialEq<
+                            ::bevy_image::Image,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
             "height",
-            |_self: Ref<::bevy_image::prelude::Image>| {
+            |_self: Ref<::bevy_image::Image>| {
                 let output: u32 = {
                     {
-                        let output: u32 = ::bevy_image::prelude::Image::height(&_self)
-                            .into();
+                        let output: u32 = ::bevy_image::Image::height(&_self).into();
                         output
                     }
                 };
@@ -286,12 +318,10 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "is_compressed",
-            |_self: Ref<::bevy_image::prelude::Image>| {
+            |_self: Ref<::bevy_image::Image>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_image::prelude::Image::is_compressed(
-                                &_self,
-                            )
+                        let output: bool = ::bevy_image::Image::is_compressed(&_self)
                             .into();
                         output
                     }
@@ -303,10 +333,10 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "pixel_data_offset",
-            |_self: Ref<::bevy_image::prelude::Image>, coords: Val<::bevy_math::UVec3>| {
+            |_self: Ref<::bevy_image::Image>, coords: Val<::bevy_math::UVec3>| {
                 let output: ::std::option::Option<usize> = {
                     {
-                        let output: ::std::option::Option<usize> = ::bevy_image::prelude::Image::pixel_data_offset(
+                        let output: ::std::option::Option<usize> = ::bevy_image::Image::pixel_data_offset(
                                 &_self,
                                 coords.into_inner(),
                             )
@@ -321,10 +351,10 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "reinterpret_stacked_2d_as_array",
-            |mut _self: Mut<::bevy_image::prelude::Image>, layers: u32| {
+            |mut _self: Mut<::bevy_image::Image>, layers: u32| {
                 let output: () = {
                     {
-                        let output: () = ::bevy_image::prelude::Image::reinterpret_stacked_2d_as_array(
+                        let output: () = ::bevy_image::Image::reinterpret_stacked_2d_as_array(
                                 &mut _self,
                                 layers,
                             )
@@ -339,10 +369,10 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "size",
-            |_self: Ref<::bevy_image::prelude::Image>| {
+            |_self: Ref<::bevy_image::Image>| {
                 let output: Val<::bevy_math::UVec2> = {
                     {
-                        let output: Val<::bevy_math::UVec2> = ::bevy_image::prelude::Image::size(
+                        let output: Val<::bevy_math::UVec2> = ::bevy_image::Image::size(
                                 &_self,
                             )
                             .into();
@@ -356,10 +386,10 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "size_f32",
-            |_self: Ref<::bevy_image::prelude::Image>| {
+            |_self: Ref<::bevy_image::Image>| {
                 let output: Val<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_image::prelude::Image::size_f32(
+                        let output: Val<::bevy_math::Vec2> = ::bevy_image::Image::size_f32(
                                 &_self,
                             )
                             .into();
@@ -374,9 +404,9 @@ pub(crate) fn register_image_functions(world: &mut World) {
         .register_documented(
             "transparent",
             || {
-                let output: Val<::bevy_image::prelude::Image> = {
+                let output: Val<::bevy_image::Image> = {
                     {
-                        let output: Val<::bevy_image::prelude::Image> = ::bevy_image::prelude::Image::transparent()
+                        let output: Val<::bevy_image::Image> = ::bevy_image::Image::transparent()
                             .into();
                         output
                     }
@@ -388,11 +418,10 @@ pub(crate) fn register_image_functions(world: &mut World) {
         )
         .register_documented(
             "width",
-            |_self: Ref<::bevy_image::prelude::Image>| {
+            |_self: Ref<::bevy_image::Image>| {
                 let output: u32 = {
                     {
-                        let output: u32 = ::bevy_image::prelude::Image::width(&_self)
-                            .into();
+                        let output: u32 = ::bevy_image::Image::width(&_self).into();
                         output
                     }
                 };
@@ -404,10 +433,7 @@ pub(crate) fn register_image_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_image::prelude::Image,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_image::Image, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 impl Plugin for BevyImageScriptingPlugin {
     fn build(&self, app: &mut App) {

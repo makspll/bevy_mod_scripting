@@ -37,8 +37,8 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         let mut meta_dirs = Vec::default();
         let mut templates_dir = None;
         // add all relevant meta dirs to the context
+        meta_dirs.push(self.args.output.to_owned());
         if let crate::Command::Generate {
-            output,
             meta,
             meta_output,
             templates,
@@ -49,7 +49,6 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
             if let Some(meta_output) = meta_output {
                 meta_dirs.push(meta_output.to_owned())
             };
-            meta_dirs.push(output.to_owned());
             meta.iter()
                 .flatten()
                 .for_each(|m| meta_dirs.push(m.to_owned()));
@@ -66,6 +65,13 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         let tera = crate::configure_tera(tcx.crate_name(LOCAL_CRATE).as_str(), &templates_dir);
 
         info!("Using meta directories: {meta_dirs:?}");
+
+        let mut graph = WorkspaceGraph::deserialize(&PathBuf::from(
+            std::env::var(WORKSPACE_GRAPH_FILE_ENV).unwrap(),
+        ))
+        .unwrap();
+        graph.stable_sort();
+
         let mut ctxt = crate::BevyCtxt::new(
             tcx,
             &meta_dirs,
@@ -77,10 +83,7 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
                 tera.render(&TemplateKind::ImportProcessor.to_string(), &ctxt)
                     .unwrap()
             })),
-            WorkspaceGraph::deserialize(&PathBuf::from(
-                std::env::var(WORKSPACE_GRAPH_FILE_ENV).unwrap(),
-            ))
-            .unwrap(),
+            graph,
         );
 
         trace!("Running all passes");

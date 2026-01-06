@@ -105,20 +105,17 @@ jobs:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
-      # - name: Free Disk Space (Ubuntu)
-      #   if: runner.os == 'Linux'
-      #   uses: jlumbroso/free-disk-space@main
-      #   with:
-      #     tool-cache: false
-      #     android: true
-      #     dotnet: true
-      #     haskell: true
-      #     large-packages: true
-      #     docker-images: true
-      #     swap-storage: true
-      # # - if: runner.os == 'linux'
-      # #   run: |
-      # #     sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      - name: Free Disk Space (Ubuntu)
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
       - name: Checkout
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: actions/checkout@v4
@@ -161,34 +158,6 @@ jobs:
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.requires_gpu }}
         run: |
           xvfb-run ${{ matrix.run_args.command }}
-
-      - name: Upload coverage artifact
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.generates_coverage }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage-report
-          path: target/coverage/html/
-
-      - name: Update coverage badge
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.generates_coverage }}
-        continue-on-error: true
-        run: |
-          git checkout -b chore/_update-coverage-badge || git checkout chore/_update-coverage-badge
-          cp target/coverage/html/badges/for_the_badge.svg badges/coverage.svg
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global push.autoSetupRemote true
-          git add badges/coverage.svg
-          
-          if [[ -n $(git status -s) ]]; then
-            git commit -m "chore(badge): Update coverage badge" -m "[skip ci]"
-            git push -f
-            gh pr create --title "chore: Update coverage badge" --body "Updates coverage badge based on test results" --base ${{ github.ref }}  --head chore/_update-coverage-badge > pr.txt
-            sed -n 's/.*pull\/\([0-9]*\).*/\1/p' pr.txt > pr_number.txt
-            PRNUMBER=$(cat pr_number.txt)
-            gh pr merge $PRNUMBER --squash
-          fi
 
   rollup-check:
     name: Required Checks Successful

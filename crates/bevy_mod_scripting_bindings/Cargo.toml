@@ -32,6 +32,7 @@ profiling = { workspace = true }
 bevy_asset = { workspace = true }
 variadics_please = { workspace = true }
 serde = { workspace = true }
+nonmax = { workspace = true }
 
 [dev-dependencies]
 pretty_assertions = { workspace = true }

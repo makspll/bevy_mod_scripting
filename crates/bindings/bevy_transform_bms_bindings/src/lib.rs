@@ -68,23 +68,6 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "compute_matrix",
-            |_self: Ref<::bevy_transform::components::GlobalTransform>| {
-                let output: Val<::bevy_math::Mat4> = {
-                    {
-                        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::GlobalTransform::compute_matrix(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the 3d affine transformation matrix as a [`Mat4`].",
-            &["_self"],
-        )
-        .register_documented(
             "compute_transform",
             |_self: Ref<::bevy_transform::components::GlobalTransform>| {
                 let output: Val<::bevy_transform::components::Transform> = {
@@ -379,7 +362,7 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the [`Transform`] `self` would have if it was a child of an entity\n with the `parent` [`GlobalTransform`].\n This is useful if you want to \"reparent\" an [`Entity`](bevy_ecs::entity::Entity).\n Say you have an entity `e1` that you want to turn into a child of `e2`,\n but you want `e1` to keep the same global transform, even after re-parenting. You would use:\n ```\n # use bevy_transform::prelude::{GlobalTransform, Transform};\n # use bevy_ecs::prelude::{Entity, Query, Component, Commands};\n #[derive(Component)]\n struct ToReparent {\n     new_parent: Entity,\n }\n fn reparent_system(\n     mut commands: Commands,\n     mut targets: Query<(&mut Transform, Entity, &GlobalTransform, &ToReparent)>,\n     transforms: Query<&GlobalTransform>,\n ) {\n     for (mut transform, entity, initial, to_reparent) in targets.iter_mut() {\n         if let Ok(parent_transform) = transforms.get(to_reparent.new_parent) {\n             *transform = initial.reparented_to(parent_transform);\n             commands.entity(entity)\n                 .remove::<ToReparent>()\n                 .set_parent(to_reparent.new_parent);\n         }\n     }\n }\n ```\n The transform is expected to be non-degenerate and without shearing, or the output\n will be invalid.",
+            " Returns the [`Transform`] `self` would have if it was a child of an entity\n with the `parent` [`GlobalTransform`].\n This is useful if you want to \"reparent\" an [`Entity`](bevy_ecs::entity::Entity).\n Say you have an entity `e1` that you want to turn into a child of `e2`,\n but you want `e1` to keep the same global transform, even after re-parenting. You would use:\n ```\n # use bevy_transform::prelude::{GlobalTransform, Transform};\n # use bevy_ecs::prelude::{Entity, Query, Component, Commands, ChildOf};\n #[derive(Component)]\n struct ToReparent {\n     new_parent: Entity,\n }\n fn reparent_system(\n     mut commands: Commands,\n     mut targets: Query<(&mut Transform, Entity, &GlobalTransform, &ToReparent)>,\n     transforms: Query<&GlobalTransform>,\n ) {\n     for (mut transform, entity, initial, to_reparent) in targets.iter_mut() {\n         if let Ok(parent_transform) = transforms.get(to_reparent.new_parent) {\n             *transform = initial.reparented_to(parent_transform);\n             commands.entity(entity)\n                 .remove::<ToReparent>()\n                 .insert(ChildOf(to_reparent.new_parent));\n         }\n     }\n }\n ```\n The transform is expected to be non-degenerate and without shearing, or the output\n will be invalid.",
             &["_self", "parent"],
         )
         .register_documented(
@@ -447,7 +430,24 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the isometric part of the transformation as an [isometry]. Any scaling done by the\n transformation will be ignored.\n The transform is expected to be non-degenerate and without shearing, or the output\n will be invalid.\n [isometry]: Isometry3d",
+            " Computes a Scale-Rotation-Translation decomposition of the transformation and returns\n the isometric part as an [isometry]. Any scaling done by the transformation will be ignored.\n Note: this is a somewhat costly and lossy conversion.\n The transform is expected to be non-degenerate and without shearing, or the output\n will be invalid.\n [isometry]: Isometry3d",
+            &["_self"],
+        )
+        .register_documented(
+            "to_matrix",
+            |_self: Ref<::bevy_transform::components::GlobalTransform>| {
+                let output: Val<::bevy_math::Mat4> = {
+                    {
+                        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::GlobalTransform::to_matrix(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the 3d affine transformation matrix as a [`Mat4`].",
             &["_self"],
         )
         .register_documented(
@@ -574,23 +574,6 @@ pub(crate) fn register_transform_functions(world: &mut World) {
                 let output: Val<::bevy_math::Affine3A> = {
                     {
                         let output: Val<::bevy_math::Affine3A> = ::bevy_transform::components::Transform::compute_affine(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the 3d affine transformation matrix from this transforms translation,\n rotation, and scale.",
-            &["_self"],
-        )
-        .register_documented(
-            "compute_matrix",
-            |_self: Ref<::bevy_transform::components::Transform>| {
-                let output: Val<::bevy_math::Mat4> = {
-                    {
-                        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::Transform::compute_matrix(
                                 &_self,
                             )
                             .into();
@@ -1177,6 +1160,23 @@ pub(crate) fn register_transform_functions(world: &mut World) {
                 output
             },
             " Get the [isometry] defined by this transform's rotation and translation, ignoring scale.\n [isometry]: Isometry3d",
+            &["_self"],
+        )
+        .register_documented(
+            "to_matrix",
+            |_self: Ref<::bevy_transform::components::Transform>| {
+                let output: Val<::bevy_math::Mat4> = {
+                    {
+                        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::Transform::to_matrix(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the 3d affine transformation matrix from this transform's translation,\n rotation, and scale.",
             &["_self"],
         )
         .register_documented(

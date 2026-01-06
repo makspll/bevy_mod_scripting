@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use log::trace;
 use rustc_hir::def_id::DefId;
 use rustc_infer::{
@@ -79,8 +77,7 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
             }
         }
 
-        assert!(type_ctxt.trait_impls.is_none(), "trait impls already set!");
-        type_ctxt.trait_impls = Some(HashMap::from_iter(impls));
+        type_ctxt.trait_impls.extend(impls);
     }
     true
 }
@@ -146,10 +143,7 @@ fn impl_matches<'tcx>(infcx: &InferCtxt<'tcx>, ty: Ty<'tcx>, impl_def_id: DefId)
         let param_env = typing_env.with_post_analysis_normalized(tcx).param_env;
         let impl_args = infcx.fresh_args_for_item(DUMMY_SP, impl_def_id);
 
-        let impl_trait_ref = tcx
-            .impl_trait_ref(impl_def_id)
-            .expect("Expected defid to be an impl for a trait")
-            .instantiate(tcx, impl_args);
+        let impl_trait_ref = tcx.impl_trait_ref(impl_def_id).instantiate(tcx, impl_args);
         let impl_trait_ref = ocx.normalize(&ObligationCause::dummy(), param_env, impl_trait_ref);
         let impl_trait_ref_ty = impl_trait_ref.self_ty();
         if ocx
@@ -164,7 +158,7 @@ fn impl_matches<'tcx>(infcx: &InferCtxt<'tcx>, ty: Ty<'tcx>, impl_def_id: DefId)
             Obligation::new(tcx, ObligationCause::dummy(), param_env, predicate)
         }));
 
-        ocx.select_where_possible().is_empty()
+        ocx.try_evaluate_obligations().is_empty()
     };
 
     infcx.probe(|_| impl_may_apply(impl_def_id))
