@@ -235,7 +235,7 @@ pretty_assertions = { version = "1.4", default-features = false, features = [
 manifest-dir-macros = { version = "0.1.18", default-features = false }
 assert_cmd = { version = "2.1", default-features = false }
 tokio = { version = "1", default-features = false }
-bevy_console = { version = "0.16", default-features = false }
+bevy_console = { version = "0.17", default-features = false }
 tracing-tracy = { version = "0.11", default-features = false }
 libtest-mimic = { version = "0.8", default-features = false }
 criterion = { version = "0.5", default-features = false }
