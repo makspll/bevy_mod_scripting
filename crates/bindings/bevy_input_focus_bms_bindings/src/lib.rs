@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyInputFocusScriptingPlugin;
 pub(crate) fn register_input_focus_functions(world: &mut World) {
@@ -123,23 +120,24 @@ pub(crate) fn register_input_focus_visible_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::InputFocusVisible,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_input_focus::InputFocusVisible>| {
-                let output: Val<::bevy_input_focus::InputFocusVisible> = {
-                    {
-                        let output: Val<::bevy_input_focus::InputFocusVisible> = <::bevy_input_focus::InputFocusVisible as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_input_focus::InputFocusVisible>| {
+            let output: Val<::bevy_input_focus::InputFocusVisible> = {
+                {
+                    let output: Val<::bevy_input_focus::InputFocusVisible> =
+                        <::bevy_input_focus::InputFocusVisible as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -152,23 +150,22 @@ pub(crate) fn register_auto_focus_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::AutoFocus,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_input_focus::AutoFocus>| {
-                let output: Val<::bevy_input_focus::AutoFocus> = {
-                    {
-                        let output: Val<::bevy_input_focus::AutoFocus> = <::bevy_input_focus::AutoFocus as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_input_focus::AutoFocus>| {
+            let output: Val<::bevy_input_focus::AutoFocus> = {
+                {
+                    let output: Val<::bevy_input_focus::AutoFocus> =
+                        <::bevy_input_focus::AutoFocus as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
