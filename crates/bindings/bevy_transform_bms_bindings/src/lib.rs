@@ -12,6 +12,71 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTransformScriptingPlugin;
+pub(crate) fn register_static_transform_optimizations_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_transform::StaticTransformOptimizations,
+    >::new(world)
+        .register_documented(
+            "disabled",
+            || {
+                let output: Val<::bevy_transform::StaticTransformOptimizations> = {
+                    {
+                        let output: Val<
+                            ::bevy_transform::StaticTransformOptimizations,
+                        > = ::bevy_transform::StaticTransformOptimizations::disabled()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Unconditionally disable static scene optimizations.",
+            &[],
+        )
+        .register_documented(
+            "enabled",
+            || {
+                let output: Val<::bevy_transform::StaticTransformOptimizations> = {
+                    {
+                        let output: Val<
+                            ::bevy_transform::StaticTransformOptimizations,
+                        > = ::bevy_transform::StaticTransformOptimizations::enabled()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Unconditionally enable static scene optimizations.",
+            &[],
+        )
+        .register_documented(
+            "from_threshold",
+            |threshold: f32| {
+                let output: Val<::bevy_transform::StaticTransformOptimizations> = {
+                    {
+                        let output: Val<
+                            ::bevy_transform::StaticTransformOptimizations,
+                        > = ::bevy_transform::StaticTransformOptimizations::from_threshold(
+                                threshold,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " If the percentage of moving objects exceeds this threshold, disable static [`Transform`]\n optimizations. This is done because the scene is so dynamic that the cost of tracking static\n trees exceeds the performance benefit of skipping propagation for these trees.\n - Setting this to `0.0` will result in never running static scene tracking.\n - Setting this to `1.0` will result in always tracking static transform trees.",
+            &["threshold"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_transform::StaticTransformOptimizations,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_global_transform_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_transform::components::GlobalTransform,
@@ -1365,6 +1430,7 @@ pub(crate) fn register_transform_tree_changed_functions(world: &mut World) {
 impl Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
+        register_static_transform_optimizations_functions(&mut world);
         register_global_transform_functions(&mut world);
         register_transform_functions(&mut world);
         register_transform_tree_changed_functions(&mut world);

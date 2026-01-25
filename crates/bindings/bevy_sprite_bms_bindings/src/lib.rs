@@ -240,11 +240,11 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         )
         .register_documented(
             "all",
-            |extent: f32| {
+            |inset: f32| {
                 let output: Val<::bevy_sprite::BorderRect> = {
                     {
                         let output: Val<::bevy_sprite::BorderRect> = ::bevy_sprite::BorderRect::all(
-                                extent,
+                                inset,
                             )
                             .into();
                         output
@@ -252,8 +252,8 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a border with the same `extent` along each edge",
-            &["extent"],
+            " Creates a border with the same `inset` along each edge",
+            &["inset"],
         )
         .register_documented(
             "axes",
@@ -270,7 +270,7 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a new border with the `left` and `right` extents equal to `horizontal`, and `top` and `bottom` extents equal to `vertical`.",
+            " Creates a new border with the `min.x` and `max.x` insets equal to `horizontal`, and the `min.y` and `max.y` insets equal to `vertical`.",
             &["horizontal", "vertical"],
         )
         .register_documented(
@@ -458,52 +458,50 @@ pub(crate) fn register_texture_slicer_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_scaling_mode_functions(world: &mut World) {
+pub(crate) fn register_sprite_scaling_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::ScalingMode,
+        ::bevy_sprite::SpriteScalingMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_sprite::ScalingMode>| {
-                let output: Val<::bevy_sprite::ScalingMode> = {
-                    {
-                        let output: Val<::bevy_sprite::ScalingMode> = <::bevy_sprite::ScalingMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_sprite::SpriteScalingMode>| {
+            let output: Val<::bevy_sprite::SpriteScalingMode> = {
+                {
+                    let output: Val<::bevy_sprite::SpriteScalingMode> =
+                        <::bevy_sprite::SpriteScalingMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_sprite::ScalingMode>,
-                other: Ref<::bevy_sprite::ScalingMode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::ScalingMode as ::std::cmp::PartialEq<
-                            ::bevy_sprite::ScalingMode,
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_sprite::SpriteScalingMode>,
+         other: Ref<::bevy_sprite::SpriteScalingMode>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_sprite::SpriteScalingMode as ::std::cmp::PartialEq<
+                            ::bevy_sprite::SpriteScalingMode,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_sprite::ScalingMode,
+            ::bevy_sprite::SpriteScalingMode,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -629,7 +627,7 @@ impl Plugin for BevySpriteScriptingPlugin {
         register_border_rect_functions(&mut world);
         register_slice_scale_mode_functions(&mut world);
         register_texture_slicer_functions(&mut world);
-        register_scaling_mode_functions(&mut world);
+        register_sprite_scaling_mode_functions(&mut world);
         register_anchor_functions(&mut world);
         register_text_2_d_shadow_functions(&mut world);
     }

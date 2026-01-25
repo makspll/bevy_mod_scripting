@@ -193,6 +193,29 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
+            "is_in_direction",
+            |
+                _self: Val<::bevy_math::CompassOctant>,
+                origin: Val<::bevy_math::Vec2>,
+                candidate: Val<::bevy_math::Vec2>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::CompassOctant::is_in_direction(
+                                _self.into_inner(),
+                                origin.into_inner(),
+                                candidate.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Checks if a point is in the direction represented by this [`CompassOctant`] from an origin.\n This uses a cone-based check: the vector from origin to the candidate point\n must have a positive dot product with the direction vector.\n Uses standard mathematical coordinates where Y increases upward.\n # Arguments\n * `origin` - The starting position\n * `candidate` - The target position to check\n # Returns\n `true` if the candidate is generally in the direction of this octant from the origin.\n # Example\n ```\n use bevy_math::{CompassOctant, Vec2};\n let origin = Vec2::new(0.0, 0.0);\n let north_point = Vec2::new(0.0, 10.0);  // Above origin (Y+ = up)\n let east_point = Vec2::new(10.0, 0.0);   // Right of origin\n assert!(CompassOctant::North.is_in_direction(origin, north_point));\n assert!(!CompassOctant::North.is_in_direction(origin, east_point));\n ```",
+            &["_self", "origin", "candidate"],
+        )
+        .register_documented(
             "neg",
             |_self: Val<::bevy_math::CompassOctant>| {
                 let output: Val<::bevy_math::CompassOctant> = {
@@ -308,6 +331,29 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_in_direction",
+            |
+                _self: Val<::bevy_math::CompassQuadrant>,
+                origin: Val<::bevy_math::Vec2>,
+                candidate: Val<::bevy_math::Vec2>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::CompassQuadrant::is_in_direction(
+                                _self.into_inner(),
+                                origin.into_inner(),
+                                candidate.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Checks if a point is in the direction represented by this [`CompassQuadrant`] from an origin.\n This uses a cone-based check: the vector from origin to the candidate point\n must have a positive dot product with the direction vector.\n Uses standard mathematical coordinates where Y increases upward.\n # Arguments\n * `origin` - The starting position\n * `candidate` - The target position to check\n # Returns\n `true` if the candidate is generally in the direction of this quadrant from the origin.\n # Example\n ```\n use bevy_math::{CompassQuadrant, Vec2};\n let origin = Vec2::new(0.0, 0.0);\n let north_point = Vec2::new(0.0, 10.0);  // Above origin (Y+ = up)\n let east_point = Vec2::new(10.0, 0.0);   // Right of origin\n assert!(CompassQuadrant::North.is_in_direction(origin, north_point));\n assert!(!CompassQuadrant::North.is_in_direction(origin, east_point));\n ```",
+            &["_self", "origin", "candidate"],
         )
         .register_documented(
             "neg",
@@ -792,184 +838,204 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_ray_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Ray2d>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::Ray2d>| {
-            let output: Val<::bevy_math::Ray2d> = {
-                {
-                    let output: Val<::bevy_math::Ray2d> =
-                        <::bevy_math::Ray2d as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::Ray2d>, other: Ref<::bevy_math::Ray2d>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_math::Ray2d as ::core::cmp::PartialEq<
-                        ::bevy_math::Ray2d,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "get_point",
-        |_self: Ref<::bevy_math::Ray2d>, distance: f32| {
-            let output: Val<::bevy_math::Vec2> = {
-                {
-                    let output: Val<::bevy_math::Vec2> =
-                        ::bevy_math::Ray2d::get_point(&_self, distance).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get a point at a given distance along the ray",
-        &["_self", "distance"],
-    )
-    .register_documented(
-        "intersect_plane",
-        |_self: Ref<::bevy_math::Ray2d>,
-         plane_origin: Val<::bevy_math::Vec2>,
-         plane: Val<::bevy_math::primitives::Plane2d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> = ::bevy_math::Ray2d::intersect_plane(
-                        &_self,
-                        plane_origin.into_inner(),
-                        plane.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance to a plane if the ray intersects it",
-        &["_self", "plane_origin", "plane"],
-    )
-    .register_documented(
-        "new",
-        |origin: Val<::bevy_math::Vec2>, direction: Val<::bevy_math::Dir2>| {
-            let output: Val<::bevy_math::Ray2d> = {
-                {
-                    let output: Val<::bevy_math::Ray2d> =
-                        ::bevy_math::Ray2d::new(origin.into_inner(), direction.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new `Ray2d` from a given origin and direction",
-        &["origin", "direction"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::Ray2d,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::Ray2d>| {
+                let output: Val<::bevy_math::Ray2d> = {
+                    {
+                        let output: Val<::bevy_math::Ray2d> = <::bevy_math::Ray2d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_math::Ray2d>, other: Ref<::bevy_math::Ray2d>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::Ray2d as ::core::cmp::PartialEq<
+                            ::bevy_math::Ray2d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get_point",
+            |_self: Ref<::bevy_math::Ray2d>, distance: f32| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Ray2d::get_point(
+                                &_self,
+                                distance,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the point at a given distance along the ray.",
+            &["_self", "distance"],
+        )
+        .register_documented(
+            "intersect_plane",
+            |
+                _self: Ref<::bevy_math::Ray2d>,
+                plane_origin: Val<::bevy_math::Vec2>,
+                plane: Val<::bevy_math::primitives::Plane2d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::Ray2d::intersect_plane(
+                                &_self,
+                                plane_origin.into_inner(),
+                                plane.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the distance to a plane if the ray intersects it.\n Use [`Ray2d::plane_intersection_point`] to get the intersection point directly.",
+            &["_self", "plane_origin", "plane"],
+        )
+        .register_documented(
+            "new",
+            |origin: Val<::bevy_math::Vec2>, direction: Val<::bevy_math::Dir2>| {
+                let output: Val<::bevy_math::Ray2d> = {
+                    {
+                        let output: Val<::bevy_math::Ray2d> = ::bevy_math::Ray2d::new(
+                                origin.into_inner(),
+                                direction.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Ray2d` from a given origin and direction",
+            &["origin", "direction"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<::bevy_math::Ray2d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_ray_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Ray3d>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::Ray3d>| {
-            let output: Val<::bevy_math::Ray3d> = {
-                {
-                    let output: Val<::bevy_math::Ray3d> =
-                        <::bevy_math::Ray3d as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::Ray3d>, other: Ref<::bevy_math::Ray3d>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_math::Ray3d as ::core::cmp::PartialEq<
-                        ::bevy_math::Ray3d,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "get_point",
-        |_self: Ref<::bevy_math::Ray3d>, distance: f32| {
-            let output: Val<::bevy_math::Vec3> = {
-                {
-                    let output: Val<::bevy_math::Vec3> =
-                        ::bevy_math::Ray3d::get_point(&_self, distance).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get a point at a given distance along the ray",
-        &["_self", "distance"],
-    )
-    .register_documented(
-        "intersect_plane",
-        |_self: Ref<::bevy_math::Ray3d>,
-         plane_origin: Val<::bevy_math::Vec3>,
-         plane: Val<::bevy_math::primitives::InfinitePlane3d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> = ::bevy_math::Ray3d::intersect_plane(
-                        &_self,
-                        plane_origin.into_inner(),
-                        plane.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance to a plane if the ray intersects it",
-        &["_self", "plane_origin", "plane"],
-    )
-    .register_documented(
-        "new",
-        |origin: Val<::bevy_math::Vec3>, direction: Val<::bevy_math::Dir3>| {
-            let output: Val<::bevy_math::Ray3d> = {
-                {
-                    let output: Val<::bevy_math::Ray3d> =
-                        ::bevy_math::Ray3d::new(origin.into_inner(), direction.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new `Ray3d` from a given origin and direction",
-        &["origin", "direction"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::Ray3d,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::Ray3d>| {
+                let output: Val<::bevy_math::Ray3d> = {
+                    {
+                        let output: Val<::bevy_math::Ray3d> = <::bevy_math::Ray3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_math::Ray3d>, other: Ref<::bevy_math::Ray3d>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::Ray3d as ::core::cmp::PartialEq<
+                            ::bevy_math::Ray3d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get_point",
+            |_self: Ref<::bevy_math::Ray3d>, distance: f32| {
+                let output: Val<::bevy_math::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::Vec3> = ::bevy_math::Ray3d::get_point(
+                                &_self,
+                                distance,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the point at a given distance along the ray",
+            &["_self", "distance"],
+        )
+        .register_documented(
+            "intersect_plane",
+            |
+                _self: Ref<::bevy_math::Ray3d>,
+                plane_origin: Val<::bevy_math::Vec3>,
+                plane: Val<::bevy_math::primitives::InfinitePlane3d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::Ray3d::intersect_plane(
+                                &_self,
+                                plane_origin.into_inner(),
+                                plane.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the distance to a plane if the ray intersects it\n Use [`Ray3d::plane_intersection_point`] to get the intersection point directly.",
+            &["_self", "plane_origin", "plane"],
+        )
+        .register_documented(
+            "new",
+            |origin: Val<::bevy_math::Vec3>, direction: Val<::bevy_math::Dir3>| {
+                let output: Val<::bevy_math::Ray3d> = {
+                    {
+                        let output: Val<::bevy_math::Ray3d> = ::bevy_math::Ray3d::new(
+                                origin.into_inner(),
+                                direction.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Ray3d` from a given origin and direction",
+            &["origin", "direction"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2384,6 +2450,20 @@ pub(crate) fn register_rect_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::Rect,
     >::new(world)
+        .register_documented(
+            "area",
+            |_self: Ref<::bevy_math::Rect>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::Rect::area(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return the area of this rectangle.\n # Examples\n ```\n # use bevy_math::Rect;\n let r = Rect::new(0., 0., 10., 10.); // w=10 h=10\n assert_eq!(r.area(), 100.0);\n ```",
+            &["_self"],
+        )
         .register_documented(
             "as_irect",
             |_self: Ref<::bevy_math::Rect>| {
@@ -4423,12 +4503,12 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |radius: f32, angle: f32| {
+            |radius: f32, half_angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSegment> = {
                     {
                         let output: Val<::bevy_math::primitives::CircularSegment> = ::bevy_math::primitives::CircularSegment::new(
                                 radius,
-                                angle,
+                                half_angle,
                             )
                             .into();
                         output
@@ -4436,8 +4516,8 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 };
                 output
             },
-            " Create a new [`CircularSegment`] from a `radius`, and an `angle`",
-            &["radius", "angle"],
+            " Create a new [`CircularSegment`] from a `radius`, and a `half_angle` in radians.",
+            &["radius", "half_angle"],
         )
         .register_documented(
             "radius",
@@ -6087,6 +6167,161 @@ pub(crate) fn register_polyline_2_d_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_cuboid_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::primitives::Cuboid,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Cuboid>| {
+                let output: Val<::bevy_math::primitives::Cuboid> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cuboid> = <::bevy_math::primitives::Cuboid as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "closest_point",
+            |_self: Ref<::bevy_math::primitives::Cuboid>, point: Val<::bevy_math::Vec3>| {
+                let output: Val<::bevy_math::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Cuboid::closest_point(
+                                &_self,
+                                point.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Finds the point on the cuboid that is closest to the given `point`.\n If the point is outside the cuboid, the returned point will be on the surface of the cuboid.\n Otherwise, it will be inside the cuboid and returned as is.",
+            &["_self", "point"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Cuboid>,
+                other: Ref<::bevy_math::primitives::Cuboid>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Cuboid as ::core::cmp::PartialEq<
+                            ::bevy_math::primitives::Cuboid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "from_corners",
+            |point1: Val<::bevy_math::Vec3>, point2: Val<::bevy_math::Vec3>| {
+                let output: Val<::bevy_math::primitives::Cuboid> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_corners(
+                                point1.into_inner(),
+                                point2.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Cuboid` from two corner points",
+            &["point1", "point2"],
+        )
+        .register_documented(
+            "from_length",
+            |length: f32| {
+                let output: Val<::bevy_math::primitives::Cuboid> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_length(
+                                length,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a `Cuboid` from a single length.\n The resulting `Cuboid` will be the same size in every direction.",
+            &["length"],
+        )
+        .register_documented(
+            "from_size",
+            |size: Val<::bevy_math::Vec3>| {
+                let output: Val<::bevy_math::primitives::Cuboid> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_size(
+                                size.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Cuboid` from a given full size",
+            &["size"],
+        )
+        .register_documented(
+            "new",
+            |x_length: f32, y_length: f32, z_length: f32| {
+                let output: Val<::bevy_math::primitives::Cuboid> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::new(
+                                x_length,
+                                y_length,
+                                z_length,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Cuboid` from a full x, y, and z length",
+            &["x_length", "y_length", "z_length"],
+        )
+        .register_documented(
+            "size",
+            |_self: Ref<::bevy_math::primitives::Cuboid>| {
+                let output: Val<::bevy_math::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Cuboid::size(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the size of the cuboid",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::primitives::Cuboid,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::Aabb3d,
@@ -6323,161 +6558,6 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Sphere,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_cuboid_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_math::primitives::Cuboid,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_math::primitives::Cuboid>| {
-                let output: Val<::bevy_math::primitives::Cuboid> = {
-                    {
-                        let output: Val<::bevy_math::primitives::Cuboid> = <::bevy_math::primitives::Cuboid as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "closest_point",
-            |_self: Ref<::bevy_math::primitives::Cuboid>, point: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_math::Vec3> = {
-                    {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Cuboid::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Finds the point on the cuboid that is closest to the given `point`.\n If the point is outside the cuboid, the returned point will be on the surface of the cuboid.\n Otherwise, it will be inside the cuboid and returned as is.",
-            &["_self", "point"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_math::primitives::Cuboid>,
-                other: Ref<::bevy_math::primitives::Cuboid>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_math::primitives::Cuboid as ::core::cmp::PartialEq<
-                            ::bevy_math::primitives::Cuboid,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "from_corners",
-            |point1: Val<::bevy_math::Vec3>, point2: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_math::primitives::Cuboid> = {
-                    {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_corners(
-                                point1.into_inner(),
-                                point2.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new `Cuboid` from two corner points",
-            &["point1", "point2"],
-        )
-        .register_documented(
-            "from_length",
-            |length: f32| {
-                let output: Val<::bevy_math::primitives::Cuboid> = {
-                    {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_length(
-                                length,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a `Cuboid` from a single length.\n The resulting `Cuboid` will be the same size in every direction.",
-            &["length"],
-        )
-        .register_documented(
-            "from_size",
-            |size: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_math::primitives::Cuboid> = {
-                    {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::from_size(
-                                size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new `Cuboid` from a given full size",
-            &["size"],
-        )
-        .register_documented(
-            "new",
-            |x_length: f32, y_length: f32, z_length: f32| {
-                let output: Val<::bevy_math::primitives::Cuboid> = {
-                    {
-                        let output: Val<::bevy_math::primitives::Cuboid> = ::bevy_math::primitives::Cuboid::new(
-                                x_length,
-                                y_length,
-                                z_length,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new `Cuboid` from a full x, y, and z length",
-            &["x_length", "y_length", "z_length"],
-        )
-        .register_documented(
-            "size",
-            |_self: Ref<::bevy_math::primitives::Cuboid>| {
-                let output: Val<::bevy_math::Vec3> = {
-                    {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Cuboid::size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get the size of the cuboid",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_math::primitives::Cuboid,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -6803,43 +6883,145 @@ pub(crate) fn register_conical_frustum_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::ConicalFrustum,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
-            let output: Val<::bevy_math::primitives::ConicalFrustum> = {
-                {
-                    let output: Val<::bevy_math::primitives::ConicalFrustum> =
-                        <::bevy_math::primitives::ConicalFrustum as ::core::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::ConicalFrustum>,
-         other: Ref<::bevy_math::primitives::ConicalFrustum>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::ConicalFrustum as ::core::cmp::PartialEq<
+        .register_documented(
+            "bottom_base",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: Val<::bevy_math::primitives::Circle> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::ConicalFrustum::bottom_base(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the bottom base of the conical frustum as a [`Circle`]",
+            &["_self"],
+        )
+        .register_documented(
+            "bottom_base_area",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::bottom_base_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of the bottom base of the conical frustum",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: Val<::bevy_math::primitives::ConicalFrustum> = {
+                    {
+                        let output: Val<::bevy_math::primitives::ConicalFrustum> = <::bevy_math::primitives::ConicalFrustum as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::ConicalFrustum>,
+                other: Ref<::bevy_math::primitives::ConicalFrustum>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::ConicalFrustum as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::ConicalFrustum,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "lateral_area",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::lateral_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of the side of the conical frustum,\n also known as the lateral area",
+            &["_self"],
+        )
+        .register_documented(
+            "slant_height",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::slant_height(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the slant height of the conical frustum, the length of the line segment\n connecting a point on the base to the closest point on the top",
+            &["_self"],
+        )
+        .register_documented(
+            "top_base",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: Val<::bevy_math::primitives::Circle> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::ConicalFrustum::top_base(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the top base of the conical frustum as a [`Circle`]",
+            &["_self"],
+        )
+        .register_documented(
+            "top_base_area",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::top_base_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of the top base of the conical frustum",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -9108,10 +9290,10 @@ impl Plugin for BevyMathScriptingPlugin {
         register_convex_polygon_functions(&mut world);
         register_polygon_functions(&mut world);
         register_polyline_2_d_functions(&mut world);
+        register_cuboid_functions(&mut world);
         register_aabb_3_d_functions(&mut world);
         register_bounding_sphere_functions(&mut world);
         register_sphere_functions(&mut world);
-        register_cuboid_functions(&mut world);
         register_cylinder_functions(&mut world);
         register_capsule_3_d_functions(&mut world);
         register_cone_functions(&mut world);

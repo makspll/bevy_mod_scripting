@@ -149,53 +149,53 @@ bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "
 # bevy
 
 
-bevy = { version = "0.17", default-features = false }
-bevy_math = { version = "0.17", default-features = false, features = ["std"] }
-bevy_transform = { version = "0.17", default-features = false }
-bevy_reflect = { version = "0.17", default-features = false }
-bevy_ecs = { version = "0.17", default-features = false }
-bevy_asset = { version = "0.17", default-features = false }
-bevy_app = { version = "0.17", default-features = false }
-bevy_log = { version = "0.17", default-features = false }
-bevy_internal = { version = "0.17", default-features = false }
-bevy_diagnostic = { version = "0.17", default-features = false }
-bevy_platform = { version = "0.17", default-features = false }
-bevy_time = { version = "0.17", default-features = false }
-bevy_input = { version = "0.17", default-features = false }
-bevy_a11y = { version = "0.17", default-features = false, features = [
+bevy = { version = "0.18", default-features = false }
+bevy_math = { version = "0.18", default-features = false, features = ["std"] }
+bevy_transform = { version = "0.18", default-features = false }
+bevy_reflect = { version = "0.18", default-features = false }
+bevy_ecs = { version = "0.18", default-features = false }
+bevy_asset = { version = "0.18", default-features = false }
+bevy_app = { version = "0.18", default-features = false }
+bevy_log = { version = "0.18", default-features = false }
+bevy_internal = { version = "0.18", default-features = false }
+bevy_diagnostic = { version = "0.18", default-features = false }
+bevy_platform = { version = "0.18", default-features = false }
+bevy_time = { version = "0.18", default-features = false }
+bevy_input = { version = "0.18", default-features = false }
+bevy_a11y = { version = "0.18", default-features = false, features = [
     "std",
     "bevy_reflect",
 ] }
-bevy_animation = { version = "0.17", default-features = false }
-bevy_color = { version = "0.17", default-features = false, features = [
+bevy_animation = { version = "0.18", default-features = false }
+bevy_color = { version = "0.18", default-features = false, features = [
     "std",
     "bevy_reflect",
 ] }
-bevy_core_pipeline = { version = "0.17", default-features = false }
-bevy_gizmos = { version = "0.17", default-features = false }
-bevy_gltf = { version = "0.17", default-features = false }
-bevy_image = { version = "0.17", default-features = false, features = [
+bevy_core_pipeline = { version = "0.18", default-features = false }
+bevy_gizmos = { version = "0.18", default-features = false }
+bevy_gltf = { version = "0.18", default-features = false }
+bevy_image = { version = "0.18", default-features = false, features = [
     "bevy_reflect",
 ] }
-bevy_input_focus = { version = "0.17", default-features = false, features = [
+bevy_input_focus = { version = "0.18", default-features = false, features = [
     "std",
     "bevy_reflect",
 ] }
-bevy_mesh = { version = "0.17", default-features = false }
-bevy_pbr = { version = "0.17", default-features = false }
-bevy_picking = { version = "0.17", default-features = false }
-bevy_render = { version = "0.17", default-features = false }
-bevy_scene = { version = "0.17", default-features = false }
-bevy_sprite = { version = "0.17", default-features = false }
-bevy_text = { version = "0.17", default-features = false }
-bevy_window = { version = "0.17", default-features = false, features = [
+bevy_mesh = { version = "0.18", default-features = false }
+bevy_pbr = { version = "0.18", default-features = false }
+bevy_picking = { version = "0.18", default-features = false }
+bevy_render = { version = "0.18", default-features = false }
+bevy_scene = { version = "0.18", default-features = false }
+bevy_sprite = { version = "0.18", default-features = false }
+bevy_text = { version = "0.18", default-features = false }
+bevy_window = { version = "0.18", default-features = false, features = [
     "bevy_reflect",
     "std",
 ] }
-bevy_winit = { version = "0.17", default-features = false }
-bevy_utils = { version = "0.17", default-features = false, features = ["std"] }
+bevy_winit = { version = "0.18", default-features = false }
+bevy_utils = { version = "0.18", default-features = false, features = ["std"] }
 
-glam = { version = "0.30.7", default-features = false }
+glam = { version = "0.30.10", default-features = false }
 uuid = { version = "1.13", default-features = false }
 smol_str = { version = "0.2.0", default-features = false }
 nonmax = { version = "0.5", default-features = false, features = ["std"] }
@@ -235,7 +235,7 @@ pretty_assertions = { version = "1.4", default-features = false, features = [
 manifest-dir-macros = { version = "0.1.18", default-features = false }
 assert_cmd = { version = "2.1", default-features = false }
 tokio = { version = "1", default-features = false }
-bevy_console = { version = "0.16", default-features = false }
+bevy_console = { version = "0.17.1", default-features = false }
 tracing-tracy = { version = "0.11", default-features = false }
 libtest-mimic = { version = "0.8", default-features = false }
 criterion = { version = "0.5", default-features = false }
@@ -247,6 +247,7 @@ bevy = { workspace = true, features = [
     "bevy_render",
     "bevy_window",
     "bevy_asset",
+    "bevy_log",
     "bevy_core_pipeline",
     "bevy_sprite",
     "bevy_sprite_render",
@@ -331,7 +332,7 @@ required-features = ["lua54", "rhai"]
 [[example]]
 name = "docgen"
 path = "examples/docgen.rs"
-required-features = []
+required-features = ["lua_language_server_files"]
 
 [[example]]
 name = "runscript"

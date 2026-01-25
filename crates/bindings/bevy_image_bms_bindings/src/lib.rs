@@ -350,24 +350,6 @@ pub(crate) fn register_image_functions(world: &mut World) {
             &["_self", "coords"],
         )
         .register_documented(
-            "reinterpret_stacked_2d_as_array",
-            |mut _self: Mut<::bevy_image::Image>, layers: u32| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_image::Image::reinterpret_stacked_2d_as_array(
-                                &mut _self,
-                                layers,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Takes a 2D image containing vertically stacked images of the same size, and reinterprets\n it as a 2D array texture, where each of the stacked images becomes one layer of the\n array. This is primarily for use with the `texture2DArray` shader uniform type.\n # Panics\n Panics if the texture is not 2D, has more than one layers or is not evenly dividable into\n the `layers`.",
-            &["_self", "layers"],
-        )
-        .register_documented(
             "size",
             |_self: Ref<::bevy_image::Image>| {
                 let output: Val<::bevy_math::UVec2> = {

@@ -17,14 +17,14 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_math = { version = "0.17.3", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
+bevy_math = { version = "0.18.0", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
 
-bevy_reflect = { version = "^0.17.3", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
+bevy_reflect = { version = "^0.18.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}
 
 derive_more = { version = "^2", features = ["std"], default-features = false}
 
-glam = { version = "^0.30.1", features = ["rand", "std"], default-features = false}
+glam = { version = "^0.30.7", features = ["rand", "std"], default-features = false}
 
 itertools = { version = "^0.14.0", features = ["use_alloc", "use_std"], default-features = false}
 

@@ -75,7 +75,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of an indexed mesh, smoothing normals for shared\n vertices.\n This method weights normals by the area of each triangle containing the vertex. Thus,\n larger triangles will skew the normals of their vertices towards their own normal more\n than smaller triangles will.\n This method is actually somewhat faster than [`Mesh::compute_smooth_normals`] because an\n intermediate result of triangle normal calculation is already scaled by the triangle's area.\n If you would rather have the computed normals be influenced only by the angles of connected\n edges, see [`Mesh::compute_smooth_normals`] instead. If you need to weight them in some\n other way, see [`Mesh::compute_custom_smooth_normals`].\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of an indexed mesh, smoothing normals for shared\n vertices.\n This method weights normals by the area of each triangle containing the vertex. Thus,\n larger triangles will skew the normals of their vertices towards their own normal more\n than smaller triangles will.\n This method is actually somewhat faster than [`Mesh::compute_smooth_normals`] because an\n intermediate result of triangle normal calculation is already scaled by the triangle's area.\n If you would rather have the computed normals be influenced only by the angles of connected\n edges, see [`Mesh::compute_smooth_normals`] instead. If you need to weight them in some\n other way, see [`Mesh::compute_custom_smooth_normals`].\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_compute_area_weighted_normals`]",
             &["_self"],
         )
         .register_documented(
@@ -92,7 +92,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n # Panics\n Panics if [`Indices`] are set or [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Consider calling [`Mesh::duplicate_vertices`] or exporting your mesh with normal\n attributes.\n FIXME: This should handle more cases since this is called as a part of gltf\n mesh loading where we can't really blame users for loading meshes that might\n not conform to the limitations here!",
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n # Panics\n Panics if [`Indices`] are set or [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Consider calling [`Mesh::duplicate_vertices`] or exporting your mesh with normal\n attributes.\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_compute_flat_normals`]\n FIXME: This should handle more cases since this is called as a part of gltf\n mesh loading where we can't really blame users for loading meshes that might\n not conform to the limitations here!",
             &["_self"],
         )
         .register_documented(
@@ -107,7 +107,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].=",
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of a mesh.\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].=\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_compute_normals`]",
             &["_self"],
         )
         .register_documented(
@@ -124,7 +124,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of an indexed mesh, smoothing normals for shared\n vertices.\n This method weights normals by the angles of the corners of connected triangles, thus\n eliminating triangle area and count as factors in the final normal. This does make it\n somewhat slower than [`Mesh::compute_area_weighted_normals`] which does not need to\n greedily normalize each triangle's normal or calculate corner angles.\n If you would rather have the computed normals be weighted by triangle area, see\n [`Mesh::compute_area_weighted_normals`] instead. If you need to weight them in some other\n way, see [`Mesh::compute_custom_smooth_normals`].\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            " Calculates the [`Mesh::ATTRIBUTE_NORMAL`] of an indexed mesh, smoothing normals for shared\n vertices.\n This method weights normals by the angles of the corners of connected triangles, thus\n eliminating triangle area and count as factors in the final normal. This does make it\n somewhat slower than [`Mesh::compute_area_weighted_normals`] which does not need to\n greedily normalize each triangle's normal or calculate corner angles.\n If you would rather have the computed normals be weighted by triangle area, see\n [`Mesh::compute_area_weighted_normals`] instead. If you need to weight them in some other\n way, see [`Mesh::compute_custom_smooth_normals`].\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_compute_smooth_normals`]",
             &["_self"],
         )
         .register_documented(
@@ -139,7 +139,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Counts all vertices of the mesh.\n If the attributes have different vertex counts, the smallest is returned.",
+            " Counts all vertices of the mesh.\n If the attributes have different vertex counts, the smallest is returned.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`.",
             &["_self"],
         )
         .register_documented(
@@ -156,7 +156,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Computes and returns the vertex data of the mesh as bytes.\n Therefore the attributes are located in the order of their [`MeshVertexAttribute::id`].\n This is used to transform the vertex data into a GPU friendly format.\n If the vertex attributes have different lengths, they are all truncated to\n the length of the smallest.\n This is a convenience method which allocates a Vec.\n Prefer pre-allocating and using [`Mesh::write_packed_vertex_buffer_data`] when possible.",
+            " Computes and returns the vertex data of the mesh as bytes.\n Therefore the attributes are located in the order of their [`MeshVertexAttribute::id`].\n This is used to transform the vertex data into a GPU friendly format.\n If the vertex attributes have different lengths, they are all truncated to\n the length of the smallest.\n This is a convenience method which allocates a Vec.\n Prefer pre-allocating and using [`Mesh::write_packed_vertex_buffer_data`] when possible.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`.",
             &["_self"],
         )
         .register_documented(
@@ -173,7 +173,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Duplicates the vertex attributes so that no vertices are shared.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [Indices] are set.",
+            " Duplicates the vertex attributes so that no vertices are shared.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [Indices] are set.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_duplicate_vertices`]",
             &["_self"],
         )
         .register_documented(
@@ -207,7 +207,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the size required for the vertex buffer in bytes.",
+            " Returns the size required for the vertex buffer in bytes.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`.",
             &["_self"],
         )
         .register_documented(
@@ -222,7 +222,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the size of a vertex in bytes.",
+            " Returns the size of a vertex in bytes.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`.",
             &["_self"],
         )
         .register_documented(
@@ -237,7 +237,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Whether this mesh has morph targets.",
+            " Whether this mesh has morph targets.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_has_morph_targets`]",
             &["_self"],
         )
         .register_documented(
@@ -255,7 +255,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Sets the vertex indices of the mesh. They describe how triangles are constructed out of the\n vertex attributes and are therefore only useful for the [`PrimitiveTopology`] variants\n that use triangles.",
+            " Sets the vertex indices of the mesh. They describe how triangles are constructed out of the\n vertex attributes and are therefore only useful for the [`PrimitiveTopology`] variants\n that use triangles.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_insert_indices`]",
             &["_self", "indices"],
         )
         .register_documented(
@@ -272,7 +272,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Normalize joint weights so they sum to 1.",
+            " Normalize joint weights so they sum to 1.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_normalize_joint_weights`]",
             &["_self"],
         )
         .register_documented(
@@ -290,7 +290,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates the vertex positions, normals, and tangents of the mesh in place by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Rotates the vertex positions, normals, and tangents of the mesh in place by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_rotate_by`]",
             &["_self", "rotation"],
         )
         .register_documented(
@@ -308,7 +308,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates the vertex positions, normals, and tangents of the mesh by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Rotates the vertex positions, normals, and tangents of the mesh by the given [`Quat`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_rotated_by`]",
             &["_self", "rotation"],
         )
         .register_documented(
@@ -326,7 +326,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Scales the vertex positions, normals, and tangents of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Scales the vertex positions, normals, and tangents of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_scale_by`]",
             &["_self", "scale"],
         )
         .register_documented(
@@ -344,7 +344,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Scales the vertex positions, normals, and tangents of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Scales the vertex positions, normals, and tangents of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_scaled_by`]",
             &["_self", "scale"],
         )
         .register_documented(
@@ -365,7 +365,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Sets the names of each morph target. This should correspond to the order of the morph targets in `set_morph_targets`.",
+            " Sets the names of each morph target. This should correspond to the order of the morph targets in `set_morph_targets`.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_set_morph_target_names`]",
             &["_self", "names"],
         )
         .register_documented(
@@ -386,7 +386,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Transforms the vertex positions, normals, and tangents of the mesh in place by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Transforms the vertex positions, normals, and tangents of the mesh in place by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_transform_by`]",
             &["_self", "transform"],
         )
         .register_documented(
@@ -407,7 +407,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Transforms the vertex positions, normals, and tangents of the mesh by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Transforms the vertex positions, normals, and tangents of the mesh by the given [`Transform`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_transformed_by`]",
             &["_self", "transform"],
         )
         .register_documented(
@@ -425,7 +425,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Translates the vertex positions of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Translates the vertex positions of the mesh in place by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_translate_by`]",
             &["_self", "translation"],
         )
         .register_documented(
@@ -443,7 +443,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Translates the vertex positions of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.",
+            " Translates the vertex positions of the mesh by the given [`Vec3`].\n `Aabb` of entities with modified mesh are not updated automatically.\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_translated_by`]",
             &["_self", "translation"],
         )
         .register_documented(
@@ -460,7 +460,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_area_weighted_normals`] to mutate an existing mesh in-place)\n This method weights normals by the area of each triangle containing the vertex. Thus,\n larger triangles will skew the normals of their vertices towards their own normal more\n than smaller triangles will. If you would rather have the computed normals be influenced\n only by the angles of connected edges, see [`Mesh::with_computed_smooth_normals`] instead.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_area_weighted_normals`] to mutate an existing mesh in-place)\n This method weights normals by the area of each triangle containing the vertex. Thus,\n larger triangles will skew the normals of their vertices towards their own normal more\n than smaller triangles will. If you would rather have the computed normals be influenced\n only by the angles of connected edges, see [`Mesh::with_computed_smooth_normals`] instead.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_with_computed_area_weighted_normals`]",
             &["_self"],
         )
         .register_documented(
@@ -477,7 +477,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_flat_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh has indices defined",
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_flat_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh has indices defined\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_with_computed_flat_normals`]",
             &["_self"],
         )
         .register_documented(
@@ -494,7 +494,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n (Alternatively, you can use [`Mesh::compute_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].",
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n If the mesh is indexed, this defaults to smooth normals. Otherwise, it defaults to flat\n normals.\n (Alternatively, you can use [`Mesh::compute_normals`] to mutate an existing mesh in-place)\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_with_computed_normals`]",
             &["_self"],
         )
         .register_documented(
@@ -511,7 +511,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_smooth_normals`] to mutate an existing mesh in-place)\n This method weights normals by the angles of triangle corners connected to each vertex. If\n you would rather have the computed normals be weighted by triangle area, see\n [`Mesh::with_computed_area_weighted_normals`] instead.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.",
+            " Consumes the mesh and returns a mesh with calculated [`Mesh::ATTRIBUTE_NORMAL`].\n (Alternatively, you can use [`Mesh::compute_smooth_normals`] to mutate an existing mesh in-place)\n This method weights normals by the angles of triangle corners connected to each vertex. If\n you would rather have the computed normals be weighted by triangle area, see\n [`Mesh::with_computed_area_weighted_normals`] instead.\n # Panics\n Panics if [`Mesh::ATTRIBUTE_POSITION`] is not of type `float3`.\n Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].\n Panics if the mesh does not have indices defined.\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_with_computed_smooth_normals`]",
             &["_self"],
         )
         .register_documented(
@@ -528,7 +528,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh with no shared vertices.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [`Indices`] are set.\n (Alternatively, you can use [`Mesh::duplicate_vertices`] to mutate an existing mesh in-place)",
+            " Consumes the mesh and returns a mesh with no shared vertices.\n This can dramatically increase the vertex count, so make sure this is what you want.\n Does nothing if no [`Indices`] are set.\n (Alternatively, you can use [`Mesh::duplicate_vertices`] to mutate an existing mesh in-place)\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_with_duplicated_vertices`]",
             &["_self"],
         )
         .register_documented(
@@ -546,7 +546,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh with the given vertex indices. They describe how triangles\n are constructed out of the vertex attributes and are therefore only useful for the\n [`PrimitiveTopology`] variants that use triangles.\n (Alternatively, you can use [`Mesh::insert_indices`] to mutate an existing mesh in-place)",
+            " Consumes the mesh and returns a mesh with the given vertex indices. They describe how triangles\n are constructed out of the vertex attributes and are therefore only useful for the\n [`PrimitiveTopology`] variants that use triangles.\n (Alternatively, you can use [`Mesh::insert_indices`] to mutate an existing mesh in-place)\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_with_inserted_indices`]",
             &["_self", "indices"],
         )
         .register_documented(
@@ -567,7 +567,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh with morph target names.\n Names should correspond to the order of the morph targets in `set_morph_targets`.\n (Alternatively, you can use [`Mesh::set_morph_target_names`] to mutate an existing mesh in-place)",
+            " Consumes the mesh and returns a mesh with morph target names.\n Names should correspond to the order of the morph targets in `set_morph_targets`.\n (Alternatively, you can use [`Mesh::set_morph_target_names`] to mutate an existing mesh in-place)\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_set_morph_target_names`]",
             &["_self", "names"],
         )
         .register_documented(
@@ -584,7 +584,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                 };
                 output
             },
-            " Consumes the mesh and returns a mesh without the vertex `indices` of the mesh.\n (Alternatively, you can use [`Mesh::remove_indices`] to mutate an existing mesh in-place)",
+            " Consumes the mesh and returns a mesh without the vertex `indices` of the mesh.\n (Alternatively, you can use [`Mesh::remove_indices`] to mutate an existing mesh in-place)\n # Panics\n Panics when the mesh data has already been extracted to `RenderWorld`. To handle\n this as an error use [`Mesh::try_with_removed_indices`]",
             &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();

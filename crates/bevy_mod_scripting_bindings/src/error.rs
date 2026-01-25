@@ -560,7 +560,7 @@ impl DisplayWithTypeInfo for InteropError {
                 )
             }
             InteropError::MissingEntity(entity) => {
-                if *entity == Entity::PLACEHOLDER || entity.index() == 0 {
+                if *entity == Entity::PLACEHOLDER || entity.index().index() == 0 {
                     write!(
                         f,
                         "Invalid entity: {entity}. Are you trying to use an entity in a callback in which it's unavailable?"

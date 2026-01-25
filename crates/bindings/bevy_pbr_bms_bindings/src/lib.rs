@@ -830,51 +830,6 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_atmosphere_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_pbr::Atmosphere,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_pbr::Atmosphere>| {
-                let output: Val<::bevy_pbr::Atmosphere> = {
-                    {
-                        let output: Val<::bevy_pbr::Atmosphere> = <::bevy_pbr::Atmosphere as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "with_density_multiplier",
-            |_self: Val<::bevy_pbr::Atmosphere>, mult: f32| {
-                let output: Val<::bevy_pbr::Atmosphere> = {
-                    {
-                        let output: Val<::bevy_pbr::Atmosphere> = ::bevy_pbr::Atmosphere::with_density_multiplier(
-                                _self.into_inner(),
-                                mult,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "mult"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<::bevy_pbr::Atmosphere, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
-}
 pub(crate) fn register_gpu_atmosphere_settings_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::GpuAtmosphereSettings,
@@ -1421,7 +1376,6 @@ impl Plugin for BevyPbrScriptingPlugin {
         register_wireframe_color_functions(&mut world);
         register_no_wireframe_functions(&mut world);
         register_mesh_3_d_wireframe_functions(&mut world);
-        register_atmosphere_functions(&mut world);
         register_gpu_atmosphere_settings_functions(&mut world);
         register_atmosphere_settings_functions(&mut world);
         register_atmosphere_mode_functions(&mut world);

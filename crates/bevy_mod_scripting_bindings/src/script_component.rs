@@ -98,6 +98,7 @@ impl WorldAccessGuard<'_> {
                     needs_drop::<DynamicComponent>().then_some(|x| x.drop_as::<DynamicComponent>()),
                     true,
                     ComponentCloneBehavior::Default,
+                    None,
                 )
             };
             w.register_component_with_descriptor(descriptor)

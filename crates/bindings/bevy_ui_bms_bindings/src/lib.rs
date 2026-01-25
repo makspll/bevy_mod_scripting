@@ -753,6 +753,649 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_computed_node_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::ComputedNode,
+    >::new(world)
+        .register_documented(
+            "border",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_ui::prelude::BorderRect> = {
+                    {
+                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::border(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the thickness of the node's border on each edge in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "border_box",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_math::Rect> = {
+                    {
+                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::border_box(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the node's border-box in object-centered physical coordinates.\n This is the full rectangle enclosing the node.",
+            &["_self"],
+        )
+        .register_documented(
+            "border_radius",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::border_radius(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the border radius for each of the node's corners in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_ui::ComputedNode> = {
+                    {
+                        let output: Val<::bevy_ui::ComputedNode> = <::bevy_ui::ComputedNode as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "contains_point",
+            |
+                _self: Ref<::bevy_ui::ComputedNode>,
+                transform: Val<::bevy_ui::UiGlobalTransform>,
+                point: Val<::bevy_math::Vec2>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::ComputedNode::contains_point(
+                                &_self,
+                                transform.into_inner(),
+                                point.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "transform", "point"],
+        )
+        .register_documented(
+            "content_box",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_math::Rect> = {
+                    {
+                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::content_box(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the node's content-box in object-centered physical coordinates.\n This is the innermost region of the node, where its content is placed.",
+            &["_self"],
+        )
+        .register_documented(
+            "content_inset",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_ui::prelude::BorderRect> = {
+                    {
+                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::content_inset(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the combined inset on each edge including both padding and border thickness in physical pixels.",
+            &["_self"],
+        )
+        .register_documented(
+            "content_size",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::content_size(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The calculated node content size as width and height in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_ui::ComputedNode>, other: Ref<::bevy_ui::ComputedNode>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui::ComputedNode as ::std::cmp::PartialEq<
+                            ::bevy_ui::ComputedNode,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "inner_radius",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::inner_radius(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inner border radius for each of the node's corners in physical pixels.",
+            &["_self"],
+        )
+        .register_documented(
+            "inverse_scale_factor",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_ui::ComputedNode::inverse_scale_factor(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of the scale factor for this node.\n To convert from physical coordinates to logical coordinates multiply by this value.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_empty",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::ComputedNode::is_empty(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Check if the node is empty.\n A node is considered empty if it has a zero or negative extent along either of its axes.",
+            &["_self"],
+        )
+        .register_documented(
+            "outline_offset",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_ui::ComputedNode::outline_offset(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of space between the outline and the edge of the node in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "outline_radius",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::outline_radius(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the border radius for each corner of the outline\n An outline's border radius is derived from the node's border-radius\n so that the outline wraps the border equally at all points.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "outline_width",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_ui::ComputedNode::outline_width(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the thickness of the UI node's outline in physical pixels.\n If this value is negative or `0.` then no outline will be rendered.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "outlined_node_size",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::outlined_node_size(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the size of the node when including its outline.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "padding",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_ui::prelude::BorderRect> = {
+                    {
+                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::padding(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the thickness of the node's padding on each edge in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "padding_box",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_math::Rect> = {
+                    {
+                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::padding_box(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the node's padding-box in object-centered physical coordinates.\n This is the region inside the border containing the node's padding and content areas.",
+            &["_self"],
+        )
+        .register_documented(
+            "resolve_clip_rect",
+            |
+                _self: Ref<::bevy_ui::ComputedNode>,
+                overflow: Val<::bevy_ui::Overflow>,
+                overflow_clip_margin: Val<::bevy_ui::OverflowClipMargin>|
+            {
+                let output: Val<::bevy_math::Rect> = {
+                    {
+                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::resolve_clip_rect(
+                                &_self,
+                                overflow.into_inner(),
+                                overflow_clip_margin.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Resolve the node's clipping rect in local space",
+            &["_self", "overflow", "overflow_clip_margin"],
+        )
+        .register_documented(
+            "size",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::size(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The calculated node size as width and height in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        )
+        .register_documented(
+            "stack_index",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::bevy_ui::ComputedNode::stack_index(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The order of the node in the UI layout.\n Nodes with a higher stack index are drawn on top of and receive interactions before nodes with lower stack indices.\n Automatically calculated in [`UiSystems::Stack`](super::UiSystems::Stack).",
+            &["_self"],
+        )
+        .register_documented(
+            "unrounded_size",
+            |_self: Ref<::bevy_ui::ComputedNode>| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::unrounded_size(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The calculated node size as width and height in physical pixels before rounding.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::ComputedNode,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::UiGlobalTransform,
+    >::new(world)
+        .register_documented(
+            "affine",
+            |_self: Ref<::bevy_ui::UiGlobalTransform>| {
+                let output: Val<::bevy_math::Affine2> = {
+                    {
+                        let output: Val<::bevy_math::Affine2> = ::bevy_ui::UiGlobalTransform::affine(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the transform as an [`Affine2`]",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ui::UiGlobalTransform>| {
+                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                    {
+                        let output: Val<::bevy_ui::UiGlobalTransform> = <::bevy_ui::UiGlobalTransform as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_ui::UiGlobalTransform>,
+                other: Ref<::bevy_ui::UiGlobalTransform>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui::UiGlobalTransform as ::std::cmp::PartialEq<
+                            ::bevy_ui::UiGlobalTransform,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "from_rotation",
+            |rotation: Val<::bevy_math::Rot2>| {
+                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                    {
+                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_rotation(
+                                rotation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `UiGlobalTransform` from the given rotation.",
+            &["rotation"],
+        )
+        .register_documented(
+            "from_scale",
+            |scale: Val<::bevy_math::Vec2>| {
+                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                    {
+                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_scale(
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `UiGlobalTransform` from the given scaling.",
+            &["scale"],
+        )
+        .register_documented(
+            "from_translation",
+            |translation: Val<::bevy_math::Vec2>| {
+                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                    {
+                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_translation(
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `UiGlobalTransform` from the given 2D translation.",
+            &["translation"],
+        )
+        .register_documented(
+            "from_xy",
+            |x: f32, y: f32| {
+                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                    {
+                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_xy(
+                                x,
+                                y,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `UiGlobalTransform` from the given 2D translation.",
+            &["x", "y"],
+        )
+        .register_documented(
+            "mul",
+            |
+                _self: Val<::bevy_ui::UiGlobalTransform>,
+                affine2: Val<::bevy_math::Affine2>|
+            {
+                let output: Val<::bevy_math::Affine2> = {
+                    {
+                        let output: Val<::bevy_math::Affine2> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
+                            ::bevy_math::Affine2,
+                        >>::mul(_self.into_inner(), affine2.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "affine2"],
+        )
+        .register_documented(
+            "mul",
+            |_self: Val<::bevy_ui::UiGlobalTransform>, value: Val<::bevy_math::Vec2>| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
+                            ::bevy_math::Vec2,
+                        >>::mul(_self.into_inner(), value.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "value"],
+        )
+        .register_documented(
+            "mul",
+            |
+                _self: Val<::bevy_ui::UiGlobalTransform>,
+                value: Val<::bevy_ui::UiGlobalTransform>|
+            {
+                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                    {
+                        let output: Val<::bevy_ui::UiGlobalTransform> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
+                            ::bevy_ui::UiGlobalTransform,
+                        >>::mul(_self.into_inner(), value.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "value"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::UiGlobalTransform,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_auto_directional_navigation_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |
+                _self: Ref<
+                    ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+                >|
+            {
+                let output: Val<
+                    ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+                        > = <::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<
+                    ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+                >,
+                other: Ref<
+                    ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+                >|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation as ::std::cmp::PartialEq<
+                            ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_content_size_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ContentSize,
@@ -779,50 +1422,6 @@ pub(crate) fn register_content_size_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_ui::ContentSize, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
-}
-pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::UiGlobalTransform,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_ui::UiGlobalTransform>| {
-            let output: Val<::bevy_ui::UiGlobalTransform> = {
-                {
-                    let output: Val<::bevy_ui::UiGlobalTransform> =
-                        <::bevy_ui::UiGlobalTransform as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_ui::UiGlobalTransform>, other: Ref<::bevy_ui::UiGlobalTransform>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_ui::UiGlobalTransform as ::std::cmp::PartialEq<
-                        ::bevy_ui::UiGlobalTransform,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::UiGlobalTransform,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
 }
 pub(crate) fn register_calculated_clip_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1051,345 +1650,6 @@ pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ui::UiTargetCamera,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_computed_node_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::ComputedNode,
-    >::new(world)
-        .register_documented(
-            "border",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
-                    {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::border(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the thickness of the node's border on each edge in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "border_radius",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::border_radius(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the border radius for each of the node's corners in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ComputedNode> = {
-                    {
-                        let output: Val<::bevy_ui::ComputedNode> = <::bevy_ui::ComputedNode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "contains_point",
-            |
-                _self: Ref<::bevy_ui::ComputedNode>,
-                transform: Val<::bevy_ui::UiGlobalTransform>,
-                point: Val<::bevy_math::Vec2>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_ui::ComputedNode::contains_point(
-                                &_self,
-                                transform.into_inner(),
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "transform", "point"],
-        )
-        .register_documented(
-            "content_inset",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
-                    {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::content_inset(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the combined inset on each edge including both padding and border thickness in physical pixels.",
-            &["_self"],
-        )
-        .register_documented(
-            "content_size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::content_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The calculated node content size as width and height in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::bevy_ui::ComputedNode>, other: Ref<::bevy_ui::ComputedNode>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::ComputedNode as ::std::cmp::PartialEq<
-                            ::bevy_ui::ComputedNode,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "inner_radius",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::inner_radius(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the inner border radius for each of the node's corners in physical pixels.",
-            &["_self"],
-        )
-        .register_documented(
-            "inverse_scale_factor",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_ui::ComputedNode::inverse_scale_factor(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the inverse of the scale factor for this node.\n To convert from physical coordinates to logical coordinates multiply by this value.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_empty",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_ui::ComputedNode::is_empty(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Check if the node is empty.\n A node is considered empty if it has a zero or negative extent along either of its axes.",
-            &["_self"],
-        )
-        .register_documented(
-            "outline_offset",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_ui::ComputedNode::outline_offset(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the amount of space between the outline and the edge of the node in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "outline_radius",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::outline_radius(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the border radius for each corner of the outline\n An outline's border radius is derived from the node's border-radius\n so that the outline wraps the border equally at all points.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "outline_width",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_ui::ComputedNode::outline_width(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the thickness of the UI node's outline in physical pixels.\n If this value is negative or `0.` then no outline will be rendered.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "outlined_node_size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::outlined_node_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of the node when including its outline.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "padding",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
-                    {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::padding(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the thickness of the node's padding on each edge in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "resolve_clip_rect",
-            |
-                _self: Ref<::bevy_ui::ComputedNode>,
-                overflow: Val<::bevy_ui::Overflow>,
-                overflow_clip_margin: Val<::bevy_ui::OverflowClipMargin>|
-            {
-                let output: Val<::bevy_math::Rect> = {
-                    {
-                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::resolve_clip_rect(
-                                &_self,
-                                overflow.into_inner(),
-                                overflow_clip_margin.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the node's clipping rect in local space",
-            &["_self", "overflow", "overflow_clip_margin"],
-        )
-        .register_documented(
-            "size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The calculated node size as width and height in physical pixels.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        )
-        .register_documented(
-            "stack_index",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::bevy_ui::ComputedNode::stack_index(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The order of the node in the UI layout.\n Nodes with a higher stack index are drawn on top of and receive interactions before nodes with lower stack indices.\n Automatically calculated in [`UiSystems::Stack`](super::UiSystems::Stack).",
-            &["_self"],
-        )
-        .register_documented(
-            "unrounded_size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
-                    {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::unrounded_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The calculated node size as width and height in physical pixels before rounding.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::ComputedNode,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -3465,84 +3725,16 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_ui::UiRect, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
-pub(crate) fn register_border_radius_functions(world: &mut World) {
+pub(crate) fn register_ignore_scroll_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::BorderRadius,
+        ::bevy_ui::IgnoreScroll,
     >::new(world)
         .register_documented(
-            "all",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::all(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Set all four corners to the same curvature.",
-            &["radius"],
-        )
-        .register_documented(
-            "bottom",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the bottom left and bottom right corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "bottom_left",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_left(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the bottom left corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "bottom_right",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_right(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the bottom right corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::BorderRadius>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: Ref<::bevy_ui::IgnoreScroll>| {
+                let output: Val<::bevy_ui::IgnoreScroll> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = <::bevy_ui::BorderRadius as ::std::clone::Clone>::clone(
+                        let output: Val<::bevy_ui::IgnoreScroll> = <::bevy_ui::IgnoreScroll as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3553,373 +3745,12 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
             },
             "",
             &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::bevy_ui::BorderRadius>, other: Ref<::bevy_ui::BorderRadius>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::BorderRadius as ::std::cmp::PartialEq<
-                            ::bevy_ui::BorderRadius,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "left",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::left(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the top left and bottom left corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "new",
-            |
-                top_left: Val<::bevy_ui::Val>,
-                top_right: Val<::bevy_ui::Val>,
-                bottom_right: Val<::bevy_ui::Val>,
-                bottom_left: Val<::bevy_ui::Val>|
-            {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::new(
-                                top_left.into_inner(),
-                                top_right.into_inner(),
-                                bottom_right.into_inner(),
-                                bottom_left.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["top_left", "top_right", "bottom_right", "bottom_left"],
-        )
-        .register_documented(
-            "percent",
-            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::percent(
-                                top_left,
-                                top_right,
-                                bottom_right,
-                                bottom_left,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii to percentage values.",
-            &["top_left", "top_right", "bottom_right", "bottom_left"],
-        )
-        .register_documented(
-            "px",
-            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::px(
-                                top_left,
-                                top_right,
-                                bottom_right,
-                                bottom_left,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii to logical pixel values.",
-            &["top_left", "top_right", "bottom_right", "bottom_left"],
-        )
-        .register_documented(
-            "resolve",
-            |
-                _self: Ref<::bevy_ui::BorderRadius>,
-                scale_factor: f32,
-                node_size: Val<::bevy_math::Vec2>,
-                viewport_size: Val<::bevy_math::Vec2>|
-            {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::BorderRadius::resolve(
-                                &_self,
-                                scale_factor,
-                                node_size.into_inner(),
-                                viewport_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the border radii for the corners from the given context values.\n Returns the radii of the each corner in physical pixels.",
-            &["_self", "scale_factor", "node_size", "viewport_size"],
-        )
-        .register_documented(
-            "resolve_single_corner",
-            |
-                radius: Val<::bevy_ui::Val>,
-                scale_factor: f32,
-                min_length: f32,
-                viewport_size: Val<::bevy_math::Vec2>|
-            {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_ui::BorderRadius::resolve_single_corner(
-                                radius.into_inner(),
-                                scale_factor,
-                                min_length,
-                                viewport_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the border radius for a single corner from the given context values.\n Returns the radius of the corner in physical pixels.",
-            &["radius", "scale_factor", "min_length", "viewport_size"],
-        )
-        .register_documented(
-            "right",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::right(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the top right and bottom right corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "top",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the top left and top right corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "top_left",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_left(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the top left corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "top_right",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_right(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the top right corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "with_bottom",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `bottom_left` and `bottom_right` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_bottom_left",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_left(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `bottom_left` field set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_bottom_right",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_right(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `bottom_right` field set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_left",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_left(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_left` and `bottom_left` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_right",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_right(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_right` and `bottom_right` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_top",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_left` and `top_right` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_top_left",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_left(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_left` field set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_top_right",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_right(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_right` field set to the given value.",
-            &["_self", "radius"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_ui::BorderRadius,
+            ::bevy_ui::IgnoreScroll,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -5469,6 +5300,464 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_ui::Overflow, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
+pub(crate) fn register_border_radius_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::BorderRadius,
+    >::new(world)
+        .register_documented(
+            "all",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::all(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Set all four corners to the same curvature.",
+            &["radius"],
+        )
+        .register_documented(
+            "bottom",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radii for the bottom left and bottom right corners.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "bottom_left",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_left(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radius for the bottom left corner.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "bottom_right",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_right(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radius for the bottom right corner.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_ui::BorderRadius>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = <::bevy_ui::BorderRadius as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_ui::BorderRadius>, other: Ref<::bevy_ui::BorderRadius>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui::BorderRadius as ::std::cmp::PartialEq<
+                            ::bevy_ui::BorderRadius,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "left",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::left(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radii for the top left and bottom left corners.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "new",
+            |
+                top_left: Val<::bevy_ui::Val>,
+                top_right: Val<::bevy_ui::Val>,
+                bottom_right: Val<::bevy_ui::Val>,
+                bottom_left: Val<::bevy_ui::Val>|
+            {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::new(
+                                top_left.into_inner(),
+                                top_right.into_inner(),
+                                bottom_right.into_inner(),
+                                bottom_left.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["top_left", "top_right", "bottom_right", "bottom_left"],
+        )
+        .register_documented(
+            "percent",
+            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::percent(
+                                top_left,
+                                top_right,
+                                bottom_right,
+                                bottom_left,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radii to percentage values.",
+            &["top_left", "top_right", "bottom_right", "bottom_left"],
+        )
+        .register_documented(
+            "px",
+            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::px(
+                                top_left,
+                                top_right,
+                                bottom_right,
+                                bottom_left,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radii to logical pixel values.",
+            &["top_left", "top_right", "bottom_right", "bottom_left"],
+        )
+        .register_documented(
+            "resolve",
+            |
+                _self: Ref<::bevy_ui::BorderRadius>,
+                scale_factor: f32,
+                node_size: Val<::bevy_math::Vec2>,
+                viewport_size: Val<::bevy_math::Vec2>|
+            {
+                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::BorderRadius::resolve(
+                                &_self,
+                                scale_factor,
+                                node_size.into_inner(),
+                                viewport_size.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Resolve the border radii for the corners from the given context values.\n Returns the radii of the each corner in physical pixels.",
+            &["_self", "scale_factor", "node_size", "viewport_size"],
+        )
+        .register_documented(
+            "resolve_single_corner",
+            |
+                radius: Val<::bevy_ui::Val>,
+                scale_factor: f32,
+                min_length: f32,
+                viewport_size: Val<::bevy_math::Vec2>|
+            {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_ui::BorderRadius::resolve_single_corner(
+                                radius.into_inner(),
+                                scale_factor,
+                                min_length,
+                                viewport_size.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Resolve the border radius for a single corner from the given context values.\n Returns the radius of the corner in physical pixels.",
+            &["radius", "scale_factor", "min_length", "viewport_size"],
+        )
+        .register_documented(
+            "right",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::right(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radii for the top right and bottom right corners.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "top",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radii for the top left and top right corners.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "top_left",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_left(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radius for the top left corner.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "top_right",
+            |radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_right(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the radius for the top right corner.\n Remaining corners will be right-angled.",
+            &["radius"],
+        )
+        .register_documented(
+            "with_bottom",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `bottom_left` and `bottom_right` fields set to the given value.",
+            &["_self", "radius"],
+        )
+        .register_documented(
+            "with_bottom_left",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_left(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `bottom_left` field set to the given value.",
+            &["_self", "radius"],
+        )
+        .register_documented(
+            "with_bottom_right",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_right(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `bottom_right` field set to the given value.",
+            &["_self", "radius"],
+        )
+        .register_documented(
+            "with_left",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_left(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `top_left` and `bottom_left` fields set to the given value.",
+            &["_self", "radius"],
+        )
+        .register_documented(
+            "with_right",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_right(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `top_right` and `bottom_right` fields set to the given value.",
+            &["_self", "radius"],
+        )
+        .register_documented(
+            "with_top",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `top_left` and `top_right` fields set to the given value.",
+            &["_self", "radius"],
+        )
+        .register_documented(
+            "with_top_left",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_left(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `top_left` field set to the given value.",
+            &["_self", "radius"],
+        )
+        .register_documented(
+            "with_top_right",
+            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
+                let output: Val<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_right(
+                                _self.into_inner(),
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the [`BorderRadius`] with its `top_right` field set to the given value.",
+            &["_self", "radius"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::BorderRadius,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::OverflowClipMargin,
@@ -5988,13 +6277,14 @@ impl Plugin for BevyUiScriptingPlugin {
         register_ui_scale_functions(&mut world);
         register_computed_ui_target_camera_functions(&mut world);
         register_computed_ui_render_target_info_functions(&mut world);
-        register_content_size_functions(&mut world);
+        register_computed_node_functions(&mut world);
         register_ui_global_transform_functions(&mut world);
+        register_auto_directional_navigation_functions(&mut world);
+        register_content_size_functions(&mut world);
         register_calculated_clip_functions(&mut world);
         register_node_functions(&mut world);
         register_overflow_axis_functions(&mut world);
         register_ui_target_camera_functions(&mut world);
-        register_computed_node_functions(&mut world);
         register_overflow_clip_box_functions(&mut world);
         register_focus_policy_functions(&mut world);
         register_image_node_size_functions(&mut world);
@@ -6015,7 +6305,7 @@ impl Plugin for BevyUiScriptingPlugin {
         register_ui_transform_functions(&mut world);
         register_relative_cursor_position_functions(&mut world);
         register_ui_rect_functions(&mut world);
-        register_border_radius_functions(&mut world);
+        register_ignore_scroll_functions(&mut world);
         register_layout_config_functions(&mut world);
         register_outline_functions(&mut world);
         register_scroll_position_functions(&mut world);
@@ -6037,6 +6327,7 @@ impl Plugin for BevyUiScriptingPlugin {
         register_max_track_sizing_function_functions(&mut world);
         register_min_track_sizing_function_functions(&mut world);
         register_overflow_functions(&mut world);
+        register_border_radius_functions(&mut world);
         register_overflow_clip_margin_functions(&mut world);
         register_global_z_index_functions(&mut world);
         register_z_index_functions(&mut world);

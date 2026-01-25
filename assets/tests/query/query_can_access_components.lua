@@ -14,7 +14,8 @@ local query_result = world.query():component(componentA):component(componentA):c
 
 assert(#query_result == 1, "Expected 1 result, got " .. #query_result)
 for i, result in pairs(query_result) do
-    assert(result:entity():index() == entity_a:index(), "Expected entity_a, got " .. result:entity():index())
+    assert(result:entity():index():index() == entity_a:index():index(),
+        "Expected entity_a, got " .. result:entity():index():index())
     components = result:components()
     assert(#components == 3, "Expected 3 components, got " .. #components)
     A = components[1]

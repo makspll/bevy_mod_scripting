@@ -404,18 +404,17 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_animation_target_functions(world: &mut World) {
+pub(crate) fn register_animated_by_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_animation::AnimationTarget,
+        ::bevy_animation::AnimatedBy,
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_animation::AnimationTarget>| {
-            let output: Val<::bevy_animation::AnimationTarget> = {
+        |_self: Ref<::bevy_animation::AnimatedBy>| {
+            let output: Val<::bevy_animation::AnimatedBy> = {
                 {
-                    let output: Val<::bevy_animation::AnimationTarget> =
-                        <::bevy_animation::AnimationTarget as ::std::clone::Clone>::clone(&_self)
-                            .into();
+                    let output: Val<::bevy_animation::AnimatedBy> =
+                        <::bevy_animation::AnimatedBy as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
             };
@@ -428,7 +427,7 @@ pub(crate) fn register_animation_target_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_animation::AnimationTarget,
+            ::bevy_animation::AnimatedBy,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -697,35 +696,6 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_weights_curve_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_animation::gltf_curves::WeightsCurve,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_animation::gltf_curves::WeightsCurve>| {
-                let output: Val<::bevy_animation::gltf_curves::WeightsCurve> = {
-                    {
-                        let output: Val<::bevy_animation::gltf_curves::WeightsCurve> = <::bevy_animation::gltf_curves::WeightsCurve as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_animation::gltf_curves::WeightsCurve,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_cubic_rotation_curve_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::gltf_curves::CubicRotationCurve,
@@ -908,10 +878,9 @@ impl Plugin for BevyAnimationScriptingPlugin {
         register_animation_player_functions(&mut world);
         register_animation_graph_functions(&mut world);
         register_animation_target_id_functions(&mut world);
-        register_animation_target_functions(&mut world);
+        register_animated_by_functions(&mut world);
         register_repeat_animation_functions(&mut world);
         register_active_animation_functions(&mut world);
-        register_weights_curve_functions(&mut world);
         register_cubic_rotation_curve_functions(&mut world);
         register_animation_graph_node_functions(&mut world);
         register_threaded_animation_graph_functions(&mut world);

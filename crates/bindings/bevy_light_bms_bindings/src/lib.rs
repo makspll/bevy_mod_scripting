@@ -68,6 +68,34 @@ pub(crate) fn register_ambient_light_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_global_ambient_light_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_light::GlobalAmbientLight,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_light::GlobalAmbientLight>| {
+            let output: Val<::bevy_light::GlobalAmbientLight> = {
+                {
+                    let output: Val<::bevy_light::GlobalAmbientLight> =
+                        <::bevy_light::GlobalAmbientLight as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_light::GlobalAmbientLight,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_environment_map_light_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_light::EnvironmentMapLight,
@@ -827,6 +855,7 @@ impl Plugin for BevyLightScriptingPlugin {
         let mut world = app.world_mut();
         register_clustered_decal_functions(&mut world);
         register_ambient_light_functions(&mut world);
+        register_global_ambient_light_functions(&mut world);
         register_environment_map_light_functions(&mut world);
         register_generated_environment_map_light_functions(&mut world);
         register_irradiance_volume_functions(&mut world);

@@ -17,12 +17,12 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_asset = { version = "0.17.3", features = ["file_watcher", "multi_threaded", "notify-debouncer-full", "watch"], default-features = true}
+bevy_asset = { version = "0.18.0", features = ["file_watcher", "multi_threaded", "notify-debouncer-full", "watch"], default-features = true}
 
 
-bevy_asset_macros = { version = "^0.17.3", features = [], default-features = true}
+bevy_asset_macros = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_tasks = { version = "^0.17.3", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
+bevy_tasks = { version = "^0.18.0", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
 
 js-sys = { version = "^0.3", features = [], default-features = true}
 
