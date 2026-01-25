@@ -211,7 +211,7 @@ pub fn init_game_of_life_state(
 }
 
 pub fn sync_window_size(
-    mut resize_event: EventReader<WindowResized>,
+    mut resize_event: MessageReader<WindowResized>,
     mut settings: ResMut<Settings>,
     mut query: Query<&mut Sprite, With<LifeState>>,
     primary_windows: Query<&Window, With<PrimaryWindow>>,

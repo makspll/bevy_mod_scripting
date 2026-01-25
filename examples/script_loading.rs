@@ -35,10 +35,6 @@ pub fn initialize_script_loading(
     }
 }
 
-/// Marker component for the UI root
-#[derive(Component)]
-struct LoadingUiRoot;
-
 /// Marker components for UI updates
 #[derive(Component)]
 struct LoadingBarFill;
