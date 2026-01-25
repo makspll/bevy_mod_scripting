@@ -17,22 +17,22 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_ecs = { version = "0.17.3", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
+bevy_ecs = { version = "0.18.0", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
 
 
 arrayvec = { version = "^0.7.4", features = ["std"], default-features = false}
 
-bevy_ecs_macros = { version = "^0.17.3", features = [], default-features = true}
+bevy_ecs_macros = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_platform = { version = "^0.17.3", features = ["alloc", "serialize", "std"], default-features = true}
+bevy_platform = { version = "^0.18.0", features = ["alloc", "serialize", "std"], default-features = true}
 
-bevy_ptr = { version = "^0.17.3", features = [], default-features = true}
+bevy_ptr = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_reflect = { version = "^0.17.3", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
+bevy_reflect = { version = "^0.18.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}
 
-bevy_tasks = { version = "^0.17.3", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
+bevy_tasks = { version = "^0.18.0", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
 
-bevy_utils = { version = "^0.17.3", features = ["debug", "parallel", "std"], default-features = true}
+bevy_utils = { version = "^0.18.0", features = ["parallel", "std"], default-features = true}
 
 bitflags = { version = "^2.3", features = ["std"], default-features = false}
 

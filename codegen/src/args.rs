@@ -85,7 +85,7 @@ pub struct Args {
         short,
         long,
         help = "The rust version to consider when looking at stability tags etc",
-        default_value = "1.88.0"
+        default_value = "1.89.0"
     )]
     pub minimum_supported_rust_version_target: Option<String>,
 }

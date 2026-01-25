@@ -1,15 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyMathScriptingPlugin;
 pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
@@ -193,6 +196,29 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
+            "is_in_direction",
+            |
+                _self: Val<::bevy_math::CompassOctant>,
+                origin: Val<::bevy_math::Vec2>,
+                candidate: Val<::bevy_math::Vec2>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::CompassOctant::is_in_direction(
+                                _self.into_inner(),
+                                origin.into_inner(),
+                                candidate.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Checks if a point is in the direction represented by this [`CompassOctant`] from an origin.\n This uses a cone-based check: the vector from origin to the candidate point\n must have a positive dot product with the direction vector.\n Uses standard mathematical coordinates where Y increases upward.\n # Arguments\n * `origin` - The starting position\n * `candidate` - The target position to check\n # Returns\n `true` if the candidate is generally in the direction of this octant from the origin.\n # Example\n ```\n use bevy_math::{CompassOctant, Vec2};\n let origin = Vec2::new(0.0, 0.0);\n let north_point = Vec2::new(0.0, 10.0);  // Above origin (Y+ = up)\n let east_point = Vec2::new(10.0, 0.0);   // Right of origin\n assert!(CompassOctant::North.is_in_direction(origin, north_point));\n assert!(!CompassOctant::North.is_in_direction(origin, east_point));\n ```",
+            &["_self", "origin", "candidate"],
+        )
+        .register_documented(
             "neg",
             |_self: Val<::bevy_math::CompassOctant>| {
                 let output: Val<::bevy_math::CompassOctant> = {
@@ -308,6 +334,29 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_in_direction",
+            |
+                _self: Val<::bevy_math::CompassQuadrant>,
+                origin: Val<::bevy_math::Vec2>,
+                candidate: Val<::bevy_math::Vec2>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_math::CompassQuadrant::is_in_direction(
+                                _self.into_inner(),
+                                origin.into_inner(),
+                                candidate.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Checks if a point is in the direction represented by this [`CompassQuadrant`] from an origin.\n This uses a cone-based check: the vector from origin to the candidate point\n must have a positive dot product with the direction vector.\n Uses standard mathematical coordinates where Y increases upward.\n # Arguments\n * `origin` - The starting position\n * `candidate` - The target position to check\n # Returns\n `true` if the candidate is generally in the direction of this quadrant from the origin.\n # Example\n ```\n use bevy_math::{CompassQuadrant, Vec2};\n let origin = Vec2::new(0.0, 0.0);\n let north_point = Vec2::new(0.0, 10.0);  // Above origin (Y+ = up)\n let east_point = Vec2::new(10.0, 0.0);   // Right of origin\n assert!(CompassQuadrant::North.is_in_direction(origin, north_point));\n assert!(!CompassQuadrant::North.is_in_direction(origin, east_point));\n ```",
+            &["_self", "origin", "candidate"],
         )
         .register_documented(
             "neg",
@@ -792,188 +841,214 @@ pub(crate) fn register_isometry_3_d_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_ray_2_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Ray2d>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::Ray2d>| {
-            let output: Val<::bevy_math::Ray2d> = {
-                {
-                    let output: Val<::bevy_math::Ray2d> =
-                        <::bevy_math::Ray2d as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::Ray2d>, other: Ref<::bevy_math::Ray2d>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_math::Ray2d as ::core::cmp::PartialEq<
-                        ::bevy_math::Ray2d,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "get_point",
-        |_self: Ref<::bevy_math::Ray2d>, distance: f32| {
-            let output: Val<::bevy_math::Vec2> = {
-                {
-                    let output: Val<::bevy_math::Vec2> =
-                        ::bevy_math::Ray2d::get_point(&_self, distance).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get a point at a given distance along the ray",
-        &["_self", "distance"],
-    )
-    .register_documented(
-        "intersect_plane",
-        |_self: Ref<::bevy_math::Ray2d>,
-         plane_origin: Val<::bevy_math::Vec2>,
-         plane: Val<::bevy_math::primitives::Plane2d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> = ::bevy_math::Ray2d::intersect_plane(
-                        &_self,
-                        plane_origin.into_inner(),
-                        plane.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance to a plane if the ray intersects it",
-        &["_self", "plane_origin", "plane"],
-    )
-    .register_documented(
-        "new",
-        |origin: Val<::bevy_math::Vec2>, direction: Val<::bevy_math::Dir2>| {
-            let output: Val<::bevy_math::Ray2d> = {
-                {
-                    let output: Val<::bevy_math::Ray2d> =
-                        ::bevy_math::Ray2d::new(origin.into_inner(), direction.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new `Ray2d` from a given origin and direction",
-        &["origin", "direction"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::Ray2d,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::Ray2d>| {
+                let output: Val<::bevy_math::Ray2d> = {
+                    {
+                        let output: Val<::bevy_math::Ray2d> = <::bevy_math::Ray2d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_math::Ray2d>, other: Ref<::bevy_math::Ray2d>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::Ray2d as ::core::cmp::PartialEq<
+                            ::bevy_math::Ray2d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get_point",
+            |_self: Ref<::bevy_math::Ray2d>, distance: f32| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = ::bevy_math::Ray2d::get_point(
+                                &_self,
+                                distance,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the point at a given distance along the ray.",
+            &["_self", "distance"],
+        )
+        .register_documented(
+            "intersect_plane",
+            |
+                _self: Ref<::bevy_math::Ray2d>,
+                plane_origin: Val<::bevy_math::Vec2>,
+                plane: Val<::bevy_math::primitives::Plane2d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::Ray2d::intersect_plane(
+                                &_self,
+                                plane_origin.into_inner(),
+                                plane.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the distance to a plane if the ray intersects it.\n Use [`Ray2d::plane_intersection_point`] to get the intersection point directly.",
+            &["_self", "plane_origin", "plane"],
+        )
+        .register_documented(
+            "new",
+            |origin: Val<::bevy_math::Vec2>, direction: Val<::bevy_math::Dir2>| {
+                let output: Val<::bevy_math::Ray2d> = {
+                    {
+                        let output: Val<::bevy_math::Ray2d> = ::bevy_math::Ray2d::new(
+                                origin.into_inner(),
+                                direction.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Ray2d` from a given origin and direction",
+            &["origin", "direction"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Ray2d, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Ray2d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_ray_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Ray3d>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::Ray3d>| {
-            let output: Val<::bevy_math::Ray3d> = {
-                {
-                    let output: Val<::bevy_math::Ray3d> =
-                        <::bevy_math::Ray3d as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::Ray3d>, other: Ref<::bevy_math::Ray3d>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_math::Ray3d as ::core::cmp::PartialEq<
-                        ::bevy_math::Ray3d,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "get_point",
-        |_self: Ref<::bevy_math::Ray3d>, distance: f32| {
-            let output: Val<::bevy_math::Vec3> = {
-                {
-                    let output: Val<::bevy_math::Vec3> =
-                        ::bevy_math::Ray3d::get_point(&_self, distance).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get a point at a given distance along the ray",
-        &["_self", "distance"],
-    )
-    .register_documented(
-        "intersect_plane",
-        |_self: Ref<::bevy_math::Ray3d>,
-         plane_origin: Val<::bevy_math::Vec3>,
-         plane: Val<::bevy_math::primitives::InfinitePlane3d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> = ::bevy_math::Ray3d::intersect_plane(
-                        &_self,
-                        plane_origin.into_inner(),
-                        plane.into_inner(),
-                    )
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance to a plane if the ray intersects it",
-        &["_self", "plane_origin", "plane"],
-    )
-    .register_documented(
-        "new",
-        |origin: Val<::bevy_math::Vec3>, direction: Val<::bevy_math::Dir3>| {
-            let output: Val<::bevy_math::Ray3d> = {
-                {
-                    let output: Val<::bevy_math::Ray3d> =
-                        ::bevy_math::Ray3d::new(origin.into_inner(), direction.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new `Ray3d` from a given origin and direction",
-        &["origin", "direction"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::Ray3d,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::Ray3d>| {
+                let output: Val<::bevy_math::Ray3d> = {
+                    {
+                        let output: Val<::bevy_math::Ray3d> = <::bevy_math::Ray3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::bevy_math::Ray3d>, other: Ref<::bevy_math::Ray3d>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::Ray3d as ::core::cmp::PartialEq<
+                            ::bevy_math::Ray3d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get_point",
+            |_self: Ref<::bevy_math::Ray3d>, distance: f32| {
+                let output: Val<::bevy_math::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::Vec3> = ::bevy_math::Ray3d::get_point(
+                                &_self,
+                                distance,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the point at a given distance along the ray",
+            &["_self", "distance"],
+        )
+        .register_documented(
+            "intersect_plane",
+            |
+                _self: Ref<::bevy_math::Ray3d>,
+                plane_origin: Val<::bevy_math::Vec3>,
+                plane: Val<::bevy_math::primitives::InfinitePlane3d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::Ray3d::intersect_plane(
+                                &_self,
+                                plane_origin.into_inner(),
+                                plane.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the distance to a plane if the ray intersects it\n Use [`Ray3d::plane_intersection_point`] to get the intersection point directly.",
+            &["_self", "plane_origin", "plane"],
+        )
+        .register_documented(
+            "new",
+            |origin: Val<::bevy_math::Vec3>, direction: Val<::bevy_math::Dir3>| {
+                let output: Val<::bevy_math::Ray3d> = {
+                    {
+                        let output: Val<::bevy_math::Ray3d> = ::bevy_math::Ray3d::new(
+                                origin.into_inner(),
+                                direction.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Ray3d` from a given origin and direction",
+            &["origin", "direction"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Ray3d, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Ray3d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_rot_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1426,7 +1501,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Rot2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Rot2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_dir_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1695,7 +1773,10 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Dir2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Dir2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_dir_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1861,7 +1942,10 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Dir3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Dir3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_dir_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2027,7 +2111,10 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Dir3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Dir3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_rect_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2378,12 +2465,29 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::IRect, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::IRect,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_rect_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::Rect,
     >::new(world)
+        .register_documented(
+            "area",
+            |_self: Ref<::bevy_math::Rect>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::Rect::area(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return the area of this rectangle.\n # Examples\n ```\n # use bevy_math::Rect;\n let r = Rect::new(0., 0., 10., 10.); // w=10 h=10\n assert_eq!(r.area(), 100.0);\n ```",
+            &["_self"],
+        )
         .register_documented(
             "as_irect",
             |_self: Ref<::bevy_math::Rect>| {
@@ -2730,7 +2834,10 @@ pub(crate) fn register_rect_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Rect, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Rect,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_rect_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3081,16 +3188,22 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::URect, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::URect,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_3_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_math::Affine3>::new(
-        world,
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::Affine3,
+    >::new(world);
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Affine3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Affine3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3860,71 +3973,78 @@ pub(crate) fn register_capsule_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Capsule2d,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::Capsule2d>| {
-            let output: Val<::bevy_math::primitives::Capsule2d> = {
-                {
-                    let output: Val<::bevy_math::primitives::Capsule2d> =
-                        <::bevy_math::primitives::Capsule2d as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Capsule2d>| {
+                let output: Val<::bevy_math::primitives::Capsule2d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Capsule2d> = <::bevy_math::primitives::Capsule2d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::Capsule2d>,
-         other: Ref<::bevy_math::primitives::Capsule2d>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::Capsule2d as ::core::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Capsule2d>,
+                other: Ref<::bevy_math::primitives::Capsule2d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Capsule2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Capsule2d,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "new",
-        |radius: f32, length: f32| {
-            let output: Val<::bevy_math::primitives::Capsule2d> = {
-                {
-                    let output: Val<::bevy_math::primitives::Capsule2d> =
-                        ::bevy_math::primitives::Capsule2d::new(radius, length).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new `Capsule2d` from a radius and length",
-        &["radius", "length"],
-    )
-    .register_documented(
-        "to_inner_rectangle",
-        |_self: Ref<::bevy_math::primitives::Capsule2d>| {
-            let output: Val<::bevy_math::primitives::Rectangle> = {
-                {
-                    let output: Val<::bevy_math::primitives::Rectangle> =
-                        ::bevy_math::primitives::Capsule2d::to_inner_rectangle(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the part connecting the semicircular ends of the capsule as a [`Rectangle`]",
-        &["_self"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "new",
+            |radius: f32, length: f32| {
+                let output: Val<::bevy_math::primitives::Capsule2d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Capsule2d> = ::bevy_math::primitives::Capsule2d::new(
+                                radius,
+                                length,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Capsule2d` from a radius and length",
+            &["radius", "length"],
+        )
+        .register_documented(
+            "to_inner_rectangle",
+            |_self: Ref<::bevy_math::primitives::Capsule2d>| {
+                let output: Val<::bevy_math::primitives::Rectangle> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Rectangle> = ::bevy_math::primitives::Capsule2d::to_inner_rectangle(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the part connecting the semicircular ends of the capsule as a [`Rectangle`]",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -4423,12 +4543,12 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |radius: f32, angle: f32| {
+            |radius: f32, half_angle: f32| {
                 let output: Val<::bevy_math::primitives::CircularSegment> = {
                     {
                         let output: Val<::bevy_math::primitives::CircularSegment> = ::bevy_math::primitives::CircularSegment::new(
                                 radius,
-                                angle,
+                                half_angle,
                             )
                             .into();
                         output
@@ -4436,8 +4556,8 @@ pub(crate) fn register_circular_segment_functions(world: &mut World) {
                 };
                 output
             },
-            " Create a new [`CircularSegment`] from a `radius`, and an `angle`",
-            &["radius", "angle"],
+            " Create a new [`CircularSegment`] from a `radius`, and a `half_angle` in radians.",
+            &["radius", "half_angle"],
         )
         .register_documented(
             "radius",
@@ -4637,41 +4757,43 @@ pub(crate) fn register_line_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Line2d,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::Line2d>| {
-            let output: Val<::bevy_math::primitives::Line2d> = {
-                {
-                    let output: Val<::bevy_math::primitives::Line2d> =
-                        <::bevy_math::primitives::Line2d as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Line2d>| {
+                let output: Val<::bevy_math::primitives::Line2d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Line2d> = <::bevy_math::primitives::Line2d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::Line2d>,
-         other: Ref<::bevy_math::primitives::Line2d>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::Line2d as ::core::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Line2d>,
+                other: Ref<::bevy_math::primitives::Line2d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Line2d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Line2d,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -5904,43 +6026,43 @@ pub(crate) fn register_convex_polygon_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::ConvexPolygon,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::ConvexPolygon>| {
-            let output: Val<::bevy_math::primitives::ConvexPolygon> = {
-                {
-                    let output: Val<::bevy_math::primitives::ConvexPolygon> =
-                        <::bevy_math::primitives::ConvexPolygon as ::core::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::ConvexPolygon>,
-         other: Ref<::bevy_math::primitives::ConvexPolygon>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::ConvexPolygon as ::core::cmp::PartialEq<
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::ConvexPolygon>| {
+                let output: Val<::bevy_math::primitives::ConvexPolygon> = {
+                    {
+                        let output: Val<::bevy_math::primitives::ConvexPolygon> = <::bevy_math::primitives::ConvexPolygon as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::ConvexPolygon>,
+                other: Ref<::bevy_math::primitives::ConvexPolygon>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::ConvexPolygon as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::ConvexPolygon,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -6084,245 +6206,6 @@ pub(crate) fn register_polyline_2_d_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_math::primitives::Polyline2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_math::bounding::Aabb3d,
-    >::new(world)
-    .register_documented(
-        "bounding_sphere",
-        |_self: Ref<::bevy_math::bounding::Aabb3d>| {
-            let output: Val<::bevy_math::bounding::BoundingSphere> = {
-                {
-                    let output: Val<::bevy_math::bounding::BoundingSphere> =
-                        ::bevy_math::bounding::Aabb3d::bounding_sphere(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Computes the smallest [`BoundingSphere`] containing this [`Aabb3d`].",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::bounding::Aabb3d>| {
-            let output: Val<::bevy_math::bounding::Aabb3d> = {
-                {
-                    let output: Val<::bevy_math::bounding::Aabb3d> =
-                        <::bevy_math::bounding::Aabb3d as ::core::clone::Clone>::clone(&_self)
-                            .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::bounding::Aabb3d>, other: Ref<::bevy_math::bounding::Aabb3d>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_math::bounding::Aabb3d as ::core::cmp::PartialEq<
-                        ::bevy_math::bounding::Aabb3d,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_math::bounding::Aabb3d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_math::bounding::BoundingSphere,
-    >::new(world)
-    .register_documented(
-        "aabb_3d",
-        |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
-            let output: Val<::bevy_math::bounding::Aabb3d> = {
-                {
-                    let output: Val<::bevy_math::bounding::Aabb3d> =
-                        ::bevy_math::bounding::BoundingSphere::aabb_3d(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Computes the smallest [`Aabb3d`] containing this [`BoundingSphere`].",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
-            let output: Val<::bevy_math::bounding::BoundingSphere> = {
-                {
-                    let output: Val<::bevy_math::bounding::BoundingSphere> =
-                        <::bevy_math::bounding::BoundingSphere as ::core::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::bounding::BoundingSphere>,
-         other: Ref<::bevy_math::bounding::BoundingSphere>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::bounding::BoundingSphere as ::core::cmp::PartialEq<
-                            ::bevy_math::bounding::BoundingSphere,
-                        >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "radius",
-        |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
-            let output: f32 = {
-                {
-                    let output: f32 = ::bevy_math::bounding::BoundingSphere::radius(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the radius of the bounding sphere",
-        &["_self"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_math::bounding::BoundingSphere,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_sphere_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_math::primitives::Sphere,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_math::primitives::Sphere>| {
-                let output: Val<::bevy_math::primitives::Sphere> = {
-                    {
-                        let output: Val<::bevy_math::primitives::Sphere> = <::bevy_math::primitives::Sphere as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "closest_point",
-            |_self: Ref<::bevy_math::primitives::Sphere>, point: Val<::bevy_math::Vec3>| {
-                let output: Val<::bevy_math::Vec3> = {
-                    {
-                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Sphere::closest_point(
-                                &_self,
-                                point.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Finds the point on the sphere that is closest to the given `point`.\n If the point is outside the sphere, the returned point will be on the surface of the sphere.\n Otherwise, it will be inside the sphere and returned as is.",
-            &["_self", "point"],
-        )
-        .register_documented(
-            "diameter",
-            |_self: Ref<::bevy_math::primitives::Sphere>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_math::primitives::Sphere::diameter(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get the diameter of the sphere",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: Ref<::bevy_math::primitives::Sphere>,
-                other: Ref<::bevy_math::primitives::Sphere>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_math::primitives::Sphere as ::core::cmp::PartialEq<
-                            ::bevy_math::primitives::Sphere,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "new",
-            |radius: f32| {
-                let output: Val<::bevy_math::primitives::Sphere> = {
-                    {
-                        let output: Val<::bevy_math::primitives::Sphere> = ::bevy_math::primitives::Sphere::new(
-                                radius,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new [`Sphere`] from a `radius`",
-            &["radius"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_math::primitives::Sphere,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -6481,104 +6364,366 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::bounding::Aabb3d,
+    >::new(world)
+        .register_documented(
+            "bounding_sphere",
+            |_self: Ref<::bevy_math::bounding::Aabb3d>| {
+                let output: Val<::bevy_math::bounding::BoundingSphere> = {
+                    {
+                        let output: Val<::bevy_math::bounding::BoundingSphere> = ::bevy_math::bounding::Aabb3d::bounding_sphere(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the smallest [`BoundingSphere`] containing this [`Aabb3d`].",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::bounding::Aabb3d>| {
+                let output: Val<::bevy_math::bounding::Aabb3d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::Aabb3d> = <::bevy_math::bounding::Aabb3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::bounding::Aabb3d>,
+                other: Ref<::bevy_math::bounding::Aabb3d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::bounding::Aabb3d as ::core::cmp::PartialEq<
+                            ::bevy_math::bounding::Aabb3d,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::bounding::Aabb3d,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::bounding::BoundingSphere,
+    >::new(world)
+        .register_documented(
+            "aabb_3d",
+            |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
+                let output: Val<::bevy_math::bounding::Aabb3d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::Aabb3d> = ::bevy_math::bounding::BoundingSphere::aabb_3d(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the smallest [`Aabb3d`] containing this [`BoundingSphere`].",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
+                let output: Val<::bevy_math::bounding::BoundingSphere> = {
+                    {
+                        let output: Val<::bevy_math::bounding::BoundingSphere> = <::bevy_math::bounding::BoundingSphere as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::bounding::BoundingSphere>,
+                other: Ref<::bevy_math::bounding::BoundingSphere>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::bounding::BoundingSphere as ::core::cmp::PartialEq<
+                            ::bevy_math::bounding::BoundingSphere,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "radius",
+            |_self: Ref<::bevy_math::bounding::BoundingSphere>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::bounding::BoundingSphere::radius(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the radius of the bounding sphere",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::bounding::BoundingSphere,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_sphere_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_math::primitives::Sphere,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Sphere>| {
+                let output: Val<::bevy_math::primitives::Sphere> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Sphere> = <::bevy_math::primitives::Sphere as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "closest_point",
+            |_self: Ref<::bevy_math::primitives::Sphere>, point: Val<::bevy_math::Vec3>| {
+                let output: Val<::bevy_math::Vec3> = {
+                    {
+                        let output: Val<::bevy_math::Vec3> = ::bevy_math::primitives::Sphere::closest_point(
+                                &_self,
+                                point.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Finds the point on the sphere that is closest to the given `point`.\n If the point is outside the sphere, the returned point will be on the surface of the sphere.\n Otherwise, it will be inside the sphere and returned as is.",
+            &["_self", "point"],
+        )
+        .register_documented(
+            "diameter",
+            |_self: Ref<::bevy_math::primitives::Sphere>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::Sphere::diameter(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the diameter of the sphere",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Sphere>,
+                other: Ref<::bevy_math::primitives::Sphere>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Sphere as ::core::cmp::PartialEq<
+                            ::bevy_math::primitives::Sphere,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "new",
+            |radius: f32| {
+                let output: Val<::bevy_math::primitives::Sphere> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Sphere> = ::bevy_math::primitives::Sphere::new(
+                                radius,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new [`Sphere`] from a `radius`",
+            &["radius"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_math::primitives::Sphere,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_cylinder_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Cylinder,
     >::new(world)
-    .register_documented(
-        "base",
-        |_self: Ref<::bevy_math::primitives::Cylinder>| {
-            let output: Val<::bevy_math::primitives::Circle> = {
-                {
-                    let output: Val<::bevy_math::primitives::Circle> =
-                        ::bevy_math::primitives::Cylinder::base(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the base of the cylinder as a [`Circle`]",
-        &["_self"],
-    )
-    .register_documented(
-        "base_area",
-        |_self: Ref<::bevy_math::primitives::Cylinder>| {
-            let output: f32 = {
-                {
-                    let output: f32 = ::bevy_math::primitives::Cylinder::base_area(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the surface area of one base of the cylinder",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::Cylinder>| {
-            let output: Val<::bevy_math::primitives::Cylinder> = {
-                {
-                    let output: Val<::bevy_math::primitives::Cylinder> =
-                        <::bevy_math::primitives::Cylinder as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "base",
+            |_self: Ref<::bevy_math::primitives::Cylinder>| {
+                let output: Val<::bevy_math::primitives::Circle> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::Cylinder::base(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::Cylinder>,
-         other: Ref<::bevy_math::primitives::Cylinder>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::Cylinder as ::core::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            " Get the base of the cylinder as a [`Circle`]",
+            &["_self"],
+        )
+        .register_documented(
+            "base_area",
+            |_self: Ref<::bevy_math::primitives::Cylinder>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::Cylinder::base_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of one base of the cylinder",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Cylinder>| {
+                let output: Val<::bevy_math::primitives::Cylinder> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cylinder> = <::bevy_math::primitives::Cylinder as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Cylinder>,
+                other: Ref<::bevy_math::primitives::Cylinder>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Cylinder as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Cylinder,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "lateral_area",
-        |_self: Ref<::bevy_math::primitives::Cylinder>| {
-            let output: f32 = {
-                {
-                    let output: f32 =
-                        ::bevy_math::primitives::Cylinder::lateral_area(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the surface area of the side of the cylinder,\n also known as the lateral area",
-        &["_self"],
-    )
-    .register_documented(
-        "new",
-        |radius: f32, height: f32| {
-            let output: Val<::bevy_math::primitives::Cylinder> = {
-                {
-                    let output: Val<::bevy_math::primitives::Cylinder> =
-                        ::bevy_math::primitives::Cylinder::new(radius, height).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new `Cylinder` from a radius and full height",
-        &["radius", "height"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "lateral_area",
+            |_self: Ref<::bevy_math::primitives::Cylinder>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::Cylinder::lateral_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of the side of the cylinder,\n also known as the lateral area",
+            &["_self"],
+        )
+        .register_documented(
+            "new",
+            |radius: f32, height: f32| {
+                let output: Val<::bevy_math::primitives::Cylinder> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cylinder> = ::bevy_math::primitives::Cylinder::new(
+                                radius,
+                                height,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Cylinder` from a radius and full height",
+            &["radius", "height"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -6591,71 +6736,78 @@ pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Capsule3d,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::Capsule3d>| {
-            let output: Val<::bevy_math::primitives::Capsule3d> = {
-                {
-                    let output: Val<::bevy_math::primitives::Capsule3d> =
-                        <::bevy_math::primitives::Capsule3d as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Capsule3d>| {
+                let output: Val<::bevy_math::primitives::Capsule3d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Capsule3d> = <::bevy_math::primitives::Capsule3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::Capsule3d>,
-         other: Ref<::bevy_math::primitives::Capsule3d>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::Capsule3d as ::core::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Capsule3d>,
+                other: Ref<::bevy_math::primitives::Capsule3d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Capsule3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Capsule3d,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "new",
-        |radius: f32, length: f32| {
-            let output: Val<::bevy_math::primitives::Capsule3d> = {
-                {
-                    let output: Val<::bevy_math::primitives::Capsule3d> =
-                        ::bevy_math::primitives::Capsule3d::new(radius, length).into();
-                    output
-                }
-            };
-            output
-        },
-        " Create a new `Capsule3d` from a radius and length",
-        &["radius", "length"],
-    )
-    .register_documented(
-        "to_cylinder",
-        |_self: Ref<::bevy_math::primitives::Capsule3d>| {
-            let output: Val<::bevy_math::primitives::Cylinder> = {
-                {
-                    let output: Val<::bevy_math::primitives::Cylinder> =
-                        ::bevy_math::primitives::Capsule3d::to_cylinder(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the part connecting the hemispherical ends\n of the capsule as a [`Cylinder`]",
-        &["_self"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "new",
+            |radius: f32, length: f32| {
+                let output: Val<::bevy_math::primitives::Capsule3d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Capsule3d> = ::bevy_math::primitives::Capsule3d::new(
+                                radius,
+                                length,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new `Capsule3d` from a radius and length",
+            &["radius", "length"],
+        )
+        .register_documented(
+            "to_cylinder",
+            |_self: Ref<::bevy_math::primitives::Capsule3d>| {
+                let output: Val<::bevy_math::primitives::Cylinder> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Cylinder> = ::bevy_math::primitives::Capsule3d::to_cylinder(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the part connecting the hemispherical ends\n of the capsule as a [`Cylinder`]",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -6803,43 +6955,145 @@ pub(crate) fn register_conical_frustum_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::ConicalFrustum,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
-            let output: Val<::bevy_math::primitives::ConicalFrustum> = {
-                {
-                    let output: Val<::bevy_math::primitives::ConicalFrustum> =
-                        <::bevy_math::primitives::ConicalFrustum as ::core::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::ConicalFrustum>,
-         other: Ref<::bevy_math::primitives::ConicalFrustum>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::ConicalFrustum as ::core::cmp::PartialEq<
+        .register_documented(
+            "bottom_base",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: Val<::bevy_math::primitives::Circle> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::ConicalFrustum::bottom_base(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the bottom base of the conical frustum as a [`Circle`]",
+            &["_self"],
+        )
+        .register_documented(
+            "bottom_base_area",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::bottom_base_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of the bottom base of the conical frustum",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: Val<::bevy_math::primitives::ConicalFrustum> = {
+                    {
+                        let output: Val<::bevy_math::primitives::ConicalFrustum> = <::bevy_math::primitives::ConicalFrustum as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::ConicalFrustum>,
+                other: Ref<::bevy_math::primitives::ConicalFrustum>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::ConicalFrustum as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::ConicalFrustum,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "lateral_area",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::lateral_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of the side of the conical frustum,\n also known as the lateral area",
+            &["_self"],
+        )
+        .register_documented(
+            "slant_height",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::slant_height(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the slant height of the conical frustum, the length of the line segment\n connecting a point on the base to the closest point on the top",
+            &["_self"],
+        )
+        .register_documented(
+            "top_base",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: Val<::bevy_math::primitives::Circle> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Circle> = ::bevy_math::primitives::ConicalFrustum::top_base(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the top base of the conical frustum as a [`Circle`]",
+            &["_self"],
+        )
+        .register_documented(
+            "top_base_area",
+            |_self: Ref<::bevy_math::primitives::ConicalFrustum>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_math::primitives::ConicalFrustum::top_base_area(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the surface area of the top base of the conical frustum",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -6943,41 +7197,43 @@ pub(crate) fn register_line_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::primitives::Line3d,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::primitives::Line3d>| {
-            let output: Val<::bevy_math::primitives::Line3d> = {
-                {
-                    let output: Val<::bevy_math::primitives::Line3d> =
-                        <::bevy_math::primitives::Line3d as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::primitives::Line3d>| {
+                let output: Val<::bevy_math::primitives::Line3d> = {
+                    {
+                        let output: Val<::bevy_math::primitives::Line3d> = <::bevy_math::primitives::Line3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::primitives::Line3d>,
-         other: Ref<::bevy_math::primitives::Line3d>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::primitives::Line3d as ::core::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::primitives::Line3d>,
+                other: Ref<::bevy_math::primitives::Line3d>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::primitives::Line3d as ::core::cmp::PartialEq<
                             ::bevy_math::primitives::Line3d,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -7769,105 +8025,123 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::RayCast2d,
     >::new(world)
-    .register_documented(
-        "aabb_intersection_at",
-        |_self: Ref<::bevy_math::bounding::RayCast2d>, aabb: Ref<::bevy_math::bounding::Aabb2d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> =
-                        ::bevy_math::bounding::RayCast2d::aabb_intersection_at(&_self, &aabb)
+        .register_documented(
+            "aabb_intersection_at",
+            |
+                _self: Ref<::bevy_math::bounding::RayCast2d>,
+                aabb: Ref<::bevy_math::bounding::Aabb2d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast2d::aabb_intersection_at(
+                                &_self,
+                                &aabb,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance of an intersection with an [`Aabb2d`], if any.",
-        &["_self", "aabb"],
-    )
-    .register_documented(
-        "circle_intersection_at",
-        |_self: Ref<::bevy_math::bounding::RayCast2d>,
-         circle: Ref<::bevy_math::bounding::BoundingCircle>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> =
-                        ::bevy_math::bounding::RayCast2d::circle_intersection_at(&_self, &circle)
+                        output
+                    }
+                };
+                output
+            },
+            " Get the distance of an intersection with an [`Aabb2d`], if any.",
+            &["_self", "aabb"],
+        )
+        .register_documented(
+            "circle_intersection_at",
+            |
+                _self: Ref<::bevy_math::bounding::RayCast2d>,
+                circle: Ref<::bevy_math::bounding::BoundingCircle>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast2d::circle_intersection_at(
+                                &_self,
+                                &circle,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance of an intersection with a [`BoundingCircle`], if any.",
-        &["_self", "circle"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::bounding::RayCast2d>| {
-            let output: Val<::bevy_math::bounding::RayCast2d> = {
-                {
-                    let output: Val<::bevy_math::bounding::RayCast2d> =
-                        <::bevy_math::bounding::RayCast2d as ::core::clone::Clone>::clone(&_self)
+                        output
+                    }
+                };
+                output
+            },
+            " Get the distance of an intersection with a [`BoundingCircle`], if any.",
+            &["_self", "circle"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::bounding::RayCast2d>| {
+                let output: Val<::bevy_math::bounding::RayCast2d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::RayCast2d> = <::bevy_math::bounding::RayCast2d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "direction_recip",
-        |_self: Ref<::bevy_math::bounding::RayCast2d>| {
-            let output: Val<::bevy_math::Vec2> = {
-                {
-                    let output: Val<::bevy_math::Vec2> =
-                        ::bevy_math::bounding::RayCast2d::direction_recip(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the cached multiplicative inverse of the direction of the ray.",
-        &["_self"],
-    )
-    .register_documented(
-        "from_ray",
-        |ray: Val<::bevy_math::Ray2d>, max: f32| {
-            let output: Val<::bevy_math::bounding::RayCast2d> = {
-                {
-                    let output: Val<::bevy_math::bounding::RayCast2d> =
-                        ::bevy_math::bounding::RayCast2d::from_ray(ray.into_inner(), max).into();
-                    output
-                }
-            };
-            output
-        },
-        " Construct a [`RayCast2d`] from a [`Ray2d`] and max distance.",
-        &["ray", "max"],
-    )
-    .register_documented(
-        "new",
-        |origin: Val<::bevy_math::Vec2>, direction: Val<::bevy_math::Dir2>, max: f32| {
-            let output: Val<::bevy_math::bounding::RayCast2d> = {
-                {
-                    let output: Val<::bevy_math::bounding::RayCast2d> =
-                        ::bevy_math::bounding::RayCast2d::new(
-                            origin.into_inner(),
-                            direction.into_inner(),
-                            max,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Construct a [`RayCast2d`] from an origin, [`Dir2`], and max distance.",
-        &["origin", "direction", "max"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "direction_recip",
+            |_self: Ref<::bevy_math::bounding::RayCast2d>| {
+                let output: Val<::bevy_math::Vec2> = {
+                    {
+                        let output: Val<::bevy_math::Vec2> = ::bevy_math::bounding::RayCast2d::direction_recip(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the cached multiplicative inverse of the direction of the ray.",
+            &["_self"],
+        )
+        .register_documented(
+            "from_ray",
+            |ray: Val<::bevy_math::Ray2d>, max: f32| {
+                let output: Val<::bevy_math::bounding::RayCast2d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::RayCast2d> = ::bevy_math::bounding::RayCast2d::from_ray(
+                                ray.into_inner(),
+                                max,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a [`RayCast2d`] from a [`Ray2d`] and max distance.",
+            &["ray", "max"],
+        )
+        .register_documented(
+            "new",
+            |
+                origin: Val<::bevy_math::Vec2>,
+                direction: Val<::bevy_math::Dir2>,
+                max: f32|
+            {
+                let output: Val<::bevy_math::bounding::RayCast2d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::RayCast2d> = ::bevy_math::bounding::RayCast2d::new(
+                                origin.into_inner(),
+                                direction.into_inner(),
+                                max,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a [`RayCast2d`] from an origin, [`Dir2`], and max distance.",
+            &["origin", "direction", "max"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -7880,86 +8154,92 @@ pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::AabbCast2d,
     >::new(world)
-    .register_documented(
-        "aabb_collision_at",
-        |_self: Ref<::bevy_math::bounding::AabbCast2d>,
-         aabb: Val<::bevy_math::bounding::Aabb2d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> =
-                        ::bevy_math::bounding::AabbCast2d::aabb_collision_at(
-                            &_self,
-                            aabb.into_inner(),
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance at which the [`Aabb2d`]s collide, if at all.",
-        &["_self", "aabb"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::bounding::AabbCast2d>| {
-            let output: Val<::bevy_math::bounding::AabbCast2d> = {
-                {
-                    let output: Val<::bevy_math::bounding::AabbCast2d> =
-                        <::bevy_math::bounding::AabbCast2d as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "aabb_collision_at",
+            |
+                _self: Ref<::bevy_math::bounding::AabbCast2d>,
+                aabb: Val<::bevy_math::bounding::Aabb2d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::bounding::AabbCast2d::aabb_collision_at(
+                                &_self,
+                                aabb.into_inner(),
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "from_ray",
-        |aabb: Val<::bevy_math::bounding::Aabb2d>, ray: Val<::bevy_math::Ray2d>, max: f32| {
-            let output: Val<::bevy_math::bounding::AabbCast2d> = {
-                {
-                    let output: Val<::bevy_math::bounding::AabbCast2d> =
-                        ::bevy_math::bounding::AabbCast2d::from_ray(
-                            aabb.into_inner(),
-                            ray.into_inner(),
-                            max,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Construct an [`AabbCast2d`] from an [`Aabb2d`], [`Ray2d`], and max distance.",
-        &["aabb", "ray", "max"],
-    )
-    .register_documented(
-        "new",
-        |aabb: Val<::bevy_math::bounding::Aabb2d>,
-         origin: Val<::bevy_math::Vec2>,
-         direction: Val<::bevy_math::Dir2>,
-         max: f32| {
-            let output: Val<::bevy_math::bounding::AabbCast2d> = {
-                {
-                    let output: Val<::bevy_math::bounding::AabbCast2d> =
-                        ::bevy_math::bounding::AabbCast2d::new(
-                            aabb.into_inner(),
-                            origin.into_inner(),
-                            direction.into_inner(),
-                            max,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Construct an [`AabbCast2d`] from an [`Aabb2d`], origin, [`Dir2`], and max distance.",
-        &["aabb", "origin", "direction", "max"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            " Get the distance at which the [`Aabb2d`]s collide, if at all.",
+            &["_self", "aabb"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::bounding::AabbCast2d>| {
+                let output: Val<::bevy_math::bounding::AabbCast2d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::AabbCast2d> = <::bevy_math::bounding::AabbCast2d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "from_ray",
+            |
+                aabb: Val<::bevy_math::bounding::Aabb2d>,
+                ray: Val<::bevy_math::Ray2d>,
+                max: f32|
+            {
+                let output: Val<::bevy_math::bounding::AabbCast2d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::AabbCast2d> = ::bevy_math::bounding::AabbCast2d::from_ray(
+                                aabb.into_inner(),
+                                ray.into_inner(),
+                                max,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct an [`AabbCast2d`] from an [`Aabb2d`], [`Ray2d`], and max distance.",
+            &["aabb", "ray", "max"],
+        )
+        .register_documented(
+            "new",
+            |
+                aabb: Val<::bevy_math::bounding::Aabb2d>,
+                origin: Val<::bevy_math::Vec2>,
+                direction: Val<::bevy_math::Dir2>,
+                max: f32|
+            {
+                let output: Val<::bevy_math::bounding::AabbCast2d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::AabbCast2d> = ::bevy_math::bounding::AabbCast2d::new(
+                                aabb.into_inner(),
+                                origin.into_inner(),
+                                direction.into_inner(),
+                                max,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct an [`AabbCast2d`] from an [`Aabb2d`], origin, [`Dir2`], and max distance.",
+            &["aabb", "origin", "direction", "max"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -8070,85 +8350,100 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::RayCast3d,
     >::new(world)
-    .register_documented(
-        "aabb_intersection_at",
-        |_self: Ref<::bevy_math::bounding::RayCast3d>, aabb: Ref<::bevy_math::bounding::Aabb3d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> =
-                        ::bevy_math::bounding::RayCast3d::aabb_intersection_at(&_self, &aabb)
+        .register_documented(
+            "aabb_intersection_at",
+            |
+                _self: Ref<::bevy_math::bounding::RayCast3d>,
+                aabb: Ref<::bevy_math::bounding::Aabb3d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast3d::aabb_intersection_at(
+                                &_self,
+                                &aabb,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance of an intersection with an [`Aabb3d`], if any.",
-        &["_self", "aabb"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::bounding::RayCast3d>| {
-            let output: Val<::bevy_math::bounding::RayCast3d> = {
-                {
-                    let output: Val<::bevy_math::bounding::RayCast3d> =
-                        <::bevy_math::bounding::RayCast3d as ::core::clone::Clone>::clone(&_self)
+                        output
+                    }
+                };
+                output
+            },
+            " Get the distance of an intersection with an [`Aabb3d`], if any.",
+            &["_self", "aabb"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::bounding::RayCast3d>| {
+                let output: Val<::bevy_math::bounding::RayCast3d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::RayCast3d> = <::bevy_math::bounding::RayCast3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "direction_recip",
-        |_self: Ref<::bevy_math::bounding::RayCast3d>| {
-            let output: Val<::bevy_math::Vec3A> = {
-                {
-                    let output: Val<::bevy_math::Vec3A> =
-                        ::bevy_math::bounding::RayCast3d::direction_recip(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the cached multiplicative inverse of the direction of the ray.",
-        &["_self"],
-    )
-    .register_documented(
-        "from_ray",
-        |ray: Val<::bevy_math::Ray3d>, max: f32| {
-            let output: Val<::bevy_math::bounding::RayCast3d> = {
-                {
-                    let output: Val<::bevy_math::bounding::RayCast3d> =
-                        ::bevy_math::bounding::RayCast3d::from_ray(ray.into_inner(), max).into();
-                    output
-                }
-            };
-            output
-        },
-        " Construct a [`RayCast3d`] from a [`Ray3d`] and max distance.",
-        &["ray", "max"],
-    )
-    .register_documented(
-        "sphere_intersection_at",
-        |_self: Ref<::bevy_math::bounding::RayCast3d>,
-         sphere: Ref<::bevy_math::bounding::BoundingSphere>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> =
-                        ::bevy_math::bounding::RayCast3d::sphere_intersection_at(&_self, &sphere)
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "direction_recip",
+            |_self: Ref<::bevy_math::bounding::RayCast3d>| {
+                let output: Val<::bevy_math::Vec3A> = {
+                    {
+                        let output: Val<::bevy_math::Vec3A> = ::bevy_math::bounding::RayCast3d::direction_recip(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance of an intersection with a [`BoundingSphere`], if any.",
-        &["_self", "sphere"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            " Get the cached multiplicative inverse of the direction of the ray.",
+            &["_self"],
+        )
+        .register_documented(
+            "from_ray",
+            |ray: Val<::bevy_math::Ray3d>, max: f32| {
+                let output: Val<::bevy_math::bounding::RayCast3d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::RayCast3d> = ::bevy_math::bounding::RayCast3d::from_ray(
+                                ray.into_inner(),
+                                max,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a [`RayCast3d`] from a [`Ray3d`] and max distance.",
+            &["ray", "max"],
+        )
+        .register_documented(
+            "sphere_intersection_at",
+            |
+                _self: Ref<::bevy_math::bounding::RayCast3d>,
+                sphere: Ref<::bevy_math::bounding::BoundingSphere>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::bounding::RayCast3d::sphere_intersection_at(
+                                &_self,
+                                &sphere,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the distance of an intersection with a [`BoundingSphere`], if any.",
+            &["_self", "sphere"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -8161,62 +8456,67 @@ pub(crate) fn register_aabb_cast_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::bounding::AabbCast3d,
     >::new(world)
-    .register_documented(
-        "aabb_collision_at",
-        |_self: Ref<::bevy_math::bounding::AabbCast3d>,
-         aabb: Val<::bevy_math::bounding::Aabb3d>| {
-            let output: ::core::option::Option<f32> = {
-                {
-                    let output: ::core::option::Option<f32> =
-                        ::bevy_math::bounding::AabbCast3d::aabb_collision_at(
-                            &_self,
-                            aabb.into_inner(),
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the distance at which the [`Aabb3d`]s collide, if at all.",
-        &["_self", "aabb"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::bounding::AabbCast3d>| {
-            let output: Val<::bevy_math::bounding::AabbCast3d> = {
-                {
-                    let output: Val<::bevy_math::bounding::AabbCast3d> =
-                        <::bevy_math::bounding::AabbCast3d as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "aabb_collision_at",
+            |
+                _self: Ref<::bevy_math::bounding::AabbCast3d>,
+                aabb: Val<::bevy_math::bounding::Aabb3d>|
+            {
+                let output: ::core::option::Option<f32> = {
+                    {
+                        let output: ::core::option::Option<f32> = ::bevy_math::bounding::AabbCast3d::aabb_collision_at(
+                                &_self,
+                                aabb.into_inner(),
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "from_ray",
-        |aabb: Val<::bevy_math::bounding::Aabb3d>, ray: Val<::bevy_math::Ray3d>, max: f32| {
-            let output: Val<::bevy_math::bounding::AabbCast3d> = {
-                {
-                    let output: Val<::bevy_math::bounding::AabbCast3d> =
-                        ::bevy_math::bounding::AabbCast3d::from_ray(
-                            aabb.into_inner(),
-                            ray.into_inner(),
-                            max,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        " Construct an [`AabbCast3d`] from an [`Aabb3d`], [`Ray3d`], and max distance.",
-        &["aabb", "ray", "max"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            " Get the distance at which the [`Aabb3d`]s collide, if at all.",
+            &["_self", "aabb"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::bounding::AabbCast3d>| {
+                let output: Val<::bevy_math::bounding::AabbCast3d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::AabbCast3d> = <::bevy_math::bounding::AabbCast3d as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "from_ray",
+            |
+                aabb: Val<::bevy_math::bounding::Aabb3d>,
+                ray: Val<::bevy_math::Ray3d>,
+                max: f32|
+            {
+                let output: Val<::bevy_math::bounding::AabbCast3d> = {
+                    {
+                        let output: Val<::bevy_math::bounding::AabbCast3d> = ::bevy_math::bounding::AabbCast3d::from_ray(
+                                aabb.into_inner(),
+                                ray.into_inner(),
+                                max,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct an [`AabbCast3d`] from an [`Aabb3d`], [`Ray3d`], and max distance.",
+            &["aabb", "ray", "max"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -8652,7 +8952,10 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::Dir4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_math::Dir4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_float_ord_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -8780,8 +9083,10 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_math::FloatOrd, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::bevy_math::FloatOrd,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_plane_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -8962,41 +9267,43 @@ pub(crate) fn register_ease_function_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::curve::EaseFunction,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_math::curve::EaseFunction>| {
-            let output: Val<::bevy_math::curve::EaseFunction> = {
-                {
-                    let output: Val<::bevy_math::curve::EaseFunction> =
-                        <::bevy_math::curve::EaseFunction as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_math::curve::EaseFunction>| {
+                let output: Val<::bevy_math::curve::EaseFunction> = {
+                    {
+                        let output: Val<::bevy_math::curve::EaseFunction> = <::bevy_math::curve::EaseFunction as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_math::curve::EaseFunction>,
-         other: Ref<::bevy_math::curve::EaseFunction>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_math::curve::EaseFunction as ::core::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_math::curve::EaseFunction>,
+                other: Ref<::bevy_math::curve::EaseFunction>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_math::curve::EaseFunction as ::core::cmp::PartialEq<
                             ::bevy_math::curve::EaseFunction,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -9108,10 +9415,10 @@ impl Plugin for BevyMathScriptingPlugin {
         register_convex_polygon_functions(&mut world);
         register_polygon_functions(&mut world);
         register_polyline_2_d_functions(&mut world);
+        register_cuboid_functions(&mut world);
         register_aabb_3_d_functions(&mut world);
         register_bounding_sphere_functions(&mut world);
         register_sphere_functions(&mut world);
-        register_cuboid_functions(&mut world);
         register_cylinder_functions(&mut world);
         register_capsule_3_d_functions(&mut world);
         register_cone_functions(&mut world);

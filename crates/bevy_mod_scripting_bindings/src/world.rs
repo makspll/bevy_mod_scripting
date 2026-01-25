@@ -598,7 +598,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// checks if a given entity exists and is valid
     pub fn is_valid_entity(&self, entity: Entity) -> Result<bool, InteropError> {
         let cell = self.as_unsafe_world_cell()?;
-        Ok(cell.get_entity(entity).is_ok() && entity.index() != 0)
+        Ok(cell.get_entity(entity).is_ok() && entity.index().index() != 0)
     }
 
     /// Tries to call a fitting overload of the function with the given name and in the type id's namespace based on the arguments provided.
@@ -1267,7 +1267,7 @@ impl WorldAccessGuard<'_> {
         self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
-            commands.entity(parent).remove_children(children);
+            commands.entity(parent).detach_children(children);
             queue.apply(world);
         })
     }

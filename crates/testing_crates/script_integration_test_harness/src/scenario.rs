@@ -636,13 +636,12 @@ impl ScenarioStep {
                                 "Callback '{label}' for attachment: '{script}' succeeded, with value: {val:?}"
                             );
 
-                            if let Some(expected_string) = expect_string_value.as_ref() {
-                                if ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
-                                {
-                                    return Err(anyhow!(
-                                        "Callback '{label}' for attachment: '{script}' expected: {expected_string}, but got: {val:#?}",
-                                    ));
-                                }
+                            if let Some(expected_string) = expect_string_value.as_ref()
+                                && ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
+                            {
+                                return Err(anyhow!(
+                                    "Callback '{label}' for attachment: '{script}' expected: {expected_string}, but got: {val:#?}",
+                                ));
                             }
                         }
                         Err(e) => {

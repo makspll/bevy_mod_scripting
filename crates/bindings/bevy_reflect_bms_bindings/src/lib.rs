@@ -3161,6 +3161,23 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "exp2",
+            |_self: Val<::glam::Vec3>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::exp2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `2^self` for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "extend",
             |_self: Val<::glam::Vec3>, w: f32| {
                 let output: Val<::glam::Vec4> = {
@@ -3243,6 +3260,23 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             },
             " Creates a new vector from an array.",
             &["a"],
+        )
+        .register_documented(
+            "from_homogeneous",
+            |v: Val<::glam::Vec4>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::from_homogeneous(
+                                v.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Projects a homogeneous coordinate to 3D space by performing perspective divide.\n # Panics\n Will panic if `v.w` is `0` when `glam_assert` is enabled.",
+            &["v"],
         )
         .register_documented(
             "is_finite",
@@ -3407,6 +3441,40 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             },
             " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "ln",
+            |_self: Val<::glam::Vec3>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::ln(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the natural logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
+        )
+        .register_documented(
+            "log2",
+            |_self: Val<::glam::Vec3>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec3::log2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the base 2 logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
         )
         .register_documented(
             "max",
@@ -4157,6 +4225,23 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 output
             },
             " Converts `self` to `[x, y, z]`",
+            &["_self"],
+        )
+        .register_documented(
+            "to_homogeneous",
+            |_self: Val<::glam::Vec3>| {
+                let output: Val<::glam::Vec4> = {
+                    {
+                        let output: Val<::glam::Vec4> = ::glam::Vec3::to_homogeneous(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a homogeneous coordinate from `self`, equivalent to `self.extend(1.0)`.",
             &["_self"],
         )
         .register_documented(
@@ -35693,6 +35778,23 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "exp2",
+            |_self: Val<::glam::Vec2>| {
+                let output: Val<::glam::Vec2> = {
+                    {
+                        let output: Val<::glam::Vec2> = ::glam::Vec2::exp2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `2^self` for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "extend",
             |_self: Val<::glam::Vec2>, z: f32| {
                 let output: Val<::glam::Vec3> = {
@@ -35954,6 +36056,40 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             },
             " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "ln",
+            |_self: Val<::glam::Vec2>| {
+                let output: Val<::glam::Vec2> = {
+                    {
+                        let output: Val<::glam::Vec2> = ::glam::Vec2::ln(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the natural logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
+        )
+        .register_documented(
+            "log2",
+            |_self: Val<::glam::Vec2>| {
+                let output: Val<::glam::Vec2> = {
+                    {
+                        let output: Val<::glam::Vec2> = ::glam::Vec2::log2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the base 2 logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
         )
         .register_documented(
             "max",
@@ -37492,6 +37628,23 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "exp2",
+            |_self: Val<::glam::Vec3A>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::exp2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `2^self` for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "extend",
             |_self: Val<::glam::Vec3A>, w: f32| {
                 let output: Val<::glam::Vec4> = {
@@ -37574,6 +37727,23 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             },
             " Creates a new vector from an array.",
             &["a"],
+        )
+        .register_documented(
+            "from_homogeneous",
+            |v: Val<::glam::Vec4>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::from_homogeneous(
+                                v.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Projects a homogeneous coordinate to 3D space by performing perspective divide.\n # Panics\n Will panic if `v.w` is `0` when `glam_assert` is enabled.",
+            &["v"],
         )
         .register_documented(
             "from_vec4",
@@ -37755,6 +37925,40 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             },
             " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "ln",
+            |_self: Val<::glam::Vec3A>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::ln(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the natural logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
+        )
+        .register_documented(
+            "log2",
+            |_self: Val<::glam::Vec3A>| {
+                let output: Val<::glam::Vec3A> = {
+                    {
+                        let output: Val<::glam::Vec3A> = ::glam::Vec3A::log2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the base 2 logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
         )
         .register_documented(
             "max",
@@ -38505,6 +38709,23 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 output
             },
             " Converts `self` to `[x, y, z]`",
+            &["_self"],
+        )
+        .register_documented(
+            "to_homogeneous",
+            |_self: Val<::glam::Vec3A>| {
+                let output: Val<::glam::Vec4> = {
+                    {
+                        let output: Val<::glam::Vec4> = ::glam::Vec3A::to_homogeneous(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a homogeneous coordinate from `self`, equivalent to `self.extend(1.0)`.",
             &["_self"],
         )
         .register_documented(
@@ -39292,6 +39513,23 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "exp2",
+            |_self: Val<::glam::Vec4>| {
+                let output: Val<::glam::Vec4> = {
+                    {
+                        let output: Val<::glam::Vec4> = ::glam::Vec4::exp2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `2^self` for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "floor",
             |_self: Val<::glam::Vec4>| {
                 let output: Val<::glam::Vec4> = {
@@ -39520,6 +39758,40 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             },
             " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "ln",
+            |_self: Val<::glam::Vec4>| {
+                let output: Val<::glam::Vec4> = {
+                    {
+                        let output: Val<::glam::Vec4> = ::glam::Vec4::ln(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the natural logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
+        )
+        .register_documented(
+            "log2",
+            |_self: Val<::glam::Vec4>| {
+                let output: Val<::glam::Vec4> = {
+                    {
+                        let output: Val<::glam::Vec4> = ::glam::Vec4::log2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the base 2 logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
         )
         .register_documented(
             "max",
@@ -39829,6 +40101,23 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             },
             " Returns a vector containing each element of `self` raised to the power of `n`.",
             &["_self", "n"],
+        )
+        .register_documented(
+            "project",
+            |_self: Val<::glam::Vec4>| {
+                let output: Val<::glam::Vec3> = {
+                    {
+                        let output: Val<::glam::Vec3> = ::glam::Vec4::project(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Projects a homogeneous coordinate to 3D space by performing perspective divide.\n To project to [`Vec3A`] use [`Vec3A::from_homogeneous()`].\n # Panics\n Will panic if `self.w` is `0` when `glam_assert` is enabled.",
+            &["_self"],
         )
         .register_documented(
             "project_onto",
@@ -41515,6 +41804,23 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "exp2",
+            |_self: Val<::glam::DVec2>| {
+                let output: Val<::glam::DVec2> = {
+                    {
+                        let output: Val<::glam::DVec2> = ::glam::DVec2::exp2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `2^self` for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "extend",
             |_self: Val<::glam::DVec2>, z: f64| {
                 let output: Val<::glam::DVec3> = {
@@ -41776,6 +42082,40 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             },
             " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "ln",
+            |_self: Val<::glam::DVec2>| {
+                let output: Val<::glam::DVec2> = {
+                    {
+                        let output: Val<::glam::DVec2> = ::glam::DVec2::ln(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the natural logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
+        )
+        .register_documented(
+            "log2",
+            |_self: Val<::glam::DVec2>| {
+                let output: Val<::glam::DVec2> = {
+                    {
+                        let output: Val<::glam::DVec2> = ::glam::DVec2::log2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the base 2 logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
         )
         .register_documented(
             "max",
@@ -43329,6 +43669,23 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "exp2",
+            |_self: Val<::glam::DVec3>| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::exp2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `2^self` for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "extend",
             |_self: Val<::glam::DVec3>, w: f64| {
                 let output: Val<::glam::DVec4> = {
@@ -43411,6 +43768,23 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             },
             " Creates a new vector from an array.",
             &["a"],
+        )
+        .register_documented(
+            "from_homogeneous",
+            |v: Val<::glam::DVec4>| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::from_homogeneous(
+                                v.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Projects a homogeneous coordinate to 3D space by performing perspective divide.\n # Panics\n Will panic if `v.w` is `0` when `glam_assert` is enabled.",
+            &["v"],
         )
         .register_documented(
             "is_finite",
@@ -43575,6 +43949,40 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             },
             " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "ln",
+            |_self: Val<::glam::DVec3>| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::ln(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the natural logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
+        )
+        .register_documented(
+            "log2",
+            |_self: Val<::glam::DVec3>| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec3::log2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the base 2 logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
         )
         .register_documented(
             "max",
@@ -44325,6 +44733,23 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 output
             },
             " Converts `self` to `[x, y, z]`",
+            &["_self"],
+        )
+        .register_documented(
+            "to_homogeneous",
+            |_self: Val<::glam::DVec3>| {
+                let output: Val<::glam::DVec4> = {
+                    {
+                        let output: Val<::glam::DVec4> = ::glam::DVec3::to_homogeneous(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a homogeneous coordinate from `self`, equivalent to `self.extend(1.0)`.",
             &["_self"],
         )
         .register_documented(
@@ -45103,6 +45528,23 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "exp2",
+            |_self: Val<::glam::DVec4>| {
+                let output: Val<::glam::DVec4> = {
+                    {
+                        let output: Val<::glam::DVec4> = ::glam::DVec4::exp2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `2^self` for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "floor",
             |_self: Val<::glam::DVec4>| {
                 let output: Val<::glam::DVec4> = {
@@ -45331,6 +45773,40 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             },
             " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "ln",
+            |_self: Val<::glam::DVec4>| {
+                let output: Val<::glam::DVec4> = {
+                    {
+                        let output: Val<::glam::DVec4> = ::glam::DVec4::ln(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the natural logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
+        )
+        .register_documented(
+            "log2",
+            |_self: Val<::glam::DVec4>| {
+                let output: Val<::glam::DVec4> = {
+                    {
+                        let output: Val<::glam::DVec4> = ::glam::DVec4::log2(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the base 2 logarithm for each element of `self`.\n This returns NaN when the element is negative and negative infinity when the element is zero.",
+            &["_self"],
         )
         .register_documented(
             "max",
@@ -45640,6 +46116,23 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             },
             " Returns a vector containing each element of `self` raised to the power of `n`.",
             &["_self", "n"],
+        )
+        .register_documented(
+            "project",
+            |_self: Val<::glam::DVec4>| {
+                let output: Val<::glam::DVec3> = {
+                    {
+                        let output: Val<::glam::DVec3> = ::glam::DVec4::project(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Projects a homogeneous coordinate to 3D space by performing perspective divide.\n # Panics\n Will panic if `self.w` is `0` when `glam_assert` is enabled.",
+            &["_self"],
         )
         .register_documented(
             "project_onto",
@@ -56557,7 +57050,7 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a UUID using the supplied bytes in little endian order.\n The individual fields encoded in the buffer will be flipped.\n # Examples\n Basic usage:\n ```\n # fn main() -> Result<(), uuid::Error> {\n # use uuid::Uuid;\n let bytes = [\n     0xa1, 0xa2, 0xa3, 0xa4,\n     0xb1, 0xb2,\n     0xc1, 0xc2,\n     0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,\n ];\n let uuid = Uuid::from_bytes_le(bytes);\n assert_eq!(\n     \"a4a3a2a1-b2b1-c2c1-d1d2-d3d4d5d6d7d8\",\n     uuid.hyphenated().to_string(),\n );\n # Ok(())\n # }\n ```",
+            " Creates a UUID using the supplied bytes in little endian order.\n Note that ordering is applied to each _field_, rather than to the bytes as a whole.\n This ordering is compatible with Microsoft's mixed endian GUID format.\n # Examples\n Basic usage:\n ```\n # fn main() -> Result<(), uuid::Error> {\n # use uuid::Uuid;\n let bytes = [\n     0xa1, 0xa2, 0xa3, 0xa4,\n     0xb1, 0xb2,\n     0xc1, 0xc2,\n     0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,\n ];\n let uuid = Uuid::from_bytes_le(bytes);\n assert_eq!(\n     \"a4a3a2a1-b2b1-c2c1-d1d2-d3d4d5d6d7d8\",\n     uuid.hyphenated().to_string(),\n );\n # Ok(())\n # }\n ```",
             &["b"],
         )
         .register_documented(
@@ -56737,7 +57230,7 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the bytes of the UUID in little-endian order.\n The bytes will be flipped to convert into little-endian order. This is\n based on the endianness of the UUID, rather than the target environment\n so bytes will be flipped on both big and little endian machines.\n # Examples\n ```\n use uuid::Uuid;\n # fn main() -> Result<(), uuid::Error> {\n let uuid = Uuid::parse_str(\"a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8\")?;\n assert_eq!(\n     uuid.to_bytes_le(),\n     ([\n         0xa4, 0xa3, 0xa2, 0xa1, 0xb2, 0xb1, 0xc2, 0xc1, 0xd1, 0xd2,\n         0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8\n     ])\n );\n # Ok(())\n # }\n ```",
+            " Returns the bytes of the UUID in little-endian order.\n The bytes for each field will be flipped to convert into little-endian order.\n This is based on the endianness of the UUID, rather than the target environment\n so bytes will be flipped on both big and little endian machines.\n Note that ordering is applied to each _field_, rather than to the bytes as a whole.\n This ordering is compatible with Microsoft's mixed endian GUID format.\n # Examples\n ```\n use uuid::Uuid;\n # fn main() -> Result<(), uuid::Error> {\n let uuid = Uuid::parse_str(\"a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8\")?;\n assert_eq!(\n     uuid.to_bytes_le(),\n     ([\n         0xa4, 0xa3, 0xa2, 0xa1, 0xb2, 0xb1, 0xc2, 0xc1, 0xd1, 0xd2,\n         0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8\n     ])\n );\n # Ok(())\n # }\n ```",
             &["_self"],
         )
         .register_documented(
@@ -56849,6 +57342,454 @@ pub(crate) fn register_non_nil_uuid_functions(world: &mut World) {
     registry
         .register_type_data::<::uuid::NonNilUuid, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
+pub(crate) fn register_texture_format_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::wgpu_types::TextureFormat,
+    >::new(world)
+        .register_documented(
+            "add_srgb_suffix",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: Val<::wgpu_types::TextureFormat> = {
+                    {
+                        let output: Val<::wgpu_types::TextureFormat> = ::wgpu_types::TextureFormat::add_srgb_suffix(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Adds an `Srgb` suffix to the given texture format, if the format supports it.",
+            &["_self"],
+        )
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: () = {
+                    {
+                        let output: () = <::wgpu_types::TextureFormat as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "block_dimensions",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: (u32, u32) = {
+                    {
+                        let output: (u32, u32) = ::wgpu_types::TextureFormat::block_dimensions(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the dimension of a [block](https://gpuweb.github.io/gpuweb/#texel-block) of texels.\n Uncompressed formats have a block dimension of `(1, 1)`.",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: Val<::wgpu_types::TextureFormat> = {
+                    {
+                        let output: Val<::wgpu_types::TextureFormat> = <::wgpu_types::TextureFormat as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "components",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::wgpu_types::TextureFormat::components(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of components this format has.",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::wgpu_types::TextureFormat>,
+                other: Ref<::wgpu_types::TextureFormat>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::wgpu_types::TextureFormat as ::core::cmp::PartialEq<
+                            ::wgpu_types::TextureFormat,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "has_color_aspect",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::has_color_aspect(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the format has a color aspect",
+            &["_self"],
+        )
+        .register_documented(
+            "has_depth_aspect",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::has_depth_aspect(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the format has a depth aspect",
+            &["_self"],
+        )
+        .register_documented(
+            "has_stencil_aspect",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::has_stencil_aspect(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the format has a stencil aspect",
+            &["_self"],
+        )
+        .register_documented(
+            "is_astc",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_astc(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` for ASTC compressed formats.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_bcn",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_bcn(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` for BCn compressed formats.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_combined_depth_stencil_format",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_combined_depth_stencil_format(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the format is a combined depth-stencil format\n see <https://gpuweb.github.io/gpuweb/#combined-depth-stencil-format>",
+            &["_self"],
+        )
+        .register_documented(
+            "is_compressed",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_compressed(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` for compressed formats.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_depth_stencil_component",
+            |
+                _self: Ref<::wgpu_types::TextureFormat>,
+                combined_format: Val<::wgpu_types::TextureFormat>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_depth_stencil_component(
+                                &_self,
+                                combined_format.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if `self` is a depth or stencil component of the given\n combined depth-stencil format",
+            &["_self", "combined_format"],
+        )
+        .register_documented(
+            "is_depth_stencil_format",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_depth_stencil_format(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the format is a depth and/or stencil format\n see <https://gpuweb.github.io/gpuweb/#depth-formats>",
+            &["_self"],
+        )
+        .register_documented(
+            "is_multi_planar_format",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_multi_planar_format(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if the format is a multi-planar format",
+            &["_self"],
+        )
+        .register_documented(
+            "is_srgb",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::wgpu_types::TextureFormat::is_srgb(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` for srgb formats.",
+            &["_self"],
+        )
+        .register_documented(
+            "planes",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: ::core::option::Option<u32> = {
+                    {
+                        let output: ::core::option::Option<u32> = ::wgpu_types::TextureFormat::planes(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of planes a multi-planar format has.",
+            &["_self"],
+        )
+        .register_documented(
+            "remove_srgb_suffix",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: Val<::wgpu_types::TextureFormat> = {
+                    {
+                        let output: Val<::wgpu_types::TextureFormat> = ::wgpu_types::TextureFormat::remove_srgb_suffix(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Strips the `Srgb` suffix from the given texture format.",
+            &["_self"],
+        )
+        .register_documented(
+            "size_multiple_requirement",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: (u32, u32) = {
+                    {
+                        let output: (u32, u32) = ::wgpu_types::TextureFormat::size_multiple_requirement(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the size multiple requirement for a texture using this format.",
+            &["_self"],
+        )
+        .register_documented(
+            "target_component_alignment",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: ::core::option::Option<u32> = {
+                    {
+                        let output: ::core::option::Option<u32> = ::wgpu_types::TextureFormat::target_component_alignment(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " See <https://gpuweb.github.io/gpuweb/#render-target-component-alignment>",
+            &["_self"],
+        )
+        .register_documented(
+            "target_pixel_byte_cost",
+            |_self: Ref<::wgpu_types::TextureFormat>| {
+                let output: ::core::option::Option<u32> = {
+                    {
+                        let output: ::core::option::Option<u32> = ::wgpu_types::TextureFormat::target_pixel_byte_cost(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The number of bytes occupied per pixel in a color attachment\n <https://gpuweb.github.io/gpuweb/#render-target-pixel-byte-cost>",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::wgpu_types::TextureFormat,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_blend_state_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::wgpu_types::BlendState,
+    >::new(world)
+        .register_documented(
+            "assert_receiver_is_total_eq",
+            |_self: Ref<::wgpu_types::BlendState>| {
+                let output: () = {
+                    {
+                        let output: () = <::wgpu_types::BlendState as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::wgpu_types::BlendState>| {
+                let output: Val<::wgpu_types::BlendState> = {
+                    {
+                        let output: Val<::wgpu_types::BlendState> = <::wgpu_types::BlendState as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: Ref<::wgpu_types::BlendState>, other: Ref<::wgpu_types::BlendState>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::wgpu_types::BlendState as ::core::cmp::PartialEq<
+                            ::wgpu_types::BlendState,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::wgpu_types::BlendState,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 impl Plugin for BevyReflectScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
@@ -56921,5 +57862,7 @@ impl Plugin for BevyReflectScriptingPlugin {
         register_smol_str_functions(&mut world);
         register_uuid_functions(&mut world);
         register_non_nil_uuid_functions(&mut world);
+        register_texture_format_functions(&mut world);
+        register_blend_state_functions(&mut world);
     }
 }

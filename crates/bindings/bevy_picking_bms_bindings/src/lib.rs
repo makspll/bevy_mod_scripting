@@ -1,55 +1,61 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyPickingScriptingPlugin;
 pub(crate) fn register_release_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Release,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Release>| {
-            let output: Val<::bevy_picking::events::Release> = {
-                {
-                    let output: Val<::bevy_picking::events::Release> =
-                        <::bevy_picking::events::Release as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Release>| {
+                let output: Val<::bevy_picking::events::Release> = {
+                    {
+                        let output: Val<::bevy_picking::events::Release> = <::bevy_picking::events::Release as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Release>,
-         other: Ref<::bevy_picking::events::Release>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Release as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Release,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Release>,
+                other: Ref<::bevy_picking::events::Release>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Release as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Release,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -62,24 +68,23 @@ pub(crate) fn register_ray_cast_backfaces_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::prelude::RayCastBackfaces,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::prelude::RayCastBackfaces>| {
-            let output: Val<::bevy_picking::prelude::RayCastBackfaces> = {
-                {
-                    let output: Val<::bevy_picking::prelude::RayCastBackfaces> =
-                        <::bevy_picking::prelude::RayCastBackfaces as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::prelude::RayCastBackfaces>| {
+                let output: Val<::bevy_picking::prelude::RayCastBackfaces> = {
+                    {
+                        let output: Val<::bevy_picking::prelude::RayCastBackfaces> = <::bevy_picking::prelude::RayCastBackfaces as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -92,24 +97,23 @@ pub(crate) fn register_ray_cast_visibility_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::prelude::RayCastVisibility,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::prelude::RayCastVisibility>| {
-            let output: Val<::bevy_picking::prelude::RayCastVisibility> = {
-                {
-                    let output: Val<::bevy_picking::prelude::RayCastVisibility> =
-                        <::bevy_picking::prelude::RayCastVisibility as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::prelude::RayCastVisibility>| {
+                let output: Val<::bevy_picking::prelude::RayCastVisibility> = {
+                    {
+                        let output: Val<::bevy_picking::prelude::RayCastVisibility> = <::bevy_picking::prelude::RayCastVisibility as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -294,22 +298,23 @@ pub(crate) fn register_picking_settings_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::PickingSettings,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::PickingSettings>| {
-            let output: Val<::bevy_picking::PickingSettings> = {
-                {
-                    let output: Val<::bevy_picking::PickingSettings> =
-                        <::bevy_picking::PickingSettings as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::PickingSettings>| {
+                let output: Val<::bevy_picking::PickingSettings> = {
+                    {
+                        let output: Val<::bevy_picking::PickingSettings> = <::bevy_picking::PickingSettings as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -416,24 +421,23 @@ pub(crate) fn register_pointer_hits_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::PointerHits,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::backend::PointerHits>| {
-            let output: Val<::bevy_picking::backend::PointerHits> = {
-                {
-                    let output: Val<::bevy_picking::backend::PointerHits> =
-                        <::bevy_picking::backend::PointerHits as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::backend::PointerHits>| {
+                let output: Val<::bevy_picking::backend::PointerHits> = {
+                    {
+                        let output: Val<::bevy_picking::backend::PointerHits> = <::bevy_picking::backend::PointerHits as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -446,39 +450,43 @@ pub(crate) fn register_cancel_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Cancel,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Cancel>| {
-            let output: Val<::bevy_picking::events::Cancel> = {
-                {
-                    let output: Val<::bevy_picking::events::Cancel> =
-                        <::bevy_picking::events::Cancel as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Cancel>| {
+                let output: Val<::bevy_picking::events::Cancel> = {
+                    {
+                        let output: Val<::bevy_picking::events::Cancel> = <::bevy_picking::events::Cancel as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Cancel>, other: Ref<::bevy_picking::events::Cancel>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Cancel as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Cancel,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Cancel>,
+                other: Ref<::bevy_picking::events::Cancel>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Cancel as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Cancel,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -491,39 +499,43 @@ pub(crate) fn register_click_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Click,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Click>| {
-            let output: Val<::bevy_picking::events::Click> = {
-                {
-                    let output: Val<::bevy_picking::events::Click> =
-                        <::bevy_picking::events::Click as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Click>| {
+                let output: Val<::bevy_picking::events::Click> = {
+                    {
+                        let output: Val<::bevy_picking::events::Click> = <::bevy_picking::events::Click as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Click>, other: Ref<::bevy_picking::events::Click>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Click as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Click,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Click>,
+                other: Ref<::bevy_picking::events::Click>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Click as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Click,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -536,39 +548,43 @@ pub(crate) fn register_press_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Press,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Press>| {
-            let output: Val<::bevy_picking::events::Press> = {
-                {
-                    let output: Val<::bevy_picking::events::Press> =
-                        <::bevy_picking::events::Press as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Press>| {
+                let output: Val<::bevy_picking::events::Press> = {
+                    {
+                        let output: Val<::bevy_picking::events::Press> = <::bevy_picking::events::Press as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Press>, other: Ref<::bevy_picking::events::Press>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Press as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Press,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Press>,
+                other: Ref<::bevy_picking::events::Press>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Press as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Press,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -581,41 +597,43 @@ pub(crate) fn register_drag_drop_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragDrop,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::DragDrop>| {
-            let output: Val<::bevy_picking::events::DragDrop> = {
-                {
-                    let output: Val<::bevy_picking::events::DragDrop> =
-                        <::bevy_picking::events::DragDrop as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::DragDrop>| {
+                let output: Val<::bevy_picking::events::DragDrop> = {
+                    {
+                        let output: Val<::bevy_picking::events::DragDrop> = <::bevy_picking::events::DragDrop as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::DragDrop>,
-         other: Ref<::bevy_picking::events::DragDrop>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::events::DragDrop as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::DragDrop>,
+                other: Ref<::bevy_picking::events::DragDrop>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::DragDrop as ::std::cmp::PartialEq<
                             ::bevy_picking::events::DragDrop,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -628,40 +646,43 @@ pub(crate) fn register_drag_end_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragEnd,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::DragEnd>| {
-            let output: Val<::bevy_picking::events::DragEnd> = {
-                {
-                    let output: Val<::bevy_picking::events::DragEnd> =
-                        <::bevy_picking::events::DragEnd as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::DragEnd>| {
+                let output: Val<::bevy_picking::events::DragEnd> = {
+                    {
+                        let output: Val<::bevy_picking::events::DragEnd> = <::bevy_picking::events::DragEnd as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::DragEnd>,
-         other: Ref<::bevy_picking::events::DragEnd>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::DragEnd as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::DragEnd,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::DragEnd>,
+                other: Ref<::bevy_picking::events::DragEnd>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::DragEnd as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::DragEnd,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -674,41 +695,43 @@ pub(crate) fn register_drag_enter_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragEnter,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::DragEnter>| {
-            let output: Val<::bevy_picking::events::DragEnter> = {
-                {
-                    let output: Val<::bevy_picking::events::DragEnter> =
-                        <::bevy_picking::events::DragEnter as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::DragEnter>| {
+                let output: Val<::bevy_picking::events::DragEnter> = {
+                    {
+                        let output: Val<::bevy_picking::events::DragEnter> = <::bevy_picking::events::DragEnter as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::DragEnter>,
-         other: Ref<::bevy_picking::events::DragEnter>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::events::DragEnter as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::DragEnter>,
+                other: Ref<::bevy_picking::events::DragEnter>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::DragEnter as ::std::cmp::PartialEq<
                             ::bevy_picking::events::DragEnter,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -721,38 +744,43 @@ pub(crate) fn register_drag_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Drag,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Drag>| {
-            let output: Val<::bevy_picking::events::Drag> = {
-                {
-                    let output: Val<::bevy_picking::events::Drag> =
-                        <::bevy_picking::events::Drag as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Drag>, other: Ref<::bevy_picking::events::Drag>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Drag as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Drag,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Drag>| {
+                let output: Val<::bevy_picking::events::Drag> = {
+                    {
+                        let output: Val<::bevy_picking::events::Drag> = <::bevy_picking::events::Drag as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Drag>,
+                other: Ref<::bevy_picking::events::Drag>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Drag as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Drag,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -765,41 +793,43 @@ pub(crate) fn register_drag_leave_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragLeave,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::DragLeave>| {
-            let output: Val<::bevy_picking::events::DragLeave> = {
-                {
-                    let output: Val<::bevy_picking::events::DragLeave> =
-                        <::bevy_picking::events::DragLeave as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::DragLeave>| {
+                let output: Val<::bevy_picking::events::DragLeave> = {
+                    {
+                        let output: Val<::bevy_picking::events::DragLeave> = <::bevy_picking::events::DragLeave as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::DragLeave>,
-         other: Ref<::bevy_picking::events::DragLeave>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::events::DragLeave as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::DragLeave>,
+                other: Ref<::bevy_picking::events::DragLeave>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::DragLeave as ::std::cmp::PartialEq<
                             ::bevy_picking::events::DragLeave,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -812,41 +842,43 @@ pub(crate) fn register_drag_over_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragOver,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::DragOver>| {
-            let output: Val<::bevy_picking::events::DragOver> = {
-                {
-                    let output: Val<::bevy_picking::events::DragOver> =
-                        <::bevy_picking::events::DragOver as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::DragOver>| {
+                let output: Val<::bevy_picking::events::DragOver> = {
+                    {
+                        let output: Val<::bevy_picking::events::DragOver> = <::bevy_picking::events::DragOver as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::DragOver>,
-         other: Ref<::bevy_picking::events::DragOver>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::events::DragOver as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::DragOver>,
+                other: Ref<::bevy_picking::events::DragOver>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::DragOver as ::std::cmp::PartialEq<
                             ::bevy_picking::events::DragOver,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -859,41 +891,43 @@ pub(crate) fn register_drag_start_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragStart,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::DragStart>| {
-            let output: Val<::bevy_picking::events::DragStart> = {
-                {
-                    let output: Val<::bevy_picking::events::DragStart> =
-                        <::bevy_picking::events::DragStart as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::DragStart>| {
+                let output: Val<::bevy_picking::events::DragStart> = {
+                    {
+                        let output: Val<::bevy_picking::events::DragStart> = <::bevy_picking::events::DragStart as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::DragStart>,
-         other: Ref<::bevy_picking::events::DragStart>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::events::DragStart as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::DragStart>,
+                other: Ref<::bevy_picking::events::DragStart>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::DragStart as ::std::cmp::PartialEq<
                             ::bevy_picking::events::DragStart,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -906,38 +940,43 @@ pub(crate) fn register_move_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Move,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Move>| {
-            let output: Val<::bevy_picking::events::Move> = {
-                {
-                    let output: Val<::bevy_picking::events::Move> =
-                        <::bevy_picking::events::Move as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Move>, other: Ref<::bevy_picking::events::Move>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Move as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Move,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Move>| {
+                let output: Val<::bevy_picking::events::Move> = {
+                    {
+                        let output: Val<::bevy_picking::events::Move> = <::bevy_picking::events::Move as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Move>,
+                other: Ref<::bevy_picking::events::Move>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Move as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Move,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -999,38 +1038,43 @@ pub(crate) fn register_over_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Over,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Over>| {
-            let output: Val<::bevy_picking::events::Over> = {
-                {
-                    let output: Val<::bevy_picking::events::Over> =
-                        <::bevy_picking::events::Over as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Over>, other: Ref<::bevy_picking::events::Over>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Over as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Over,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Over>| {
+                let output: Val<::bevy_picking::events::Over> = {
+                    {
+                        let output: Val<::bevy_picking::events::Over> = <::bevy_picking::events::Over as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Over>,
+                other: Ref<::bevy_picking::events::Over>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Over as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Over,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1043,39 +1087,43 @@ pub(crate) fn register_scroll_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Scroll,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::Scroll>| {
-            let output: Val<::bevy_picking::events::Scroll> = {
-                {
-                    let output: Val<::bevy_picking::events::Scroll> =
-                        <::bevy_picking::events::Scroll as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::Scroll>| {
+                let output: Val<::bevy_picking::events::Scroll> = {
+                    {
+                        let output: Val<::bevy_picking::events::Scroll> = <::bevy_picking::events::Scroll as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::Scroll>, other: Ref<::bevy_picking::events::Scroll>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_picking::events::Scroll as ::std::cmp::PartialEq<
-                        ::bevy_picking::events::Scroll,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::Scroll>,
+                other: Ref<::bevy_picking::events::Scroll>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::Scroll as ::std::cmp::PartialEq<
+                            ::bevy_picking::events::Scroll,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1088,41 +1136,43 @@ pub(crate) fn register_hit_data_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::HitData,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::backend::HitData>| {
-            let output: Val<::bevy_picking::backend::HitData> = {
-                {
-                    let output: Val<::bevy_picking::backend::HitData> =
-                        <::bevy_picking::backend::HitData as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::backend::HitData>| {
+                let output: Val<::bevy_picking::backend::HitData> = {
+                    {
+                        let output: Val<::bevy_picking::backend::HitData> = <::bevy_picking::backend::HitData as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::backend::HitData>,
-         other: Ref<::bevy_picking::backend::HitData>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::backend::HitData as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::backend::HitData>,
+                other: Ref<::bevy_picking::backend::HitData>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::backend::HitData as ::std::cmp::PartialEq<
                             ::bevy_picking::backend::HitData,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1269,58 +1319,60 @@ pub(crate) fn register_pointer_location_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerLocation,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::pointer::PointerLocation>| {
-            let output: Val<::bevy_picking::pointer::PointerLocation> = {
-                {
-                    let output: Val<::bevy_picking::pointer::PointerLocation> =
-                        <::bevy_picking::pointer::PointerLocation as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::pointer::PointerLocation>,
-         other: Ref<::bevy_picking::pointer::PointerLocation>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::pointer::PointerLocation as ::std::cmp::PartialEq<
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::pointer::PointerLocation>| {
+                let output: Val<::bevy_picking::pointer::PointerLocation> = {
+                    {
+                        let output: Val<::bevy_picking::pointer::PointerLocation> = <::bevy_picking::pointer::PointerLocation as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::pointer::PointerLocation>,
+                other: Ref<::bevy_picking::pointer::PointerLocation>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::pointer::PointerLocation as ::std::cmp::PartialEq<
                             ::bevy_picking::pointer::PointerLocation,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "new",
-        |location: Val<::bevy_picking::pointer::Location>| {
-            let output: Val<::bevy_picking::pointer::PointerLocation> = {
-                {
-                    let output: Val<::bevy_picking::pointer::PointerLocation> =
-                        ::bevy_picking::pointer::PointerLocation::new(location.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        "Returns a [`PointerLocation`] associated with the given location",
-        &["location"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "new",
+            |location: Val<::bevy_picking::pointer::Location>| {
+                let output: Val<::bevy_picking::pointer::PointerLocation> = {
+                    {
+                        let output: Val<::bevy_picking::pointer::PointerLocation> = ::bevy_picking::pointer::PointerLocation::new(
+                                location.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "Returns a [`PointerLocation`] associated with the given location",
+            &["location"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1420,41 +1472,43 @@ pub(crate) fn register_location_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::Location,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::pointer::Location>| {
-            let output: Val<::bevy_picking::pointer::Location> = {
-                {
-                    let output: Val<::bevy_picking::pointer::Location> =
-                        <::bevy_picking::pointer::Location as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::pointer::Location>| {
+                let output: Val<::bevy_picking::pointer::Location> = {
+                    {
+                        let output: Val<::bevy_picking::pointer::Location> = <::bevy_picking::pointer::Location as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::pointer::Location>,
-         other: Ref<::bevy_picking::pointer::Location>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::pointer::Location as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::pointer::Location>,
+                other: Ref<::bevy_picking::pointer::Location>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::pointer::Location as ::std::cmp::PartialEq<
                             ::bevy_picking::pointer::Location,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1467,24 +1521,23 @@ pub(crate) fn register_pointer_action_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerAction,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::pointer::PointerAction>| {
-            let output: Val<::bevy_picking::pointer::PointerAction> = {
-                {
-                    let output: Val<::bevy_picking::pointer::PointerAction> =
-                        <::bevy_picking::pointer::PointerAction as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::pointer::PointerAction>| {
+                let output: Val<::bevy_picking::pointer::PointerAction> = {
+                    {
+                        let output: Val<::bevy_picking::pointer::PointerAction> = <::bevy_picking::pointer::PointerAction as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1497,41 +1550,43 @@ pub(crate) fn register_drag_entry_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::DragEntry,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_picking::events::DragEntry>| {
-            let output: Val<::bevy_picking::events::DragEntry> = {
-                {
-                    let output: Val<::bevy_picking::events::DragEntry> =
-                        <::bevy_picking::events::DragEntry as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_picking::events::DragEntry>| {
+                let output: Val<::bevy_picking::events::DragEntry> = {
+                    {
+                        let output: Val<::bevy_picking::events::DragEntry> = <::bevy_picking::events::DragEntry as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_picking::events::DragEntry>,
-         other: Ref<::bevy_picking::events::DragEntry>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        <::bevy_picking::events::DragEntry as ::std::cmp::PartialEq<
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: Ref<::bevy_picking::events::DragEntry>,
+                other: Ref<::bevy_picking::events::DragEntry>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_picking::events::DragEntry as ::std::cmp::PartialEq<
                             ::bevy_picking::events::DragEntry,
                         >>::eq(&_self, &other)
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

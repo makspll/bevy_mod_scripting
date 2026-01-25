@@ -1,69 +1,97 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTimeScriptingPlugin;
 pub(crate) fn register_fixed_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_time::Fixed>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_time::Fixed>| {
-            let output: Val<::bevy_time::Fixed> = {
-                {
-                    let output: Val<::bevy_time::Fixed> =
-                        <::bevy_time::Fixed as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_time::Fixed,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_time::Fixed>| {
+                let output: Val<::bevy_time::Fixed> = {
+                    {
+                        let output: Val<::bevy_time::Fixed> = <::bevy_time::Fixed as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Fixed, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Fixed,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_real_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_time::Real>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_time::Real>| {
-            let output: Val<::bevy_time::Real> = {
-                {
-                    let output: Val<::bevy_time::Real> =
-                        <::bevy_time::Real as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_time::Real,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_time::Real>| {
+                let output: Val<::bevy_time::Real> = {
+                    {
+                        let output: Val<::bevy_time::Real> = <::bevy_time::Real as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Real, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Real,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_timer_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_time::Timer,
     >::new(world)
+        .register_documented(
+            "almost_finish",
+            |mut _self: Mut<::bevy_time::Timer>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_time::Timer::almost_finish(&mut _self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Almost finishes the timer leaving 1 ns of remaining time.\n This can be useful when needing an immediate action without having\n to wait for the set duration of the timer in the first tick.\n # Examples\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer = Timer::from_seconds(1.5, TimerMode::Once);\n timer.almost_finish();\n assert!(!timer.is_finished());\n assert_eq!(timer.remaining(), Duration::from_nanos(1));\n ```",
+            &["_self"],
+        )
         .register_documented(
             "assert_receiver_is_total_eq",
             |_self: Ref<::bevy_time::Timer>| {
@@ -190,21 +218,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
                 };
                 output
             },
-            " Finishes the timer.\n # Examples\n ```\n # use bevy_time::*;\n let mut timer = Timer::from_seconds(1.5, TimerMode::Once);\n timer.finish();\n assert!(timer.finished());\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "finished",
-            |_self: Ref<::bevy_time::Timer>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_time::Timer::finished(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns `true` if the timer has reached its duration.\n For repeating timers, this method behaves identically to [`Timer::just_finished`].\n # Examples\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer_once = Timer::from_seconds(1.0, TimerMode::Once);\n timer_once.tick(Duration::from_secs_f32(1.5));\n assert!(timer_once.finished());\n timer_once.tick(Duration::from_secs_f32(0.5));\n assert!(timer_once.finished());\n let mut timer_repeating = Timer::from_seconds(1.0, TimerMode::Repeating);\n timer_repeating.tick(Duration::from_secs_f32(1.1));\n assert!(timer_repeating.finished());\n timer_repeating.tick(Duration::from_secs_f32(0.8));\n assert!(!timer_repeating.finished());\n timer_repeating.tick(Duration::from_secs_f32(0.6));\n assert!(timer_repeating.finished());\n ```",
+            " Finishes the timer.\n # Examples\n ```\n # use bevy_time::*;\n let mut timer = Timer::from_seconds(1.5, TimerMode::Once);\n timer.finish();\n assert!(timer.is_finished());\n ```",
             &["_self"],
         )
         .register_documented(
@@ -348,20 +362,6 @@ pub(crate) fn register_timer_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "paused",
-            |_self: Ref<::bevy_time::Timer>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_time::Timer::paused(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns `true` if the timer is paused.\n See also [`Stopwatch::is_paused`](Stopwatch::is_paused).\n # Examples\n ```\n # use bevy_time::*;\n let mut timer = Timer::from_seconds(1.0, TimerMode::Once);\n assert!(!timer.paused());\n timer.pause();\n assert!(timer.paused());\n timer.unpause();\n assert!(!timer.paused());\n ```",
-            &["_self"],
-        )
-        .register_documented(
             "remaining",
             |_self: Ref<::bevy_time::Timer>| {
                 let output: Val<::core::time::Duration> = {
@@ -495,7 +495,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Timer, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Timer,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_timer_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -555,8 +558,10 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::TimerMode, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::bevy_time::TimerMode,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_virtual_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -582,7 +587,10 @@ pub(crate) fn register_virtual_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Virtual, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Virtual,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_stopwatch_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -784,8 +792,10 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Stopwatch, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::bevy_time::Stopwatch,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 impl Plugin for BevyTimeScriptingPlugin {
     fn build(&self, app: &mut App) {

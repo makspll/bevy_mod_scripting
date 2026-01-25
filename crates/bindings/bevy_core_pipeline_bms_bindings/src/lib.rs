@@ -1,36 +1,41 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyCorePipelineScriptingPlugin;
 pub(crate) fn register_skybox_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::Skybox,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::Skybox>| {
-            let output: Val<::bevy_core_pipeline::Skybox> = {
-                {
-                    let output: Val<::bevy_core_pipeline::Skybox> =
-                        <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::Skybox>| {
+                let output: Val<::bevy_core_pipeline::Skybox> = {
+                    {
+                        let output: Val<::bevy_core_pipeline::Skybox> = <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -204,6 +209,39 @@ pub(crate) fn register_deferred_prepass_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_deferred_prepass_double_buffer_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer>| {
+                let output: Val<
+                    ::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer,
+                        > = <::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_depth_prepass_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::prepass::DepthPrepass,
@@ -230,6 +268,39 @@ pub(crate) fn register_depth_prepass_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_core_pipeline::prepass::DepthPrepass,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_depth_prepass_double_buffer_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer>| {
+                let output: Val<
+                    ::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer,
+                > = {
+                    {
+                        let output: Val<
+                            ::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer,
+                        > = <::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -293,7 +364,9 @@ pub(crate) fn register_normal_prepass_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_order_independent_transparency_settings_functions(world: &mut World) {
+pub(crate) fn register_order_independent_transparency_settings_functions(
+    world: &mut World,
+) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
     >::new(world)
@@ -337,7 +410,9 @@ impl Plugin for BevyCorePipelineScriptingPlugin {
         register_tonemapping_functions(&mut world);
         register_deband_dither_functions(&mut world);
         register_deferred_prepass_functions(&mut world);
+        register_deferred_prepass_double_buffer_functions(&mut world);
         register_depth_prepass_functions(&mut world);
+        register_depth_prepass_double_buffer_functions(&mut world);
         register_motion_vector_prepass_functions(&mut world);
         register_normal_prepass_functions(&mut world);
         register_order_independent_transparency_settings_functions(&mut world);

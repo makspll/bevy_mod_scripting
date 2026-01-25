@@ -7,7 +7,7 @@ use crate::{
 
 use ::{
     bevy_ecs::{
-        component::{ComponentId, Tick},
+        component::ComponentId,
         entity::Entity,
         query::{FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
@@ -18,6 +18,7 @@ use ::{
     bevy_reflect::Reflect,
 };
 use bevy_ecs::{
+    change_detection::{CheckChangeTicks, Tick},
     schedule::{InternedSystemSet, IntoScheduleConfigs, Schedule, Schedules},
     system::{RunSystemError, SystemIn, SystemStateFlags},
     world::DeferredWorld,
@@ -466,7 +467,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         component_access_set
     }
 
-    fn check_change_tick(&mut self, change_tick: bevy_ecs::component::CheckChangeTicks) {
+    fn check_change_tick(&mut self, change_tick: CheckChangeTicks) {
         self.last_run.check_tick(change_tick);
     }
 

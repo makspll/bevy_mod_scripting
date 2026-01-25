@@ -1,39 +1,41 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Mut, Val},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAnimationScriptingPlugin;
 pub(crate) fn register_animation_node_type_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::AnimationNodeType,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_animation::graph::AnimationNodeType>| {
-            let output: Val<::bevy_animation::graph::AnimationNodeType> = {
-                {
-                    let output: Val<::bevy_animation::graph::AnimationNodeType> =
-                        <::bevy_animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::graph::AnimationNodeType>| {
+                let output: Val<::bevy_animation::graph::AnimationNodeType> = {
+                    {
+                        let output: Val<::bevy_animation::graph::AnimationNodeType> = <::bevy_animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -124,52 +126,58 @@ pub(crate) fn register_animation_clip_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::AnimationClip,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_animation::AnimationClip>| {
-            let output: Val<::bevy_animation::AnimationClip> = {
-                {
-                    let output: Val<::bevy_animation::AnimationClip> =
-                        <::bevy_animation::AnimationClip as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::AnimationClip>| {
+                let output: Val<::bevy_animation::AnimationClip> = {
+                    {
+                        let output: Val<::bevy_animation::AnimationClip> = <::bevy_animation::AnimationClip as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "duration",
-        |_self: Ref<::bevy_animation::AnimationClip>| {
-            let output: f32 = {
-                {
-                    let output: f32 = ::bevy_animation::AnimationClip::duration(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Duration of the clip, represented in seconds.",
-        &["_self"],
-    )
-    .register_documented(
-        "set_duration",
-        |mut _self: Mut<::bevy_animation::AnimationClip>, duration_sec: f32| {
-            let output: () = {
-                {
-                    let output: () =
-                        ::bevy_animation::AnimationClip::set_duration(&mut _self, duration_sec)
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "duration",
+            |_self: Ref<::bevy_animation::AnimationClip>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::bevy_animation::AnimationClip::duration(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        " Set the duration of the clip in seconds.",
-        &["_self", "duration_sec"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            " Duration of the clip, represented in seconds.",
+            &["_self"],
+        )
+        .register_documented(
+            "set_duration",
+            |mut _self: Mut<::bevy_animation::AnimationClip>, duration_sec: f32| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_animation::AnimationClip::set_duration(
+                                &mut _self,
+                                duration_sec,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Set the duration of the clip in seconds.",
+            &["_self", "duration_sec"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -182,70 +190,78 @@ pub(crate) fn register_animation_player_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::AnimationPlayer,
     >::new(world)
-    .register_documented(
-        "all_finished",
-        |_self: Ref<::bevy_animation::AnimationPlayer>| {
-            let output: bool = {
-                {
-                    let output: bool =
-                        ::bevy_animation::AnimationPlayer::all_finished(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Check if all playing animations have finished, according to the repetition behavior.",
-        &["_self"],
-    )
-    .register_documented(
-        "all_paused",
-        |_self: Ref<::bevy_animation::AnimationPlayer>| {
-            let output: bool = {
-                {
-                    let output: bool = ::bevy_animation::AnimationPlayer::all_paused(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Check if all playing animations are paused.",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_animation::AnimationPlayer>| {
-            let output: Val<::bevy_animation::AnimationPlayer> = {
-                {
-                    let output: Val<::bevy_animation::AnimationPlayer> =
-                        <::bevy_animation::AnimationPlayer as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "all_finished",
+            |_self: Ref<::bevy_animation::AnimationPlayer>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_animation::AnimationPlayer::all_finished(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "clone_from",
-        |mut _self: Mut<::bevy_animation::AnimationPlayer>,
-         source: Ref<::bevy_animation::AnimationPlayer>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::bevy_animation::AnimationPlayer as ::std::clone::Clone>::clone_from(
-                            &mut _self, &source,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "source"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            " Check if all playing animations have finished, according to the repetition behavior.",
+            &["_self"],
+        )
+        .register_documented(
+            "all_paused",
+            |_self: Ref<::bevy_animation::AnimationPlayer>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_animation::AnimationPlayer::all_paused(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Check if all playing animations are paused.",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::AnimationPlayer>| {
+                let output: Val<::bevy_animation::AnimationPlayer> = {
+                    {
+                        let output: Val<::bevy_animation::AnimationPlayer> = <::bevy_animation::AnimationPlayer as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone_from",
+            |
+                mut _self: Mut<::bevy_animation::AnimationPlayer>,
+                source: Ref<::bevy_animation::AnimationPlayer>|
+            {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_animation::AnimationPlayer as ::std::clone::Clone>::clone_from(
+                                &mut _self,
+                                &source,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "source"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -404,31 +420,32 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_animation_target_functions(world: &mut World) {
+pub(crate) fn register_animated_by_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_animation::AnimationTarget,
+        ::bevy_animation::AnimatedBy,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_animation::AnimationTarget>| {
-            let output: Val<::bevy_animation::AnimationTarget> = {
-                {
-                    let output: Val<::bevy_animation::AnimationTarget> =
-                        <::bevy_animation::AnimationTarget as ::std::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: Ref<::bevy_animation::AnimatedBy>| {
+                let output: Val<::bevy_animation::AnimatedBy> = {
+                    {
+                        let output: Val<::bevy_animation::AnimatedBy> = <::bevy_animation::AnimatedBy as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_animation::AnimationTarget,
+            ::bevy_animation::AnimatedBy,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -697,35 +714,6 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_weights_curve_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_animation::gltf_curves::WeightsCurve,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_animation::gltf_curves::WeightsCurve>| {
-                let output: Val<::bevy_animation::gltf_curves::WeightsCurve> = {
-                    {
-                        let output: Val<::bevy_animation::gltf_curves::WeightsCurve> = <::bevy_animation::gltf_curves::WeightsCurve as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_animation::gltf_curves::WeightsCurve,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_cubic_rotation_curve_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::gltf_curves::CubicRotationCurve,
@@ -908,10 +896,9 @@ impl Plugin for BevyAnimationScriptingPlugin {
         register_animation_player_functions(&mut world);
         register_animation_graph_functions(&mut world);
         register_animation_target_id_functions(&mut world);
-        register_animation_target_functions(&mut world);
+        register_animated_by_functions(&mut world);
         register_repeat_animation_functions(&mut world);
         register_active_animation_functions(&mut world);
-        register_weights_curve_functions(&mut world);
         register_cubic_rotation_curve_functions(&mut world);
         register_animation_graph_node_functions(&mut world);
         register_threaded_animation_graph_functions(&mut world);

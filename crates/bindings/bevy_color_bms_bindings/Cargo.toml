@@ -17,15 +17,15 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_color = { version = "0.17.3", features = ["alloc", "bevy_reflect", "encase", "std", "wgpu-types"], default-features = true}
+bevy_color = { version = "0.18.0", features = ["alloc", "bevy_reflect", "encase", "std", "wgpu-types"], default-features = true}
 
 
-bevy_math = { version = "^0.17.3", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
+bevy_math = { version = "^0.18.0", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
-bevy_reflect = { version = "^0.17.3", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
+bevy_reflect = { version = "^0.18.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}
 
 bytemuck = { version = "^1", features = [], default-features = true}
 
-wgpu-types = { version = "^26", features = ["std"], default-features = false}
+wgpu-types = { version = "^27", features = ["std"], default-features = false}
 
 

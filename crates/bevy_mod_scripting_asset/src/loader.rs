@@ -2,6 +2,7 @@
 
 use bevy_asset::AssetLoader;
 use bevy_log::warn;
+use bevy_reflect::TypePath;
 use serde::{Deserialize, Serialize};
 
 use crate::{Language, LanguageExtensions, ScriptAsset, ScriptAssetError};
@@ -14,6 +15,7 @@ pub struct ScriptSettings {
 }
 
 /// A loader for script assets
+#[derive(TypePath)]
 pub struct ScriptAssetLoader {
     /// The file extensions this loader should handle
     language_extensions: &'static LanguageExtensions,
@@ -55,17 +57,14 @@ impl AssetLoader for ScriptAssetLoader {
     ) -> Result<Self::Asset, Self::Error> {
         let mut content = Vec::new();
         reader.read_to_end(&mut content).await.map_err(|e| {
-            ScriptAssetError::new(
-                "reading from disk",
-                Some(load_context.asset_path()),
-                Box::new(e),
-            )
+            ScriptAssetError::new("reading from disk", Some(load_context.path()), Box::new(e))
         })?;
         if let Some(processor) = &self.preprocessor {
             processor(&mut content)?;
         }
         let language = settings.language.clone().unwrap_or_else(|| {
             let ext = load_context
+                .path()
                 .path()
                 .extension()
                 .and_then(|e| e.to_str())
@@ -74,7 +73,7 @@ impl AssetLoader for ScriptAssetLoader {
                 .get(ext)
                 .cloned()
                 .unwrap_or_else(|| {
-                    warn!("Unknown language for {:?}", load_context.path().display());
+                    warn!("Unknown language for {}", load_context.path());
                     Language::Unknown
                 })
         });

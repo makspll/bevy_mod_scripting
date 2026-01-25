@@ -68,13 +68,13 @@ impl DisplayWithTypeInfo for ReflectReference {
                     .and_then(|t| t.try_get_context().ok().map(|c| c.world))
             });
 
-            if let Some(guard) = guard {
-                if let Ok(r) = self.with_reflect(guard.clone(), |s| {
+            if let Some(guard) = guard
+                && let Ok(r) = self.with_reflect(guard.clone(), |s| {
                     PrintReflectAsDebug::new_with_opt_info(s, Some(type_info_provider))
                         .to_string_with_type_info(f, Some(type_info_provider))
-                }) {
-                    return r;
-                }
+                })
+            {
+                return r;
             }
         }
 

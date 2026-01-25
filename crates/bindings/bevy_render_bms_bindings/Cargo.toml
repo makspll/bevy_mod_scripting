@@ -17,62 +17,62 @@ categories.workspace = true
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_render = { version = "0.17.3", features = ["multi_threaded", "webgl"], default-features = true}
+bevy_render = { version = "0.18.0", features = ["morph", "multi_threaded", "webgl"], default-features = true}
 
 
 async-channel = { version = "^2.3.0", features = [], default-features = true}
 
-bevy_app = { version = "^0.17.3", features = ["bevy_reflect", "error_panic_hook", "reflect_auto_register", "std"], default-features = true}
+bevy_app = { version = "^0.18.0", features = ["bevy_reflect", "error_panic_hook", "reflect_auto_register", "std"], default-features = true}
 
-bevy_asset = { version = "^0.17.3", features = ["file_watcher", "multi_threaded", "notify-debouncer-full", "watch"], default-features = true}
+bevy_asset = { version = "^0.18.0", features = ["file_watcher", "multi_threaded", "notify-debouncer-full", "watch"], default-features = true}
 
-bevy_camera = { version = "^0.17.3", features = [], default-features = true}
+bevy_camera = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_color = { version = "^0.17.3", features = ["alloc", "bevy_reflect", "encase", "std", "wgpu-types"], default-features = true}
+bevy_color = { version = "^0.18.0", features = ["alloc", "bevy_reflect", "encase", "std", "wgpu-types"], default-features = true}
 
-bevy_derive = { version = "^0.17.3", features = [], default-features = true}
+bevy_derive = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_diagnostic = { version = "^0.17.3", features = ["std", "sysinfo", "sysinfo_plugin"], default-features = true}
+bevy_diagnostic = { version = "^0.18.0", features = ["std", "sysinfo", "sysinfo_plugin"], default-features = true}
 
-bevy_ecs = { version = "^0.17.3", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
+bevy_ecs = { version = "^0.18.0", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
 
-bevy_encase_derive = { version = "^0.17.3", features = [], default-features = true}
+bevy_encase_derive = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_image = { version = "^0.17.3", features = ["bevy_reflect", "hdr", "ktx2", "png", "zstd", "zstd_rust"], default-features = true}
+bevy_image = { version = "^0.18.0", features = ["bevy_reflect", "hdr", "ktx2", "png", "zstd", "zstd_rust"], default-features = true}
 
-bevy_math = { version = "^0.17.3", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
+bevy_math = { version = "^0.18.0", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
-bevy_mesh = { version = "^0.17.3", features = [], default-features = true}
+bevy_mesh = { version = "^0.18.0", features = ["bevy_mikktspace", "morph"], default-features = true}
 
-bevy_reflect = { version = "^0.17.3", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "smallvec", "smol_str", "std", "uuid"], default-features = true}
+bevy_reflect = { version = "^0.18.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}
 
-bevy_render_macros = { version = "^0.17.3", features = [], default-features = true}
+bevy_render_macros = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_shader = { version = "^0.17.3", features = [], default-features = true}
+bevy_shader = { version = "^0.18.0", features = [], default-features = true}
 
-bevy_tasks = { version = "^0.17.3", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
+bevy_tasks = { version = "^0.18.0", features = ["async_executor", "futures-lite", "multi_threaded"], default-features = true}
 
-bevy_time = { version = "^0.17.3", features = ["bevy_reflect", "std"], default-features = true}
+bevy_time = { version = "^0.18.0", features = ["bevy_reflect", "std"], default-features = true}
 
-bevy_transform = { version = "^0.17.3", features = ["alloc", "async_executor", "bevy-support", "bevy_log", "bevy_reflect", "std"], default-features = true}
+bevy_transform = { version = "^0.18.0", features = ["alloc", "async_executor", "bevy-support", "bevy_log", "bevy_reflect", "std"], default-features = true}
 
-bevy_utils = { version = "^0.17.3", features = ["debug", "parallel"], default-features = true}
+bevy_utils = { version = "^0.18.0", features = ["parallel"], default-features = true}
 
-bevy_window = { version = "^0.17.3", features = ["bevy_asset", "bevy_image", "bevy_reflect", "custom_cursor", "std"], default-features = true}
+bevy_window = { version = "^0.18.0", features = ["bevy_asset", "bevy_image", "bevy_reflect", "custom_cursor", "std"], default-features = true}
 
 bitflags = { version = "^2", features = [], default-features = true}
 
 bytemuck = { version = "^1.5", features = [], default-features = true}
 
-encase = { version = "^0.11", features = [], default-features = true}
+encase = { version = "^0.12", features = [], default-features = true}
 
 fixedbitset = { version = "^0.5", features = [], default-features = true}
 
 indexmap = { version = "^2", features = [], default-features = true}
 
-js-sys = { version = "^0.3", features = [], default-features = true}
+js-sys = { version = "^0.3.83", features = [], default-features = true}
 
-naga = { version = "^26", features = [], default-features = true}
+naga = { version = "^27", features = [], default-features = true}
 
 nonmax = { version = "^0.5", features = [], default-features = true}
 
@@ -86,6 +86,6 @@ wasm-bindgen = { version = "^0.2", features = [], default-features = true}
 
 web-sys = { version = "^0.3.67", features = [], default-features = true}
 
-wgpu = { version = "^26", features = ["webgl"], default-features = false}
+wgpu = { version = "^27", features = ["webgl"], default-features = false}
 
 
