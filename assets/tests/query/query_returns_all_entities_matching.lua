@@ -13,7 +13,7 @@ world.add_default_component(entity_c, component_with)
 world.add_default_component(entity_b, component_without)
 
 local found_entities = {}
-for i,result in pairs(world.query():component(component_with):without(component_without):build()) do
+for i, result in pairs(world.query():component(component_with):without(component_without):build()) do
     table.insert(found_entities, result:entity())
 end
 
@@ -26,6 +26,6 @@ expected_entities = {
 }
 
 for i, entity in ipairs(found_entities) do
-    assert(entity:index() == expected_entities[i]:index(), "Expected entity " .. expected_entities[i]:index() .. " but got " .. entity:index())
+    assert(entity:index():index() == expected_entities[i]:index():index(),
+        "Expected entity " .. expected_entities[i]:index():index() .. " but got " .. entity:index():index())
 end
-

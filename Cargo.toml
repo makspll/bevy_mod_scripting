@@ -332,7 +332,7 @@ required-features = ["lua54", "rhai"]
 [[example]]
 name = "docgen"
 path = "examples/docgen.rs"
-required-features = []
+required-features = ["lua_language_server_files"]
 
 [[example]]
 name = "runscript"
