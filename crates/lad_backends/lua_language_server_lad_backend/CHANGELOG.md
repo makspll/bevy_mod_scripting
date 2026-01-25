@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.18.0...lua_language_server_lad_backend-v0.19.0) - 2026-01-25
+
+### Added
+
+- [**breaking**] bevy 0.18 ([#507](https://github.com/makspll/bevy_mod_scripting/pull/507))
+
 ## [0.16.1](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.16.0...lua_language_server_lad_backend-v0.16.1) - 2025-11-06
 
 ### Added
