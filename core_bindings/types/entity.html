@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-1b4d5895.js";
+            window.path_to_searchindex_js = "../../searchindex-bf7977f2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-90db5100.js"></script>
+        <script src="../../toc-887108de.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -184,11 +184,10 @@
 <p>Opaque Type. 🔒</p>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>Lightweight identifier of an <a href="crate::entity">entity</a>.</p>
-<p>The identifier is implemented using a <a href="https://lucassardois.medium.com/generational-indices-guide-8e3c5f7fd594">generational index</a>: a combination of an index ([<code>EntityRow</code>]) and a generation ([<code>EntityGeneration</code>]).
-This allows fast insertion after data removal in an array while minimizing loss of spatial locality.</p>
-<p>These identifiers are only valid on the <a href="crate::world::World"><code>World</code></a> it’s sourced from. Attempting to use an <code>Entity</code> to
-fetch entity components or metadata from a different world will either fail or return unexpected results.</p>
+<p>Unique identifier for an entity in a <a href="crate::world::World"><code>World</code></a>.
+Note that this is just an id, not the entity itself.
+Further, the entity this id refers to may no longer exist in the <a href="crate::world::World"><code>World</code></a>.
+For more information about entities, their ids, and how to use them, see the module <a href="crate::entity">docs</a>.</p>
 <h1 id="aliasing"><a class="header" href="#aliasing">Aliasing</a></h1>
 <p>Once an entity is despawned, it ceases to exist.
 However, its [<code>Entity</code>] id is still present, and may still be contained in some data.
@@ -197,7 +196,7 @@ If this happens, which is rare but very possible, it will be logged.</p>
 <p>Aliasing can happen without warning.
 Holding onto a [<code>Entity</code>] id corresponding to an entity well after that entity was despawned can cause un-intuitive behavior for both ordering, and comparing in general.
 To prevent these bugs, it is generally best practice to stop holding an [<code>Entity</code>] or [<code>EntityGeneration</code>] value as soon as you know it has been despawned.
-If you must do otherwise, do not assume the [<code>Entity</code>] corresponds to the same conceptual entity it originally did.
+If you must do otherwise, do not assume the [<code>Entity</code>] id corresponds to the same entity it originally did.
 See [<code>EntityGeneration</code>]’s docs for more information about aliasing and why it occurs.</p>
 <h1 id="stability-warning"><a class="header" href="#stability-warning">Stability warning</a></h1>
 <p>For all intents and purposes, <code>Entity</code> should be treated as an opaque identifier. The internal bit
@@ -250,15 +249,15 @@ fn dispose_expired_food(mut commands: Commands, query: Query&lt;Entity, With&lt;
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./entity/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./entity/index.html">index</a></td><td>Return a transiently unique identifier.  See also [`EntityIndex`].  No two simultaneously-live entities share the same index, but dead entities’ indices may collide  with both live and dead entities. Useful for compactly representing entities within a  specific snapshot of the world, such as when serializing.</td></tr>
+<tr><td><a href="./entity/from_index.html">from_index</a></td><td>Creates a new entity ID with the specified `index` and an unspecified generation.  # Note  Spawning...</td></tr>
+<tr><td><a href="./entity/from_index_and_generation.html">from_index_and_generation</a></td><td>Creates a new instance with the given index and generation.</td></tr>
+<tr><td><a href="./entity/index_u32.html">index_u32</a></td><td>Equivalent to `self.index().index()`. See [`Self::index`] for details.</td></tr>
 <tr><td><a href="./entity/from_bits.html">from_bits</a></td><td>Reconstruct an `Entity` previously destructured with [`Entity::to_bits`].  Only useful when applied to results from `to_bits` in the same instance of an application.  # Panics  This method will likely panic if given `u64` values that did not come from [`Entity::to_bits`]...</td></tr>
-<tr><td><a href="./entity/from_row_and_generation.html">from_row_and_generation</a></td><td>Creates a new instance with the given index and generation.</td></tr>
+<tr><td><a href="./entity/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./entity/to_bits.html">to_bits</a></td><td>Convert to a form convenient for passing outside of rust.  Only useful for identifying entities wit...</td></tr>
-<tr><td><a href="./entity/index.html">index</a></td><td>Equivalent to `self.row().index()`. See [`Self::row`] for details.</td></tr>
-<tr><td><a href="./entity/generation.html">generation</a></td><td>Returns the generation of this Entity’s row. The generation is incremented each time an  entity wit...</td></tr>
 <tr><td><a href="./entity/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./entity/row.html">row</a></td><td>Return a transiently unique identifier.  See also [`EntityRow`].  No two simultaneously-live entities share the same row, but dead entities’ indices may collide  with both live and dead entities. Useful for compactly representing entities within a  specific snapshot of the world, such as when serializing.</td></tr>
-<tr><td><a href="./entity/from_row.html">from_row</a></td><td>Creates a new entity ID with the specified `row` and a generation of 1.  # Note  Spawning a specifi...</td></tr>
+<tr><td><a href="./entity/generation.html">generation</a></td><td>Returns the generation of this Entity’s index. The generation is incremented each time an  entity w...</td></tr>
 </tbody>
 </table>
 </div>
@@ -267,11 +266,11 @@ fn dispose_expired_food(mut commands: Commands, query: Query&lt;Entity, With&lt;
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/tick/assert_receiver_is_total_eq.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/componentid/assert_receiver_is_total_eq.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/entity/eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/entity/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -281,11 +280,11 @@ fn dispose_expired_food(mut commands: Commands, query: Query&lt;Entity, With&lt;
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/tick/assert_receiver_is_total_eq.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/componentid/assert_receiver_is_total_eq.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/entity/eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/entity/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

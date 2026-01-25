@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-1b4d5895.js";
+            window.path_to_searchindex_js = "../searchindex-bf7977f2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-90db5100.js"></script>
+        <script src="../toc-887108de.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -227,23 +227,25 @@
 <div>  </div>
 </td></tr>
 <tr><td><a href="././types/orderindependenttransparencysettings.html"><code>OrderIndependentTransparencySettings</code></a></td><td>Used to identify which camera will use OIT to render transparent meshes  and to configure OIT.</td></tr>
+<tr><td><a href="././types/deferredprepassdoublebuffer.html"><code>DeferredPrepassDoubleBuffer</code></a></td><td>Allows querying the previous frame’s [`DeferredPrepass`].</td></tr>
 <tr><td><a href="././types/depthprepass.html"><code>DepthPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then depth values will be copied to a separate texture available to the main pass.</td></tr>
-<tr><td><a href="././types/motionvectorprepass.html"><code>MotionVectorPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then screen space motion vectors will be copied to a separate texture available to the main pass.</td></tr>
+<tr><td><a href="././types/depthprepassdoublebuffer.html"><code>DepthPrepassDoubleBuffer</code></a></td><td>Allows querying the previous frame’s [`DepthPrepass`].</td></tr>
+<tr><td><a href="././types/motionvectorprepass.html"><code>MotionVectorPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then screen space motion vectors will be copied to a separate texture available to the main pass.   Motion vectors are stored in the range -1,1, with +x right and +y down.  A value of (1.0,1.0) indicates a pixel moved from the top left corner to the bottom right corner of the screen.</td></tr>
 <tr><td><a href="././types/normalprepass.html"><code>NormalPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then vertex world normals will be copied to a separate texture available to the main pass.  Normals will have normal map textures already applied.</td></tr>
 <tr><td><a href="././types/skybox.html"><code>Skybox</code></a></td><td>Adds a skybox to a 3D camera, based on a cubemap texture.   Note that this component does not (curr...</td></tr>
 <tr><td><a href="././types/debanddither.html"><code>DebandDither</code></a></td><td>Enables a debanding shader that applies dithering to mitigate color banding in the final image for ...</td></tr>
 <tr><td><a href="././types/tonemapping.html"><code>Tonemapping</code></a></td><td>Optionally enables a tonemapping shader that attempts to map linear input stimulus into a perceptua...</td></tr>
-<tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`](crate::world::World).   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`](crate::world::World::register_component)...</td></tr>
 <tr><td><a href="././types/componentticks.html"><code>ComponentTicks</code></a></td><td>Records when a component or resource was added and when it was last mutably dereferenced (or added)...</td></tr>
 <tr><td><a href="././types/tick.html"><code>Tick</code></a></td><td>A value that tracks when a system ran relative to other systems.  This is used to power change dete...</td></tr>
-<tr><td><a href="././types/entity.html"><code>Entity</code></a></td><td>Lightweight identifier of an [entity](crate::entity).   The identifier is implemented using a [gene...</td></tr>
-<tr><td><a href="././types/entitygeneration.html"><code>EntityGeneration</code></a></td><td>This tracks different versions or generations of an [`EntityRow`].  Importantly, this can wrap, meaning each generation is not necessarily unique per [`EntityRow`]...</td></tr>
-<tr><td><a href="././types/entityrow.html"><code>EntityRow</code></a></td><td>This represents the row or “index” of an [`Entity`] within the [`Entities`] table.  This is a light...</td></tr>
+<tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`](crate::world::World).   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`](crate::world::World::register_component)...</td></tr>
+<tr><td><a href="././types/entity.html"><code>Entity</code></a></td><td>Unique identifier for an entity in a [`World`].  Note that this is just an id, not the entity itself.  Further, the entity this id refers to may no longer exist in the [`World`]...</td></tr>
+<tr><td><a href="././types/entitygeneration.html"><code>EntityGeneration</code></a></td><td>This tracks different versions or generations of an [`EntityIndex`].  Importantly, this can wrap, meaning each generation is not necessarily unique per [`EntityIndex`]...</td></tr>
+<tr><td><a href="././types/entityindex.html"><code>EntityIndex</code></a></td><td>This represents the index of an [`Entity`] within the [`Entities`] array.  This is a lighter weight...</td></tr>
 <tr><td><a href="././types/entityhash.html"><code>EntityHash</code></a></td><td>A [`BuildHasher`] that results in a [`EntityHasher`].</td></tr>
 <tr><td><a href="././types/entityhashset.html"><code>EntityHashSet</code></a></td><td>A [`HashSet`] pre-configured to use [`EntityHash`] hashing.</td></tr>
+<tr><td><a href="././types/entityindexset.html"><code>EntityIndexSet</code></a></td><td>An [`IndexSet`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/defaultqueryfilters.html"><code>DefaultQueryFilters</code></a></td><td>Default query filters work by excluding entities with certain components from most queries.   If a ...</td></tr>
 <tr><td><a href="././types/disabled.html"><code>Disabled</code></a></td><td>A marker component for disabled entities.   Semantically, this component is used to mark entities t...</td></tr>
-<tr><td><a href="././types/internal.html"><code>Internal</code></a></td><td>A marker component for internal entities.   This component is used to mark entities as being intern...</td></tr>
 <tr><td><a href="././types/childof.html"><code>ChildOf</code></a></td><td>Stores the parent entity of this child entity with this component.   This is a [`Relationship`] component, and creates the canonical  “parent / child” hierarchy. This is the “source of truth” component, and it pairs with  the [`Children`]...</td></tr>
 <tr><td><a href="././types/children.html"><code>Children</code></a></td><td>Tracks which entities are children of this parent entity.   A [`RelationshipTarget`] collection component that is populated  with entities that “target” this entity with the [`ChildOf`]...</td></tr>
 <tr><td><a href="././types/add.html"><code>Add</code></a></td><td>Trigger emitted when a component is inserted onto an entity that does not already have that  compon...</td></tr>
@@ -323,7 +325,7 @@
 <tr><td><a href="././types/circularsector.html"><code>CircularSector</code></a></td><td>A primitive representing a circular sector: a pie slice of a circle.   The segment is positioned so...</td></tr>
 <tr><td><a href="././types/circularsegment.html"><code>CircularSegment</code></a></td><td>A primitive representing a circular segment:  the area enclosed by the arc of a circle and its chor...</td></tr>
 <tr><td><a href="././types/convexpolygon.html"><code>ConvexPolygon</code></a></td><td>A convex polygon with `N` vertices.</td></tr>
-<tr><td><a href="././types/ellipse.html"><code>Ellipse</code></a></td><td>An ellipse primitive, which is like a circle, but the width and height can be different</td></tr>
+<tr><td><a href="././types/ellipse.html"><code>Ellipse</code></a></td><td>An ellipse primitive, which is like a circle, but the width and height can be different   Ellipse d...</td></tr>
 <tr><td><a href="././types/line2d.html"><code>Line2d</code></a></td><td>An infinite line going through the origin along a direction in 2D space.   For a finite line: [`Segment2d`]...</td></tr>
 <tr><td><a href="././types/plane2d.html"><code>Plane2d</code></a></td><td>An unbounded plane in 2D space. It forms a separating surface through the origin,  stretching infin...</td></tr>
 <tr><td><a href="././types/polygon.html"><code>Polygon</code></a></td><td>A polygon with N vertices.</td></tr>
@@ -363,6 +365,7 @@
 <tr><td><a href="././types/globaltransform.html"><code>GlobalTransform</code></a></td><td>[`GlobalTransform`] is an affine transformation from entity-local coordinates to worldspace coordinates.   You cannot directly mutate [`GlobalTransform`]...</td></tr>
 <tr><td><a href="././types/transform.html"><code>Transform</code></a></td><td>Describe the position of an entity. If the entity has a parent, the position is relative  to its pa...</td></tr>
 <tr><td><a href="././types/transformtreechanged.html"><code>TransformTreeChanged</code></a></td><td>An optimization for transform propagation. This ZST marker component uses change detection to  mark...</td></tr>
+<tr><td><a href="././types/statictransformoptimizations.html"><code>StaticTransformOptimizations</code></a></td><td>Configure the behavior of static scene optimizations for [`Transform`] propagation.   For scenes with many static entities, it is much faster to track trees of unchanged  [`Transform`]...</td></tr>
 <tr><td><a href="././types/typeid.html"><code>TypeId</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/socketaddr.html"><code>SocketAddr</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/rangefull.html"><code>RangeFull</code></a></td><td>No Documentation 🚧</td></tr>
@@ -431,6 +434,8 @@
 <tr><td><a href="././types/smolstr.html"><code>SmolStr</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonniluuid.html"><code>NonNilUuid</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/uuid.html"><code>Uuid</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/blendstate.html"><code>BlendState</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/textureformat.html"><code>TextureFormat</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/bool.html"><code>Bool</code></a></td><td>A boolean value</td></tr>
 <tr><td><a href="././types/char.html"><code>Char</code></a></td><td>An 8-bit character</td></tr>
 <tr><td><a href="././types/dynamicfunction.html"><code>DynamicFunction</code></a></td><td>A callable dynamic function</td></tr>
@@ -465,6 +470,7 @@
 <tr><td><a href="././types/renderassetusages.html"><code>RenderAssetUsages</code></a></td><td>Defines where the asset will be used.   If an asset is set to the `RENDER_WORLD` but not the `MAIN_WORLD`...</td></tr>
 <tr><td><a href="././types/camera.html"><code>Camera</code></a></td><td>The defining [`Component`] for camera entities,  storing information about how and what to render through this camera.   The [`Camera`]...</td></tr>
 <tr><td><a href="././types/cameramaintextureusages.html"><code>CameraMainTextureUsages</code></a></td><td>This component lets you control the [`TextureUsages`] field of the main texture generated for the camera</td></tr>
+<tr><td><a href="././types/cameraoutputmode.html"><code>CameraOutputMode</code></a></td><td>Control how this [`Camera`] outputs once rendering is completed.</td></tr>
 <tr><td><a href="././types/exposure.html"><code>Exposure</code></a></td><td>How much energy a [`Camera3d`](crate::Camera3d) absorbs from incoming light.   <a href="https://en&#92;.wikipedia&#92;.org/wiki/Exposure&#92;_&#92;(photography&#92;)">https://en\.wikipedia\.org/wiki/Exposure\_\(photography\)</a></td></tr>
 <tr><td><a href="././types/imagerendertarget.html"><code>ImageRenderTarget</code></a></td><td>A render target that renders to an [`Image`].</td></tr>
 <tr><td><a href="././types/mainpassresolutionoverride.html"><code>MainPassResolutionOverride</code></a></td><td>Override the resolution a 3d camera’s main pass is rendered at.   Does not affect post processing. ...</td></tr>
@@ -475,6 +481,7 @@
 <tr><td><a href="././types/viewport.html"><code>Viewport</code></a></td><td>Render viewport configuration for the [`Camera`] component.   The viewport defines the area on the render target to which the camera renders its image.  You can overlay multiple cameras in a single window using viewports to create effects like  split screen, minimaps, and character viewers.</td></tr>
 <tr><td><a href="././types/clearcolor.html"><code>ClearColor</code></a></td><td>A [`Resource`] that stores the default color that cameras use to clear the screen between frames.   This color appears as the “background” color for simple apps,  when there are portions of the screen with nothing rendered.   Individual cameras may use [`Camera.clear_color`]...</td></tr>
 <tr><td><a href="././types/clearcolorconfig.html"><code>ClearColorConfig</code></a></td><td>For a camera, specifies the color used to clear the viewport  [before rendering](crate::camera::Camera::clear_color)  or when [writing to the final render target texture](crate::camera::Camera::output_mode)...</td></tr>
+<tr><td><a href="././types/msaawriteback.html"><code>MsaaWriteback</code></a></td><td>Controls when MSAA writeback occurs for a camera.   MSAA writeback copies the previous camera’s out...</td></tr>
 <tr><td><a href="././types/camera2d.html"><code>Camera2d</code></a></td><td>A 2D camera component. Enables the 2D render graph for a [`Camera`].</td></tr>
 <tr><td><a href="././types/camera3d.html"><code>Camera3d</code></a></td><td>A 3D camera component. Enables the main 3D render graph for a [`Camera`].   The camera coordinate space is right-handed X-right, Y-up, Z-back.  This means “forward” is -Z.</td></tr>
 <tr><td><a href="././types/camera3ddepthloadop.html"><code>Camera3dDepthLoadOp</code></a></td><td>The depth clear operation to perform for the main 3d pass.</td></tr>
@@ -493,8 +500,9 @@
 <tr><td><a href="././types/cascadesvisibleentities.html"><code>CascadesVisibleEntities</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/cubemapvisibleentities.html"><code>CubemapVisibleEntities</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/inheritedvisibility.html"><code>InheritedVisibility</code></a></td><td>Whether or not an entity is visible in the hierarchy.  This will not be accurate until [`VisibilityPropagate`]...</td></tr>
+<tr><td><a href="././types/noautoaabb.html"><code>NoAutoAabb</code></a></td><td>Add this component to an entity to prevent its `AABB` from being automatically recomputed.   This i...</td></tr>
 <tr><td><a href="././types/nofrustumculling.html"><code>NoFrustumCulling</code></a></td><td>Use this component to opt-out of built-in frustum culling for entities, see  [`Frustum`].   It can be used for example:  - when a [`Mesh`]...</td></tr>
-<tr><td><a href="././types/viewvisibility.html"><code>ViewVisibility</code></a></td><td>Algorithmically-computed indication of whether an entity is visible and should be extracted for ren...</td></tr>
+<tr><td><a href="././types/viewvisibility.html"><code>ViewVisibility</code></a></td><td>Algorithmically computed indication of whether an entity is visible and should be extracted for  re...</td></tr>
 <tr><td><a href="././types/visibility.html"><code>Visibility</code></a></td><td>User indication of whether an entity is visible. Propagates down the entity hierarchy.   If an enti...</td></tr>
 <tr><td><a href="././types/visibilityclass.html"><code>VisibilityClass</code></a></td><td>A bucket into which we group entities for the purposes of visibility.   Bevy’s various rendering su...</td></tr>
 <tr><td><a href="././types/visibleentities.html"><code>VisibleEntities</code></a></td><td>Collection of entities visible from the current view.   This component contains all entities which ...</td></tr>
@@ -509,7 +517,9 @@
 <tr><td><a href="././types/inputfocus.html"><code>InputFocus</code></a></td><td>Resource representing which entity has input focus, if any. Input events (other than pointer-like i...</td></tr>
 <tr><td><a href="././types/inputfocusvisible.html"><code>InputFocusVisible</code></a></td><td>Resource representing whether the input focus indicator should be visible on UI elements.   Note th...</td></tr>
 <tr><td><a href="././types/autofocus.html"><code>AutoFocus</code></a></td><td>Indicates that this widget should automatically receive [`InputFocus`].   This can be useful for things like dialog boxes, the first text input in a form,  or the first button in a game menu.   The focus is swapped when this component is added  or an entity with this component is spawned.</td></tr>
-<tr><td><a href="././types/directionalnavigationmap.html"><code>DirectionalNavigationMap</code></a></td><td>A resource that stores the traversable graph of focusable entities.   Each entity can have up to 8 ...</td></tr>
+<tr><td><a href="././types/autonavigationconfig.html"><code>AutoNavigationConfig</code></a></td><td>Configuration resource for automatic directional navigation and for generating manual  navigation e...</td></tr>
+<tr><td><a href="././types/directionalnavigationmap.html"><code>DirectionalNavigationMap</code></a></td><td>A resource that stores the manually specified traversable graph of focusable entities.   Each entit...</td></tr>
+<tr><td><a href="././types/focusablearea.html"><code>FocusableArea</code></a></td><td>A focusable area with position and size information.   This struct represents a UI element used dur...</td></tr>
 <tr><td><a href="././types/navneighbors.html"><code>NavNeighbors</code></a></td><td>The up-to-eight neighbors of a focusable entity, one for each [`CompassOctant`].</td></tr>
 <tr><td><a href="././types/tabgroup.html"><code>TabGroup</code></a></td><td>A component used to mark a tree of entities as containing tabbable elements.</td></tr>
 <tr><td><a href="././types/tabindex.html"><code>TabIndex</code></a></td><td>A component which indicates that an entity wants to participate in tab navigation.   Note that you ...</td></tr>
@@ -563,40 +573,6 @@
 <tr><td><a href="././types/callbacklabel.html"><code>CallbackLabel</code></a></td><td>A string which disallows common invalid characters in callback labels,  particularly at the start o...</td></tr>
 <tr><td><a href="././types/scriptcomponent.html"><code>ScriptComponent</code></a></td><td>A component which identifies the scripts existing on an entity.   Event handlers search for compone...</td></tr>
 <tr><td><a href="././types/contextkey.html"><code>ContextKey</code></a></td><td>The key for a context. The context key is used for:  - Identifying the script itself, uniquely.  - ...</td></tr>
-<tr><td><a href="././types/pickable.html"><code>Pickable</code></a></td><td>An optional component that marks an entity as usable by a backend, and overrides default  picking b...</td></tr>
-<tr><td><a href="././types/pickingsettings.html"><code>PickingSettings</code></a></td><td>Controls the behavior of picking   ## Custom initialization  ```  # use bevy_app::App;  # use bevy_picking::{PickingSettings, PickingPlugin};  App::new()      .insert_resource(PickingSettings {          is_enabled: true,          is_input_enabled: false,          is_hover_enabled: true,          is_window_picking_enabled: false,      })      // or DefaultPlugins      .add_plugins(PickingPlugin);  `...</td></tr>
-<tr><td><a href="././types/hitdata.html"><code>HitData</code></a></td><td>Holds data from a successful pointer hit test. See [`HitData::depth`] for important details.</td></tr>
-<tr><td><a href="././types/pointerhits.html"><code>PointerHits</code></a></td><td>A message produced by a picking backend after it has run its hit tests, describing the entities  un...</td></tr>
-<tr><td><a href="././types/rayid.html"><code>RayId</code></a></td><td>Identifies a ray constructed from some (pointer, camera) combination. A pointer can be over  multip...</td></tr>
-<tr><td><a href="././types/cancel.html"><code>Cancel</code></a></td><td>Fires when a pointer is canceled, and its current interaction state is dropped.</td></tr>
-<tr><td><a href="././types/click.html"><code>Click</code></a></td><td>Fires when a pointer sends a pointer pressed event followed by a pointer released event, with the s...</td></tr>
-<tr><td><a href="././types/drag.html"><code>Drag</code></a></td><td>Fires while the [target entity](EntityEvent::event_target) is being dragged.</td></tr>
-<tr><td><a href="././types/dragdrop.html"><code>DragDrop</code></a></td><td>Fires when a pointer drops the `dropped` entity onto the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/dragend.html"><code>DragEnd</code></a></td><td>Fires when a pointer is dragging the [target entity](EntityEvent::event_target) and a pointer released event is received.</td></tr>
-<tr><td><a href="././types/dragenter.html"><code>DragEnter</code></a></td><td>Fires when a pointer dragging the `dragged` entity enters the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/dragentry.html"><code>DragEntry</code></a></td><td>Dragging state.</td></tr>
-<tr><td><a href="././types/dragleave.html"><code>DragLeave</code></a></td><td>Fires when a pointer dragging the `dragged` entity leaves the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/dragover.html"><code>DragOver</code></a></td><td>Fires while the `dragged` entity is being dragged over the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/dragstart.html"><code>DragStart</code></a></td><td>Fires when the [target entity](EntityEvent::event_target) receives a pointer pressed event followed by a pointer move event.</td></tr>
-<tr><td><a href="././types/move.html"><code>Move</code></a></td><td>Fires while a pointer is moving over the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/out.html"><code>Out</code></a></td><td>Fires when a pointer crosses out of the bounds of the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/over.html"><code>Over</code></a></td><td>Fires when a pointer crosses into the bounds of the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/press.html"><code>Press</code></a></td><td>Fires when a pointer button is pressed over the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/release.html"><code>Release</code></a></td><td>Fires when a pointer button is released over the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/scroll.html"><code>Scroll</code></a></td><td>Fires while a pointer is scrolling over the [target entity](EntityEvent::event_target).</td></tr>
-<tr><td><a href="././types/directlyhovered.html"><code>DirectlyHovered</code></a></td><td>A component that allows users to use regular Bevy change detection to determine when the pointer  i...</td></tr>
-<tr><td><a href="././types/hovered.html"><code>Hovered</code></a></td><td>A component that allows users to use regular Bevy change detection to determine when the pointer  e...</td></tr>
-<tr><td><a href="././types/pickinginteraction.html"><code>PickingInteraction</code></a></td><td>A component that aggregates picking interaction state of this entity across all pointers.   Unlike ...</td></tr>
-<tr><td><a href="././types/pointerinputsettings.html"><code>PointerInputSettings</code></a></td><td>Settings for enabling and disabling updating mouse and touch inputs for picking   ## Custom initial...</td></tr>
-<tr><td><a href="././types/location.html"><code>Location</code></a></td><td>The location of a pointer, including the current [`NormalizedRenderTarget`], and the x/y  position of the pointer on this render target.   Note that:  - a pointer can move freely between render targets  - a pointer is not associated with a [`Camera`]...</td></tr>
-<tr><td><a href="././types/pointeraction.html"><code>PointerAction</code></a></td><td>Event sent to drive a pointer.</td></tr>
-<tr><td><a href="././types/pointerbutton.html"><code>PointerButton</code></a></td><td>The button that was just pressed or released</td></tr>
-<tr><td><a href="././types/pointerid.html"><code>PointerId</code></a></td><td>Identifies a unique pointer entity. `Mouse` and `Touch` pointers are automatically spawned.   This ...</td></tr>
-<tr><td><a href="././types/pointerinput.html"><code>PointerInput</code></a></td><td>An input event effecting a pointer.</td></tr>
-<tr><td><a href="././types/pointerinteraction.html"><code>PointerInteraction</code></a></td><td>Holds a list of entities this pointer is currently interacting with, sorted from nearest to  farthe...</td></tr>
-<tr><td><a href="././types/pointerlocation.html"><code>PointerLocation</code></a></td><td>Component that tracks a pointer’s current [`Location`].</td></tr>
-<tr><td><a href="././types/pointerpress.html"><code>PointerPress</code></a></td><td>Tracks the state of the pointer’s buttons in response to [`PointerInput`] events.</td></tr>
-<tr><td><a href="././types/pressdirection.html"><code>PressDirection</code></a></td><td>The stage of the pointer button press event</td></tr>
 <tr><td><a href="././types/alphamode.html"><code>AlphaMode</code></a></td><td>Sets how a material’s base color alpha channel is used for transparency.</td></tr>
 <tr><td><a href="././types/camerarendergraph.html"><code>CameraRenderGraph</code></a></td><td>Configures the [`RenderGraph`] name assigned to be run for a given [`Camera`] entity.</td></tr>
 <tr><td><a href="././types/mipbias.html"><code>MipBias</code></a></td><td>Camera component specifying a mip bias to apply when sampling from material textures.   Often used ...</td></tr>
@@ -618,12 +594,12 @@
 <tr><td><a href="././types/screenshot.html"><code>Screenshot</code></a></td><td>A component that signals to the renderer to capture a screenshot this frame.   This component shoul...</td></tr>
 <tr><td><a href="././types/screenshotcaptured.html"><code>ScreenshotCaptured</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/anchor.html"><code>Anchor</code></a></td><td>Normalized (relative to its size) offset of a 2d renderable entity from its [`Transform`].</td></tr>
-<tr><td><a href="././types/scalingmode.html"><code>ScalingMode</code></a></td><td>Represents various modes for proportional scaling of a texture.   Can be used in [`SpriteImageMode::Scale`]...</td></tr>
 <tr><td><a href="././types/sprite.html"><code>Sprite</code></a></td><td>Describes a sprite to be rendered to a 2D camera</td></tr>
 <tr><td><a href="././types/spriteimagemode.html"><code>SpriteImageMode</code></a></td><td>Controls how the image is altered when scaled.</td></tr>
+<tr><td><a href="././types/spritescalingmode.html"><code>SpriteScalingMode</code></a></td><td>Represents various modes for proportional scaling of a texture.   Can be used in [`SpriteImageMode::Scale`]...</td></tr>
 <tr><td><a href="././types/text2d.html"><code>Text2d</code></a></td><td>The top-level 2D text component.   Adding `Text2d` to an entity will pull in required components fo...</td></tr>
 <tr><td><a href="././types/text2dshadow.html"><code>Text2dShadow</code></a></td><td>Adds a shadow behind `Text2d` text   Use `TextShadow` for text drawn with `bevy_ui`</td></tr>
-<tr><td><a href="././types/borderrect.html"><code>BorderRect</code></a></td><td>Defines the extents of the border of a rectangle.   This struct is used to represent thickness or o...</td></tr>
+<tr><td><a href="././types/borderrect.html"><code>BorderRect</code></a></td><td>Defines border insets that shrink a rectangle from its minimum and maximum corners.   This struct i...</td></tr>
 <tr><td><a href="././types/slicescalemode.html"><code>SliceScaleMode</code></a></td><td>Defines how a texture slice scales when resized</td></tr>
 <tr><td><a href="././types/textureslicer.html"><code>TextureSlicer</code></a></td><td>Slices a texture using the **9-slicing** technique. This allows to reuse an image at various sizes ...</td></tr>
 <tr><td><a href="././types/colormaterial.html"><code>ColorMaterial</code></a></td><td>A [2d material](Material2d) that renders [2d meshes](crate::Mesh2d) with a texture tinted by a unif...</td></tr>
@@ -648,19 +624,29 @@
 <tr><td><a href="././types/glyphatlasinfo.html"><code>GlyphAtlasInfo</code></a></td><td>Information about a glyph in an atlas.   Rasterized glyphs are stored as rectangles  in one or more...</td></tr>
 <tr><td><a href="././types/glyphatlaslocation.html"><code>GlyphAtlasLocation</code></a></td><td>The location of a glyph in an atlas,  and how it should be positioned when placed.   Used in [`GlyphAtlasInfo`]...</td></tr>
 <tr><td><a href="././types/positionedglyph.html"><code>PositionedGlyph</code></a></td><td>A glyph of a font, typically representing a single character, positioned in screen space.   Contain...</td></tr>
+<tr><td><a href="././types/rungeometry.html"><code>RunGeometry</code></a></td><td>Geometry of a text run used to render text decorations like background colors, strikethrough, and u...</td></tr>
 <tr><td><a href="././types/textlayoutinfo.html"><code>TextLayoutInfo</code></a></td><td>Render information for a corresponding text block.   Contains scaled glyphs and their size. Generat...</td></tr>
 <tr><td><a href="././types/computedtextblock.html"><code>ComputedTextBlock</code></a></td><td>Computed information for a text block.   See [`TextLayout`].   Automatically updated by 2d and UI text systems.</td></tr>
+<tr><td><a href="././types/fontfeaturetag.html"><code>FontFeatureTag</code></a></td><td>An OpenType font feature tag.</td></tr>
+<tr><td><a href="././types/fontfeatures.html"><code>FontFeatures</code></a></td><td>OpenType features for .otf fonts that support them.   Examples features include ligatures, small-ca...</td></tr>
+<tr><td><a href="././types/fonthinting.html"><code>FontHinting</code></a></td><td>Font hinting strategy.   The text bounds can underflow or overflow slightly with `FontHinting::Enabled`...</td></tr>
 <tr><td><a href="././types/fontsmoothing.html"><code>FontSmoothing</code></a></td><td>Determines which antialiasing method to use when rendering text. By default, text is  rendered with...</td></tr>
+<tr><td><a href="././types/fontweight.html"><code>FontWeight</code></a></td><td>How thick or bold the strokes of a font appear.   Valid font weights range from 1 to 1000, inclusiv...</td></tr>
 <tr><td><a href="././types/justify.html"><code>Justify</code></a></td><td>Describes the horizontal alignment of multiple lines of text relative to each other.   This only af...</td></tr>
 <tr><td><a href="././types/linebreak.html"><code>LineBreak</code></a></td><td>Determines how lines will be broken when preventing text from running out of bounds.</td></tr>
 <tr><td><a href="././types/lineheight.html"><code>LineHeight</code></a></td><td>Specifies the height of each line of text for `Text` and `Text2d`   Default is 1.2x the font size</td></tr>
+<tr><td><a href="././types/strikethrough.html"><code>Strikethrough</code></a></td><td>A text entity with this component is drawn with strikethrough.</td></tr>
+<tr><td><a href="././types/strikethroughcolor.html"><code>StrikethroughColor</code></a></td><td>Color for the text’s strikethrough. If this component is not present, its `TextColor` will be used.</td></tr>
 <tr><td><a href="././types/textbackgroundcolor.html"><code>TextBackgroundColor</code></a></td><td>The background color of the text for this section.</td></tr>
 <tr><td><a href="././types/textcolor.html"><code>TextColor</code></a></td><td>The color of the text for this section.</td></tr>
 <tr><td><a href="././types/textentity.html"><code>TextEntity</code></a></td><td>A sub-entity of a [`ComputedTextBlock`].   Returned by [`ComputedTextBlock::entities`].</td></tr>
 <tr><td><a href="././types/textfont.html"><code>TextFont</code></a></td><td>`TextFont` determines the style of a text span within a [`ComputedTextBlock`], specifically  the font face, the font size, the line height, and the antialiasing method.</td></tr>
 <tr><td><a href="././types/textlayout.html"><code>TextLayout</code></a></td><td>Component with text format settings for a block of text.   A block of text is composed of text span...</td></tr>
 <tr><td><a href="././types/textspan.html"><code>TextSpan</code></a></td><td>A span of text in a tree of spans.   A `TextSpan` is only valid when it exists as a child of a pare...</td></tr>
+<tr><td><a href="././types/underline.html"><code>Underline</code></a></td><td>Add to a text entity to draw its text with underline.</td></tr>
+<tr><td><a href="././types/underlinecolor.html"><code>UnderlineColor</code></a></td><td>Color for the text’s underline. If this component is not present, its `TextColor` will be used.</td></tr>
 <tr><td><a href="././types/uiscale.html"><code>UiScale</code></a></td><td>The current scale of the UI.   A multiplier to fixed-sized ui values.  **Note:** This will only aff...</td></tr>
+<tr><td><a href="././types/autodirectionalnavigation.html"><code>AutoDirectionalNavigation</code></a></td><td>Marker component to enable automatic directional navigation to and from the entity.   Simply add th...</td></tr>
 <tr><td><a href="././types/focuspolicy.html"><code>FocusPolicy</code></a></td><td>Describes whether the node should block interactions with lower nodes</td></tr>
 <tr><td><a href="././types/interaction.html"><code>Interaction</code></a></td><td>Describes what type of input interaction has occurred for a UI node.   This is commonly queried wit...</td></tr>
 <tr><td><a href="././types/relativecursorposition.html"><code>RelativeCursorPosition</code></a></td><td>A component storing the position of the mouse relative to the node, (0., 0.) being the center and (...</td></tr>
@@ -698,6 +684,7 @@
 <tr><td><a href="././types/gridplacement.html"><code>GridPlacement</code></a></td><td>Represents the position of a grid item in a single axis.   There are 3 fields which may be set:    ...</td></tr>
 <tr><td><a href="././types/gridtrack.html"><code>GridTrack</code></a></td><td>A [`GridTrack`] is a Row or Column of a CSS Grid. This struct specifies what size the track should be.  See below for the different “track sizing functions” you can specify.</td></tr>
 <tr><td><a href="././types/gridtrackrepetition.html"><code>GridTrackRepetition</code></a></td><td>How many times to repeat a repeated grid track   &lt;https://developer.mozilla.org/en-US/docs/Web/CSS/...</td></tr>
+<tr><td><a href="././types/ignorescroll.html"><code>IgnoreScroll</code></a></td><td>Controls whether a UI element ignores its parent’s [`ScrollPosition`] along specific axes.   When an axis is set to `true`, the node will not have the parent’s scroll position applied  on that axis. This can be used to keep an element visually fixed along one or both axes  even when its parent UI element is scrolled.</td></tr>
 <tr><td><a href="././types/justifycontent.html"><code>JustifyContent</code></a></td><td>Used to control how items are distributed.  - For Flexbox containers, controls alignment of items i...</td></tr>
 <tr><td><a href="././types/justifyitems.html"><code>JustifyItems</code></a></td><td>Used to control how each individual item is aligned by default within the space they’re given.  - F...</td></tr>
 <tr><td><a href="././types/justifyself.html"><code>JustifySelf</code></a></td><td>Used to control how the specified item is aligned within the space it’s given.  - For children of f...</td></tr>
@@ -728,7 +715,7 @@
 <tr><td><a href="././types/text.html"><code>Text</code></a></td><td>The top-level UI text component.   Adding [`Text`] to an entity will pull in required components for setting up a UI text node.   The string in this component is the first ‘text span’ in a hierarchy of text spans that are collected into  a [`ComputedTextBlock`]...</td></tr>
 <tr><td><a href="././types/textnodeflags.html"><code>TextNodeFlags</code></a></td><td>UI text system flags.   Used internally by [`measure_text_system`] and [`text_system`] to schedule text for processing.</td></tr>
 <tr><td><a href="././types/textshadow.html"><code>TextShadow</code></a></td><td>Adds a shadow behind text   Use the `Text2dShadow` component for `Text2d` shadows</td></tr>
-<tr><td><a href="././types/viewportnode.html"><code>ViewportNode</code></a></td><td>Component used to render a [`Camera::target`]  to a node.   # See Also   [`update_viewport_render_target_size`...</td></tr>
+<tr><td><a href="././types/viewportnode.html"><code>ViewportNode</code></a></td><td>Component used to render a [`RenderTarget`]  to a node.   # See Also   [`update_viewport_render_target_size`...</td></tr>
 <tr><td><a href="././types/cursoricon.html"><code>CursorIcon</code></a></td><td>Insert into a window entity to set the cursor for that window.</td></tr>
 <tr><td><a href="././types/customcursor.html"><code>CustomCursor</code></a></td><td>Custom cursor image data.</td></tr>
 <tr><td><a href="././types/customcursorimage.html"><code>CustomCursorImage</code></a></td><td>A custom cursor created from an image.</td></tr>
@@ -776,7 +763,7 @@
 <tr><td><a href="././types/windowresizeconstraints.html"><code>WindowResizeConstraints</code></a></td><td>The size limits on a [`Window`].   These values are measured in logical pixels (see [`WindowResolution`...</td></tr>
 <tr><td><a href="././types/windowresolution.html"><code>WindowResolution</code></a></td><td>Controls the size of a [`Window`]   ## Physical, logical and requested sizes   There are three sizes associated with a window:  - the physical size,    which represents the actual height and width in physical pixels    the window occupies on the monitor,  - the logical size,    which represents the size that should be used to scale elements    inside the window, measured in logical pixels,  - the requested size,    measured in logical pixels, which is the value submitted    to the API when creating the window, or requesting that it be resized.   ## Scale factor   The reason logical size and physical size are separated and can be different  is to account for the cases where:  - several monitors have different pixel densities,  - the user has set up a pixel density preference in its operating system,  - the Bevy `App` has specified a specific scale factor between both.   The factor between physical size and logical size can be retrieved with  [`WindowResolution::scale_factor`]...</td></tr>
 <tr><td><a href="././types/windowtheme.html"><code>WindowTheme</code></a></td><td>The [`Window`] theme variant to use.</td></tr>
-<tr><td><a href="././types/wakeup.html"><code>WakeUp</code></a></td><td>The default event that can be used to wake the window loop  Wakes up the loop if in wait state</td></tr>
+<tr><td><a href="././types/winituserevent.html"><code>WinitUserEvent</code></a></td><td>Events that can be sent to perform actions inside the winit event loop.   Sent via the [`EventLoopProxyWrapper`]...</td></tr>
 <tr><td><a href="././types/nonzeroi128.html"><code>NonZeroI128</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzeroi16.html"><code>NonZeroI16</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzeroi32.html"><code>NonZeroI32</code></a></td><td>No Documentation 🚧</td></tr>
@@ -803,6 +790,7 @@
 <tr><td><a href="././types/entityhashmapnavneighbors.html"><code>EntityHashMap&lt;NavNeighbors&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/axisgamepadinput.html"><code>Axis&lt;GamepadInput&gt;</code></a></td><td>Stores the position data of the input devices of type `T`.   The values are stored as `f32`s, using...</td></tr>
 <tr><td><a href="././types/buttoninputgamepadbutton.html"><code>ButtonInput&lt;GamepadButton&gt;</code></a></td><td>A “press-able” input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
+<tr><td><a href="././types/meshextractabledataindices.html"><code>MeshExtractableData&lt;Indices&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/arc.html"><code>Arc</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/arc.html"><code>Arc</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/meshmaterial2dcolormaterial.html"><code>MeshMaterial2d&lt;ColorMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_math::primitives::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
@@ -812,8 +800,11 @@
 <tr><td><a href="././types/timevirtual.html"><code>Time&lt;Virtual&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
 <tr><td><a href="././types/range.html"><code>Range</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/rangeinclusive.html"><code>RangeInclusive</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/meshextractabledataalloc::vec::vecalloc::string::string.html"><code>MeshExtractableData&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/meshextractabledatahandleimage.html"><code>MeshExtractableData&lt;Handle&lt;Image&gt;&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetentity.html"><code>HashSet&lt;Entity&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetgamepadbutton.html"><code>HashSet&lt;GamepadButton&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/indexsetentity.html"><code>IndexSet&lt;Entity&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>

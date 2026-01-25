@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-1b4d5895.js";
+            window.path_to_searchindex_js = "../../searchindex-bf7977f2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-90db5100.js"></script>
+        <script src="../../toc-887108de.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -185,11 +185,12 @@
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>Defines where the asset will be used.</p>
-<p>If an asset is set to the <code>RENDER_WORLD</code> but not the <code>MAIN_WORLD</code>, the asset will be
-unloaded from the asset server once it’s been extracted and prepared in the render world.</p>
-<p>Unloading the asset saves on memory, as for most cases it is no longer necessary to keep
-it in RAM once it’s been uploaded to the GPU’s VRAM. However, this means you can no longer
-access the asset from the CPU (via the <code>Assets&lt;T&gt;</code> resource) once unloaded (without re-loading it).</p>
+<p>If an asset is set to the <code>RENDER_WORLD</code> but not the <code>MAIN_WORLD</code>, the asset data (pixel data,
+mesh vertex data, etc) will be removed from the cpu-side asset once it’s been extracted and prepared
+in the render world. The asset will remain in the assets collection, but with only metadata.</p>
+<p>Unloading the asset data saves on memory, as for most cases it is no longer necessary to keep
+it in RAM once it’s been uploaded to the GPU’s VRAM. However, this means you cannot access the
+asset data from the CPU (via the <code>Assets&lt;T&gt;</code> resource) once unloaded (without re-loading it).</p>
 <p>If you never need access to the asset from the CPU past the first frame it’s loaded on,
 or only need very infrequent access, then set this to <code>RENDER_WORLD</code>. Otherwise, set this to
 <code>RENDER_WORLD | MAIN_WORLD</code>.</p>

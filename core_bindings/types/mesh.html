@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-1b4d5895.js";
+            window.path_to_searchindex_js = "../../searchindex-bf7977f2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-90db5100.js"></script>
+        <script src="../../toc-887108de.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,11 +183,12 @@
                         <h1 id="mesh"><a class="header" href="#mesh"><code>Mesh</code></a></h1>
 <h3 id="mesh-1"><a class="header" href="#mesh-1">Mesh</a></h3>
 <ul>
-<li><strong>indices</strong>:Optional&lt;<a href="./indices.html">Indices</a>&gt;</li>
-<li><strong>morph_targets</strong>:Optional&lt;Handle&lt;<a href="./image.html">Image</a>&gt;&gt;</li>
-<li><strong>morph_target_names</strong>:Optional&lt;Vec&lt;<a href="./string.html">String</a>&gt;&gt;</li>
+<li><strong>indices</strong>:MeshExtractableData&lt;<a href="./indices.html">Indices</a>&gt;</li>
+<li><strong>morph_targets</strong>:MeshExtractableData&lt;Handle&lt;<a href="./image.html">Image</a>&gt;&gt;</li>
+<li><strong>morph_target_names</strong>:MeshExtractableData&lt;<a href="./alloc::vec::vecalloc::string::string.html">alloc::vec::Vec&lt;alloc::string::String&gt;</a>&gt;</li>
 <li><strong>asset_usage</strong>:<a href="./renderassetusages.html">RenderAssetUsages</a></li>
 <li><strong>enable_raytracing</strong>:<a href="./bool.html">Bool</a></li>
+<li><strong>final_aabb</strong>:Optional&lt;<a href="./aabb3d.html">Aabb3d</a>&gt;</li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
