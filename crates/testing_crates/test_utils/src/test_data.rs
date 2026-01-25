@@ -267,7 +267,7 @@ impl SimpleEnum {
 }
 
 pub(crate) const TEST_COMPONENT_ID_START: usize = 20;
-pub(crate) const TEST_ENTITY_ID_START: u32 = 1;
+pub(crate) const TEST_ENTITY_ID_START: u32 = 9;
 
 pub trait GetTestComponentId {
     fn test_component_id() -> ComponentId;
@@ -393,6 +393,10 @@ fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init:
                 None,
             ))
         };
+    }
+
+    while world.entities().len() < TEST_ENTITY_ID_START {
+        world.spawn_empty();
     }
 
     init_all_components(world, &mut type_registry_guard);
