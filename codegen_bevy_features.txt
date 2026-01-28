@@ -1,1 +1,1 @@
-default,bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded,std,async_executor,bevy_reflect/wgpu-types,bevy_reflect/glam,bevy_reflect/uuid,bevy_reflect/smol_str,bevy_sprite/bevy_picking
+default,touch,gestures,bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded,std,async_executor,bevy_reflect/wgpu-types,bevy_reflect/glam,bevy_reflect/uuid,bevy_reflect/smol_str,bevy_sprite/bevy_picking

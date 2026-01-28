@@ -24,7 +24,7 @@ bevy_app = { version = "^0.18.0", features = ["bevy_reflect", "error_panic_hook"
 
 bevy_ecs = { version = "^0.18.0", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
 
-bevy_input = { version = "^0.18.0", features = ["bevy_reflect", "gamepad", "keyboard", "mouse", "smol_str", "std"], default-features = true}
+bevy_input = { version = "^0.18.0", features = ["bevy_reflect", "gamepad", "gestures", "keyboard", "mouse", "smol_str", "std", "touch"], default-features = true}
 
 bevy_math = { version = "^0.18.0", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
