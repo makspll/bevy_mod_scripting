@@ -341,6 +341,7 @@ path = "examples/run_script.rs"
 [[example]]
 name = "script_loading"
 path = "examples/script_loading.rs"
+required-features = ["lua54"]
 
 [workspace.lints.clippy]
 panic = "deny"
