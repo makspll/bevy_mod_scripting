@@ -1,137 +1,142 @@
-use bevy_mod_scripting_bindings::ScriptValue;
+use bevy_ecs::{
+    observer::On,
+    system::{Commands, In},
+    world::WorldId,
+};
+use bevy_mod_scripting_script::ScriptAttachment;
 
 use crate::{
-    callbacks::ScriptCallbacks,
     commands::RunScriptCallback,
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded},
 };
 
 use super::*;
 
-const UNLOADED_SCRIPT_STATE_KEY: &str = "state";
-
-pub(crate) struct OnLoadedListener;
-
-impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnLoadedListener {
-    fn on_enter(
-        &self,
-        state: &mut ContextAssigned<P>,
-        world: &mut World,
-        ctxt: &mut Context,
-    ) -> Result<(), ScriptError> {
-        let world_id = world.id();
-        let emit_responses = P::readonly_configuration(world_id).emit_responses;
-        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let guard = WorldGuard::new_exclusive(world);
-        bevy_log::trace!(
-            "Running on_script_loaded hook for script: {}",
-            ctxt.attachment
-        );
-        RunScriptCallback::<P>::new(
-            ctxt.attachment.clone(),
-            OnScriptLoaded::into_callback_label(),
-            vec![],
-            emit_responses,
-        )
-        .run_with_context(guard.clone(), state.context.clone(), callbacks)
-        .map(|_| ())
-    }
+pub(crate) fn clear_machine_data(
+    attachment: In<ScriptAttachment>,
+    mut datas: ResMut<ActiveMachinesData>,
+) {
+    datas.0.remove(&attachment.0);
 }
 
-pub(crate) struct OnUnloadedForUnloadListener;
-impl<P: IntoScriptPluginParams> TransitionListener<UnloadingInitialized<P>>
-    for OnUnloadedForUnloadListener
-{
-    fn on_enter(
-        &self,
-        state: &mut UnloadingInitialized<P>,
-        world: &mut World,
-        ctxt: &mut Context,
-    ) -> Result<(), ScriptError> {
-        let world_id = world.id();
-        let emit_responses = P::readonly_configuration(world_id).emit_responses;
-        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let guard = WorldGuard::new_exclusive(world);
-        bevy_log::trace!(
-            "Running on_script_unloaded hook for script: {}",
-            ctxt.attachment
-        );
-        let v = RunScriptCallback::<P>::new(
-            ctxt.attachment.clone(),
+pub fn on_script_loaded_pipeline_handler<P: IntoScriptPluginParams>(
+    trigger: On<ContextAssigned<P>>,
+    mut commands: Commands,
+    world_id: WorldId,
+) {
+    let event = trigger.event();
+    let emit_responses = P::readonly_configuration(world_id).emit_responses;
+    bevy_log::debug!(
+        "Running on_script_loaded hook for script: {}",
+        event.attachment
+    );
+    commands.queue(RunScriptCallback::<P>::new(
+        event.attachment.clone(),
+        OnScriptLoaded::into_callback_label(),
+        vec![],
+        emit_responses,
+    ));
+}
+
+pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>(
+    trigger: On<UnloadingInitialized<P>>,
+    mut commands: Commands,
+    world_id: WorldId,
+) {
+    let event = trigger.event();
+    let emit_responses = P::readonly_configuration(world_id).emit_responses;
+    // let guard = WorldGuard::new_exclusive(world);
+    bevy_log::debug!(
+        "Running on_script_unloaded hook for script: {}",
+        event.attachment
+    );
+    commands.queue(
+        RunScriptCallback::<P>::new(
+            event.attachment.clone(),
             OnScriptUnloaded::into_callback_label(),
             vec![],
             emit_responses,
         )
-        .run_with_context(guard.clone(), state.existing_context.clone(), callbacks)?;
-        ctxt.insert(UNLOADED_SCRIPT_STATE_KEY, v);
-        Ok(())
-    }
+        .with_post_callback_handler(|world, attachment, response| {
+            if let Ok(v) = response.as_ref() {
+                bevy_log::debug!(
+                    "on_script_unloaded hook for script: {} setting reload_state: {:?}",
+                    attachment,
+                    v
+                );
+                let mut data = world.get_resource_or_init::<ActiveMachinesData>();
+                let data = data.0.entry(attachment).or_default();
+
+                data.reload_state = v.clone();
+            }
+        }),
+    );
 }
-
-pub(crate) struct OnUnloadedForReloadListener;
-impl<P: IntoScriptPluginParams> TransitionListener<ReloadingInitialized<P>>
-    for OnUnloadedForReloadListener
-{
-    fn on_enter(
-        &self,
-        state: &mut ReloadingInitialized<P>,
-        world: &mut World,
-        ctxt: &mut Context,
-    ) -> Result<(), ScriptError> {
-        let world_id = world.id();
-        let emit_responses = P::readonly_configuration(world_id).emit_responses;
-        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let guard = WorldGuard::new_exclusive(world);
-
-        bevy_log::trace!(
-            "Running on_script_unloaded for reload hook for script: {}",
-            ctxt.attachment
-        );
-
-        let v = RunScriptCallback::<P>::new(
-            ctxt.attachment.clone(),
+// todo unify the two, they just need a context extractor trait
+pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>(
+    trigger: On<ReloadingInitialized<P>>,
+    mut commands: Commands,
+    world_id: WorldId,
+) {
+    let event = trigger.event();
+    let emit_responses = P::readonly_configuration(world_id).emit_responses;
+    bevy_log::debug!(
+        "Running on_script_unloaded hook for script: {}",
+        event.attachment
+    );
+    commands.queue(
+        RunScriptCallback::<P>::new(
+            event.attachment.clone(),
             OnScriptUnloaded::into_callback_label(),
             vec![],
             emit_responses,
         )
-        .run_with_context(guard.clone(), state.existing_context.clone(), callbacks)?;
-        ctxt.insert(UNLOADED_SCRIPT_STATE_KEY, v);
-        Ok(())
-    }
+        .with_post_callback_handler(|world, attachment, response| {
+            if let Ok(v) = response.as_ref() {
+                bevy_log::debug!(
+                    "on_script_unloaded hook for script: {} setting reload_state: {:?}",
+                    attachment,
+                    v
+                );
+                let mut data = world.get_resource_or_init::<ActiveMachinesData>();
+                let data = data.0.entry(attachment).or_default();
+
+                data.reload_state = v.clone();
+            }
+        }),
+    );
 }
 
-pub(crate) struct OnReloadedListener;
-impl<P: IntoScriptPluginParams> TransitionListener<ContextAssigned<P>> for OnReloadedListener {
-    fn on_enter(
-        &self,
-        state: &mut ContextAssigned<P>,
-        world: &mut World,
-        ctxt: &mut Context,
-    ) -> Result<(), ScriptError> {
-        let world_id = world.id();
-        let emit_responses = P::readonly_configuration(world_id).emit_responses;
-        let callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let guard = WorldGuard::new_exclusive(world);
+pub fn on_script_reloaded_pipeline_handler<P: IntoScriptPluginParams>(
+    trigger: On<ContextAssigned<P>>,
+    mut commands: Commands,
+    world_id: WorldId,
+    datas: Res<ActiveMachinesData>,
+) {
+    let event = trigger.event();
 
-        if state.is_new_context {
-            return Ok(());
-        }
+    let emit_responses = P::readonly_configuration(world_id).emit_responses;
 
-        bevy_log::trace!(
-            "Running on_script_reloaded hook for script: {}",
-            ctxt.attachment
-        );
-
-        let unload_state = ctxt.get_first_typed::<ScriptValue>(UNLOADED_SCRIPT_STATE_KEY);
-        let unload_state = unload_state.unwrap_or(ScriptValue::Unit);
-
-        RunScriptCallback::<P>::new(
-            ctxt.attachment.clone(),
-            OnScriptReloaded::into_callback_label(),
-            vec![unload_state],
-            emit_responses,
-        )
-        .run_with_context(guard.clone(), state.context.clone(), callbacks)
-        .map(|_| ())
+    if event.is_new_context {
+        return;
     }
+
+    let unload_state = datas
+        .0
+        .get(&event.attachment)
+        .map(|e| e.reload_state.clone())
+        .unwrap_or_default();
+
+    bevy_log::debug!(
+        "Running on_script_reloaded hook for script: {}, with unload_state: {:?}",
+        event.attachment,
+        unload_state
+    );
+
+    commands.queue(RunScriptCallback::<P>::new(
+        event.attachment.clone(),
+        OnScriptReloaded::into_callback_label(),
+        vec![unload_state],
+        emit_responses,
+    ))
 }

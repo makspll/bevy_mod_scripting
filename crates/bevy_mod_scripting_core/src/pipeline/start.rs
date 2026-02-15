@@ -1,3 +1,5 @@
+use crate::script::Context;
+
 use super::*;
 use bevy_asset::AssetEvent;
 use bevy_ecs::message::{MessageReader, MessageWriter};
@@ -101,11 +103,11 @@ pub fn filter_script_attachments<P: IntoScriptPluginParams>(
     }
 }
 
-/// Filters incoming [`ScriptDetachedEvent`]'s leaving only those which are currently attached
+/// Filters incoming [`ScriptDetachedEvent`]'s leaving only those which are currently attached and match the plugin's language
 pub fn filter_script_detachments<P: IntoScriptPluginParams>(
     mut events: MessageReader<ScriptDetachedEvent>,
     mut filtered: MessageWriter<ForPlugin<ScriptDetachedEvent, P>>,
-    contexts: Res<ScriptContext<P>>,
+    contexts: Res<ScriptContexts<P>>,
 ) {
     let contexts_guard = contexts.read();
     let mut batch = events
@@ -125,39 +127,47 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
     mut events: MessageReader<ForPlugin<ScriptAttachedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
     mut assets: ResMut<Assets<ScriptAsset>>,
-    contexts: Res<ScriptContext<P>>,
 ) {
-    let contexts = contexts.read();
+    // let contexts = contexts.read();
     events.read().for_each(|wrapper| {
         let attachment_event = wrapper.event();
+        let attachment = attachment_event.0.clone();
         debug!("received attachment event: {attachment_event:?}");
         let id = attachment_event.0.script();
-        let mut context = Context {
-            attachment: attachment_event.0.clone(),
-            blackboard: Default::default(),
+        let mut context = MachineContext {
+            attachment: attachment.clone(),
         };
         if let Some(strong_handle) = StrongScriptHandle::from_assets(id, &mut assets) {
-            // we want the loading process to have access to asset paths, we will weaken the handle at the end.
+            // we want the loading process to have access to asset paths
             *context.attachment.script_mut() = strong_handle.0.clone();
             let content = strong_handle.get(&assets);
-            if let Some(existing_context) = contexts.get_context(&attachment_event.0) {
-                machines.queue_machine(
-                    context,
-                    ReloadingInitialized {
-                        source: strong_handle.handle().clone(),
-                        content: content.content,
-                        existing_context,
-                    },
-                );
-            } else {
-                machines.queue_machine(
-                    context,
-                    LoadingInitialized {
-                        source: strong_handle.handle().clone(),
-                        content: content.content,
-                    },
-                );
-            }
+
+            // we query for the contexts to decide if this is a reload or load at runtime
+            // not when queueing, in case another machine before this one affects the state, we do need the asset though
+            machines.queue_machine(context, move |w| {
+                let contexts = w.get_resource_or_init::<ScriptContexts<P>>();
+                let contexts = contexts.read();
+
+                match contexts.get_context(&attachment) {
+                    Some(Context::LoadedAndActive(context)) => {
+                        vec![Box::new(ReloadingInitialized {
+                            attachment: attachment.clone(),
+                            source: strong_handle.handle().clone(),
+                            content: content.content,
+                            existing_context: context,
+                        })]
+                    }
+                    // context is in an invalid state
+                    Some(_) => vec![],
+                    None => {
+                        vec![Box::new(LoadingInitialized {
+                            attachment: attachment.clone(),
+                            source: strong_handle.handle().clone(),
+                            content: content.content,
+                        })]
+                    }
+                }
+            });
         }
     });
 }
@@ -166,21 +176,34 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
 pub fn process_detachments<P: IntoScriptPluginParams>(
     mut events: MessageReader<ForPlugin<ScriptDetachedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
-    contexts: Res<ScriptContext<P>>,
+    contexts: Res<ScriptContexts<P>>,
 ) {
     events.read().for_each(|wrapper| {
         let attachment_event = wrapper.event();
+        let attachment = &attachment_event.0;
         let contexts_guard = contexts.read();
         contexts_guard
             .get_context(&attachment_event.0)
             .into_iter()
             .for_each(|existing_context| {
+                // for the borrow checker
+                let attachment = attachment.clone();
                 machines.queue_machine(
-                    Context {
-                        attachment: attachment_event.0.clone(),
-                        blackboard: Default::default(),
+                    MachineContext {
+                        attachment: attachment.clone(),
                     },
-                    UnloadingInitialized { existing_context },
+                    move |_| {
+                        existing_context
+                            .as_loaded()
+                            .map(|existing_context| {
+                                Box::new(UnloadingInitialized {
+                                    attachment,
+                                    existing_context: existing_context.clone(),
+                                }) as Box<dyn MachineState<P>>
+                            })
+                            .into_iter()
+                            .collect::<Vec<_>>()
+                    },
                 );
             })
     });
@@ -191,7 +214,7 @@ pub fn process_asset_modifications<P: IntoScriptPluginParams>(
     mut events: MessageReader<ForPlugin<ScriptAssetModifiedEvent, P>>,
     mut machines: ResMut<ActiveMachines<P>>,
     mut assets: ResMut<Assets<ScriptAsset>>,
-    contexts: Res<ScriptContext<P>>,
+    contexts: Res<ScriptContexts<P>>,
 ) {
     let affected_ids = events.read().map(|e| e.event().0).collect::<HashSet<_>>();
 
@@ -207,15 +230,24 @@ pub fn process_asset_modifications<P: IntoScriptPluginParams>(
             let id = attachment.script();
             if let Some(strong_handle) = StrongScriptHandle::from_assets(id, &mut assets) {
                 let content = strong_handle.get(&assets);
+
                 machines.queue_machine(
-                    Context {
-                        attachment,
-                        blackboard: Default::default(),
+                    MachineContext {
+                        attachment: attachment.clone(),
                     },
-                    ReloadingInitialized {
-                        source: strong_handle.handle().clone(),
-                        content: content.content,
-                        existing_context,
+                    move |_| {
+                        existing_context
+                            .as_loaded()
+                            .map(|existing_context| {
+                                Box::new(ReloadingInitialized {
+                                    attachment,
+                                    source: strong_handle.handle().clone(),
+                                    content: content.content,
+                                    existing_context: existing_context.clone(),
+                                }) as Box<dyn MachineState<P>>
+                            })
+                            .into_iter()
+                            .collect::<Vec<_>>()
                     },
                 );
             }

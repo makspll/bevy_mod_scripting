@@ -26,7 +26,7 @@ use bevy_mod_scripting_core::{
         ScriptCallbackResponseEvent, ScriptDetachedEvent,
     },
     handler::event_handler,
-    script::{ContextPolicy, ScriptComponent, ScriptContext},
+    script::{ContextPolicy, ScriptComponent, ScriptContexts},
 };
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -790,12 +790,12 @@ impl ScenarioStep {
                 let residents = match context.current_script_language {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => world
-                        .resource::<ScriptContext<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
+                        .resource::<ScriptContexts<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
                         .read()
                         .residents_len(&script),
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => world
-                        .resource::<ScriptContext<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                        .resource::<ScriptContexts<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
                         .read()
                         .residents_len(&script),
                     _ => {

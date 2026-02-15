@@ -31,7 +31,7 @@ use bevy_mod_scripting_core::{
     commands::AttachScript,
     error::ScriptError,
     pipeline::PipelineRun,
-    script::{ScriptComponent, ScriptContext},
+    script::{ScriptComponent, ScriptContexts},
 };
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -314,7 +314,7 @@ where
 
     let script_contexts = app
         .world_mut()
-        .get_resource_or_init::<ScriptContext<P>>()
+        .get_resource_or_init::<ScriptContexts<P>>()
         .clone();
     let guard = WorldGuard::new_exclusive(app.world_mut());
 
@@ -322,6 +322,7 @@ where
 
     let script_contexts = script_contexts.read();
     let ctxt_arc = script_contexts.get_context(&context_key).unwrap();
+    let ctxt_arc = ctxt_arc.as_loaded().unwrap();
     drop(script_contexts);
     let mut ctxt_locked = ctxt_arc.lock();
 

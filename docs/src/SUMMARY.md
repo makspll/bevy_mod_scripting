@@ -31,6 +31,11 @@
     - [0.16.0](./ReleaseNotes/0.16.0.md)
     - [0.16-to-0.17](./ReleaseNotes/0.16-to-0.17.md)
     - [0.17.0](./ReleaseNotes/0.17.0.md)
+    - [0.17-to-0.18](./ReleaseNotes/0.17-to-0.18.md)
+    - [0.18.0](./ReleaseNotes/0.18.0.md)
+    - [0.19.0](./ReleaseNotes/0.19.0.md)
+    - [0.19-to-0.20](./ReleaseNotes/0.19-to-0.20.md)
+    - [0.20.0](./ReleaseNotes/0.20.0.md)
 
 # Scripting Reference
 

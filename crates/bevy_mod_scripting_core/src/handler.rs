@@ -18,7 +18,7 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
         ScriptErrorEvent,
     },
-    script::ScriptContext,
+    script::ScriptContexts,
 };
 use {
     bevy_ecs::{
@@ -94,7 +94,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 ) {
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
-        let script_context = world.get_resource_or_init::<ScriptContext<P>>().clone();
+        let script_context = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let event_cursor = state.get_mut(world);
         let guard = WorldAccessGuard::new_exclusive(world);
@@ -113,7 +113,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
     mut event_cursor: Local<MessageCursor<ScriptCallbackEvent>>,
-    script_context: ScriptContext<P>,
+    script_context: ScriptContexts<P>,
     script_callbacks: ScriptCallbacks<P>,
     guard: WorldAccessGuard,
 ) {
@@ -143,6 +143,12 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         let recipients = event.recipients.get_recipients(script_context.clone());
 
         for (attachment, ctxt) in recipients {
+            // we don't issue callbacks to scripts which are currently loading/unloading/reloading
+            let ctxt = if let Some(ctxt) = ctxt.as_loaded() {
+                ctxt
+            } else {
+                continue;
+            };
             let mut ctxt = ctxt.lock();
 
             let call_result = P::handle(

@@ -2,7 +2,7 @@
 
 use crate::{
     IntoScriptPluginParams, callbacks::ScriptCallbacks, event::CallbackLabel,
-    extractors::get_all_access_ids, handler::ScriptingHandler, script::ScriptContext,
+    extractors::get_all_access_ids, handler::ScriptingHandler, script::ScriptContexts,
 };
 
 use ::{
@@ -190,7 +190,7 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     subset: HashSet<ReflectAccessId>,
     callback_label: CallbackLabel,
     system_params: Vec<ScriptSystemParam>,
-    script_contexts: ScriptContext<P>,
+    script_contexts: ScriptContexts<P>,
     script_callbacks: ScriptCallbacks<P>,
 }
 
@@ -350,6 +350,12 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         let script_context = &state.script_contexts.read();
 
         if let Some(context) = script_context.get_context(&self.target_attachment) {
+            let context = if let Some(context) = context.as_loaded() {
+                context
+            } else {
+                return Ok(());
+            };
+
             let mut context = context.lock();
             let result = P::handle(
                 payload,
@@ -460,7 +466,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             subset,
             callback_label: self.name.to_string().into(),
             system_params,
-            script_contexts: world.get_resource_or_init::<ScriptContext<P>>().clone(),
+            script_contexts: world.get_resource_or_init::<ScriptContexts<P>>().clone(),
             script_callbacks: world.get_resource_or_init::<ScriptCallbacks<P>>().clone(),
         });
 
