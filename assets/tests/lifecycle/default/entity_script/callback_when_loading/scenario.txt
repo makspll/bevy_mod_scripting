@@ -1,5 +1,5 @@
 SetCurrentLanguage language="@this_script_language"
-InstallPlugin miliseconds_budget=10
+InstallPlugin miliseconds_budget=1
 SetupHandler OnTest=null, Update=null
 SetupHandler OnTestPostUpdate=null, PostUpdate=null
 SetupHandler Last=null, OnTestLast=null
@@ -13,3 +13,5 @@ AssertContextState state="Loading", attachment="EntityScript", entity="test_enti
 EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script", string_value="arg1" 
 RunUpdateOnce
 AssertNoCallbackResponsesEmitted
+AssertContextState state="LoadedAndActive", attachment="EntityScript", entity="test_entity", script="@this_script"
+
