@@ -30,12 +30,15 @@ pub fn on_script_loaded_pipeline_handler<P: IntoScriptPluginParams>(
         "Running on_script_loaded hook for script: {}",
         event.attachment
     );
-    commands.queue(RunScriptCallback::<P>::new(
-        event.attachment.clone(),
-        OnScriptLoaded::into_callback_label(),
-        vec![],
-        emit_responses,
-    ));
+    commands.queue(
+        RunScriptCallback::<P>::new(
+            event.attachment.clone(),
+            OnScriptLoaded::into_callback_label(),
+            vec![],
+            emit_responses,
+        )
+        .with_context_override(trigger.context.clone()),
+    );
 }
 
 pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>(
@@ -47,7 +50,7 @@ pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>
     let emit_responses = P::readonly_configuration(world_id).emit_responses;
     // let guard = WorldGuard::new_exclusive(world);
     bevy_log::debug!(
-        "Running on_script_unloaded hook for script: {}",
+        "Running on_script_unloaded hook for script: {}, due to unload",
         event.attachment
     );
     commands.queue(
@@ -57,6 +60,7 @@ pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>
             vec![],
             emit_responses,
         )
+        .with_context_override(trigger.existing_context.clone())
         .with_post_callback_handler(|world, attachment, response| {
             if let Ok(v) = response.as_ref() {
                 bevy_log::debug!(
@@ -81,7 +85,7 @@ pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>
     let event = trigger.event();
     let emit_responses = P::readonly_configuration(world_id).emit_responses;
     bevy_log::debug!(
-        "Running on_script_unloaded hook for script: {}",
+        "Running on_script_unloaded hook for script: {}, due to reload",
         event.attachment
     );
     commands.queue(
@@ -91,6 +95,7 @@ pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>
             vec![],
             emit_responses,
         )
+        .with_context_override(trigger.existing_context.clone())
         .with_post_callback_handler(|world, attachment, response| {
             if let Ok(v) = response.as_ref() {
                 bevy_log::debug!(
@@ -98,10 +103,11 @@ pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>
                     attachment,
                     v
                 );
-                let mut data = world.get_resource_or_init::<ActiveMachinesData>();
-                let data = data.0.entry(attachment).or_default();
+                let mut datas = world.get_resource_or_init::<ActiveMachinesData>();
+                let data = datas.0.entry(attachment).or_default();
 
                 data.reload_state = v.clone();
+                bevy_log::debug!("Datas: {}", datas.0.len());
             }
         }),
     );
@@ -128,15 +134,19 @@ pub fn on_script_reloaded_pipeline_handler<P: IntoScriptPluginParams>(
         .unwrap_or_default();
 
     bevy_log::debug!(
-        "Running on_script_reloaded hook for script: {}, with unload_state: {:?}",
+        "Running on_script_reloaded hook for script: {}, with unload_state: {:?}, with data count: {}",
         event.attachment,
-        unload_state
+        unload_state,
+        datas.0.len()
     );
 
-    commands.queue(RunScriptCallback::<P>::new(
-        event.attachment.clone(),
-        OnScriptReloaded::into_callback_label(),
-        vec![unload_state],
-        emit_responses,
-    ))
+    commands.queue(
+        RunScriptCallback::<P>::new(
+            event.attachment.clone(),
+            OnScriptReloaded::into_callback_label(),
+            vec![unload_state],
+            emit_responses,
+        )
+        .with_context_override(trigger.context.clone()),
+    )
 }

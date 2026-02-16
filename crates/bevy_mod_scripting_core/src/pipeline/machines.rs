@@ -201,6 +201,7 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
 
                 // trigger observers, modify state potentially
                 machine_state.trigger_event(world);
+                world.flush();
 
                 let next = machine_state.poll_next(&self.context, world);
                 self.internal_state = MachineExecutionState::Running(next.into());

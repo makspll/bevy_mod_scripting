@@ -28,13 +28,20 @@ pub struct RunScriptCallback<P: IntoScriptPluginParams> {
     /// The callback to run
     pub callback: CallbackLabel,
     /// optional context passed down to errors
-    pub context: Vec<String>,
+    pub error_context: Vec<String>,
     /// The arguments to pass to the callback
     pub args: Vec<ScriptValue>,
     /// Whether the callback should emit a response event
     pub trigger_response: bool,
     /// Hack to make this Send, C does not need to be Send since it is not stored in the command
     pub _ph: std::marker::PhantomData<fn(P::R, P::C)>,
+
+    /// If set will send errors as a [`crate::ScriptErrorEvent`]
+    pub send_errors: bool,
+
+    /// overrides the context to use, removing the need to look it up
+    pub context_override: Option<Arc<Mutex<P::C>>>,
+
     /// Optional handler run after the callback is finished with the response value
     /// Only applies when used as a command
     pub post_callback:
@@ -51,12 +58,14 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     ) -> Self {
         Self {
             attachment,
-            context: vec![],
+            error_context: vec![],
             callback,
             args,
             trigger_response,
             _ph: std::marker::PhantomData,
             post_callback: |_, _, _| {},
+            send_errors: true,
+            context_override: None,
         }
     }
 
@@ -75,9 +84,21 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         self
     }
 
+    /// Sets [`Self::context_override`] to the given value
+    pub fn with_context_override(mut self, context: Arc<Mutex<P::C>>) -> Self {
+        self.context_override = Some(context);
+        self
+    }
+
+    /// Sets [`Self::send_errors`], to the given value
+    pub fn with_send_errors(mut self, send_errors: bool) -> Self {
+        self.send_errors = send_errors;
+        self
+    }
+
     /// Sets the context for the command, makes produced errors more useful.
-    pub fn with_context(mut self, context: impl ToString) -> Self {
-        self.context.push(context.to_string());
+    pub fn with_error_context(mut self, context: impl ToString) -> Self {
+        self.error_context.push(context.to_string());
         self
     }
 
@@ -93,7 +114,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// Does not send the error as a message, this needs to be done explicitly by the caller.
     ///
     /// calls [`std::mem::take`] on the arguments, to avoid cloning
-    pub fn run_with_context(
+    fn run_with_context(
         &mut self,
         guard: WorldGuard,
         ctxt: Arc<Mutex<P::C>>,
@@ -110,7 +131,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         );
         let result = result.map_err(|e| {
             let mut err = ScriptError::from(e).with_script(self.attachment.script().display());
-            for ctxt in &self.context {
+            for ctxt in &self.error_context {
                 err = err.with_context(ctxt.clone())
             }
             err.with_context(format!("in callback: {}", self.callback))
@@ -143,7 +164,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// Equivalent to [`Self::run`], but usable in the case where you already have [`ScriptContext`] and [`ScriptCallbacks`] resources available.
     ///
     /// Does not send the error as a message, this needs to be done explicitly by the caller.
-    pub fn run_with_contexts(
+    fn run_with_contexts(
         &mut self,
         guard: WorldGuard,
         script_contexts: ScriptContexts<P>,
@@ -175,12 +196,18 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// Equivalent to running the command, but also returns the result of the callback.
     ///
     /// The returned errors will NOT be sent as events or printed unless send errors is set to true
-    pub fn run(mut self, world: &mut World, send_errors: bool) -> Result<ScriptValue, ScriptError> {
+    pub fn run(mut self, world: &mut World) -> Result<ScriptValue, ScriptError> {
         let script_contexts = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let guard = WorldGuard::new_exclusive(world);
-        let res = self.run_with_contexts(guard.clone(), script_contexts, script_callbacks);
-        if send_errors && res.is_err() {
+
+        let res = if let Some(context_override) = &self.context_override {
+            self.run_with_context(guard.clone(), context_override.clone(), script_callbacks)
+        } else {
+            self.run_with_contexts(guard.clone(), script_contexts, script_callbacks)
+        };
+
+        if self.send_errors && res.is_err() {
             Self::handle_error(&res, guard);
         }
 
@@ -192,7 +219,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
 
 impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
     fn apply(self, world: &mut World) {
-        let _ = self.run(world, true);
+        let _ = self.run(world);
     }
 }
 
