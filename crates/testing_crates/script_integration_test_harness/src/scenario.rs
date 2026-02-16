@@ -20,7 +20,7 @@ use bevy_log::info;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_core::{
-    ConfigureScriptPlugin,
+    ConfigureScriptPlugin, IntoScriptPluginParams,
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptAttachedEvent, ScriptCallbackEvent,
         ScriptCallbackResponseEvent, ScriptDetachedEvent,
@@ -332,7 +332,7 @@ pub enum ScenarioStep {
         as_name: String,
     },
     /// Waits until the script with the given name is loaded.
-    WaitForScriptLoaded {
+    WaitForScriptAssetLoaded {
         script: Handle<ScriptAsset>,
     },
     /// Spawns an entity with the given name and attaches the given script to it.
@@ -384,6 +384,11 @@ pub enum ScenarioStep {
     /// Despawns the entity with the given name.
     DespawnEntity {
         entity: Entity,
+    },
+    /// Asserts that the context corresponding to this attachment is in the given state
+    AssertContextState {
+        attachment: ScriptAttachment,
+        state: ScenarioContextState,
     },
 }
 
@@ -551,7 +556,7 @@ impl ScenarioStep {
                     path.display()
                 );
             }
-            ScenarioStep::WaitForScriptLoaded { script } => {
+            ScenarioStep::WaitForScriptAssetLoaded { script } => {
                 let res = Self::execute_until_event::<AssetEvent<ScriptAsset>, _, _, _>(
                     context,
                     app,
@@ -817,6 +822,60 @@ impl ScenarioStep {
             ScenarioStep::Comment { comment } => {
                 // Comments are ignored, do nothing, log it though for debugging
                 info!("Comment: {comment}");
+            }
+            ScenarioStep::AssertContextState {
+                attachment: script,
+                state,
+            } => {
+                let world = app.world_mut();
+
+                fn context_to_state<P: IntoScriptPluginParams>(
+                    ctxt: bevy_mod_scripting_core::script::Context<P>,
+                ) -> ScenarioContextState {
+                    match ctxt {
+                        bevy_mod_scripting_core::script::Context::LoadedAndActive(_) => {
+                            ScenarioContextState::LoadedAndActive
+                        }
+                        bevy_mod_scripting_core::script::Context::Loading => {
+                            ScenarioContextState::Loading
+                        }
+                        bevy_mod_scripting_core::script::Context::Unloading(_) => {
+                            ScenarioContextState::Unloading
+                        }
+                        bevy_mod_scripting_core::script::Context::Reloading(_) => {
+                            ScenarioContextState::Reloading
+                        }
+                    }
+                }
+
+                let got_state = match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => world
+                        .resource::<ScriptContexts<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
+                        .read()
+                        .get_context(&script)
+                        .map(context_to_state),
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => world
+                        .resource::<ScriptContexts<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                        .read()
+                        .get_context(&script)
+                        .map(context_to_state),
+                    _ => {
+                        return Err(anyhow!(
+                            "Scenario step AssertContextState is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
+                    }
+                };
+
+                if got_state != Some(state.clone()) {
+                    return Err(anyhow!(
+                        "Expected {state:?} state for script attachment: {script}, but found {got_state:?}",
+                    ));
+                } else {
+                    info!("Script attachment: {script} context has state {state:?} as expected",);
+                }
             }
         }
         Ok(())

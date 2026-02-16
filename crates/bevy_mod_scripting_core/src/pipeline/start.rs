@@ -146,10 +146,16 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
             // not when queueing, in case another machine before this one affects the state, we do need the asset though
             machines.queue_machine(context, move |w| {
                 let contexts = w.get_resource_or_init::<ScriptContexts<P>>();
-                let contexts = contexts.read();
+                let mut contexts = contexts.write();
 
                 match contexts.get_context(&attachment) {
                     Some(Context::LoadedAndActive(context)) => {
+                        if let Err((attachment, _)) =
+                            contexts.insert(attachment.clone(), Context::Reloading(context.clone()))
+                        {
+                            bevy_log::warn!("Could not insert context for attachment {attachment}. Reloading interrupted.");
+                        };
+
                         vec![Box::new(ReloadingInitialized {
                             attachment: attachment.clone(),
                             source: strong_handle.handle().clone(),
@@ -160,6 +166,12 @@ pub fn process_attachments<P: IntoScriptPluginParams>(
                     // context is in an invalid state
                     Some(_) => vec![],
                     None => {
+                        if let Err((attachment, _)) =
+                            contexts.insert(attachment.clone(), Context::Loading)
+                        {
+                            bevy_log::warn!("Could not insert context for attachment {attachment}. Loading interrupted.");
+                        };
+
                         vec![Box::new(LoadingInitialized {
                             attachment: attachment.clone(),
                             source: strong_handle.handle().clone(),
@@ -192,17 +204,28 @@ pub fn process_detachments<P: IntoScriptPluginParams>(
                     MachineContext {
                         attachment: attachment.clone(),
                     },
-                    move |_| {
-                        existing_context
-                            .as_loaded()
-                            .map(|existing_context| {
-                                Box::new(UnloadingInitialized {
+                    move |world| {
+                        let contexts = world.get_resource_or_init::<ScriptContexts<P>>();
+                        let mut contexts = contexts.write();
+
+                        let existing_context = if let Some(context) = existing_context.as_loaded() {
+                            context
+                        } else {
+                            // cannot unload a context which isn't loaded
+                            return vec![];
+                        };
+
+                        if let Err((attachment, _)) =
+                            contexts.insert(attachment.clone(), Context::Unloading(existing_context.clone()))
+                        {
+                            bevy_log::warn!("Could not insert context for attachment {attachment}. Unloading interrupted.");
+                        };
+
+                        vec![Box::new(UnloadingInitialized {
                                     attachment,
                                     existing_context: existing_context.clone(),
                                 }) as Box<dyn MachineState<P>>
-                            })
-                            .into_iter()
-                            .collect::<Vec<_>>()
+                            ]
                     },
                 );
             })

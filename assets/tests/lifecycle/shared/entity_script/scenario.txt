@@ -5,7 +5,7 @@ FinalizeApp
 
 // load script a 
 LoadScriptAs as_name="script_a", path="lifecycle.lua"
-WaitForScriptLoaded name="script_a"
+WaitForScriptAssetLoaded name="script_a"
 SpawnEntityWithScript name="test_entity_a", script="script_a"
 RunUpdateOnce
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptLoaded", script="script_a", entity="test_entity_a", expect_string_value="loaded!"
@@ -21,7 +21,7 @@ AssertNoCallbackResponsesEmitted
 
 // load licecycle_b.lua, which prefixes all outputs with "B", the unload callback is called using the old script's state
 LoadScriptAs as_name="script_b", path="lifecycle_b.lua"
-WaitForScriptLoaded name="script_b"
+WaitForScriptAssetLoaded name="script_b"
 SpawnEntityWithScript name="test_entity_b", script="script_b"
 RunUpdateOnce
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptUnloaded", script="script_b", entity="test_entity_b", expect_string_value="unloaded!"

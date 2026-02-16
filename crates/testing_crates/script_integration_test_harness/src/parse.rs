@@ -78,7 +78,7 @@ pub enum ScenarioStepSerialized {
         as_name: String,
     },
     /// Waits until the script with the given name is loaded.
-    WaitForScriptLoaded {
+    WaitForScriptAssetLoaded {
         name: String,
     },
     /// Spawns an entity with the given name and attaches the given script to it.
@@ -123,6 +123,11 @@ pub enum ScenarioStepSerialized {
         language: Option<ScenarioLanguage>,
     },
     AssertNoCallbackResponsesEmitted,
+    AssertContextState {
+        #[serde(flatten)]
+        attachment: ScenarioAttachment,
+        state: ScenarioContextState,
+    },
     AssertContextResidents {
         #[serde(flatten)]
         script: ScenarioAttachment,
@@ -138,6 +143,14 @@ pub enum ScenarioStepSerialized {
     SetCurrentLanguage {
         language: ScenarioLanguage,
     },
+}
+
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
+pub enum ScenarioContextState {
+    LoadedAndActive,
+    Loading,
+    Reloading,
+    Unloading,
 }
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
@@ -248,6 +261,10 @@ impl ScenarioStepSerialized {
 
     pub fn parse_and_resolve(self, context: &ScenarioContext) -> Result<ScenarioStep, Error> {
         Ok(match self {
+            Self::AssertContextState { attachment, state } => ScenarioStep::AssertContextState {
+                attachment: Self::resolve_attachment(context, attachment)?,
+                state,
+            },
             Self::FinalizeApp => ScenarioStep::FinalizeApp,
             Self::AssertContextResidents {
                 script,
@@ -316,7 +333,7 @@ impl ScenarioStepSerialized {
                 path,
                 as_name: as_name.to_string(),
             },
-            Self::WaitForScriptLoaded { name } => ScenarioStep::WaitForScriptLoaded {
+            Self::WaitForScriptAssetLoaded { name } => ScenarioStep::WaitForScriptAssetLoaded {
                 script: context.get_script_handle(&name)?,
             },
             Self::SpawnEntityWithScript { name, script } => ScenarioStep::SpawnEntityWithScript {

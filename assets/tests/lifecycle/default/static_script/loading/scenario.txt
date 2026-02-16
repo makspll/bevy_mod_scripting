@@ -4,7 +4,7 @@ FinalizeApp
 
 // load script a 
 LoadScriptAs as_name="script_a", path="lifecycle.lua"
-WaitForScriptLoaded name="script_a"
+WaitForScriptAssetLoaded name="script_a"
 AttachStaticScript script="script_a"
 RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptLoaded", script="script_a", expect_string_value="loaded!"

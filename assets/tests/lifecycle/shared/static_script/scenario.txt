@@ -5,7 +5,7 @@ FinalizeApp
 
 // load script a 
 LoadScriptAs as_name="script_a", path="lifecycle.lua"
-WaitForScriptLoaded name="script_a"
+WaitForScriptAssetLoaded name="script_a"
 AttachStaticScript script="script_a"
 RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptLoaded", script="script_a", expect_string_value="loaded!"
@@ -21,7 +21,7 @@ AssertNoCallbackResponsesEmitted
 
 // load licecycle_b.lua, which prefixes all outputs with "B"
 LoadScriptAs as_name="script_b", path="lifecycle_b.lua"
-WaitForScriptLoaded name="script_b"
+WaitForScriptAssetLoaded name="script_b"
 AttachStaticScript script="script_b"
 RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptUnloaded", script="script_b", expect_string_value="unloaded!"

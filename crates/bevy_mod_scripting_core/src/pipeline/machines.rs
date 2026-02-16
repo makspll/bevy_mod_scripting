@@ -99,7 +99,6 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
     pub fn tick_machines(&mut self, world: &mut World) {
         let start = Instant::now();
         let end = start + self.budget.unwrap_or(Duration::from_secs(99999));
-
         while (self.queued_machines() > 0 || self.active_machine.is_some()) && Instant::now() < end
         {
             if self.active_machine.is_some() {
