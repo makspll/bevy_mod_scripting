@@ -8,9 +8,9 @@ In versions prior to `16.0` the pipeline was represented by load unload commands
 - Allowing async steps in the process
 
 The new pipeline works like this:
-- A set of systems in `PostUpdate` "filter" incoming `ScriptAttachedEvent` and `ScriptDetachedEvent`'s as well as `ScriptAssetModifiedEvent`'s (some generated from asset events, others from component hooks). The filtered events are wrapped in `ForPlugin<P>(inner)` events based on the language of the underlying event's.
+- A set of systems in `PreUpdate` "filter" incoming `ScriptAttachedEvent` and `ScriptDetachedEvent`'s as well as `ScriptAssetModifiedEvent`'s (some generated from asset events, others from component hooks). The filtered events are wrapped in `ForPlugin<P>(inner)` events based on the language of the underlying event's.
 - A set of other systems then converts those into active `ScriptMachine`'s
-- Then inside the `ScriptProcessingSchedule<P>`, which is only run if there are active machines, we tick each machine until it either errors or reaches its final state.
+- Then inside the `ScriptProcessingSchedule<P>`, which is only run in `PreUpdate` if there are active machines, we tick each machine until it either errors or reaches its final state.
 
 ## Script Machines
 
@@ -42,28 +42,11 @@ Enter: OnUnloaded callback]
     G --> H
 ```
 
-Hooks, such as `on_script_loaded` are implemented using `TransitionListener`'s which can be inserted into the `ActiveMachines` resource. This allows you to hook into various parts of the loading process and add your own callbacks, i.e.:
+Hooks, such as `on_script_loaded` are implemented using bevy observers. This allows you to hook into various parts of the loading process and add your own callbacks, i.e.:
 
 ```rust
-pub(crate) struct MyUnloadListener;
-impl<P: IntoScriptPluginParams> TransitionListener<UnloadingInitialized<P>>
-    for OnUnloadedForUnloadListener
-{
-    fn on_enter(
-        &self,
-        state: &mut UnloadingInitialized<P>,
-        world: &mut World,
-        ctxt: &mut Context,
-    ) -> Result<(), ScriptError> {
-        info!("doing unload things")
-        Ok(())
-    }
-}
-
-// example config, if you do this before the scripting plugin is initialized, the ordering of callbacks might be different to if you do this after.
 fn main(&mut app: App) {
-    let machines = app.world_mut().get_resource_or_init::<ActiveMachines<LuaScriptingPlugin>>();
-    machines.push_listener::<UnloadingInitialized<LuaScriptingPlugin>>(MyUnloadListener);
+    let machines = app.add_observer(|On<LoadingCompleted<LuaScriptingPlugin>>| todo!("do stuff"));
 }
 ```
 
