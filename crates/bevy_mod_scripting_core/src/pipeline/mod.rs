@@ -2,7 +2,7 @@
 
 use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc, time::Duration};
 
-use bevy_app::{App, Plugin, PostUpdate};
+use bevy_app::{App, Plugin, PreUpdate};
 use bevy_asset::{AssetServer, Assets, Handle, LoadState};
 use bevy_ecs::{
     message::{Message, MessageReader},
@@ -242,21 +242,23 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
         active_machines.budget = self.time_budget;
 
         app.configure_sets(
-            PostUpdate,
-            PipelineSet::ListeningPhase.before(PipelineSet::MachineStartPhase),
+            PreUpdate,
+            PipelineSet::ListeningPhase
+                .after(bevy_asset::AssetTrackingSystems)
+                .before(PipelineSet::MachineStartPhase),
         );
 
         // todo: nicer way to order these, ideall .chain() + conditional newtype?
         if self.script_component_triggers {
             app.add_systems(
-                PostUpdate,
+                PreUpdate,
                 filter_script_attachments::<P>
                     .in_set(PipelineSet::ListeningPhase)
                     .before(filter_script_modifications::<P>)
                     .before(filter_script_detachments::<P>),
             );
             app.add_systems(
-                PostUpdate,
+                PreUpdate,
                 filter_script_detachments::<P>
                     .in_set(PipelineSet::ListeningPhase)
                     .after(filter_script_attachments::<P>)
@@ -266,13 +268,13 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
 
         if self.hot_loading_asset_triggers {
             app.add_systems(
-                PostUpdate,
+                PreUpdate,
                 filter_script_modifications::<P>.in_set(PipelineSet::ListeningPhase),
             );
         }
 
         app.add_systems(
-            PostUpdate,
+            PreUpdate,
             (
                 process_attachments::<P>,
                 process_detachments::<P>,
@@ -283,7 +285,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
         );
 
         app.add_systems(
-            PostUpdate,
+            PreUpdate,
             automatic_pipeline_runner::<P>.after(PipelineSet::MachineStartPhase),
         );
 

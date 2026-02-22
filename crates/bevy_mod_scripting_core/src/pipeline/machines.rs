@@ -6,7 +6,7 @@ use std::{
 };
 
 use bevy_ecs::event::Event;
-use bevy_log::debug;
+use bevy_log::trace;
 use bevy_mod_scripting_bindings::{InteropError, ScriptValue};
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
@@ -34,7 +34,8 @@ pub struct ActiveMachines<P: IntoScriptPluginParams> {
         MachineContext,
         Box<dyn FnOnce(&mut World) -> Vec<Box<dyn MachineState<P>>> + Send + Sync + 'static>,
     )>,
-    pub(crate) budget: Option<Duration>,
+    /// The current time budget per frame
+    pub budget: Option<Duration>,
 }
 
 impl<P: IntoScriptPluginParams> Default for ActiveMachines<P> {
@@ -101,6 +102,8 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
         let end = start + self.budget.unwrap_or(Duration::from_secs(99999));
         while (self.queued_machines() > 0 || self.active_machine.is_some()) && Instant::now() < end
         {
+            bevy_log::trace!("Ticking machines for {:?}", end - start);
+
             if self.active_machine.is_some() {
                 let final_state = match &mut self.active_machine {
                     Some(next) => next.tick(world),
@@ -133,6 +136,11 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
                     let machines = initializer(world);
                     self.initialized_machines.extend(machines);
                     if let Some(machine) = self.initialized_machines.pop_front() {
+                        trace!(
+                            "State machine '{}' queued. For script: {}",
+                            machine.state_name(),
+                            context.attachment,
+                        );
                         self.active_machine = Some(ScriptMachine {
                             context,
                             internal_state: MachineExecutionState::Initialized(machine),
@@ -192,7 +200,7 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
     ) -> Option<Result<Box<dyn MachineState<P>>, ScriptError>> {
         match &mut self.internal_state {
             MachineExecutionState::Initialized(machine_state) => {
-                debug!(
+                trace!(
                     "State '{}' entered. For script: {}",
                     machine_state.state_name(),
                     self.context.attachment,
@@ -214,7 +222,7 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
                     match res {
                         Ok(next) => {
                             if next.is_final() {
-                                debug!(
+                                trace!(
                                     "Reached final state '{}'. For script {}",
                                     next.state_name(),
                                     &self.context.attachment
@@ -226,7 +234,7 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
                             }
                         }
                         res => {
-                            debug!(
+                            trace!(
                                 "Error in progressing to next state. For script {}",
                                 &self.context.attachment
                             );

@@ -51,7 +51,11 @@ pub enum ScenarioStepSerialized {
     InstallPlugin {
         context_policy: Option<ContextMode>,
         emit_responses: Option<bool>,
-        miliseconds_budget: Option<u64>,
+        nanoseconds_budget: Option<u64>,
+    },
+    /// Sets the pipeline processing budget
+    SetNanosecondsBudget {
+        nanoseconds_budget: Option<u64>,
     },
     /// Called after the app config is set up, but before we run anything
     FinalizeApp,
@@ -265,6 +269,9 @@ impl ScenarioStepSerialized {
                 attachment: Self::resolve_attachment(context, attachment)?,
                 state,
             },
+            Self::SetNanosecondsBudget { nanoseconds_budget } => {
+                ScenarioStep::SetNanosecondsBudget { nanoseconds_budget }
+            }
             Self::FinalizeApp => ScenarioStep::FinalizeApp,
             Self::AssertContextResidents {
                 script,
@@ -285,11 +292,11 @@ impl ScenarioStepSerialized {
             Self::InstallPlugin {
                 context_policy,
                 emit_responses,
-                miliseconds_budget,
+                nanoseconds_budget,
             } => ScenarioStep::InstallPlugin {
                 context_policy: Self::resolve_context_policy(context_policy),
                 emit_responses: emit_responses.unwrap_or(false),
-                miliseconds_budget,
+                nanoseconds_budget,
             },
             Self::DropScriptAsset { script } => ScenarioStep::DropScriptAsset {
                 script: context.get_script_handle(&script)?,

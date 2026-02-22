@@ -241,6 +241,11 @@ impl<P: IntoScriptPluginParams> Context<P> {
             _ => None,
         }
     }
+
+    /// Returns true if the context is an instance of [`Context::Loading`] or [`Context::Reloading`]
+    pub fn is_loading_or_reloading(&self) -> bool {
+        matches!(self, Context::Loading | Context::Reloading(_))
+    }
 }
 
 impl<P: IntoScriptPluginParams> Clone for Context<P> {

@@ -1,6 +1,6 @@
 // #main_script dynamic_on_test.lua
 SetCurrentLanguage language="@this_script_language"
-InstallPlugin miliseconds_budget=999999
+InstallPlugin nanoseconds_budget=999999999
 SetupHandler OnTest=null, Update=null
 SetupHandler OnTestPostUpdate=null, PostUpdate=null
 SetupHandler Last=null, OnTestLast=null
