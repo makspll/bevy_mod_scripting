@@ -51,7 +51,11 @@ pub enum ScenarioStepSerialized {
     InstallPlugin {
         context_policy: Option<ContextMode>,
         emit_responses: Option<bool>,
-        miliseconds_budget: Option<u64>,
+        nanoseconds_budget: Option<u64>,
+    },
+    /// Sets the pipeline processing budget
+    SetNanosecondsBudget {
+        nanoseconds_budget: Option<u64>,
     },
     /// Called after the app config is set up, but before we run anything
     FinalizeApp,
@@ -78,7 +82,7 @@ pub enum ScenarioStepSerialized {
         as_name: String,
     },
     /// Waits until the script with the given name is loaded.
-    WaitForScriptLoaded {
+    WaitForScriptAssetLoaded {
         name: String,
     },
     /// Spawns an entity with the given name and attaches the given script to it.
@@ -123,6 +127,11 @@ pub enum ScenarioStepSerialized {
         language: Option<ScenarioLanguage>,
     },
     AssertNoCallbackResponsesEmitted,
+    AssertContextState {
+        #[serde(flatten)]
+        attachment: ScenarioAttachment,
+        state: ScenarioContextState,
+    },
     AssertContextResidents {
         #[serde(flatten)]
         script: ScenarioAttachment,
@@ -138,6 +147,14 @@ pub enum ScenarioStepSerialized {
     SetCurrentLanguage {
         language: ScenarioLanguage,
     },
+}
+
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
+pub enum ScenarioContextState {
+    LoadedAndActive,
+    Loading,
+    Reloading,
+    Unloading,
 }
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
@@ -248,6 +265,13 @@ impl ScenarioStepSerialized {
 
     pub fn parse_and_resolve(self, context: &ScenarioContext) -> Result<ScenarioStep, Error> {
         Ok(match self {
+            Self::AssertContextState { attachment, state } => ScenarioStep::AssertContextState {
+                attachment: Self::resolve_attachment(context, attachment)?,
+                state,
+            },
+            Self::SetNanosecondsBudget { nanoseconds_budget } => {
+                ScenarioStep::SetNanosecondsBudget { nanoseconds_budget }
+            }
             Self::FinalizeApp => ScenarioStep::FinalizeApp,
             Self::AssertContextResidents {
                 script,
@@ -268,11 +292,11 @@ impl ScenarioStepSerialized {
             Self::InstallPlugin {
                 context_policy,
                 emit_responses,
-                miliseconds_budget,
+                nanoseconds_budget,
             } => ScenarioStep::InstallPlugin {
                 context_policy: Self::resolve_context_policy(context_policy),
                 emit_responses: emit_responses.unwrap_or(false),
-                miliseconds_budget,
+                nanoseconds_budget,
             },
             Self::DropScriptAsset { script } => ScenarioStep::DropScriptAsset {
                 script: context.get_script_handle(&script)?,
@@ -316,7 +340,7 @@ impl ScenarioStepSerialized {
                 path,
                 as_name: as_name.to_string(),
             },
-            Self::WaitForScriptLoaded { name } => ScenarioStep::WaitForScriptLoaded {
+            Self::WaitForScriptAssetLoaded { name } => ScenarioStep::WaitForScriptAssetLoaded {
                 script: context.get_script_handle(&name)?,
             },
             Self::SpawnEntityWithScript { name, script } => ScenarioStep::SpawnEntityWithScript {

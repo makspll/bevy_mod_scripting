@@ -15,10 +15,10 @@ use crate::{
     callbacks::ScriptCallbacks,
     error::ScriptError,
     event::{
-        CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
-        ScriptErrorEvent,
+        CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
+        ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
-    script::ScriptContext,
+    script::ScriptContexts,
 };
 use {
     bevy_ecs::{
@@ -94,7 +94,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 ) {
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
-        let script_context = world.get_resource_or_init::<ScriptContext<P>>().clone();
+        let script_context = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let event_cursor = state.get_mut(world);
         let guard = WorldAccessGuard::new_exclusive(world);
@@ -113,7 +113,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
     mut event_cursor: Local<MessageCursor<ScriptCallbackEvent>>,
-    script_context: ScriptContext<P>,
+    script_context: ScriptContexts<P>,
     script_callbacks: ScriptCallbacks<P>,
     guard: WorldAccessGuard,
 ) {
@@ -137,12 +137,29 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         }
     };
 
+    let mut events_to_requeue = vec![];
+
     for event in events.into_iter().filter(|e| {
         e.label == callback_label && e.language.as_ref().is_none_or(|l| l == &P::LANGUAGE)
     }) {
         let recipients = event.recipients.get_recipients(script_context.clone());
+        let highly_specific = matches!(
+            event.recipients,
+            Recipients::ScriptEntity(_, _) | Recipients::StaticScript(_)
+        );
 
         for (attachment, ctxt) in recipients {
+            // we don't issue callbacks to scripts which are currently loading/unloading/reloading
+            let ctxt = if let Some(ctxt) = ctxt.as_loaded() {
+                ctxt
+            } else if highly_specific && ctxt.is_loading_or_reloading() {
+                // events with high specificity, have their callbacks re-queued in this case
+                // i.e. we don't want `on_update` to queue up, but a directed `on_collision_with_entity` callback will have
+                events_to_requeue.push(event.clone());
+                continue;
+            } else {
+                continue;
+            };
             let mut ctxt = ctxt.lock();
 
             let call_result = P::handle(
@@ -176,6 +193,13 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             collect_errors(call_result, &mut errors);
         }
     }
+
+    if let Err(err) = guard.with_resource_mut(|mut writer: Mut<Messages<ScriptCallbackEvent>>| {
+        writer.write_batch(events_to_requeue);
+    }) {
+        errors.push(err.into());
+    }
+
     send_script_errors(guard, errors.iter());
 }
 

@@ -1,13 +1,13 @@
 SetCurrentLanguage language="@this_script_language"
-InstallPlugin miliseconds_budget=999999
+InstallPlugin nanoseconds_budget=999999999
 SetupHandler OnTest=null, Update=null
 SetupHandler OnTestPostUpdate=null, PostUpdate=null
 SetupHandler Last=null, OnTestLast=null
 FinalizeApp
 
 LoadScriptAs as_name="@this_script", path="@this_script"
-WaitForScriptLoaded name="@this_script"
+WaitForScriptAssetLoaded name="@this_script"
 AttachStaticScript script="@this_script"
 EmitScriptCallbackEvent emit_response=true, label="OnTest", language=null, recipients="StaticScript", script="@this_script", string_value="arg1" 
 RunUpdateOnce
-AssertNoCallbackResponsesEmitted
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", script="@this_script"

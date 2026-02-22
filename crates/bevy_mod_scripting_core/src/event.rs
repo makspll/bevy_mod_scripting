@@ -1,19 +1,18 @@
 //! Event handlers and event types for scripting.
 
-use std::{marker::PhantomData, sync::Arc};
+use std::marker::PhantomData;
 
 use ::{bevy_ecs::entity::Entity, bevy_reflect::Reflect};
-use bevy_asset::AssetId;
+use bevy_asset::{AssetId, Handle};
 use bevy_ecs::message::Message;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_script::ScriptAttachment;
-use parking_lot::Mutex;
 
 use crate::{
     IntoScriptPluginParams,
     error::ScriptError,
-    script::{ScriptContext, ScriptId},
+    script::{Context, ScriptContexts, ScriptId},
 };
 
 /// An error coming from a script
@@ -199,12 +198,16 @@ impl std::fmt::Display for CallbackLabel {
 #[derive(Clone, Debug)]
 pub enum Recipients {
     /// The event needs to be handled by all scripts, if multiple scripts share a context, the event will be sent once per script in the context.
+    /// Scripts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
     AllScripts,
     /// The event is to be handled by all unique contexts, i.e. if two scripts share the same context, the event will be sent only once per the context.
+    /// Contexts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
     AllContexts,
     /// The event is to be handled by a specific script-entity pair
+    /// If the target context is in the process of loading, the callback will be re-queued untill the script is loaded, if the entity has been despawned the callback will not be executed
     ScriptEntity(ScriptId, Entity),
     /// the event is to be handled by a specific static script
+    /// If the target context is in the process of loading, the callback will be re-queued untill the script is loaded.
     StaticScript(ScriptId),
 }
 
@@ -212,8 +215,8 @@ impl Recipients {
     /// Retrieves all the recipients of the event based on existing scripts
     pub fn get_recipients<P: IntoScriptPluginParams>(
         &self,
-        script_context: ScriptContext<P>,
-    ) -> Vec<(ScriptAttachment, Arc<Mutex<P::C>>)> {
+        script_context: ScriptContexts<P>,
+    ) -> Vec<(ScriptAttachment, Context<P>)> {
         let script_context = script_context.read();
         match self {
             Recipients::AllScripts => script_context.all_residents().collect(),
@@ -279,12 +282,35 @@ impl ScriptCallbackEvent {
         self
     }
 
+    /// Creates a new callback event with the given label, arguments and the specific entity script as recipients
+    /// If the target context is in the process of loading, the callback will be re-queued untill the script is loaded, if the entity has been despawned the callback will not be executed
+    pub fn new_for_script_entity<L: Into<CallbackLabel>>(
+        label: L,
+        args: Vec<ScriptValue>,
+        handle: Handle<ScriptAsset>,
+        entity: Entity,
+    ) -> Self {
+        Self::new(label, args, Recipients::ScriptEntity(handle, entity), None)
+    }
+
+    /// Creates a new callback event with the given label, arguments and the specific static script as recipients
+    /// If the target context is in the process of loading, the callback will be re-queued untill the script is loaded.
+    pub fn new_for_static_script<L: Into<CallbackLabel>>(
+        label: L,
+        args: Vec<ScriptValue>,
+        handle: Handle<ScriptAsset>,
+    ) -> Self {
+        Self::new(label, args, Recipients::StaticScript(handle), None)
+    }
+
     /// Creates a new callback event with the given label, arguments and all scripts and languages as recipients
+    /// Scripts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
     pub fn new_for_all_scripts<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
         Self::new(label, args, Recipients::AllScripts, None)
     }
 
     /// Creates a new callback event with the given label, arguments and all contexts (which can contain multiple scripts) and languages as recipients
+    /// Contexts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
     pub fn new_for_all_contexts<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
         Self::new(label, args, Recipients::AllContexts, None)
     }
@@ -431,7 +457,7 @@ mod test {
     use crate::{
         config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
         event::Recipients,
-        script::{ContextPolicy, ScriptContext},
+        script::{ContextPolicy, ScriptContexts},
     };
 
     #[test]
@@ -490,9 +516,9 @@ mod test {
     ///
     /// ContextD:
     /// - StaticScriptB (663f1128-62f9-456f-9b76-a326fbe86fa8)
-    fn make_test_contexts() -> ScriptContext<TestPlugin> {
+    fn make_test_contexts() -> ScriptContexts<TestPlugin> {
         let policy = ContextPolicy::per_entity();
-        let script_context = ScriptContext::<TestPlugin>::new(policy);
+        let script_context = ScriptContexts::<TestPlugin>::new(policy);
         let mut script_context_guard = script_context.write();
         let context_a = Arc::new(Mutex::new(TestContext {
             invocations: vec![ScriptValue::String("a".to_string().into())],
@@ -536,7 +562,7 @@ mod test {
         script_context_guard
             .insert(
                 ScriptAttachment::EntityScript(Entity::from_raw_u32(0).unwrap(), entity_script_a),
-                context_a,
+                context_a.into(),
             )
             .unwrap();
 
@@ -550,7 +576,7 @@ mod test {
         script_context_guard
             .insert(
                 ScriptAttachment::EntityScript(Entity::from_raw_u32(1).unwrap(), entity_script_c),
-                context_b,
+                context_b.into(),
             )
             .unwrap();
         script_context_guard
@@ -561,11 +587,17 @@ mod test {
             .unwrap();
 
         script_context_guard
-            .insert(ScriptAttachment::StaticScript(static_script_a), context_c)
+            .insert(
+                ScriptAttachment::StaticScript(static_script_a),
+                context_c.into(),
+            )
             .unwrap();
 
         script_context_guard
-            .insert(ScriptAttachment::StaticScript(static_script_b), context_d)
+            .insert(
+                ScriptAttachment::StaticScript(static_script_b),
+                context_d.into(),
+            )
             .unwrap();
 
         drop(script_context_guard);
@@ -600,7 +632,11 @@ mod test {
     #[test]
     fn test_all_scripts_recipients() {
         let script_context = make_test_contexts();
-        let recipients = Recipients::AllScripts.get_recipients(script_context);
+        let recipients: Vec<_> = Recipients::AllScripts
+            .get_recipients(script_context)
+            .into_iter()
+            .map(|(a, b)| (a, b.as_loaded().unwrap().clone()))
+            .collect();
         assert_eq!(recipients.len(), 6);
         let mut id_context_pairs = recipients_to_asset_ids(&recipients);
 
@@ -640,7 +676,11 @@ mod test {
     #[test]
     fn test_all_contexts_recipients() {
         let script_context = make_test_contexts();
-        let recipients = Recipients::AllContexts.get_recipients(script_context);
+        let recipients: Vec<_> = Recipients::AllContexts
+            .get_recipients(script_context)
+            .into_iter()
+            .map(|(a, b)| (a, b.as_loaded().unwrap().clone()))
+            .collect();
         assert_eq!(recipients.len(), 4);
         let mut id_context_pairs = recipients_to_asset_ids(&recipients);
         id_context_pairs.sort_by_key(|(id, _)| *id);
@@ -680,14 +720,17 @@ mod test {
     #[test]
     fn test_script_entity_recipients() {
         let script_context = make_test_contexts();
-        let recipients = Recipients::ScriptEntity(
+        let recipients: Vec<_> = Recipients::ScriptEntity(
             Handle::Uuid(
                 uuid!("163f1128-62f9-456f-9b76-a326fbe86fa8"),
                 Default::default(),
             ),
             Entity::from_raw_u32(0).unwrap(),
         )
-        .get_recipients(script_context);
+        .get_recipients(script_context)
+        .into_iter()
+        .map(|(a, b)| (a, b.as_loaded().unwrap().clone()))
+        .collect();
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);
@@ -703,11 +746,14 @@ mod test {
     #[test]
     fn test_static_script_recipients() {
         let script_context = make_test_contexts();
-        let recipients = Recipients::StaticScript(Handle::Uuid(
+        let recipients: Vec<_> = Recipients::StaticScript(Handle::Uuid(
             uuid!("563f1128-62f9-456f-9b76-a326fbe86fa8"),
             Default::default(),
         ))
-        .get_recipients(script_context);
+        .get_recipients(script_context)
+        .into_iter()
+        .map(|(a, b)| (a, b.as_loaded().unwrap().clone()))
+        .collect();
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);

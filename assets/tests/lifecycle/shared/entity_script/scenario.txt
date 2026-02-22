@@ -1,11 +1,11 @@
 // #main_script lifecycle.lua
 SetCurrentLanguage language="@this_script_language"
-InstallPlugin emit_responses=true, context_policy="Global"
+InstallPlugin emit_responses=true, context_policy="Global", nanoseconds_budget=99999999999
 FinalizeApp
 
 // load script a 
 LoadScriptAs as_name="script_a", path="lifecycle.lua"
-WaitForScriptLoaded name="script_a"
+WaitForScriptAssetLoaded name="script_a"
 SpawnEntityWithScript name="test_entity_a", script="script_a"
 RunUpdateOnce
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptLoaded", script="script_a", entity="test_entity_a", expect_string_value="loaded!"
@@ -14,6 +14,8 @@ AssertNoCallbackResponsesEmitted
 // reload script_a, with the same content
 ReloadScriptFrom script="script_a", path="lifecycle.lua"
 RunUpdateOnce 
+
+RunUpdateOnce 
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptUnloaded", script="script_a", entity="test_entity_a", expect_string_value="unloaded!"
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptLoaded", script="script_a", entity="test_entity_a", expect_string_value="loaded!"
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptReloaded", script="script_a", entity="test_entity_a", expect_string_value="reloaded with: unloaded!"
@@ -21,7 +23,7 @@ AssertNoCallbackResponsesEmitted
 
 // load licecycle_b.lua, which prefixes all outputs with "B", the unload callback is called using the old script's state
 LoadScriptAs as_name="script_b", path="lifecycle_b.lua"
-WaitForScriptLoaded name="script_b"
+WaitForScriptAssetLoaded name="script_b"
 SpawnEntityWithScript name="test_entity_b", script="script_b"
 RunUpdateOnce
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptUnloaded", script="script_b", entity="test_entity_b", expect_string_value="unloaded!"
@@ -32,6 +34,8 @@ AssertNoCallbackResponsesEmitted
 // reload script_b, with the same content
 ReloadScriptFrom script="script_b", path="lifecycle_b.lua"
 RunUpdateOnce
+RunUpdateOnce 
+
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptUnloaded", script="script_b", entity="test_entity_b", expect_string_value="B: unloaded!"
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptLoaded", script="script_b", entity="test_entity_b", expect_string_value="B: loaded!"
 AssertCallbackSuccess attachment="EntityScript", label="OnScriptReloaded", script="script_b", entity="test_entity_b", expect_string_value="B: reloaded with: B: unloaded!"

@@ -2,13 +2,14 @@
 
 use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc, time::Duration};
 
-use bevy_app::{App, Plugin, PostUpdate};
+use bevy_app::{App, Plugin, PreUpdate};
 use bevy_asset::{AssetServer, Assets, Handle, LoadState};
 use bevy_ecs::{
     message::{Message, MessageReader},
+    observer::On,
     resource::Resource,
     schedule::{IntoScheduleConfigs, Schedule, ScheduleLabel, SystemSet},
-    system::{Command, Local, Res, ResMut, SystemParam},
+    system::{Command, IntoSystem, Local, Res, ResMut, SystemParam},
     world::World,
 };
 use bevy_log::debug;
@@ -17,7 +18,6 @@ use bevy_mod_scripting_bindings::WorldGuard;
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_platform::collections::HashSet;
 use parking_lot::Mutex;
-use smallvec::SmallVec;
 
 use crate::{
     IntoScriptPluginParams,
@@ -28,10 +28,11 @@ use crate::{
         ScriptErrorEvent,
     },
     pipeline::hooks::{
-        OnLoadedListener, OnReloadedListener, OnUnloadedForReloadListener,
-        OnUnloadedForUnloadListener,
+        clear_machine_data, on_script_loaded_pipeline_handler, on_script_reloaded_pipeline_handler,
+        on_script_unloaded_for_reload_pipeline_handler,
+        on_script_unloaded_for_unload_pipeline_handler, process_machine_failure,
     },
-    script::ScriptContext,
+    script::ScriptContexts,
 };
 
 mod hooks;
@@ -208,38 +209,61 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
             .add_plugin_message::<ScriptDetachedEvent>(app)
             .add_plugin_message::<ScriptAssetModifiedEvent>(app);
 
-        let mut active_machines = app.world_mut().get_resource_or_init::<ActiveMachines<P>>();
+        app.init_resource::<ActiveMachinesData>();
+
+        // load observer goes first
         if self.on_script_loaded_callback {
-            active_machines.push_listener::<ContextAssigned<P>>(OnLoadedListener);
+            app.add_observer(on_script_loaded_pipeline_handler::<P>);
         }
-
+        // then reload
         if self.on_script_reloaded_callback {
-            active_machines.push_listener::<ContextAssigned<P>>(OnReloadedListener);
+            app.add_observer(on_script_reloaded_pipeline_handler::<P>);
         }
 
+        // these are the only triggers on their events
         if self.on_script_unloaded_callback {
-            active_machines.push_listener::<ReloadingInitialized<P>>(OnUnloadedForReloadListener);
-            active_machines.push_listener::<UnloadingInitialized<P>>(OnUnloadedForUnloadListener);
+            app.add_observer(on_script_unloaded_for_unload_pipeline_handler::<P>);
+            app.add_observer(on_script_unloaded_for_reload_pipeline_handler::<P>);
         }
+
+        // clear hanging machine data
+        app.add_observer(
+            (|trigger: On<LoadingCompleted>| trigger.0.clone()).pipe(clear_machine_data),
+        );
+        app.add_observer(
+            (|trigger: On<UnloadingCompleted>| trigger.0.clone()).pipe(clear_machine_data),
+        );
+        app.add_observer(
+            (|trigger: On<ProcessInterrupted>| trigger.0.clone()).pipe(clear_machine_data),
+        );
+        // failed machines shouldn't lead to locking out scripts
+        app.add_observer(
+            (|trigger: On<ProcessInterrupted>| trigger.0.clone())
+                .pipe(process_machine_failure::<P>),
+        );
+
+        let mut active_machines = app.world_mut().get_resource_or_init::<ActiveMachines<P>>();
 
         active_machines.budget = self.time_budget;
 
         app.configure_sets(
-            PostUpdate,
-            PipelineSet::ListeningPhase.before(PipelineSet::MachineStartPhase),
+            PreUpdate,
+            PipelineSet::ListeningPhase
+                .after(bevy_asset::AssetTrackingSystems)
+                .before(PipelineSet::MachineStartPhase),
         );
 
         // todo: nicer way to order these, ideall .chain() + conditional newtype?
         if self.script_component_triggers {
             app.add_systems(
-                PostUpdate,
+                PreUpdate,
                 filter_script_attachments::<P>
                     .in_set(PipelineSet::ListeningPhase)
                     .before(filter_script_modifications::<P>)
                     .before(filter_script_detachments::<P>),
             );
             app.add_systems(
-                PostUpdate,
+                PreUpdate,
                 filter_script_detachments::<P>
                     .in_set(PipelineSet::ListeningPhase)
                     .after(filter_script_attachments::<P>)
@@ -249,13 +273,13 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
 
         if self.hot_loading_asset_triggers {
             app.add_systems(
-                PostUpdate,
+                PreUpdate,
                 filter_script_modifications::<P>.in_set(PipelineSet::ListeningPhase),
             );
         }
 
         app.add_systems(
-            PostUpdate,
+            PreUpdate,
             (
                 process_attachments::<P>,
                 process_detachments::<P>,
@@ -266,7 +290,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
         );
 
         app.add_systems(
-            PostUpdate,
+            PreUpdate,
             automatic_pipeline_runner::<P>.after(PipelineSet::MachineStartPhase),
         );
 
@@ -329,7 +353,7 @@ impl<P: IntoScriptPluginParams> Command for RunProcessingPipelineOnce<P> {
 pub fn automatic_pipeline_runner<P: IntoScriptPluginParams>(world: &mut World) {
     if world
         .get_resource::<ActiveMachines<P>>()
-        .is_some_and(|machines| machines.active_machines() > 0)
+        .is_some_and(|machines| machines.processing_and_queued_machines() > 0)
     {
         RunProcessingPipelineOnce::<P>::new(None).apply(world);
     }
@@ -346,7 +370,8 @@ impl PipelineRun for App {
         loop {
             let world = self.world_mut();
             let machines = world.get_resource::<ActiveMachines<P>>();
-            let has_active = machines.is_some_and(|machines| machines.active_machines() > 0);
+            let has_active =
+                machines.is_some_and(|machines| machines.processing_and_queued_machines() > 0);
             if !has_active {
                 break;
             }
@@ -358,7 +383,7 @@ impl PipelineRun for App {
 #[derive(SystemParam)]
 /// System parameter composing resources related to script loading, exposing utility methods for checking on your script pipeline status
 pub struct ScriptPipelineState<'w, P: IntoScriptPluginParams> {
-    contexts: Res<'w, ScriptContext<P>>,
+    contexts: Res<'w, ScriptContexts<P>>,
     machines: Res<'w, ActiveMachines<P>>,
 }
 
@@ -374,7 +399,7 @@ impl<'w, P: IntoScriptPluginParams> ScriptPipelineState<'w, P> {
     /// Returns the number of scripts currently being processed,
     /// this includes loads, reloads and removals, when this is zero, no processing is happening at the moment
     pub fn num_processing_scripts(&self) -> usize {
-        self.machines.active_machines()
+        self.machines.processing_and_queued_machines()
     }
 
     /// returns true if the current processing batch is completed,

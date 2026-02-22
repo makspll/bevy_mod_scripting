@@ -2,7 +2,7 @@ use std::{
     borrow::Cow,
     collections::{HashMap, VecDeque},
     path::{Path, PathBuf},
-    time::Instant,
+    time::{Duration, Instant},
 };
 
 use ::{
@@ -19,16 +19,20 @@ use bevy_ecs::message::{Message, MessageCursor, Messages};
 use bevy_log::info;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
+#[cfg(feature = "lua")]
+use bevy_mod_scripting_core::pipeline::ActiveMachines;
 use bevy_mod_scripting_core::{
-    ConfigureScriptPlugin,
+    ConfigureScriptPlugin, IntoScriptPluginParams,
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptAttachedEvent, ScriptCallbackEvent,
         ScriptCallbackResponseEvent, ScriptDetachedEvent,
     },
     handler::event_handler,
-    script::{ContextPolicy, ScriptComponent, ScriptContext},
+    script::{ContextPolicy, ScriptComponent, ScriptContexts},
 };
 use bevy_mod_scripting_display::DisplayProxy;
+#[cfg(feature = "lua")]
+use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use bevy_mod_scripting_script::ScriptAttachment;
 use test_utils::test_data::setup_integration_test;
 
@@ -303,7 +307,7 @@ pub enum ScenarioStep {
     InstallPlugin {
         context_policy: ContextPolicy,
         emit_responses: bool,
-        miliseconds_budget: Option<u64>,
+        nanoseconds_budget: Option<u64>,
     },
     /// Finalizes the app, cleaning up resources and preparing for the next steps.
     FinalizeApp,
@@ -332,7 +336,7 @@ pub enum ScenarioStep {
         as_name: String,
     },
     /// Waits until the script with the given name is loaded.
-    WaitForScriptLoaded {
+    WaitForScriptAssetLoaded {
         script: Handle<ScriptAsset>,
     },
     /// Spawns an entity with the given name and attaches the given script to it.
@@ -385,6 +389,14 @@ pub enum ScenarioStep {
     DespawnEntity {
         entity: Entity,
     },
+    /// Asserts that the context corresponding to this attachment is in the given state
+    AssertContextState {
+        attachment: ScriptAttachment,
+        state: ScenarioContextState,
+    },
+    SetNanosecondsBudget {
+        nanoseconds_budget: Option<u64>,
+    },
 }
 
 /// Execution
@@ -393,6 +405,7 @@ impl ScenarioStep {
         context: &mut ScenarioContext,
         app: &mut App,
     ) -> Result<(), Error> {
+        bevy_log::info!("Executing all schedules");
         app.update();
 
         // add watched events
@@ -479,7 +492,7 @@ impl ScenarioStep {
             ScenarioStep::InstallPlugin {
                 context_policy,
                 emit_responses,
-                miliseconds_budget,
+                nanoseconds_budget,
             } => {
                 if !context.initialized_app {
                     *app = setup_integration_test(|_, _| {});
@@ -492,8 +505,8 @@ impl ScenarioStep {
                         use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
                         use std::time::Duration;
                         let mut pipeline = ScriptLoadingPipeline::default();
-                        if let Some(budget) = miliseconds_budget {
-                            pipeline.time_budget = Some(Duration::from_millis(budget));
+                        if let Some(budget) = nanoseconds_budget {
+                            pipeline.time_budget = Some(Duration::from_nanos(budget));
                         }
                         let plugin = crate::make_test_lua_plugin();
                         let plugin = plugin
@@ -507,7 +520,7 @@ impl ScenarioStep {
                         use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
                         use std::time::Duration;
                         let mut pipeline = ScriptLoadingPipeline::default();
-                        if let Some(budget) = miliseconds_budget {
+                        if let Some(budget) = nanoseconds_budget {
                             pipeline.time_budget = Some(Duration::from_millis(budget));
                         }
                         let plugin = crate::make_test_rhai_plugin();
@@ -551,7 +564,7 @@ impl ScenarioStep {
                     path.display()
                 );
             }
-            ScenarioStep::WaitForScriptLoaded { script } => {
+            ScenarioStep::WaitForScriptAssetLoaded { script } => {
                 let res = Self::execute_until_event::<AssetEvent<ScriptAsset>, _, _, _>(
                     context,
                     app,
@@ -790,12 +803,12 @@ impl ScenarioStep {
                 let residents = match context.current_script_language {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => world
-                        .resource::<ScriptContext<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
+                        .resource::<ScriptContexts<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
                         .read()
                         .residents_len(&script),
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => world
-                        .resource::<ScriptContext<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                        .resource::<ScriptContexts<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
                         .read()
                         .residents_len(&script),
                     _ => {
@@ -817,6 +830,87 @@ impl ScenarioStep {
             ScenarioStep::Comment { comment } => {
                 // Comments are ignored, do nothing, log it though for debugging
                 info!("Comment: {comment}");
+            }
+            ScenarioStep::AssertContextState {
+                attachment: script,
+                state,
+            } => {
+                let world = app.world_mut();
+
+                fn context_to_state<P: IntoScriptPluginParams>(
+                    ctxt: bevy_mod_scripting_core::script::Context<P>,
+                ) -> ScenarioContextState {
+                    match ctxt {
+                        bevy_mod_scripting_core::script::Context::LoadedAndActive(_) => {
+                            ScenarioContextState::LoadedAndActive
+                        }
+                        bevy_mod_scripting_core::script::Context::Loading => {
+                            ScenarioContextState::Loading
+                        }
+                        bevy_mod_scripting_core::script::Context::Unloading(_) => {
+                            ScenarioContextState::Unloading
+                        }
+                        bevy_mod_scripting_core::script::Context::Reloading(_) => {
+                            ScenarioContextState::Reloading
+                        }
+                    }
+                }
+
+                let got_state = match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => world
+                        .resource::<ScriptContexts<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
+                        .read()
+                        .get_context(&script)
+                        .map(context_to_state),
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => world
+                        .resource::<ScriptContexts<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                        .read()
+                        .get_context(&script)
+                        .map(context_to_state),
+                    _ => {
+                        return Err(anyhow!(
+                            "Scenario step AssertContextState is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
+                    }
+                };
+
+                if got_state != Some(state.clone()) {
+                    return Err(anyhow!(
+                        "Expected {state:?} state for script attachment: {script}, but found {got_state:?}",
+                    ));
+                } else {
+                    info!("Script attachment: {script} context has state {state:?} as expected",);
+                }
+            }
+            ScenarioStep::SetNanosecondsBudget { nanoseconds_budget } => {
+                let nanoseconds_budget = nanoseconds_budget.map(Duration::from_nanos);
+                match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => {
+                        let mut machines = app
+                            .world_mut()
+                            .get_resource_mut::<ActiveMachines<LuaScriptingPlugin>>()
+                            .unwrap();
+                        machines.budget = nanoseconds_budget;
+                    }
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => {
+                        let mut machines = app
+                            .world_mut()
+                            .get_resource_mut::<ActiveMachines<LuaScriptingPlugin>>()
+                            .unwrap();
+                        machines.budget = nanoseconds_budget;
+                    }
+                    _ => {
+                        return Err(anyhow!(
+                            "Scenario step SetNanosecondsBudget is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
+                    }
+                }
             }
         }
         Ok(())

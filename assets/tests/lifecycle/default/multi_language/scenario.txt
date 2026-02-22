@@ -11,13 +11,13 @@ FinalizeApp
 // load lua script
 SetCurrentLanguage language="Lua"
 LoadScriptAs as_name="script_lua", path="multi_lang.lua"
-WaitForScriptLoaded name="script_lua"
+WaitForScriptAssetLoaded name="script_lua"
 AttachStaticScript script="script_lua"
 
 // load rhai script
 SetCurrentLanguage language="Rhai"
 LoadScriptAs as_name="script_rhai", path="multi_lang.rhai"
-WaitForScriptLoaded name="script_rhai"
+WaitForScriptAssetLoaded name="script_rhai"
 AttachStaticScript script="script_rhai"
 
 // expect no responses
