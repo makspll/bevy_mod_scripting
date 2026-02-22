@@ -24,6 +24,7 @@ pub(crate) fn process_machine_failure<P: IntoScriptPluginParams>(
     script_contexts: ResMut<ScriptContexts<P>>,
 ) {
     let mut script_contexts = script_contexts.write();
+
     // TODO: handle this
     let _ = script_contexts.mark_active_if_not_loading(&attachment);
 }
