@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bb5032a7.js";
+            window.path_to_searchindex_js = "../searchindex-ed0e542a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-32351b3e.js"></script>
+        <script src="../toc-0144a543.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -190,9 +190,9 @@
 </ul>
 <p>The new pipeline works like this:</p>
 <ul>
-<li>A set of systems in <code>PostUpdate</code> “filter” incoming <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code>’s as well as <code>ScriptAssetModifiedEvent</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
+<li>A set of systems in <code>PreUpdate</code> “filter” incoming <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code>’s as well as <code>ScriptAssetModifiedEvent</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
 <li>A set of other systems then converts those into active <code>ScriptMachine</code>’s</li>
-<li>Then inside the <code>ScriptProcessingSchedule&lt;P&gt;</code>, which is only run if there are active machines, we tick each machine until it either errors or reaches its final state.</li>
+<li>Then inside the <code>ScriptProcessingSchedule&lt;P&gt;</code>, which is only run in <code>PreUpdate</code> if there are active machines, we tick each machine until it either errors or reaches its final state.</li>
 </ul>
 <h2 id="script-machines"><a class="header" href="#script-machines">Script Machines</a></h2>
 <h3 id="state-machine"><a class="header" href="#state-machine">State Machine</a></h3>
@@ -222,26 +222,9 @@ Enter: OnUnloaded callback]
     G --&gt; H
 </pre>
 
-<p>Hooks, such as <code>on_script_loaded</code> are implemented using <code>TransitionListener</code>’s which can be inserted into the <code>ActiveMachines</code> resource. This allows you to hook into various parts of the loading process and add your own callbacks, i.e.:</p>
-<pre class="playground"><code class="language-rust">pub(crate) struct MyUnloadListener;
-impl&lt;P: IntoScriptPluginParams&gt; TransitionListener&lt;UnloadingInitialized&lt;P&gt;&gt;
-    for OnUnloadedForUnloadListener
-{
-    fn on_enter(
-        &amp;self,
-        state: &amp;mut UnloadingInitialized&lt;P&gt;,
-        world: &amp;mut World,
-        ctxt: &amp;mut Context,
-    ) -&gt; Result&lt;(), ScriptError&gt; {
-        info!("doing unload things")
-        Ok(())
-    }
-}
-
-// example config, if you do this before the scripting plugin is initialized, the ordering of callbacks might be different to if you do this after.
-fn main(&amp;mut app: App) {
-    let machines = app.world_mut().get_resource_or_init::&lt;ActiveMachines&lt;LuaScriptingPlugin&gt;&gt;();
-    machines.push_listener::&lt;UnloadingInitialized&lt;LuaScriptingPlugin&gt;&gt;(MyUnloadListener);
+<p>Hooks, such as <code>on_script_loaded</code> are implemented using bevy observers. This allows you to hook into various parts of the loading process and add your own callbacks, i.e.:</p>
+<pre class="playground"><code class="language-rust">fn main(&amp;mut app: App) {
+    let machines = app.add_observer(|On&lt;LoadingCompleted&lt;LuaScriptingPlugin&gt;&gt;| todo!("do stuff"));
 }</code></pre>
 <h2 id="timing--order"><a class="header" href="#timing--order">Timing &amp; Order</a></h2>
 <p>The machine ticking by default is limited to 16ms per run (i.e. 60fps assuming it has the entirety of the frame to run). This is not entirely effective as some operations are not currently very fine grained, for example if a callback takes more than 16ms it will easilly hog the frame time.</p>

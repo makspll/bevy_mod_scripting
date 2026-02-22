@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-bb5032a7.js";
+            window.path_to_searchindex_js = "../../searchindex-ed0e542a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-32351b3e.js"></script>
+        <script src="../../toc-0144a543.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -199,119 +199,119 @@
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./vec3a/min_element.html">min_element</a></td><td>Returns the horizontal minimum of `self`.  In other words this computes `min(x, y, ..)`.  NaN propo...</td></tr>
-<tr><td><a href="./vec3a/project_onto_normalized.html">project_onto_normalized</a></td><td>Returns the vector projection of `self` onto `rhs`.  `rhs` must be normalized.  # Panics  Will pani...</td></tr>
-<tr><td><a href="./vec3a/min_position.html">min_position</a></td><td>Returns the index of the first minimum element of `self`.</td></tr>
-<tr><td><a href="./vec3a/div-2.html">div-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/length_squared.html">length_squared</a></td><td>Computes the squared length of `self`.  This is faster than `length()` as it avoids a square root o...</td></tr>
-<tr><td><a href="./vec3a/to_vec3.html">to_vec3</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/new.html">new</a></td><td>Creates a new vector.</td></tr>
-<tr><td><a href="./vec3a/as_u16vec3.html">as_u16vec3</a></td><td>Casts all elements of `self` to `u16`.</td></tr>
-<tr><td><a href="./vec3a/cmple.html">cmple</a></td><td>Returns a vector mask containing the result of a `&lt;=` comparison for each element of  `self` and `rhs`...</td></tr>
-<tr><td><a href="./vec3a/with_x.html">with_x</a></td><td>Creates a 3D vector from `self` with the given value of `x`.</td></tr>
-<tr><td><a href="./vec3a/is_nan_mask.html">is_nan_mask</a></td><td>Performs `is_nan` on each element of self, returning a vector mask of the results.  In other words, this computes `[x.is_nan(), y.is_nan(), ...]...</td></tr>
-<tr><td><a href="./vec3a/rotate_z.html">rotate_z</a></td><td>Rotates around the z axis by `angle` (in radians).</td></tr>
-<tr><td><a href="./vec3a/add-1.html">add-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/rem.html">rem</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/length.html">length</a></td><td>Computes the length of `self`.</td></tr>
-<tr><td><a href="./vec3a/ln.html">ln</a></td><td>Returns a vector containing the natural logarithm for each element of `self`.  This returns NaN whe...</td></tr>
-<tr><td><a href="./vec3a/reflect.html">reflect</a></td><td>Returns the reflection vector for a given incident vector `self` and surface normal  `normal`.  `normal`...</td></tr>
-<tr><td><a href="./vec3a/to_array.html">to_array</a></td><td>Converts `self` to `[x, y, z]`</td></tr>
-<tr><td><a href="./vec3a/log2.html">log2</a></td><td>Returns a vector containing the base 2 logarithm for each element of `self`.  This returns NaN when...</td></tr>
-<tr><td><a href="./vec3a/neg.html">neg</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/trunc.html">trunc</a></td><td>Returns a vector containing the integer part each element of `self`. This means numbers are  always...</td></tr>
-<tr><td><a href="./vec3a/splat.html">splat</a></td><td>Creates a vector with all elements set to `v`.</td></tr>
-<tr><td><a href="./vec3a/normalize.html">normalize</a></td><td>Returns `self` normalized to length 1.0.  For valid results, `self` must be finite and _not_ of len...</td></tr>
-<tr><td><a href="./vec3a/copysign.html">copysign</a></td><td>Returns a vector with signs of `rhs` and the magnitudes of `self`.</td></tr>
-<tr><td><a href="./vec3a/clamp.html">clamp</a></td><td>Component-wise clamping of values, similar to [`f32::clamp`].  Each element in `min` must be less-or-equal to the corresponding element in `max`.  NaN propogation does not follow IEEE 754-2008 semantics and may differ on  different SIMD architectures.  # Panics  Will panic if `min` is greater than `max` when `glam_assert` is enabled.</td></tr>
-<tr><td><a href="./vec3a/normalize_or_zero.html">normalize_or_zero</a></td><td>Returns `self` normalized to length 1.0 if possible, else returns zero.  In particular, if the inpu...</td></tr>
-<tr><td><a href="./vec3a/abs_diff_eq.html">abs_diff_eq</a></td><td>Returns true if the absolute difference of all elements between `self` and `rhs` is  less than or e...</td></tr>
-<tr><td><a href="./vec3a/max_element.html">max_element</a></td><td>Returns the horizontal maximum of `self`.  In other words this computes `max(x, y, ..)`.  NaN propo...</td></tr>
-<tr><td><a href="./vec3a/from_homogeneous.html">from_homogeneous</a></td><td>Projects a homogeneous coordinate to 3D space by performing perspective divide.  # Panics  Will pan...</td></tr>
-<tr><td><a href="./vec3a/div-1.html">div-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/as_uvec3.html">as_uvec3</a></td><td>Casts all elements of `self` to `u32`.</td></tr>
-<tr><td><a href="./vec3a/dot.html">dot</a></td><td>Computes the dot product of `self` and `rhs`.</td></tr>
-<tr><td><a href="./vec3a/as_i64vec3.html">as_i64vec3</a></td><td>Casts all elements of `self` to `i64`.</td></tr>
-<tr><td><a href="./vec3a/any_orthonormal_vector.html">any_orthonormal_vector</a></td><td>Returns any unit vector that is orthogonal to the given one.  The input vector must be unit length....</td></tr>
-<tr><td><a href="./vec3a/round.html">round</a></td><td>Returns a vector containing the nearest integer to a number for each element of `self`.  Round half...</td></tr>
-<tr><td><a href="./vec3a/is_finite_mask.html">is_finite_mask</a></td><td>Performs `is_finite` on each element of self, returning a vector mask of the results.  In other words, this computes `[x.is_finite(), y.is_finite(), ...]...</td></tr>
-<tr><td><a href="./vec3a/truncate.html">truncate</a></td><td>Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.  Truncation may also b...</td></tr>
-<tr><td><a href="./vec3a/dot_into_vec.html">dot_into_vec</a></td><td>Returns a vector where every component is the dot product of `self` and `rhs`.</td></tr>
-<tr><td><a href="./vec3a/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/element_sum.html">element_sum</a></td><td>Returns the sum of all elements of `self`.  In other words, this computes `self.x + self.y + ..`.</td></tr>
-<tr><td><a href="./vec3a/rem-1.html">rem-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/div.html">div</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/project_onto.html">project_onto</a></td><td>Returns the vector projection of `self` onto `rhs`.  `rhs` must be of non-zero length.  # Panics  W...</td></tr>
-<tr><td><a href="./vec3a/cmpeq.html">cmpeq</a></td><td>Returns a vector mask containing the result of a `==` comparison for each element of  `self` and `rhs`...</td></tr>
-<tr><td><a href="./vec3a/sub-1.html">sub-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/abs.html">abs</a></td><td>Returns a vector containing the absolute value of each element of `self`.</td></tr>
-<tr><td><a href="./vec3a/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.  When `s...</td></tr>
-<tr><td><a href="./vec3a/element_product.html">element_product</a></td><td>Returns the product of all elements of `self`.  In other words, this computes `self.x * self.y * .....</td></tr>
-<tr><td><a href="./vec3a/any_orthogonal_vector.html">any_orthogonal_vector</a></td><td>Returns some vector that is orthogonal to the given one.  The input vector must be finite and non-z...</td></tr>
-<tr><td><a href="./vec3a/distance.html">distance</a></td><td>Computes the Euclidean distance between two points in space.</td></tr>
-<tr><td><a href="./vec3a/midpoint.html">midpoint</a></td><td>Calculates the midpoint between `self` and `rhs`.  The midpoint is the average of, or halfway point...</td></tr>
-<tr><td><a href="./vec3a/add-2.html">add-2</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./vec3a/fract_gl.html">fract_gl</a></td><td>Returns a vector containing the fractional part of the vector as `self - self.floor()`.  Note that ...</td></tr>
-<tr><td><a href="./vec3a/rotate_y.html">rotate_y</a></td><td>Rotates around the y axis by `angle` (in radians).</td></tr>
-<tr><td><a href="./vec3a/as_ivec3.html">as_ivec3</a></td><td>Casts all elements of `self` to `i32`.</td></tr>
-<tr><td><a href="./vec3a/sub-2.html">sub-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/from_vec4.html">from_vec4</a></td><td>Creates a [`Vec3A`] from the `x`, `y` and `z` elements of `self` discarding `w`.  On architectures where SIMD is supported such as SSE2 on `x86_64` this conversion is a noop.</td></tr>
-<tr><td><a href="./vec3a/exp2.html">exp2</a></td><td>Returns a vector containing `2^self` for each element of `self`.</td></tr>
-<tr><td><a href="./vec3a/as_i8vec3.html">as_i8vec3</a></td><td>Casts all elements of `self` to `i8`.</td></tr>
-<tr><td><a href="./vec3a/refract.html">refract</a></td><td>Returns the refraction direction for a given incident vector `self`, surface normal  `normal` and r...</td></tr>
-<tr><td><a href="./vec3a/as_u64vec3.html">as_u64vec3</a></td><td>Casts all elements of `self` to `u64`.</td></tr>
-<tr><td><a href="./vec3a/max_position.html">max_position</a></td><td>Returns the index of the first maximum element of `self`.</td></tr>
-<tr><td><a href="./vec3a/div_euclid.html">div_euclid</a></td><td>Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.</td></tr>
-<tr><td><a href="./vec3a/clamp_length_min.html">clamp_length_min</a></td><td>Returns a vector with a length no less than `min`.  # Panics  Will panic if `min` is negative when `glam_assert` is enabled.</td></tr>
-<tr><td><a href="./vec3a/max.html">max</a></td><td>Returns a vector containing the maximum values for each element of `self` and `rhs`.  In other word...</td></tr>
-<tr><td><a href="./vec3a/rotate_axis.html">rotate_axis</a></td><td>Rotates around `axis` by `angle` (in radians).  The axis must be a unit vector.  # Panics  Will pan...</td></tr>
-<tr><td><a href="./vec3a/reject_from.html">reject_from</a></td><td>Returns the vector rejection of `self` from `rhs`.  The vector rejection is the vector perpendicula...</td></tr>
-<tr><td><a href="./vec3a/distance_squared.html">distance_squared</a></td><td>Compute the squared euclidean distance between two points in space.</td></tr>
-<tr><td><a href="./vec3a/add.html">add</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/lerp.html">lerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on the value `s`.  When `s` is `0.0`...</td></tr>
-<tr><td><a href="./vec3a/as_i16vec3.html">as_i16vec3</a></td><td>Casts all elements of `self` to `i16`.</td></tr>
-<tr><td><a href="./vec3a/rotate_towards.html">rotate_towards</a></td><td>Rotates towards `rhs` up to `max_angle` (in radians).  When `max_angle` is `0.0`, the result will b...</td></tr>
-<tr><td><a href="./vec3a/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/min.html">min</a></td><td>Returns a vector containing the minimum values for each element of `self` and `rhs`.  In other word...</td></tr>
-<tr><td><a href="./vec3a/with_z.html">with_z</a></td><td>Creates a 3D vector from `self` with the given value of `z`.</td></tr>
-<tr><td><a href="./vec3a/angle_between.html">angle_between</a></td><td>Returns the angle (in radians) between two vectors in the range `[0, +π]`.  The inputs do not need to be unit vectors however they must be non-zero.</td></tr>
-<tr><td><a href="./vec3a/reject_from_normalized.html">reject_from_normalized</a></td><td>Returns the vector rejection of `self` from `rhs`.  The vector rejection is the vector perpendicula...</td></tr>
-<tr><td><a href="./vec3a/normalize_or.html">normalize_or</a></td><td>Returns `self` normalized to length 1.0 if possible, else returns a  fallback value.  In particular...</td></tr>
-<tr><td><a href="./vec3a/clamp_length_max.html">clamp_length_max</a></td><td>Returns a vector with a length no more than `max`.  # Panics  Will panic if `max` is negative when `glam_assert` is enabled.</td></tr>
-<tr><td><a href="./vec3a/rem-2.html">rem-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/extend.html">extend</a></td><td>Creates a 4D vector from `self` and the given `w` value.</td></tr>
-<tr><td><a href="./vec3a/fract.html">fract</a></td><td>Returns a vector containing the fractional part of the vector as `self - self.trunc()`.  Note that ...</td></tr>
-<tr><td><a href="./vec3a/as_u8vec3.html">as_u8vec3</a></td><td>Casts all elements of `self` to `u8`.</td></tr>
-<tr><td><a href="./vec3a/exp.html">exp</a></td><td>Returns a vector containing `e^self` (the exponential function) for each element of  `self`.</td></tr>
-<tr><td><a href="./vec3a/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/cross.html">cross</a></td><td>Computes the cross product of `self` and `rhs`.</td></tr>
-<tr><td><a href="./vec3a/from_array.html">from_array</a></td><td>Creates a new vector from an array.</td></tr>
-<tr><td><a href="./vec3a/cmpge.html">cmpge</a></td><td>Returns a vector mask containing the result of a `&gt;=` comparison for each element of  `self` and `rhs`...</td></tr>
-<tr><td><a href="./vec3a/is_nan.html">is_nan</a></td><td>Returns `true` if any elements are `NaN`.</td></tr>
-<tr><td><a href="./vec3a/length_recip.html">length_recip</a></td><td>Computes `1.0 / length()`.  For valid results, `self` must _not_ be of length zero.</td></tr>
-<tr><td><a href="./vec3a/rotate_x.html">rotate_x</a></td><td>Rotates around the x axis by `angle` (in radians).</td></tr>
-<tr><td><a href="./vec3a/rem_euclid.html">rem_euclid</a></td><td>Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.  [Euclidean division...</td></tr>
-<tr><td><a href="./vec3a/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/cmplt.html">cmplt</a></td><td>Returns a vector mask containing the result of a `&lt;` comparison for each element of  `self` and `rhs`...</td></tr>
-<tr><td><a href="./vec3a/select.html">select</a></td><td>Creates a vector from the elements in `if_true` and `if_false`, selecting which to use  for each el...</td></tr>
 <tr><td><a href="./vec3a/clamp_length.html">clamp_length</a></td><td>Returns a vector with a length no less than `min` and no more than `max`.  # Panics  Will panic if `min`...</td></tr>
-<tr><td><a href="./vec3a/as_dvec3.html">as_dvec3</a></td><td>Casts all elements of `self` to `f64`.</td></tr>
-<tr><td><a href="./vec3a/is_normalized.html">is_normalized</a></td><td>Returns whether `self` is length `1.0` or not.  Uses a precision threshold of approximately `1e-4`.</td></tr>
-<tr><td><a href="./vec3a/mul_add.html">mul_add</a></td><td>Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding  error, yielding a more accurate result than an unfused multiply-add.  Using `mul_add` *may* be more performant than an unfused multiply-add if the target  architecture has a dedicated fma CPU instruction. However, this is not always true,  and will be heavily dependant on designing algorithms with specific target hardware in  mind.</td></tr>
-<tr><td><a href="./vec3a/with_y.html">with_y</a></td><td>Creates a 3D vector from `self` with the given value of `y`.</td></tr>
-<tr><td><a href="./vec3a/powf.html">powf</a></td><td>Returns a vector containing each element of `self` raised to the power of `n`.</td></tr>
-<tr><td><a href="./vec3a/cmpgt.html">cmpgt</a></td><td>Returns a vector mask containing the result of a `&gt;` comparison for each element of  `self` and `rhs`...</td></tr>
-<tr><td><a href="./vec3a/is_negative_bitmask.html">is_negative_bitmask</a></td><td>Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.  A negat...</td></tr>
-<tr><td><a href="./vec3a/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/ceil.html">ceil</a></td><td>Returns a vector containing the smallest integer greater than or equal to a number for  each elemen...</td></tr>
-<tr><td><a href="./vec3a/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, all elements are finite.  If any element is either  `NaN`, positive...</td></tr>
-<tr><td><a href="./vec3a/signum.html">signum</a></td><td>Returns a vector with elements representing the sign of `self`.  - `1.0` if the number is positive,...</td></tr>
-<tr><td><a href="./vec3a/sub.html">sub</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./vec3a/floor.html">floor</a></td><td>Returns a vector containing the largest integer less than or equal to a number for each  element of...</td></tr>
-<tr><td><a href="./vec3a/recip.html">recip</a></td><td>Returns a vector containing the reciprocal `1.0/n` of each element of `self`.</td></tr>
+<tr><td><a href="./vec3a/rotate_towards.html">rotate_towards</a></td><td>Rotates towards `rhs` up to `max_angle` (in radians).  When `max_angle` is `0.0`, the result will b...</td></tr>
+<tr><td><a href="./vec3a/as_i16vec3.html">as_i16vec3</a></td><td>Casts all elements of `self` to `i16`.</td></tr>
+<tr><td><a href="./vec3a/distance_squared.html">distance_squared</a></td><td>Compute the squared euclidean distance between two points in space.</td></tr>
 <tr><td><a href="./vec3a/move_towards.html">move_towards</a></td><td>Moves towards `rhs` based on the value `d`.  When `d` is `0.0`, the result will be equal to `self`....</td></tr>
+<tr><td><a href="./vec3a/min.html">min</a></td><td>Returns a vector containing the minimum values for each element of `self` and `rhs`.  In other word...</td></tr>
+<tr><td><a href="./vec3a/mul_add.html">mul_add</a></td><td>Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding  error, yielding a more accurate result than an unfused multiply-add.  Using `mul_add` *may* be more performant than an unfused multiply-add if the target  architecture has a dedicated fma CPU instruction. However, this is not always true,  and will be heavily dependant on designing algorithms with specific target hardware in  mind.</td></tr>
+<tr><td><a href="./vec3a/is_nan.html">is_nan</a></td><td>Returns `true` if any elements are `NaN`.</td></tr>
+<tr><td><a href="./vec3a/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/as_u64vec3.html">as_u64vec3</a></td><td>Casts all elements of `self` to `u64`.</td></tr>
+<tr><td><a href="./vec3a/rem-2.html">rem-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/max.html">max</a></td><td>Returns a vector containing the maximum values for each element of `self` and `rhs`.  In other word...</td></tr>
+<tr><td><a href="./vec3a/any_orthogonal_vector.html">any_orthogonal_vector</a></td><td>Returns some vector that is orthogonal to the given one.  The input vector must be finite and non-z...</td></tr>
+<tr><td><a href="./vec3a/element_product.html">element_product</a></td><td>Returns the product of all elements of `self`.  In other words, this computes `self.x * self.y * .....</td></tr>
+<tr><td><a href="./vec3a/reject_from.html">reject_from</a></td><td>Returns the vector rejection of `self` from `rhs`.  The vector rejection is the vector perpendicula...</td></tr>
+<tr><td><a href="./vec3a/rem_euclid.html">rem_euclid</a></td><td>Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.  [Euclidean division...</td></tr>
+<tr><td><a href="./vec3a/element_sum.html">element_sum</a></td><td>Returns the sum of all elements of `self`.  In other words, this computes `self.x + self.y + ..`.</td></tr>
+<tr><td><a href="./vec3a/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/rotate_x.html">rotate_x</a></td><td>Rotates around the x axis by `angle` (in radians).</td></tr>
+<tr><td><a href="./vec3a/refract.html">refract</a></td><td>Returns the refraction direction for a given incident vector `self`, surface normal  `normal` and r...</td></tr>
+<tr><td><a href="./vec3a/normalize_or_zero.html">normalize_or_zero</a></td><td>Returns `self` normalized to length 1.0 if possible, else returns zero.  In particular, if the inpu...</td></tr>
+<tr><td><a href="./vec3a/sub-1.html">sub-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/select.html">select</a></td><td>Creates a vector from the elements in `if_true` and `if_false`, selecting which to use  for each el...</td></tr>
+<tr><td><a href="./vec3a/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.  When `s...</td></tr>
+<tr><td><a href="./vec3a/splat.html">splat</a></td><td>Creates a vector with all elements set to `v`.</td></tr>
+<tr><td><a href="./vec3a/rem-1.html">rem-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/rotate_z.html">rotate_z</a></td><td>Rotates around the z axis by `angle` (in radians).</td></tr>
+<tr><td><a href="./vec3a/clamp_length_max.html">clamp_length_max</a></td><td>Returns a vector with a length no more than `max`.  # Panics  Will panic if `max` is negative when `glam_assert` is enabled.</td></tr>
+<tr><td><a href="./vec3a/angle_between.html">angle_between</a></td><td>Returns the angle (in radians) between two vectors in the range `[0, +π]`.  The inputs do not need to be unit vectors however they must be non-zero.</td></tr>
+<tr><td><a href="./vec3a/reflect.html">reflect</a></td><td>Returns the reflection vector for a given incident vector `self` and surface normal  `normal`.  `normal`...</td></tr>
+<tr><td><a href="./vec3a/is_normalized.html">is_normalized</a></td><td>Returns whether `self` is length `1.0` or not.  Uses a precision threshold of approximately `1e-4`.</td></tr>
+<tr><td><a href="./vec3a/cmpgt.html">cmpgt</a></td><td>Returns a vector mask containing the result of a `&gt;` comparison for each element of  `self` and `rhs`...</td></tr>
+<tr><td><a href="./vec3a/with_z.html">with_z</a></td><td>Creates a 3D vector from `self` with the given value of `z`.</td></tr>
+<tr><td><a href="./vec3a/fract.html">fract</a></td><td>Returns a vector containing the fractional part of the vector as `self - self.trunc()`.  Note that ...</td></tr>
+<tr><td><a href="./vec3a/is_negative_bitmask.html">is_negative_bitmask</a></td><td>Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.  A negat...</td></tr>
+<tr><td><a href="./vec3a/as_u16vec3.html">as_u16vec3</a></td><td>Casts all elements of `self` to `u16`.</td></tr>
+<tr><td><a href="./vec3a/div_euclid.html">div_euclid</a></td><td>Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.</td></tr>
+<tr><td><a href="./vec3a/add.html">add</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/dot_into_vec.html">dot_into_vec</a></td><td>Returns a vector where every component is the dot product of `self` and `rhs`.</td></tr>
+<tr><td><a href="./vec3a/with_y.html">with_y</a></td><td>Creates a 3D vector from `self` with the given value of `y`.</td></tr>
 <tr><td><a href="./vec3a/to_homogeneous.html">to_homogeneous</a></td><td>Creates a homogeneous coordinate from `self`, equivalent to `self.extend(1.0)`.</td></tr>
+<tr><td><a href="./vec3a/add-2.html">add-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/lerp.html">lerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on the value `s`.  When `s` is `0.0`...</td></tr>
+<tr><td><a href="./vec3a/clamp_length_min.html">clamp_length_min</a></td><td>Returns a vector with a length no less than `min`.  # Panics  Will panic if `min` is negative when `glam_assert` is enabled.</td></tr>
+<tr><td><a href="./vec3a/round.html">round</a></td><td>Returns a vector containing the nearest integer to a number for each element of `self`.  Round half...</td></tr>
 <tr><td><a href="./vec3a/cmpne.html">cmpne</a></td><td>Returns a vector mask containing the result of a `!=` comparison for each element of  `self` and `rhs`...</td></tr>
+<tr><td><a href="./vec3a/normalize_or.html">normalize_or</a></td><td>Returns `self` normalized to length 1.0 if possible, else returns a  fallback value.  In particular...</td></tr>
+<tr><td><a href="./vec3a/sub-2.html">sub-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/as_dvec3.html">as_dvec3</a></td><td>Casts all elements of `self` to `f64`.</td></tr>
+<tr><td><a href="./vec3a/truncate.html">truncate</a></td><td>Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.  Truncation may also b...</td></tr>
+<tr><td><a href="./vec3a/any_orthonormal_vector.html">any_orthonormal_vector</a></td><td>Returns any unit vector that is orthogonal to the given one.  The input vector must be unit length....</td></tr>
+<tr><td><a href="./vec3a/ln.html">ln</a></td><td>Returns a vector containing the natural logarithm for each element of `self`.  This returns NaN whe...</td></tr>
+<tr><td><a href="./vec3a/signum.html">signum</a></td><td>Returns a vector with elements representing the sign of `self`.  - `1.0` if the number is positive,...</td></tr>
+<tr><td><a href="./vec3a/cmpeq.html">cmpeq</a></td><td>Returns a vector mask containing the result of a `==` comparison for each element of  `self` and `rhs`...</td></tr>
+<tr><td><a href="./vec3a/to_vec3.html">to_vec3</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/is_nan_mask.html">is_nan_mask</a></td><td>Performs `is_nan` on each element of self, returning a vector mask of the results.  In other words, this computes `[x.is_nan(), y.is_nan(), ...]...</td></tr>
+<tr><td><a href="./vec3a/copysign.html">copysign</a></td><td>Returns a vector with signs of `rhs` and the magnitudes of `self`.</td></tr>
+<tr><td><a href="./vec3a/cmpge.html">cmpge</a></td><td>Returns a vector mask containing the result of a `&gt;=` comparison for each element of  `self` and `rhs`...</td></tr>
+<tr><td><a href="./vec3a/div-2.html">div-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/rem.html">rem</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/extend.html">extend</a></td><td>Creates a 4D vector from `self` and the given `w` value.</td></tr>
+<tr><td><a href="./vec3a/powf.html">powf</a></td><td>Returns a vector containing each element of `self` raised to the power of `n`.</td></tr>
+<tr><td><a href="./vec3a/exp2.html">exp2</a></td><td>Returns a vector containing `2^self` for each element of `self`.</td></tr>
+<tr><td><a href="./vec3a/min_element.html">min_element</a></td><td>Returns the horizontal minimum of `self`.  In other words this computes `min(x, y, ..)`.  NaN propo...</td></tr>
+<tr><td><a href="./vec3a/div-1.html">div-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/project_onto_normalized.html">project_onto_normalized</a></td><td>Returns the vector projection of `self` onto `rhs`.  `rhs` must be normalized.  # Panics  Will pani...</td></tr>
+<tr><td><a href="./vec3a/from_array.html">from_array</a></td><td>Creates a new vector from an array.</td></tr>
+<tr><td><a href="./vec3a/rotate_axis.html">rotate_axis</a></td><td>Rotates around `axis` by `angle` (in radians).  The axis must be a unit vector.  # Panics  Will pan...</td></tr>
+<tr><td><a href="./vec3a/sub.html">sub</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/as_i8vec3.html">as_i8vec3</a></td><td>Casts all elements of `self` to `i8`.</td></tr>
+<tr><td><a href="./vec3a/from_homogeneous.html">from_homogeneous</a></td><td>Projects a homogeneous coordinate to 3D space by performing perspective divide.  # Panics  Will pan...</td></tr>
+<tr><td><a href="./vec3a/cmple.html">cmple</a></td><td>Returns a vector mask containing the result of a `&lt;=` comparison for each element of  `self` and `rhs`...</td></tr>
+<tr><td><a href="./vec3a/as_uvec3.html">as_uvec3</a></td><td>Casts all elements of `self` to `u32`.</td></tr>
+<tr><td><a href="./vec3a/exp.html">exp</a></td><td>Returns a vector containing `e^self` (the exponential function) for each element of  `self`.</td></tr>
+<tr><td><a href="./vec3a/midpoint.html">midpoint</a></td><td>Calculates the midpoint between `self` and `rhs`.  The midpoint is the average of, or halfway point...</td></tr>
+<tr><td><a href="./vec3a/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/project_onto.html">project_onto</a></td><td>Returns the vector projection of `self` onto `rhs`.  `rhs` must be of non-zero length.  # Panics  W...</td></tr>
+<tr><td><a href="./vec3a/new.html">new</a></td><td>Creates a new vector.</td></tr>
+<tr><td><a href="./vec3a/with_x.html">with_x</a></td><td>Creates a 3D vector from `self` with the given value of `x`.</td></tr>
+<tr><td><a href="./vec3a/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/trunc.html">trunc</a></td><td>Returns a vector containing the integer part each element of `self`. This means numbers are  always...</td></tr>
+<tr><td><a href="./vec3a/div.html">div</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/min_position.html">min_position</a></td><td>Returns the index of the first minimum element of `self`.</td></tr>
+<tr><td><a href="./vec3a/length_recip.html">length_recip</a></td><td>Computes `1.0 / length()`.  For valid results, `self` must _not_ be of length zero.</td></tr>
+<tr><td><a href="./vec3a/abs.html">abs</a></td><td>Returns a vector containing the absolute value of each element of `self`.</td></tr>
+<tr><td><a href="./vec3a/is_finite_mask.html">is_finite_mask</a></td><td>Performs `is_finite` on each element of self, returning a vector mask of the results.  In other words, this computes `[x.is_finite(), y.is_finite(), ...]...</td></tr>
+<tr><td><a href="./vec3a/to_array.html">to_array</a></td><td>Converts `self` to `[x, y, z]`</td></tr>
+<tr><td><a href="./vec3a/abs_diff_eq.html">abs_diff_eq</a></td><td>Returns true if the absolute difference of all elements between `self` and `rhs` is  less than or e...</td></tr>
+<tr><td><a href="./vec3a/neg.html">neg</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/as_u8vec3.html">as_u8vec3</a></td><td>Casts all elements of `self` to `u8`.</td></tr>
+<tr><td><a href="./vec3a/rotate_y.html">rotate_y</a></td><td>Rotates around the y axis by `angle` (in radians).</td></tr>
+<tr><td><a href="./vec3a/distance.html">distance</a></td><td>Computes the Euclidean distance between two points in space.</td></tr>
+<tr><td><a href="./vec3a/as_i64vec3.html">as_i64vec3</a></td><td>Casts all elements of `self` to `i64`.</td></tr>
+<tr><td><a href="./vec3a/dot.html">dot</a></td><td>Computes the dot product of `self` and `rhs`.</td></tr>
+<tr><td><a href="./vec3a/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, all elements are finite.  If any element is either  `NaN`, positive...</td></tr>
+<tr><td><a href="./vec3a/max_element.html">max_element</a></td><td>Returns the horizontal maximum of `self`.  In other words this computes `max(x, y, ..)`.  NaN propo...</td></tr>
+<tr><td><a href="./vec3a/from_vec4.html">from_vec4</a></td><td>Creates a [`Vec3A`] from the `x`, `y` and `z` elements of `self` discarding `w`.  On architectures where SIMD is supported such as SSE2 on `x86_64` this conversion is a noop.</td></tr>
+<tr><td><a href="./vec3a/as_ivec3.html">as_ivec3</a></td><td>Casts all elements of `self` to `i32`.</td></tr>
+<tr><td><a href="./vec3a/floor.html">floor</a></td><td>Returns a vector containing the largest integer less than or equal to a number for each  element of...</td></tr>
+<tr><td><a href="./vec3a/length_squared.html">length_squared</a></td><td>Computes the squared length of `self`.  This is faster than `length()` as it avoids a square root o...</td></tr>
+<tr><td><a href="./vec3a/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/add-1.html">add-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./vec3a/cross.html">cross</a></td><td>Computes the cross product of `self` and `rhs`.</td></tr>
+<tr><td><a href="./vec3a/recip.html">recip</a></td><td>Returns a vector containing the reciprocal `1.0/n` of each element of `self`.</td></tr>
+<tr><td><a href="./vec3a/cmplt.html">cmplt</a></td><td>Returns a vector mask containing the result of a `&lt;` comparison for each element of  `self` and `rhs`...</td></tr>
+<tr><td><a href="./vec3a/length.html">length</a></td><td>Computes the length of `self`.</td></tr>
+<tr><td><a href="./vec3a/max_position.html">max_position</a></td><td>Returns the index of the first maximum element of `self`.</td></tr>
+<tr><td><a href="./vec3a/normalize.html">normalize</a></td><td>Returns `self` normalized to length 1.0.  For valid results, `self` must be finite and _not_ of len...</td></tr>
+<tr><td><a href="./vec3a/ceil.html">ceil</a></td><td>Returns a vector containing the smallest integer greater than or equal to a number for  each elemen...</td></tr>
+<tr><td><a href="./vec3a/log2.html">log2</a></td><td>Returns a vector containing the base 2 logarithm for each element of `self`.  This returns NaN when...</td></tr>
+<tr><td><a href="./vec3a/reject_from_normalized.html">reject_from_normalized</a></td><td>Returns the vector rejection of `self` from `rhs`.  The vector rejection is the vector perpendicula...</td></tr>
+<tr><td><a href="./vec3a/clamp.html">clamp</a></td><td>Component-wise clamping of values, similar to [`f32::clamp`].  Each element in `min` must be less-or-equal to the corresponding element in `max`.  NaN propogation does not follow IEEE 754-2008 semantics and may differ on  different SIMD architectures.  # Panics  Will panic if `min` is greater than `max` when `glam_assert` is enabled.</td></tr>
 </tbody>
 </table>
 </div>
@@ -320,11 +320,11 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/vec3/cross.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/vec3/to_vec3a.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/vec3a/min_element.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/vec3a/fract_gl.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -334,11 +334,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/vec3/cross.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/vec3/to_vec3a.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/vec3a/min_element.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/vec3a/fract_gl.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-bb5032a7.js";
+            window.path_to_searchindex_js = "../../searchindex-ed0e542a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-32351b3e.js"></script>
+        <script src="../../toc-0144a543.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -204,26 +204,26 @@ the minimum and maximum corners.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./urect/height.html">height</a></td><td>Rectangle height (max.y - min.y).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.height(), 1);  `...</td></tr>
-<tr><td><a href="./urect/from_corners.html">from_corners</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
 <tr><td><a href="./urect/is_empty.html">is_empty</a></td><td>Check if the rectangle is empty.  # Examples  ```  # use bevy_math::{URect, UVec2};  let r = URect::from_corners(UVec2::ZERO, UVec2::new(0, 1)); // w=0 h=1  assert!(r.is_empty());  ```</td></tr>
-<tr><td><a href="./urect/union_point.html">union_point</a></td><td>Build a new rectangle formed of the union of this rectangle and a point.  The union is the smallest...</td></tr>
-<tr><td><a href="./urect/width.html">width</a></td><td>Rectangle width (max.x - min.x).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.width(), 5);  `...</td></tr>
-<tr><td><a href="./urect/inflate.html">inflate</a></td><td>Create a new rectangle by expanding it evenly on all sides.  A positive expansion value produces a ...</td></tr>
-<tr><td><a href="./urect/center.html">center</a></td><td>The center point of the rectangle.  # Rounding Behavior  If the (min + max) contains odd numbers th...</td></tr>
-<tr><td><a href="./urect/intersect.html">intersect</a></td><td>Build a new rectangle formed of the intersection of this rectangle and another rectangle.  The inte...</td></tr>
-<tr><td><a href="./urect/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./urect/union.html">union</a></td><td>Build a new rectangle formed of the union of this rectangle and another rectangle.  The union is th...</td></tr>
-<tr><td><a href="./urect/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./urect/new.html">new</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
-<tr><td><a href="./urect/from_center_size.html">from_center_size</a></td><td>Create a new rectangle from its center and size.  # Rounding Behavior  If the size contains odd num...</td></tr>
-<tr><td><a href="./urect/as_irect.html">as_irect</a></td><td>Returns self as [`IRect`] (i32)</td></tr>
-<tr><td><a href="./urect/as_rect.html">as_rect</a></td><td>Returns self as [`Rect`] (f32)</td></tr>
 <tr><td><a href="./urect/from_center_half_size.html">from_center_half_size</a></td><td>Create a new rectangle from its center and half-size.  # Panics  This method panics if any of the c...</td></tr>
+<tr><td><a href="./urect/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./urect/inflate.html">inflate</a></td><td>Create a new rectangle by expanding it evenly on all sides.  A positive expansion value produces a ...</td></tr>
 <tr><td><a href="./urect/half_size.html">half_size</a></td><td>Rectangle half-size.  # Rounding Behavior  If the full size contains odd numbers they will be round...</td></tr>
-<tr><td><a href="./urect/contains.html">contains</a></td><td>Check if a point lies within this rectangle, inclusive of its edges.  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert!(r.contains(r.center()));  assert!(r.contains(r.min));  assert!(r.contains(r.max));  ```</td></tr>
+<tr><td><a href="./urect/from_corners.html">from_corners</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
+<tr><td><a href="./urect/as_rect.html">as_rect</a></td><td>Returns self as [`Rect`] (f32)</td></tr>
+<tr><td><a href="./urect/height.html">height</a></td><td>Rectangle height (max.y - min.y).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.height(), 1);  `...</td></tr>
+<tr><td><a href="./urect/intersect.html">intersect</a></td><td>Build a new rectangle formed of the intersection of this rectangle and another rectangle.  The inte...</td></tr>
+<tr><td><a href="./urect/new.html">new</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
+<tr><td><a href="./urect/union.html">union</a></td><td>Build a new rectangle formed of the union of this rectangle and another rectangle.  The union is th...</td></tr>
+<tr><td><a href="./urect/from_center_size.html">from_center_size</a></td><td>Create a new rectangle from its center and size.  # Rounding Behavior  If the size contains odd num...</td></tr>
 <tr><td><a href="./urect/size.html">size</a></td><td>Rectangle size.  # Examples  ```  # use bevy_math::{URect, UVec2};  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.size(), UVec2::new(5, 1));  `...</td></tr>
 <tr><td><a href="./urect/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./urect/union_point.html">union_point</a></td><td>Build a new rectangle formed of the union of this rectangle and a point.  The union is the smallest...</td></tr>
+<tr><td><a href="./urect/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./urect/as_irect.html">as_irect</a></td><td>Returns self as [`IRect`] (i32)</td></tr>
+<tr><td><a href="./urect/width.html">width</a></td><td>Rectangle width (max.x - min.x).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.width(), 5);  `...</td></tr>
+<tr><td><a href="./urect/contains.html">contains</a></td><td>Check if a point lies within this rectangle, inclusive of its edges.  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert!(r.contains(r.center()));  assert!(r.contains(r.min));  assert!(r.contains(r.max));  ```</td></tr>
+<tr><td><a href="./urect/center.html">center</a></td><td>The center point of the rectangle.  # Rounding Behavior  If the (min + max) contains odd numbers th...</td></tr>
 </tbody>
 </table>
 </div>
@@ -232,11 +232,11 @@ the minimum and maximum corners.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/rect/height.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/rect/eq.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/urect/height.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/urect/is_empty.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -246,11 +246,11 @@ the minimum and maximum corners.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/rect/height.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/rect/eq.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/urect/height.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/urect/is_empty.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
