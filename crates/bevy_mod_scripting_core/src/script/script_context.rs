@@ -246,6 +246,16 @@ impl<P: IntoScriptPluginParams> Context<P> {
     pub fn is_loading_or_reloading(&self) -> bool {
         matches!(self, Context::Loading | Context::Reloading(_))
     }
+
+    /// Returns an available context if the state contains any
+    pub fn as_available_context(&self) -> Option<&Arc<Mutex<P::C>>> {
+        match self {
+            Context::LoadedAndActive(mutex)
+            | Context::Unloading(mutex)
+            | Context::Reloading(mutex) => Some(mutex),
+            Context::Loading => None,
+        }
+    }
 }
 
 impl<P: IntoScriptPluginParams> Clone for Context<P> {
@@ -382,6 +392,20 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
             }
             None => Err((context_key, context)),
         }
+    }
+
+    /// Marks the context as loaded and active, if a context is available (i.e. not `Loading` state currently)
+    pub fn mark_active_if_not_loading<'a>(
+        &mut self,
+        context_key: &'a ScriptAttachment,
+    ) -> Result<(), &'a ScriptAttachment> {
+        if let Some(entry) = self.get_entry_mut(context_key)
+            && let Some(ctxt) = entry.context.as_available_context()
+        {
+            entry.context = Context::LoadedAndActive(ctxt.clone());
+            return Ok(());
+        }
+        Err(context_key)
     }
 
     /// Mark a context as resident.

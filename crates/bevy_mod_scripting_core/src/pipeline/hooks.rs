@@ -19,6 +19,15 @@ pub(crate) fn clear_machine_data(
     datas.0.remove(&attachment.0);
 }
 
+pub(crate) fn process_machine_failure<P: IntoScriptPluginParams>(
+    attachment: In<ScriptAttachment>,
+    script_contexts: ResMut<ScriptContexts<P>>,
+) {
+    let mut script_contexts = script_contexts.write();
+    // TODO: handle this
+    let _ = script_contexts.mark_active_if_not_loading(&attachment);
+}
+
 pub fn on_script_loaded_pipeline_handler<P: IntoScriptPluginParams>(
     trigger: On<ContextAssigned<P>>,
     mut commands: Commands,

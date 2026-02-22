@@ -118,7 +118,7 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
                         _ = world
                             .write_message(ScriptErrorEvent::new(err.with_language(P::LANGUAGE)));
 
-                        if let Some(active_machine) = self.active_machine.as_ref() {
+                        if let Some(active_machine) = self.active_machine.as_mut() {
                             let failed_state =
                                 ProcessInterrupted(active_machine.context.attachment.clone());
                             world.trigger(failed_state);
@@ -262,20 +262,6 @@ impl<P: IntoScriptPluginParams> ScriptMachine<P> {
 pub struct MachineContext {
     /// The script attachment being loaded or reloaded
     pub attachment: ScriptAttachment,
-}
-impl MachineContext {
-    // /// push a value onto the blackboard
-    // pub fn insert(&mut self, key: &'static str, val: impl Any + Send + Sync + 'static) {
-    //     self.blackboard.push((key, Arc::new(val)));
-    // }
-
-    // /// tries to find a value and cast it to the given type
-    // pub fn get_first_typed<T: Any + Clone>(&self, key: &'static str) -> Option<T> {
-    //     self.blackboard
-    //         .iter()
-    //         .find_map(|(k, v)| (*k == key).then_some(v.downcast_ref().cloned()))
-    //         .flatten()
-    // }
 }
 
 /// Describes a state in a finite state machine
@@ -519,6 +505,8 @@ impl<P: IntoScriptPluginParams> MachineState<P> for UnloadingInitialized<P> {
             }) as Box<dyn MachineState<P>>)))
         } else {
             contexts_guard.remove_resident(attachment);
+            // TODO: handle failures here
+            let _ = contexts_guard.mark_active_if_not_loading(attachment);
             Box::new(ready(Ok(Box::new(ResidentRemoved {
                 attachment: attachment.clone(),
                 removed_from_context: self.existing_context.clone(),
@@ -590,13 +578,9 @@ impl<P: IntoScriptPluginParams> MachineState<P> for ContextRemoved<P> {
         _ctxt: &MachineContext,
         _world: &mut World,
     ) -> Box<dyn Future<Output = Result<Box<dyn MachineState<P>>, ScriptError>> + Send + Sync> {
-        Box::new(ready(
-            Ok(Box::new(self.clone()) as Box<dyn MachineState<P>>),
-        ))
-    }
-
-    fn is_final(&self) -> bool {
-        true
+        Box::new(ready(Ok(
+            Box::new(UnloadingCompleted(self.attachment.clone())) as Box<dyn MachineState<P>>,
+        )))
     }
 
     fn trigger_event(&mut self, world: &mut World) {
@@ -610,13 +594,25 @@ impl<P: IntoScriptPluginParams> MachineState<P> for ResidentRemoved<P> {
         _ctxt: &MachineContext,
         _world: &mut World,
     ) -> Box<dyn Future<Output = Result<Box<dyn MachineState<P>>, ScriptError>> + Send + Sync> {
+        Box::new(ready(Ok(
+            Box::new(UnloadingCompleted(self.attachment.clone())) as Box<dyn MachineState<P>>,
+        )))
+    }
+
+    fn trigger_event(&mut self, world: &mut World) {
+        world.trigger_ref(self)
+    }
+}
+
+impl<P: IntoScriptPluginParams> MachineState<P> for UnloadingCompleted {
+    fn poll_next(
+        &mut self,
+        _ctxt: &MachineContext,
+        _world: &mut World,
+    ) -> Box<dyn Future<Output = Result<Box<dyn MachineState<P>>, ScriptError>> + Send + Sync> {
         Box::new(ready(
             Ok(Box::new(self.clone()) as Box<dyn MachineState<P>>),
         ))
-    }
-
-    fn is_final(&self) -> bool {
-        true
     }
 
     fn trigger_event(&mut self, world: &mut World) {

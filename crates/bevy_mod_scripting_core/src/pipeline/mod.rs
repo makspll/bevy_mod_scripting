@@ -30,7 +30,7 @@ use crate::{
     pipeline::hooks::{
         clear_machine_data, on_script_loaded_pipeline_handler, on_script_reloaded_pipeline_handler,
         on_script_unloaded_for_reload_pipeline_handler,
-        on_script_unloaded_for_unload_pipeline_handler,
+        on_script_unloaded_for_unload_pipeline_handler, process_machine_failure,
     },
     script::ScriptContexts,
 };
@@ -235,6 +235,11 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
         );
         app.add_observer(
             (|trigger: On<ProcessInterrupted>| trigger.0.clone()).pipe(clear_machine_data),
+        );
+        // failed machines shouldn't lead to locking out scripts
+        app.add_observer(
+            (|trigger: On<ProcessInterrupted>| trigger.0.clone())
+                .pipe(process_machine_failure::<P>),
         );
 
         let mut active_machines = app.world_mut().get_resource_or_init::<ActiveMachines<P>>();
