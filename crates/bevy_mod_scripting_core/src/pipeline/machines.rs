@@ -100,9 +100,12 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
     pub fn tick_machines(&mut self, world: &mut World) {
         let start = Instant::now();
         let end = start + self.budget.unwrap_or(Duration::from_secs(99999));
-        while (self.queued_machines() > 0 || self.active_machine.is_some()) && Instant::now() < end
+
+        let left = end - Instant::now();
+        while (self.queued_machines() > 0 || self.active_machine.is_some())
+            && left > Duration::default()
         {
-            bevy_log::trace!("Ticking machines for {:?}", end - start);
+            bevy_log::trace!("Ticking machines for up to {:?}", left);
 
             if self.active_machine.is_some() {
                 let final_state = match &mut self.active_machine {
@@ -613,6 +616,10 @@ impl<P: IntoScriptPluginParams> MachineState<P> for UnloadingCompleted {
         Box::new(ready(
             Ok(Box::new(self.clone()) as Box<dyn MachineState<P>>),
         ))
+    }
+
+    fn is_final(&self) -> bool {
+        true
     }
 
     fn trigger_event(&mut self, world: &mut World) {

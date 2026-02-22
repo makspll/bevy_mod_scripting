@@ -10,4 +10,4 @@ WaitForScriptAssetLoaded name="@this_script"
 AttachStaticScript script="@this_script"
 EmitScriptCallbackEvent emit_response=true, label="OnTest", language=null, recipients="StaticScript", script="@this_script", string_value="arg1" 
 RunUpdateOnce
-AssertNoCallbackResponsesEmitted
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", script="@this_script"

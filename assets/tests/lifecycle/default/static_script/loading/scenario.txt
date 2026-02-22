@@ -13,6 +13,7 @@ AssertNoCallbackResponsesEmitted
 // reload script_a, with the same content
 ReloadScriptFrom script="script_a", path="lifecycle.lua"
 RunUpdateOnce 
+RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptUnloaded", script="script_a", expect_string_value="unloaded!"
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptLoaded", script="script_a", expect_string_value="loaded!"
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptReloaded", script="script_a", expect_string_value="reloaded with: unloaded!"
