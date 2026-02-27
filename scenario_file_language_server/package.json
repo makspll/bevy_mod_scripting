@@ -3,7 +3,7 @@
     "displayName": "Scenario DSL",
     "description": "Syntax highlighting and completions for Scenario DSL from the bevy mod scripting framework",
     "version": "0.0.1",
-    "publisher": "Maksymilian Mozolewski",
+    "publisher": "MaksymilianMozolewski",
     "engines": {
         "vscode": "^1.80.0"
     },
