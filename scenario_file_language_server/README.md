@@ -1,4 +1,5 @@
 # Scenario DSL
+[VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=MaksymilianMozolewski.scenario-dsl)
 
 ![alt text](https://github.com/makspll/bevy_mod_scripting/tree/main/scenario_file_language_server/image.png)
 
