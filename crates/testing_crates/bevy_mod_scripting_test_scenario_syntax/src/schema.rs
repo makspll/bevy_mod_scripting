@@ -1,15 +1,15 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::Serialize;
 
 #[derive(Serialize)]
 struct ScenarioSchema {
-    pub steps: HashMap<String, StepSchema>,
+    pub steps: BTreeMap<String, StepSchema>,
 }
 
 #[derive(Serialize)]
 struct StepSchema {
-    pub fields: HashMap<String, FieldSchema>,
+    pub fields: BTreeMap<String, FieldSchema>,
 }
 #[derive(Serialize)]
 enum SchemaType {
@@ -32,8 +32,6 @@ pub fn serialize_schema() -> serde_json::Result<String> {
 
 /// Produces schema as expected by scenario files
 fn get_schema() -> ScenarioSchema {
-    use std::collections::HashMap;
-
     fn str_field(name: &str, optional: bool, doc: &str) -> (String, FieldSchema) {
         (
             name.to_string(),
@@ -105,7 +103,7 @@ fn get_schema() -> ScenarioSchema {
             (
                 "FinalizeApp".into(),
                 StepSchema {
-                    fields: HashMap::new(),
+                    fields: BTreeMap::new(),
                 },
             ),
             (
@@ -225,7 +223,7 @@ fn get_schema() -> ScenarioSchema {
             (
                 "RunUpdateOnce".into(),
                 StepSchema {
-                    fields: HashMap::new(),
+                    fields: BTreeMap::new(),
                 },
             ),
             (
@@ -251,7 +249,7 @@ fn get_schema() -> ScenarioSchema {
             (
                 "AssertNoCallbackResponsesEmitted".into(),
                 StepSchema {
-                    fields: HashMap::new(),
+                    fields: BTreeMap::new(),
                 },
             ),
             (
