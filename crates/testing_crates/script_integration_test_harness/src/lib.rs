@@ -1,4 +1,3 @@
-pub mod parse;
 pub mod scenario;
 pub mod test_functions;
 

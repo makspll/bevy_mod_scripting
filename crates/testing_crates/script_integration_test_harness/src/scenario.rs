@@ -8,12 +8,9 @@ use std::{
 use ::{
     bevy_app::App,
     bevy_asset::{AssetEvent, Handle, LoadState},
-    bevy_ecs::{
-        entity::Entity, schedule::ScheduleLabel, system::Command, system::IntoSystem, world::World,
-    },
+    bevy_ecs::{entity::Entity, system::Command, system::IntoSystem, world::World},
 };
 use anyhow::{Context, Error, anyhow};
-use bevy_app::{FixedUpdate, Last, PostUpdate, Startup, Update};
 use bevy_asset::{AssetServer, Assets};
 use bevy_ecs::message::{Message, MessageCursor, Messages};
 use bevy_log::info;
@@ -22,10 +19,11 @@ use bevy_mod_scripting_bindings::ScriptValue;
 #[cfg(feature = "lua")]
 use bevy_mod_scripting_core::pipeline::ActiveMachines;
 use bevy_mod_scripting_core::{
-    ConfigureScriptPlugin, IntoScriptPluginParams,
+    ConfigureScriptPlugin, IntoScriptPluginParams, callback_labels,
     event::{
-        CallbackLabel, IntoCallbackLabel, ScriptAttachedEvent, ScriptCallbackEvent,
-        ScriptCallbackResponseEvent, ScriptDetachedEvent,
+        CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
+        Recipients, ScriptAttachedEvent, ScriptCallbackEvent, ScriptCallbackResponseEvent,
+        ScriptDetachedEvent,
     },
     handler::event_handler,
     script::{ContextPolicy, ScriptComponent, ScriptContexts},
@@ -34,18 +32,26 @@ use bevy_mod_scripting_display::DisplayProxy;
 #[cfg(feature = "lua")]
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_test_scenario_syntax::*;
 use test_utils::test_data::setup_integration_test;
 
-use crate::{install_test_plugin, parse::*};
+use crate::install_test_plugin;
 
 const TIMEOUT_SECONDS: u64 = 10;
-pub const SCENARIO_SELF_SCRIPT_NAME: &str = "@this_script";
-pub const SCENARIO_SELF_LANGUAGE_NAME: &str = "@this_language";
 
 pub struct Scenario {
     pub steps: Vec<ScenarioStepSerialized>,
     pub context: ScenarioContext,
 }
+
+callback_labels!(
+    OnTest => "on_test",
+    OnTestPostUpdate => "on_test_post_update",
+    OnTestLast => "on_test_last",
+    CallbackA => "callback_a",
+    CallbackB => "callback_b",
+    CallbackC => "callback_c",
+);
 
 impl Scenario {
     /// Parses a scenario from a file.
@@ -124,13 +130,13 @@ impl Scenario {
 
     pub fn execute(mut self, mut app: App) -> Result<(), Error> {
         let original_steps = self.steps.clone();
-        for (i, step) in self.steps.into_iter().enumerate() {
+        for (i, step) in self.steps.iter().enumerate() {
             info!(
                 "Executing step #{i}: {}",
                 step.to_flat_string().unwrap_or_default()
             );
             self.context.current_step_no = i;
-            let parsed_step = step.parse_and_resolve(&self.context)?;
+            let parsed_step = self.parse_and_resolve(step.clone())?;
             if let Err(err) = parsed_step.execute(&mut self.context, &mut app) {
                 let error =
                     Scenario::scenario_error(&self.context.event_log, &original_steps, (i, err));
@@ -138,6 +144,217 @@ impl Scenario {
             }
         }
         Ok(())
+    }
+
+    pub fn resolve_attachment(
+        &self,
+        attachment: ScenarioAttachment,
+    ) -> Result<ScriptAttachment, Error> {
+        match attachment {
+            ScenarioAttachment::EntityScript { entity, script } => {
+                let entity = self.context.get_entity(&entity)?;
+                let script = self.context.get_script_handle(&script)?;
+                Ok(ScriptAttachment::EntityScript(entity, script))
+            }
+            ScenarioAttachment::StaticScript { script } => {
+                let script = self.context.get_script_handle(&script)?;
+                Ok(ScriptAttachment::StaticScript(script))
+            }
+        }
+    }
+
+    pub fn resolve_recipients(&self, recipients: ScenarioRecipients) -> Result<Recipients, Error> {
+        Ok(match recipients {
+            ScenarioRecipients::AllScripts => Recipients::AllScripts,
+            ScenarioRecipients::AllContexts => Recipients::AllContexts,
+            ScenarioRecipients::EntityScript { entity, script } => Recipients::ScriptEntity(
+                self.context.get_script_handle(&script)?,
+                self.context.get_entity(&entity)?,
+            ),
+            ScenarioRecipients::StaticScript { script } => {
+                Recipients::StaticScript(self.context.get_script_handle(&script)?)
+            }
+        })
+    }
+
+    pub fn resolve_label(label: ScenarioLabel) -> CallbackLabel {
+        match label {
+            ScenarioLabel::OnTest => OnTest.into(),
+            ScenarioLabel::OnTestPostUpdate => OnTestPostUpdate.into(),
+            ScenarioLabel::OnTestLast => OnTestLast.into(),
+            ScenarioLabel::CallbackA => CallbackA.into(),
+            ScenarioLabel::CallbackB => CallbackB.into(),
+            ScenarioLabel::CallbackC => CallbackC.into(),
+            ScenarioLabel::OnScriptLoaded => OnScriptLoaded.into(),
+            ScenarioLabel::OnScriptUnloaded => OnScriptUnloaded.into(),
+            ScenarioLabel::OnScriptReloaded => OnScriptReloaded.into(),
+        }
+    }
+
+    pub fn resolve_context_policy(context_policy: Option<ContextMode>) -> ContextPolicy {
+        match context_policy {
+            Some(ContextMode::Global) => ContextPolicy::shared(),
+            Some(ContextMode::PerEntity) => ContextPolicy::per_entity(),
+            Some(ContextMode::PerEntityPerScript) => ContextPolicy::per_entity_and_script(),
+            None => ContextPolicy::default(),
+        }
+    }
+
+    pub fn parse_and_resolve(&self, step: ScenarioStepSerialized) -> Result<ScenarioStep, Error> {
+        Ok(match step {
+            ScenarioStepSerialized::AssertContextState { attachment, state } => {
+                ScenarioStep::AssertContextState {
+                    attachment: self.resolve_attachment(attachment)?,
+                    state,
+                }
+            }
+            ScenarioStepSerialized::SetNanosecondsBudget { nanoseconds_budget } => {
+                ScenarioStep::SetNanosecondsBudget { nanoseconds_budget }
+            }
+            ScenarioStepSerialized::FinalizeApp => ScenarioStep::FinalizeApp,
+            ScenarioStepSerialized::AssertContextResidents {
+                script,
+                residents_num,
+            } => ScenarioStep::AssertContextResidents {
+                script: self.resolve_attachment(script)?,
+                residents_num,
+            },
+            ScenarioStepSerialized::AttachStaticScript { script } => {
+                ScenarioStep::AttachStaticScript {
+                    script: self.context.get_script_handle(&script)?,
+                }
+            }
+            ScenarioStepSerialized::DetachStaticScript { script } => {
+                ScenarioStep::DetachStaticScript {
+                    script: self.context.get_script_handle(&script)?,
+                }
+            }
+            ScenarioStepSerialized::SetCurrentLanguage { language } => {
+                ScenarioStep::SetCurrentLanguage {
+                    language: Self::parse_language(language),
+                }
+            }
+            ScenarioStepSerialized::InstallPlugin {
+                context_policy,
+                emit_responses,
+                nanoseconds_budget,
+            } => ScenarioStep::InstallPlugin {
+                context_policy: Self::resolve_context_policy(context_policy),
+                emit_responses: emit_responses.unwrap_or(false),
+                nanoseconds_budget,
+            },
+            ScenarioStepSerialized::DropScriptAsset { script } => ScenarioStep::DropScriptAsset {
+                script: self.context.get_script_handle(&script)?,
+            },
+            ScenarioStepSerialized::RunUpdateOnce => ScenarioStep::RunUpdateOnce,
+            ScenarioStepSerialized::EmitScriptCallbackEvent {
+                label,
+                recipients,
+                language,
+                emit_response,
+                string_value,
+            } => {
+                let label = Self::resolve_label(label.clone());
+                let recipients = self.resolve_recipients(recipients.clone())?;
+                let language = language.map(Self::parse_language);
+                let payload = string_value
+                    .map(|s| vec![ScriptValue::String(s.into())])
+                    .unwrap_or(vec![]);
+                let mut event = ScriptCallbackEvent::new(label, payload, recipients, language);
+                if emit_response {
+                    event = event.with_response();
+                }
+                ScenarioStep::EmitScriptCallbackEvent { event }
+            }
+            ScenarioStepSerialized::AssertCallbackSuccess {
+                label,
+                attachment,
+                expect_string_value,
+                language,
+            } => ScenarioStep::AssertCallbackSuccess {
+                label: Self::resolve_label(label.clone()),
+                script: self.resolve_attachment(attachment)?,
+                expect_string_value,
+                language: language.map(Self::parse_language),
+            },
+            ScenarioStepSerialized::SetupHandler { schedule, label } => {
+                ScenarioStep::SetupHandler {
+                    schedule,
+                    label: Self::resolve_label(label),
+                }
+            }
+            ScenarioStepSerialized::LoadScriptAs { path, as_name } => ScenarioStep::LoadScriptAs {
+                path,
+                as_name: as_name.to_string(),
+            },
+            ScenarioStepSerialized::WaitForScriptAssetLoaded { name } => {
+                ScenarioStep::WaitForScriptAssetLoaded {
+                    script: self.context.get_script_handle(&name)?,
+                }
+            }
+            ScenarioStepSerialized::SpawnEntityWithScript { name, script } => {
+                ScenarioStep::SpawnEntityWithScript {
+                    script: self.context.get_script_handle(&script)?,
+                    entity: name,
+                }
+            }
+            ScenarioStepSerialized::ReloadScriptFrom { script, path } => {
+                ScenarioStep::ReloadScriptFrom {
+                    script: self.context.get_script_handle(&script)?,
+                    path,
+                }
+            }
+            ScenarioStepSerialized::AssertNoCallbackResponsesEmitted => {
+                ScenarioStep::AssertNoCallbackResponsesEmitted
+            }
+            ScenarioStepSerialized::DespawnEntity { entity } => ScenarioStep::DespawnEntity {
+                entity: self.context.get_entity(&entity)?,
+            },
+            ScenarioStepSerialized::Comment { comment } => ScenarioStep::Comment { comment },
+        })
+    }
+
+    pub fn parse_language(language: ScenarioLanguage) -> Language {
+        match language {
+            ScenarioLanguage::Lua => Language::Lua,
+            ScenarioLanguage::Rhai => Language::Rhai,
+            ScenarioLanguage::ThisScriptLanguage => Language::External {
+                name: SCENARIO_SELF_LANGUAGE_NAME.into(),
+                one_indexed: false,
+            },
+        }
+    }
+
+    pub fn add_handler<T: IntoCallbackLabel + 'static>(
+        schedule: ScenarioSchedule,
+        language: Option<Language>,
+        app: &mut App,
+    ) {
+        let language = language.unwrap_or(Language::External {
+            name: "Unset language".into(),
+            one_indexed: false,
+        });
+        match language {
+            #[cfg(feature = "lua")]
+            Language::Lua => {
+                let system = IntoSystem::into_system(
+                    event_handler::<T, bevy_mod_scripting_lua::LuaScriptingPlugin>,
+                )
+                .with_name(T::into_callback_label().to_string());
+                app.add_systems(schedule.clone(), system);
+            }
+            #[cfg(feature = "rhai")]
+            Language::Rhai => {
+                let system = IntoSystem::into_system(
+                    event_handler::<T, bevy_mod_scripting_rhai::RhaiScriptingPlugin>,
+                )
+                .with_name(T::into_callback_label().to_string());
+                app.add_systems(schedule.clone(), system);
+            }
+            _ => {
+                panic!("Unsupported language for scenario schedule: {language:?}");
+            }
+        }
     }
 }
 
@@ -249,51 +466,6 @@ impl ScenarioContext {
             .get(name)
             .cloned()
             .ok_or_else(|| anyhow!("Entity with name '{name}' not found in context. Did you miss a `SpawnEntityWithScript` step?"))
-    }
-}
-
-impl ScenarioSchedule {
-    pub fn add_handler<T: IntoCallbackLabel + 'static>(
-        &self,
-        language: Option<Language>,
-        app: &mut App,
-    ) {
-        let language = language.unwrap_or(Language::External {
-            name: "Unset language".into(),
-            one_indexed: false,
-        });
-        match language {
-            #[cfg(feature = "lua")]
-            Language::Lua => {
-                let system = IntoSystem::into_system(
-                    event_handler::<T, bevy_mod_scripting_lua::LuaScriptingPlugin>,
-                )
-                .with_name(T::into_callback_label().to_string());
-                app.add_systems(self.clone(), system);
-            }
-            #[cfg(feature = "rhai")]
-            Language::Rhai => {
-                let system = IntoSystem::into_system(
-                    event_handler::<T, bevy_mod_scripting_rhai::RhaiScriptingPlugin>,
-                )
-                .with_name(T::into_callback_label().to_string());
-                app.add_systems(self.clone(), system);
-            }
-            _ => {
-                panic!("Unsupported language for scenario schedule: {language:?}");
-            }
-        }
-    }
-}
-impl ScheduleLabel for ScenarioSchedule {
-    fn dyn_clone(&self) -> Box<dyn ScheduleLabel> {
-        match self {
-            ScenarioSchedule::Startup => Startup.dyn_clone(),
-            ScenarioSchedule::Update => Update.dyn_clone(),
-            ScenarioSchedule::FixedUpdate => FixedUpdate.dyn_clone(),
-            ScenarioSchedule::PostUpdate => PostUpdate.dyn_clone(),
-            ScenarioSchedule::Last => Last.dyn_clone(),
-        }
     }
 }
 
@@ -585,30 +757,43 @@ impl ScenarioStep {
 
                 info!("Script '{}' loaded successfully", script.display());
             }
-            ScenarioStep::SetupHandler { schedule, label } => {
-                match label.to_string().as_str() {
-                    "on_test" => {
-                        schedule.add_handler::<OnTest>(context.current_script_language.clone(), app)
-                    }
-                    "on_test_post_update" => schedule.add_handler::<OnTestPostUpdate>(
-                        context.current_script_language.clone(),
-                        app,
-                    ),
-                    "on_test_last" => schedule
-                        .add_handler::<OnTestLast>(context.current_script_language.clone(), app),
-                    "callback_a" => schedule
-                        .add_handler::<CallbackA>(context.current_script_language.clone(), app),
-                    "callback_b" => schedule
-                        .add_handler::<CallbackB>(context.current_script_language.clone(), app),
-                    "callback_c" => schedule
-                        .add_handler::<CallbackC>(context.current_script_language.clone(), app),
-                    _ => {
-                        return Err(anyhow!(
-                            "callback label: {label} is not allowed, you can only use one of a set of labels",
-                        ));
-                    }
+            ScenarioStep::SetupHandler { schedule, label } => match label.to_string().as_str() {
+                "on_test" => Scenario::add_handler::<OnTest>(
+                    schedule,
+                    context.current_script_language.clone(),
+                    app,
+                ),
+                "on_test_post_update" => Scenario::add_handler::<OnTestPostUpdate>(
+                    schedule,
+                    context.current_script_language.clone(),
+                    app,
+                ),
+                "on_test_last" => Scenario::add_handler::<OnTestLast>(
+                    schedule,
+                    context.current_script_language.clone(),
+                    app,
+                ),
+                "callback_a" => Scenario::add_handler::<CallbackA>(
+                    schedule,
+                    context.current_script_language.clone(),
+                    app,
+                ),
+                "callback_b" => Scenario::add_handler::<CallbackB>(
+                    schedule,
+                    context.current_script_language.clone(),
+                    app,
+                ),
+                "callback_c" => Scenario::add_handler::<CallbackC>(
+                    schedule,
+                    context.current_script_language.clone(),
+                    app,
+                ),
+                _ => {
+                    return Err(anyhow!(
+                        "callback label: {label} is not allowed, you can only use one of a set of labels",
+                    ));
                 }
-            }
+            },
             ScenarioStep::SpawnEntityWithScript {
                 entity: name,
                 script,

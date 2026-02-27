@@ -1,0 +1,281 @@
+{
+  "steps": {
+    "AssertContextState": {
+      "fields": {
+        "entity": {
+          "ty": "String",
+          "optional": true,
+          "doc": "entity when attachment == EntityScript"
+        },
+        "attachment": {
+          "ty": "String",
+          "optional": false,
+          "doc": "attachment discriminator"
+        },
+        "state": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the context state to assert"
+        },
+        "script": {
+          "ty": "String",
+          "optional": true,
+          "doc": "script when attachment targets a script"
+        }
+      }
+    },
+    "InstallPlugin": {
+      "fields": {
+        "emit_responses": {
+          "ty": "String",
+          "optional": true,
+          "doc": "sets the emit_responses flag for core callbacks"
+        },
+        "context_policy": {
+          "ty": "String",
+          "optional": true,
+          "doc": "the context policy to use in the scenario"
+        },
+        "nanoseconds_budget": {
+          "ty": "Number",
+          "optional": true,
+          "doc": "the amount of nanoseconds to set the loading budget to"
+        }
+      }
+    },
+    "WaitForScriptAssetLoaded": {
+      "fields": {
+        "name": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the name of the script for which to wait"
+        }
+      }
+    },
+    "SpawnEntityWithScript": {
+      "fields": {
+        "script": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the script to spawn on the entity"
+        },
+        "name": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the name to give this entity for future reference"
+        }
+      }
+    },
+    "DropScriptAsset": {
+      "fields": {
+        "script": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the script to drop the asset for"
+        }
+      }
+    },
+    "AssertNoCallbackResponsesEmitted": {
+      "fields": {}
+    },
+    "LoadScriptAs": {
+      "fields": {
+        "as_name": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the name to give this script for future reference"
+        },
+        "path": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the path to load the script from"
+        }
+      }
+    },
+    "ReloadScriptFrom": {
+      "fields": {
+        "script": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the script to reload"
+        },
+        "path": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the path to reload the new content from"
+        }
+      }
+    },
+    "SetCurrentLanguage": {
+      "fields": {
+        "language": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the language"
+        }
+      }
+    },
+    "AssertContextResidents": {
+      "fields": {
+        "attachment": {
+          "ty": "String",
+          "optional": false,
+          "doc": "attachment discriminator"
+        },
+        "entity": {
+          "ty": "String",
+          "optional": true,
+          "doc": "entity when attachment == EntityScript"
+        },
+        "script": {
+          "ty": "String",
+          "optional": true,
+          "doc": "script when attachment targets a script"
+        },
+        "residents_num": {
+          "ty": "Number",
+          "optional": false,
+          "doc": "number of residents to expect"
+        }
+      }
+    },
+    "DespawnEntity": {
+      "fields": {
+        "entity": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the entity to despawn"
+        }
+      }
+    },
+    "FinalizeApp": {
+      "fields": {}
+    },
+    "SetNanosecondsBudget": {
+      "fields": {
+        "nanoseconds_budget": {
+          "ty": "Number",
+          "optional": true,
+          "doc": "the amount of nanoseconds to set the loading budget to"
+        }
+      }
+    },
+    "Comment": {
+      "fields": {
+        "comment": {
+          "ty": "String",
+          "optional": false,
+          "doc": "a comment"
+        }
+      }
+    },
+    "SetupHandler": {
+      "fields": {
+        "label": {
+          "ty": "String",
+          "optional": false,
+          "doc": "callback label to setup this handler for"
+        },
+        "schedule": {
+          "ty": "String",
+          "optional": false,
+          "doc": "schedule in which to place this handler"
+        }
+      }
+    },
+    "DetachStaticScript": {
+      "fields": {
+        "script": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the script to be detached"
+        }
+      }
+    },
+    "EmitScriptCallbackEvent": {
+      "fields": {
+        "recipients": {
+          "ty": "String",
+          "optional": false,
+          "doc": "recipient selection discriminator"
+        },
+        "entity": {
+          "ty": "String",
+          "optional": true,
+          "doc": "target entity when recipients requires it"
+        },
+        "script": {
+          "ty": "String",
+          "optional": true,
+          "doc": "target script when recipients requires it"
+        },
+        "language": {
+          "ty": "String",
+          "optional": true,
+          "doc": "the language to set on the callback event"
+        },
+        "label": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the label to fire the callback for"
+        },
+        "string_value": {
+          "ty": "String",
+          "optional": true,
+          "doc": "the string value to send as payload"
+        },
+        "emit_response": {
+          "ty": "String",
+          "optional": false,
+          "doc": "sets the emit_response flag on the callback event"
+        }
+      }
+    },
+    "RunUpdateOnce": {
+      "fields": {}
+    },
+    "AttachStaticScript": {
+      "fields": {
+        "script": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the script to be attached"
+        }
+      }
+    },
+    "AssertCallbackSuccess": {
+      "fields": {
+        "script": {
+          "ty": "String",
+          "optional": true,
+          "doc": "script when attachment targets a script"
+        },
+        "label": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the label for which to query"
+        },
+        "attachment": {
+          "ty": "String",
+          "optional": false,
+          "doc": "attachment discriminator"
+        },
+        "entity": {
+          "ty": "String",
+          "optional": true,
+          "doc": "entity when attachment == EntityScript"
+        },
+        "language": {
+          "ty": "String",
+          "optional": true,
+          "doc": "the language to query"
+        },
+        "expect_string_value": {
+          "ty": "String",
+          "optional": true,
+          "doc": "the string value to expect returned from the callback"
+        }
+      }
+    }
+  }
+}

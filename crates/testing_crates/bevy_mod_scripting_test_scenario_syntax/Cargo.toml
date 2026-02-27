@@ -1,0 +1,21 @@
+[package]
+name = "bevy_mod_scripting_test_scenario_syntax"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+serde = { workspace = true, features = ["derive", "std"] }
+serde_json = { workspace = true, features = ["std"] }
+bevy_ecs = { workspace = true }
+bevy_app = { workspace = true }
+
+[lints]
+workspace = true
