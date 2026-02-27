@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'scenario_file_language_server/**'
-      - 'scenario-vscode/**'
+      - 'scenario_file_language_server/**'
       - '.github/workflows/scenario_dsl_vscode_extension_publish.yml'
   workflow_dispatch:
 
@@ -32,7 +32,7 @@ jobs:
           node-version: 20
 
       - name: Install NPM packages
-        working-directory: ./scenario-vscode
+        working-directory: ./scenario_file_language_server
         run: npm install
 
       - name: Generate schema.json
@@ -46,9 +46,9 @@ jobs:
         shell: bash
 
       - name: Compile extension
-        working-directory: ./scenario-vscode
+        working-directory: ./scenario_file_language_server
         run: npm run compile
 
       - name: Publish VSCode extension
-        working-directory: ./scenario-vscode
+        working-directory: ./scenario_file_language_server
         run: npx vsce publish
