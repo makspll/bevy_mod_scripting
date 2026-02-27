@@ -29,7 +29,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install NPM packages
         working-directory: ./scenario-vscode
