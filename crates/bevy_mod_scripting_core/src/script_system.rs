@@ -27,7 +27,7 @@ use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, InteropError, IntoScript, ReflectAccessId, ReflectReference,
-    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, Val, WorldAccessGuard,
+    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, V, WorldAccessGuard,
     WorldGuard,
 };
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -322,7 +322,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     let results = entities
                         .into_iter()
                         .map(|entity| {
-                            Val(ScriptQueryResult {
+                            V(ScriptQueryResult {
                                 entity,
                                 components: components
                                     .iter()

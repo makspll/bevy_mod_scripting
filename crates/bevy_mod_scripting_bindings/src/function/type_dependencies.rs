@@ -2,7 +2,7 @@
 
 use super::{
     DynamicScriptFunction, DynamicScriptFunctionMut,
-    from::{Mut, Ref, Union, Val},
+    from::{M, R, Union, V},
     script_function::FunctionCallContext,
 };
 use crate::{ReflectReference, ScriptValue, error::InteropError};
@@ -132,19 +132,19 @@ impl_get_type_dependencies!(
 impl_get_type_dependencies!(
     #[derive(GetTypeDependencies)]
     #[get_type_dependencies(bms_bindings_path = "crate", underlying = "T", dont_recurse)]
-    struct Val<T> {}
+    struct V<T> {}
 );
 
 impl_get_type_dependencies!(
     #[derive(GetTypeDependencies)]
     #[get_type_dependencies(bms_bindings_path = "crate", underlying = "T", dont_recurse)]
-    struct Ref<'a, T> {}
+    struct R<'a, T> {}
 );
 
 impl_get_type_dependencies!(
     #[derive(GetTypeDependencies)]
     #[get_type_dependencies(bms_bindings_path = "crate", underlying = "T", dont_recurse)]
-    struct Mut<'a, T> {}
+    struct M<'a, T> {}
 );
 
 impl_get_type_dependencies!(

@@ -272,9 +272,9 @@ pub(crate) enum ProxyType {
 impl ProxyType {
     pub fn to_ident_str(self) -> &'static str {
         match self {
-            ProxyType::Ref => "Ref",
-            ProxyType::RefMut => "Mut",
-            ProxyType::Val => "Val",
+            ProxyType::Ref => "R",
+            ProxyType::RefMut => "M",
+            ProxyType::Val => "V",
         }
     }
 }

@@ -993,10 +993,10 @@ mod test {
     use std::collections::HashMap;
 
     use bevy_mod_scripting_bindings::{
-        Union, Val,
+        Union, V,
         docgen::info::GetFunctionInfo,
         function::{
-            from::Ref,
+            from::R,
             namespace::{GlobalNamespace, IntoNamespace},
         },
     };
@@ -1264,7 +1264,7 @@ mod test {
         type_registry.register::<PlainStructType>();
 
         let plain_struct_function =
-            |_: Ref<PlainStructType>, _: usize| PlainStructType { int_field: 2 };
+            |_: R<PlainStructType>, _: usize| PlainStructType { int_field: 2 };
         let plain_struct_function_info = plain_struct_function.get_function_info(
             "plain_struct_function".into(),
             PlainStructType::into_namespace(),
@@ -1279,7 +1279,7 @@ mod test {
             .with_docs("hello docs");
 
         let function_with_complex_args =
-            |_: ReflectReference, _: (usize, String), _: Option<Vec<Ref<EnumType>>>| 2usize;
+            |_: ReflectReference, _: (usize, String), _: Option<Vec<R<EnumType>>>| 2usize;
         let function_with_complex_args_info = function_with_complex_args
             .get_function_info("hello_world".into(), GenericStructType::<usize>::into_namespace())
             .with_arg_names(&["ref_", "tuple", "option_vec_ref_wrapper"])
@@ -1314,8 +1314,8 @@ mod test {
             .add_type::<TupleStructType>()
             .add_type::<PlainStructType>()
             .add_type_info(EnumType::type_info())
-            .add_instance::<Val<GenericStructType<usize>>>("my_static_instance", true)
-            .add_instance::<Vec<Val<UnitType>>>("my_non_static_instance", false)
+            .add_instance::<V<GenericStructType<usize>>>("my_static_instance", true)
+            .add_instance::<Vec<V<UnitType>>>("my_non_static_instance", false)
             .add_instance::<HashMap<String, Union<String, String>>>("map", false)
             .build();
 

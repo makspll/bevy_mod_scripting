@@ -22,7 +22,7 @@ In order for a function to be callable by a script it must adhere to a few requi
 
 The into/from requirements allow us to convert these types to `ScriptValue`'s, and each supported scripting language can then marshall these into the script.
 
-Note these types are implemented for primitives, but if you want to interact with one of your `Reflect` implementing types, you will need to use one of `Ref<T>`, `Mut<T>` or `Val<T>` wrappers in place of `&T`, `&mut T` and `T` respectively.
+Note these types are implemented for primitives, but if you want to interact with one of your `Reflect` implementing types, you will need to use one of `R<T>`, `M<T>` or `V<T>` wrappers in place of `&T`, `&mut T` and `T` respectively.
 
 These wrappers enable us to safely interact with bevy, and claim any necessary mutex'es on `Resources`, `Components` or `Allocations`.
 
@@ -72,7 +72,7 @@ impl TestStruct {
     /// * `arg1` - the second argument
     /// Returns:
     /// * `return` - nothing
-    fn test_fn(_self: Ref<TestStruct>, mut arg1: usize) {}
+    fn test_fn(_self: R<TestStruct>, mut arg1: usize) {}
 }
 
 

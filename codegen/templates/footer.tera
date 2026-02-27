@@ -15,7 +15,7 @@ impl {{item.import_path}} {
     {% endfor %}
     fn {{ function.ident }} (
         {%- for arg in function.args -%}
-            {%- if arg.proxy_ty is matching("Mut.*")-%}
+            {%- if arg.proxy_ty is matching("M.*")-%}
             mut {% endif -%}
             {{- arg.ident | to_arg_pattern() -}}
         : {{ arg.proxy_ty -}},
@@ -29,11 +29,11 @@ impl {{item.import_path}} {
         {%- endif -%}
         (
             {%- for arg in function.args -%}
-                {%- if arg.proxy_ty is matching("Ref.*")-%}
+                {%- if arg.proxy_ty is matching("R.*")-%}
                 & {{ arg.ident | to_arg_pattern() -}}
-                {%- elif arg.proxy_ty is matching ("Mut.*")-%}
+                {%- elif arg.proxy_ty is matching ("M.*")-%}
                 &mut {{ arg.ident | to_arg_pattern() -}}
-                {%- elif arg.proxy_ty is matching("Val.*")-%}
+                {%- elif arg.proxy_ty is matching("V.*")-%}
                 {{- arg.ident | to_arg_pattern() -}}.into_inner()
                 {%- else -%}
                 {{- arg.ident | to_arg_pattern() -}}

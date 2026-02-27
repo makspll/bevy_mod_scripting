@@ -1,15 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAssetScriptingPlugin;
 pub(crate) fn register_untyped_handle_functions(world: &mut World) {
@@ -18,10 +21,10 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_asset::UntypedHandle>| {
-                let output: Val<::bevy_asset::UntypedHandle> = {
+            |_self: R<::bevy_asset::UntypedHandle>| {
+                let output: V<::bevy_asset::UntypedHandle> = {
                     {
-                        let output: Val<::bevy_asset::UntypedHandle> = <::bevy_asset::UntypedHandle as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_asset::UntypedHandle> = <::bevy_asset::UntypedHandle as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -36,8 +39,8 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_asset::UntypedHandle>,
-                other: Ref<::bevy_asset::UntypedHandle>|
+                _self: R<::bevy_asset::UntypedHandle>,
+                other: R<::bevy_asset::UntypedHandle>|
             {
                 let output: bool = {
                     {
@@ -55,10 +58,10 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
         )
         .register_documented(
             "id",
-            |_self: Ref<::bevy_asset::UntypedHandle>| {
-                let output: Val<::bevy_asset::UntypedAssetId> = {
+            |_self: R<::bevy_asset::UntypedHandle>| {
+                let output: V<::bevy_asset::UntypedAssetId> = {
                     {
-                        let output: Val<::bevy_asset::UntypedAssetId> = ::bevy_asset::UntypedHandle::id(
+                        let output: V<::bevy_asset::UntypedAssetId> = ::bevy_asset::UntypedHandle::id(
                                 &_self,
                             )
                             .into();
@@ -72,10 +75,10 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
         )
         .register_documented(
             "type_id",
-            |_self: Ref<::bevy_asset::UntypedHandle>| {
-                let output: Val<::core::any::TypeId> = {
+            |_self: R<::bevy_asset::UntypedHandle>| {
+                let output: V<::core::any::TypeId> = {
                     {
-                        let output: Val<::core::any::TypeId> = ::bevy_asset::UntypedHandle::type_id(
+                        let output: V<::core::any::TypeId> = ::bevy_asset::UntypedHandle::type_id(
                                 &_self,
                             )
                             .into();
@@ -99,54 +102,60 @@ pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_asset::UntypedAssetId,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_asset::UntypedAssetId>| {
-            let output: Val<::bevy_asset::UntypedAssetId> = {
-                {
-                    let output: Val<::bevy_asset::UntypedAssetId> =
-                        <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_asset::UntypedAssetId>| {
+                let output: V<::bevy_asset::UntypedAssetId> = {
+                    {
+                        let output: V<::bevy_asset::UntypedAssetId> = <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: Ref<::bevy_asset::UntypedAssetId>, other: Ref<::bevy_asset::UntypedAssetId>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
-                        ::bevy_asset::UntypedAssetId,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "type_id",
-        |_self: Ref<::bevy_asset::UntypedAssetId>| {
-            let output: Val<::core::any::TypeId> = {
-                {
-                    let output: Val<::core::any::TypeId> =
-                        ::bevy_asset::UntypedAssetId::type_id(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns the stored [`TypeId`] of the referenced [`Asset`].",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_asset::UntypedAssetId>,
+                other: R<::bevy_asset::UntypedAssetId>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
+                            ::bevy_asset::UntypedAssetId,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "type_id",
+            |_self: R<::bevy_asset::UntypedAssetId>| {
+                let output: V<::core::any::TypeId> = {
+                    {
+                        let output: V<::core::any::TypeId> = ::bevy_asset::UntypedAssetId::type_id(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the stored [`TypeId`] of the referenced [`Asset`].",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -161,7 +170,7 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_asset::AssetIndex>| {
+            |_self: R<::bevy_asset::AssetIndex>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_asset::AssetIndex as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -178,10 +187,10 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_asset::AssetIndex>| {
-                let output: Val<::bevy_asset::AssetIndex> = {
+            |_self: R<::bevy_asset::AssetIndex>| {
+                let output: V<::bevy_asset::AssetIndex> = {
                     {
-                        let output: Val<::bevy_asset::AssetIndex> = <::bevy_asset::AssetIndex as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_asset::AssetIndex> = <::bevy_asset::AssetIndex as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -195,7 +204,7 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_asset::AssetIndex>, other: Ref<::bevy_asset::AssetIndex>| {
+            |_self: R<::bevy_asset::AssetIndex>, other: R<::bevy_asset::AssetIndex>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_asset::AssetIndex as ::core::cmp::PartialEq<
@@ -213,9 +222,9 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
         .register_documented(
             "from_bits",
             |bits: u64| {
-                let output: Val<::bevy_asset::AssetIndex> = {
+                let output: V<::bevy_asset::AssetIndex> = {
                     {
-                        let output: Val<::bevy_asset::AssetIndex> = ::bevy_asset::AssetIndex::from_bits(
+                        let output: V<::bevy_asset::AssetIndex> = ::bevy_asset::AssetIndex::from_bits(
                                 bits,
                             )
                             .into();
@@ -229,7 +238,7 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
         )
         .register_documented(
             "to_bits",
-            |_self: Val<::bevy_asset::AssetIndex>| {
+            |_self: V<::bevy_asset::AssetIndex>| {
                 let output: u64 = {
                     {
                         let output: u64 = ::bevy_asset::AssetIndex::to_bits(
@@ -259,9 +268,9 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "all",
             || {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::all()
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::all()
                             .into();
                         output
                     }
@@ -273,7 +282,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         )
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_asset::RenderAssetUsages>| {
+            |_self: R<::bevy_asset::RenderAssetUsages>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_asset::RenderAssetUsages as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -290,7 +299,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         )
         .register_documented(
             "bits",
-            |_self: Ref<::bevy_asset::RenderAssetUsages>| {
+            |_self: R<::bevy_asset::RenderAssetUsages>| {
                 let output: u8 = {
                     {
                         let output: u8 = ::bevy_asset::RenderAssetUsages::bits(&_self)
@@ -305,10 +314,10 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_asset::RenderAssetUsages>| {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+            |_self: R<::bevy_asset::RenderAssetUsages>| {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = <::bevy_asset::RenderAssetUsages as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_asset::RenderAssetUsages> = <::bevy_asset::RenderAssetUsages as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -322,11 +331,11 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         )
         .register_documented(
             "complement",
-            |_self: Val<::bevy_asset::RenderAssetUsages>| {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+            |_self: V<::bevy_asset::RenderAssetUsages>| {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::complement(
-                                _self.into_inner(),
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::complement(
+                                &_self,
                             )
                             .into();
                         output
@@ -340,14 +349,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "contains",
             |
-                _self: Ref<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                _self: R<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::contains(
                                 &_self,
-                                other.into_inner(),
+                                &other,
                             )
                             .into();
                         output
@@ -361,14 +370,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "difference",
             |
-                _self: Val<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                _self: V<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::difference(
-                                _self.into_inner(),
-                                other.into_inner(),
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::difference(
+                                &_self,
+                                &other,
                             )
                             .into();
                         output
@@ -382,9 +391,9 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "empty",
             || {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::empty()
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::empty()
                             .into();
                         output
                     }
@@ -397,8 +406,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_asset::RenderAssetUsages>,
-                other: Ref<::bevy_asset::RenderAssetUsages>|
+                _self: R<::bevy_asset::RenderAssetUsages>,
+                other: R<::bevy_asset::RenderAssetUsages>|
             {
                 let output: bool = {
                     {
@@ -417,9 +426,9 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "from_bits_retain",
             |bits: u8| {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::from_bits_retain(
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::from_bits_retain(
                                 bits,
                             )
                             .into();
@@ -434,9 +443,9 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "from_bits_truncate",
             |bits: u8| {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::from_bits_truncate(
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::from_bits_truncate(
                                 bits,
                             )
                             .into();
@@ -451,14 +460,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "insert",
             |
-                mut _self: Mut<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                mut _self: M<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::insert(
-                                &mut _self,
-                                other.into_inner(),
+                                &_self,
+                                &other,
                             )
                             .into();
                         output
@@ -472,14 +481,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "intersection",
             |
-                _self: Val<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                _self: V<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::intersection(
-                                _self.into_inner(),
-                                other.into_inner(),
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::intersection(
+                                &_self,
+                                &other,
                             )
                             .into();
                         output
@@ -493,14 +502,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "intersects",
             |
-                _self: Ref<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                _self: R<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::intersects(
                                 &_self,
-                                other.into_inner(),
+                                &other,
                             )
                             .into();
                         output
@@ -513,7 +522,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         )
         .register_documented(
             "is_all",
-            |_self: Ref<::bevy_asset::RenderAssetUsages>| {
+            |_self: R<::bevy_asset::RenderAssetUsages>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::is_all(
@@ -530,7 +539,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         )
         .register_documented(
             "is_empty",
-            |_self: Ref<::bevy_asset::RenderAssetUsages>| {
+            |_self: R<::bevy_asset::RenderAssetUsages>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::is_empty(
@@ -548,14 +557,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "remove",
             |
-                mut _self: Mut<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                mut _self: M<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::remove(
-                                &mut _self,
-                                other.into_inner(),
+                                &_self,
+                                &other,
                             )
                             .into();
                         output
@@ -569,15 +578,15 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "set",
             |
-                mut _self: Mut<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>,
+                mut _self: M<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>,
                 value: bool|
             {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::set(
-                                &mut _self,
-                                other.into_inner(),
+                                &_self,
+                                &other,
                                 value,
                             )
                             .into();
@@ -592,14 +601,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "sub",
             |
-                _self: Val<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                _self: V<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = <::bevy_asset::RenderAssetUsages as ::core::ops::Sub<
+                        let output: V<::bevy_asset::RenderAssetUsages> = <::bevy_asset::RenderAssetUsages as ::core::ops::Sub<
                             ::bevy_asset::RenderAssetUsages,
-                        >>::sub(_self.into_inner(), other.into_inner())
+                        >>::sub(&_self, &other)
                             .into();
                         output
                     }
@@ -612,14 +621,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "symmetric_difference",
             |
-                _self: Val<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                _self: V<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::symmetric_difference(
-                                _self.into_inner(),
-                                other.into_inner(),
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::symmetric_difference(
+                                &_self,
+                                &other,
                             )
                             .into();
                         output
@@ -633,14 +642,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "toggle",
             |
-                mut _self: Mut<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                mut _self: M<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::toggle(
-                                &mut _self,
-                                other.into_inner(),
+                                &_self,
+                                &other,
                             )
                             .into();
                         output
@@ -654,14 +663,14 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
         .register_documented(
             "union",
             |
-                _self: Val<::bevy_asset::RenderAssetUsages>,
-                other: Val<::bevy_asset::RenderAssetUsages>|
+                _self: V<::bevy_asset::RenderAssetUsages>,
+                other: V<::bevy_asset::RenderAssetUsages>|
             {
-                let output: Val<::bevy_asset::RenderAssetUsages> = {
+                let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
-                        let output: Val<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::union(
-                                _self.into_inner(),
-                                other.into_inner(),
+                        let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::union(
+                                &_self,
+                                &other,
                             )
                             .into();
                         output

@@ -30,7 +30,7 @@ mod test {
 
     use crate::{
         function::{
-            from::{Ref, Union, Val},
+            from::{R, Union, V},
             namespace::IntoNamespace,
             script_function::AppScriptFunctionRegistry,
         },
@@ -47,7 +47,7 @@ mod test {
         #[script_bindings(bms_bindings_path = "crate", name = "test_fn")]
         impl TestStruct {
             /// My docs !!
-            fn test_fn(_self: Ref<TestStruct>, mut _arg1: usize) {}
+            fn test_fn(_self: R<TestStruct>, mut _arg1: usize) {}
         }
 
         let mut test_world = World::default();
@@ -68,7 +68,7 @@ mod test {
 
         assert_eq!(
             test_fn.info.arg_info[0].type_id,
-            std::any::TypeId::of::<Ref<TestStruct>>()
+            std::any::TypeId::of::<R<TestStruct>>()
         );
         assert_eq!(test_fn.info.arg_info[0].name, Some("_self".into()));
 
@@ -126,7 +126,7 @@ mod test {
             T: ScriptArgument + ScriptReturn,
             T: GetTypeRegistration + FromReflect + Typed,
         {
-            test_is_valid_arg_and_return::<Val<T>>();
+            test_is_valid_arg_and_return::<V<T>>();
         }
 
         fn test_ref<T>()
@@ -134,7 +134,7 @@ mod test {
             T: ScriptArgument,
             T: GetTypeRegistration + FromReflect + Typed,
         {
-            test_is_valid_arg::<Ref<'_, T>>();
+            test_is_valid_arg::<R<'_, T>>();
         }
 
         fn test_mut<T>()
@@ -142,7 +142,7 @@ mod test {
             T: ScriptArgument,
             T: GetTypeRegistration + FromReflect + Typed,
         {
-            test_is_valid_arg::<Ref<'_, T>>();
+            test_is_valid_arg::<R<'_, T>>();
         }
 
         fn test_union<T>()

@@ -233,7 +233,7 @@ mod test {
 
     use crate::{
         docgen::typed_through::UntypedWrapperKind,
-        function::from::{Mut, Ref, Val},
+        function::from::{M, R, V},
     };
 
     use super::*;
@@ -270,16 +270,16 @@ mod test {
 
     #[test]
     fn test_get_function_info_references() {
-        let fn_ = |_: Ref<i32>, _: Mut<f32>| -> Val<f64> { Val::new(0.0) };
+        let fn_ = |_: R<i32>, _: M<f32>| -> V<f64> { V::new(0.0) };
 
         let info = fn_.get_function_info(Cow::Borrowed("test_fn"), Namespace::Global);
         assert_eq!(info.name, "test_fn");
         assert_eq!(info.namespace, Namespace::Global);
         assert_eq!(info.arg_info.len(), 2);
-        assert_eq!(info.return_info.type_id, TypeId::of::<Val<f64>>());
+        assert_eq!(info.return_info.type_id, TypeId::of::<V<f64>>());
 
-        assert_eq!(info.arg_info[0].type_id, TypeId::of::<Ref<'static, i32>>());
-        assert_eq!(info.arg_info[1].type_id, TypeId::of::<Mut<'static, f32>>());
+        assert_eq!(info.arg_info[0].type_id, TypeId::of::<R<'static, i32>>());
+        assert_eq!(info.arg_info[1].type_id, TypeId::of::<M<'static, f32>>());
 
         match &info.arg_info[0].type_info {
             Some(ThroughTypeInfo::UntypedWrapper {

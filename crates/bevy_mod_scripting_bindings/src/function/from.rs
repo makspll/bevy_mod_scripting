@@ -183,13 +183,13 @@ impl FromScript for ReflectReference {
 /// This can be used to retrieve a value out of a [`ScriptValue::Reference`] corresponding to the type `T`.
 /// You can also use this to return values from a script function to be allocated directly as a [`ScriptValue::Reference`].
 #[derive(Reflect)]
-pub struct Val<T>(pub T);
+pub struct V<T>(pub T);
 
 #[profiling::all_functions]
-impl<T> Val<T> {
+impl<T> V<T> {
     /// Create a new `Val` with the given value.
     pub fn new(value: T) -> Self {
-        Val(value)
+        V(value)
     }
 
     /// Unwrap the value from the `Val`.
@@ -198,7 +198,7 @@ impl<T> Val<T> {
     }
 }
 
-impl<T> Deref for Val<T> {
+impl<T> Deref for V<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -206,25 +206,25 @@ impl<T> Deref for Val<T> {
     }
 }
 
-impl<T> DerefMut for Val<T> {
+impl<T> DerefMut for V<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T> From<T> for Val<T> {
+impl<T> From<T> for V<T> {
     fn from(value: T) -> Self {
-        Val(value)
+        V(value)
     }
 }
 
 #[profiling::all_functions]
-impl<T: FromReflect> FromScript for Val<T> {
+impl<T: FromReflect> FromScript for V<T> {
     type This<'w> = Self;
     #[profiling::function]
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
         match value {
-            ScriptValue::Reference(reflect_reference) => Ok(Val(reflect_reference.with_reflect(
+            ScriptValue::Reference(reflect_reference) => Ok(V(reflect_reference.with_reflect(
                 world.clone(),
                 |r| {
                     T::from_reflect(r).ok_or_else(|| {
@@ -253,9 +253,9 @@ impl<T: FromReflect> FromScript for Val<T> {
 ///
 /// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
 /// The script function calling mechanism will take care of releasing all accesses claimed during the function call.
-pub struct Ref<'w, T>(pub &'w T);
+pub struct R<'w, T>(pub &'w T);
 
-impl<T> Deref for Ref<'_, T> {
+impl<T> Deref for R<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -264,8 +264,8 @@ impl<T> Deref for Ref<'_, T> {
 }
 
 #[profiling::all_functions]
-impl<T: FromReflect> FromScript for Ref<'_, T> {
-    type This<'a> = Ref<'a, T>;
+impl<T: FromReflect> FromScript for R<'_, T> {
+    type This<'a> = R<'a, T>;
     #[profiling::function]
     fn from_script(
         value: ScriptValue,
@@ -284,12 +284,12 @@ impl<T: FromReflect> FromScript for Ref<'_, T> {
                             ref_.get_represented_type_info().map(|i| i.type_id()),
                         )
                     })?;
-                    Ok(Ref(cast))
+                    Ok(R(cast))
                 } else {
                     Err(InteropError::cannot_claim_access(
                         raid,
                         world.get_access_location(raid),
-                        format!("In conversion to type: Ref<{}>", std::any::type_name::<T>()),
+                        format!("In conversion to type: R<{}>", std::any::type_name::<T>()),
                     ))
                 }
             }
@@ -301,9 +301,9 @@ impl<T: FromReflect> FromScript for Ref<'_, T> {
     }
 }
 
-impl<'a, T> From<&'a T> for Ref<'a, T> {
+impl<'a, T> From<&'a T> for R<'a, T> {
     fn from(value: &'a T) -> Self {
-        Ref(value)
+        R(value)
     }
 }
 
@@ -314,9 +314,9 @@ impl<'a, T> From<&'a T> for Ref<'a, T> {
 ///
 /// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
 /// The [`ScriptFunction`] calling mechanism will take care of releasing all accesses claimed during the function call.
-pub struct Mut<'w, T>(pub &'w mut T);
+pub struct M<'w, T>(pub &'w mut T);
 
-impl<T> Deref for Mut<'_, T> {
+impl<T> Deref for M<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -324,21 +324,21 @@ impl<T> Deref for Mut<'_, T> {
     }
 }
 
-impl<T> DerefMut for Mut<'_, T> {
+impl<T> DerefMut for M<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.0
     }
 }
 
-impl<'a, T> From<&'a mut T> for Mut<'a, T> {
+impl<'a, T> From<&'a mut T> for M<'a, T> {
     fn from(value: &'a mut T) -> Self {
-        Mut(value)
+        M(value)
     }
 }
 
 #[profiling::all_functions]
-impl<T: FromReflect> FromScript for Mut<'_, T> {
-    type This<'w> = Mut<'w, T>;
+impl<T: FromReflect> FromScript for M<'_, T> {
+    type This<'w> = M<'w, T>;
     #[profiling::function]
     fn from_script(
         value: ScriptValue,
@@ -355,7 +355,7 @@ impl<T: FromReflect> FromScript for Mut<'_, T> {
                     let cast = ref_.try_downcast_mut::<T>().ok_or_else(|| {
                         InteropError::type_mismatch(std::any::TypeId::of::<T>(), type_id)
                     })?;
-                    Ok(Mut(cast))
+                    Ok(M(cast))
                 } else {
                     Err(InteropError::cannot_claim_access(
                         raid,

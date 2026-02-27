@@ -1,15 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyUiRenderScriptingPlugin;
 pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
@@ -18,7 +21,7 @@ pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui_render::BoxShadowSamples>| {
+            |_self: R<::bevy_ui_render::BoxShadowSamples>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui_render::BoxShadowSamples as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -35,10 +38,10 @@ pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui_render::BoxShadowSamples>| {
-                let output: Val<::bevy_ui_render::BoxShadowSamples> = {
+            |_self: R<::bevy_ui_render::BoxShadowSamples>| {
+                let output: V<::bevy_ui_render::BoxShadowSamples> = {
                     {
-                        let output: Val<::bevy_ui_render::BoxShadowSamples> = <::bevy_ui_render::BoxShadowSamples as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui_render::BoxShadowSamples> = <::bevy_ui_render::BoxShadowSamples as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -53,8 +56,8 @@ pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui_render::BoxShadowSamples>,
-                other: Ref<::bevy_ui_render::BoxShadowSamples>|
+                _self: R<::bevy_ui_render::BoxShadowSamples>,
+                other: R<::bevy_ui_render::BoxShadowSamples>|
             {
                 let output: bool = {
                     {
@@ -84,7 +87,7 @@ pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui_render::UiAntiAlias>| {
+            |_self: R<::bevy_ui_render::UiAntiAlias>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui_render::UiAntiAlias as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -101,10 +104,10 @@ pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui_render::UiAntiAlias>| {
-                let output: Val<::bevy_ui_render::UiAntiAlias> = {
+            |_self: R<::bevy_ui_render::UiAntiAlias>| {
+                let output: V<::bevy_ui_render::UiAntiAlias> = {
                     {
-                        let output: Val<::bevy_ui_render::UiAntiAlias> = <::bevy_ui_render::UiAntiAlias as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui_render::UiAntiAlias> = <::bevy_ui_render::UiAntiAlias as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -119,8 +122,8 @@ pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui_render::UiAntiAlias>,
-                other: Ref<::bevy_ui_render::UiAntiAlias>|
+                _self: R<::bevy_ui_render::UiAntiAlias>,
+                other: R<::bevy_ui_render::UiAntiAlias>|
             {
                 let output: bool = {
                     {

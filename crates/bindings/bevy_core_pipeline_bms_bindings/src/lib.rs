@@ -1,36 +1,41 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyCorePipelineScriptingPlugin;
 pub(crate) fn register_skybox_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::Skybox,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: Ref<::bevy_core_pipeline::Skybox>| {
-            let output: Val<::bevy_core_pipeline::Skybox> = {
-                {
-                    let output: Val<::bevy_core_pipeline::Skybox> =
-                        <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_core_pipeline::Skybox>| {
+                let output: V<::bevy_core_pipeline::Skybox> = {
+                    {
+                        let output: V<::bevy_core_pipeline::Skybox> = <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -45,7 +50,7 @@ pub(crate) fn register_tonemapping_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_core_pipeline::tonemapping::Tonemapping>| {
+            |_self: R<::bevy_core_pipeline::tonemapping::Tonemapping>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_core_pipeline::tonemapping::Tonemapping as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -62,12 +67,10 @@ pub(crate) fn register_tonemapping_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_core_pipeline::tonemapping::Tonemapping>| {
-                let output: Val<::bevy_core_pipeline::tonemapping::Tonemapping> = {
+            |_self: R<::bevy_core_pipeline::tonemapping::Tonemapping>| {
+                let output: V<::bevy_core_pipeline::tonemapping::Tonemapping> = {
                     {
-                        let output: Val<
-                            ::bevy_core_pipeline::tonemapping::Tonemapping,
-                        > = <::bevy_core_pipeline::tonemapping::Tonemapping as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_core_pipeline::tonemapping::Tonemapping> = <::bevy_core_pipeline::tonemapping::Tonemapping as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -82,8 +85,8 @@ pub(crate) fn register_tonemapping_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_core_pipeline::tonemapping::Tonemapping>,
-                other: Ref<::bevy_core_pipeline::tonemapping::Tonemapping>|
+                _self: R<::bevy_core_pipeline::tonemapping::Tonemapping>,
+                other: R<::bevy_core_pipeline::tonemapping::Tonemapping>|
             {
                 let output: bool = {
                     {
@@ -101,7 +104,7 @@ pub(crate) fn register_tonemapping_functions(world: &mut World) {
         )
         .register_documented(
             "is_enabled",
-            |_self: Ref<::bevy_core_pipeline::tonemapping::Tonemapping>| {
+            |_self: R<::bevy_core_pipeline::tonemapping::Tonemapping>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_core_pipeline::tonemapping::Tonemapping::is_enabled(
@@ -130,7 +133,7 @@ pub(crate) fn register_deband_dither_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_core_pipeline::tonemapping::DebandDither>| {
+            |_self: R<::bevy_core_pipeline::tonemapping::DebandDither>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_core_pipeline::tonemapping::DebandDither as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -147,12 +150,10 @@ pub(crate) fn register_deband_dither_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_core_pipeline::tonemapping::DebandDither>| {
-                let output: Val<::bevy_core_pipeline::tonemapping::DebandDither> = {
+            |_self: R<::bevy_core_pipeline::tonemapping::DebandDither>| {
+                let output: V<::bevy_core_pipeline::tonemapping::DebandDither> = {
                     {
-                        let output: Val<
-                            ::bevy_core_pipeline::tonemapping::DebandDither,
-                        > = <::bevy_core_pipeline::tonemapping::DebandDither as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_core_pipeline::tonemapping::DebandDither> = <::bevy_core_pipeline::tonemapping::DebandDither as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -167,8 +168,8 @@ pub(crate) fn register_deband_dither_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_core_pipeline::tonemapping::DebandDither>,
-                other: Ref<::bevy_core_pipeline::tonemapping::DebandDither>|
+                _self: R<::bevy_core_pipeline::tonemapping::DebandDither>,
+                other: R<::bevy_core_pipeline::tonemapping::DebandDither>|
             {
                 let output: bool = {
                     {
@@ -210,12 +211,12 @@ pub(crate) fn register_deferred_prepass_double_buffer_functions(world: &mut Worl
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer>| {
-                let output: Val<
+            |_self: R<::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer>| {
+                let output: V<
                     ::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer,
                 > = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer,
                         > = <::bevy_core_pipeline::prepass::DeferredPrepassDoubleBuffer as ::std::clone::Clone>::clone(
                                 &_self,
@@ -243,10 +244,10 @@ pub(crate) fn register_depth_prepass_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_core_pipeline::prepass::DepthPrepass>| {
-                let output: Val<::bevy_core_pipeline::prepass::DepthPrepass> = {
+            |_self: R<::bevy_core_pipeline::prepass::DepthPrepass>| {
+                let output: V<::bevy_core_pipeline::prepass::DepthPrepass> = {
                     {
-                        let output: Val<::bevy_core_pipeline::prepass::DepthPrepass> = <::bevy_core_pipeline::prepass::DepthPrepass as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_core_pipeline::prepass::DepthPrepass> = <::bevy_core_pipeline::prepass::DepthPrepass as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -272,12 +273,10 @@ pub(crate) fn register_depth_prepass_double_buffer_functions(world: &mut World) 
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer>| {
-                let output: Val<
-                    ::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer,
-                > = {
+            |_self: R<::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer>| {
+                let output: V<::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer,
                         > = <::bevy_core_pipeline::prepass::DepthPrepassDoubleBuffer as ::std::clone::Clone>::clone(
                                 &_self,
@@ -305,10 +304,10 @@ pub(crate) fn register_motion_vector_prepass_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_core_pipeline::prepass::MotionVectorPrepass>| {
-                let output: Val<::bevy_core_pipeline::prepass::MotionVectorPrepass> = {
+            |mut _self: R<::bevy_core_pipeline::prepass::MotionVectorPrepass>| {
+                let output: V<::bevy_core_pipeline::prepass::MotionVectorPrepass> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_core_pipeline::prepass::MotionVectorPrepass,
                         > = <::bevy_core_pipeline::prepass::MotionVectorPrepass as ::std::clone::Clone>::clone(
                                 &_self,
@@ -336,10 +335,10 @@ pub(crate) fn register_normal_prepass_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_core_pipeline::prepass::NormalPrepass>| {
-                let output: Val<::bevy_core_pipeline::prepass::NormalPrepass> = {
+            |_self: R<::bevy_core_pipeline::prepass::NormalPrepass>| {
+                let output: V<::bevy_core_pipeline::prepass::NormalPrepass> = {
                     {
-                        let output: Val<::bevy_core_pipeline::prepass::NormalPrepass> = <::bevy_core_pipeline::prepass::NormalPrepass as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_core_pipeline::prepass::NormalPrepass> = <::bevy_core_pipeline::prepass::NormalPrepass as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -359,22 +358,20 @@ pub(crate) fn register_normal_prepass_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_order_independent_transparency_settings_functions(world: &mut World) {
+pub(crate) fn register_order_independent_transparency_settings_functions(
+    world: &mut World,
+) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
     >::new(world)
         .register_documented(
             "clone",
-            |
-                _self: Ref<
-                    ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
-                >|
-            {
-                let output: Val<
+            |_self: R<::bevy_core_pipeline::oit::OrderIndependentTransparencySettings>| {
+                let output: V<
                     ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
                 > = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
                         > = <::bevy_core_pipeline::oit::OrderIndependentTransparencySettings as ::std::clone::Clone>::clone(
                                 &_self,
