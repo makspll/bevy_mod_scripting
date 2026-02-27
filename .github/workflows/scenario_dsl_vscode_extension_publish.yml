@@ -6,6 +6,8 @@ on:
       - 'scenario_file_language_server/**'
       - 'scenario_file_language_server/**'
       - '.github/workflows/scenario_dsl_vscode_extension_publish.yml'
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
