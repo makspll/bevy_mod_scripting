@@ -1,0 +1,56 @@
+name: Publish Scenario DSL VSCode Extension
+
+on:
+  push:
+    paths:
+      - 'scenario_file_language_server/**'
+      - 'scenario_file_language_server/**'
+      - '.github/workflows/scenario_dsl_vscode_extension_publish.yml'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}  # GitHub secret for VSCode publishing
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install NPM packages
+        working-directory: ./scenario_file_language_server
+        run: npm install
+
+      - name: Generate schema.json
+        run: |
+          cargo run -p bevy_mod_scripting_test_scenario_syntax --release \
+            > ./scenario_file_language_server/src/schema.json
+
+      - name: Verify schema.json is up-to-date
+        run: |
+          git diff --exit-code ./scenario_file_language_server/src/schema.json
+        shell: bash
+
+      - name: Compile extension
+        working-directory: ./scenario_file_language_server
+        run: npm run compile
+
+      - name: Publish VSCode extension
+        working-directory: ./scenario_file_language_server
+        run: npx vsce publish

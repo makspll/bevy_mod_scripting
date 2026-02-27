@@ -1,0 +1,51 @@
+{
+    "name": "scenario-dsl",
+    "displayName": "Scenario DSL",
+    "description": "Syntax highlighting and completions for Scenario DSL from the bevy mod scripting framework",
+    "version": "0.0.1",
+    "publisher": "MaksymilianMozolewski",
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "activationEvents": [
+        "onLanguage:scenario"
+    ],
+    "repository": "https://github.com/makspll/bevy_mod_scripting",
+    "main": "./out/extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "scenario",
+                "aliases": [
+                    "Scenario",
+                    "scenario"
+                ],
+                "extensions": [
+                    ".bmsscenario"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "scenario",
+                "scopeName": "source.scenario",
+                "path": "./src/scenario.tmLanguage.json"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^25.3.2",
+        "@types/vscode": "^1.80.0",
+        "typescript": "^5.2.2",
+        "vsce": "^2.12.0"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "scopeName": "source.scenario",
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#steps"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.scenario",
+                    "match": "//.*$"
+                }
+            ]
+        },
+        "steps": {
+            "patterns": [
+                {
+                    "name": "keyword.control.step.scenario",
+                    "match": "\\b(SetCurrentLanguage|InstallPlugin|SetupHandler|FinalizeApp|LoadScriptAs|WaitForScriptAssetLoaded|SpawnEntityWithScript|RunUpdateOnce|EmitScriptCallbackEvent|AssertCallbackSuccess|AssertNoCallbackResponsesEmitted|AssertContextState|AssertContextResidents|ReloadScriptFrom|DropScriptAsset|DespawnEntity|AttachStaticScript)\\b"
+                },
+                {
+                    "name": "variable.parameter.field.scenario",
+                    "match": "\\b\\w+\\s*="
+                }
+            ]
+        }
+    }
+}

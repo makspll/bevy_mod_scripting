@@ -1,0 +1,32 @@
+//! Defines the scenario language used in bevy mod scripting framework integration tests
+//!
+//! Example:
+//!
+//! ```bmsscenario
+//!     SetCurrentLanguage language="@this_script_language"
+//!     InstallPlugin nanoseconds_budget=999999999
+//!     SetupHandler OnTest=null, Update=null
+//!     SetupHandler OnTestPostUpdate=null, PostUpdate=null
+//!     SetupHandler Last=null, OnTestLast=null
+//!     FinalizeApp
+//!     LoadScriptAs as_name="@this_script", path="@this_script"
+//!     WaitForScriptAssetLoaded name="@this_script"
+//!     SpawnEntityWithScript name="test_entity", script="@this_script"
+//!     RunUpdateOnce
+//!     EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+//!     EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestPostUpdate", language=null, recipients="EntityScript", script="@this_script"
+//!     EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+//!     RunUpdateOnce
+//!     AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+//!     AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestPostUpdate", script="@this_script"
+//!     AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script"
+//!
+//! ```
+//!
+//! Scenarios are serialized/deserialized using json as an intermediate stage, each step is simply a flattened
+//! json object.
+
+mod parse;
+mod schema;
+
+pub use {parse::*, schema::*};
