@@ -5,6 +5,7 @@ on:
     paths:
       - 'scenario_file_language_server/**'
       - 'scenario-vscode/**'
+      - '.github/workflows/scenario_dsl_vscode_extension_publish.yml'
   workflow_dispatch:
 
 jobs:
