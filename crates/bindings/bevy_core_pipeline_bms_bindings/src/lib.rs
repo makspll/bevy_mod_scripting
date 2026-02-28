@@ -299,7 +299,7 @@ pub(crate) fn register_motion_vector_prepass_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_core_pipeline::prepass::MotionVectorPrepass>| {
+            |_self: R<::bevy_core_pipeline::prepass::MotionVectorPrepass>| {
                 let output: V<::bevy_core_pipeline::prepass::MotionVectorPrepass> = {
                     {
                         let output: V<

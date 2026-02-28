@@ -455,7 +455,7 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
                 let output: V<::bevy_math::Isometry2d> = {
                     {
                         let output: V<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::from_rotation(
-                                &rotation,
+                                rotation.into_inner(),
                             )
                             .into();
                         output
@@ -612,7 +612,7 @@ pub(crate) fn register_isometry_2_d_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::Isometry2d> = ::bevy_math::Isometry2d::new(
                                 translation.into_inner(),
-                                &rotation,
+                                rotation.into_inner(),
                             )
                             .into();
                         output
@@ -1047,7 +1047,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>, other: V<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::angle_to(&_self, &other)
+                        let output: f32 = ::bevy_math::Rot2::angle_to(
+                                _self.into_inner(),
+                                other.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -1062,7 +1065,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::as_degrees(&_self).into();
+                        let output: f32 = ::bevy_math::Rot2::as_degrees(
+                                _self.into_inner(),
+                            )
+                            .into();
                         output
                     }
                 };
@@ -1076,7 +1082,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::as_radians(&_self).into();
+                        let output: f32 = ::bevy_math::Rot2::as_radians(
+                                _self.into_inner(),
+                            )
+                            .into();
                         output
                     }
                 };
@@ -1090,7 +1099,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::as_turn_fraction(&_self)
+                        let output: f32 = ::bevy_math::Rot2::as_turn_fraction(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -1157,7 +1168,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: V<::bevy_math::Rot2> = {
                     {
                         let output: V<::bevy_math::Rot2> = ::bevy_math::Rot2::fast_renormalize(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -1192,7 +1203,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: V<::bevy_math::Rot2> = {
                     {
                         let output: V<::bevy_math::Rot2> = ::bevy_math::Rot2::inverse(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -1208,7 +1219,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::Rot2::is_finite(&_self).into();
+                        let output: bool = ::bevy_math::Rot2::is_finite(
+                                _self.into_inner(),
+                            )
+                            .into();
                         output
                     }
                 };
@@ -1222,7 +1236,8 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::Rot2::is_nan(&_self).into();
+                        let output: bool = ::bevy_math::Rot2::is_nan(_self.into_inner())
+                            .into();
                         output
                     }
                 };
@@ -1236,7 +1251,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::Rot2::is_near_identity(&_self)
+                        let output: bool = ::bevy_math::Rot2::is_near_identity(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -1251,7 +1268,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: bool = {
                     {
-                        let output: bool = ::bevy_math::Rot2::is_normalized(&_self)
+                        let output: bool = ::bevy_math::Rot2::is_normalized(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -1266,7 +1285,8 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::length(&_self).into();
+                        let output: f32 = ::bevy_math::Rot2::length(_self.into_inner())
+                            .into();
                         output
                     }
                 };
@@ -1280,7 +1300,10 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::length_recip(&_self).into();
+                        let output: f32 = ::bevy_math::Rot2::length_recip(
+                                _self.into_inner(),
+                            )
+                            .into();
                         output
                     }
                 };
@@ -1294,7 +1317,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: f32 = {
                     {
-                        let output: f32 = ::bevy_math::Rot2::length_squared(&_self)
+                        let output: f32 = ::bevy_math::Rot2::length_squared(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -1311,7 +1336,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::Dir2> = <::bevy_math::Rot2 as ::core::ops::Mul<
                             ::bevy_math::Dir2,
-                        >>::mul(&_self, direction.into_inner())
+                        >>::mul(_self.into_inner(), direction.into_inner())
                             .into();
                         output
                     }
@@ -1328,7 +1353,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::Rot2> = <::bevy_math::Rot2 as ::core::ops::Mul<
                             ::bevy_math::Rot2,
-                        >>::mul(&_self, &rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -1345,7 +1370,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::Vec2> = <::bevy_math::Rot2 as ::core::ops::Mul<
                             ::bevy_math::Vec2,
-                        >>::mul(&_self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -1361,8 +1386,8 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: V<::bevy_math::Rot2> = {
                     {
                         let output: V<::bevy_math::Rot2> = ::bevy_math::Rot2::nlerp(
-                                &_self,
-                                &end,
+                                _self.into_inner(),
+                                end.into_inner(),
                                 s,
                             )
                             .into();
@@ -1380,7 +1405,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: V<::bevy_math::Rot2> = {
                     {
                         let output: V<::bevy_math::Rot2> = ::bevy_math::Rot2::normalize(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -1413,7 +1438,9 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
             |_self: V<::bevy_math::Rot2>| {
                 let output: (f32, f32) = {
                     {
-                        let output: (f32, f32) = ::bevy_math::Rot2::sin_cos(&_self)
+                        let output: (f32, f32) = ::bevy_math::Rot2::sin_cos(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -1429,8 +1456,8 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
                 let output: V<::bevy_math::Rot2> = {
                     {
                         let output: V<::bevy_math::Rot2> = ::bevy_math::Rot2::slerp(
-                                &_self,
-                                &end,
+                                _self.into_inner(),
+                                end.into_inner(),
                                 s,
                             )
                             .into();
@@ -2299,7 +2326,7 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::IRect> = ::bevy_math::IRect::intersect(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -2368,7 +2395,7 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::IRect> = ::bevy_math::IRect::union(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -2647,7 +2674,7 @@ pub(crate) fn register_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::Rect> = ::bevy_math::Rect::intersect(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -2699,7 +2726,7 @@ pub(crate) fn register_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::Rect> = ::bevy_math::Rect::normalize(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -2734,7 +2761,7 @@ pub(crate) fn register_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::Rect> = ::bevy_math::Rect::union(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -3016,7 +3043,7 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::URect> = ::bevy_math::URect::intersect(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -3085,7 +3112,7 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::URect> = ::bevy_math::URect::union(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -5434,7 +5461,7 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                 let output: V<::bevy_math::primitives::Segment2d> = {
                     {
                         let output: V<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::from_ray_and_length(
-                                &ray,
+                                ray.into_inner(),
                                 length,
                             )
                             .into();
@@ -5645,7 +5672,7 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::rotated(
                                 &_self,
-                                &rotation,
+                                rotation.into_inner(),
                             )
                             .into();
                         output
@@ -5667,7 +5694,7 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::rotated_around(
                                 &_self,
-                                &rotation,
+                                rotation.into_inner(),
                                 point.into_inner(),
                             )
                             .into();
@@ -5689,7 +5716,7 @@ pub(crate) fn register_segment_2_d_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::primitives::Segment2d> = ::bevy_math::primitives::Segment2d::rotated_around_center(
                                 &_self,
-                                &rotation,
+                                rotation.into_inner(),
                             )
                             .into();
                         output
@@ -7254,7 +7281,7 @@ pub(crate) fn register_segment_3_d_functions(world: &mut World) {
                 let output: V<::bevy_math::primitives::Segment3d> = {
                     {
                         let output: V<::bevy_math::primitives::Segment3d> = ::bevy_math::primitives::Segment3d::from_ray_and_length(
-                                &ray,
+                                ray.into_inner(),
                                 length,
                             )
                             .into();
@@ -7966,7 +7993,7 @@ pub(crate) fn register_ray_cast_2_d_functions(world: &mut World) {
             let output: V<::bevy_math::bounding::RayCast2d> = {
                 {
                     let output: V<::bevy_math::bounding::RayCast2d> =
-                        ::bevy_math::bounding::RayCast2d::from_ray(&ray, max).into();
+                        ::bevy_math::bounding::RayCast2d::from_ray(ray.into_inner(), max).into();
                     output
                 }
             };
@@ -8048,8 +8075,12 @@ pub(crate) fn register_aabb_cast_2_d_functions(world: &mut World) {
             let output: V<::bevy_math::bounding::AabbCast2d> = {
                 {
                     let output: V<::bevy_math::bounding::AabbCast2d> =
-                        ::bevy_math::bounding::AabbCast2d::from_ray(aabb.into_inner(), &ray, max)
-                            .into();
+                        ::bevy_math::bounding::AabbCast2d::from_ray(
+                            aabb.into_inner(),
+                            ray.into_inner(),
+                            max,
+                        )
+                        .into();
                     output
                 }
             };
@@ -8143,7 +8174,7 @@ pub(crate) fn register_bounding_circle_cast_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::bounding::BoundingCircleCast> = ::bevy_math::bounding::BoundingCircleCast::from_ray(
                                 circle.into_inner(),
-                                &ray,
+                                ray.into_inner(),
                                 max,
                             )
                             .into();
@@ -8245,7 +8276,7 @@ pub(crate) fn register_ray_cast_3_d_functions(world: &mut World) {
             let output: V<::bevy_math::bounding::RayCast3d> = {
                 {
                     let output: V<::bevy_math::bounding::RayCast3d> =
-                        ::bevy_math::bounding::RayCast3d::from_ray(&ray, max).into();
+                        ::bevy_math::bounding::RayCast3d::from_ray(ray.into_inner(), max).into();
                     output
                 }
             };
@@ -8324,8 +8355,12 @@ pub(crate) fn register_aabb_cast_3_d_functions(world: &mut World) {
             let output: V<::bevy_math::bounding::AabbCast3d> = {
                 {
                     let output: V<::bevy_math::bounding::AabbCast3d> =
-                        ::bevy_math::bounding::AabbCast3d::from_ray(aabb.into_inner(), &ray, max)
-                            .into();
+                        ::bevy_math::bounding::AabbCast3d::from_ray(
+                            aabb.into_inner(),
+                            ray.into_inner(),
+                            max,
+                        )
+                        .into();
                     output
                 }
             };
@@ -8374,7 +8409,7 @@ pub(crate) fn register_bounding_sphere_cast_functions(world: &mut World) {
                     {
                         let output: V<::bevy_math::bounding::BoundingSphereCast> = ::bevy_math::bounding::BoundingSphereCast::from_ray(
                                 sphere.into_inner(),
-                                &ray,
+                                ray.into_inner(),
                                 max,
                             )
                             .into();

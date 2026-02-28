@@ -123,7 +123,7 @@ pub(crate) fn register_mesh_picking_camera_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_picking::mesh_picking::MeshPickingCamera>| {
+            |_self: R<::bevy_picking::mesh_picking::MeshPickingCamera>| {
                 let output: V<::bevy_picking::mesh_picking::MeshPickingCamera> = {
                     {
                         let output: V<::bevy_picking::mesh_picking::MeshPickingCamera> = <::bevy_picking::mesh_picking::MeshPickingCamera as ::std::clone::Clone>::clone(
@@ -902,7 +902,7 @@ pub(crate) fn register_move_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_picking::events::Move>| {
+        |_self: R<::bevy_picking::events::Move>| {
             let output: V<::bevy_picking::events::Move> = {
                 {
                     let output: V<::bevy_picking::events::Move> =
@@ -917,7 +917,7 @@ pub(crate) fn register_move_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_picking::events::Move>, mut other: R<::bevy_picking::events::Move>| {
+        |_self: R<::bevy_picking::events::Move>, other: R<::bevy_picking::events::Move>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_picking::events::Move as ::std::cmp::PartialEq<
@@ -1961,7 +1961,7 @@ pub(crate) fn register_ray_mesh_hit_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_picking::mesh_picking::ray_cast::RayMeshHit>| {
+            |_self: R<::bevy_picking::mesh_picking::ray_cast::RayMeshHit>| {
                 let output: V<::bevy_picking::mesh_picking::ray_cast::RayMeshHit> = {
                     {
                         let output: V<
@@ -2023,7 +2023,7 @@ pub(crate) fn register_simplified_mesh_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh>| {
+            |_self: R<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh>| {
                 let output: V<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh> = {
                     {
                         let output: V<

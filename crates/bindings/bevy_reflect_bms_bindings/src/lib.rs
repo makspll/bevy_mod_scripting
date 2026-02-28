@@ -1626,7 +1626,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 let output: V<::glam::Quat> = {
                     {
                         let output: V<::glam::Quat> = ::glam::Quat::from_euler(
-                                &euler,
+                                euler.into_inner(),
                                 a,
                                 b,
                                 c,
@@ -1642,7 +1642,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut mat: R<::glam::Mat3>| {
+            |mat: R<::glam::Mat3>| {
                 let output: V<::glam::Quat> = {
                     {
                         let output: V<::glam::Quat> = ::glam::Quat::from_mat3(&mat)
@@ -1657,7 +1657,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3a",
-            |mut mat: R<::glam::Mat3A>| {
+            |mat: R<::glam::Mat3A>| {
                 let output: V<::glam::Quat> = {
                     {
                         let output: V<::glam::Quat> = ::glam::Quat::from_mat3a(&mat)
@@ -1672,7 +1672,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4",
-            |mut mat: R<::glam::Mat4>| {
+            |mat: R<::glam::Mat4>| {
                 let output: V<::glam::Quat> = {
                     {
                         let output: V<::glam::Quat> = ::glam::Quat::from_mat4(&mat)
@@ -2360,7 +2360,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                     {
                         let output: (f32, f32, f32) = ::glam::Quat::to_euler(
                                 _self.into_inner(),
-                                &order,
+                                order.into_inner(),
                             )
                             .into();
                         output
@@ -46323,7 +46323,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "abs",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::abs(&_self).into();
@@ -46337,12 +46337,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "abs_diff_eq",
-            |mut _self: R<::glam::Mat2>, mut rhs: V<::glam::Mat2>, max_abs_diff: f32| {
+            |_self: R<::glam::Mat2>, rhs: V<::glam::Mat2>, max_abs_diff: f32| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat2::abs_diff_eq(
                                 &_self,
-                                &mut rhs,
+                                rhs.into_inner(),
                                 max_abs_diff,
                             )
                             .into();
@@ -46356,12 +46356,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat2>, mut rhs: R<::glam::Mat2>| {
+            |_self: V<::glam::Mat2>, rhs: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Add<
                             &::glam::Mat2,
-                        >>::add(&mut _self, &rhs)
+                        >>::add(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -46373,12 +46373,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat2>, mut rhs: V<::glam::Mat2>| {
+            |_self: V<::glam::Mat2>, rhs: V<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Add<
                             ::glam::Mat2,
-                        >>::add(&mut _self, &mut rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -46390,7 +46390,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add_mat2",
-            |mut _self: R<::glam::Mat2>, mut rhs: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>, rhs: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::add_mat2(
@@ -46408,7 +46408,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dmat2",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::Mat2::as_dmat2(&_self)
@@ -46423,7 +46423,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::clone::Clone>::clone(
@@ -46440,7 +46440,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "col",
-            |mut _self: R<::glam::Mat2>, index: usize| {
+            |_self: R<::glam::Mat2>, index: usize| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Mat2::col(&_self, index)
@@ -46455,7 +46455,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "determinant",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::glam::Mat2::determinant(&_self).into();
@@ -46469,12 +46469,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |mut _self: V<::glam::Mat2>, rhs: f32| {
+            |_self: V<::glam::Mat2>, rhs: f32| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Div<
                             f32,
-                        >>::div(&mut _self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -46486,7 +46486,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "div_scalar",
-            |mut _self: R<::glam::Mat2>, rhs: f32| {
+            |_self: R<::glam::Mat2>, rhs: f32| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::div_scalar(
@@ -46504,7 +46504,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::glam::Mat2>, mut rhs: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>, rhs: R<::glam::Mat2>| {
                 let output: bool = {
                     {
                         let output: bool = <::glam::Mat2 as ::core::cmp::PartialEq<
@@ -46571,10 +46571,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut m: V<::glam::Mat3>| {
+            |m: V<::glam::Mat3>| {
                 let output: V<::glam::Mat2> = {
                     {
-                        let output: V<::glam::Mat2> = ::glam::Mat2::from_mat3(&mut m)
+                        let output: V<::glam::Mat2> = ::glam::Mat2::from_mat3(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -46586,11 +46588,11 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3_minor",
-            |mut m: V<::glam::Mat3>, i: usize, j: usize| {
+            |m: V<::glam::Mat3>, i: usize, j: usize| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::from_mat3_minor(
-                                &mut m,
+                                m.into_inner(),
                                 i,
                                 j,
                             )
@@ -46605,10 +46607,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3a",
-            |mut m: V<::glam::Mat3A>| {
+            |m: V<::glam::Mat3A>| {
                 let output: V<::glam::Mat2> = {
                     {
-                        let output: V<::glam::Mat2> = ::glam::Mat2::from_mat3a(&mut m)
+                        let output: V<::glam::Mat2> = ::glam::Mat2::from_mat3a(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -46620,11 +46624,11 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3a_minor",
-            |mut m: V<::glam::Mat3A>, i: usize, j: usize| {
+            |m: V<::glam::Mat3A>, i: usize, j: usize| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::from_mat3a_minor(
-                                &mut m,
+                                m.into_inner(),
                                 i,
                                 j,
                             )
@@ -46657,7 +46661,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "inverse",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::inverse(&_self)
@@ -46672,7 +46676,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "is_finite",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat2::is_finite(&_self).into();
@@ -46686,7 +46690,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "is_nan",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat2::is_nan(&_self).into();
@@ -46700,12 +46704,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat2>, mut rhs: R<::glam::Mat2>| {
+            |_self: V<::glam::Mat2>, rhs: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Mul<
                             &::glam::Mat2,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -46717,12 +46721,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat2>, rhs: R<::glam::Vec2>| {
+            |_self: V<::glam::Mat2>, rhs: R<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = <::glam::Mat2 as ::core::ops::Mul<
                             &::glam::Vec2,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -46734,12 +46738,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat2>, mut rhs: V<::glam::Mat2>| {
+            |_self: V<::glam::Mat2>, rhs: V<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Mul<
                             ::glam::Mat2,
-                        >>::mul(&mut _self, &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -46751,12 +46755,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat2>, rhs: V<::glam::Vec2>| {
+            |_self: V<::glam::Mat2>, rhs: V<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = <::glam::Mat2 as ::core::ops::Mul<
                             ::glam::Vec2,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -46768,12 +46772,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat2>, rhs: f32| {
+            |_self: V<::glam::Mat2>, rhs: f32| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Mul<
                             f32,
-                        >>::mul(&mut _self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -46785,7 +46789,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul_mat2",
-            |mut _self: R<::glam::Mat2>, mut rhs: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>, rhs: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::mul_mat2(
@@ -46803,7 +46807,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul_scalar",
-            |mut _self: R<::glam::Mat2>, rhs: f32| {
+            |_self: R<::glam::Mat2>, rhs: f32| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::mul_scalar(
@@ -46821,7 +46825,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec2",
-            |mut _self: R<::glam::Mat2>, rhs: V<::glam::Vec2>| {
+            |_self: R<::glam::Mat2>, rhs: V<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Mat2::mul_vec2(
@@ -46839,11 +46843,11 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |mut _self: V<::glam::Mat2>| {
+            |_self: V<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Neg>::neg(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -46856,7 +46860,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "row",
-            |mut _self: R<::glam::Mat2>, index: usize| {
+            |_self: R<::glam::Mat2>, index: usize| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Mat2::row(&_self, index)
@@ -46871,12 +46875,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat2>, mut rhs: R<::glam::Mat2>| {
+            |_self: V<::glam::Mat2>, rhs: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Sub<
                             &::glam::Mat2,
-                        >>::sub(&mut _self, &rhs)
+                        >>::sub(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -46888,12 +46892,12 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat2>, mut rhs: V<::glam::Mat2>| {
+            |_self: V<::glam::Mat2>, rhs: V<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Sub<
                             ::glam::Mat2,
-                        >>::sub(&mut _self, &mut rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -46905,7 +46909,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub_mat2",
-            |mut _self: R<::glam::Mat2>, mut rhs: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>, rhs: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::sub_mat2(
@@ -46923,7 +46927,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: [f32; 4] = {
                     {
                         let output: [f32; 4] = ::glam::Mat2::to_cols_array(&_self)
@@ -46938,7 +46942,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array_2d",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: [[f32; 2]; 2] = {
                     {
                         let output: [[f32; 2]; 2] = ::glam::Mat2::to_cols_array_2d(
@@ -46955,7 +46959,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "transpose",
-            |mut _self: R<::glam::Mat2>| {
+            |_self: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::Mat2::transpose(&_self)
@@ -46978,7 +46982,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "abs",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::abs(&_self).into();
@@ -46992,12 +46996,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "abs_diff_eq",
-            |mut _self: R<::glam::Mat3>, mut rhs: V<::glam::Mat3>, max_abs_diff: f32| {
+            |_self: R<::glam::Mat3>, rhs: V<::glam::Mat3>, max_abs_diff: f32| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat3::abs_diff_eq(
                                 &_self,
-                                &mut rhs,
+                                rhs.into_inner(),
                                 max_abs_diff,
                             )
                             .into();
@@ -47011,12 +47015,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat3>, mut rhs: R<::glam::Mat3>| {
+            |_self: V<::glam::Mat3>, rhs: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Add<
                             &::glam::Mat3,
-                        >>::add(&mut _self, &rhs)
+                        >>::add(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -47028,12 +47032,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat3>, mut rhs: V<::glam::Mat3>| {
+            |_self: V<::glam::Mat3>, rhs: V<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Add<
                             ::glam::Mat3,
-                        >>::add(&mut _self, &mut rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -47045,7 +47049,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add_mat3",
-            |mut _self: R<::glam::Mat3>, mut rhs: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>, rhs: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::add_mat3(
@@ -47063,7 +47067,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dmat3",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::Mat3::as_dmat3(&_self)
@@ -47078,7 +47082,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::clone::Clone>::clone(
@@ -47095,7 +47099,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "col",
-            |mut _self: R<::glam::Mat3>, index: usize| {
+            |_self: R<::glam::Mat3>, index: usize| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Mat3::col(&_self, index)
@@ -47110,7 +47114,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "determinant",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::glam::Mat3::determinant(&_self).into();
@@ -47124,12 +47128,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |mut _self: V<::glam::Mat3>, rhs: f32| {
+            |_self: V<::glam::Mat3>, rhs: f32| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Div<
                             f32,
-                        >>::div(&mut _self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -47141,7 +47145,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "div_scalar",
-            |mut _self: R<::glam::Mat3>, rhs: f32| {
+            |_self: R<::glam::Mat3>, rhs: f32| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::div_scalar(
@@ -47159,7 +47163,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::glam::Mat3>, mut rhs: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>, rhs: R<::glam::Mat3>| {
                 let output: bool = {
                     {
                         let output: bool = <::glam::Mat3 as ::core::cmp::PartialEq<
@@ -47249,7 +47253,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::from_euler(
-                                &order,
+                                order.into_inner(),
                                 a,
                                 b,
                                 c,
@@ -47265,10 +47269,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat2",
-            |mut m: V<::glam::Mat2>| {
+            |m: V<::glam::Mat2>| {
                 let output: V<::glam::Mat3> = {
                     {
-                        let output: V<::glam::Mat3> = ::glam::Mat3::from_mat2(&mut m)
+                        let output: V<::glam::Mat3> = ::glam::Mat3::from_mat2(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -47280,10 +47286,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4",
-            |mut m: V<::glam::Mat4>| {
+            |m: V<::glam::Mat4>| {
                 let output: V<::glam::Mat3> = {
                     {
-                        let output: V<::glam::Mat3> = ::glam::Mat3::from_mat4(&mut m)
+                        let output: V<::glam::Mat3> = ::glam::Mat3::from_mat4(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -47295,11 +47303,11 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4_minor",
-            |mut m: V<::glam::Mat4>, i: usize, j: usize| {
+            |m: V<::glam::Mat4>, i: usize, j: usize| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::from_mat4_minor(
-                                &mut m,
+                                m.into_inner(),
                                 i,
                                 j,
                             )
@@ -47435,7 +47443,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "inverse",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::inverse(&_self)
@@ -47450,7 +47458,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "is_finite",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat3::is_finite(&_self).into();
@@ -47464,7 +47472,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "is_nan",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat3::is_nan(&_self).into();
@@ -47552,12 +47560,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, rhs: R<::glam::Affine2>| {
+            |_self: V<::glam::Mat3>, rhs: R<::glam::Affine2>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
                             &::glam::Affine2,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -47569,12 +47577,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, mut rhs: R<::glam::Mat3>| {
+            |_self: V<::glam::Mat3>, rhs: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
                             &::glam::Mat3,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -47586,12 +47594,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, rhs: R<::glam::Vec3>| {
+            |_self: V<::glam::Mat3>, rhs: R<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = <::glam::Mat3 as ::core::ops::Mul<
                             &::glam::Vec3,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -47603,12 +47611,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, rhs: R<::glam::Vec3A>| {
+            |_self: V<::glam::Mat3>, rhs: R<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = <::glam::Mat3 as ::core::ops::Mul<
                             &::glam::Vec3A,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -47620,12 +47628,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, rhs: V<::glam::Affine2>| {
+            |_self: V<::glam::Mat3>, rhs: V<::glam::Affine2>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
                             ::glam::Affine2,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -47637,12 +47645,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, mut rhs: V<::glam::Mat3>| {
+            |_self: V<::glam::Mat3>, rhs: V<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
                             ::glam::Mat3,
-                        >>::mul(&mut _self, &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -47654,12 +47662,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, rhs: V<::glam::Vec3>| {
+            |_self: V<::glam::Mat3>, rhs: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = <::glam::Mat3 as ::core::ops::Mul<
                             ::glam::Vec3,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -47671,12 +47679,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, rhs: V<::glam::Vec3A>| {
+            |_self: V<::glam::Mat3>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = <::glam::Mat3 as ::core::ops::Mul<
                             ::glam::Vec3A,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -47688,12 +47696,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3>, rhs: f32| {
+            |_self: V<::glam::Mat3>, rhs: f32| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Mul<
                             f32,
-                        >>::mul(&mut _self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -47705,7 +47713,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul_mat3",
-            |mut _self: R<::glam::Mat3>, mut rhs: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>, rhs: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::mul_mat3(
@@ -47723,7 +47731,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul_scalar",
-            |mut _self: R<::glam::Mat3>, rhs: f32| {
+            |_self: R<::glam::Mat3>, rhs: f32| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::mul_scalar(
@@ -47741,7 +47749,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec3",
-            |mut _self: R<::glam::Mat3>, rhs: V<::glam::Vec3>| {
+            |_self: R<::glam::Mat3>, rhs: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Mat3::mul_vec3(
@@ -47759,7 +47767,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec3a",
-            |mut _self: R<::glam::Mat3>, rhs: V<::glam::Vec3A>| {
+            |_self: R<::glam::Mat3>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Mat3::mul_vec3a(
@@ -47777,11 +47785,11 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |mut _self: V<::glam::Mat3>| {
+            |_self: V<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Neg>::neg(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -47794,7 +47802,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "row",
-            |mut _self: R<::glam::Mat3>, index: usize| {
+            |_self: R<::glam::Mat3>, index: usize| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Mat3::row(&_self, index)
@@ -47809,12 +47817,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat3>, mut rhs: R<::glam::Mat3>| {
+            |_self: V<::glam::Mat3>, rhs: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Sub<
                             &::glam::Mat3,
-                        >>::sub(&mut _self, &rhs)
+                        >>::sub(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -47826,12 +47834,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat3>, mut rhs: V<::glam::Mat3>| {
+            |_self: V<::glam::Mat3>, rhs: V<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Sub<
                             ::glam::Mat3,
-                        >>::sub(&mut _self, &mut rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -47843,7 +47851,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub_mat3",
-            |mut _self: R<::glam::Mat3>, mut rhs: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>, rhs: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::sub_mat3(
@@ -47861,7 +47869,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: [f32; 9] = {
                     {
                         let output: [f32; 9] = ::glam::Mat3::to_cols_array(&_self)
@@ -47876,7 +47884,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array_2d",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: [[f32; 3]; 3] = {
                     {
                         let output: [[f32; 3]; 3] = ::glam::Mat3::to_cols_array_2d(
@@ -47893,12 +47901,12 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "to_euler",
-            |mut _self: R<::glam::Mat3>, order: V<::glam::EulerRot>| {
+            |_self: R<::glam::Mat3>, order: V<::glam::EulerRot>| {
                 let output: (f32, f32, f32) = {
                     {
                         let output: (f32, f32, f32) = ::glam::Mat3::to_euler(
                                 &_self,
-                                &order,
+                                order.into_inner(),
                             )
                             .into();
                         output
@@ -47911,7 +47919,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "transform_point2",
-            |mut _self: R<::glam::Mat3>, rhs: V<::glam::Vec2>| {
+            |_self: R<::glam::Mat3>, rhs: V<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Mat3::transform_point2(
@@ -47929,7 +47937,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "transform_vector2",
-            |mut _self: R<::glam::Mat3>, rhs: V<::glam::Vec2>| {
+            |_self: R<::glam::Mat3>, rhs: V<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Mat3::transform_vector2(
@@ -47947,7 +47955,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "transpose",
-            |mut _self: R<::glam::Mat3>| {
+            |_self: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::Mat3::transpose(&_self)
@@ -47970,7 +47978,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "abs",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::abs(&_self).into();
@@ -47984,12 +47992,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "abs_diff_eq",
-            |mut _self: R<::glam::Mat3A>, mut rhs: V<::glam::Mat3A>, max_abs_diff: f32| {
+            |_self: R<::glam::Mat3A>, rhs: V<::glam::Mat3A>, max_abs_diff: f32| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat3A::abs_diff_eq(
                                 &_self,
-                                &mut rhs,
+                                rhs.into_inner(),
                                 max_abs_diff,
                             )
                             .into();
@@ -48003,12 +48011,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat3A>, mut rhs: R<::glam::Mat3A>| {
+            |_self: V<::glam::Mat3A>, rhs: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Add<
                             &::glam::Mat3A,
-                        >>::add(&mut _self, &rhs)
+                        >>::add(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -48020,12 +48028,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat3A>, mut rhs: V<::glam::Mat3A>| {
+            |_self: V<::glam::Mat3A>, rhs: V<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Add<
                             ::glam::Mat3A,
-                        >>::add(&mut _self, &mut rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -48037,7 +48045,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "add_mat3",
-            |mut _self: R<::glam::Mat3A>, mut rhs: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>, rhs: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::add_mat3(
@@ -48055,7 +48063,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_dmat3",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::Mat3A::as_dmat3(&_self)
@@ -48070,7 +48078,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::clone::Clone>::clone(
@@ -48087,7 +48095,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "col",
-            |mut _self: R<::glam::Mat3A>, index: usize| {
+            |_self: R<::glam::Mat3A>, index: usize| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Mat3A::col(&_self, index)
@@ -48102,7 +48110,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "determinant",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::glam::Mat3A::determinant(&_self).into();
@@ -48116,12 +48124,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |mut _self: V<::glam::Mat3A>, rhs: f32| {
+            |_self: V<::glam::Mat3A>, rhs: f32| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Div<
                             f32,
-                        >>::div(&mut _self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -48133,7 +48141,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "div_scalar",
-            |mut _self: R<::glam::Mat3A>, rhs: f32| {
+            |_self: R<::glam::Mat3A>, rhs: f32| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::div_scalar(
@@ -48151,7 +48159,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::glam::Mat3A>, mut rhs: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>, rhs: R<::glam::Mat3A>| {
                 let output: bool = {
                     {
                         let output: bool = <::glam::Mat3A as ::core::cmp::PartialEq<
@@ -48245,7 +48253,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::from_euler(
-                                &order,
+                                order.into_inner(),
                                 a,
                                 b,
                                 c,
@@ -48261,10 +48269,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat2",
-            |mut m: V<::glam::Mat2>| {
+            |m: V<::glam::Mat2>| {
                 let output: V<::glam::Mat3A> = {
                     {
-                        let output: V<::glam::Mat3A> = ::glam::Mat3A::from_mat2(&mut m)
+                        let output: V<::glam::Mat3A> = ::glam::Mat3A::from_mat2(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -48276,10 +48286,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4",
-            |mut m: V<::glam::Mat4>| {
+            |m: V<::glam::Mat4>| {
                 let output: V<::glam::Mat3A> = {
                     {
-                        let output: V<::glam::Mat3A> = ::glam::Mat3A::from_mat4(&mut m)
+                        let output: V<::glam::Mat3A> = ::glam::Mat3A::from_mat4(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -48291,11 +48303,11 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4_minor",
-            |mut m: V<::glam::Mat4>, i: usize, j: usize| {
+            |m: V<::glam::Mat4>, i: usize, j: usize| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::from_mat4_minor(
-                                &mut m,
+                                m.into_inner(),
                                 i,
                                 j,
                             )
@@ -48431,7 +48443,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "inverse",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::inverse(&_self)
@@ -48446,7 +48458,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "is_finite",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat3A::is_finite(&_self).into();
@@ -48460,7 +48472,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "is_nan",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat3A::is_nan(&_self).into();
@@ -48548,12 +48560,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, rhs: R<::glam::Affine2>| {
+            |_self: V<::glam::Mat3A>, rhs: R<::glam::Affine2>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
                             &::glam::Affine2,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -48565,12 +48577,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, mut rhs: R<::glam::Mat3A>| {
+            |_self: V<::glam::Mat3A>, rhs: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
                             &::glam::Mat3A,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -48582,12 +48594,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, rhs: R<::glam::Vec3>| {
+            |_self: V<::glam::Mat3A>, rhs: R<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = <::glam::Mat3A as ::core::ops::Mul<
                             &::glam::Vec3,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -48599,12 +48611,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, rhs: R<::glam::Vec3A>| {
+            |_self: V<::glam::Mat3A>, rhs: R<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = <::glam::Mat3A as ::core::ops::Mul<
                             &::glam::Vec3A,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -48616,12 +48628,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, rhs: V<::glam::Affine2>| {
+            |_self: V<::glam::Mat3A>, rhs: V<::glam::Affine2>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
                             ::glam::Affine2,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -48633,12 +48645,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, mut rhs: V<::glam::Mat3A>| {
+            |_self: V<::glam::Mat3A>, rhs: V<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
                             ::glam::Mat3A,
-                        >>::mul(&mut _self, &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -48650,12 +48662,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, rhs: V<::glam::Vec3>| {
+            |_self: V<::glam::Mat3A>, rhs: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = <::glam::Mat3A as ::core::ops::Mul<
                             ::glam::Vec3,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -48667,12 +48679,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, rhs: V<::glam::Vec3A>| {
+            |_self: V<::glam::Mat3A>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = <::glam::Mat3A as ::core::ops::Mul<
                             ::glam::Vec3A,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -48684,12 +48696,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat3A>, rhs: f32| {
+            |_self: V<::glam::Mat3A>, rhs: f32| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Mul<
                             f32,
-                        >>::mul(&mut _self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -48701,7 +48713,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul_mat3",
-            |mut _self: R<::glam::Mat3A>, mut rhs: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>, rhs: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::mul_mat3(
@@ -48719,7 +48731,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul_scalar",
-            |mut _self: R<::glam::Mat3A>, rhs: f32| {
+            |_self: R<::glam::Mat3A>, rhs: f32| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::mul_scalar(
@@ -48737,7 +48749,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec3",
-            |mut _self: R<::glam::Mat3A>, rhs: V<::glam::Vec3>| {
+            |_self: R<::glam::Mat3A>, rhs: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Mat3A::mul_vec3(
@@ -48755,7 +48767,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec3a",
-            |mut _self: R<::glam::Mat3A>, rhs: V<::glam::Vec3A>| {
+            |_self: R<::glam::Mat3A>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Mat3A::mul_vec3a(
@@ -48773,11 +48785,11 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |mut _self: V<::glam::Mat3A>| {
+            |_self: V<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Neg>::neg(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -48790,7 +48802,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "row",
-            |mut _self: R<::glam::Mat3A>, index: usize| {
+            |_self: R<::glam::Mat3A>, index: usize| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Mat3A::row(&_self, index)
@@ -48805,12 +48817,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat3A>, mut rhs: R<::glam::Mat3A>| {
+            |_self: V<::glam::Mat3A>, rhs: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Sub<
                             &::glam::Mat3A,
-                        >>::sub(&mut _self, &rhs)
+                        >>::sub(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -48822,12 +48834,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat3A>, mut rhs: V<::glam::Mat3A>| {
+            |_self: V<::glam::Mat3A>, rhs: V<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Sub<
                             ::glam::Mat3A,
-                        >>::sub(&mut _self, &mut rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -48839,7 +48851,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "sub_mat3",
-            |mut _self: R<::glam::Mat3A>, mut rhs: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>, rhs: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::sub_mat3(
@@ -48857,7 +48869,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: [f32; 9] = {
                     {
                         let output: [f32; 9] = ::glam::Mat3A::to_cols_array(&_self)
@@ -48872,7 +48884,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array_2d",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: [[f32; 3]; 3] = {
                     {
                         let output: [[f32; 3]; 3] = ::glam::Mat3A::to_cols_array_2d(
@@ -48889,12 +48901,12 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "to_euler",
-            |mut _self: R<::glam::Mat3A>, order: V<::glam::EulerRot>| {
+            |_self: R<::glam::Mat3A>, order: V<::glam::EulerRot>| {
                 let output: (f32, f32, f32) = {
                     {
                         let output: (f32, f32, f32) = ::glam::Mat3A::to_euler(
                                 &_self,
-                                &order,
+                                order.into_inner(),
                             )
                             .into();
                         output
@@ -48907,7 +48919,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "transform_point2",
-            |mut _self: R<::glam::Mat3A>, rhs: V<::glam::Vec2>| {
+            |_self: R<::glam::Mat3A>, rhs: V<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Mat3A::transform_point2(
@@ -48925,7 +48937,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "transform_vector2",
-            |mut _self: R<::glam::Mat3A>, rhs: V<::glam::Vec2>| {
+            |_self: R<::glam::Mat3A>, rhs: V<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Mat3A::transform_vector2(
@@ -48943,7 +48955,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "transpose",
-            |mut _self: R<::glam::Mat3A>| {
+            |_self: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = ::glam::Mat3A::transpose(&_self)
@@ -48966,7 +48978,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "abs",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::abs(&_self).into();
@@ -48980,12 +48992,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "abs_diff_eq",
-            |mut _self: R<::glam::Mat4>, mut rhs: V<::glam::Mat4>, max_abs_diff: f32| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Mat4>, max_abs_diff: f32| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat4::abs_diff_eq(
                                 &_self,
-                                &mut rhs,
+                                rhs.into_inner(),
                                 max_abs_diff,
                             )
                             .into();
@@ -48999,12 +49011,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat4>, mut rhs: R<::glam::Mat4>| {
+            |_self: V<::glam::Mat4>, rhs: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Add<
                             &::glam::Mat4,
-                        >>::add(&mut _self, &rhs)
+                        >>::add(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -49016,12 +49028,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::Mat4>, mut rhs: V<::glam::Mat4>| {
+            |_self: V<::glam::Mat4>, rhs: V<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Add<
                             ::glam::Mat4,
-                        >>::add(&mut _self, &mut rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -49033,7 +49045,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add_mat4",
-            |mut _self: R<::glam::Mat4>, mut rhs: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>, rhs: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::add_mat4(
@@ -49051,7 +49063,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dmat4",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::Mat4::as_dmat4(&_self)
@@ -49066,7 +49078,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::clone::Clone>::clone(
@@ -49083,7 +49095,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "col",
-            |mut _self: R<::glam::Mat4>, index: usize| {
+            |_self: R<::glam::Mat4>, index: usize| {
                 let output: V<::glam::Vec4> = {
                     {
                         let output: V<::glam::Vec4> = ::glam::Mat4::col(&_self, index)
@@ -49098,7 +49110,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "determinant",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::glam::Mat4::determinant(&_self).into();
@@ -49112,12 +49124,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |mut _self: V<::glam::Mat4>, rhs: f32| {
+            |_self: V<::glam::Mat4>, rhs: f32| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Div<
                             f32,
-                        >>::div(&mut _self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -49129,7 +49141,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "div_scalar",
-            |mut _self: R<::glam::Mat4>, rhs: f32| {
+            |_self: R<::glam::Mat4>, rhs: f32| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::div_scalar(
@@ -49147,7 +49159,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::glam::Mat4>, mut rhs: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>, rhs: R<::glam::Mat4>| {
                 let output: bool = {
                     {
                         let output: bool = <::glam::Mat4 as ::core::cmp::PartialEq<
@@ -49228,7 +49240,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::from_euler(
-                                &order,
+                                order.into_inner(),
                                 a,
                                 b,
                                 c,
@@ -49244,10 +49256,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut m: V<::glam::Mat3>| {
+            |m: V<::glam::Mat3>| {
                 let output: V<::glam::Mat4> = {
                     {
-                        let output: V<::glam::Mat4> = ::glam::Mat4::from_mat3(&mut m)
+                        let output: V<::glam::Mat4> = ::glam::Mat4::from_mat3(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -49259,11 +49273,11 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3_translation",
-            |mut mat3: V<::glam::Mat3>, translation: V<::glam::Vec3>| {
+            |mat3: V<::glam::Mat3>, translation: V<::glam::Vec3>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::from_mat3_translation(
-                                &mut mat3,
+                                mat3.into_inner(),
                                 translation.into_inner(),
                             )
                             .into();
@@ -49277,10 +49291,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3a",
-            |mut m: V<::glam::Mat3A>| {
+            |m: V<::glam::Mat3A>| {
                 let output: V<::glam::Mat4> = {
                     {
-                        let output: V<::glam::Mat4> = ::glam::Mat4::from_mat3a(&mut m)
+                        let output: V<::glam::Mat4> = ::glam::Mat4::from_mat3a(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -49501,7 +49517,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "inverse",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::inverse(&_self)
@@ -49516,7 +49532,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "is_finite",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat4::is_finite(&_self).into();
@@ -49530,7 +49546,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "is_nan",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::Mat4::is_nan(&_self).into();
@@ -49620,12 +49636,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat4>, rhs: R<::glam::Affine3A>| {
+            |_self: V<::glam::Mat4>, rhs: R<::glam::Affine3A>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
                             &::glam::Affine3A,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -49637,12 +49653,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat4>, mut rhs: R<::glam::Mat4>| {
+            |_self: V<::glam::Mat4>, rhs: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
                             &::glam::Mat4,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -49654,12 +49670,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat4>, rhs: R<::glam::Vec4>| {
+            |_self: V<::glam::Mat4>, rhs: R<::glam::Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
                         let output: V<::glam::Vec4> = <::glam::Mat4 as ::core::ops::Mul<
                             &::glam::Vec4,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -49671,12 +49687,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat4>, rhs: V<::glam::Affine3A>| {
+            |_self: V<::glam::Mat4>, rhs: V<::glam::Affine3A>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
                             ::glam::Affine3A,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -49688,12 +49704,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat4>, mut rhs: V<::glam::Mat4>| {
+            |_self: V<::glam::Mat4>, rhs: V<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
                             ::glam::Mat4,
-                        >>::mul(&mut _self, &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -49705,12 +49721,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat4>, rhs: V<::glam::Vec4>| {
+            |_self: V<::glam::Mat4>, rhs: V<::glam::Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
                         let output: V<::glam::Vec4> = <::glam::Mat4 as ::core::ops::Mul<
                             ::glam::Vec4,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -49722,12 +49738,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::Mat4>, rhs: f32| {
+            |_self: V<::glam::Mat4>, rhs: f32| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
                             f32,
-                        >>::mul(&mut _self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -49739,7 +49755,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul_mat4",
-            |mut _self: R<::glam::Mat4>, mut rhs: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>, rhs: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::mul_mat4(
@@ -49757,7 +49773,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul_scalar",
-            |mut _self: R<::glam::Mat4>, rhs: f32| {
+            |_self: R<::glam::Mat4>, rhs: f32| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::mul_scalar(
@@ -49775,7 +49791,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec4",
-            |mut _self: R<::glam::Mat4>, rhs: V<::glam::Vec4>| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
                         let output: V<::glam::Vec4> = ::glam::Mat4::mul_vec4(
@@ -49793,11 +49809,11 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |mut _self: V<::glam::Mat4>| {
+            |_self: V<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Neg>::neg(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -50012,7 +50028,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "project_point3",
-            |mut _self: R<::glam::Mat4>, rhs: V<::glam::Vec3>| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Mat4::project_point3(
@@ -50030,7 +50046,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "project_point3a",
-            |mut _self: R<::glam::Mat4>, rhs: V<::glam::Vec3A>| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Mat4::project_point3a(
@@ -50048,7 +50064,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "row",
-            |mut _self: R<::glam::Mat4>, index: usize| {
+            |_self: R<::glam::Mat4>, index: usize| {
                 let output: V<::glam::Vec4> = {
                     {
                         let output: V<::glam::Vec4> = ::glam::Mat4::row(&_self, index)
@@ -50063,12 +50079,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat4>, mut rhs: R<::glam::Mat4>| {
+            |_self: V<::glam::Mat4>, rhs: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Sub<
                             &::glam::Mat4,
-                        >>::sub(&mut _self, &rhs)
+                        >>::sub(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -50080,12 +50096,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::Mat4>, mut rhs: V<::glam::Mat4>| {
+            |_self: V<::glam::Mat4>, rhs: V<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Sub<
                             ::glam::Mat4,
-                        >>::sub(&mut _self, &mut rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -50097,7 +50113,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub_mat4",
-            |mut _self: R<::glam::Mat4>, mut rhs: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>, rhs: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::sub_mat4(
@@ -50115,7 +50131,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: [f32; 16] = {
                     {
                         let output: [f32; 16] = ::glam::Mat4::to_cols_array(&_self)
@@ -50130,7 +50146,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array_2d",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: [[f32; 4]; 4] = {
                     {
                         let output: [[f32; 4]; 4] = ::glam::Mat4::to_cols_array_2d(
@@ -50147,12 +50163,12 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "to_euler",
-            |mut _self: R<::glam::Mat4>, order: V<::glam::EulerRot>| {
+            |_self: R<::glam::Mat4>, order: V<::glam::EulerRot>| {
                 let output: (f32, f32, f32) = {
                     {
                         let output: (f32, f32, f32) = ::glam::Mat4::to_euler(
                                 &_self,
-                                &order,
+                                order.into_inner(),
                             )
                             .into();
                         output
@@ -50165,7 +50181,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transform_point3",
-            |mut _self: R<::glam::Mat4>, rhs: V<::glam::Vec3>| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Mat4::transform_point3(
@@ -50183,7 +50199,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transform_point3a",
-            |mut _self: R<::glam::Mat4>, rhs: V<::glam::Vec3A>| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Mat4::transform_point3a(
@@ -50201,7 +50217,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transform_vector3",
-            |mut _self: R<::glam::Mat4>, rhs: V<::glam::Vec3>| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Mat4::transform_vector3(
@@ -50219,7 +50235,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transform_vector3a",
-            |mut _self: R<::glam::Mat4>, rhs: V<::glam::Vec3A>| {
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Mat4::transform_vector3a(
@@ -50237,7 +50253,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transpose",
-            |mut _self: R<::glam::Mat4>| {
+            |_self: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::Mat4::transpose(&_self)
@@ -50260,7 +50276,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "abs",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::abs(&_self).into();
@@ -50274,12 +50290,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "abs_diff_eq",
-            |mut _self: R<::glam::DMat2>, mut rhs: V<::glam::DMat2>, max_abs_diff: f64| {
+            |_self: R<::glam::DMat2>, rhs: V<::glam::DMat2>, max_abs_diff: f64| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat2::abs_diff_eq(
                                 &_self,
-                                &mut rhs,
+                                rhs.into_inner(),
                                 max_abs_diff,
                             )
                             .into();
@@ -50293,12 +50309,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::DMat2>, mut rhs: R<::glam::DMat2>| {
+            |_self: V<::glam::DMat2>, rhs: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Add<
                             &::glam::DMat2,
-                        >>::add(&mut _self, &rhs)
+                        >>::add(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -50310,12 +50326,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::DMat2>, mut rhs: V<::glam::DMat2>| {
+            |_self: V<::glam::DMat2>, rhs: V<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Add<
                             ::glam::DMat2,
-                        >>::add(&mut _self, &mut rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -50327,7 +50343,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "add_mat2",
-            |mut _self: R<::glam::DMat2>, mut rhs: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>, rhs: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::add_mat2(
@@ -50345,7 +50361,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_mat2",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: V<::glam::Mat2> = {
                     {
                         let output: V<::glam::Mat2> = ::glam::DMat2::as_mat2(&_self)
@@ -50360,7 +50376,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::clone::Clone>::clone(
@@ -50377,7 +50393,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "col",
-            |mut _self: R<::glam::DMat2>, index: usize| {
+            |_self: R<::glam::DMat2>, index: usize| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = ::glam::DMat2::col(&_self, index)
@@ -50392,7 +50408,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "determinant",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: f64 = {
                     {
                         let output: f64 = ::glam::DMat2::determinant(&_self).into();
@@ -50406,12 +50422,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |mut _self: V<::glam::DMat2>, rhs: f64| {
+            |_self: V<::glam::DMat2>, rhs: f64| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Div<
                             f64,
-                        >>::div(&mut _self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -50423,7 +50439,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "div_scalar",
-            |mut _self: R<::glam::DMat2>, rhs: f64| {
+            |_self: R<::glam::DMat2>, rhs: f64| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::div_scalar(
@@ -50441,7 +50457,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::glam::DMat2>, mut rhs: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>, rhs: R<::glam::DMat2>| {
                 let output: bool = {
                     {
                         let output: bool = <::glam::DMat2 as ::core::cmp::PartialEq<
@@ -50508,10 +50524,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut m: V<::glam::DMat3>| {
+            |m: V<::glam::DMat3>| {
                 let output: V<::glam::DMat2> = {
                     {
-                        let output: V<::glam::DMat2> = ::glam::DMat2::from_mat3(&mut m)
+                        let output: V<::glam::DMat2> = ::glam::DMat2::from_mat3(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -50523,11 +50541,11 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3_minor",
-            |mut m: V<::glam::DMat3>, i: usize, j: usize| {
+            |m: V<::glam::DMat3>, i: usize, j: usize| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::from_mat3_minor(
-                                &mut m,
+                                m.into_inner(),
                                 i,
                                 j,
                             )
@@ -50560,7 +50578,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "inverse",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::inverse(&_self)
@@ -50575,7 +50593,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "is_finite",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat2::is_finite(&_self).into();
@@ -50589,7 +50607,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "is_nan",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat2::is_nan(&_self).into();
@@ -50603,12 +50621,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat2>, mut rhs: R<::glam::DMat2>| {
+            |_self: V<::glam::DMat2>, rhs: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Mul<
                             &::glam::DMat2,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -50620,12 +50638,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat2>, rhs: R<::glam::DVec2>| {
+            |_self: V<::glam::DMat2>, rhs: R<::glam::DVec2>| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = <::glam::DMat2 as ::core::ops::Mul<
                             &::glam::DVec2,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -50637,12 +50655,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat2>, mut rhs: V<::glam::DMat2>| {
+            |_self: V<::glam::DMat2>, rhs: V<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Mul<
                             ::glam::DMat2,
-                        >>::mul(&mut _self, &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -50654,12 +50672,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat2>, rhs: V<::glam::DVec2>| {
+            |_self: V<::glam::DMat2>, rhs: V<::glam::DVec2>| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = <::glam::DMat2 as ::core::ops::Mul<
                             ::glam::DVec2,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -50671,12 +50689,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat2>, rhs: f64| {
+            |_self: V<::glam::DMat2>, rhs: f64| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Mul<
                             f64,
-                        >>::mul(&mut _self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -50688,7 +50706,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul_mat2",
-            |mut _self: R<::glam::DMat2>, mut rhs: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>, rhs: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::mul_mat2(
@@ -50706,7 +50724,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul_scalar",
-            |mut _self: R<::glam::DMat2>, rhs: f64| {
+            |_self: R<::glam::DMat2>, rhs: f64| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::mul_scalar(
@@ -50724,7 +50742,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec2",
-            |mut _self: R<::glam::DMat2>, rhs: V<::glam::DVec2>| {
+            |_self: R<::glam::DMat2>, rhs: V<::glam::DVec2>| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = ::glam::DMat2::mul_vec2(
@@ -50742,11 +50760,11 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |mut _self: V<::glam::DMat2>| {
+            |_self: V<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Neg>::neg(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -50759,7 +50777,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "row",
-            |mut _self: R<::glam::DMat2>, index: usize| {
+            |_self: R<::glam::DMat2>, index: usize| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = ::glam::DMat2::row(&_self, index)
@@ -50774,12 +50792,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::DMat2>, mut rhs: R<::glam::DMat2>| {
+            |_self: V<::glam::DMat2>, rhs: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Sub<
                             &::glam::DMat2,
-                        >>::sub(&mut _self, &rhs)
+                        >>::sub(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -50791,12 +50809,12 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::DMat2>, mut rhs: V<::glam::DMat2>| {
+            |_self: V<::glam::DMat2>, rhs: V<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Sub<
                             ::glam::DMat2,
-                        >>::sub(&mut _self, &mut rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -50808,7 +50826,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "sub_mat2",
-            |mut _self: R<::glam::DMat2>, mut rhs: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>, rhs: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::sub_mat2(
@@ -50826,7 +50844,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: [f64; 4] = {
                     {
                         let output: [f64; 4] = ::glam::DMat2::to_cols_array(&_self)
@@ -50841,7 +50859,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array_2d",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: [[f64; 2]; 2] = {
                     {
                         let output: [[f64; 2]; 2] = ::glam::DMat2::to_cols_array_2d(
@@ -50858,7 +50876,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "transpose",
-            |mut _self: R<::glam::DMat2>| {
+            |_self: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
                         let output: V<::glam::DMat2> = ::glam::DMat2::transpose(&_self)
@@ -50881,7 +50899,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "abs",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::abs(&_self).into();
@@ -50895,12 +50913,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "abs_diff_eq",
-            |mut _self: R<::glam::DMat3>, mut rhs: V<::glam::DMat3>, max_abs_diff: f64| {
+            |_self: R<::glam::DMat3>, rhs: V<::glam::DMat3>, max_abs_diff: f64| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat3::abs_diff_eq(
                                 &_self,
-                                &mut rhs,
+                                rhs.into_inner(),
                                 max_abs_diff,
                             )
                             .into();
@@ -50914,12 +50932,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::DMat3>, mut rhs: R<::glam::DMat3>| {
+            |_self: V<::glam::DMat3>, rhs: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Add<
                             &::glam::DMat3,
-                        >>::add(&mut _self, &rhs)
+                        >>::add(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -50931,12 +50949,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::DMat3>, mut rhs: V<::glam::DMat3>| {
+            |_self: V<::glam::DMat3>, rhs: V<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Add<
                             ::glam::DMat3,
-                        >>::add(&mut _self, &mut rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -50948,7 +50966,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "add_mat3",
-            |mut _self: R<::glam::DMat3>, mut rhs: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>, rhs: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::add_mat3(
@@ -50966,7 +50984,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_mat3",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = ::glam::DMat3::as_mat3(&_self)
@@ -50981,7 +50999,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::clone::Clone>::clone(
@@ -50998,7 +51016,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "col",
-            |mut _self: R<::glam::DMat3>, index: usize| {
+            |_self: R<::glam::DMat3>, index: usize| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DMat3::col(&_self, index)
@@ -51013,7 +51031,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "determinant",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: f64 = {
                     {
                         let output: f64 = ::glam::DMat3::determinant(&_self).into();
@@ -51027,12 +51045,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |mut _self: V<::glam::DMat3>, rhs: f64| {
+            |_self: V<::glam::DMat3>, rhs: f64| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Div<
                             f64,
-                        >>::div(&mut _self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -51044,7 +51062,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "div_scalar",
-            |mut _self: R<::glam::DMat3>, rhs: f64| {
+            |_self: R<::glam::DMat3>, rhs: f64| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::div_scalar(
@@ -51062,7 +51080,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::glam::DMat3>, mut rhs: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>, rhs: R<::glam::DMat3>| {
                 let output: bool = {
                     {
                         let output: bool = <::glam::DMat3 as ::core::cmp::PartialEq<
@@ -51156,7 +51174,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::from_euler(
-                                &order,
+                                order.into_inner(),
                                 a,
                                 b,
                                 c,
@@ -51172,10 +51190,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat2",
-            |mut m: V<::glam::DMat2>| {
+            |m: V<::glam::DMat2>| {
                 let output: V<::glam::DMat3> = {
                     {
-                        let output: V<::glam::DMat3> = ::glam::DMat3::from_mat2(&mut m)
+                        let output: V<::glam::DMat3> = ::glam::DMat3::from_mat2(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -51187,10 +51207,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4",
-            |mut m: V<::glam::DMat4>| {
+            |m: V<::glam::DMat4>| {
                 let output: V<::glam::DMat3> = {
                     {
-                        let output: V<::glam::DMat3> = ::glam::DMat3::from_mat4(&mut m)
+                        let output: V<::glam::DMat3> = ::glam::DMat3::from_mat4(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -51202,11 +51224,11 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4_minor",
-            |mut m: V<::glam::DMat4>, i: usize, j: usize| {
+            |m: V<::glam::DMat4>, i: usize, j: usize| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::from_mat4_minor(
-                                &mut m,
+                                m.into_inner(),
                                 i,
                                 j,
                             )
@@ -51342,7 +51364,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "inverse",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::inverse(&_self)
@@ -51357,7 +51379,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "is_finite",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat3::is_finite(&_self).into();
@@ -51371,7 +51393,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "is_nan",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat3::is_nan(&_self).into();
@@ -51459,12 +51481,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat3>, rhs: R<::glam::DAffine2>| {
+            |_self: V<::glam::DMat3>, rhs: R<::glam::DAffine2>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
                             &::glam::DAffine2,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -51476,12 +51498,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat3>, mut rhs: R<::glam::DMat3>| {
+            |_self: V<::glam::DMat3>, rhs: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
                             &::glam::DMat3,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -51493,12 +51515,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat3>, rhs: R<::glam::DVec3>| {
+            |_self: V<::glam::DMat3>, rhs: R<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = <::glam::DMat3 as ::core::ops::Mul<
                             &::glam::DVec3,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -51510,12 +51532,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat3>, rhs: V<::glam::DAffine2>| {
+            |_self: V<::glam::DMat3>, rhs: V<::glam::DAffine2>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
                             ::glam::DAffine2,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -51527,12 +51549,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat3>, mut rhs: V<::glam::DMat3>| {
+            |_self: V<::glam::DMat3>, rhs: V<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
                             ::glam::DMat3,
-                        >>::mul(&mut _self, &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -51544,12 +51566,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat3>, rhs: V<::glam::DVec3>| {
+            |_self: V<::glam::DMat3>, rhs: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = <::glam::DMat3 as ::core::ops::Mul<
                             ::glam::DVec3,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -51561,12 +51583,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat3>, rhs: f64| {
+            |_self: V<::glam::DMat3>, rhs: f64| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Mul<
                             f64,
-                        >>::mul(&mut _self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -51578,7 +51600,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul_mat3",
-            |mut _self: R<::glam::DMat3>, mut rhs: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>, rhs: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::mul_mat3(
@@ -51596,7 +51618,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul_scalar",
-            |mut _self: R<::glam::DMat3>, rhs: f64| {
+            |_self: R<::glam::DMat3>, rhs: f64| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::mul_scalar(
@@ -51614,7 +51636,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec3",
-            |mut _self: R<::glam::DMat3>, rhs: V<::glam::DVec3>| {
+            |_self: R<::glam::DMat3>, rhs: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DMat3::mul_vec3(
@@ -51632,11 +51654,11 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |mut _self: V<::glam::DMat3>| {
+            |_self: V<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Neg>::neg(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -51649,7 +51671,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "row",
-            |mut _self: R<::glam::DMat3>, index: usize| {
+            |_self: R<::glam::DMat3>, index: usize| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DMat3::row(&_self, index)
@@ -51664,12 +51686,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::DMat3>, mut rhs: R<::glam::DMat3>| {
+            |_self: V<::glam::DMat3>, rhs: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Sub<
                             &::glam::DMat3,
-                        >>::sub(&mut _self, &rhs)
+                        >>::sub(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -51681,12 +51703,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::DMat3>, mut rhs: V<::glam::DMat3>| {
+            |_self: V<::glam::DMat3>, rhs: V<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Sub<
                             ::glam::DMat3,
-                        >>::sub(&mut _self, &mut rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -51698,7 +51720,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "sub_mat3",
-            |mut _self: R<::glam::DMat3>, mut rhs: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>, rhs: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::sub_mat3(
@@ -51716,7 +51738,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: [f64; 9] = {
                     {
                         let output: [f64; 9] = ::glam::DMat3::to_cols_array(&_self)
@@ -51731,7 +51753,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array_2d",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: [[f64; 3]; 3] = {
                     {
                         let output: [[f64; 3]; 3] = ::glam::DMat3::to_cols_array_2d(
@@ -51748,12 +51770,12 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "to_euler",
-            |mut _self: R<::glam::DMat3>, order: V<::glam::EulerRot>| {
+            |_self: R<::glam::DMat3>, order: V<::glam::EulerRot>| {
                 let output: (f64, f64, f64) = {
                     {
                         let output: (f64, f64, f64) = ::glam::DMat3::to_euler(
                                 &_self,
-                                &order,
+                                order.into_inner(),
                             )
                             .into();
                         output
@@ -51766,7 +51788,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "transform_point2",
-            |mut _self: R<::glam::DMat3>, rhs: V<::glam::DVec2>| {
+            |_self: R<::glam::DMat3>, rhs: V<::glam::DVec2>| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = ::glam::DMat3::transform_point2(
@@ -51784,7 +51806,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "transform_vector2",
-            |mut _self: R<::glam::DMat3>, rhs: V<::glam::DVec2>| {
+            |_self: R<::glam::DMat3>, rhs: V<::glam::DVec2>| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = ::glam::DMat3::transform_vector2(
@@ -51802,7 +51824,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "transpose",
-            |mut _self: R<::glam::DMat3>| {
+            |_self: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = ::glam::DMat3::transpose(&_self)
@@ -51825,7 +51847,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "abs",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::abs(&_self).into();
@@ -51839,12 +51861,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "abs_diff_eq",
-            |mut _self: R<::glam::DMat4>, mut rhs: V<::glam::DMat4>, max_abs_diff: f64| {
+            |_self: R<::glam::DMat4>, rhs: V<::glam::DMat4>, max_abs_diff: f64| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat4::abs_diff_eq(
                                 &_self,
-                                &mut rhs,
+                                rhs.into_inner(),
                                 max_abs_diff,
                             )
                             .into();
@@ -51858,12 +51880,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::DMat4>, mut rhs: R<::glam::DMat4>| {
+            |_self: V<::glam::DMat4>, rhs: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Add<
                             &::glam::DMat4,
-                        >>::add(&mut _self, &rhs)
+                        >>::add(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -51875,12 +51897,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add",
-            |mut _self: V<::glam::DMat4>, mut rhs: V<::glam::DMat4>| {
+            |_self: V<::glam::DMat4>, rhs: V<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Add<
                             ::glam::DMat4,
-                        >>::add(&mut _self, &mut rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -51892,7 +51914,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "add_mat4",
-            |mut _self: R<::glam::DMat4>, mut rhs: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>, rhs: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::add_mat4(
@@ -51910,7 +51932,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_mat4",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = ::glam::DMat4::as_mat4(&_self)
@@ -51925,7 +51947,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::clone::Clone>::clone(
@@ -51942,7 +51964,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "col",
-            |mut _self: R<::glam::DMat4>, index: usize| {
+            |_self: R<::glam::DMat4>, index: usize| {
                 let output: V<::glam::DVec4> = {
                     {
                         let output: V<::glam::DVec4> = ::glam::DMat4::col(&_self, index)
@@ -51957,7 +51979,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "determinant",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: f64 = {
                     {
                         let output: f64 = ::glam::DMat4::determinant(&_self).into();
@@ -51971,12 +51993,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |mut _self: V<::glam::DMat4>, rhs: f64| {
+            |_self: V<::glam::DMat4>, rhs: f64| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Div<
                             f64,
-                        >>::div(&mut _self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -51988,7 +52010,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "div_scalar",
-            |mut _self: R<::glam::DMat4>, rhs: f64| {
+            |_self: R<::glam::DMat4>, rhs: f64| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::div_scalar(
@@ -52006,7 +52028,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::glam::DMat4>, mut rhs: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>, rhs: R<::glam::DMat4>| {
                 let output: bool = {
                     {
                         let output: bool = <::glam::DMat4 as ::core::cmp::PartialEq<
@@ -52087,7 +52109,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::from_euler(
-                                &order,
+                                order.into_inner(),
                                 a,
                                 b,
                                 c,
@@ -52103,10 +52125,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut m: V<::glam::DMat3>| {
+            |m: V<::glam::DMat3>| {
                 let output: V<::glam::DMat4> = {
                     {
-                        let output: V<::glam::DMat4> = ::glam::DMat4::from_mat3(&mut m)
+                        let output: V<::glam::DMat4> = ::glam::DMat4::from_mat3(
+                                m.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -52118,11 +52142,11 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3_translation",
-            |mut mat3: V<::glam::DMat3>, translation: V<::glam::DVec3>| {
+            |mat3: V<::glam::DMat3>, translation: V<::glam::DVec3>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::from_mat3_translation(
-                                &mut mat3,
+                                mat3.into_inner(),
                                 translation.into_inner(),
                             )
                             .into();
@@ -52345,7 +52369,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "inverse",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::inverse(&_self)
@@ -52360,7 +52384,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "is_finite",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat4::is_finite(&_self).into();
@@ -52374,7 +52398,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "is_nan",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: bool = {
                     {
                         let output: bool = ::glam::DMat4::is_nan(&_self).into();
@@ -52464,12 +52488,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat4>, rhs: R<::glam::DAffine3>| {
+            |_self: V<::glam::DMat4>, rhs: R<::glam::DAffine3>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
                             &::glam::DAffine3,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -52481,12 +52505,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat4>, mut rhs: R<::glam::DMat4>| {
+            |_self: V<::glam::DMat4>, rhs: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
                             &::glam::DMat4,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -52498,12 +52522,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat4>, rhs: R<::glam::DVec4>| {
+            |_self: V<::glam::DMat4>, rhs: R<::glam::DVec4>| {
                 let output: V<::glam::DVec4> = {
                     {
                         let output: V<::glam::DVec4> = <::glam::DMat4 as ::core::ops::Mul<
                             &::glam::DVec4,
-                        >>::mul(&mut _self, &rhs)
+                        >>::mul(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -52515,12 +52539,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat4>, rhs: V<::glam::DAffine3>| {
+            |_self: V<::glam::DMat4>, rhs: V<::glam::DAffine3>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
                             ::glam::DAffine3,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -52532,12 +52556,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat4>, mut rhs: V<::glam::DMat4>| {
+            |_self: V<::glam::DMat4>, rhs: V<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
                             ::glam::DMat4,
-                        >>::mul(&mut _self, &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -52549,12 +52573,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat4>, rhs: V<::glam::DVec4>| {
+            |_self: V<::glam::DMat4>, rhs: V<::glam::DVec4>| {
                 let output: V<::glam::DVec4> = {
                     {
                         let output: V<::glam::DVec4> = <::glam::DMat4 as ::core::ops::Mul<
                             ::glam::DVec4,
-                        >>::mul(&mut _self, rhs.into_inner())
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -52566,12 +52590,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |mut _self: V<::glam::DMat4>, rhs: f64| {
+            |_self: V<::glam::DMat4>, rhs: f64| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Mul<
                             f64,
-                        >>::mul(&mut _self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -52583,7 +52607,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul_mat4",
-            |mut _self: R<::glam::DMat4>, mut rhs: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>, rhs: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::mul_mat4(
@@ -52601,7 +52625,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul_scalar",
-            |mut _self: R<::glam::DMat4>, rhs: f64| {
+            |_self: R<::glam::DMat4>, rhs: f64| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::mul_scalar(
@@ -52619,7 +52643,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul_vec4",
-            |mut _self: R<::glam::DMat4>, rhs: V<::glam::DVec4>| {
+            |_self: R<::glam::DMat4>, rhs: V<::glam::DVec4>| {
                 let output: V<::glam::DVec4> = {
                     {
                         let output: V<::glam::DVec4> = ::glam::DMat4::mul_vec4(
@@ -52637,11 +52661,11 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |mut _self: V<::glam::DMat4>| {
+            |_self: V<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Neg>::neg(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -52856,7 +52880,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "project_point3",
-            |mut _self: R<::glam::DMat4>, rhs: V<::glam::DVec3>| {
+            |_self: R<::glam::DMat4>, rhs: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DMat4::project_point3(
@@ -52874,7 +52898,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "row",
-            |mut _self: R<::glam::DMat4>, index: usize| {
+            |_self: R<::glam::DMat4>, index: usize| {
                 let output: V<::glam::DVec4> = {
                     {
                         let output: V<::glam::DVec4> = ::glam::DMat4::row(&_self, index)
@@ -52889,12 +52913,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::DMat4>, mut rhs: R<::glam::DMat4>| {
+            |_self: V<::glam::DMat4>, rhs: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Sub<
                             &::glam::DMat4,
-                        >>::sub(&mut _self, &rhs)
+                        >>::sub(_self.into_inner(), &rhs)
                             .into();
                         output
                     }
@@ -52906,12 +52930,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |mut _self: V<::glam::DMat4>, mut rhs: V<::glam::DMat4>| {
+            |_self: V<::glam::DMat4>, rhs: V<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Sub<
                             ::glam::DMat4,
-                        >>::sub(&mut _self, &mut rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -52923,7 +52947,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "sub_mat4",
-            |mut _self: R<::glam::DMat4>, mut rhs: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>, rhs: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::sub_mat4(
@@ -52941,7 +52965,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: [f64; 16] = {
                     {
                         let output: [f64; 16] = ::glam::DMat4::to_cols_array(&_self)
@@ -52956,7 +52980,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "to_cols_array_2d",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: [[f64; 4]; 4] = {
                     {
                         let output: [[f64; 4]; 4] = ::glam::DMat4::to_cols_array_2d(
@@ -52973,12 +52997,12 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "to_euler",
-            |mut _self: R<::glam::DMat4>, order: V<::glam::EulerRot>| {
+            |_self: R<::glam::DMat4>, order: V<::glam::EulerRot>| {
                 let output: (f64, f64, f64) = {
                     {
                         let output: (f64, f64, f64) = ::glam::DMat4::to_euler(
                                 &_self,
-                                &order,
+                                order.into_inner(),
                             )
                             .into();
                         output
@@ -52991,7 +53015,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transform_point3",
-            |mut _self: R<::glam::DMat4>, rhs: V<::glam::DVec3>| {
+            |_self: R<::glam::DMat4>, rhs: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DMat4::transform_point3(
@@ -53009,7 +53033,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transform_vector3",
-            |mut _self: R<::glam::DMat4>, rhs: V<::glam::DVec3>| {
+            |_self: R<::glam::DMat4>, rhs: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DMat4::transform_vector3(
@@ -53027,7 +53051,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "transpose",
-            |mut _self: R<::glam::DMat4>| {
+            |_self: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = ::glam::DMat4::transpose(&_self)
@@ -53174,11 +53198,11 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat2",
-            |mut matrix2: V<::glam::Mat2>| {
+            |matrix2: V<::glam::Mat2>| {
                 let output: V<::glam::Affine2> = {
                     {
                         let output: V<::glam::Affine2> = ::glam::Affine2::from_mat2(
-                                &mut matrix2,
+                                matrix2.into_inner(),
                             )
                             .into();
                         output
@@ -53191,11 +53215,11 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat2_translation",
-            |mut matrix2: V<::glam::Mat2>, translation: V<::glam::Vec2>| {
+            |matrix2: V<::glam::Mat2>, translation: V<::glam::Vec2>| {
                 let output: V<::glam::Affine2> = {
                     {
                         let output: V<::glam::Affine2> = ::glam::Affine2::from_mat2_translation(
-                                &mut matrix2,
+                                matrix2.into_inner(),
                                 translation.into_inner(),
                             )
                             .into();
@@ -53209,11 +53233,11 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut m: V<::glam::Mat3>| {
+            |m: V<::glam::Mat3>| {
                 let output: V<::glam::Affine2> = {
                     {
                         let output: V<::glam::Affine2> = ::glam::Affine2::from_mat3(
-                                &mut m,
+                                m.into_inner(),
                             )
                             .into();
                         output
@@ -53226,11 +53250,11 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3a",
-            |mut m: V<::glam::Mat3A>| {
+            |m: V<::glam::Mat3A>| {
                 let output: V<::glam::Affine2> = {
                     {
                         let output: V<::glam::Affine2> = ::glam::Affine2::from_mat3a(
-                                &mut m,
+                                m.into_inner(),
                             )
                             .into();
                         output
@@ -53356,7 +53380,7 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Affine2>, mut rhs: R<::glam::Mat3>| {
+            |_self: V<::glam::Affine2>, rhs: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Affine2 as ::core::ops::Mul<
@@ -53373,7 +53397,7 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Affine2>, mut rhs: R<::glam::Mat3A>| {
+            |_self: V<::glam::Affine2>, rhs: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Affine2 as ::core::ops::Mul<
@@ -53407,12 +53431,12 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Affine2>, mut rhs: V<::glam::Mat3>| {
+            |_self: V<::glam::Affine2>, rhs: V<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
                         let output: V<::glam::Mat3> = <::glam::Affine2 as ::core::ops::Mul<
                             ::glam::Mat3,
-                        >>::mul(_self.into_inner(), &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -53424,12 +53448,12 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Affine2>, mut rhs: V<::glam::Mat3A>| {
+            |_self: V<::glam::Affine2>, rhs: V<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
                         let output: V<::glam::Mat3A> = <::glam::Affine2 as ::core::ops::Mul<
                             ::glam::Mat3A,
-                        >>::mul(_self.into_inner(), &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -53630,11 +53654,11 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut mat3: V<::glam::Mat3>| {
+            |mat3: V<::glam::Mat3>| {
                 let output: V<::glam::Affine3A> = {
                     {
                         let output: V<::glam::Affine3A> = ::glam::Affine3A::from_mat3(
-                                &mut mat3,
+                                mat3.into_inner(),
                             )
                             .into();
                         output
@@ -53647,11 +53671,11 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3_translation",
-            |mut mat3: V<::glam::Mat3>, translation: V<::glam::Vec3>| {
+            |mat3: V<::glam::Mat3>, translation: V<::glam::Vec3>| {
                 let output: V<::glam::Affine3A> = {
                     {
                         let output: V<::glam::Affine3A> = ::glam::Affine3A::from_mat3_translation(
-                                &mut mat3,
+                                mat3.into_inner(),
                                 translation.into_inner(),
                             )
                             .into();
@@ -53665,11 +53689,11 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4",
-            |mut m: V<::glam::Mat4>| {
+            |m: V<::glam::Mat4>| {
                 let output: V<::glam::Affine3A> = {
                     {
                         let output: V<::glam::Affine3A> = ::glam::Affine3A::from_mat4(
-                                &mut m,
+                                m.into_inner(),
                             )
                             .into();
                         output
@@ -53963,7 +53987,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Affine3A>, mut rhs: R<::glam::Mat4>| {
+            |_self: V<::glam::Affine3A>, rhs: R<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Affine3A as ::core::ops::Mul<
@@ -53997,12 +54021,12 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Affine3A>, mut rhs: V<::glam::Mat4>| {
+            |_self: V<::glam::Affine3A>, rhs: V<::glam::Mat4>| {
                 let output: V<::glam::Mat4> = {
                     {
                         let output: V<::glam::Mat4> = <::glam::Affine3A as ::core::ops::Mul<
                             ::glam::Mat4,
-                        >>::mul(_self.into_inner(), &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -54254,11 +54278,11 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat2",
-            |mut matrix2: V<::glam::DMat2>| {
+            |matrix2: V<::glam::DMat2>| {
                 let output: V<::glam::DAffine2> = {
                     {
                         let output: V<::glam::DAffine2> = ::glam::DAffine2::from_mat2(
-                                &mut matrix2,
+                                matrix2.into_inner(),
                             )
                             .into();
                         output
@@ -54271,11 +54295,11 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat2_translation",
-            |mut matrix2: V<::glam::DMat2>, translation: V<::glam::DVec2>| {
+            |matrix2: V<::glam::DMat2>, translation: V<::glam::DVec2>| {
                 let output: V<::glam::DAffine2> = {
                     {
                         let output: V<::glam::DAffine2> = ::glam::DAffine2::from_mat2_translation(
-                                &mut matrix2,
+                                matrix2.into_inner(),
                                 translation.into_inner(),
                             )
                             .into();
@@ -54289,11 +54313,11 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut m: V<::glam::DMat3>| {
+            |m: V<::glam::DMat3>| {
                 let output: V<::glam::DAffine2> = {
                     {
                         let output: V<::glam::DAffine2> = ::glam::DAffine2::from_mat3(
-                                &mut m,
+                                m.into_inner(),
                             )
                             .into();
                         output
@@ -54421,7 +54445,7 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DAffine2>, mut rhs: R<::glam::DMat3>| {
+            |_self: V<::glam::DAffine2>, rhs: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DAffine2 as ::core::ops::Mul<
@@ -54455,12 +54479,12 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DAffine2>, mut rhs: V<::glam::DMat3>| {
+            |_self: V<::glam::DAffine2>, rhs: V<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
                         let output: V<::glam::DMat3> = <::glam::DAffine2 as ::core::ops::Mul<
                             ::glam::DMat3,
-                        >>::mul(_self.into_inner(), &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -54661,11 +54685,11 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut mat3: V<::glam::DMat3>| {
+            |mat3: V<::glam::DMat3>| {
                 let output: V<::glam::DAffine3> = {
                     {
                         let output: V<::glam::DAffine3> = ::glam::DAffine3::from_mat3(
-                                &mut mat3,
+                                mat3.into_inner(),
                             )
                             .into();
                         output
@@ -54678,11 +54702,11 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3_translation",
-            |mut mat3: V<::glam::DMat3>, translation: V<::glam::DVec3>| {
+            |mat3: V<::glam::DMat3>, translation: V<::glam::DVec3>| {
                 let output: V<::glam::DAffine3> = {
                     {
                         let output: V<::glam::DAffine3> = ::glam::DAffine3::from_mat3_translation(
-                                &mut mat3,
+                                mat3.into_inner(),
                                 translation.into_inner(),
                             )
                             .into();
@@ -54696,11 +54720,11 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4",
-            |mut m: V<::glam::DMat4>| {
+            |m: V<::glam::DMat4>| {
                 let output: V<::glam::DAffine3> = {
                     {
                         let output: V<::glam::DAffine3> = ::glam::DAffine3::from_mat4(
-                                &mut m,
+                                m.into_inner(),
                             )
                             .into();
                         output
@@ -54994,7 +55018,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DAffine3>, mut rhs: R<::glam::DMat4>| {
+            |_self: V<::glam::DAffine3>, rhs: R<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DAffine3 as ::core::ops::Mul<
@@ -55028,12 +55052,12 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DAffine3>, mut rhs: V<::glam::DMat4>| {
+            |_self: V<::glam::DAffine3>, rhs: V<::glam::DMat4>| {
                 let output: V<::glam::DMat4> = {
                     {
                         let output: V<::glam::DMat4> = <::glam::DAffine3 as ::core::ops::Mul<
                             ::glam::DMat4,
-                        >>::mul(_self.into_inner(), &mut rhs)
+                        >>::mul(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -55347,7 +55371,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 let output: V<::glam::DQuat> = {
                     {
                         let output: V<::glam::DQuat> = ::glam::DQuat::from_euler(
-                                &euler,
+                                euler.into_inner(),
                                 a,
                                 b,
                                 c,
@@ -55363,7 +55387,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat3",
-            |mut mat: R<::glam::DMat3>| {
+            |mat: R<::glam::DMat3>| {
                 let output: V<::glam::DQuat> = {
                     {
                         let output: V<::glam::DQuat> = ::glam::DQuat::from_mat3(&mat)
@@ -55378,7 +55402,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "from_mat4",
-            |mut mat: R<::glam::DMat4>| {
+            |mat: R<::glam::DMat4>| {
                 let output: V<::glam::DQuat> = {
                     {
                         let output: V<::glam::DQuat> = ::glam::DQuat::from_mat4(&mat)
@@ -56019,7 +56043,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                     {
                         let output: (f64, f64, f64) = ::glam::DQuat::to_euler(
                                 _self.into_inner(),
-                                &order,
+                                order.into_inner(),
                             )
                             .into();
                         output

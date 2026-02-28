@@ -107,7 +107,7 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
                     {
                         let output: usize = ::bevy_image::TextureAtlasLayout::add_texture(
                                 &mut _self,
-                                &rect,
+                                rect.into_inner(),
                             )
                             .into();
                         output

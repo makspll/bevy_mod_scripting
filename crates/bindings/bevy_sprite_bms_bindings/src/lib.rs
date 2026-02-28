@@ -46,7 +46,7 @@ pub(crate) fn register_sprite_picking_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_sprite::SpritePickingMode>| {
+        |_self: R<::bevy_sprite::SpritePickingMode>| {
             let output: V<::bevy_sprite::SpritePickingMode> = {
                 {
                     let output: V<::bevy_sprite::SpritePickingMode> =
@@ -157,7 +157,7 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_sprite::SpriteImageMode>| {
+            |_self: R<::bevy_sprite::SpriteImageMode>| {
                 let output: V<::bevy_sprite::SpriteImageMode> = {
                     {
                         let output: V<::bevy_sprite::SpriteImageMode> = <::bevy_sprite::SpriteImageMode as ::std::clone::Clone>::clone(
@@ -175,8 +175,8 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_sprite::SpriteImageMode>,
-                mut other: R<::bevy_sprite::SpriteImageMode>|
+                _self: R<::bevy_sprite::SpriteImageMode>,
+                other: R<::bevy_sprite::SpriteImageMode>|
             {
                 let output: bool = {
                     {
@@ -194,7 +194,7 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
         )
         .register_documented(
             "uses_slices",
-            |mut _self: R<::bevy_sprite::SpriteImageMode>| {
+            |_self: R<::bevy_sprite::SpriteImageMode>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_sprite::SpriteImageMode::uses_slices(
@@ -228,7 +228,7 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Add<
                             ::bevy_sprite::BorderRect,
-                        >>::add(&_self, &rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -297,7 +297,7 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Div<
                             f32,
-                        >>::div(&_self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -331,7 +331,7 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Mul<
                             f32,
-                        >>::mul(&_self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -348,7 +348,7 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
                     {
                         let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Sub<
                             ::bevy_sprite::BorderRect,
-                        >>::sub(&_self, &rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -372,7 +372,7 @@ pub(crate) fn register_slice_scale_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_sprite::SliceScaleMode>| {
+        |_self: R<::bevy_sprite::SliceScaleMode>| {
             let output: V<::bevy_sprite::SliceScaleMode> = {
                 {
                     let output: V<::bevy_sprite::SliceScaleMode> =
@@ -388,8 +388,7 @@ pub(crate) fn register_slice_scale_mode_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_sprite::SliceScaleMode>,
-         mut other: R<::bevy_sprite::SliceScaleMode>| {
+        |_self: R<::bevy_sprite::SliceScaleMode>, other: R<::bevy_sprite::SliceScaleMode>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_sprite::SliceScaleMode as ::std::cmp::PartialEq<
@@ -462,7 +461,7 @@ pub(crate) fn register_sprite_scaling_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_sprite::SpriteScalingMode>| {
+        |_self: R<::bevy_sprite::SpriteScalingMode>| {
             let output: V<::bevy_sprite::SpriteScalingMode> = {
                 {
                     let output: V<::bevy_sprite::SpriteScalingMode> =
@@ -478,8 +477,7 @@ pub(crate) fn register_sprite_scaling_mode_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_sprite::SpriteScalingMode>,
-         mut other: R<::bevy_sprite::SpriteScalingMode>| {
+        |_self: R<::bevy_sprite::SpriteScalingMode>, other: R<::bevy_sprite::SpriteScalingMode>| {
             let output: bool = {
                 {
                     let output: bool =

@@ -253,7 +253,7 @@ pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_pbr::ParallaxMappingMethod>| {
+            |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::ParallaxMappingMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -270,7 +270,7 @@ pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_pbr::ParallaxMappingMethod>| {
+            |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
                 let output: V<::bevy_pbr::ParallaxMappingMethod> = {
                     {
                         let output: V<::bevy_pbr::ParallaxMappingMethod> = <::bevy_pbr::ParallaxMappingMethod as ::std::clone::Clone>::clone(
@@ -288,8 +288,8 @@ pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_pbr::ParallaxMappingMethod>,
-                mut other: R<::bevy_pbr::ParallaxMappingMethod>|
+                _self: R<::bevy_pbr::ParallaxMappingMethod>,
+                other: R<::bevy_pbr::ParallaxMappingMethod>|
             {
                 let output: bool = {
                     {
@@ -319,7 +319,7 @@ pub(crate) fn register_standard_material_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_pbr::StandardMaterial>| {
+        |_self: R<::bevy_pbr::StandardMaterial>| {
             let output: V<::bevy_pbr::StandardMaterial> = {
                 {
                     let output: V<::bevy_pbr::StandardMaterial> =
@@ -349,12 +349,16 @@ pub(crate) fn register_standard_material_functions(world: &mut World) {
     )
     .register_documented(
         "flipped",
-        |mut _self: V<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
+        |_self: V<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
             let output: V<::bevy_pbr::StandardMaterial> = {
                 {
                     let output: V<::bevy_pbr::StandardMaterial> =
-                        ::bevy_pbr::StandardMaterial::flipped(&mut _self, horizontal, vertical)
-                            .into();
+                        ::bevy_pbr::StandardMaterial::flipped(
+                            _self.into_inner(),
+                            horizontal,
+                            vertical,
+                        )
+                        .into();
                     output
                 }
             };
@@ -454,7 +458,7 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_pbr::DefaultOpaqueRendererMethod>| {
+        |_self: R<::bevy_pbr::DefaultOpaqueRendererMethod>| {
             let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
                 {
                     let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> =
@@ -506,7 +510,7 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
             let output: () = {
                 {
                     let output: () =
-                        ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_deferred(&_self).into();
+                        ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_deferred(&mut _self).into();
                     output
                 }
             };
@@ -521,7 +525,7 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
             let output: () = {
                 {
                     let output: () =
-                        ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_forward(&_self).into();
+                        ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_forward(&mut _self).into();
                     output
                 }
             };
@@ -544,7 +548,7 @@ pub(crate) fn register_wireframe_material_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_pbr::wireframe::WireframeMaterial>| {
+        |_self: R<::bevy_pbr::wireframe::WireframeMaterial>| {
             let output: V<::bevy_pbr::wireframe::WireframeMaterial> = {
                 {
                     let output: V<::bevy_pbr::wireframe::WireframeMaterial> =
@@ -766,7 +770,7 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
+            |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -783,7 +787,7 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
+            |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
                 let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> = {
                     {
                         let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::clone::Clone>::clone(
@@ -801,8 +805,8 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_pbr::wireframe::Mesh3dWireframe>,
-                mut other: R<::bevy_pbr::wireframe::Mesh3dWireframe>|
+                _self: R<::bevy_pbr::wireframe::Mesh3dWireframe>,
+                other: R<::bevy_pbr::wireframe::Mesh3dWireframe>|
             {
                 let output: bool = {
                     {
@@ -888,7 +892,7 @@ pub(crate) fn register_atmosphere_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_pbr::AtmosphereMode>| {
+            |_self: R<::bevy_pbr::AtmosphereMode>| {
                 let output: V<::bevy_pbr::AtmosphereMode> = {
                     {
                         let output: V<::bevy_pbr::AtmosphereMode> = <::bevy_pbr::AtmosphereMode as ::std::clone::Clone>::clone(
@@ -917,7 +921,7 @@ pub(crate) fn register_render_visible_mesh_entities_functions(world: &mut World)
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_pbr::RenderVisibleMeshEntities>| {
+        |_self: R<::bevy_pbr::RenderVisibleMeshEntities>| {
             let output: V<::bevy_pbr::RenderVisibleMeshEntities> = {
                 {
                     let output: V<::bevy_pbr::RenderVisibleMeshEntities> =
@@ -1019,7 +1023,7 @@ pub(crate) fn register_opaque_renderer_method_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_pbr::OpaqueRendererMethod>| {
+        |_self: R<::bevy_pbr::OpaqueRendererMethod>| {
             let output: V<::bevy_pbr::OpaqueRendererMethod> = {
                 {
                     let output: V<::bevy_pbr::OpaqueRendererMethod> =
@@ -1035,8 +1039,7 @@ pub(crate) fn register_opaque_renderer_method_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_pbr::OpaqueRendererMethod>,
-         mut other: R<::bevy_pbr::OpaqueRendererMethod>| {
+        |_self: R<::bevy_pbr::OpaqueRendererMethod>, other: R<::bevy_pbr::OpaqueRendererMethod>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1092,7 +1095,7 @@ pub(crate) fn register_material_binding_id_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_pbr::MaterialBindingId>| {
+        |_self: R<::bevy_pbr::MaterialBindingId>| {
             let output: V<::bevy_pbr::MaterialBindingId> = {
                 {
                     let output: V<::bevy_pbr::MaterialBindingId> =
@@ -1120,7 +1123,7 @@ pub(crate) fn register_material_bind_group_slot_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_pbr::MaterialBindGroupSlot>| {
+        |_self: R<::bevy_pbr::MaterialBindGroupSlot>| {
             let output: V<::bevy_pbr::MaterialBindGroupSlot> = {
                 {
                     let output: V<::bevy_pbr::MaterialBindGroupSlot> =
@@ -1136,8 +1139,8 @@ pub(crate) fn register_material_bind_group_slot_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_pbr::MaterialBindGroupSlot>,
-         mut other: R<::bevy_pbr::MaterialBindGroupSlot>| {
+        |_self: R<::bevy_pbr::MaterialBindGroupSlot>,
+         other: R<::bevy_pbr::MaterialBindGroupSlot>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1167,7 +1170,7 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_pbr::MaterialBindGroupIndex>| {
+            |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::MaterialBindGroupIndex as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1184,7 +1187,7 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_pbr::MaterialBindGroupIndex>| {
+            |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
                 let output: V<::bevy_pbr::MaterialBindGroupIndex> = {
                     {
                         let output: V<::bevy_pbr::MaterialBindGroupIndex> = <::bevy_pbr::MaterialBindGroupIndex as ::std::clone::Clone>::clone(
@@ -1202,8 +1205,8 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_pbr::MaterialBindGroupIndex>,
-                mut other: R<::bevy_pbr::MaterialBindGroupIndex>|
+                _self: R<::bevy_pbr::MaterialBindGroupIndex>,
+                other: R<::bevy_pbr::MaterialBindGroupIndex>|
             {
                 let output: bool = {
                     {

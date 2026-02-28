@@ -513,7 +513,7 @@ pub(crate) fn register_msaa_writeback_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_camera::MsaaWriteback>| {
+            |_self: R<::bevy_camera::MsaaWriteback>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_camera::MsaaWriteback as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -530,7 +530,7 @@ pub(crate) fn register_msaa_writeback_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_camera::MsaaWriteback>| {
+            |_self: R<::bevy_camera::MsaaWriteback>| {
                 let output: V<::bevy_camera::MsaaWriteback> = {
                     {
                         let output: V<::bevy_camera::MsaaWriteback> = <::bevy_camera::MsaaWriteback as ::std::clone::Clone>::clone(
@@ -548,8 +548,8 @@ pub(crate) fn register_msaa_writeback_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_camera::MsaaWriteback>,
-                mut other: R<::bevy_camera::MsaaWriteback>|
+                _self: R<::bevy_camera::MsaaWriteback>,
+                other: R<::bevy_camera::MsaaWriteback>|
             {
                 let output: bool = {
                     {
@@ -775,7 +775,7 @@ pub(crate) fn register_frustum_functions(world: &mut World) {
         )
         .register_documented(
             "from_clip_from_world",
-            |mut clip_from_world: R<::bevy_math::Mat4>| {
+            |clip_from_world: R<::bevy_math::Mat4>| {
                 let output: V<::bevy_camera::primitives::Frustum> = {
                     {
                         let output: V<::bevy_camera::primitives::Frustum> = ::bevy_camera::primitives::Frustum::from_clip_from_world(
@@ -793,7 +793,7 @@ pub(crate) fn register_frustum_functions(world: &mut World) {
         .register_documented(
             "from_clip_from_world_custom_far",
             |
-                mut clip_from_world: R<::bevy_math::Mat4>,
+                clip_from_world: R<::bevy_math::Mat4>,
                 view_translation: R<::bevy_math::Vec3>,
                 view_backward: R<::bevy_math::Vec3>,
                 far: f32|
@@ -1145,7 +1145,7 @@ pub(crate) fn register_camera_main_texture_usages_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_camera::CameraMainTextureUsages>| {
+        |_self: R<::bevy_camera::CameraMainTextureUsages>| {
             let output: V<::bevy_camera::CameraMainTextureUsages> = {
                 {
                     let output: V<::bevy_camera::CameraMainTextureUsages> =
@@ -1204,7 +1204,7 @@ pub(crate) fn register_camera_output_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_camera::CameraOutputMode>| {
+        |_self: R<::bevy_camera::CameraOutputMode>| {
             let output: V<::bevy_camera::CameraOutputMode> = {
                 {
                     let output: V<::bevy_camera::CameraOutputMode> =
@@ -1278,7 +1278,7 @@ pub(crate) fn register_manual_texture_view_handle_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_camera::ManualTextureViewHandle>| {
+            |_self: R<::bevy_camera::ManualTextureViewHandle>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_camera::ManualTextureViewHandle as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1295,7 +1295,7 @@ pub(crate) fn register_manual_texture_view_handle_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_camera::ManualTextureViewHandle>| {
+            |_self: R<::bevy_camera::ManualTextureViewHandle>| {
                 let output: V<::bevy_camera::ManualTextureViewHandle> = {
                     {
                         let output: V<::bevy_camera::ManualTextureViewHandle> = <::bevy_camera::ManualTextureViewHandle as ::std::clone::Clone>::clone(
@@ -1313,8 +1313,8 @@ pub(crate) fn register_manual_texture_view_handle_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_camera::ManualTextureViewHandle>,
-                mut other: R<::bevy_camera::ManualTextureViewHandle>|
+                _self: R<::bevy_camera::ManualTextureViewHandle>,
+                other: R<::bevy_camera::ManualTextureViewHandle>|
             {
                 let output: bool = {
                     {
@@ -1601,7 +1601,7 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
         "relative_radius",
         |_self: R<::bevy_camera::primitives::Aabb>,
          p_normal: R<::bevy_math::Vec3A>,
-         mut world_from_local: R<::bevy_math::Mat3A>| {
+         world_from_local: R<::bevy_math::Mat3A>| {
             let output: f32 = {
                 {
                     let output: f32 = ::bevy_camera::primitives::Aabb::relative_radius(
@@ -1750,7 +1750,7 @@ pub(crate) fn register_scaling_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_camera::ScalingMode>| {
+            |_self: R<::bevy_camera::ScalingMode>| {
                 let output: V<::bevy_camera::ScalingMode> = {
                     {
                         let output: V<::bevy_camera::ScalingMode> = <::bevy_camera::ScalingMode as ::std::clone::Clone>::clone(
@@ -1821,7 +1821,7 @@ pub(crate) fn register_visible_mesh_entities_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_camera::visibility::VisibleMeshEntities>| {
+            |_self: R<::bevy_camera::visibility::VisibleMeshEntities>| {
                 let output: V<::bevy_camera::visibility::VisibleMeshEntities> = {
                     {
                         let output: V<::bevy_camera::visibility::VisibleMeshEntities> = <::bevy_camera::visibility::VisibleMeshEntities as ::std::clone::Clone>::clone(
@@ -2116,7 +2116,7 @@ pub(crate) fn register_render_layers_functions(world: &mut World) {
                 let output: V<::bevy_camera::visibility::RenderLayers> = {
                     {
                         let output: V<::bevy_camera::visibility::RenderLayers> = ::bevy_camera::visibility::RenderLayers::with(
-                                &_self,
+                                _self.into_inner(),
                                 layer,
                             )
                             .into();
@@ -2134,7 +2134,7 @@ pub(crate) fn register_render_layers_functions(world: &mut World) {
                 let output: V<::bevy_camera::visibility::RenderLayers> = {
                     {
                         let output: V<::bevy_camera::visibility::RenderLayers> = ::bevy_camera::visibility::RenderLayers::without(
-                                &_self,
+                                _self.into_inner(),
                                 layer,
                             )
                             .into();

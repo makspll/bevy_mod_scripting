@@ -326,7 +326,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
                         let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::complement(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -347,7 +347,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::contains(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -367,8 +367,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
                         let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::difference(
-                                &_self,
-                                &other,
+                                _self.into_inner(),
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -457,8 +457,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::insert(
-                                &_self,
-                                &other,
+                                &mut _self,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -478,8 +478,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
                         let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::intersection(
-                                &_self,
-                                &other,
+                                _self.into_inner(),
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -500,7 +500,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                     {
                         let output: bool = ::bevy_asset::RenderAssetUsages::intersects(
                                 &_self,
-                                &other,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -554,8 +554,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::remove(
-                                &_self,
-                                &other,
+                                &mut _self,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -576,8 +576,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::set(
-                                &_self,
-                                &other,
+                                &mut _self,
+                                other.into_inner(),
                                 value,
                             )
                             .into();
@@ -599,7 +599,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                     {
                         let output: V<::bevy_asset::RenderAssetUsages> = <::bevy_asset::RenderAssetUsages as ::core::ops::Sub<
                             ::bevy_asset::RenderAssetUsages,
-                        >>::sub(&_self, &other)
+                        >>::sub(_self.into_inner(), other.into_inner())
                             .into();
                         output
                     }
@@ -618,8 +618,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
                         let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::symmetric_difference(
-                                &_self,
-                                &other,
+                                _self.into_inner(),
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -639,8 +639,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: () = {
                     {
                         let output: () = ::bevy_asset::RenderAssetUsages::toggle(
-                                &_self,
-                                &other,
+                                &mut _self,
+                                other.into_inner(),
                             )
                             .into();
                         output
@@ -660,8 +660,8 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 let output: V<::bevy_asset::RenderAssetUsages> = {
                     {
                         let output: V<::bevy_asset::RenderAssetUsages> = ::bevy_asset::RenderAssetUsages::union(
-                                &_self,
-                                &other,
+                                _self.into_inner(),
+                                other.into_inner(),
                             )
                             .into();
                         output

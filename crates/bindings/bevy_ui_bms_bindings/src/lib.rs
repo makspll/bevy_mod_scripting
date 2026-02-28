@@ -358,13 +358,13 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
             "with_mode",
             |
                 _self: V<::bevy_ui::widget::ImageNode>,
-                mut mode: V<::bevy_ui::widget::NodeImageMode>|
+                mode: V<::bevy_ui::widget::NodeImageMode>|
             {
                 let output: V<::bevy_ui::widget::ImageNode> = {
                     {
                         let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_mode(
                                 _self.into_inner(),
-                                &mut mode,
+                                mode.into_inner(),
                             )
                             .into();
                         output
@@ -382,7 +382,7 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
                     {
                         let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_rect(
                                 _self.into_inner(),
-                                &rect,
+                                rect.into_inner(),
                             )
                             .into();
                         output
@@ -436,7 +436,7 @@ pub(crate) fn register_node_image_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_ui::widget::NodeImageMode>| {
+            |_self: R<::bevy_ui::widget::NodeImageMode>| {
                 let output: V<::bevy_ui::widget::NodeImageMode> = {
                     {
                         let output: V<::bevy_ui::widget::NodeImageMode> = <::bevy_ui::widget::NodeImageMode as ::std::clone::Clone>::clone(
@@ -454,8 +454,8 @@ pub(crate) fn register_node_image_mode_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_ui::widget::NodeImageMode>,
-                mut other: R<::bevy_ui::widget::NodeImageMode>|
+                _self: R<::bevy_ui::widget::NodeImageMode>,
+                other: R<::bevy_ui::widget::NodeImageMode>|
             {
                 let output: bool = {
                     {
@@ -473,7 +473,7 @@ pub(crate) fn register_node_image_mode_functions(world: &mut World) {
         )
         .register_documented(
             "uses_slices",
-            |mut _self: R<::bevy_ui::widget::NodeImageMode>| {
+            |_self: R<::bevy_ui::widget::NodeImageMode>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_ui::widget::NodeImageMode::uses_slices(
@@ -1065,14 +1065,14 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
             |
                 _self: R<::bevy_ui::ComputedNode>,
                 overflow: V<::bevy_ui::Overflow>,
-                mut overflow_clip_margin: V<::bevy_ui::OverflowClipMargin>|
+                overflow_clip_margin: V<::bevy_ui::OverflowClipMargin>|
             {
                 let output: V<::bevy_math::Rect> = {
                     {
                         let output: V<::bevy_math::Rect> = ::bevy_ui::ComputedNode::resolve_clip_rect(
                                 &_self,
                                 overflow.into_inner(),
-                                &mut overflow_clip_margin,
+                                overflow_clip_margin.into_inner(),
                             )
                             .into();
                         output
@@ -1204,7 +1204,7 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
                 let output: V<::bevy_ui::UiGlobalTransform> = {
                     {
                         let output: V<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_rotation(
-                                &rotation,
+                                rotation.into_inner(),
                             )
                             .into();
                         output
@@ -2741,7 +2741,7 @@ pub(crate) fn register_radial_gradient_functions(world: &mut World) {
                 let output: V<::bevy_ui::RadialGradient> = {
                     {
                         let output: V<::bevy_ui::RadialGradient> = ::bevy_ui::RadialGradient::in_color_space(
-                                &_self,
+                                _self.into_inner(),
                                 color_space.into_inner(),
                             )
                             .into();
@@ -2808,7 +2808,7 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
             let output: V<::bevy_math::Vec2> = {
                 {
                     let output: V<::bevy_math::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
-                        &_self,
+                        _self.into_inner(),
                         position.into_inner(),
                         scale_factor,
                         physical_size.into_inner(),
@@ -3270,7 +3270,7 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
                 let output: V<::bevy_ui::UiTransform> = {
                     {
                         let output: V<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_rotation(
-                                &rotation,
+                                rotation.into_inner(),
                             )
                             .into();
                         output
@@ -3629,7 +3629,7 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
                 let output: V<::bevy_ui::UiRect> = {
                     {
                         let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_bottom(
-                                &_self,
+                                _self.into_inner(),
                                 bottom.into_inner(),
                             )
                             .into();
@@ -3647,7 +3647,7 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
                 let output: V<::bevy_ui::UiRect> = {
                     {
                         let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_left(
-                                &_self,
+                                _self.into_inner(),
                                 left.into_inner(),
                             )
                             .into();
@@ -3665,7 +3665,7 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
                 let output: V<::bevy_ui::UiRect> = {
                     {
                         let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_right(
-                                &_self,
+                                _self.into_inner(),
                                 right.into_inner(),
                             )
                             .into();
@@ -3683,7 +3683,7 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
                 let output: V<::bevy_ui::UiRect> = {
                     {
                         let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_top(
-                                &_self,
+                                _self.into_inner(),
                                 top.into_inner(),
                             )
                             .into();
@@ -4969,7 +4969,7 @@ pub(crate) fn register_max_track_sizing_function_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_ui::MaxTrackSizingFunction>| {
+        |_self: R<::bevy_ui::MaxTrackSizingFunction>| {
             let output: V<::bevy_ui::MaxTrackSizingFunction> = {
                 {
                     let output: V<::bevy_ui::MaxTrackSizingFunction> =
@@ -4985,8 +4985,8 @@ pub(crate) fn register_max_track_sizing_function_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_ui::MaxTrackSizingFunction>,
-         mut other: R<::bevy_ui::MaxTrackSizingFunction>| {
+        |_self: R<::bevy_ui::MaxTrackSizingFunction>,
+         other: R<::bevy_ui::MaxTrackSizingFunction>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -5016,7 +5016,7 @@ pub(crate) fn register_min_track_sizing_function_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_ui::MinTrackSizingFunction>| {
+        |_self: R<::bevy_ui::MinTrackSizingFunction>| {
             let output: V<::bevy_ui::MinTrackSizingFunction> = {
                 {
                     let output: V<::bevy_ui::MinTrackSizingFunction> =
@@ -5032,8 +5032,8 @@ pub(crate) fn register_min_track_sizing_function_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_ui::MinTrackSizingFunction>,
-         mut other: R<::bevy_ui::MinTrackSizingFunction>| {
+        |_self: R<::bevy_ui::MinTrackSizingFunction>,
+         other: R<::bevy_ui::MinTrackSizingFunction>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -5582,7 +5582,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5600,7 +5600,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_left(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5618,7 +5618,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_right(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5636,7 +5636,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_left(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5654,7 +5654,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_right(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5672,7 +5672,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5690,7 +5690,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_left(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5708,7 +5708,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
                 let output: V<::bevy_ui::BorderRadius> = {
                     {
                         let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_right(
-                                &_self,
+                                _self.into_inner(),
                                 radius.into_inner(),
                             )
                             .into();
@@ -5749,7 +5749,7 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_ui::OverflowClipMargin>| {
+            |_self: R<::bevy_ui::OverflowClipMargin>| {
                 let output: V<::bevy_ui::OverflowClipMargin> = {
                     {
                         let output: V<::bevy_ui::OverflowClipMargin> = <::bevy_ui::OverflowClipMargin as ::std::clone::Clone>::clone(
@@ -5782,8 +5782,8 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_ui::OverflowClipMargin>,
-                mut other: R<::bevy_ui::OverflowClipMargin>|
+                _self: R<::bevy_ui::OverflowClipMargin>,
+                other: R<::bevy_ui::OverflowClipMargin>|
             {
                 let output: bool = {
                     {
@@ -5816,11 +5816,11 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         )
         .register_documented(
             "with_margin",
-            |mut _self: V<::bevy_ui::OverflowClipMargin>, margin: f32| {
+            |_self: V<::bevy_ui::OverflowClipMargin>, margin: f32| {
                 let output: V<::bevy_ui::OverflowClipMargin> = {
                     {
                         let output: V<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::with_margin(
-                                &mut _self,
+                                _self.into_inner(),
                                 margin,
                             )
                             .into();

@@ -82,7 +82,7 @@ pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World)
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
+        |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
             let output: V<::bevy_a11y::ManageAccessibilityUpdates> = {
                 {
                     let output: V<::bevy_a11y::ManageAccessibilityUpdates> =
@@ -100,7 +100,7 @@ pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World)
     )
     .register_documented(
         "get",
-        |mut _self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
+        |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
             let output: bool = {
                 {
                     let output: bool = ::bevy_a11y::ManageAccessibilityUpdates::get(&_self).into();

@@ -18,7 +18,7 @@ pub(crate) fn register_morph_weights_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::morph::MorphWeights>| {
+        |_self: R<::bevy_mesh::morph::MorphWeights>| {
             let output: V<::bevy_mesh::morph::MorphWeights> = {
                 {
                     let output: V<::bevy_mesh::morph::MorphWeights> =
@@ -46,7 +46,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::Mesh>| {
+            |_self: R<::bevy_mesh::Mesh>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = <::bevy_mesh::Mesh as ::std::clone::Clone>::clone(
@@ -129,7 +129,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "count_vertices",
-            |mut _self: R<::bevy_mesh::Mesh>| {
+            |_self: R<::bevy_mesh::Mesh>| {
                 let output: usize = {
                     {
                         let output: usize = ::bevy_mesh::Mesh::count_vertices(&_self)
@@ -144,7 +144,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "create_packed_vertex_buffer_data",
-            |mut _self: R<::bevy_mesh::Mesh>| {
+            |_self: R<::bevy_mesh::Mesh>| {
                 let output: ::std::vec::Vec<u8> = {
                     {
                         let output: ::std::vec::Vec<u8> = ::bevy_mesh::Mesh::create_packed_vertex_buffer_data(
@@ -178,7 +178,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::bevy_mesh::Mesh>, mut other: R<::bevy_mesh::Mesh>| {
+            |_self: R<::bevy_mesh::Mesh>, other: R<::bevy_mesh::Mesh>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_mesh::Mesh as ::std::cmp::PartialEq<
@@ -195,7 +195,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "get_vertex_buffer_size",
-            |mut _self: R<::bevy_mesh::Mesh>| {
+            |_self: R<::bevy_mesh::Mesh>| {
                 let output: usize = {
                     {
                         let output: usize = ::bevy_mesh::Mesh::get_vertex_buffer_size(
@@ -212,7 +212,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "get_vertex_size",
-            |mut _self: R<::bevy_mesh::Mesh>| {
+            |_self: R<::bevy_mesh::Mesh>| {
                 let output: u64 = {
                     {
                         let output: u64 = ::bevy_mesh::Mesh::get_vertex_size(&_self)
@@ -227,7 +227,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "has_morph_targets",
-            |mut _self: R<::bevy_mesh::Mesh>| {
+            |_self: R<::bevy_mesh::Mesh>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_mesh::Mesh::has_morph_targets(&_self)
@@ -295,11 +295,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "rotated_by",
-            |mut _self: V<::bevy_mesh::Mesh>, rotation: V<::bevy_math::Quat>| {
+            |_self: V<::bevy_mesh::Mesh>, rotation: V<::bevy_math::Quat>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::rotated_by(
-                                &mut _self,
+                                _self.into_inner(),
                                 rotation.into_inner(),
                             )
                             .into();
@@ -331,11 +331,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "scaled_by",
-            |mut _self: V<::bevy_mesh::Mesh>, scale: V<::bevy_math::Vec3>| {
+            |_self: V<::bevy_mesh::Mesh>, scale: V<::bevy_math::Vec3>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::scaled_by(
-                                &mut _self,
+                                _self.into_inner(),
                                 scale.into_inner(),
                             )
                             .into();
@@ -357,7 +357,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
                     {
                         let output: () = ::bevy_mesh::Mesh::set_morph_target_names(
                                 &mut _self,
-                                names.into_inner(),
+                                names,
                             )
                             .into();
                         output
@@ -392,13 +392,13 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         .register_documented(
             "transformed_by",
             |
-                mut _self: V<::bevy_mesh::Mesh>,
+                _self: V<::bevy_mesh::Mesh>,
                 transform: V<::bevy_transform::components::Transform>|
             {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::transformed_by(
-                                &mut _self,
+                                _self.into_inner(),
                                 transform.into_inner(),
                             )
                             .into();
@@ -430,11 +430,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "translated_by",
-            |mut _self: V<::bevy_mesh::Mesh>, translation: V<::bevy_math::Vec3>| {
+            |_self: V<::bevy_mesh::Mesh>, translation: V<::bevy_math::Vec3>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::translated_by(
-                                &mut _self,
+                                _self.into_inner(),
                                 translation.into_inner(),
                             )
                             .into();
@@ -448,11 +448,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_computed_area_weighted_normals",
-            |mut _self: V<::bevy_mesh::Mesh>| {
+            |_self: V<::bevy_mesh::Mesh>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_computed_area_weighted_normals(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -465,11 +465,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_computed_flat_normals",
-            |mut _self: V<::bevy_mesh::Mesh>| {
+            |_self: V<::bevy_mesh::Mesh>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_computed_flat_normals(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -482,11 +482,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_computed_normals",
-            |mut _self: V<::bevy_mesh::Mesh>| {
+            |_self: V<::bevy_mesh::Mesh>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_computed_normals(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -499,11 +499,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_computed_smooth_normals",
-            |mut _self: V<::bevy_mesh::Mesh>| {
+            |_self: V<::bevy_mesh::Mesh>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_computed_smooth_normals(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -516,11 +516,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_duplicated_vertices",
-            |mut _self: V<::bevy_mesh::Mesh>| {
+            |_self: V<::bevy_mesh::Mesh>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_duplicated_vertices(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -533,11 +533,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_inserted_indices",
-            |mut _self: V<::bevy_mesh::Mesh>, indices: V<::bevy_mesh::Indices>| {
+            |_self: V<::bevy_mesh::Mesh>, indices: V<::bevy_mesh::Indices>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_inserted_indices(
-                                &mut _self,
+                                _self.into_inner(),
                                 indices.into_inner(),
                             )
                             .into();
@@ -551,15 +551,12 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_morph_target_names",
-            |
-                mut _self: V<::bevy_mesh::Mesh>,
-                names: ::std::vec::Vec<::std::string::String>|
-            {
+            |_self: V<::bevy_mesh::Mesh>, names: ::std::vec::Vec<::std::string::String>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_morph_target_names(
-                                &mut _self,
-                                names.into_inner(),
+                                _self.into_inner(),
+                                names,
                             )
                             .into();
                         output
@@ -572,11 +569,11 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         )
         .register_documented(
             "with_removed_indices",
-            |mut _self: V<::bevy_mesh::Mesh>| {
+            |_self: V<::bevy_mesh::Mesh>| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::Mesh::with_removed_indices(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -598,7 +595,7 @@ pub(crate) fn register_mesh_2_d_functions(world: &mut World) {
     )
     .register_documented(
         "assert_receiver_is_total_eq",
-        |mut _self: R<::bevy_mesh::Mesh2d>| {
+        |_self: R<::bevy_mesh::Mesh2d>| {
             let output: () = {
                 {
                     let output: () =
@@ -616,7 +613,7 @@ pub(crate) fn register_mesh_2_d_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::Mesh2d>| {
+        |_self: R<::bevy_mesh::Mesh2d>| {
             let output: V<::bevy_mesh::Mesh2d> = {
                 {
                     let output: V<::bevy_mesh::Mesh2d> =
@@ -631,7 +628,7 @@ pub(crate) fn register_mesh_2_d_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_mesh::Mesh2d>, mut other: R<::bevy_mesh::Mesh2d>| {
+        |_self: R<::bevy_mesh::Mesh2d>, other: R<::bevy_mesh::Mesh2d>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_mesh::Mesh2d as ::std::cmp::PartialEq<
@@ -657,7 +654,7 @@ pub(crate) fn register_mesh_3_d_functions(world: &mut World) {
     )
     .register_documented(
         "assert_receiver_is_total_eq",
-        |mut _self: R<::bevy_mesh::Mesh3d>| {
+        |_self: R<::bevy_mesh::Mesh3d>| {
             let output: () = {
                 {
                     let output: () =
@@ -675,7 +672,7 @@ pub(crate) fn register_mesh_3_d_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::Mesh3d>| {
+        |_self: R<::bevy_mesh::Mesh3d>| {
             let output: V<::bevy_mesh::Mesh3d> = {
                 {
                     let output: V<::bevy_mesh::Mesh3d> =
@@ -690,7 +687,7 @@ pub(crate) fn register_mesh_3_d_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_mesh::Mesh3d>, mut other: R<::bevy_mesh::Mesh3d>| {
+        |_self: R<::bevy_mesh::Mesh3d>, other: R<::bevy_mesh::Mesh3d>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_mesh::Mesh3d as ::std::cmp::PartialEq<
@@ -716,7 +713,7 @@ pub(crate) fn register_mesh_tag_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_mesh::MeshTag>| {
+            |_self: R<::bevy_mesh::MeshTag>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_mesh::MeshTag as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -733,7 +730,7 @@ pub(crate) fn register_mesh_tag_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::MeshTag>| {
+            |_self: R<::bevy_mesh::MeshTag>| {
                 let output: V<::bevy_mesh::MeshTag> = {
                     {
                         let output: V<::bevy_mesh::MeshTag> = <::bevy_mesh::MeshTag as ::std::clone::Clone>::clone(
@@ -750,7 +747,7 @@ pub(crate) fn register_mesh_tag_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::bevy_mesh::MeshTag>, mut other: R<::bevy_mesh::MeshTag>| {
+            |_self: R<::bevy_mesh::MeshTag>, other: R<::bevy_mesh::MeshTag>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_mesh::MeshTag as ::std::cmp::PartialEq<
@@ -877,7 +874,7 @@ pub(crate) fn register_mesh_morph_weights_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::morph::MeshMorphWeights>| {
+        |_self: R<::bevy_mesh::morph::MeshMorphWeights>| {
             let output: V<::bevy_mesh::morph::MeshMorphWeights> = {
                 {
                     let output: V<::bevy_mesh::morph::MeshMorphWeights> =
@@ -907,7 +904,7 @@ pub(crate) fn register_circle_mesh_builder_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::CircleMeshBuilder>| {
+        |_self: R<::bevy_mesh::CircleMeshBuilder>| {
             let output: V<::bevy_mesh::CircleMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircleMeshBuilder> =
@@ -938,11 +935,12 @@ pub(crate) fn register_circle_mesh_builder_functions(world: &mut World) {
     )
     .register_documented(
         "resolution",
-        |mut _self: V<::bevy_mesh::CircleMeshBuilder>, resolution: u32| {
+        |_self: V<::bevy_mesh::CircleMeshBuilder>, resolution: u32| {
             let output: V<::bevy_mesh::CircleMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircleMeshBuilder> =
-                        ::bevy_mesh::CircleMeshBuilder::resolution(&mut _self, resolution).into();
+                        ::bevy_mesh::CircleMeshBuilder::resolution(_self.into_inner(), resolution)
+                            .into();
                     output
                 }
             };
@@ -965,7 +963,7 @@ pub(crate) fn register_circular_mesh_uv_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::CircularMeshUvMode>| {
+        |_self: R<::bevy_mesh::CircularMeshUvMode>| {
             let output: V<::bevy_mesh::CircularMeshUvMode> = {
                 {
                     let output: V<::bevy_mesh::CircularMeshUvMode> =
@@ -981,8 +979,7 @@ pub(crate) fn register_circular_mesh_uv_mode_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_mesh::CircularMeshUvMode>,
-         mut other: R<::bevy_mesh::CircularMeshUvMode>| {
+        |_self: R<::bevy_mesh::CircularMeshUvMode>, other: R<::bevy_mesh::CircularMeshUvMode>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_mesh::CircularMeshUvMode as ::std::cmp::PartialEq<
@@ -1011,7 +1008,7 @@ pub(crate) fn register_circular_sector_mesh_builder_functions(world: &mut World)
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::CircularSectorMeshBuilder>| {
+        |_self: R<::bevy_mesh::CircularSectorMeshBuilder>| {
             let output: V<::bevy_mesh::CircularSectorMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSectorMeshBuilder> =
@@ -1044,12 +1041,15 @@ pub(crate) fn register_circular_sector_mesh_builder_functions(world: &mut World)
     )
     .register_documented(
         "resolution",
-        |mut _self: V<::bevy_mesh::CircularSectorMeshBuilder>, resolution: u32| {
+        |_self: V<::bevy_mesh::CircularSectorMeshBuilder>, resolution: u32| {
             let output: V<::bevy_mesh::CircularSectorMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSectorMeshBuilder> =
-                        ::bevy_mesh::CircularSectorMeshBuilder::resolution(&mut _self, resolution)
-                            .into();
+                        ::bevy_mesh::CircularSectorMeshBuilder::resolution(
+                            _self.into_inner(),
+                            resolution,
+                        )
+                        .into();
                     output
                 }
             };
@@ -1060,13 +1060,16 @@ pub(crate) fn register_circular_sector_mesh_builder_functions(world: &mut World)
     )
     .register_documented(
         "uv_mode",
-        |mut _self: V<::bevy_mesh::CircularSectorMeshBuilder>,
-         mut uv_mode: V<::bevy_mesh::CircularMeshUvMode>| {
+        |_self: V<::bevy_mesh::CircularSectorMeshBuilder>,
+         uv_mode: V<::bevy_mesh::CircularMeshUvMode>| {
             let output: V<::bevy_mesh::CircularSectorMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSectorMeshBuilder> =
-                        ::bevy_mesh::CircularSectorMeshBuilder::uv_mode(&mut _self, &mut uv_mode)
-                            .into();
+                        ::bevy_mesh::CircularSectorMeshBuilder::uv_mode(
+                            _self.into_inner(),
+                            uv_mode.into_inner(),
+                        )
+                        .into();
                     output
                 }
             };
@@ -1089,7 +1092,7 @@ pub(crate) fn register_circular_segment_mesh_builder_functions(world: &mut World
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::CircularSegmentMeshBuilder>| {
+        |_self: R<::bevy_mesh::CircularSegmentMeshBuilder>| {
             let output: V<::bevy_mesh::CircularSegmentMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSegmentMeshBuilder> =
@@ -1122,12 +1125,15 @@ pub(crate) fn register_circular_segment_mesh_builder_functions(world: &mut World
     )
     .register_documented(
         "resolution",
-        |mut _self: V<::bevy_mesh::CircularSegmentMeshBuilder>, resolution: u32| {
+        |_self: V<::bevy_mesh::CircularSegmentMeshBuilder>, resolution: u32| {
             let output: V<::bevy_mesh::CircularSegmentMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSegmentMeshBuilder> =
-                        ::bevy_mesh::CircularSegmentMeshBuilder::resolution(&mut _self, resolution)
-                            .into();
+                        ::bevy_mesh::CircularSegmentMeshBuilder::resolution(
+                            _self.into_inner(),
+                            resolution,
+                        )
+                        .into();
                     output
                 }
             };
@@ -1138,13 +1144,16 @@ pub(crate) fn register_circular_segment_mesh_builder_functions(world: &mut World
     )
     .register_documented(
         "uv_mode",
-        |mut _self: V<::bevy_mesh::CircularSegmentMeshBuilder>,
-         mut uv_mode: V<::bevy_mesh::CircularMeshUvMode>| {
+        |_self: V<::bevy_mesh::CircularSegmentMeshBuilder>,
+         uv_mode: V<::bevy_mesh::CircularMeshUvMode>| {
             let output: V<::bevy_mesh::CircularSegmentMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSegmentMeshBuilder> =
-                        ::bevy_mesh::CircularSegmentMeshBuilder::uv_mode(&mut _self, &mut uv_mode)
-                            .into();
+                        ::bevy_mesh::CircularSegmentMeshBuilder::uv_mode(
+                            _self.into_inner(),
+                            uv_mode.into_inner(),
+                        )
+                        .into();
                     output
                 }
             };
@@ -1167,7 +1176,7 @@ pub(crate) fn register_convex_polygon_mesh_builder_functions(world: &mut World) 
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::ConvexPolygonMeshBuilder>| {
+        |_self: R<::bevy_mesh::ConvexPolygonMeshBuilder>| {
             let output: V<::bevy_mesh::ConvexPolygonMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::ConvexPolygonMeshBuilder> =
@@ -1197,7 +1206,7 @@ pub(crate) fn register_regular_polygon_mesh_builder_functions(world: &mut World)
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::RegularPolygonMeshBuilder>| {
+            |_self: R<::bevy_mesh::RegularPolygonMeshBuilder>| {
                 let output: V<::bevy_mesh::RegularPolygonMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::RegularPolygonMeshBuilder> = <::bevy_mesh::RegularPolygonMeshBuilder as ::std::clone::Clone>::clone(
@@ -1244,7 +1253,7 @@ pub(crate) fn register_ellipse_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::EllipseMeshBuilder>| {
+            |_self: R<::bevy_mesh::EllipseMeshBuilder>| {
                 let output: V<::bevy_mesh::EllipseMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::EllipseMeshBuilder> = <::bevy_mesh::EllipseMeshBuilder as ::std::clone::Clone>::clone(
@@ -1280,11 +1289,11 @@ pub(crate) fn register_ellipse_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "resolution",
-            |mut _self: V<::bevy_mesh::EllipseMeshBuilder>, resolution: u32| {
+            |_self: V<::bevy_mesh::EllipseMeshBuilder>, resolution: u32| {
                 let output: V<::bevy_mesh::EllipseMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::EllipseMeshBuilder> = ::bevy_mesh::EllipseMeshBuilder::resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -1310,7 +1319,7 @@ pub(crate) fn register_polyline_2_d_mesh_builder_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::Polyline2dMeshBuilder>| {
+        |_self: R<::bevy_mesh::Polyline2dMeshBuilder>| {
             let output: V<::bevy_mesh::Polyline2dMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::Polyline2dMeshBuilder> =
@@ -1338,7 +1347,7 @@ pub(crate) fn register_annulus_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::AnnulusMeshBuilder>| {
+            |_self: R<::bevy_mesh::AnnulusMeshBuilder>| {
                 let output: V<::bevy_mesh::AnnulusMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::AnnulusMeshBuilder> = <::bevy_mesh::AnnulusMeshBuilder as ::std::clone::Clone>::clone(
@@ -1374,11 +1383,11 @@ pub(crate) fn register_annulus_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "resolution",
-            |mut _self: V<::bevy_mesh::AnnulusMeshBuilder>, resolution: u32| {
+            |_self: V<::bevy_mesh::AnnulusMeshBuilder>, resolution: u32| {
                 let output: V<::bevy_mesh::AnnulusMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::AnnulusMeshBuilder> = ::bevy_mesh::AnnulusMeshBuilder::resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -1404,7 +1413,7 @@ pub(crate) fn register_rhombus_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::RhombusMeshBuilder>| {
+            |_self: R<::bevy_mesh::RhombusMeshBuilder>| {
                 let output: V<::bevy_mesh::RhombusMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::RhombusMeshBuilder> = <::bevy_mesh::RhombusMeshBuilder as ::std::clone::Clone>::clone(
@@ -1451,7 +1460,7 @@ pub(crate) fn register_triangle_2_d_mesh_builder_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::Triangle2dMeshBuilder>| {
+        |_self: R<::bevy_mesh::Triangle2dMeshBuilder>| {
             let output: V<::bevy_mesh::Triangle2dMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::Triangle2dMeshBuilder> =
@@ -1499,7 +1508,7 @@ pub(crate) fn register_rectangle_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::RectangleMeshBuilder>| {
+            |_self: R<::bevy_mesh::RectangleMeshBuilder>| {
                 let output: V<::bevy_mesh::RectangleMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::RectangleMeshBuilder> = <::bevy_mesh::RectangleMeshBuilder as ::std::clone::Clone>::clone(
@@ -1546,7 +1555,7 @@ pub(crate) fn register_capsule_2_d_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::Capsule2dMeshBuilder>| {
+            |_self: R<::bevy_mesh::Capsule2dMeshBuilder>| {
                 let output: V<::bevy_mesh::Capsule2dMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::Capsule2dMeshBuilder> = <::bevy_mesh::Capsule2dMeshBuilder as ::std::clone::Clone>::clone(
@@ -1582,11 +1591,11 @@ pub(crate) fn register_capsule_2_d_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "resolution",
-            |mut _self: V<::bevy_mesh::Capsule2dMeshBuilder>, resolution: u32| {
+            |_self: V<::bevy_mesh::Capsule2dMeshBuilder>, resolution: u32| {
                 let output: V<::bevy_mesh::Capsule2dMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::Capsule2dMeshBuilder> = ::bevy_mesh::Capsule2dMeshBuilder::resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -1640,7 +1649,7 @@ pub(crate) fn register_capsule_3_d_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::Capsule3dMeshBuilder>| {
+            |_self: R<::bevy_mesh::Capsule3dMeshBuilder>| {
                 let output: V<::bevy_mesh::Capsule3dMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::Capsule3dMeshBuilder> = <::bevy_mesh::Capsule3dMeshBuilder as ::std::clone::Clone>::clone(
@@ -1657,11 +1666,11 @@ pub(crate) fn register_capsule_3_d_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "latitudes",
-            |mut _self: V<::bevy_mesh::Capsule3dMeshBuilder>, latitudes: u32| {
+            |_self: V<::bevy_mesh::Capsule3dMeshBuilder>, latitudes: u32| {
                 let output: V<::bevy_mesh::Capsule3dMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::Capsule3dMeshBuilder> = ::bevy_mesh::Capsule3dMeshBuilder::latitudes(
-                                &mut _self,
+                                _self.into_inner(),
                                 latitudes,
                             )
                             .into();
@@ -1675,11 +1684,11 @@ pub(crate) fn register_capsule_3_d_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "longitudes",
-            |mut _self: V<::bevy_mesh::Capsule3dMeshBuilder>, longitudes: u32| {
+            |_self: V<::bevy_mesh::Capsule3dMeshBuilder>, longitudes: u32| {
                 let output: V<::bevy_mesh::Capsule3dMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::Capsule3dMeshBuilder> = ::bevy_mesh::Capsule3dMeshBuilder::longitudes(
-                                &mut _self,
+                                _self.into_inner(),
                                 longitudes,
                             )
                             .into();
@@ -1713,11 +1722,11 @@ pub(crate) fn register_capsule_3_d_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "rings",
-            |mut _self: V<::bevy_mesh::Capsule3dMeshBuilder>, rings: u32| {
+            |_self: V<::bevy_mesh::Capsule3dMeshBuilder>, rings: u32| {
                 let output: V<::bevy_mesh::Capsule3dMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::Capsule3dMeshBuilder> = ::bevy_mesh::Capsule3dMeshBuilder::rings(
-                                &mut _self,
+                                _self.into_inner(),
                                 rings,
                             )
                             .into();
@@ -1732,13 +1741,13 @@ pub(crate) fn register_capsule_3_d_mesh_builder_functions(world: &mut World) {
         .register_documented(
             "uv_profile",
             |
-                mut _self: V<::bevy_mesh::Capsule3dMeshBuilder>,
+                _self: V<::bevy_mesh::Capsule3dMeshBuilder>,
                 uv_profile: V<::bevy_mesh::CapsuleUvProfile>|
             {
                 let output: V<::bevy_mesh::Capsule3dMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::Capsule3dMeshBuilder> = ::bevy_mesh::Capsule3dMeshBuilder::uv_profile(
-                                &mut _self,
+                                _self.into_inner(),
                                 uv_profile.into_inner(),
                             )
                             .into();
@@ -1793,14 +1802,11 @@ pub(crate) fn register_cone_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "anchor",
-            |
-                mut _self: V<::bevy_mesh::ConeMeshBuilder>,
-                anchor: V<::bevy_mesh::ConeAnchor>|
-            {
+            |_self: V<::bevy_mesh::ConeMeshBuilder>, anchor: V<::bevy_mesh::ConeAnchor>| {
                 let output: V<::bevy_mesh::ConeMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::ConeMeshBuilder> = ::bevy_mesh::ConeMeshBuilder::anchor(
-                                &mut _self,
+                                _self.into_inner(),
                                 anchor.into_inner(),
                             )
                             .into();
@@ -1814,7 +1820,7 @@ pub(crate) fn register_cone_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::ConeMeshBuilder>| {
+            |_self: R<::bevy_mesh::ConeMeshBuilder>| {
                 let output: V<::bevy_mesh::ConeMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::ConeMeshBuilder> = <::bevy_mesh::ConeMeshBuilder as ::std::clone::Clone>::clone(
@@ -1850,11 +1856,11 @@ pub(crate) fn register_cone_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "resolution",
-            |mut _self: V<::bevy_mesh::ConeMeshBuilder>, resolution: u32| {
+            |_self: V<::bevy_mesh::ConeMeshBuilder>, resolution: u32| {
                 let output: V<::bevy_mesh::ConeMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::ConeMeshBuilder> = ::bevy_mesh::ConeMeshBuilder::resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -1880,7 +1886,7 @@ pub(crate) fn register_conical_frustum_mesh_builder_functions(world: &mut World)
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::ConicalFrustumMeshBuilder>| {
+            |_self: R<::bevy_mesh::ConicalFrustumMeshBuilder>| {
                 let output: V<::bevy_mesh::ConicalFrustumMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::ConicalFrustumMeshBuilder> = <::bevy_mesh::ConicalFrustumMeshBuilder as ::std::clone::Clone>::clone(
@@ -1917,11 +1923,11 @@ pub(crate) fn register_conical_frustum_mesh_builder_functions(world: &mut World)
         )
         .register_documented(
             "resolution",
-            |mut _self: V<::bevy_mesh::ConicalFrustumMeshBuilder>, resolution: u32| {
+            |_self: V<::bevy_mesh::ConicalFrustumMeshBuilder>, resolution: u32| {
                 let output: V<::bevy_mesh::ConicalFrustumMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::ConicalFrustumMeshBuilder> = ::bevy_mesh::ConicalFrustumMeshBuilder::resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -1935,11 +1941,11 @@ pub(crate) fn register_conical_frustum_mesh_builder_functions(world: &mut World)
         )
         .register_documented(
             "segments",
-            |mut _self: V<::bevy_mesh::ConicalFrustumMeshBuilder>, segments: u32| {
+            |_self: V<::bevy_mesh::ConicalFrustumMeshBuilder>, segments: u32| {
                 let output: V<::bevy_mesh::ConicalFrustumMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::ConicalFrustumMeshBuilder> = ::bevy_mesh::ConicalFrustumMeshBuilder::segments(
-                                &mut _self,
+                                _self.into_inner(),
                                 segments,
                             )
                             .into();
@@ -1965,7 +1971,7 @@ pub(crate) fn register_cuboid_mesh_builder_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::CuboidMeshBuilder>| {
+        |_self: R<::bevy_mesh::CuboidMeshBuilder>| {
             let output: V<::bevy_mesh::CuboidMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CuboidMeshBuilder> =
@@ -2023,13 +2029,13 @@ pub(crate) fn register_cylinder_mesh_builder_functions(world: &mut World) {
         .register_documented(
             "anchor",
             |
-                mut _self: V<::bevy_mesh::CylinderMeshBuilder>,
+                _self: V<::bevy_mesh::CylinderMeshBuilder>,
                 anchor: V<::bevy_mesh::CylinderAnchor>|
             {
                 let output: V<::bevy_mesh::CylinderMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::CylinderMeshBuilder> = ::bevy_mesh::CylinderMeshBuilder::anchor(
-                                &mut _self,
+                                _self.into_inner(),
                                 anchor.into_inner(),
                             )
                             .into();
@@ -2043,7 +2049,7 @@ pub(crate) fn register_cylinder_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::CylinderMeshBuilder>| {
+            |_self: R<::bevy_mesh::CylinderMeshBuilder>| {
                 let output: V<::bevy_mesh::CylinderMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::CylinderMeshBuilder> = <::bevy_mesh::CylinderMeshBuilder as ::std::clone::Clone>::clone(
@@ -2079,11 +2085,11 @@ pub(crate) fn register_cylinder_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "resolution",
-            |mut _self: V<::bevy_mesh::CylinderMeshBuilder>, resolution: u32| {
+            |_self: V<::bevy_mesh::CylinderMeshBuilder>, resolution: u32| {
                 let output: V<::bevy_mesh::CylinderMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::CylinderMeshBuilder> = ::bevy_mesh::CylinderMeshBuilder::resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -2097,11 +2103,11 @@ pub(crate) fn register_cylinder_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "segments",
-            |mut _self: V<::bevy_mesh::CylinderMeshBuilder>, segments: u32| {
+            |_self: V<::bevy_mesh::CylinderMeshBuilder>, segments: u32| {
                 let output: V<::bevy_mesh::CylinderMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::CylinderMeshBuilder> = ::bevy_mesh::CylinderMeshBuilder::segments(
-                                &mut _self,
+                                _self.into_inner(),
                                 segments,
                             )
                             .into();
@@ -2115,11 +2121,11 @@ pub(crate) fn register_cylinder_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "without_caps",
-            |mut _self: V<::bevy_mesh::CylinderMeshBuilder>| {
+            |_self: V<::bevy_mesh::CylinderMeshBuilder>| {
                 let output: V<::bevy_mesh::CylinderMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::CylinderMeshBuilder> = ::bevy_mesh::CylinderMeshBuilder::without_caps(
-                                &mut _self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -2144,7 +2150,7 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::PlaneMeshBuilder>| {
+            |_self: R<::bevy_mesh::PlaneMeshBuilder>| {
                 let output: V<::bevy_mesh::PlaneMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::PlaneMeshBuilder> = <::bevy_mesh::PlaneMeshBuilder as ::std::clone::Clone>::clone(
@@ -2213,11 +2219,11 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "normal",
-            |mut _self: V<::bevy_mesh::PlaneMeshBuilder>, normal: V<::bevy_math::Dir3>| {
+            |_self: V<::bevy_mesh::PlaneMeshBuilder>, normal: V<::bevy_math::Dir3>| {
                 let output: V<::bevy_mesh::PlaneMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::PlaneMeshBuilder> = ::bevy_mesh::PlaneMeshBuilder::normal(
-                                &mut _self,
+                                _self.into_inner(),
                                 normal.into_inner(),
                             )
                             .into();
@@ -2231,11 +2237,11 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "size",
-            |mut _self: V<::bevy_mesh::PlaneMeshBuilder>, width: f32, height: f32| {
+            |_self: V<::bevy_mesh::PlaneMeshBuilder>, width: f32, height: f32| {
                 let output: V<::bevy_mesh::PlaneMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::PlaneMeshBuilder> = ::bevy_mesh::PlaneMeshBuilder::size(
-                                &mut _self,
+                                _self.into_inner(),
                                 width,
                                 height,
                             )
@@ -2250,11 +2256,11 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "subdivisions",
-            |mut _self: V<::bevy_mesh::PlaneMeshBuilder>, subdivisions: u32| {
+            |_self: V<::bevy_mesh::PlaneMeshBuilder>, subdivisions: u32| {
                 let output: V<::bevy_mesh::PlaneMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::PlaneMeshBuilder> = ::bevy_mesh::PlaneMeshBuilder::subdivisions(
-                                &mut _self,
+                                _self.into_inner(),
                                 subdivisions,
                             )
                             .into();
@@ -2309,7 +2315,7 @@ pub(crate) fn register_sphere_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::SphereMeshBuilder>| {
+            |_self: R<::bevy_mesh::SphereMeshBuilder>| {
                 let output: V<::bevy_mesh::SphereMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::SphereMeshBuilder> = <::bevy_mesh::SphereMeshBuilder as ::std::clone::Clone>::clone(
@@ -2326,14 +2332,11 @@ pub(crate) fn register_sphere_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "kind",
-            |
-                mut _self: V<::bevy_mesh::SphereMeshBuilder>,
-                kind: V<::bevy_mesh::SphereKind>|
-            {
+            |_self: V<::bevy_mesh::SphereMeshBuilder>, kind: V<::bevy_mesh::SphereKind>| {
                 let output: V<::bevy_mesh::SphereMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::SphereMeshBuilder> = ::bevy_mesh::SphereMeshBuilder::kind(
-                                &mut _self,
+                                _self.into_inner(),
                                 kind.into_inner(),
                             )
                             .into();
@@ -2365,7 +2368,7 @@ pub(crate) fn register_sphere_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "uv",
-            |mut _self: R<::bevy_mesh::SphereMeshBuilder>, sectors: u32, stacks: u32| {
+            |_self: R<::bevy_mesh::SphereMeshBuilder>, sectors: u32, stacks: u32| {
                 let output: V<::bevy_mesh::Mesh> = {
                     {
                         let output: V<::bevy_mesh::Mesh> = ::bevy_mesh::SphereMeshBuilder::uv(
@@ -2396,7 +2399,7 @@ pub(crate) fn register_tetrahedron_mesh_builder_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::TetrahedronMeshBuilder>| {
+        |_self: R<::bevy_mesh::TetrahedronMeshBuilder>| {
             let output: V<::bevy_mesh::TetrahedronMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::TetrahedronMeshBuilder> =
@@ -2424,7 +2427,7 @@ pub(crate) fn register_torus_mesh_builder_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_mesh::TorusMeshBuilder>| {
+            |_self: R<::bevy_mesh::TorusMeshBuilder>| {
                 let output: V<::bevy_mesh::TorusMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::TorusMeshBuilder> = <::bevy_mesh::TorusMeshBuilder as ::std::clone::Clone>::clone(
@@ -2441,11 +2444,11 @@ pub(crate) fn register_torus_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "major_resolution",
-            |mut _self: V<::bevy_mesh::TorusMeshBuilder>, resolution: usize| {
+            |_self: V<::bevy_mesh::TorusMeshBuilder>, resolution: usize| {
                 let output: V<::bevy_mesh::TorusMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::TorusMeshBuilder> = ::bevy_mesh::TorusMeshBuilder::major_resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -2459,11 +2462,11 @@ pub(crate) fn register_torus_mesh_builder_functions(world: &mut World) {
         )
         .register_documented(
             "minor_resolution",
-            |mut _self: V<::bevy_mesh::TorusMeshBuilder>, resolution: usize| {
+            |_self: V<::bevy_mesh::TorusMeshBuilder>, resolution: usize| {
                 let output: V<::bevy_mesh::TorusMeshBuilder> = {
                     {
                         let output: V<::bevy_mesh::TorusMeshBuilder> = ::bevy_mesh::TorusMeshBuilder::minor_resolution(
-                                &mut _self,
+                                _self.into_inner(),
                                 resolution,
                             )
                             .into();
@@ -2507,7 +2510,7 @@ pub(crate) fn register_triangle_3_d_mesh_builder_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::Triangle3dMeshBuilder>| {
+        |_self: R<::bevy_mesh::Triangle3dMeshBuilder>| {
             let output: V<::bevy_mesh::Triangle3dMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::Triangle3dMeshBuilder> =
@@ -2535,7 +2538,7 @@ pub(crate) fn register_skinned_mesh_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_mesh::skinning::SkinnedMesh>| {
+        |_self: R<::bevy_mesh::skinning::SkinnedMesh>| {
             let output: V<::bevy_mesh::skinning::SkinnedMesh> = {
                 {
                     let output: V<::bevy_mesh::skinning::SkinnedMesh> =

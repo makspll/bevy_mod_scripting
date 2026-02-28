@@ -717,11 +717,11 @@ pub(crate) fn register_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_matrix",
-            |mut world_from_local: V<::bevy_math::Mat4>| {
+            |world_from_local: V<::bevy_math::Mat4>| {
                 let output: V<::bevy_transform::components::Transform> = {
                     {
                         let output: V<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_matrix(
-                                &mut world_from_local,
+                                world_from_local.into_inner(),
                             )
                             .into();
                         output

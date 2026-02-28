@@ -102,7 +102,7 @@ pub(crate) fn register_environment_map_light_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_light::EnvironmentMapLight>| {
+        |_self: R<::bevy_light::EnvironmentMapLight>| {
             let output: V<::bevy_light::EnvironmentMapLight> = {
                 {
                     let output: V<::bevy_light::EnvironmentMapLight> =
@@ -130,7 +130,7 @@ pub(crate) fn register_generated_environment_map_light_functions(world: &mut Wor
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_light::GeneratedEnvironmentMapLight>| {
+        |_self: R<::bevy_light::GeneratedEnvironmentMapLight>| {
             let output: V<::bevy_light::GeneratedEnvironmentMapLight> = {
                 {
                     let output: V<::bevy_light::GeneratedEnvironmentMapLight> =
@@ -402,7 +402,7 @@ pub(crate) fn register_point_light_shadow_map_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_light::PointLightShadowMap>| {
+        |_self: R<::bevy_light::PointLightShadowMap>| {
             let output: V<::bevy_light::PointLightShadowMap> = {
                 {
                     let output: V<::bevy_light::PointLightShadowMap> =
@@ -543,7 +543,7 @@ pub(crate) fn register_directional_light_shadow_map_functions(world: &mut World)
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_light::DirectionalLightShadowMap>| {
+        |_self: R<::bevy_light::DirectionalLightShadowMap>| {
             let output: V<::bevy_light::DirectionalLightShadowMap> = {
                 {
                     let output: V<::bevy_light::DirectionalLightShadowMap> =
@@ -672,7 +672,7 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_light::ShadowFilteringMethod>| {
+            |_self: R<::bevy_light::ShadowFilteringMethod>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_light::ShadowFilteringMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -689,7 +689,7 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_light::ShadowFilteringMethod>| {
+            |_self: R<::bevy_light::ShadowFilteringMethod>| {
                 let output: V<::bevy_light::ShadowFilteringMethod> = {
                     {
                         let output: V<::bevy_light::ShadowFilteringMethod> = <::bevy_light::ShadowFilteringMethod as ::std::clone::Clone>::clone(
@@ -707,8 +707,8 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_light::ShadowFilteringMethod>,
-                mut other: R<::bevy_light::ShadowFilteringMethod>|
+                _self: R<::bevy_light::ShadowFilteringMethod>,
+                other: R<::bevy_light::ShadowFilteringMethod>|
             {
                 let output: bool = {
                     {
@@ -738,7 +738,7 @@ pub(crate) fn register_cluster_far_z_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_light::cluster::ClusterFarZMode>| {
+        |_self: R<::bevy_light::cluster::ClusterFarZMode>| {
             let output: V<::bevy_light::cluster::ClusterFarZMode> = {
                 {
                     let output: V<::bevy_light::cluster::ClusterFarZMode> =

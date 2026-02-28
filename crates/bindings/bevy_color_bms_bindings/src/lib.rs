@@ -855,7 +855,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                     {
                         let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Add<
                             ::bevy_color::LinearRgba,
-                        >>::add(&_self, &rhs)
+                        >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -904,7 +904,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                     {
                         let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Div<
                             f32,
-                        >>::div(&_self, rhs)
+                        >>::div(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -938,7 +938,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                     {
                         let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Mul<
                             f32,
-                        >>::mul(&_self, rhs)
+                        >>::mul(_self.into_inner(), rhs)
                             .into();
                         output
                     }
@@ -954,7 +954,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                 let output: V<::bevy_color::LinearRgba> = {
                     {
                         let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Neg>::neg(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -1011,7 +1011,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                     {
                         let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Sub<
                             ::bevy_color::LinearRgba,
-                        >>::sub(&_self, &rhs)
+                        >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
                         output
                     }
@@ -1027,7 +1027,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                 let output: V<::bevy_color::LinearRgba> = {
                     {
                         let output: V<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::with_blue(
-                                &_self,
+                                _self.into_inner(),
                                 blue,
                             )
                             .into();
@@ -1045,7 +1045,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                 let output: V<::bevy_color::LinearRgba> = {
                     {
                         let output: V<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::with_green(
-                                &_self,
+                                _self.into_inner(),
                                 green,
                             )
                             .into();
@@ -1063,7 +1063,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                 let output: V<::bevy_color::LinearRgba> = {
                     {
                         let output: V<::bevy_color::LinearRgba> = ::bevy_color::LinearRgba::with_red(
-                                &_self,
+                                _self.into_inner(),
                                 red,
                             )
                             .into();

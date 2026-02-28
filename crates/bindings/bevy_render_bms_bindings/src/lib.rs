@@ -18,7 +18,7 @@ pub(crate) fn register_alpha_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_render::alpha::AlphaMode>| {
+        |_self: R<::bevy_render::alpha::AlphaMode>| {
             let output: V<::bevy_render::alpha::AlphaMode> = {
                 {
                     let output: V<::bevy_render::alpha::AlphaMode> =
@@ -34,8 +34,7 @@ pub(crate) fn register_alpha_mode_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_render::alpha::AlphaMode>,
-         mut other: R<::bevy_render::alpha::AlphaMode>| {
+        |_self: R<::bevy_render::alpha::AlphaMode>, other: R<::bevy_render::alpha::AlphaMode>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_render::alpha::AlphaMode as ::std::cmp::PartialEq<
@@ -64,7 +63,7 @@ pub(crate) fn register_msaa_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_render::view::Msaa>| {
+            |_self: R<::bevy_render::view::Msaa>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_render::view::Msaa as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -81,7 +80,7 @@ pub(crate) fn register_msaa_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_render::view::Msaa>| {
+            |_self: R<::bevy_render::view::Msaa>| {
                 let output: V<::bevy_render::view::Msaa> = {
                     {
                         let output: V<::bevy_render::view::Msaa> = <::bevy_render::view::Msaa as ::std::clone::Clone>::clone(
@@ -98,10 +97,7 @@ pub(crate) fn register_msaa_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                mut _self: R<::bevy_render::view::Msaa>,
-                mut other: R<::bevy_render::view::Msaa>|
-            {
+            |_self: R<::bevy_render::view::Msaa>, other: R<::bevy_render::view::Msaa>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_render::view::Msaa as ::std::cmp::PartialEq<
@@ -135,7 +131,7 @@ pub(crate) fn register_msaa_functions(world: &mut World) {
         )
         .register_documented(
             "samples",
-            |mut _self: R<::bevy_render::view::Msaa>| {
+            |_self: R<::bevy_render::view::Msaa>| {
                 let output: u32 = {
                     {
                         let output: u32 = ::bevy_render::view::Msaa::samples(&_self)
@@ -162,7 +158,7 @@ pub(crate) fn register_main_entity_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_render::sync_world::MainEntity>| {
+            |_self: R<::bevy_render::sync_world::MainEntity>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_render::sync_world::MainEntity as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -179,7 +175,7 @@ pub(crate) fn register_main_entity_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_render::sync_world::MainEntity>| {
+            |_self: R<::bevy_render::sync_world::MainEntity>| {
                 let output: V<::bevy_render::sync_world::MainEntity> = {
                     {
                         let output: V<::bevy_render::sync_world::MainEntity> = <::bevy_render::sync_world::MainEntity as ::std::clone::Clone>::clone(
@@ -197,8 +193,8 @@ pub(crate) fn register_main_entity_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_render::sync_world::MainEntity>,
-                mut other: R<::bevy_render::sync_world::MainEntity>|
+                _self: R<::bevy_render::sync_world::MainEntity>,
+                other: R<::bevy_render::sync_world::MainEntity>|
             {
                 let output: bool = {
                     {
@@ -216,7 +212,7 @@ pub(crate) fn register_main_entity_functions(world: &mut World) {
         )
         .register_documented(
             "id",
-            |mut _self: R<::bevy_render::sync_world::MainEntity>| {
+            |_self: R<::bevy_render::sync_world::MainEntity>| {
                 let output: V<::bevy_ecs::entity::Entity> = {
                     {
                         let output: V<::bevy_ecs::entity::Entity> = ::bevy_render::sync_world::MainEntity::id(
@@ -614,7 +610,7 @@ pub(crate) fn register_mip_bias_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_render::camera::MipBias>| {
+        |_self: R<::bevy_render::camera::MipBias>| {
             let output: V<::bevy_render::camera::MipBias> = {
                 {
                     let output: V<::bevy_render::camera::MipBias> =
@@ -694,7 +690,7 @@ pub(crate) fn register_shader_storage_buffer_functions(world: &mut World) {
                     {
                         let output: V<::bevy_render::storage::ShaderStorageBuffer> = ::bevy_render::storage::ShaderStorageBuffer::with_size(
                                 size,
-                                &asset_usage,
+                                asset_usage.into_inner(),
                             )
                             .into();
                         output
@@ -868,12 +864,12 @@ pub(crate) fn register_screenshot_functions(world: &mut World) {
     )
     .register_documented(
         "texture_view",
-        |mut texture_view: V<::bevy_camera::ManualTextureViewHandle>| {
+        |texture_view: V<::bevy_camera::ManualTextureViewHandle>| {
             let output: V<::bevy_render::view::screenshot::Screenshot> = {
                 {
                     let output: V<::bevy_render::view::screenshot::Screenshot> =
                         ::bevy_render::view::screenshot::Screenshot::texture_view(
-                            &mut texture_view,
+                            texture_view.into_inner(),
                         )
                         .into();
                     output

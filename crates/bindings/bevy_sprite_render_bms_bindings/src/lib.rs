@@ -18,7 +18,7 @@ pub(crate) fn register_color_material_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_sprite_render::ColorMaterial>| {
+        |_self: R<::bevy_sprite_render::ColorMaterial>| {
             let output: V<::bevy_sprite_render::ColorMaterial> = {
                 {
                     let output: V<::bevy_sprite_render::ColorMaterial> =
@@ -46,7 +46,7 @@ pub(crate) fn register_alpha_mode_2_d_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_sprite_render::AlphaMode2d>| {
+        |_self: R<::bevy_sprite_render::AlphaMode2d>| {
             let output: V<::bevy_sprite_render::AlphaMode2d> = {
                 {
                     let output: V<::bevy_sprite_render::AlphaMode2d> =
@@ -62,8 +62,8 @@ pub(crate) fn register_alpha_mode_2_d_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_sprite_render::AlphaMode2d>,
-         mut other: R<::bevy_sprite_render::AlphaMode2d>| {
+        |_self: R<::bevy_sprite_render::AlphaMode2d>,
+         other: R<::bevy_sprite_render::AlphaMode2d>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -93,7 +93,7 @@ pub(crate) fn register_wireframe_2_d_material_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_sprite_render::Wireframe2dMaterial>| {
+        |_self: R<::bevy_sprite_render::Wireframe2dMaterial>| {
             let output: V<::bevy_sprite_render::Wireframe2dMaterial> = {
                 {
                     let output: V<::bevy_sprite_render::Wireframe2dMaterial> =
@@ -315,7 +315,7 @@ pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_sprite_render::Mesh2dWireframe>| {
+            |_self: R<::bevy_sprite_render::Mesh2dWireframe>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_sprite_render::Mesh2dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -332,7 +332,7 @@ pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_sprite_render::Mesh2dWireframe>| {
+            |_self: R<::bevy_sprite_render::Mesh2dWireframe>| {
                 let output: V<::bevy_sprite_render::Mesh2dWireframe> = {
                     {
                         let output: V<::bevy_sprite_render::Mesh2dWireframe> = <::bevy_sprite_render::Mesh2dWireframe as ::std::clone::Clone>::clone(
@@ -350,8 +350,8 @@ pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_sprite_render::Mesh2dWireframe>,
-                mut other: R<::bevy_sprite_render::Mesh2dWireframe>|
+                _self: R<::bevy_sprite_render::Mesh2dWireframe>,
+                other: R<::bevy_sprite_render::Mesh2dWireframe>|
             {
                 let output: bool = {
                     {

@@ -256,7 +256,7 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
         .register_documented(
             "clone",
             |
-                mut _self: R<
+                _self: R<
                     ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
                 >|
             {
@@ -281,10 +281,10 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<
+                _self: R<
                     ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
                 >,
-                mut other: R<
+                other: R<
                     ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
                 >|
             {

@@ -406,7 +406,7 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_input::mouse::MouseButton>| {
+            |_self: R<::bevy_input::mouse::MouseButton>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::mouse::MouseButton as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -423,7 +423,7 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_input::mouse::MouseButton>| {
+            |_self: R<::bevy_input::mouse::MouseButton>| {
                 let output: V<::bevy_input::mouse::MouseButton> = {
                     {
                         let output: V<::bevy_input::mouse::MouseButton> = <::bevy_input::mouse::MouseButton as ::core::clone::Clone>::clone(
@@ -441,8 +441,8 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_input::mouse::MouseButton>,
-                mut other: R<::bevy_input::mouse::MouseButton>|
+                _self: R<::bevy_input::mouse::MouseButton>,
+                other: R<::bevy_input::mouse::MouseButton>|
             {
                 let output: bool = {
                     {
@@ -716,7 +716,7 @@ pub(crate) fn register_accumulated_mouse_motion_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_input::mouse::AccumulatedMouseMotion>| {
+            |_self: R<::bevy_input::mouse::AccumulatedMouseMotion>| {
                 let output: V<::bevy_input::mouse::AccumulatedMouseMotion> = {
                     {
                         let output: V<::bevy_input::mouse::AccumulatedMouseMotion> = <::bevy_input::mouse::AccumulatedMouseMotion as ::core::clone::Clone>::clone(
@@ -734,8 +734,8 @@ pub(crate) fn register_accumulated_mouse_motion_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_input::mouse::AccumulatedMouseMotion>,
-                mut other: R<::bevy_input::mouse::AccumulatedMouseMotion>|
+                _self: R<::bevy_input::mouse::AccumulatedMouseMotion>,
+                other: R<::bevy_input::mouse::AccumulatedMouseMotion>|
             {
                 let output: bool = {
                     {
@@ -765,7 +765,7 @@ pub(crate) fn register_accumulated_mouse_scroll_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_input::mouse::AccumulatedMouseScroll>| {
+            |_self: R<::bevy_input::mouse::AccumulatedMouseScroll>| {
                 let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = {
                     {
                         let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = <::bevy_input::mouse::AccumulatedMouseScroll as ::core::clone::Clone>::clone(
@@ -783,8 +783,8 @@ pub(crate) fn register_accumulated_mouse_scroll_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_input::mouse::AccumulatedMouseScroll>,
-                mut other: R<::bevy_input::mouse::AccumulatedMouseScroll>|
+                _self: R<::bevy_input::mouse::AccumulatedMouseScroll>,
+                other: R<::bevy_input::mouse::AccumulatedMouseScroll>|
             {
                 let output: bool = {
                     {
@@ -814,7 +814,7 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_input::mouse::MouseButtonInput>| {
+            |_self: R<::bevy_input::mouse::MouseButtonInput>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::mouse::MouseButtonInput as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -831,7 +831,7 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_input::mouse::MouseButtonInput>| {
+            |_self: R<::bevy_input::mouse::MouseButtonInput>| {
                 let output: V<::bevy_input::mouse::MouseButtonInput> = {
                     {
                         let output: V<::bevy_input::mouse::MouseButtonInput> = <::bevy_input::mouse::MouseButtonInput as ::core::clone::Clone>::clone(
@@ -849,8 +849,8 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_input::mouse::MouseButtonInput>,
-                mut other: R<::bevy_input::mouse::MouseButtonInput>|
+                _self: R<::bevy_input::mouse::MouseButtonInput>,
+                other: R<::bevy_input::mouse::MouseButtonInput>|
             {
                 let output: bool = {
                     {
@@ -880,7 +880,7 @@ pub(crate) fn register_mouse_motion_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_input::mouse::MouseMotion>| {
+        |_self: R<::bevy_input::mouse::MouseMotion>| {
             let output: V<::bevy_input::mouse::MouseMotion> = {
                 {
                     let output: V<::bevy_input::mouse::MouseMotion> =
@@ -896,8 +896,7 @@ pub(crate) fn register_mouse_motion_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_input::mouse::MouseMotion>,
-         mut other: R<::bevy_input::mouse::MouseMotion>| {
+        |_self: R<::bevy_input::mouse::MouseMotion>, other: R<::bevy_input::mouse::MouseMotion>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -927,7 +926,7 @@ pub(crate) fn register_mouse_wheel_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_input::mouse::MouseWheel>| {
+        |_self: R<::bevy_input::mouse::MouseWheel>| {
             let output: V<::bevy_input::mouse::MouseWheel> = {
                 {
                     let output: V<::bevy_input::mouse::MouseWheel> =
@@ -943,8 +942,7 @@ pub(crate) fn register_mouse_wheel_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |mut _self: R<::bevy_input::mouse::MouseWheel>,
-         mut other: R<::bevy_input::mouse::MouseWheel>| {
+        |_self: R<::bevy_input::mouse::MouseWheel>, other: R<::bevy_input::mouse::MouseWheel>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -2646,7 +2644,7 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_input::mouse::MouseScrollUnit>| {
+            |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::mouse::MouseScrollUnit as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -2663,7 +2661,7 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_input::mouse::MouseScrollUnit>| {
+            |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
                 let output: V<::bevy_input::mouse::MouseScrollUnit> = {
                     {
                         let output: V<::bevy_input::mouse::MouseScrollUnit> = <::bevy_input::mouse::MouseScrollUnit as ::core::clone::Clone>::clone(
@@ -2681,8 +2679,8 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                mut _self: R<::bevy_input::mouse::MouseScrollUnit>,
-                mut other: R<::bevy_input::mouse::MouseScrollUnit>|
+                _self: R<::bevy_input::mouse::MouseScrollUnit>,
+                other: R<::bevy_input::mouse::MouseScrollUnit>|
             {
                 let output: bool = {
                     {

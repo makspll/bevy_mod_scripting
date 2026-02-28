@@ -239,12 +239,12 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "from_seconds",
-            |duration: f32, mut mode: V<::bevy_time::TimerMode>| {
+            |duration: f32, mode: V<::bevy_time::TimerMode>| {
                 let output: V<::bevy_time::Timer> = {
                     {
                         let output: V<::bevy_time::Timer> = ::bevy_time::Timer::from_seconds(
                                 duration,
-                                &mut mode,
+                                mode.into_inner(),
                             )
                             .into();
                         output
@@ -318,12 +318,12 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |duration: V<::core::time::Duration>, mut mode: V<::bevy_time::TimerMode>| {
+            |duration: V<::core::time::Duration>, mode: V<::bevy_time::TimerMode>| {
                 let output: V<::bevy_time::Timer> = {
                     {
                         let output: V<::bevy_time::Timer> = ::bevy_time::Timer::new(
                                 duration.into_inner(),
-                                &mut mode,
+                                mode.into_inner(),
                             )
                             .into();
                         output
@@ -432,12 +432,12 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "set_mode",
-            |mut _self: M<::bevy_time::Timer>, mut mode: V<::bevy_time::TimerMode>| {
+            |mut _self: M<::bevy_time::Timer>, mode: V<::bevy_time::TimerMode>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::set_mode(
                                 &mut _self,
-                                &mut mode,
+                                mode.into_inner(),
                             )
                             .into();
                         output
@@ -490,7 +490,7 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |mut _self: R<::bevy_time::TimerMode>| {
+            |_self: R<::bevy_time::TimerMode>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_time::TimerMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -507,7 +507,7 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_time::TimerMode>| {
+            |_self: R<::bevy_time::TimerMode>| {
                 let output: V<::bevy_time::TimerMode> = {
                     {
                         let output: V<::bevy_time::TimerMode> = <::bevy_time::TimerMode as ::core::clone::Clone>::clone(
@@ -524,7 +524,7 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |mut _self: R<::bevy_time::TimerMode>, mut other: R<::bevy_time::TimerMode>| {
+            |_self: R<::bevy_time::TimerMode>, other: R<::bevy_time::TimerMode>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_time::TimerMode as ::core::cmp::PartialEq<

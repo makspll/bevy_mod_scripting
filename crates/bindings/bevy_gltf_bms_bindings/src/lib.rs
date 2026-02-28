@@ -74,7 +74,7 @@ pub(crate) fn register_gltf_mesh_extras_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_gltf::GltfMeshExtras>| {
+            |_self: R<::bevy_gltf::GltfMeshExtras>| {
                 let output: V<::bevy_gltf::GltfMeshExtras> = {
                     {
                         let output: V<::bevy_gltf::GltfMeshExtras> = <::bevy_gltf::GltfMeshExtras as ::std::clone::Clone>::clone(
@@ -103,7 +103,7 @@ pub(crate) fn register_gltf_mesh_name_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |mut _self: R<::bevy_gltf::GltfMeshName>| {
+            |_self: R<::bevy_gltf::GltfMeshName>| {
                 let output: V<::bevy_gltf::GltfMeshName> = {
                     {
                         let output: V<::bevy_gltf::GltfMeshName> = <::bevy_gltf::GltfMeshName as ::std::clone::Clone>::clone(
@@ -132,7 +132,7 @@ pub(crate) fn register_gltf_material_extras_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_gltf::GltfMaterialExtras>| {
+        |_self: R<::bevy_gltf::GltfMaterialExtras>| {
             let output: V<::bevy_gltf::GltfMaterialExtras> = {
                 {
                     let output: V<::bevy_gltf::GltfMaterialExtras> =
@@ -160,7 +160,7 @@ pub(crate) fn register_gltf_material_name_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |mut _self: R<::bevy_gltf::GltfMaterialName>| {
+        |_self: R<::bevy_gltf::GltfMaterialName>| {
             let output: V<::bevy_gltf::GltfMaterialName> = {
                 {
                     let output: V<::bevy_gltf::GltfMaterialName> =
