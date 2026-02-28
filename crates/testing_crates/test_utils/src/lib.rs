@@ -95,7 +95,7 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
                 p.file_name().and_then(|f| f.to_str()).is_some_and(|p| {
                     p == "scenario.txt"
                         || p == "group_scenario.txt"
-                        || p.split(".").last().is_some_and(|ext| ext == ".bmsscenario")
+                        || p.split(".").last().is_some_and(|ext| ext == "bmsscenario")
                 })
             });
 

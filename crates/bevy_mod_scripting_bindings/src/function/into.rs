@@ -1,6 +1,6 @@
 //! Implementations of the [`IntoScript`] trait for various types.
 
-use super::{DynamicScriptFunction, DynamicScriptFunctionMut, Union, Val};
+use super::{DynamicScriptFunction, DynamicScriptFunctionMut, Union, V};
 use crate::{ReflectReference, ScriptValue, WorldGuard, error::InteropError};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
@@ -111,7 +111,7 @@ impl IntoScript for ReflectReference {
 }
 
 #[profiling::all_functions]
-impl<T: Reflect> IntoScript for Val<T> {
+impl<T: Reflect> IntoScript for V<T> {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
         let boxed = Box::new(self.0);
         let allocator = world.allocator();

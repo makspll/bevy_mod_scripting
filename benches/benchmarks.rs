@@ -10,9 +10,7 @@ use bevy::{
     },
     reflect::Reflect,
 };
-use bevy_mod_scripting_bindings::{
-    FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
-};
+use bevy_mod_scripting_bindings::{FromScript, IntoScript, M, R, ReflectReference, ScriptValue, V};
 use criterion::{
     BatchSize, BenchmarkFilter, BenchmarkGroup, Criterion, criterion_main, measurement::Measurement,
 };
@@ -226,10 +224,10 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
 
     perform_benchmark_with_generator(
         "Val<T>::from_into",
-        &|rng, _| Val::new(ReflectyVal(rng.random::<u32>())),
+        &|rng, _| V::new(ReflectyVal(rng.random::<u32>())),
         &|w, i| {
             let v = i.into_script(w.clone()).unwrap();
-            Val::<ReflectyVal>::from_script(v, w).unwrap();
+            V::<ReflectyVal>::from_script(v, w).unwrap();
         },
         &mut group,
         BatchSize::SmallInput,
@@ -238,12 +236,12 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
     perform_benchmark_with_generator(
         "Ref<T>::from",
         &|rng, w| {
-            Val::new(ReflectyVal(rng.random::<u32>()))
+            V::new(ReflectyVal(rng.random::<u32>()))
                 .into_script(w)
                 .unwrap()
         },
         &|w, i| {
-            Ref::<ReflectyVal>::from_script(i, w).unwrap();
+            R::<ReflectyVal>::from_script(i, w).unwrap();
         },
         &mut group,
         BatchSize::SmallInput,
@@ -252,12 +250,12 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
     perform_benchmark_with_generator(
         "Mut<T>::from",
         &|rng, w| {
-            Val::new(ReflectyVal(rng.random::<u32>()))
+            V::new(ReflectyVal(rng.random::<u32>()))
                 .into_script(w)
                 .unwrap()
         },
         &|w, i| {
-            Mut::<ReflectyVal>::from_script(i, w).unwrap();
+            M::<ReflectyVal>::from_script(i, w).unwrap();
         },
         &mut group,
         BatchSize::SmallInput,

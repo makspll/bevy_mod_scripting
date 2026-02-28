@@ -6,7 +6,7 @@ use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
@@ -18,10 +18,10 @@ pub(crate) fn register_sprite_picking_camera_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_sprite::SpritePickingCamera>| {
-            let output: Val<::bevy_sprite::SpritePickingCamera> = {
+        |_self: R<::bevy_sprite::SpritePickingCamera>| {
+            let output: V<::bevy_sprite::SpritePickingCamera> = {
                 {
-                    let output: Val<::bevy_sprite::SpritePickingCamera> =
+                    let output: V<::bevy_sprite::SpritePickingCamera> =
                         <::bevy_sprite::SpritePickingCamera as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -46,10 +46,10 @@ pub(crate) fn register_sprite_picking_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_sprite::SpritePickingMode>| {
-            let output: Val<::bevy_sprite::SpritePickingMode> = {
+        |_self: R<::bevy_sprite::SpritePickingMode>| {
+            let output: V<::bevy_sprite::SpritePickingMode> = {
                 {
-                    let output: Val<::bevy_sprite::SpritePickingMode> =
+                    let output: V<::bevy_sprite::SpritePickingMode> =
                         <::bevy_sprite::SpritePickingMode as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -86,10 +86,10 @@ pub(crate) fn register_text_2_d_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_sprite::Text2d>| {
-                let output: Val<::bevy_sprite::Text2d> = {
+            |_self: R<::bevy_sprite::Text2d>| {
+                let output: V<::bevy_sprite::Text2d> = {
                     {
-                        let output: Val<::bevy_sprite::Text2d> = <::bevy_sprite::Text2d as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_sprite::Text2d> = <::bevy_sprite::Text2d as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -113,10 +113,10 @@ pub(crate) fn register_sprite_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_sprite::Sprite>| {
-                let output: Val<::bevy_sprite::Sprite> = {
+            |_self: R<::bevy_sprite::Sprite>| {
+                let output: V<::bevy_sprite::Sprite> = {
                     {
-                        let output: Val<::bevy_sprite::Sprite> = <::bevy_sprite::Sprite as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_sprite::Sprite> = <::bevy_sprite::Sprite as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -130,10 +130,10 @@ pub(crate) fn register_sprite_functions(world: &mut World) {
         )
         .register_documented(
             "sized",
-            |custom_size: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_sprite::Sprite> = {
+            |custom_size: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_sprite::Sprite> = {
                     {
-                        let output: Val<::bevy_sprite::Sprite> = ::bevy_sprite::Sprite::sized(
+                        let output: V<::bevy_sprite::Sprite> = ::bevy_sprite::Sprite::sized(
                                 custom_size.into_inner(),
                             )
                             .into();
@@ -157,10 +157,10 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_sprite::SpriteImageMode>| {
-                let output: Val<::bevy_sprite::SpriteImageMode> = {
+            |_self: R<::bevy_sprite::SpriteImageMode>| {
+                let output: V<::bevy_sprite::SpriteImageMode> = {
                     {
-                        let output: Val<::bevy_sprite::SpriteImageMode> = <::bevy_sprite::SpriteImageMode as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_sprite::SpriteImageMode> = <::bevy_sprite::SpriteImageMode as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -175,8 +175,8 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_sprite::SpriteImageMode>,
-                other: Ref<::bevy_sprite::SpriteImageMode>|
+                _self: R<::bevy_sprite::SpriteImageMode>,
+                other: R<::bevy_sprite::SpriteImageMode>|
             {
                 let output: bool = {
                     {
@@ -194,7 +194,7 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
         )
         .register_documented(
             "uses_slices",
-            |_self: Ref<::bevy_sprite::SpriteImageMode>| {
+            |_self: R<::bevy_sprite::SpriteImageMode>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_sprite::SpriteImageMode::uses_slices(
@@ -223,10 +223,10 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "add",
-            |_self: Val<::bevy_sprite::BorderRect>, rhs: Val<::bevy_sprite::BorderRect>| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+            |_self: V<::bevy_sprite::BorderRect>, rhs: V<::bevy_sprite::BorderRect>| {
+                let output: V<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Add<
+                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Add<
                             ::bevy_sprite::BorderRect,
                         >>::add(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -241,9 +241,9 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         .register_documented(
             "all",
             |inset: f32| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+                let output: V<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_sprite::BorderRect::all(
+                        let output: V<::bevy_sprite::BorderRect> = ::bevy_sprite::BorderRect::all(
                                 inset,
                             )
                             .into();
@@ -258,9 +258,9 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         .register_documented(
             "axes",
             |horizontal: f32, vertical: f32| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+                let output: V<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = ::bevy_sprite::BorderRect::axes(
+                        let output: V<::bevy_sprite::BorderRect> = ::bevy_sprite::BorderRect::axes(
                                 horizontal,
                                 vertical,
                             )
@@ -275,10 +275,10 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_sprite::BorderRect>| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+            |_self: R<::bevy_sprite::BorderRect>| {
+                let output: V<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -292,10 +292,10 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |_self: Val<::bevy_sprite::BorderRect>, rhs: f32| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+            |_self: V<::bevy_sprite::BorderRect>, rhs: f32| {
+                let output: V<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Div<
+                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -309,10 +309,7 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_sprite::BorderRect>,
-                other: Ref<::bevy_sprite::BorderRect>|
-            {
+            |_self: R<::bevy_sprite::BorderRect>, other: R<::bevy_sprite::BorderRect>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_sprite::BorderRect as ::std::cmp::PartialEq<
@@ -329,10 +326,10 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: Val<::bevy_sprite::BorderRect>, rhs: f32| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+            |_self: V<::bevy_sprite::BorderRect>, rhs: f32| {
+                let output: V<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Mul<
+                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -346,10 +343,10 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
         )
         .register_documented(
             "sub",
-            |_self: Val<::bevy_sprite::BorderRect>, rhs: Val<::bevy_sprite::BorderRect>| {
-                let output: Val<::bevy_sprite::BorderRect> = {
+            |_self: V<::bevy_sprite::BorderRect>, rhs: V<::bevy_sprite::BorderRect>| {
+                let output: V<::bevy_sprite::BorderRect> = {
                     {
-                        let output: Val<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Sub<
+                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Sub<
                             ::bevy_sprite::BorderRect,
                         >>::sub(_self.into_inner(), rhs.into_inner())
                             .into();
@@ -375,10 +372,10 @@ pub(crate) fn register_slice_scale_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_sprite::SliceScaleMode>| {
-            let output: Val<::bevy_sprite::SliceScaleMode> = {
+        |_self: R<::bevy_sprite::SliceScaleMode>| {
+            let output: V<::bevy_sprite::SliceScaleMode> = {
                 {
-                    let output: Val<::bevy_sprite::SliceScaleMode> =
+                    let output: V<::bevy_sprite::SliceScaleMode> =
                         <::bevy_sprite::SliceScaleMode as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -391,7 +388,7 @@ pub(crate) fn register_slice_scale_mode_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_sprite::SliceScaleMode>, other: Ref<::bevy_sprite::SliceScaleMode>| {
+        |_self: R<::bevy_sprite::SliceScaleMode>, other: R<::bevy_sprite::SliceScaleMode>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_sprite::SliceScaleMode as ::std::cmp::PartialEq<
@@ -420,10 +417,10 @@ pub(crate) fn register_texture_slicer_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_sprite::TextureSlicer>| {
-            let output: Val<::bevy_sprite::TextureSlicer> = {
+        |_self: R<::bevy_sprite::TextureSlicer>| {
+            let output: V<::bevy_sprite::TextureSlicer> = {
                 {
-                    let output: Val<::bevy_sprite::TextureSlicer> =
+                    let output: V<::bevy_sprite::TextureSlicer> =
                         <::bevy_sprite::TextureSlicer as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -435,7 +432,7 @@ pub(crate) fn register_texture_slicer_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_sprite::TextureSlicer>, other: Ref<::bevy_sprite::TextureSlicer>| {
+        |_self: R<::bevy_sprite::TextureSlicer>, other: R<::bevy_sprite::TextureSlicer>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_sprite::TextureSlicer as ::std::cmp::PartialEq<
@@ -464,10 +461,10 @@ pub(crate) fn register_sprite_scaling_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_sprite::SpriteScalingMode>| {
-            let output: Val<::bevy_sprite::SpriteScalingMode> = {
+        |_self: R<::bevy_sprite::SpriteScalingMode>| {
+            let output: V<::bevy_sprite::SpriteScalingMode> = {
                 {
-                    let output: Val<::bevy_sprite::SpriteScalingMode> =
+                    let output: V<::bevy_sprite::SpriteScalingMode> =
                         <::bevy_sprite::SpriteScalingMode as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -480,8 +477,7 @@ pub(crate) fn register_sprite_scaling_mode_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_sprite::SpriteScalingMode>,
-         other: Ref<::bevy_sprite::SpriteScalingMode>| {
+        |_self: R<::bevy_sprite::SpriteScalingMode>, other: R<::bevy_sprite::SpriteScalingMode>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -511,10 +507,10 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "as_vec",
-            |_self: Ref<::bevy_sprite::Anchor>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_sprite::Anchor>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_sprite::Anchor::as_vec(
+                        let output: V<::bevy_math::Vec2> = ::bevy_sprite::Anchor::as_vec(
                                 &_self,
                             )
                             .into();
@@ -528,10 +524,10 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_sprite::Anchor>| {
-                let output: Val<::bevy_sprite::Anchor> = {
+            |_self: R<::bevy_sprite::Anchor>| {
+                let output: V<::bevy_sprite::Anchor> = {
                     {
-                        let output: Val<::bevy_sprite::Anchor> = <::bevy_sprite::Anchor as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_sprite::Anchor> = <::bevy_sprite::Anchor as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -545,7 +541,7 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_sprite::Anchor>, other: Ref<::bevy_sprite::Anchor>| {
+            |_self: R<::bevy_sprite::Anchor>, other: R<::bevy_sprite::Anchor>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_sprite::Anchor as ::std::cmp::PartialEq<
@@ -572,10 +568,10 @@ pub(crate) fn register_text_2_d_shadow_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_sprite::Text2dShadow>| {
-                let output: Val<::bevy_sprite::Text2dShadow> = {
+            |_self: R<::bevy_sprite::Text2dShadow>| {
+                let output: V<::bevy_sprite::Text2dShadow> = {
                     {
-                        let output: Val<::bevy_sprite::Text2dShadow> = <::bevy_sprite::Text2dShadow as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_sprite::Text2dShadow> = <::bevy_sprite::Text2dShadow as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -590,8 +586,8 @@ pub(crate) fn register_text_2_d_shadow_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_sprite::Text2dShadow>,
-                other: Ref<::bevy_sprite::Text2dShadow>|
+                _self: R<::bevy_sprite::Text2dShadow>,
+                other: R<::bevy_sprite::Text2dShadow>|
             {
                 let output: bool = {
                     {

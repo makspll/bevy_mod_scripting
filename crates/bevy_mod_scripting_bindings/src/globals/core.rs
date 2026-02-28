@@ -15,7 +15,7 @@ use std::{cell::RefCell, sync::Arc};
 
 use crate::{
     ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, WorldGuard,
-    function::from::{Union, Val},
+    function::from::{Union, V},
 };
 use crate::{docgen::into_through_type_info, error::InteropError};
 
@@ -116,7 +116,7 @@ fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration)
         warn!("existing `entity` global was replaced by the core `entity` dummy type.")
     }
 
-    if global_registry.register_dummy_typed::<Val<Handle<ScriptAsset>>>("script_asset", "the asset handle for this script. If the asset is ever unloaded, the handle will be less useful.").is_some() {
+    if global_registry.register_dummy_typed::<V<Handle<ScriptAsset>>>("script_asset", "the asset handle for this script. If the asset is ever unloaded, the handle will be less useful.").is_some() {
         warn!("existing `script_asset` global was replaced by the core `script_asset` dummy type.")
     };
 }
@@ -134,8 +134,8 @@ impl CoreGlobals {
         HashMap<
             String,
             Union<
-                Val<ScriptTypeRegistration>,
-                Union<Val<ScriptComponentRegistration>, Val<ScriptResourceRegistration>>,
+                V<ScriptTypeRegistration>,
+                Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
             >,
         >,
         InteropError,
@@ -149,8 +149,7 @@ impl CoreGlobals {
             let type_path = registration.type_info().type_path_table().short_path();
             let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
             let registration = guard.clone().get_type_registration(registration)?;
-            let registration =
-                registration.map_both(Val::from, |u| u.map_both(Val::from, Val::from));
+            let registration = registration.map_both(V::from, |u| u.map_both(V::from, V::from));
             if type_cache
                 .insert(type_path.to_owned(), registration)
                 .is_some()

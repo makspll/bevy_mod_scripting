@@ -15,7 +15,9 @@ impl TestExecutor for Test {
     fn execute(self) -> Result<(), Failed> {
         let script_asset_path = self.script_asset_path;
         let scenario_path = self.scenario_path.ok_or_else(|| {
-            Failed::from("Test does not have a scenario.txt file near to use for test".to_string())
+            Failed::from(
+                "Test does not have a scenario.bmsscenario file near to use for test".to_string(),
+            )
         })?;
         println!(
             "Running test: {}, with scenario: {}",

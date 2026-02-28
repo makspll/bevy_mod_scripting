@@ -6,7 +6,7 @@ use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
@@ -18,10 +18,10 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "dpad",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_input::gamepad::Gamepad>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::dpad(
+                        let output: V<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::dpad(
                                 &_self,
                             )
                             .into();
@@ -36,8 +36,8 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         .register_documented(
             "just_pressed",
             |
-                _self: Ref<::bevy_input::gamepad::Gamepad>,
-                button_type: Val<::bevy_input::gamepad::GamepadButton>|
+                _self: R<::bevy_input::gamepad::Gamepad>,
+                button_type: V<::bevy_input::gamepad::GamepadButton>|
             {
                 let output: bool = {
                     {
@@ -57,8 +57,8 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         .register_documented(
             "just_released",
             |
-                _self: Ref<::bevy_input::gamepad::Gamepad>,
-                button_type: Val<::bevy_input::gamepad::GamepadButton>|
+                _self: R<::bevy_input::gamepad::Gamepad>,
+                button_type: V<::bevy_input::gamepad::GamepadButton>|
             {
                 let output: bool = {
                     {
@@ -77,10 +77,10 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         )
         .register_documented(
             "left_stick",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_input::gamepad::Gamepad>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::left_stick(
+                        let output: V<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::left_stick(
                                 &_self,
                             )
                             .into();
@@ -95,8 +95,8 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         .register_documented(
             "pressed",
             |
-                _self: Ref<::bevy_input::gamepad::Gamepad>,
-                button_type: Val<::bevy_input::gamepad::GamepadButton>|
+                _self: R<::bevy_input::gamepad::Gamepad>,
+                button_type: V<::bevy_input::gamepad::GamepadButton>|
             {
                 let output: bool = {
                     {
@@ -115,7 +115,7 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         )
         .register_documented(
             "product_id",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
+            |_self: R<::bevy_input::gamepad::Gamepad>| {
                 let output: ::core::option::Option<u16> = {
                     {
                         let output: ::core::option::Option<u16> = ::bevy_input::gamepad::Gamepad::product_id(
@@ -132,10 +132,10 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         )
         .register_documented(
             "right_stick",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_input::gamepad::Gamepad>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::right_stick(
+                        let output: V<::bevy_math::Vec2> = ::bevy_input::gamepad::Gamepad::right_stick(
                                 &_self,
                             )
                             .into();
@@ -149,7 +149,7 @@ pub(crate) fn register_gamepad_functions(world: &mut World) {
         )
         .register_documented(
             "vendor_id",
-            |_self: Ref<::bevy_input::gamepad::Gamepad>| {
+            |_self: R<::bevy_input::gamepad::Gamepad>| {
                 let output: ::core::option::Option<u16> = {
                     {
                         let output: ::core::option::Option<u16> = ::bevy_input::gamepad::Gamepad::vendor_id(
@@ -178,7 +178,7 @@ pub(crate) fn register_gamepad_axis_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::gamepad::GamepadAxis>| {
+            |_self: R<::bevy_input::gamepad::GamepadAxis>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::gamepad::GamepadAxis as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -195,10 +195,10 @@ pub(crate) fn register_gamepad_axis_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadAxis>| {
-                let output: Val<::bevy_input::gamepad::GamepadAxis> = {
+            |_self: R<::bevy_input::gamepad::GamepadAxis>| {
+                let output: V<::bevy_input::gamepad::GamepadAxis> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadAxis> = <::bevy_input::gamepad::GamepadAxis as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::GamepadAxis> = <::bevy_input::gamepad::GamepadAxis as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -213,8 +213,8 @@ pub(crate) fn register_gamepad_axis_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadAxis>,
-                other: Ref<::bevy_input::gamepad::GamepadAxis>|
+                _self: R<::bevy_input::gamepad::GamepadAxis>,
+                other: R<::bevy_input::gamepad::GamepadAxis>|
             {
                 let output: bool = {
                     {
@@ -244,7 +244,7 @@ pub(crate) fn register_gamepad_button_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::gamepad::GamepadButton>| {
+            |_self: R<::bevy_input::gamepad::GamepadButton>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::gamepad::GamepadButton as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -261,10 +261,10 @@ pub(crate) fn register_gamepad_button_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadButton>| {
-                let output: Val<::bevy_input::gamepad::GamepadButton> = {
+            |_self: R<::bevy_input::gamepad::GamepadButton>| {
+                let output: V<::bevy_input::gamepad::GamepadButton> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadButton> = <::bevy_input::gamepad::GamepadButton as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::GamepadButton> = <::bevy_input::gamepad::GamepadButton as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -279,8 +279,8 @@ pub(crate) fn register_gamepad_button_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadButton>,
-                other: Ref<::bevy_input::gamepad::GamepadButton>|
+                _self: R<::bevy_input::gamepad::GamepadButton>,
+                other: R<::bevy_input::gamepad::GamepadButton>|
             {
                 let output: bool = {
                     {
@@ -310,10 +310,10 @@ pub(crate) fn register_gamepad_settings_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gamepad::GamepadSettings>| {
-            let output: Val<::bevy_input::gamepad::GamepadSettings> = {
+        |_self: R<::bevy_input::gamepad::GamepadSettings>| {
+            let output: V<::bevy_input::gamepad::GamepadSettings> = {
                 {
-                    let output: Val<::bevy_input::gamepad::GamepadSettings> =
+                    let output: V<::bevy_input::gamepad::GamepadSettings> =
                         <::bevy_input::gamepad::GamepadSettings as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -340,7 +340,7 @@ pub(crate) fn register_key_code_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::keyboard::KeyCode>| {
+            |_self: R<::bevy_input::keyboard::KeyCode>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::keyboard::KeyCode as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -357,10 +357,10 @@ pub(crate) fn register_key_code_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::keyboard::KeyCode>| {
-                let output: Val<::bevy_input::keyboard::KeyCode> = {
+            |_self: R<::bevy_input::keyboard::KeyCode>| {
+                let output: V<::bevy_input::keyboard::KeyCode> = {
                     {
-                        let output: Val<::bevy_input::keyboard::KeyCode> = <::bevy_input::keyboard::KeyCode as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::keyboard::KeyCode> = <::bevy_input::keyboard::KeyCode as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -375,8 +375,8 @@ pub(crate) fn register_key_code_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::keyboard::KeyCode>,
-                other: Ref<::bevy_input::keyboard::KeyCode>|
+                _self: R<::bevy_input::keyboard::KeyCode>,
+                other: R<::bevy_input::keyboard::KeyCode>|
             {
                 let output: bool = {
                     {
@@ -406,7 +406,7 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::mouse::MouseButton>| {
+            |_self: R<::bevy_input::mouse::MouseButton>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::mouse::MouseButton as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -423,10 +423,10 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::mouse::MouseButton>| {
-                let output: Val<::bevy_input::mouse::MouseButton> = {
+            |_self: R<::bevy_input::mouse::MouseButton>| {
+                let output: V<::bevy_input::mouse::MouseButton> = {
                     {
-                        let output: Val<::bevy_input::mouse::MouseButton> = <::bevy_input::mouse::MouseButton as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::mouse::MouseButton> = <::bevy_input::mouse::MouseButton as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -441,8 +441,8 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::mouse::MouseButton>,
-                other: Ref<::bevy_input::mouse::MouseButton>|
+                _self: R<::bevy_input::mouse::MouseButton>,
+                other: R<::bevy_input::mouse::MouseButton>|
             {
                 let output: bool = {
                     {
@@ -472,10 +472,10 @@ pub(crate) fn register_touch_input_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::touch::TouchInput>| {
-            let output: Val<::bevy_input::touch::TouchInput> = {
+        |_self: R<::bevy_input::touch::TouchInput>| {
+            let output: V<::bevy_input::touch::TouchInput> = {
                 {
-                    let output: Val<::bevy_input::touch::TouchInput> =
+                    let output: V<::bevy_input::touch::TouchInput> =
                         <::bevy_input::touch::TouchInput as ::core::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -488,8 +488,7 @@ pub(crate) fn register_touch_input_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::touch::TouchInput>,
-         other: Ref<::bevy_input::touch::TouchInput>| {
+        |_self: R<::bevy_input::touch::TouchInput>, other: R<::bevy_input::touch::TouchInput>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -519,7 +518,7 @@ pub(crate) fn register_key_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::keyboard::Key>| {
+            |_self: R<::bevy_input::keyboard::Key>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::keyboard::Key as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -536,10 +535,10 @@ pub(crate) fn register_key_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::keyboard::Key>| {
-                let output: Val<::bevy_input::keyboard::Key> = {
+            |_self: R<::bevy_input::keyboard::Key>| {
+                let output: V<::bevy_input::keyboard::Key> = {
                     {
-                        let output: Val<::bevy_input::keyboard::Key> = <::bevy_input::keyboard::Key as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::keyboard::Key> = <::bevy_input::keyboard::Key as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -554,8 +553,8 @@ pub(crate) fn register_key_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::keyboard::Key>,
-                other: Ref<::bevy_input::keyboard::Key>|
+                _self: R<::bevy_input::keyboard::Key>,
+                other: R<::bevy_input::keyboard::Key>|
             {
                 let output: bool = {
                     {
@@ -585,7 +584,7 @@ pub(crate) fn register_keyboard_focus_lost_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::keyboard::KeyboardFocusLost>| {
+            |_self: R<::bevy_input::keyboard::KeyboardFocusLost>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::keyboard::KeyboardFocusLost as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -602,10 +601,10 @@ pub(crate) fn register_keyboard_focus_lost_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::keyboard::KeyboardFocusLost>| {
-                let output: Val<::bevy_input::keyboard::KeyboardFocusLost> = {
+            |_self: R<::bevy_input::keyboard::KeyboardFocusLost>| {
+                let output: V<::bevy_input::keyboard::KeyboardFocusLost> = {
                     {
-                        let output: Val<::bevy_input::keyboard::KeyboardFocusLost> = <::bevy_input::keyboard::KeyboardFocusLost as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::keyboard::KeyboardFocusLost> = <::bevy_input::keyboard::KeyboardFocusLost as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -620,8 +619,8 @@ pub(crate) fn register_keyboard_focus_lost_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::keyboard::KeyboardFocusLost>,
-                other: Ref<::bevy_input::keyboard::KeyboardFocusLost>|
+                _self: R<::bevy_input::keyboard::KeyboardFocusLost>,
+                other: R<::bevy_input::keyboard::KeyboardFocusLost>|
             {
                 let output: bool = {
                     {
@@ -651,7 +650,7 @@ pub(crate) fn register_keyboard_input_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::keyboard::KeyboardInput>| {
+            |_self: R<::bevy_input::keyboard::KeyboardInput>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::keyboard::KeyboardInput as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -668,10 +667,10 @@ pub(crate) fn register_keyboard_input_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::keyboard::KeyboardInput>| {
-                let output: Val<::bevy_input::keyboard::KeyboardInput> = {
+            |_self: R<::bevy_input::keyboard::KeyboardInput>| {
+                let output: V<::bevy_input::keyboard::KeyboardInput> = {
                     {
-                        let output: Val<::bevy_input::keyboard::KeyboardInput> = <::bevy_input::keyboard::KeyboardInput as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::keyboard::KeyboardInput> = <::bevy_input::keyboard::KeyboardInput as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -686,8 +685,8 @@ pub(crate) fn register_keyboard_input_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::keyboard::KeyboardInput>,
-                other: Ref<::bevy_input::keyboard::KeyboardInput>|
+                _self: R<::bevy_input::keyboard::KeyboardInput>,
+                other: R<::bevy_input::keyboard::KeyboardInput>|
             {
                 let output: bool = {
                     {
@@ -717,10 +716,10 @@ pub(crate) fn register_accumulated_mouse_motion_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::mouse::AccumulatedMouseMotion>| {
-                let output: Val<::bevy_input::mouse::AccumulatedMouseMotion> = {
+            |_self: R<::bevy_input::mouse::AccumulatedMouseMotion>| {
+                let output: V<::bevy_input::mouse::AccumulatedMouseMotion> = {
                     {
-                        let output: Val<::bevy_input::mouse::AccumulatedMouseMotion> = <::bevy_input::mouse::AccumulatedMouseMotion as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::mouse::AccumulatedMouseMotion> = <::bevy_input::mouse::AccumulatedMouseMotion as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -735,8 +734,8 @@ pub(crate) fn register_accumulated_mouse_motion_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::mouse::AccumulatedMouseMotion>,
-                other: Ref<::bevy_input::mouse::AccumulatedMouseMotion>|
+                _self: R<::bevy_input::mouse::AccumulatedMouseMotion>,
+                other: R<::bevy_input::mouse::AccumulatedMouseMotion>|
             {
                 let output: bool = {
                     {
@@ -766,10 +765,10 @@ pub(crate) fn register_accumulated_mouse_scroll_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::mouse::AccumulatedMouseScroll>| {
-                let output: Val<::bevy_input::mouse::AccumulatedMouseScroll> = {
+            |_self: R<::bevy_input::mouse::AccumulatedMouseScroll>| {
+                let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = {
                     {
-                        let output: Val<::bevy_input::mouse::AccumulatedMouseScroll> = <::bevy_input::mouse::AccumulatedMouseScroll as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = <::bevy_input::mouse::AccumulatedMouseScroll as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -784,8 +783,8 @@ pub(crate) fn register_accumulated_mouse_scroll_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::mouse::AccumulatedMouseScroll>,
-                other: Ref<::bevy_input::mouse::AccumulatedMouseScroll>|
+                _self: R<::bevy_input::mouse::AccumulatedMouseScroll>,
+                other: R<::bevy_input::mouse::AccumulatedMouseScroll>|
             {
                 let output: bool = {
                     {
@@ -815,7 +814,7 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::mouse::MouseButtonInput>| {
+            |_self: R<::bevy_input::mouse::MouseButtonInput>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::mouse::MouseButtonInput as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -832,10 +831,10 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::mouse::MouseButtonInput>| {
-                let output: Val<::bevy_input::mouse::MouseButtonInput> = {
+            |_self: R<::bevy_input::mouse::MouseButtonInput>| {
+                let output: V<::bevy_input::mouse::MouseButtonInput> = {
                     {
-                        let output: Val<::bevy_input::mouse::MouseButtonInput> = <::bevy_input::mouse::MouseButtonInput as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::mouse::MouseButtonInput> = <::bevy_input::mouse::MouseButtonInput as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -850,8 +849,8 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::mouse::MouseButtonInput>,
-                other: Ref<::bevy_input::mouse::MouseButtonInput>|
+                _self: R<::bevy_input::mouse::MouseButtonInput>,
+                other: R<::bevy_input::mouse::MouseButtonInput>|
             {
                 let output: bool = {
                     {
@@ -881,10 +880,10 @@ pub(crate) fn register_mouse_motion_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::mouse::MouseMotion>| {
-            let output: Val<::bevy_input::mouse::MouseMotion> = {
+        |_self: R<::bevy_input::mouse::MouseMotion>| {
+            let output: V<::bevy_input::mouse::MouseMotion> = {
                 {
-                    let output: Val<::bevy_input::mouse::MouseMotion> =
+                    let output: V<::bevy_input::mouse::MouseMotion> =
                         <::bevy_input::mouse::MouseMotion as ::core::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -897,8 +896,7 @@ pub(crate) fn register_mouse_motion_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::mouse::MouseMotion>,
-         other: Ref<::bevy_input::mouse::MouseMotion>| {
+        |_self: R<::bevy_input::mouse::MouseMotion>, other: R<::bevy_input::mouse::MouseMotion>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -928,10 +926,10 @@ pub(crate) fn register_mouse_wheel_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::mouse::MouseWheel>| {
-            let output: Val<::bevy_input::mouse::MouseWheel> = {
+        |_self: R<::bevy_input::mouse::MouseWheel>| {
+            let output: V<::bevy_input::mouse::MouseWheel> = {
                 {
-                    let output: Val<::bevy_input::mouse::MouseWheel> =
+                    let output: V<::bevy_input::mouse::MouseWheel> =
                         <::bevy_input::mouse::MouseWheel as ::core::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -944,8 +942,7 @@ pub(crate) fn register_mouse_wheel_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::mouse::MouseWheel>,
-         other: Ref<::bevy_input::mouse::MouseWheel>| {
+        |_self: R<::bevy_input::mouse::MouseWheel>, other: R<::bevy_input::mouse::MouseWheel>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -975,12 +972,10 @@ pub(crate) fn register_gamepad_axis_changed_event_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadAxisChangedEvent>| {
-                let output: Val<::bevy_input::gamepad::GamepadAxisChangedEvent> = {
+            |_self: R<::bevy_input::gamepad::GamepadAxisChangedEvent>| {
+                let output: V<::bevy_input::gamepad::GamepadAxisChangedEvent> = {
                     {
-                        let output: Val<
-                            ::bevy_input::gamepad::GamepadAxisChangedEvent,
-                        > = <::bevy_input::gamepad::GamepadAxisChangedEvent as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::GamepadAxisChangedEvent> = <::bevy_input::gamepad::GamepadAxisChangedEvent as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -995,8 +990,8 @@ pub(crate) fn register_gamepad_axis_changed_event_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadAxisChangedEvent>,
-                other: Ref<::bevy_input::gamepad::GamepadAxisChangedEvent>|
+                _self: R<::bevy_input::gamepad::GamepadAxisChangedEvent>,
+                other: R<::bevy_input::gamepad::GamepadAxisChangedEvent>|
             {
                 let output: bool = {
                     {
@@ -1015,15 +1010,13 @@ pub(crate) fn register_gamepad_axis_changed_event_functions(world: &mut World) {
         .register_documented(
             "new",
             |
-                entity: Val<::bevy_ecs::entity::Entity>,
-                axis: Val<::bevy_input::gamepad::GamepadAxis>,
+                entity: V<::bevy_ecs::entity::Entity>,
+                axis: V<::bevy_input::gamepad::GamepadAxis>,
                 value: f32|
             {
-                let output: Val<::bevy_input::gamepad::GamepadAxisChangedEvent> = {
+                let output: V<::bevy_input::gamepad::GamepadAxisChangedEvent> = {
                     {
-                        let output: Val<
-                            ::bevy_input::gamepad::GamepadAxisChangedEvent,
-                        > = ::bevy_input::gamepad::GamepadAxisChangedEvent::new(
+                        let output: V<::bevy_input::gamepad::GamepadAxisChangedEvent> = ::bevy_input::gamepad::GamepadAxisChangedEvent::new(
                                 entity.into_inner(),
                                 axis.into_inner(),
                                 value,
@@ -1051,10 +1044,10 @@ pub(crate) fn register_gamepad_button_changed_event_functions(world: &mut World)
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadButtonChangedEvent>| {
-                let output: Val<::bevy_input::gamepad::GamepadButtonChangedEvent> = {
+            |_self: R<::bevy_input::gamepad::GamepadButtonChangedEvent>| {
+                let output: V<::bevy_input::gamepad::GamepadButtonChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::GamepadButtonChangedEvent,
                         > = <::bevy_input::gamepad::GamepadButtonChangedEvent as ::core::clone::Clone>::clone(
                                 &_self,
@@ -1071,8 +1064,8 @@ pub(crate) fn register_gamepad_button_changed_event_functions(world: &mut World)
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadButtonChangedEvent>,
-                other: Ref<::bevy_input::gamepad::GamepadButtonChangedEvent>|
+                _self: R<::bevy_input::gamepad::GamepadButtonChangedEvent>,
+                other: R<::bevy_input::gamepad::GamepadButtonChangedEvent>|
             {
                 let output: bool = {
                     {
@@ -1091,14 +1084,14 @@ pub(crate) fn register_gamepad_button_changed_event_functions(world: &mut World)
         .register_documented(
             "new",
             |
-                entity: Val<::bevy_ecs::entity::Entity>,
-                button: Val<::bevy_input::gamepad::GamepadButton>,
-                state: Val<::bevy_input::ButtonState>,
+                entity: V<::bevy_ecs::entity::Entity>,
+                button: V<::bevy_input::gamepad::GamepadButton>,
+                state: V<::bevy_input::ButtonState>,
                 value: f32|
             {
-                let output: Val<::bevy_input::gamepad::GamepadButtonChangedEvent> = {
+                let output: V<::bevy_input::gamepad::GamepadButtonChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::GamepadButtonChangedEvent,
                         > = ::bevy_input::gamepad::GamepadButtonChangedEvent::new(
                                 entity.into_inner(),
@@ -1129,7 +1122,7 @@ pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut 
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
+            |_self: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::gamepad::GamepadButtonStateChangedEvent as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1146,10 +1139,10 @@ pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut 
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
-                let output: Val<::bevy_input::gamepad::GamepadButtonStateChangedEvent> = {
+            |_self: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
+                let output: V<::bevy_input::gamepad::GamepadButtonStateChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::GamepadButtonStateChangedEvent,
                         > = <::bevy_input::gamepad::GamepadButtonStateChangedEvent as ::core::clone::Clone>::clone(
                                 &_self,
@@ -1166,8 +1159,8 @@ pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut 
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadButtonStateChangedEvent>,
-                other: Ref<::bevy_input::gamepad::GamepadButtonStateChangedEvent>|
+                _self: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>,
+                other: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>|
             {
                 let output: bool = {
                     {
@@ -1186,13 +1179,13 @@ pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut 
         .register_documented(
             "new",
             |
-                entity: Val<::bevy_ecs::entity::Entity>,
-                button: Val<::bevy_input::gamepad::GamepadButton>,
-                state: Val<::bevy_input::ButtonState>|
+                entity: V<::bevy_ecs::entity::Entity>,
+                button: V<::bevy_input::gamepad::GamepadButton>,
+                state: V<::bevy_input::ButtonState>|
             {
-                let output: Val<::bevy_input::gamepad::GamepadButtonStateChangedEvent> = {
+                let output: V<::bevy_input::gamepad::GamepadButtonStateChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::GamepadButtonStateChangedEvent,
                         > = ::bevy_input::gamepad::GamepadButtonStateChangedEvent::new(
                                 entity.into_inner(),
@@ -1222,10 +1215,10 @@ pub(crate) fn register_gamepad_connection_event_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadConnectionEvent>| {
-                let output: Val<::bevy_input::gamepad::GamepadConnectionEvent> = {
+            |_self: R<::bevy_input::gamepad::GamepadConnectionEvent>| {
+                let output: V<::bevy_input::gamepad::GamepadConnectionEvent> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadConnectionEvent> = <::bevy_input::gamepad::GamepadConnectionEvent as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::GamepadConnectionEvent> = <::bevy_input::gamepad::GamepadConnectionEvent as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1239,7 +1232,7 @@ pub(crate) fn register_gamepad_connection_event_functions(world: &mut World) {
         )
         .register_documented(
             "connected",
-            |_self: Ref<::bevy_input::gamepad::GamepadConnectionEvent>| {
+            |_self: R<::bevy_input::gamepad::GamepadConnectionEvent>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_input::gamepad::GamepadConnectionEvent::connected(
@@ -1256,7 +1249,7 @@ pub(crate) fn register_gamepad_connection_event_functions(world: &mut World) {
         )
         .register_documented(
             "disconnected",
-            |_self: Ref<::bevy_input::gamepad::GamepadConnectionEvent>| {
+            |_self: R<::bevy_input::gamepad::GamepadConnectionEvent>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_input::gamepad::GamepadConnectionEvent::disconnected(
@@ -1274,8 +1267,8 @@ pub(crate) fn register_gamepad_connection_event_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadConnectionEvent>,
-                other: Ref<::bevy_input::gamepad::GamepadConnectionEvent>|
+                _self: R<::bevy_input::gamepad::GamepadConnectionEvent>,
+                other: R<::bevy_input::gamepad::GamepadConnectionEvent>|
             {
                 let output: bool = {
                     {
@@ -1294,12 +1287,12 @@ pub(crate) fn register_gamepad_connection_event_functions(world: &mut World) {
         .register_documented(
             "new",
             |
-                gamepad: Val<::bevy_ecs::entity::Entity>,
-                connection: Val<::bevy_input::gamepad::GamepadConnection>|
+                gamepad: V<::bevy_ecs::entity::Entity>,
+                connection: V<::bevy_input::gamepad::GamepadConnection>|
             {
-                let output: Val<::bevy_input::gamepad::GamepadConnectionEvent> = {
+                let output: V<::bevy_input::gamepad::GamepadConnectionEvent> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadConnectionEvent> = ::bevy_input::gamepad::GamepadConnectionEvent::new(
+                        let output: V<::bevy_input::gamepad::GamepadConnectionEvent> = ::bevy_input::gamepad::GamepadConnectionEvent::new(
                                 gamepad.into_inner(),
                                 connection.into_inner(),
                             )
@@ -1326,10 +1319,10 @@ pub(crate) fn register_gamepad_event_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gamepad::GamepadEvent>| {
-            let output: Val<::bevy_input::gamepad::GamepadEvent> = {
+        |_self: R<::bevy_input::gamepad::GamepadEvent>| {
+            let output: V<::bevy_input::gamepad::GamepadEvent> = {
                 {
-                    let output: Val<::bevy_input::gamepad::GamepadEvent> =
+                    let output: V<::bevy_input::gamepad::GamepadEvent> =
                         <::bevy_input::gamepad::GamepadEvent as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -1344,8 +1337,8 @@ pub(crate) fn register_gamepad_event_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::gamepad::GamepadEvent>,
-         other: Ref<::bevy_input::gamepad::GamepadEvent>| {
+        |_self: R<::bevy_input::gamepad::GamepadEvent>,
+         other: R<::bevy_input::gamepad::GamepadEvent>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1375,10 +1368,10 @@ pub(crate) fn register_gamepad_rumble_request_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadRumbleRequest>| {
-                let output: Val<::bevy_input::gamepad::GamepadRumbleRequest> = {
+            |_self: R<::bevy_input::gamepad::GamepadRumbleRequest>| {
+                let output: V<::bevy_input::gamepad::GamepadRumbleRequest> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadRumbleRequest> = <::bevy_input::gamepad::GamepadRumbleRequest as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::GamepadRumbleRequest> = <::bevy_input::gamepad::GamepadRumbleRequest as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1392,10 +1385,10 @@ pub(crate) fn register_gamepad_rumble_request_functions(world: &mut World) {
         )
         .register_documented(
             "gamepad",
-            |_self: Ref<::bevy_input::gamepad::GamepadRumbleRequest>| {
-                let output: Val<::bevy_ecs::entity::Entity> = {
+            |_self: R<::bevy_input::gamepad::GamepadRumbleRequest>| {
+                let output: V<::bevy_ecs::entity::Entity> = {
                     {
-                        let output: Val<::bevy_ecs::entity::Entity> = ::bevy_input::gamepad::GamepadRumbleRequest::gamepad(
+                        let output: V<::bevy_ecs::entity::Entity> = ::bevy_input::gamepad::GamepadRumbleRequest::gamepad(
                                 &_self,
                             )
                             .into();
@@ -1421,10 +1414,10 @@ pub(crate) fn register_raw_gamepad_axis_changed_event_functions(world: &mut Worl
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::RawGamepadAxisChangedEvent>| {
-                let output: Val<::bevy_input::gamepad::RawGamepadAxisChangedEvent> = {
+            |_self: R<::bevy_input::gamepad::RawGamepadAxisChangedEvent>| {
+                let output: V<::bevy_input::gamepad::RawGamepadAxisChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::RawGamepadAxisChangedEvent,
                         > = <::bevy_input::gamepad::RawGamepadAxisChangedEvent as ::core::clone::Clone>::clone(
                                 &_self,
@@ -1441,8 +1434,8 @@ pub(crate) fn register_raw_gamepad_axis_changed_event_functions(world: &mut Worl
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::RawGamepadAxisChangedEvent>,
-                other: Ref<::bevy_input::gamepad::RawGamepadAxisChangedEvent>|
+                _self: R<::bevy_input::gamepad::RawGamepadAxisChangedEvent>,
+                other: R<::bevy_input::gamepad::RawGamepadAxisChangedEvent>|
             {
                 let output: bool = {
                     {
@@ -1461,13 +1454,13 @@ pub(crate) fn register_raw_gamepad_axis_changed_event_functions(world: &mut Worl
         .register_documented(
             "new",
             |
-                gamepad: Val<::bevy_ecs::entity::Entity>,
-                axis_type: Val<::bevy_input::gamepad::GamepadAxis>,
+                gamepad: V<::bevy_ecs::entity::Entity>,
+                axis_type: V<::bevy_input::gamepad::GamepadAxis>,
                 value: f32|
             {
-                let output: Val<::bevy_input::gamepad::RawGamepadAxisChangedEvent> = {
+                let output: V<::bevy_input::gamepad::RawGamepadAxisChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::RawGamepadAxisChangedEvent,
                         > = ::bevy_input::gamepad::RawGamepadAxisChangedEvent::new(
                                 gamepad.into_inner(),
@@ -1497,10 +1490,10 @@ pub(crate) fn register_raw_gamepad_button_changed_event_functions(world: &mut Wo
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::RawGamepadButtonChangedEvent>| {
-                let output: Val<::bevy_input::gamepad::RawGamepadButtonChangedEvent> = {
+            |_self: R<::bevy_input::gamepad::RawGamepadButtonChangedEvent>| {
+                let output: V<::bevy_input::gamepad::RawGamepadButtonChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::RawGamepadButtonChangedEvent,
                         > = <::bevy_input::gamepad::RawGamepadButtonChangedEvent as ::core::clone::Clone>::clone(
                                 &_self,
@@ -1517,8 +1510,8 @@ pub(crate) fn register_raw_gamepad_button_changed_event_functions(world: &mut Wo
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::RawGamepadButtonChangedEvent>,
-                other: Ref<::bevy_input::gamepad::RawGamepadButtonChangedEvent>|
+                _self: R<::bevy_input::gamepad::RawGamepadButtonChangedEvent>,
+                other: R<::bevy_input::gamepad::RawGamepadButtonChangedEvent>|
             {
                 let output: bool = {
                     {
@@ -1537,13 +1530,13 @@ pub(crate) fn register_raw_gamepad_button_changed_event_functions(world: &mut Wo
         .register_documented(
             "new",
             |
-                gamepad: Val<::bevy_ecs::entity::Entity>,
-                button_type: Val<::bevy_input::gamepad::GamepadButton>,
+                gamepad: V<::bevy_ecs::entity::Entity>,
+                button_type: V<::bevy_input::gamepad::GamepadButton>,
                 value: f32|
             {
-                let output: Val<::bevy_input::gamepad::RawGamepadButtonChangedEvent> = {
+                let output: V<::bevy_input::gamepad::RawGamepadButtonChangedEvent> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_input::gamepad::RawGamepadButtonChangedEvent,
                         > = ::bevy_input::gamepad::RawGamepadButtonChangedEvent::new(
                                 gamepad.into_inner(),
@@ -1573,10 +1566,10 @@ pub(crate) fn register_raw_gamepad_event_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gamepad::RawGamepadEvent>| {
-            let output: Val<::bevy_input::gamepad::RawGamepadEvent> = {
+        |_self: R<::bevy_input::gamepad::RawGamepadEvent>| {
+            let output: V<::bevy_input::gamepad::RawGamepadEvent> = {
                 {
-                    let output: Val<::bevy_input::gamepad::RawGamepadEvent> =
+                    let output: V<::bevy_input::gamepad::RawGamepadEvent> =
                         <::bevy_input::gamepad::RawGamepadEvent as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -1591,8 +1584,8 @@ pub(crate) fn register_raw_gamepad_event_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::gamepad::RawGamepadEvent>,
-         other: Ref<::bevy_input::gamepad::RawGamepadEvent>| {
+        |_self: R<::bevy_input::gamepad::RawGamepadEvent>,
+         other: R<::bevy_input::gamepad::RawGamepadEvent>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1622,10 +1615,10 @@ pub(crate) fn register_pinch_gesture_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gestures::PinchGesture>| {
-            let output: Val<::bevy_input::gestures::PinchGesture> = {
+        |_self: R<::bevy_input::gestures::PinchGesture>| {
+            let output: V<::bevy_input::gestures::PinchGesture> = {
                 {
-                    let output: Val<::bevy_input::gestures::PinchGesture> =
+                    let output: V<::bevy_input::gestures::PinchGesture> =
                         <::bevy_input::gestures::PinchGesture as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -1640,8 +1633,8 @@ pub(crate) fn register_pinch_gesture_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::gestures::PinchGesture>,
-         other: Ref<::bevy_input::gestures::PinchGesture>| {
+        |_self: R<::bevy_input::gestures::PinchGesture>,
+         other: R<::bevy_input::gestures::PinchGesture>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1671,10 +1664,10 @@ pub(crate) fn register_rotation_gesture_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gestures::RotationGesture>| {
-            let output: Val<::bevy_input::gestures::RotationGesture> = {
+        |_self: R<::bevy_input::gestures::RotationGesture>| {
+            let output: V<::bevy_input::gestures::RotationGesture> = {
                 {
-                    let output: Val<::bevy_input::gestures::RotationGesture> =
+                    let output: V<::bevy_input::gestures::RotationGesture> =
                         <::bevy_input::gestures::RotationGesture as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -1689,8 +1682,8 @@ pub(crate) fn register_rotation_gesture_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::gestures::RotationGesture>,
-         other: Ref<::bevy_input::gestures::RotationGesture>| {
+        |_self: R<::bevy_input::gestures::RotationGesture>,
+         other: R<::bevy_input::gestures::RotationGesture>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1720,10 +1713,10 @@ pub(crate) fn register_double_tap_gesture_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gestures::DoubleTapGesture>| {
-            let output: Val<::bevy_input::gestures::DoubleTapGesture> = {
+        |_self: R<::bevy_input::gestures::DoubleTapGesture>| {
+            let output: V<::bevy_input::gestures::DoubleTapGesture> = {
                 {
-                    let output: Val<::bevy_input::gestures::DoubleTapGesture> =
+                    let output: V<::bevy_input::gestures::DoubleTapGesture> =
                         <::bevy_input::gestures::DoubleTapGesture as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -1738,8 +1731,8 @@ pub(crate) fn register_double_tap_gesture_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::gestures::DoubleTapGesture>,
-         other: Ref<::bevy_input::gestures::DoubleTapGesture>| {
+        |_self: R<::bevy_input::gestures::DoubleTapGesture>,
+         other: R<::bevy_input::gestures::DoubleTapGesture>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1769,10 +1762,10 @@ pub(crate) fn register_pan_gesture_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gestures::PanGesture>| {
-            let output: Val<::bevy_input::gestures::PanGesture> = {
+        |_self: R<::bevy_input::gestures::PanGesture>| {
+            let output: V<::bevy_input::gestures::PanGesture> = {
                 {
-                    let output: Val<::bevy_input::gestures::PanGesture> =
+                    let output: V<::bevy_input::gestures::PanGesture> =
                         <::bevy_input::gestures::PanGesture as ::core::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -1785,8 +1778,8 @@ pub(crate) fn register_pan_gesture_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::gestures::PanGesture>,
-         other: Ref<::bevy_input::gestures::PanGesture>| {
+        |_self: R<::bevy_input::gestures::PanGesture>,
+         other: R<::bevy_input::gestures::PanGesture>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1816,7 +1809,7 @@ pub(crate) fn register_button_state_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::ButtonState>| {
+            |_self: R<::bevy_input::ButtonState>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::ButtonState as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1833,10 +1826,10 @@ pub(crate) fn register_button_state_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::ButtonState>| {
-                let output: Val<::bevy_input::ButtonState> = {
+            |_self: R<::bevy_input::ButtonState>| {
+                let output: V<::bevy_input::ButtonState> = {
                     {
-                        let output: Val<::bevy_input::ButtonState> = <::bevy_input::ButtonState as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::ButtonState> = <::bevy_input::ButtonState as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1850,10 +1843,7 @@ pub(crate) fn register_button_state_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_input::ButtonState>,
-                other: Ref<::bevy_input::ButtonState>|
-            {
+            |_self: R<::bevy_input::ButtonState>, other: R<::bevy_input::ButtonState>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_input::ButtonState as ::core::cmp::PartialEq<
@@ -1870,7 +1860,7 @@ pub(crate) fn register_button_state_functions(world: &mut World) {
         )
         .register_documented(
             "is_pressed",
-            |_self: Ref<::bevy_input::ButtonState>| {
+            |_self: R<::bevy_input::ButtonState>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_input::ButtonState::is_pressed(&_self)
@@ -1897,10 +1887,10 @@ pub(crate) fn register_gamepad_connection_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gamepad::GamepadConnection>| {
-            let output: Val<::bevy_input::gamepad::GamepadConnection> = {
+        |_self: R<::bevy_input::gamepad::GamepadConnection>| {
+            let output: V<::bevy_input::gamepad::GamepadConnection> = {
                 {
-                    let output: Val<::bevy_input::gamepad::GamepadConnection> =
+                    let output: V<::bevy_input::gamepad::GamepadConnection> =
                         <::bevy_input::gamepad::GamepadConnection as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -1915,8 +1905,8 @@ pub(crate) fn register_gamepad_connection_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::gamepad::GamepadConnection>,
-         other: Ref<::bevy_input::gamepad::GamepadConnection>| {
+        |_self: R<::bevy_input::gamepad::GamepadConnection>,
+         other: R<::bevy_input::gamepad::GamepadConnection>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1946,7 +1936,7 @@ pub(crate) fn register_gamepad_input_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::gamepad::GamepadInput>| {
+            |_self: R<::bevy_input::gamepad::GamepadInput>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::gamepad::GamepadInput as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1963,10 +1953,10 @@ pub(crate) fn register_gamepad_input_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadInput>| {
-                let output: Val<::bevy_input::gamepad::GamepadInput> = {
+            |_self: R<::bevy_input::gamepad::GamepadInput>| {
+                let output: V<::bevy_input::gamepad::GamepadInput> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadInput> = <::bevy_input::gamepad::GamepadInput as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::GamepadInput> = <::bevy_input::gamepad::GamepadInput as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1981,8 +1971,8 @@ pub(crate) fn register_gamepad_input_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadInput>,
-                other: Ref<::bevy_input::gamepad::GamepadInput>|
+                _self: R<::bevy_input::gamepad::GamepadInput>,
+                other: R<::bevy_input::gamepad::GamepadInput>|
             {
                 let output: bool = {
                     {
@@ -2012,10 +2002,10 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::ButtonSettings>| {
-                let output: Val<::bevy_input::gamepad::ButtonSettings> = {
+            |_self: R<::bevy_input::gamepad::ButtonSettings>| {
+                let output: V<::bevy_input::gamepad::ButtonSettings> = {
                     {
-                        let output: Val<::bevy_input::gamepad::ButtonSettings> = <::bevy_input::gamepad::ButtonSettings as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::ButtonSettings> = <::bevy_input::gamepad::ButtonSettings as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2030,8 +2020,8 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::ButtonSettings>,
-                other: Ref<::bevy_input::gamepad::ButtonSettings>|
+                _self: R<::bevy_input::gamepad::ButtonSettings>,
+                other: R<::bevy_input::gamepad::ButtonSettings>|
             {
                 let output: bool = {
                     {
@@ -2049,7 +2039,7 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
         )
         .register_documented(
             "is_pressed",
-            |_self: Ref<::bevy_input::gamepad::ButtonSettings>, value: f32| {
+            |_self: R<::bevy_input::gamepad::ButtonSettings>, value: f32| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_input::gamepad::ButtonSettings::is_pressed(
@@ -2067,7 +2057,7 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
         )
         .register_documented(
             "is_released",
-            |_self: Ref<::bevy_input::gamepad::ButtonSettings>, value: f32| {
+            |_self: R<::bevy_input::gamepad::ButtonSettings>, value: f32| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_input::gamepad::ButtonSettings::is_released(
@@ -2085,7 +2075,7 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
         )
         .register_documented(
             "press_threshold",
-            |_self: Ref<::bevy_input::gamepad::ButtonSettings>| {
+            |_self: R<::bevy_input::gamepad::ButtonSettings>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::ButtonSettings::press_threshold(
@@ -2102,7 +2092,7 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
         )
         .register_documented(
             "release_threshold",
-            |_self: Ref<::bevy_input::gamepad::ButtonSettings>| {
+            |_self: R<::bevy_input::gamepad::ButtonSettings>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::ButtonSettings::release_threshold(
@@ -2119,7 +2109,7 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
         )
         .register_documented(
             "set_press_threshold",
-            |mut _self: Mut<::bevy_input::gamepad::ButtonSettings>, value: f32| {
+            |mut _self: M<::bevy_input::gamepad::ButtonSettings>, value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::ButtonSettings::set_press_threshold(
@@ -2137,7 +2127,7 @@ pub(crate) fn register_button_settings_functions(world: &mut World) {
         )
         .register_documented(
             "set_release_threshold",
-            |mut _self: Mut<::bevy_input::gamepad::ButtonSettings>, value: f32| {
+            |mut _self: M<::bevy_input::gamepad::ButtonSettings>, value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::ButtonSettings::set_release_threshold(
@@ -2167,7 +2157,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clamp",
-            |_self: Ref<::bevy_input::gamepad::AxisSettings>, raw_value: f32| {
+            |_self: R<::bevy_input::gamepad::AxisSettings>, raw_value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::clamp(
@@ -2185,10 +2175,10 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::AxisSettings>| {
-                let output: Val<::bevy_input::gamepad::AxisSettings> = {
+            |_self: R<::bevy_input::gamepad::AxisSettings>| {
+                let output: V<::bevy_input::gamepad::AxisSettings> = {
                     {
-                        let output: Val<::bevy_input::gamepad::AxisSettings> = <::bevy_input::gamepad::AxisSettings as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::AxisSettings> = <::bevy_input::gamepad::AxisSettings as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2202,7 +2192,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "deadzone_lowerbound",
-            |_self: Ref<::bevy_input::gamepad::AxisSettings>| {
+            |_self: R<::bevy_input::gamepad::AxisSettings>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::deadzone_lowerbound(
@@ -2219,7 +2209,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "deadzone_upperbound",
-            |_self: Ref<::bevy_input::gamepad::AxisSettings>| {
+            |_self: R<::bevy_input::gamepad::AxisSettings>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::deadzone_upperbound(
@@ -2237,8 +2227,8 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::AxisSettings>,
-                other: Ref<::bevy_input::gamepad::AxisSettings>|
+                _self: R<::bevy_input::gamepad::AxisSettings>,
+                other: R<::bevy_input::gamepad::AxisSettings>|
             {
                 let output: bool = {
                     {
@@ -2256,7 +2246,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "livezone_lowerbound",
-            |_self: Ref<::bevy_input::gamepad::AxisSettings>| {
+            |_self: R<::bevy_input::gamepad::AxisSettings>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::livezone_lowerbound(
@@ -2273,7 +2263,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "livezone_upperbound",
-            |_self: Ref<::bevy_input::gamepad::AxisSettings>| {
+            |_self: R<::bevy_input::gamepad::AxisSettings>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::livezone_upperbound(
@@ -2290,7 +2280,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "set_deadzone_lowerbound",
-            |mut _self: Mut<::bevy_input::gamepad::AxisSettings>, value: f32| {
+            |mut _self: M<::bevy_input::gamepad::AxisSettings>, value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::set_deadzone_lowerbound(
@@ -2308,7 +2298,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "set_deadzone_upperbound",
-            |mut _self: Mut<::bevy_input::gamepad::AxisSettings>, value: f32| {
+            |mut _self: M<::bevy_input::gamepad::AxisSettings>, value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::set_deadzone_upperbound(
@@ -2326,7 +2316,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "set_livezone_lowerbound",
-            |mut _self: Mut<::bevy_input::gamepad::AxisSettings>, value: f32| {
+            |mut _self: M<::bevy_input::gamepad::AxisSettings>, value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::set_livezone_lowerbound(
@@ -2344,7 +2334,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "set_livezone_upperbound",
-            |mut _self: Mut<::bevy_input::gamepad::AxisSettings>, value: f32| {
+            |mut _self: M<::bevy_input::gamepad::AxisSettings>, value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::set_livezone_upperbound(
@@ -2362,7 +2352,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "set_threshold",
-            |mut _self: Mut<::bevy_input::gamepad::AxisSettings>, value: f32| {
+            |mut _self: M<::bevy_input::gamepad::AxisSettings>, value: f32| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::set_threshold(
@@ -2380,7 +2370,7 @@ pub(crate) fn register_axis_settings_functions(world: &mut World) {
         )
         .register_documented(
             "threshold",
-            |_self: Ref<::bevy_input::gamepad::AxisSettings>| {
+            |_self: R<::bevy_input::gamepad::AxisSettings>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_input::gamepad::AxisSettings::threshold(
@@ -2409,10 +2399,10 @@ pub(crate) fn register_button_axis_settings_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::gamepad::ButtonAxisSettings>| {
-            let output: Val<::bevy_input::gamepad::ButtonAxisSettings> = {
+        |_self: R<::bevy_input::gamepad::ButtonAxisSettings>| {
+            let output: V<::bevy_input::gamepad::ButtonAxisSettings> = {
                 {
-                    let output: Val<::bevy_input::gamepad::ButtonAxisSettings> =
+                    let output: V<::bevy_input::gamepad::ButtonAxisSettings> =
                         <::bevy_input::gamepad::ButtonAxisSettings as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -2439,10 +2429,10 @@ pub(crate) fn register_gamepad_rumble_intensity_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::gamepad::GamepadRumbleIntensity>| {
-                let output: Val<::bevy_input::gamepad::GamepadRumbleIntensity> = {
+            |_self: R<::bevy_input::gamepad::GamepadRumbleIntensity>| {
+                let output: V<::bevy_input::gamepad::GamepadRumbleIntensity> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadRumbleIntensity> = <::bevy_input::gamepad::GamepadRumbleIntensity as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::gamepad::GamepadRumbleIntensity> = <::bevy_input::gamepad::GamepadRumbleIntensity as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2457,8 +2447,8 @@ pub(crate) fn register_gamepad_rumble_intensity_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::gamepad::GamepadRumbleIntensity>,
-                other: Ref<::bevy_input::gamepad::GamepadRumbleIntensity>|
+                _self: R<::bevy_input::gamepad::GamepadRumbleIntensity>,
+                other: R<::bevy_input::gamepad::GamepadRumbleIntensity>|
             {
                 let output: bool = {
                     {
@@ -2477,9 +2467,9 @@ pub(crate) fn register_gamepad_rumble_intensity_functions(world: &mut World) {
         .register_documented(
             "strong_motor",
             |intensity: f32| {
-                let output: Val<::bevy_input::gamepad::GamepadRumbleIntensity> = {
+                let output: V<::bevy_input::gamepad::GamepadRumbleIntensity> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadRumbleIntensity> = ::bevy_input::gamepad::GamepadRumbleIntensity::strong_motor(
+                        let output: V<::bevy_input::gamepad::GamepadRumbleIntensity> = ::bevy_input::gamepad::GamepadRumbleIntensity::strong_motor(
                                 intensity,
                             )
                             .into();
@@ -2494,9 +2484,9 @@ pub(crate) fn register_gamepad_rumble_intensity_functions(world: &mut World) {
         .register_documented(
             "weak_motor",
             |intensity: f32| {
-                let output: Val<::bevy_input::gamepad::GamepadRumbleIntensity> = {
+                let output: V<::bevy_input::gamepad::GamepadRumbleIntensity> = {
                     {
-                        let output: Val<::bevy_input::gamepad::GamepadRumbleIntensity> = ::bevy_input::gamepad::GamepadRumbleIntensity::weak_motor(
+                        let output: V<::bevy_input::gamepad::GamepadRumbleIntensity> = ::bevy_input::gamepad::GamepadRumbleIntensity::weak_motor(
                                 intensity,
                             )
                             .into();
@@ -2522,7 +2512,7 @@ pub(crate) fn register_native_key_code_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::keyboard::NativeKeyCode>| {
+            |_self: R<::bevy_input::keyboard::NativeKeyCode>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::keyboard::NativeKeyCode as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -2539,10 +2529,10 @@ pub(crate) fn register_native_key_code_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::keyboard::NativeKeyCode>| {
-                let output: Val<::bevy_input::keyboard::NativeKeyCode> = {
+            |_self: R<::bevy_input::keyboard::NativeKeyCode>| {
+                let output: V<::bevy_input::keyboard::NativeKeyCode> = {
                     {
-                        let output: Val<::bevy_input::keyboard::NativeKeyCode> = <::bevy_input::keyboard::NativeKeyCode as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::keyboard::NativeKeyCode> = <::bevy_input::keyboard::NativeKeyCode as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2557,8 +2547,8 @@ pub(crate) fn register_native_key_code_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::keyboard::NativeKeyCode>,
-                other: Ref<::bevy_input::keyboard::NativeKeyCode>|
+                _self: R<::bevy_input::keyboard::NativeKeyCode>,
+                other: R<::bevy_input::keyboard::NativeKeyCode>|
             {
                 let output: bool = {
                     {
@@ -2588,7 +2578,7 @@ pub(crate) fn register_native_key_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::keyboard::NativeKey>| {
+            |_self: R<::bevy_input::keyboard::NativeKey>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::keyboard::NativeKey as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -2605,10 +2595,10 @@ pub(crate) fn register_native_key_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::keyboard::NativeKey>| {
-                let output: Val<::bevy_input::keyboard::NativeKey> = {
+            |_self: R<::bevy_input::keyboard::NativeKey>| {
+                let output: V<::bevy_input::keyboard::NativeKey> = {
                     {
-                        let output: Val<::bevy_input::keyboard::NativeKey> = <::bevy_input::keyboard::NativeKey as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::keyboard::NativeKey> = <::bevy_input::keyboard::NativeKey as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2623,8 +2613,8 @@ pub(crate) fn register_native_key_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::keyboard::NativeKey>,
-                other: Ref<::bevy_input::keyboard::NativeKey>|
+                _self: R<::bevy_input::keyboard::NativeKey>,
+                other: R<::bevy_input::keyboard::NativeKey>|
             {
                 let output: bool = {
                     {
@@ -2654,7 +2644,7 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::mouse::MouseScrollUnit>| {
+            |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::mouse::MouseScrollUnit as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -2671,10 +2661,10 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::mouse::MouseScrollUnit>| {
-                let output: Val<::bevy_input::mouse::MouseScrollUnit> = {
+            |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
+                let output: V<::bevy_input::mouse::MouseScrollUnit> = {
                     {
-                        let output: Val<::bevy_input::mouse::MouseScrollUnit> = <::bevy_input::mouse::MouseScrollUnit as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::mouse::MouseScrollUnit> = <::bevy_input::mouse::MouseScrollUnit as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2689,8 +2679,8 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::mouse::MouseScrollUnit>,
-                other: Ref<::bevy_input::mouse::MouseScrollUnit>|
+                _self: R<::bevy_input::mouse::MouseScrollUnit>,
+                other: R<::bevy_input::mouse::MouseScrollUnit>|
             {
                 let output: bool = {
                     {
@@ -2720,7 +2710,7 @@ pub(crate) fn register_touch_phase_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_input::touch::TouchPhase>| {
+            |_self: R<::bevy_input::touch::TouchPhase>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_input::touch::TouchPhase as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -2737,10 +2727,10 @@ pub(crate) fn register_touch_phase_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_input::touch::TouchPhase>| {
-                let output: Val<::bevy_input::touch::TouchPhase> = {
+            |_self: R<::bevy_input::touch::TouchPhase>| {
+                let output: V<::bevy_input::touch::TouchPhase> = {
                     {
-                        let output: Val<::bevy_input::touch::TouchPhase> = <::bevy_input::touch::TouchPhase as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_input::touch::TouchPhase> = <::bevy_input::touch::TouchPhase as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2755,8 +2745,8 @@ pub(crate) fn register_touch_phase_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_input::touch::TouchPhase>,
-                other: Ref<::bevy_input::touch::TouchPhase>|
+                _self: R<::bevy_input::touch::TouchPhase>,
+                other: R<::bevy_input::touch::TouchPhase>|
             {
                 let output: bool = {
                     {
@@ -2786,10 +2776,10 @@ pub(crate) fn register_force_touch_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_input::touch::ForceTouch>| {
-            let output: Val<::bevy_input::touch::ForceTouch> = {
+        |_self: R<::bevy_input::touch::ForceTouch>| {
+            let output: V<::bevy_input::touch::ForceTouch> = {
                 {
-                    let output: Val<::bevy_input::touch::ForceTouch> =
+                    let output: V<::bevy_input::touch::ForceTouch> =
                         <::bevy_input::touch::ForceTouch as ::core::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -2802,8 +2792,7 @@ pub(crate) fn register_force_touch_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_input::touch::ForceTouch>,
-         other: Ref<::bevy_input::touch::ForceTouch>| {
+        |_self: R<::bevy_input::touch::ForceTouch>, other: R<::bevy_input::touch::ForceTouch>| {
             let output: bool = {
                 {
                     let output: bool =

@@ -6,7 +6,7 @@ use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
@@ -18,10 +18,10 @@ pub(crate) fn register_distance_fog_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::DistanceFog>| {
-                let output: Val<::bevy_pbr::DistanceFog> = {
+            |_self: R<::bevy_pbr::DistanceFog>| {
+                let output: V<::bevy_pbr::DistanceFog> = {
                     {
-                        let output: Val<::bevy_pbr::DistanceFog> = <::bevy_pbr::DistanceFog as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::DistanceFog> = <::bevy_pbr::DistanceFog as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -47,10 +47,10 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::FogFalloff>| {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+            |_self: R<::bevy_pbr::FogFalloff>| {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = <::bevy_pbr::FogFalloff as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::FogFalloff> = <::bevy_pbr::FogFalloff as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -65,9 +65,9 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
         .register_documented(
             "from_visibility",
             |visibility: f32| {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility(
                                 visibility,
                             )
                             .into();
@@ -81,10 +81,10 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
         )
         .register_documented(
             "from_visibility_color",
-            |visibility: f32, extinction_inscattering_color: Val<::bevy_color::Color>| {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+            |visibility: f32, extinction_inscattering_color: V<::bevy_color::Color>| {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_color(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_color(
                                 visibility,
                                 extinction_inscattering_color.into_inner(),
                             )
@@ -101,12 +101,12 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
             "from_visibility_colors",
             |
                 visibility: f32,
-                extinction_color: Val<::bevy_color::Color>,
-                inscattering_color: Val<::bevy_color::Color>|
+                extinction_color: V<::bevy_color::Color>,
+                inscattering_color: V<::bevy_color::Color>|
             {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_colors(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_colors(
                                 visibility,
                                 extinction_color.into_inner(),
                                 inscattering_color.into_inner(),
@@ -123,9 +123,9 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
         .register_documented(
             "from_visibility_contrast",
             |visibility: f32, contrast_threshold: f32| {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast(
                                 visibility,
                                 contrast_threshold,
                             )
@@ -143,11 +143,11 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
             |
                 visibility: f32,
                 contrast_threshold: f32,
-                extinction_inscattering_color: Val<::bevy_color::Color>|
+                extinction_inscattering_color: V<::bevy_color::Color>|
             {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast_color(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast_color(
                                 visibility,
                                 contrast_threshold,
                                 extinction_inscattering_color.into_inner(),
@@ -166,12 +166,12 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
             |
                 visibility: f32,
                 contrast_threshold: f32,
-                extinction_color: Val<::bevy_color::Color>,
-                inscattering_color: Val<::bevy_color::Color>|
+                extinction_color: V<::bevy_color::Color>,
+                inscattering_color: V<::bevy_color::Color>|
             {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast_colors(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast_colors(
                                 visibility,
                                 contrast_threshold,
                                 extinction_color.into_inner(),
@@ -194,9 +194,9 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
         .register_documented(
             "from_visibility_contrast_squared",
             |visibility: f32, contrast_threshold: f32| {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast_squared(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_contrast_squared(
                                 visibility,
                                 contrast_threshold,
                             )
@@ -212,9 +212,9 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
         .register_documented(
             "from_visibility_squared",
             |visibility: f32| {
-                let output: Val<::bevy_pbr::FogFalloff> = {
+                let output: V<::bevy_pbr::FogFalloff> = {
                     {
-                        let output: Val<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_squared(
+                        let output: V<::bevy_pbr::FogFalloff> = ::bevy_pbr::FogFalloff::from_visibility_squared(
                                 visibility,
                             )
                             .into();
@@ -253,7 +253,7 @@ pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_pbr::ParallaxMappingMethod>| {
+            |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::ParallaxMappingMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -270,10 +270,10 @@ pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::ParallaxMappingMethod>| {
-                let output: Val<::bevy_pbr::ParallaxMappingMethod> = {
+            |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
+                let output: V<::bevy_pbr::ParallaxMappingMethod> = {
                     {
-                        let output: Val<::bevy_pbr::ParallaxMappingMethod> = <::bevy_pbr::ParallaxMappingMethod as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::ParallaxMappingMethod> = <::bevy_pbr::ParallaxMappingMethod as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -288,8 +288,8 @@ pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_pbr::ParallaxMappingMethod>,
-                other: Ref<::bevy_pbr::ParallaxMappingMethod>|
+                _self: R<::bevy_pbr::ParallaxMappingMethod>,
+                other: R<::bevy_pbr::ParallaxMappingMethod>|
             {
                 let output: bool = {
                     {
@@ -319,10 +319,10 @@ pub(crate) fn register_standard_material_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::StandardMaterial>| {
-            let output: Val<::bevy_pbr::StandardMaterial> = {
+        |_self: R<::bevy_pbr::StandardMaterial>| {
+            let output: V<::bevy_pbr::StandardMaterial> = {
                 {
-                    let output: Val<::bevy_pbr::StandardMaterial> =
+                    let output: V<::bevy_pbr::StandardMaterial> =
                         <::bevy_pbr::StandardMaterial as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -334,7 +334,7 @@ pub(crate) fn register_standard_material_functions(world: &mut World) {
     )
     .register_documented(
         "flip",
-        |mut _self: Mut<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
+        |mut _self: M<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
             let output: () = {
                 {
                     let output: () =
@@ -349,10 +349,10 @@ pub(crate) fn register_standard_material_functions(world: &mut World) {
     )
     .register_documented(
         "flipped",
-        |_self: Val<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
-            let output: Val<::bevy_pbr::StandardMaterial> = {
+        |_self: V<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
+            let output: V<::bevy_pbr::StandardMaterial> = {
                 {
-                    let output: Val<::bevy_pbr::StandardMaterial> =
+                    let output: V<::bevy_pbr::StandardMaterial> =
                         ::bevy_pbr::StandardMaterial::flipped(
                             _self.into_inner(),
                             horizontal,
@@ -381,10 +381,10 @@ pub(crate) fn register_screen_space_ambient_occlusion_functions(world: &mut Worl
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::ScreenSpaceAmbientOcclusion>| {
-            let output: Val<::bevy_pbr::ScreenSpaceAmbientOcclusion> = {
+        |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>| {
+            let output: V<::bevy_pbr::ScreenSpaceAmbientOcclusion> = {
                 {
-                    let output: Val<::bevy_pbr::ScreenSpaceAmbientOcclusion> =
+                    let output: V<::bevy_pbr::ScreenSpaceAmbientOcclusion> =
                         <::bevy_pbr::ScreenSpaceAmbientOcclusion as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -399,8 +399,8 @@ pub(crate) fn register_screen_space_ambient_occlusion_functions(world: &mut Worl
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_pbr::ScreenSpaceAmbientOcclusion>,
-         other: Ref<::bevy_pbr::ScreenSpaceAmbientOcclusion>| {
+        |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>,
+         other: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -430,10 +430,10 @@ pub(crate) fn register_screen_space_reflections_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::ScreenSpaceReflections>| {
-            let output: Val<::bevy_pbr::ScreenSpaceReflections> = {
+        |_self: R<::bevy_pbr::ScreenSpaceReflections>| {
+            let output: V<::bevy_pbr::ScreenSpaceReflections> = {
                 {
-                    let output: Val<::bevy_pbr::ScreenSpaceReflections> =
+                    let output: V<::bevy_pbr::ScreenSpaceReflections> =
                         <::bevy_pbr::ScreenSpaceReflections as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -458,10 +458,10 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::DefaultOpaqueRendererMethod>| {
-            let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> = {
+        |_self: R<::bevy_pbr::DefaultOpaqueRendererMethod>| {
+            let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
                 {
-                    let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> =
+                    let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> =
                         <::bevy_pbr::DefaultOpaqueRendererMethod as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -477,9 +477,9 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
     .register_documented(
         "deferred",
         || {
-            let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> = {
+            let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
                 {
-                    let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> =
+                    let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> =
                         ::bevy_pbr::DefaultOpaqueRendererMethod::deferred().into();
                     output
                 }
@@ -492,9 +492,9 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
     .register_documented(
         "forward",
         || {
-            let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> = {
+            let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
                 {
-                    let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> =
+                    let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> =
                         ::bevy_pbr::DefaultOpaqueRendererMethod::forward().into();
                     output
                 }
@@ -506,7 +506,7 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
     )
     .register_documented(
         "set_to_deferred",
-        |mut _self: Mut<::bevy_pbr::DefaultOpaqueRendererMethod>| {
+        |mut _self: M<::bevy_pbr::DefaultOpaqueRendererMethod>| {
             let output: () = {
                 {
                     let output: () =
@@ -521,7 +521,7 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
     )
     .register_documented(
         "set_to_forward",
-        |mut _self: Mut<::bevy_pbr::DefaultOpaqueRendererMethod>| {
+        |mut _self: M<::bevy_pbr::DefaultOpaqueRendererMethod>| {
             let output: () = {
                 {
                     let output: () =
@@ -548,10 +548,10 @@ pub(crate) fn register_wireframe_material_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::wireframe::WireframeMaterial>| {
-            let output: Val<::bevy_pbr::wireframe::WireframeMaterial> = {
+        |_self: R<::bevy_pbr::wireframe::WireframeMaterial>| {
+            let output: V<::bevy_pbr::wireframe::WireframeMaterial> = {
                 {
-                    let output: Val<::bevy_pbr::wireframe::WireframeMaterial> =
+                    let output: V<::bevy_pbr::wireframe::WireframeMaterial> =
                         <::bevy_pbr::wireframe::WireframeMaterial as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -578,10 +578,10 @@ pub(crate) fn register_wireframe_config_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::wireframe::WireframeConfig>| {
-            let output: Val<::bevy_pbr::wireframe::WireframeConfig> = {
+        |_self: R<::bevy_pbr::wireframe::WireframeConfig>| {
+            let output: V<::bevy_pbr::wireframe::WireframeConfig> = {
                 {
-                    let output: Val<::bevy_pbr::wireframe::WireframeConfig> =
+                    let output: V<::bevy_pbr::wireframe::WireframeConfig> =
                         <::bevy_pbr::wireframe::WireframeConfig as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -608,7 +608,7 @@ pub(crate) fn register_wireframe_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_pbr::wireframe::Wireframe>| {
+            |_self: R<::bevy_pbr::wireframe::Wireframe>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::wireframe::Wireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -625,10 +625,10 @@ pub(crate) fn register_wireframe_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::wireframe::Wireframe>| {
-                let output: Val<::bevy_pbr::wireframe::Wireframe> = {
+            |_self: R<::bevy_pbr::wireframe::Wireframe>| {
+                let output: V<::bevy_pbr::wireframe::Wireframe> = {
                     {
-                        let output: Val<::bevy_pbr::wireframe::Wireframe> = <::bevy_pbr::wireframe::Wireframe as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::wireframe::Wireframe> = <::bevy_pbr::wireframe::Wireframe as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -643,8 +643,8 @@ pub(crate) fn register_wireframe_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_pbr::wireframe::Wireframe>,
-                other: Ref<::bevy_pbr::wireframe::Wireframe>|
+                _self: R<::bevy_pbr::wireframe::Wireframe>,
+                other: R<::bevy_pbr::wireframe::Wireframe>|
             {
                 let output: bool = {
                     {
@@ -674,10 +674,10 @@ pub(crate) fn register_wireframe_color_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::wireframe::WireframeColor>| {
-            let output: Val<::bevy_pbr::wireframe::WireframeColor> = {
+        |_self: R<::bevy_pbr::wireframe::WireframeColor>| {
+            let output: V<::bevy_pbr::wireframe::WireframeColor> = {
                 {
-                    let output: Val<::bevy_pbr::wireframe::WireframeColor> =
+                    let output: V<::bevy_pbr::wireframe::WireframeColor> =
                         <::bevy_pbr::wireframe::WireframeColor as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -704,7 +704,7 @@ pub(crate) fn register_no_wireframe_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_pbr::wireframe::NoWireframe>| {
+            |_self: R<::bevy_pbr::wireframe::NoWireframe>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::wireframe::NoWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -721,10 +721,10 @@ pub(crate) fn register_no_wireframe_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::wireframe::NoWireframe>| {
-                let output: Val<::bevy_pbr::wireframe::NoWireframe> = {
+            |_self: R<::bevy_pbr::wireframe::NoWireframe>| {
+                let output: V<::bevy_pbr::wireframe::NoWireframe> = {
                     {
-                        let output: Val<::bevy_pbr::wireframe::NoWireframe> = <::bevy_pbr::wireframe::NoWireframe as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::wireframe::NoWireframe> = <::bevy_pbr::wireframe::NoWireframe as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -739,8 +739,8 @@ pub(crate) fn register_no_wireframe_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_pbr::wireframe::NoWireframe>,
-                other: Ref<::bevy_pbr::wireframe::NoWireframe>|
+                _self: R<::bevy_pbr::wireframe::NoWireframe>,
+                other: R<::bevy_pbr::wireframe::NoWireframe>|
             {
                 let output: bool = {
                     {
@@ -770,7 +770,7 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_pbr::wireframe::Mesh3dWireframe>| {
+            |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -787,10 +787,10 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::wireframe::Mesh3dWireframe>| {
-                let output: Val<::bevy_pbr::wireframe::Mesh3dWireframe> = {
+            |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
+                let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> = {
                     {
-                        let output: Val<::bevy_pbr::wireframe::Mesh3dWireframe> = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -805,8 +805,8 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_pbr::wireframe::Mesh3dWireframe>,
-                other: Ref<::bevy_pbr::wireframe::Mesh3dWireframe>|
+                _self: R<::bevy_pbr::wireframe::Mesh3dWireframe>,
+                other: R<::bevy_pbr::wireframe::Mesh3dWireframe>|
             {
                 let output: bool = {
                     {
@@ -836,10 +836,10 @@ pub(crate) fn register_gpu_atmosphere_settings_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::GpuAtmosphereSettings>| {
-            let output: Val<::bevy_pbr::GpuAtmosphereSettings> = {
+        |_self: R<::bevy_pbr::GpuAtmosphereSettings>| {
+            let output: V<::bevy_pbr::GpuAtmosphereSettings> = {
                 {
-                    let output: Val<::bevy_pbr::GpuAtmosphereSettings> =
+                    let output: V<::bevy_pbr::GpuAtmosphereSettings> =
                         <::bevy_pbr::GpuAtmosphereSettings as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -864,10 +864,10 @@ pub(crate) fn register_atmosphere_settings_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::AtmosphereSettings>| {
-            let output: Val<::bevy_pbr::AtmosphereSettings> = {
+        |_self: R<::bevy_pbr::AtmosphereSettings>| {
+            let output: V<::bevy_pbr::AtmosphereSettings> = {
                 {
-                    let output: Val<::bevy_pbr::AtmosphereSettings> =
+                    let output: V<::bevy_pbr::AtmosphereSettings> =
                         <::bevy_pbr::AtmosphereSettings as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -892,10 +892,10 @@ pub(crate) fn register_atmosphere_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::AtmosphereMode>| {
-                let output: Val<::bevy_pbr::AtmosphereMode> = {
+            |_self: R<::bevy_pbr::AtmosphereMode>| {
+                let output: V<::bevy_pbr::AtmosphereMode> = {
                     {
-                        let output: Val<::bevy_pbr::AtmosphereMode> = <::bevy_pbr::AtmosphereMode as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::AtmosphereMode> = <::bevy_pbr::AtmosphereMode as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -921,10 +921,10 @@ pub(crate) fn register_render_visible_mesh_entities_functions(world: &mut World)
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::RenderVisibleMeshEntities>| {
-            let output: Val<::bevy_pbr::RenderVisibleMeshEntities> = {
+        |_self: R<::bevy_pbr::RenderVisibleMeshEntities>| {
+            let output: V<::bevy_pbr::RenderVisibleMeshEntities> = {
                 {
-                    let output: Val<::bevy_pbr::RenderVisibleMeshEntities> =
+                    let output: V<::bevy_pbr::RenderVisibleMeshEntities> =
                         <::bevy_pbr::RenderVisibleMeshEntities as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -951,10 +951,10 @@ pub(crate) fn register_render_cubemap_visible_entities_functions(world: &mut Wor
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::RenderCubemapVisibleEntities>| {
-            let output: Val<::bevy_pbr::RenderCubemapVisibleEntities> = {
+        |_self: R<::bevy_pbr::RenderCubemapVisibleEntities>| {
+            let output: V<::bevy_pbr::RenderCubemapVisibleEntities> = {
                 {
-                    let output: Val<::bevy_pbr::RenderCubemapVisibleEntities> =
+                    let output: V<::bevy_pbr::RenderCubemapVisibleEntities> =
                         <::bevy_pbr::RenderCubemapVisibleEntities as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -981,10 +981,10 @@ pub(crate) fn register_render_cascades_visible_entities_functions(world: &mut Wo
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::RenderCascadesVisibleEntities>| {
-            let output: Val<::bevy_pbr::RenderCascadesVisibleEntities> = {
+        |_self: R<::bevy_pbr::RenderCascadesVisibleEntities>| {
+            let output: V<::bevy_pbr::RenderCascadesVisibleEntities> = {
                 {
-                    let output: Val<::bevy_pbr::RenderCascadesVisibleEntities> =
+                    let output: V<::bevy_pbr::RenderCascadesVisibleEntities> =
                         <::bevy_pbr::RenderCascadesVisibleEntities as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -1023,10 +1023,10 @@ pub(crate) fn register_opaque_renderer_method_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::OpaqueRendererMethod>| {
-            let output: Val<::bevy_pbr::OpaqueRendererMethod> = {
+        |_self: R<::bevy_pbr::OpaqueRendererMethod>| {
+            let output: V<::bevy_pbr::OpaqueRendererMethod> = {
                 {
-                    let output: Val<::bevy_pbr::OpaqueRendererMethod> =
+                    let output: V<::bevy_pbr::OpaqueRendererMethod> =
                         <::bevy_pbr::OpaqueRendererMethod as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -1039,8 +1039,7 @@ pub(crate) fn register_opaque_renderer_method_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_pbr::OpaqueRendererMethod>,
-         other: Ref<::bevy_pbr::OpaqueRendererMethod>| {
+        |_self: R<::bevy_pbr::OpaqueRendererMethod>, other: R<::bevy_pbr::OpaqueRendererMethod>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1070,10 +1069,10 @@ pub(crate) fn register_lightmap_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::Lightmap>| {
-                let output: Val<::bevy_pbr::Lightmap> = {
+            |_self: R<::bevy_pbr::Lightmap>| {
+                let output: V<::bevy_pbr::Lightmap> = {
                     {
-                        let output: Val<::bevy_pbr::Lightmap> = <::bevy_pbr::Lightmap as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::Lightmap> = <::bevy_pbr::Lightmap as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1096,10 +1095,10 @@ pub(crate) fn register_material_binding_id_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::MaterialBindingId>| {
-            let output: Val<::bevy_pbr::MaterialBindingId> = {
+        |_self: R<::bevy_pbr::MaterialBindingId>| {
+            let output: V<::bevy_pbr::MaterialBindingId> = {
                 {
-                    let output: Val<::bevy_pbr::MaterialBindingId> =
+                    let output: V<::bevy_pbr::MaterialBindingId> =
                         <::bevy_pbr::MaterialBindingId as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -1124,10 +1123,10 @@ pub(crate) fn register_material_bind_group_slot_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_pbr::MaterialBindGroupSlot>| {
-            let output: Val<::bevy_pbr::MaterialBindGroupSlot> = {
+        |_self: R<::bevy_pbr::MaterialBindGroupSlot>| {
+            let output: V<::bevy_pbr::MaterialBindGroupSlot> = {
                 {
-                    let output: Val<::bevy_pbr::MaterialBindGroupSlot> =
+                    let output: V<::bevy_pbr::MaterialBindGroupSlot> =
                         <::bevy_pbr::MaterialBindGroupSlot as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -1140,8 +1139,8 @@ pub(crate) fn register_material_bind_group_slot_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_pbr::MaterialBindGroupSlot>,
-         other: Ref<::bevy_pbr::MaterialBindGroupSlot>| {
+        |_self: R<::bevy_pbr::MaterialBindGroupSlot>,
+         other: R<::bevy_pbr::MaterialBindGroupSlot>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -1171,7 +1170,7 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_pbr::MaterialBindGroupIndex>| {
+            |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::MaterialBindGroupIndex as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1188,10 +1187,10 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::MaterialBindGroupIndex>| {
-                let output: Val<::bevy_pbr::MaterialBindGroupIndex> = {
+            |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
+                let output: V<::bevy_pbr::MaterialBindGroupIndex> = {
                     {
-                        let output: Val<::bevy_pbr::MaterialBindGroupIndex> = <::bevy_pbr::MaterialBindGroupIndex as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::MaterialBindGroupIndex> = <::bevy_pbr::MaterialBindGroupIndex as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1206,8 +1205,8 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_pbr::MaterialBindGroupIndex>,
-                other: Ref<::bevy_pbr::MaterialBindGroupIndex>|
+                _self: R<::bevy_pbr::MaterialBindGroupIndex>,
+                other: R<::bevy_pbr::MaterialBindGroupIndex>|
             {
                 let output: bool = {
                     {
@@ -1237,7 +1236,7 @@ pub(crate) fn register_uv_channel_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_pbr::UvChannel>| {
+            |_self: R<::bevy_pbr::UvChannel>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::UvChannel as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1254,10 +1253,10 @@ pub(crate) fn register_uv_channel_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::UvChannel>| {
-                let output: Val<::bevy_pbr::UvChannel> = {
+            |_self: R<::bevy_pbr::UvChannel>| {
+                let output: V<::bevy_pbr::UvChannel> = {
                     {
-                        let output: Val<::bevy_pbr::UvChannel> = <::bevy_pbr::UvChannel as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_pbr::UvChannel> = <::bevy_pbr::UvChannel as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1271,7 +1270,7 @@ pub(crate) fn register_uv_channel_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_pbr::UvChannel>, other: Ref<::bevy_pbr::UvChannel>| {
+            |_self: R<::bevy_pbr::UvChannel>, other: R<::bevy_pbr::UvChannel>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_pbr::UvChannel as ::std::cmp::PartialEq<
@@ -1298,7 +1297,7 @@ pub(crate) fn register_screen_space_ambient_occlusion_quality_level_functions(wo
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>| {
+            |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1315,10 +1314,10 @@ pub(crate) fn register_screen_space_ambient_occlusion_quality_level_functions(wo
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>| {
-                let output: Val<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel> = {
+            |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>| {
+                let output: V<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel,
                         > = <::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::clone::Clone>::clone(
                                 &_self,
@@ -1335,8 +1334,8 @@ pub(crate) fn register_screen_space_ambient_occlusion_quality_level_functions(wo
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>,
-                other: Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>|
+                _self: R<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>,
+                other: R<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>|
             {
                 let output: bool = {
                     {

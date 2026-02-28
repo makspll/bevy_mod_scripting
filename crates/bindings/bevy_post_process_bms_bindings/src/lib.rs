@@ -6,7 +6,7 @@ use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
@@ -19,15 +19,15 @@ pub(crate) fn register_auto_exposure_compensation_curve_functions(world: &mut Wo
         .register_documented(
             "clone",
             |
-                _self: Ref<
+                _self: R<
                     ::bevy_post_process::auto_exposure::AutoExposureCompensationCurve,
                 >|
             {
-                let output: Val<
+                let output: V<
                     ::bevy_post_process::auto_exposure::AutoExposureCompensationCurve,
                 > = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_post_process::auto_exposure::AutoExposureCompensationCurve,
                         > = <::bevy_post_process::auto_exposure::AutoExposureCompensationCurve as ::std::clone::Clone>::clone(
                                 &_self,
@@ -55,10 +55,10 @@ pub(crate) fn register_auto_exposure_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_post_process::auto_exposure::AutoExposure>| {
-                let output: Val<::bevy_post_process::auto_exposure::AutoExposure> = {
+            |_self: R<::bevy_post_process::auto_exposure::AutoExposure>| {
+                let output: V<::bevy_post_process::auto_exposure::AutoExposure> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_post_process::auto_exposure::AutoExposure,
                         > = <::bevy_post_process::auto_exposure::AutoExposure as ::std::clone::Clone>::clone(
                                 &_self,
@@ -86,10 +86,10 @@ pub(crate) fn register_bloom_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_post_process::bloom::Bloom>| {
-            let output: Val<::bevy_post_process::bloom::Bloom> = {
+        |_self: R<::bevy_post_process::bloom::Bloom>| {
+            let output: V<::bevy_post_process::bloom::Bloom> = {
                 {
-                    let output: Val<::bevy_post_process::bloom::Bloom> =
+                    let output: V<::bevy_post_process::bloom::Bloom> =
                         <::bevy_post_process::bloom::Bloom as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -114,7 +114,7 @@ pub(crate) fn register_bloom_composite_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_post_process::bloom::BloomCompositeMode>| {
+            |_self: R<::bevy_post_process::bloom::BloomCompositeMode>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_post_process::bloom::BloomCompositeMode as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -131,12 +131,10 @@ pub(crate) fn register_bloom_composite_mode_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_post_process::bloom::BloomCompositeMode>| {
-                let output: Val<::bevy_post_process::bloom::BloomCompositeMode> = {
+            |_self: R<::bevy_post_process::bloom::BloomCompositeMode>| {
+                let output: V<::bevy_post_process::bloom::BloomCompositeMode> = {
                     {
-                        let output: Val<
-                            ::bevy_post_process::bloom::BloomCompositeMode,
-                        > = <::bevy_post_process::bloom::BloomCompositeMode as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_post_process::bloom::BloomCompositeMode> = <::bevy_post_process::bloom::BloomCompositeMode as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -151,8 +149,8 @@ pub(crate) fn register_bloom_composite_mode_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_post_process::bloom::BloomCompositeMode>,
-                other: Ref<::bevy_post_process::bloom::BloomCompositeMode>|
+                _self: R<::bevy_post_process::bloom::BloomCompositeMode>,
+                other: R<::bevy_post_process::bloom::BloomCompositeMode>|
             {
                 let output: bool = {
                     {
@@ -182,10 +180,10 @@ pub(crate) fn register_bloom_prefilter_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_post_process::bloom::BloomPrefilter>| {
-            let output: Val<::bevy_post_process::bloom::BloomPrefilter> = {
+        |_self: R<::bevy_post_process::bloom::BloomPrefilter>| {
+            let output: V<::bevy_post_process::bloom::BloomPrefilter> = {
                 {
-                    let output: Val<::bevy_post_process::bloom::BloomPrefilter> =
+                    let output: V<::bevy_post_process::bloom::BloomPrefilter> =
                         <::bevy_post_process::bloom::BloomPrefilter as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -212,10 +210,10 @@ pub(crate) fn register_depth_of_field_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_post_process::dof::DepthOfField>| {
-            let output: Val<::bevy_post_process::dof::DepthOfField> = {
+        |_self: R<::bevy_post_process::dof::DepthOfField>| {
+            let output: V<::bevy_post_process::dof::DepthOfField> = {
                 {
-                    let output: Val<::bevy_post_process::dof::DepthOfField> =
+                    let output: V<::bevy_post_process::dof::DepthOfField> =
                         <::bevy_post_process::dof::DepthOfField as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -242,10 +240,10 @@ pub(crate) fn register_depth_of_field_mode_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_post_process::dof::DepthOfFieldMode>| {
-            let output: Val<::bevy_post_process::dof::DepthOfFieldMode> = {
+        |_self: R<::bevy_post_process::dof::DepthOfFieldMode>| {
+            let output: V<::bevy_post_process::dof::DepthOfFieldMode> = {
                 {
-                    let output: Val<::bevy_post_process::dof::DepthOfFieldMode> =
+                    let output: V<::bevy_post_process::dof::DepthOfFieldMode> =
                         <::bevy_post_process::dof::DepthOfFieldMode as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -260,8 +258,8 @@ pub(crate) fn register_depth_of_field_mode_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_post_process::dof::DepthOfFieldMode>,
-         other: Ref<::bevy_post_process::dof::DepthOfFieldMode>| {
+        |_self: R<::bevy_post_process::dof::DepthOfFieldMode>,
+         other: R<::bevy_post_process::dof::DepthOfFieldMode>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -291,12 +289,10 @@ pub(crate) fn register_chromatic_aberration_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_post_process::effect_stack::ChromaticAberration>| {
-                let output: Val<
-                    ::bevy_post_process::effect_stack::ChromaticAberration,
-                > = {
+            |_self: R<::bevy_post_process::effect_stack::ChromaticAberration>| {
+                let output: V<::bevy_post_process::effect_stack::ChromaticAberration> = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_post_process::effect_stack::ChromaticAberration,
                         > = <::bevy_post_process::effect_stack::ChromaticAberration as ::std::clone::Clone>::clone(
                                 &_self,
@@ -324,10 +320,10 @@ pub(crate) fn register_motion_blur_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_post_process::motion_blur::MotionBlur>| {
-                let output: Val<::bevy_post_process::motion_blur::MotionBlur> = {
+            |_self: R<::bevy_post_process::motion_blur::MotionBlur>| {
+                let output: V<::bevy_post_process::motion_blur::MotionBlur> = {
                     {
-                        let output: Val<::bevy_post_process::motion_blur::MotionBlur> = <::bevy_post_process::motion_blur::MotionBlur as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_post_process::motion_blur::MotionBlur> = <::bevy_post_process::motion_blur::MotionBlur as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();

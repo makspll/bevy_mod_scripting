@@ -6,7 +6,7 @@ use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
@@ -18,10 +18,10 @@ pub(crate) fn register_fixed_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_time::Fixed>| {
-            let output: Val<::bevy_time::Fixed> = {
+        |_self: R<::bevy_time::Fixed>| {
+            let output: V<::bevy_time::Fixed> = {
                 {
-                    let output: Val<::bevy_time::Fixed> =
+                    let output: V<::bevy_time::Fixed> =
                         <::bevy_time::Fixed as ::core::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -42,10 +42,10 @@ pub(crate) fn register_real_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_time::Real>| {
-            let output: Val<::bevy_time::Real> = {
+        |_self: R<::bevy_time::Real>| {
+            let output: V<::bevy_time::Real> = {
                 {
-                    let output: Val<::bevy_time::Real> =
+                    let output: V<::bevy_time::Real> =
                         <::bevy_time::Real as ::core::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -66,7 +66,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "almost_finish",
-            |mut _self: Mut<::bevy_time::Timer>| {
+            |mut _self: M<::bevy_time::Timer>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::almost_finish(&mut _self)
@@ -81,7 +81,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_time::Timer as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -98,10 +98,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_time::Timer>| {
-                let output: Val<::bevy_time::Timer> = {
+            |_self: R<::bevy_time::Timer>| {
+                let output: V<::bevy_time::Timer> = {
                     {
-                        let output: Val<::bevy_time::Timer> = <::bevy_time::Timer as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_time::Timer> = <::bevy_time::Timer as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -115,10 +115,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "duration",
-            |_self: Ref<::bevy_time::Timer>| {
-                let output: Val<::core::time::Duration> = {
+            |_self: R<::bevy_time::Timer>| {
+                let output: V<::core::time::Duration> = {
                     {
-                        let output: Val<::core::time::Duration> = ::bevy_time::Timer::duration(
+                        let output: V<::core::time::Duration> = ::bevy_time::Timer::duration(
                                 &_self,
                             )
                             .into();
@@ -132,10 +132,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "elapsed",
-            |_self: Ref<::bevy_time::Timer>| {
-                let output: Val<::core::time::Duration> = {
+            |_self: R<::bevy_time::Timer>| {
+                let output: V<::core::time::Duration> = {
                     {
-                        let output: Val<::core::time::Duration> = ::bevy_time::Timer::elapsed(
+                        let output: V<::core::time::Duration> = ::bevy_time::Timer::elapsed(
                                 &_self,
                             )
                             .into();
@@ -149,7 +149,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "elapsed_secs",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_time::Timer::elapsed_secs(&_self)
@@ -164,7 +164,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "elapsed_secs_f64",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: f64 = {
                     {
                         let output: f64 = ::bevy_time::Timer::elapsed_secs_f64(&_self)
@@ -179,7 +179,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_time::Timer>, other: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>, other: R<::bevy_time::Timer>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_time::Timer as ::core::cmp::PartialEq<
@@ -196,7 +196,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "finish",
-            |mut _self: Mut<::bevy_time::Timer>| {
+            |mut _self: M<::bevy_time::Timer>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::finish(&mut _self).into();
@@ -210,7 +210,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "fraction",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_time::Timer::fraction(&_self).into();
@@ -224,7 +224,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "fraction_remaining",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_time::Timer::fraction_remaining(&_self)
@@ -239,10 +239,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "from_seconds",
-            |duration: f32, mode: Val<::bevy_time::TimerMode>| {
-                let output: Val<::bevy_time::Timer> = {
+            |duration: f32, mode: V<::bevy_time::TimerMode>| {
+                let output: V<::bevy_time::Timer> = {
                     {
-                        let output: Val<::bevy_time::Timer> = ::bevy_time::Timer::from_seconds(
+                        let output: V<::bevy_time::Timer> = ::bevy_time::Timer::from_seconds(
                                 duration,
                                 mode.into_inner(),
                             )
@@ -257,7 +257,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "is_finished",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_time::Timer::is_finished(&_self)
@@ -272,7 +272,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "is_paused",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_time::Timer::is_paused(&_self).into();
@@ -286,7 +286,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "just_finished",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_time::Timer::just_finished(&_self)
@@ -301,10 +301,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "mode",
-            |_self: Ref<::bevy_time::Timer>| {
-                let output: Val<::bevy_time::TimerMode> = {
+            |_self: R<::bevy_time::Timer>| {
+                let output: V<::bevy_time::TimerMode> = {
                     {
-                        let output: Val<::bevy_time::TimerMode> = ::bevy_time::Timer::mode(
+                        let output: V<::bevy_time::TimerMode> = ::bevy_time::Timer::mode(
                                 &_self,
                             )
                             .into();
@@ -318,10 +318,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |duration: Val<::core::time::Duration>, mode: Val<::bevy_time::TimerMode>| {
-                let output: Val<::bevy_time::Timer> = {
+            |duration: V<::core::time::Duration>, mode: V<::bevy_time::TimerMode>| {
+                let output: V<::bevy_time::Timer> = {
                     {
-                        let output: Val<::bevy_time::Timer> = ::bevy_time::Timer::new(
+                        let output: V<::bevy_time::Timer> = ::bevy_time::Timer::new(
                                 duration.into_inner(),
                                 mode.into_inner(),
                             )
@@ -336,7 +336,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "pause",
-            |mut _self: Mut<::bevy_time::Timer>| {
+            |mut _self: M<::bevy_time::Timer>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::pause(&mut _self).into();
@@ -350,10 +350,10 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "remaining",
-            |_self: Ref<::bevy_time::Timer>| {
-                let output: Val<::core::time::Duration> = {
+            |_self: R<::bevy_time::Timer>| {
+                let output: V<::core::time::Duration> = {
                     {
-                        let output: Val<::core::time::Duration> = ::bevy_time::Timer::remaining(
+                        let output: V<::core::time::Duration> = ::bevy_time::Timer::remaining(
                                 &_self,
                             )
                             .into();
@@ -367,7 +367,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "remaining_secs",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_time::Timer::remaining_secs(&_self)
@@ -382,7 +382,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "reset",
-            |mut _self: Mut<::bevy_time::Timer>| {
+            |mut _self: M<::bevy_time::Timer>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::reset(&mut _self).into();
@@ -396,7 +396,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "set_duration",
-            |mut _self: Mut<::bevy_time::Timer>, duration: Val<::core::time::Duration>| {
+            |mut _self: M<::bevy_time::Timer>, duration: V<::core::time::Duration>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::set_duration(
@@ -414,7 +414,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "set_elapsed",
-            |mut _self: Mut<::bevy_time::Timer>, time: Val<::core::time::Duration>| {
+            |mut _self: M<::bevy_time::Timer>, time: V<::core::time::Duration>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::set_elapsed(
@@ -432,7 +432,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "set_mode",
-            |mut _self: Mut<::bevy_time::Timer>, mode: Val<::bevy_time::TimerMode>| {
+            |mut _self: M<::bevy_time::Timer>, mode: V<::bevy_time::TimerMode>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::set_mode(
@@ -450,7 +450,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "times_finished_this_tick",
-            |_self: Ref<::bevy_time::Timer>| {
+            |_self: R<::bevy_time::Timer>| {
                 let output: u32 = {
                     {
                         let output: u32 = ::bevy_time::Timer::times_finished_this_tick(
@@ -467,7 +467,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
         )
         .register_documented(
             "unpause",
-            |mut _self: Mut<::bevy_time::Timer>| {
+            |mut _self: M<::bevy_time::Timer>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Timer::unpause(&mut _self).into();
@@ -490,7 +490,7 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_time::TimerMode>| {
+            |_self: R<::bevy_time::TimerMode>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_time::TimerMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -507,10 +507,10 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_time::TimerMode>| {
-                let output: Val<::bevy_time::TimerMode> = {
+            |_self: R<::bevy_time::TimerMode>| {
+                let output: V<::bevy_time::TimerMode> = {
                     {
-                        let output: Val<::bevy_time::TimerMode> = <::bevy_time::TimerMode as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_time::TimerMode> = <::bevy_time::TimerMode as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -524,7 +524,7 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_time::TimerMode>, other: Ref<::bevy_time::TimerMode>| {
+            |_self: R<::bevy_time::TimerMode>, other: R<::bevy_time::TimerMode>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_time::TimerMode as ::core::cmp::PartialEq<
@@ -551,10 +551,10 @@ pub(crate) fn register_virtual_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_time::Virtual>| {
-                let output: Val<::bevy_time::Virtual> = {
+            |_self: R<::bevy_time::Virtual>| {
+                let output: V<::bevy_time::Virtual> = {
                     {
-                        let output: Val<::bevy_time::Virtual> = <::bevy_time::Virtual as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_time::Virtual> = <::bevy_time::Virtual as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -577,7 +577,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_time::Stopwatch>| {
+            |_self: R<::bevy_time::Stopwatch>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_time::Stopwatch as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -594,10 +594,10 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_time::Stopwatch>| {
-                let output: Val<::bevy_time::Stopwatch> = {
+            |_self: R<::bevy_time::Stopwatch>| {
+                let output: V<::bevy_time::Stopwatch> = {
                     {
-                        let output: Val<::bevy_time::Stopwatch> = <::bevy_time::Stopwatch as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_time::Stopwatch> = <::bevy_time::Stopwatch as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -611,10 +611,10 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "elapsed",
-            |_self: Ref<::bevy_time::Stopwatch>| {
-                let output: Val<::core::time::Duration> = {
+            |_self: R<::bevy_time::Stopwatch>| {
+                let output: V<::core::time::Duration> = {
                     {
-                        let output: Val<::core::time::Duration> = ::bevy_time::Stopwatch::elapsed(
+                        let output: V<::core::time::Duration> = ::bevy_time::Stopwatch::elapsed(
                                 &_self,
                             )
                             .into();
@@ -628,7 +628,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "elapsed_secs",
-            |_self: Ref<::bevy_time::Stopwatch>| {
+            |_self: R<::bevy_time::Stopwatch>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_time::Stopwatch::elapsed_secs(&_self)
@@ -643,7 +643,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "elapsed_secs_f64",
-            |_self: Ref<::bevy_time::Stopwatch>| {
+            |_self: R<::bevy_time::Stopwatch>| {
                 let output: f64 = {
                     {
                         let output: f64 = ::bevy_time::Stopwatch::elapsed_secs_f64(
@@ -660,7 +660,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_time::Stopwatch>, other: Ref<::bevy_time::Stopwatch>| {
+            |_self: R<::bevy_time::Stopwatch>, other: R<::bevy_time::Stopwatch>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_time::Stopwatch as ::core::cmp::PartialEq<
@@ -677,7 +677,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "is_paused",
-            |_self: Ref<::bevy_time::Stopwatch>| {
+            |_self: R<::bevy_time::Stopwatch>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_time::Stopwatch::is_paused(&_self)
@@ -693,9 +693,9 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         .register_documented(
             "new",
             || {
-                let output: Val<::bevy_time::Stopwatch> = {
+                let output: V<::bevy_time::Stopwatch> = {
                     {
-                        let output: Val<::bevy_time::Stopwatch> = ::bevy_time::Stopwatch::new()
+                        let output: V<::bevy_time::Stopwatch> = ::bevy_time::Stopwatch::new()
                             .into();
                         output
                     }
@@ -707,7 +707,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "pause",
-            |mut _self: Mut<::bevy_time::Stopwatch>| {
+            |mut _self: M<::bevy_time::Stopwatch>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Stopwatch::pause(&mut _self)
@@ -722,7 +722,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "reset",
-            |mut _self: Mut<::bevy_time::Stopwatch>| {
+            |mut _self: M<::bevy_time::Stopwatch>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Stopwatch::reset(&mut _self)
@@ -737,7 +737,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "set_elapsed",
-            |mut _self: Mut<::bevy_time::Stopwatch>, time: Val<::core::time::Duration>| {
+            |mut _self: M<::bevy_time::Stopwatch>, time: V<::core::time::Duration>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Stopwatch::set_elapsed(
@@ -755,7 +755,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
         )
         .register_documented(
             "unpause",
-            |mut _self: Mut<::bevy_time::Stopwatch>| {
+            |mut _self: M<::bevy_time::Stopwatch>| {
                 let output: () = {
                     {
                         let output: () = ::bevy_time::Stopwatch::unpause(&mut _self)

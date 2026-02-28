@@ -7,7 +7,7 @@ use bevy_platform::collections::HashMap;
 use crate::{ReflectReference, ScriptValue, docgen::TypedThrough, error::InteropError};
 
 use super::{
-    from::{FromScript, Mut, Ref, Union, Val},
+    from::{FromScript, M, R, Union, V},
     into::IntoScript,
     script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     type_dependencies::GetTypeDependencies,
@@ -72,9 +72,9 @@ impl_arg_info!(
 );
 
 impl<T1, T2> ArgMeta for Union<T1, T2> {}
-impl<T> ArgMeta for Val<T> {}
-impl<T> ArgMeta for Ref<'_, T> {}
-impl<T> ArgMeta for Mut<'_, T> {}
+impl<T> ArgMeta for V<T> {}
+impl<T> ArgMeta for R<'_, T> {}
+impl<T> ArgMeta for M<'_, T> {}
 
 impl<T> ArgMeta for Result<T, InteropError> {}
 

@@ -20,7 +20,7 @@ use std::sync::Arc;
 
 #[diagnostic::on_unimplemented(
     message = "This function does not fulfil the requirements to be a script callable function. All arguments must implement the ScriptArgument trait and all return values must implement the ScriptReturn trait",
-    note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
+    note = "If you're trying to return a non-primitive type, you might need to use V<T> R<T> or M<T> wrappers"
 )]
 /// A trait implemented by functions which can act as dynamic script functions, which can then be registered against a [`ScriptFunctionRegistry`].
 pub trait ScriptFunction<'env, Marker> {
@@ -30,7 +30,7 @@ pub trait ScriptFunction<'env, Marker> {
 
 #[diagnostic::on_unimplemented(
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetTypeDependencies",
-    note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
+    note = "If you're trying to return a non-primitive type, you might need to use V<T> R<T> or M<T> wrappers"
 )]
 /// A trait implemented by functions which can act as mutable dynamic script functions.
 pub trait ScriptFunctionMut<'env, Marker> {
@@ -816,7 +816,7 @@ mod test {
         #[derive(Component, Reflect)]
         struct Comp;
 
-        let fn_ = |_a: crate::function::from::Mut<Comp>| 0usize;
+        let fn_ = |_a: crate::function::from::M<Comp>| 0usize;
         let script_function = fn_.into_dynamic_script_function();
 
         with_local_world(|| {

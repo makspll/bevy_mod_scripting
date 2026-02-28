@@ -6,7 +6,7 @@ use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
@@ -18,10 +18,10 @@ pub(crate) fn register_accessibility_requested_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_a11y::AccessibilityRequested>| {
-                let output: Val<::bevy_a11y::AccessibilityRequested> = {
+            |_self: R<::bevy_a11y::AccessibilityRequested>| {
+                let output: V<::bevy_a11y::AccessibilityRequested> = {
                     {
-                        let output: Val<::bevy_a11y::AccessibilityRequested> = <::bevy_a11y::AccessibilityRequested as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_a11y::AccessibilityRequested> = <::bevy_a11y::AccessibilityRequested as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -35,7 +35,7 @@ pub(crate) fn register_accessibility_requested_functions(world: &mut World) {
         )
         .register_documented(
             "get",
-            |_self: Ref<::bevy_a11y::AccessibilityRequested>| {
+            |_self: R<::bevy_a11y::AccessibilityRequested>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_a11y::AccessibilityRequested::get(
@@ -52,7 +52,7 @@ pub(crate) fn register_accessibility_requested_functions(world: &mut World) {
         )
         .register_documented(
             "set",
-            |_self: Ref<::bevy_a11y::AccessibilityRequested>, value: bool| {
+            |_self: R<::bevy_a11y::AccessibilityRequested>, value: bool| {
                 let output: () = {
                     {
                         let output: () = ::bevy_a11y::AccessibilityRequested::set(
@@ -82,10 +82,10 @@ pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World)
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_a11y::ManageAccessibilityUpdates>| {
-            let output: Val<::bevy_a11y::ManageAccessibilityUpdates> = {
+        |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
+            let output: V<::bevy_a11y::ManageAccessibilityUpdates> = {
                 {
-                    let output: Val<::bevy_a11y::ManageAccessibilityUpdates> =
+                    let output: V<::bevy_a11y::ManageAccessibilityUpdates> =
                         <::bevy_a11y::ManageAccessibilityUpdates as ::core::clone::Clone>::clone(
                             &_self,
                         )
@@ -100,7 +100,7 @@ pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World)
     )
     .register_documented(
         "get",
-        |_self: Ref<::bevy_a11y::ManageAccessibilityUpdates>| {
+        |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
             let output: bool = {
                 {
                     let output: bool = ::bevy_a11y::ManageAccessibilityUpdates::get(&_self).into();
@@ -114,7 +114,7 @@ pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World)
     )
     .register_documented(
         "set",
-        |mut _self: Mut<::bevy_a11y::ManageAccessibilityUpdates>, value: bool| {
+        |mut _self: M<::bevy_a11y::ManageAccessibilityUpdates>, value: bool| {
             let output: () = {
                 {
                     let output: () =
@@ -141,7 +141,7 @@ pub(crate) fn register_accessibility_systems_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_a11y::AccessibilitySystems>| {
+            |_self: R<::bevy_a11y::AccessibilitySystems>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_a11y::AccessibilitySystems as ::core::cmp::Eq>::assert_receiver_is_total_eq(
@@ -158,10 +158,10 @@ pub(crate) fn register_accessibility_systems_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_a11y::AccessibilitySystems>| {
-                let output: Val<::bevy_a11y::AccessibilitySystems> = {
+            |_self: R<::bevy_a11y::AccessibilitySystems>| {
+                let output: V<::bevy_a11y::AccessibilitySystems> = {
                     {
-                        let output: Val<::bevy_a11y::AccessibilitySystems> = <::bevy_a11y::AccessibilitySystems as ::core::clone::Clone>::clone(
+                        let output: V<::bevy_a11y::AccessibilitySystems> = <::bevy_a11y::AccessibilitySystems as ::core::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -176,8 +176,8 @@ pub(crate) fn register_accessibility_systems_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_a11y::AccessibilitySystems>,
-                other: Ref<::bevy_a11y::AccessibilitySystems>|
+                _self: R<::bevy_a11y::AccessibilitySystems>,
+                other: R<::bevy_a11y::AccessibilitySystems>|
             {
                 let output: bool = {
                     {

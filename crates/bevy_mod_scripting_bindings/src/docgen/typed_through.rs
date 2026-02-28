@@ -6,7 +6,7 @@ use std::{any::TypeId, ffi::OsString, path::PathBuf};
 use crate::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Union, Val},
+        from::{M, R, Union, V},
         script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     },
     script_value::ScriptValue,
@@ -21,9 +21,9 @@ use bevy_reflect::{TypeInfo, Typed};
 /// - A through type can not contain a nested through type. It must always contain a fully typed inner type.
 ///
 /// This means that:
-/// - `Ref<Ref<T>>` is not allowed, but `Ref<T>` is.
+/// - `R<R<T>>` is not allowed, but `R<T>` is.
 ///
-/// i.e. `Ref`, `Mut` and `Val` wrappers are `leaf` types, and can not contain other `leaf` types.
+/// i.e. `R`, `M` and `V` wrappers are `leaf` types, and can not contain other `leaf` types.
 ///
 /// This is to keep the implementations of this trait simple, and to ultimately depend on the `TypeInfo` trait for the actual type information.
 #[derive(Clone, DebugWithTypeInfo)]
@@ -215,7 +215,7 @@ impl<T1: TypedThrough, T2: TypedThrough> TypedThrough for Union<T1, T2> {
     }
 }
 
-impl<T: Typed> TypedThrough for Ref<'_, T> {
+impl<T: Typed> TypedThrough for R<'_, T> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::UntypedWrapper {
             through_type: T::type_info(),
@@ -224,7 +224,7 @@ impl<T: Typed> TypedThrough for Ref<'_, T> {
     }
 }
 
-impl<T: Typed> TypedThrough for Mut<'_, T> {
+impl<T: Typed> TypedThrough for M<'_, T> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::UntypedWrapper {
             through_type: T::type_info(),
@@ -233,7 +233,7 @@ impl<T: Typed> TypedThrough for Mut<'_, T> {
     }
 }
 
-impl<T: Typed> TypedThrough for Val<T> {
+impl<T: Typed> TypedThrough for V<T> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::UntypedWrapper {
             through_type: T::type_info(),

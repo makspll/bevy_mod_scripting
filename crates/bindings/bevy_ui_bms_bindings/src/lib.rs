@@ -6,7 +6,7 @@ use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{Mut, Ref, Val},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
@@ -18,7 +18,7 @@ pub(crate) fn register_display_functions(world: &mut World) {
     )
     .register_documented(
         "assert_receiver_is_total_eq",
-        |_self: Ref<::bevy_ui::Display>| {
+        |_self: R<::bevy_ui::Display>| {
             let output: () = {
                 {
                     let output: () =
@@ -34,10 +34,10 @@ pub(crate) fn register_display_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::Display>| {
-            let output: Val<::bevy_ui::Display> = {
+        |_self: R<::bevy_ui::Display>| {
+            let output: V<::bevy_ui::Display> = {
                 {
-                    let output: Val<::bevy_ui::Display> =
+                    let output: V<::bevy_ui::Display> =
                         <::bevy_ui::Display as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -49,7 +49,7 @@ pub(crate) fn register_display_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::Display>, other: Ref<::bevy_ui::Display>| {
+        |_self: R<::bevy_ui::Display>, other: R<::bevy_ui::Display>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::Display as ::std::cmp::PartialEq<
@@ -75,10 +75,10 @@ pub(crate) fn register_ui_picking_camera_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::picking_backend::UiPickingCamera>| {
-                let output: Val<::bevy_ui::picking_backend::UiPickingCamera> = {
+            |_self: R<::bevy_ui::picking_backend::UiPickingCamera>| {
+                let output: V<::bevy_ui::picking_backend::UiPickingCamera> = {
                     {
-                        let output: Val<::bevy_ui::picking_backend::UiPickingCamera> = <::bevy_ui::picking_backend::UiPickingCamera as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::picking_backend::UiPickingCamera> = <::bevy_ui::picking_backend::UiPickingCamera as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -116,10 +116,10 @@ pub(crate) fn register_text_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::widget::Text>| {
-                let output: Val<::bevy_ui::widget::Text> = {
+            |_self: R<::bevy_ui::widget::Text>| {
+                let output: V<::bevy_ui::widget::Text> = {
                     {
-                        let output: Val<::bevy_ui::widget::Text> = <::bevy_ui::widget::Text as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::widget::Text> = <::bevy_ui::widget::Text as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -133,7 +133,7 @@ pub(crate) fn register_text_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::widget::Text>, other: Ref<::bevy_ui::widget::Text>| {
+            |_self: R<::bevy_ui::widget::Text>, other: R<::bevy_ui::widget::Text>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::widget::Text as ::std::cmp::PartialEq<
@@ -162,10 +162,10 @@ pub(crate) fn register_text_shadow_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::widget::TextShadow>| {
-            let output: Val<::bevy_ui::widget::TextShadow> = {
+        |_self: R<::bevy_ui::widget::TextShadow>| {
+            let output: V<::bevy_ui::widget::TextShadow> = {
                 {
-                    let output: Val<::bevy_ui::widget::TextShadow> =
+                    let output: V<::bevy_ui::widget::TextShadow> =
                         <::bevy_ui::widget::TextShadow as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -178,7 +178,7 @@ pub(crate) fn register_text_shadow_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::widget::TextShadow>, other: Ref<::bevy_ui::widget::TextShadow>| {
+        |_self: R<::bevy_ui::widget::TextShadow>, other: R<::bevy_ui::widget::TextShadow>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::widget::TextShadow as ::std::cmp::PartialEq<
@@ -207,7 +207,7 @@ pub(crate) fn register_button_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::widget::Button>| {
+            |_self: R<::bevy_ui::widget::Button>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::widget::Button as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -224,10 +224,10 @@ pub(crate) fn register_button_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::widget::Button>| {
-                let output: Val<::bevy_ui::widget::Button> = {
+            |_self: R<::bevy_ui::widget::Button>| {
+                let output: V<::bevy_ui::widget::Button> = {
                     {
-                        let output: Val<::bevy_ui::widget::Button> = <::bevy_ui::widget::Button as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::widget::Button> = <::bevy_ui::widget::Button as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -241,10 +241,7 @@ pub(crate) fn register_button_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::widget::Button>,
-                other: Ref<::bevy_ui::widget::Button>|
-            {
+            |_self: R<::bevy_ui::widget::Button>, other: R<::bevy_ui::widget::Button>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::widget::Button as ::std::cmp::PartialEq<
@@ -273,10 +270,10 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::widget::ImageNode>| {
-                let output: Val<::bevy_ui::widget::ImageNode> = {
+            |_self: R<::bevy_ui::widget::ImageNode>| {
+                let output: V<::bevy_ui::widget::ImageNode> = {
                     {
-                        let output: Val<::bevy_ui::widget::ImageNode> = <::bevy_ui::widget::ImageNode as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::widget::ImageNode> = <::bevy_ui::widget::ImageNode as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -290,10 +287,10 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
         )
         .register_documented(
             "solid_color",
-            |color: Val<::bevy_color::Color>| {
-                let output: Val<::bevy_ui::widget::ImageNode> = {
+            |color: V<::bevy_color::Color>| {
+                let output: V<::bevy_ui::widget::ImageNode> = {
                     {
-                        let output: Val<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::solid_color(
+                        let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::solid_color(
                                 color.into_inner(),
                             )
                             .into();
@@ -307,10 +304,10 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
         )
         .register_documented(
             "with_color",
-            |_self: Val<::bevy_ui::widget::ImageNode>, color: Val<::bevy_color::Color>| {
-                let output: Val<::bevy_ui::widget::ImageNode> = {
+            |_self: V<::bevy_ui::widget::ImageNode>, color: V<::bevy_color::Color>| {
+                let output: V<::bevy_ui::widget::ImageNode> = {
                     {
-                        let output: Val<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_color(
+                        let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_color(
                                 _self.into_inner(),
                                 color.into_inner(),
                             )
@@ -325,10 +322,10 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
         )
         .register_documented(
             "with_flip_x",
-            |_self: Val<::bevy_ui::widget::ImageNode>| {
-                let output: Val<::bevy_ui::widget::ImageNode> = {
+            |_self: V<::bevy_ui::widget::ImageNode>| {
+                let output: V<::bevy_ui::widget::ImageNode> = {
                     {
-                        let output: Val<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_flip_x(
+                        let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_flip_x(
                                 _self.into_inner(),
                             )
                             .into();
@@ -342,10 +339,10 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
         )
         .register_documented(
             "with_flip_y",
-            |_self: Val<::bevy_ui::widget::ImageNode>| {
-                let output: Val<::bevy_ui::widget::ImageNode> = {
+            |_self: V<::bevy_ui::widget::ImageNode>| {
+                let output: V<::bevy_ui::widget::ImageNode> = {
                     {
-                        let output: Val<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_flip_y(
+                        let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_flip_y(
                                 _self.into_inner(),
                             )
                             .into();
@@ -360,12 +357,12 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
         .register_documented(
             "with_mode",
             |
-                _self: Val<::bevy_ui::widget::ImageNode>,
-                mode: Val<::bevy_ui::widget::NodeImageMode>|
+                _self: V<::bevy_ui::widget::ImageNode>,
+                mode: V<::bevy_ui::widget::NodeImageMode>|
             {
-                let output: Val<::bevy_ui::widget::ImageNode> = {
+                let output: V<::bevy_ui::widget::ImageNode> = {
                     {
-                        let output: Val<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_mode(
+                        let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_mode(
                                 _self.into_inner(),
                                 mode.into_inner(),
                             )
@@ -380,10 +377,10 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
         )
         .register_documented(
             "with_rect",
-            |_self: Val<::bevy_ui::widget::ImageNode>, rect: Val<::bevy_math::Rect>| {
-                let output: Val<::bevy_ui::widget::ImageNode> = {
+            |_self: V<::bevy_ui::widget::ImageNode>, rect: V<::bevy_math::Rect>| {
+                let output: V<::bevy_ui::widget::ImageNode> = {
                     {
-                        let output: Val<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_rect(
+                        let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_rect(
                                 _self.into_inner(),
                                 rect.into_inner(),
                             )
@@ -410,10 +407,10 @@ pub(crate) fn register_label_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::widget::Label>| {
-                let output: Val<::bevy_ui::widget::Label> = {
+            |_self: R<::bevy_ui::widget::Label>| {
+                let output: V<::bevy_ui::widget::Label> = {
                     {
-                        let output: Val<::bevy_ui::widget::Label> = <::bevy_ui::widget::Label as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::widget::Label> = <::bevy_ui::widget::Label as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -439,10 +436,10 @@ pub(crate) fn register_node_image_mode_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::widget::NodeImageMode>| {
-                let output: Val<::bevy_ui::widget::NodeImageMode> = {
+            |_self: R<::bevy_ui::widget::NodeImageMode>| {
+                let output: V<::bevy_ui::widget::NodeImageMode> = {
                     {
-                        let output: Val<::bevy_ui::widget::NodeImageMode> = <::bevy_ui::widget::NodeImageMode as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::widget::NodeImageMode> = <::bevy_ui::widget::NodeImageMode as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -457,8 +454,8 @@ pub(crate) fn register_node_image_mode_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui::widget::NodeImageMode>,
-                other: Ref<::bevy_ui::widget::NodeImageMode>|
+                _self: R<::bevy_ui::widget::NodeImageMode>,
+                other: R<::bevy_ui::widget::NodeImageMode>|
             {
                 let output: bool = {
                     {
@@ -476,7 +473,7 @@ pub(crate) fn register_node_image_mode_functions(world: &mut World) {
         )
         .register_documented(
             "uses_slices",
-            |_self: Ref<::bevy_ui::widget::NodeImageMode>| {
+            |_self: R<::bevy_ui::widget::NodeImageMode>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_ui::widget::NodeImageMode::uses_slices(
@@ -505,10 +502,10 @@ pub(crate) fn register_viewport_node_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::widget::ViewportNode>| {
-            let output: Val<::bevy_ui::widget::ViewportNode> = {
+        |_self: R<::bevy_ui::widget::ViewportNode>| {
+            let output: V<::bevy_ui::widget::ViewportNode> = {
                 {
-                    let output: Val<::bevy_ui::widget::ViewportNode> =
+                    let output: V<::bevy_ui::widget::ViewportNode> =
                         <::bevy_ui::widget::ViewportNode as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -521,10 +518,10 @@ pub(crate) fn register_viewport_node_functions(world: &mut World) {
     )
     .register_documented(
         "new",
-        |camera: Val<::bevy_ecs::entity::Entity>| {
-            let output: Val<::bevy_ui::widget::ViewportNode> = {
+        |camera: V<::bevy_ecs::entity::Entity>| {
+            let output: V<::bevy_ui::widget::ViewportNode> = {
                 {
-                    let output: Val<::bevy_ui::widget::ViewportNode> =
+                    let output: V<::bevy_ui::widget::ViewportNode> =
                         ::bevy_ui::widget::ViewportNode::new(camera.into_inner()).into();
                     output
                 }
@@ -548,7 +545,7 @@ pub(crate) fn register_interaction_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::Interaction>| {
+            |_self: R<::bevy_ui::Interaction>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::Interaction as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -565,10 +562,10 @@ pub(crate) fn register_interaction_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::Interaction>| {
-                let output: Val<::bevy_ui::Interaction> = {
+            |_self: R<::bevy_ui::Interaction>| {
+                let output: V<::bevy_ui::Interaction> = {
                     {
-                        let output: Val<::bevy_ui::Interaction> = <::bevy_ui::Interaction as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::Interaction> = <::bevy_ui::Interaction as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -582,7 +579,7 @@ pub(crate) fn register_interaction_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::Interaction>, other: Ref<::bevy_ui::Interaction>| {
+            |_self: R<::bevy_ui::Interaction>, other: R<::bevy_ui::Interaction>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::Interaction as ::std::cmp::PartialEq<
@@ -618,10 +615,10 @@ pub(crate) fn register_computed_ui_target_camera_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::ComputedUiTargetCamera>| {
-            let output: Val<::bevy_ui::ComputedUiTargetCamera> = {
+        |_self: R<::bevy_ui::ComputedUiTargetCamera>| {
+            let output: V<::bevy_ui::ComputedUiTargetCamera> = {
                 {
-                    let output: Val<::bevy_ui::ComputedUiTargetCamera> =
+                    let output: V<::bevy_ui::ComputedUiTargetCamera> =
                         <::bevy_ui::ComputedUiTargetCamera as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -634,8 +631,8 @@ pub(crate) fn register_computed_ui_target_camera_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::ComputedUiTargetCamera>,
-         other: Ref<::bevy_ui::ComputedUiTargetCamera>| {
+        |_self: R<::bevy_ui::ComputedUiTargetCamera>,
+         other: R<::bevy_ui::ComputedUiTargetCamera>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -665,10 +662,10 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::ComputedUiRenderTargetInfo>| {
-            let output: Val<::bevy_ui::ComputedUiRenderTargetInfo> = {
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: V<::bevy_ui::ComputedUiRenderTargetInfo> = {
                 {
-                    let output: Val<::bevy_ui::ComputedUiRenderTargetInfo> =
+                    let output: V<::bevy_ui::ComputedUiRenderTargetInfo> =
                         <::bevy_ui::ComputedUiRenderTargetInfo as ::std::clone::Clone>::clone(
                             &_self,
                         )
@@ -683,8 +680,8 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::ComputedUiRenderTargetInfo>,
-         other: Ref<::bevy_ui::ComputedUiRenderTargetInfo>| {
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>,
+         other: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -702,10 +699,10 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
     )
     .register_documented(
         "logical_size",
-        |_self: Ref<::bevy_ui::ComputedUiRenderTargetInfo>| {
-            let output: Val<::bevy_math::Vec2> = {
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: V<::bevy_math::Vec2> = {
                 {
-                    let output: Val<::bevy_math::Vec2> =
+                    let output: V<::bevy_math::Vec2> =
                         ::bevy_ui::ComputedUiRenderTargetInfo::logical_size(&_self).into();
                     output
                 }
@@ -717,10 +714,10 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
     )
     .register_documented(
         "physical_size",
-        |_self: Ref<::bevy_ui::ComputedUiRenderTargetInfo>| {
-            let output: Val<::bevy_math::UVec2> = {
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: V<::bevy_math::UVec2> = {
                 {
-                    let output: Val<::bevy_math::UVec2> =
+                    let output: V<::bevy_math::UVec2> =
                         ::bevy_ui::ComputedUiRenderTargetInfo::physical_size(&_self).into();
                     output
                 }
@@ -732,7 +729,7 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
     )
     .register_documented(
         "scale_factor",
-        |_self: Ref<::bevy_ui::ComputedUiRenderTargetInfo>| {
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
             let output: f32 = {
                 {
                     let output: f32 =
@@ -759,10 +756,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "border",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_ui::prelude::BorderRect> = {
                     {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::border(
+                        let output: V<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::border(
                                 &_self,
                             )
                             .into();
@@ -776,10 +773,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "border_box",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Rect> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::border_box(
+                        let output: V<::bevy_math::Rect> = ::bevy_ui::ComputedNode::border_box(
                                 &_self,
                             )
                             .into();
@@ -793,10 +790,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "border_radius",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_ui::ResolvedBorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::border_radius(
+                        let output: V<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::border_radius(
                                 &_self,
                             )
                             .into();
@@ -810,10 +807,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ComputedNode> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_ui::ComputedNode> = {
                     {
-                        let output: Val<::bevy_ui::ComputedNode> = <::bevy_ui::ComputedNode as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::ComputedNode> = <::bevy_ui::ComputedNode as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -828,9 +825,9 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "contains_point",
             |
-                _self: Ref<::bevy_ui::ComputedNode>,
-                transform: Val<::bevy_ui::UiGlobalTransform>,
-                point: Val<::bevy_math::Vec2>|
+                _self: R<::bevy_ui::ComputedNode>,
+                transform: V<::bevy_ui::UiGlobalTransform>,
+                point: V<::bevy_math::Vec2>|
             {
                 let output: bool = {
                     {
@@ -850,10 +847,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "content_box",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Rect> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::content_box(
+                        let output: V<::bevy_math::Rect> = ::bevy_ui::ComputedNode::content_box(
                                 &_self,
                             )
                             .into();
@@ -867,10 +864,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "content_inset",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_ui::prelude::BorderRect> = {
                     {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::content_inset(
+                        let output: V<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::content_inset(
                                 &_self,
                             )
                             .into();
@@ -884,10 +881,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "content_size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::content_size(
+                        let output: V<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::content_size(
                                 &_self,
                             )
                             .into();
@@ -901,7 +898,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::ComputedNode>, other: Ref<::bevy_ui::ComputedNode>| {
+            |_self: R<::bevy_ui::ComputedNode>, other: R<::bevy_ui::ComputedNode>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::ComputedNode as ::std::cmp::PartialEq<
@@ -918,10 +915,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "inner_radius",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_ui::ResolvedBorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::inner_radius(
+                        let output: V<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::inner_radius(
                                 &_self,
                             )
                             .into();
@@ -935,7 +932,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "inverse_scale_factor",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
+            |_self: R<::bevy_ui::ComputedNode>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_ui::ComputedNode::inverse_scale_factor(
@@ -952,7 +949,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "is_empty",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
+            |_self: R<::bevy_ui::ComputedNode>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_ui::ComputedNode::is_empty(&_self)
@@ -967,7 +964,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "outline_offset",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
+            |_self: R<::bevy_ui::ComputedNode>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_ui::ComputedNode::outline_offset(&_self)
@@ -982,10 +979,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "outline_radius",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_ui::ResolvedBorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::outline_radius(
+                        let output: V<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::ComputedNode::outline_radius(
                                 &_self,
                             )
                             .into();
@@ -999,7 +996,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "outline_width",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
+            |_self: R<::bevy_ui::ComputedNode>| {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_ui::ComputedNode::outline_width(&_self)
@@ -1014,10 +1011,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "outlined_node_size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::outlined_node_size(
+                        let output: V<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::outlined_node_size(
                                 &_self,
                             )
                             .into();
@@ -1031,10 +1028,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "padding",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_ui::prelude::BorderRect> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_ui::prelude::BorderRect> = {
                     {
-                        let output: Val<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::padding(
+                        let output: V<::bevy_ui::prelude::BorderRect> = ::bevy_ui::ComputedNode::padding(
                                 &_self,
                             )
                             .into();
@@ -1048,10 +1045,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "padding_box",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Rect> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::padding_box(
+                        let output: V<::bevy_math::Rect> = ::bevy_ui::ComputedNode::padding_box(
                                 &_self,
                             )
                             .into();
@@ -1066,13 +1063,13 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         .register_documented(
             "resolve_clip_rect",
             |
-                _self: Ref<::bevy_ui::ComputedNode>,
-                overflow: Val<::bevy_ui::Overflow>,
-                overflow_clip_margin: Val<::bevy_ui::OverflowClipMargin>|
+                _self: R<::bevy_ui::ComputedNode>,
+                overflow: V<::bevy_ui::Overflow>,
+                overflow_clip_margin: V<::bevy_ui::OverflowClipMargin>|
             {
-                let output: Val<::bevy_math::Rect> = {
+                let output: V<::bevy_math::Rect> = {
                     {
-                        let output: Val<::bevy_math::Rect> = ::bevy_ui::ComputedNode::resolve_clip_rect(
+                        let output: V<::bevy_math::Rect> = ::bevy_ui::ComputedNode::resolve_clip_rect(
                                 &_self,
                                 overflow.into_inner(),
                                 overflow_clip_margin.into_inner(),
@@ -1088,10 +1085,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::size(
+                        let output: V<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::size(
                                 &_self,
                             )
                             .into();
@@ -1105,7 +1102,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "stack_index",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
+            |_self: R<::bevy_ui::ComputedNode>| {
                 let output: u32 = {
                     {
                         let output: u32 = ::bevy_ui::ComputedNode::stack_index(&_self)
@@ -1120,10 +1117,10 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
         )
         .register_documented(
             "unrounded_size",
-            |_self: Ref<::bevy_ui::ComputedNode>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: R<::bevy_ui::ComputedNode>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::unrounded_size(
+                        let output: V<::bevy_math::Vec2> = ::bevy_ui::ComputedNode::unrounded_size(
                                 &_self,
                             )
                             .into();
@@ -1149,10 +1146,10 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "affine",
-            |_self: Ref<::bevy_ui::UiGlobalTransform>| {
-                let output: Val<::bevy_math::Affine2> = {
+            |_self: R<::bevy_ui::UiGlobalTransform>| {
+                let output: V<::bevy_math::Affine2> = {
                     {
-                        let output: Val<::bevy_math::Affine2> = ::bevy_ui::UiGlobalTransform::affine(
+                        let output: V<::bevy_math::Affine2> = ::bevy_ui::UiGlobalTransform::affine(
                                 &_self,
                             )
                             .into();
@@ -1166,10 +1163,10 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::UiGlobalTransform>| {
-                let output: Val<::bevy_ui::UiGlobalTransform> = {
+            |_self: R<::bevy_ui::UiGlobalTransform>| {
+                let output: V<::bevy_ui::UiGlobalTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiGlobalTransform> = <::bevy_ui::UiGlobalTransform as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::UiGlobalTransform> = <::bevy_ui::UiGlobalTransform as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1184,8 +1181,8 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui::UiGlobalTransform>,
-                other: Ref<::bevy_ui::UiGlobalTransform>|
+                _self: R<::bevy_ui::UiGlobalTransform>,
+                other: R<::bevy_ui::UiGlobalTransform>|
             {
                 let output: bool = {
                     {
@@ -1203,10 +1200,10 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_rotation",
-            |rotation: Val<::bevy_math::Rot2>| {
-                let output: Val<::bevy_ui::UiGlobalTransform> = {
+            |rotation: V<::bevy_math::Rot2>| {
+                let output: V<::bevy_ui::UiGlobalTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_rotation(
+                        let output: V<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_rotation(
                                 rotation.into_inner(),
                             )
                             .into();
@@ -1220,10 +1217,10 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_scale",
-            |scale: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::UiGlobalTransform> = {
+            |scale: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_ui::UiGlobalTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_scale(
+                        let output: V<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_scale(
                                 scale.into_inner(),
                             )
                             .into();
@@ -1237,10 +1234,10 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_translation",
-            |translation: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::UiGlobalTransform> = {
+            |translation: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_ui::UiGlobalTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_translation(
+                        let output: V<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_translation(
                                 translation.into_inner(),
                             )
                             .into();
@@ -1255,9 +1252,9 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         .register_documented(
             "from_xy",
             |x: f32, y: f32| {
-                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                let output: V<::bevy_ui::UiGlobalTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_xy(
+                        let output: V<::bevy_ui::UiGlobalTransform> = ::bevy_ui::UiGlobalTransform::from_xy(
                                 x,
                                 y,
                             )
@@ -1272,13 +1269,10 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |
-                _self: Val<::bevy_ui::UiGlobalTransform>,
-                affine2: Val<::bevy_math::Affine2>|
-            {
-                let output: Val<::bevy_math::Affine2> = {
+            |_self: V<::bevy_ui::UiGlobalTransform>, affine2: V<::bevy_math::Affine2>| {
+                let output: V<::bevy_math::Affine2> = {
                     {
-                        let output: Val<::bevy_math::Affine2> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
+                        let output: V<::bevy_math::Affine2> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
                             ::bevy_math::Affine2,
                         >>::mul(_self.into_inner(), affine2.into_inner())
                             .into();
@@ -1292,10 +1286,10 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: Val<::bevy_ui::UiGlobalTransform>, value: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_math::Vec2> = {
+            |_self: V<::bevy_ui::UiGlobalTransform>, value: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
+                        let output: V<::bevy_math::Vec2> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
                             ::bevy_math::Vec2,
                         >>::mul(_self.into_inner(), value.into_inner())
                             .into();
@@ -1310,12 +1304,12 @@ pub(crate) fn register_ui_global_transform_functions(world: &mut World) {
         .register_documented(
             "mul",
             |
-                _self: Val<::bevy_ui::UiGlobalTransform>,
-                value: Val<::bevy_ui::UiGlobalTransform>|
+                _self: V<::bevy_ui::UiGlobalTransform>,
+                value: V<::bevy_ui::UiGlobalTransform>|
             {
-                let output: Val<::bevy_ui::UiGlobalTransform> = {
+                let output: V<::bevy_ui::UiGlobalTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiGlobalTransform> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
+                        let output: V<::bevy_ui::UiGlobalTransform> = <::bevy_ui::UiGlobalTransform as ::std::ops::Mul<
                             ::bevy_ui::UiGlobalTransform,
                         >>::mul(_self.into_inner(), value.into_inner())
                             .into();
@@ -1342,15 +1336,15 @@ pub(crate) fn register_auto_directional_navigation_functions(world: &mut World) 
         .register_documented(
             "clone",
             |
-                _self: Ref<
+                _self: R<
                     ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
                 >|
             {
-                let output: Val<
+                let output: V<
                     ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
                 > = {
                     {
-                        let output: Val<
+                        let output: V<
                             ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
                         > = <::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation as ::std::clone::Clone>::clone(
                                 &_self,
@@ -1367,10 +1361,10 @@ pub(crate) fn register_auto_directional_navigation_functions(world: &mut World) 
         .register_documented(
             "eq",
             |
-                _self: Ref<
+                _self: R<
                     ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
                 >,
-                other: Ref<
+                other: R<
                     ::bevy_ui::auto_directional_navigation::AutoDirectionalNavigation,
                 >|
             {
@@ -1402,10 +1396,10 @@ pub(crate) fn register_content_size_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "fixed_size",
-            |size: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::ContentSize> = {
+            |size: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_ui::ContentSize> = {
                     {
-                        let output: Val<::bevy_ui::ContentSize> = ::bevy_ui::ContentSize::fixed_size(
+                        let output: V<::bevy_ui::ContentSize> = ::bevy_ui::ContentSize::fixed_size(
                                 size.into_inner(),
                             )
                             .into();
@@ -1429,10 +1423,10 @@ pub(crate) fn register_calculated_clip_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::CalculatedClip>| {
-                let output: Val<::bevy_ui::CalculatedClip> = {
+            |_self: R<::bevy_ui::CalculatedClip>| {
+                let output: V<::bevy_ui::CalculatedClip> = {
                     {
-                        let output: Val<::bevy_ui::CalculatedClip> = <::bevy_ui::CalculatedClip as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::CalculatedClip> = <::bevy_ui::CalculatedClip as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1458,10 +1452,10 @@ pub(crate) fn register_node_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::Node>| {
-            let output: Val<::bevy_ui::Node> = {
+        |_self: R<::bevy_ui::Node>| {
+            let output: V<::bevy_ui::Node> = {
                 {
-                    let output: Val<::bevy_ui::Node> =
+                    let output: V<::bevy_ui::Node> =
                         <::bevy_ui::Node as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -1473,7 +1467,7 @@ pub(crate) fn register_node_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::Node>, other: Ref<::bevy_ui::Node>| {
+        |_self: R<::bevy_ui::Node>, other: R<::bevy_ui::Node>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::Node as ::std::cmp::PartialEq<
@@ -1498,7 +1492,7 @@ pub(crate) fn register_overflow_axis_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::OverflowAxis>| {
+            |_self: R<::bevy_ui::OverflowAxis>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::OverflowAxis as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1515,10 +1509,10 @@ pub(crate) fn register_overflow_axis_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::OverflowAxis>| {
-                let output: Val<::bevy_ui::OverflowAxis> = {
+            |_self: R<::bevy_ui::OverflowAxis>| {
+                let output: V<::bevy_ui::OverflowAxis> = {
                     {
-                        let output: Val<::bevy_ui::OverflowAxis> = <::bevy_ui::OverflowAxis as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::OverflowAxis> = <::bevy_ui::OverflowAxis as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1532,7 +1526,7 @@ pub(crate) fn register_overflow_axis_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::OverflowAxis>, other: Ref<::bevy_ui::OverflowAxis>| {
+            |_self: R<::bevy_ui::OverflowAxis>, other: R<::bevy_ui::OverflowAxis>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::OverflowAxis as ::std::cmp::PartialEq<
@@ -1549,7 +1543,7 @@ pub(crate) fn register_overflow_axis_functions(world: &mut World) {
         )
         .register_documented(
             "is_visible",
-            |_self: Ref<::bevy_ui::OverflowAxis>| {
+            |_self: R<::bevy_ui::OverflowAxis>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_ui::OverflowAxis::is_visible(&_self)
@@ -1576,7 +1570,7 @@ pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::UiTargetCamera>| {
+            |_self: R<::bevy_ui::UiTargetCamera>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::UiTargetCamera as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1593,10 +1587,10 @@ pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::UiTargetCamera>| {
-                let output: Val<::bevy_ui::UiTargetCamera> = {
+            |_self: R<::bevy_ui::UiTargetCamera>| {
+                let output: V<::bevy_ui::UiTargetCamera> = {
                     {
-                        let output: Val<::bevy_ui::UiTargetCamera> = <::bevy_ui::UiTargetCamera as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::UiTargetCamera> = <::bevy_ui::UiTargetCamera as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1610,10 +1604,10 @@ pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
         )
         .register_documented(
             "entity",
-            |_self: Ref<::bevy_ui::UiTargetCamera>| {
-                let output: Val<::bevy_ecs::entity::Entity> = {
+            |_self: R<::bevy_ui::UiTargetCamera>| {
+                let output: V<::bevy_ecs::entity::Entity> = {
                     {
-                        let output: Val<::bevy_ecs::entity::Entity> = ::bevy_ui::UiTargetCamera::entity(
+                        let output: V<::bevy_ecs::entity::Entity> = ::bevy_ui::UiTargetCamera::entity(
                                 &_self,
                             )
                             .into();
@@ -1627,10 +1621,7 @@ pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::UiTargetCamera>,
-                other: Ref<::bevy_ui::UiTargetCamera>|
-            {
+            |_self: R<::bevy_ui::UiTargetCamera>, other: R<::bevy_ui::UiTargetCamera>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::UiTargetCamera as ::std::cmp::PartialEq<
@@ -1659,7 +1650,7 @@ pub(crate) fn register_overflow_clip_box_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::OverflowClipBox>| {
+            |_self: R<::bevy_ui::OverflowClipBox>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::OverflowClipBox as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1676,10 +1667,10 @@ pub(crate) fn register_overflow_clip_box_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::OverflowClipBox>| {
-                let output: Val<::bevy_ui::OverflowClipBox> = {
+            |_self: R<::bevy_ui::OverflowClipBox>| {
+                let output: V<::bevy_ui::OverflowClipBox> = {
                     {
-                        let output: Val<::bevy_ui::OverflowClipBox> = <::bevy_ui::OverflowClipBox as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::OverflowClipBox> = <::bevy_ui::OverflowClipBox as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1693,10 +1684,7 @@ pub(crate) fn register_overflow_clip_box_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::OverflowClipBox>,
-                other: Ref<::bevy_ui::OverflowClipBox>|
-            {
+            |_self: R<::bevy_ui::OverflowClipBox>, other: R<::bevy_ui::OverflowClipBox>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::OverflowClipBox as ::std::cmp::PartialEq<
@@ -1725,7 +1713,7 @@ pub(crate) fn register_focus_policy_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::FocusPolicy>| {
+            |_self: R<::bevy_ui::FocusPolicy>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::FocusPolicy as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1742,10 +1730,10 @@ pub(crate) fn register_focus_policy_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::FocusPolicy>| {
-                let output: Val<::bevy_ui::FocusPolicy> = {
+            |_self: R<::bevy_ui::FocusPolicy>| {
+                let output: V<::bevy_ui::FocusPolicy> = {
                     {
-                        let output: Val<::bevy_ui::FocusPolicy> = <::bevy_ui::FocusPolicy as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::FocusPolicy> = <::bevy_ui::FocusPolicy as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -1759,7 +1747,7 @@ pub(crate) fn register_focus_policy_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::FocusPolicy>, other: Ref<::bevy_ui::FocusPolicy>| {
+            |_self: R<::bevy_ui::FocusPolicy>, other: R<::bevy_ui::FocusPolicy>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::FocusPolicy as ::std::cmp::PartialEq<
@@ -1786,10 +1774,10 @@ pub(crate) fn register_image_node_size_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::widget::ImageNodeSize>| {
-            let output: Val<::bevy_ui::widget::ImageNodeSize> = {
+        |_self: R<::bevy_ui::widget::ImageNodeSize>| {
+            let output: V<::bevy_ui::widget::ImageNodeSize> = {
                 {
-                    let output: Val<::bevy_ui::widget::ImageNodeSize> =
+                    let output: V<::bevy_ui::widget::ImageNodeSize> =
                         <::bevy_ui::widget::ImageNodeSize as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -1802,10 +1790,10 @@ pub(crate) fn register_image_node_size_functions(world: &mut World) {
     )
     .register_documented(
         "size",
-        |_self: Ref<::bevy_ui::widget::ImageNodeSize>| {
-            let output: Val<::bevy_math::UVec2> = {
+        |_self: R<::bevy_ui::widget::ImageNodeSize>| {
+            let output: V<::bevy_math::UVec2> = {
                 {
-                    let output: Val<::bevy_math::UVec2> =
+                    let output: V<::bevy_math::UVec2> =
                         ::bevy_ui::widget::ImageNodeSize::size(&_self).into();
                     output
                 }
@@ -1829,10 +1817,10 @@ pub(crate) fn register_text_node_flags_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::widget::TextNodeFlags>| {
-            let output: Val<::bevy_ui::widget::TextNodeFlags> = {
+        |_self: R<::bevy_ui::widget::TextNodeFlags>| {
+            let output: V<::bevy_ui::widget::TextNodeFlags> = {
                 {
-                    let output: Val<::bevy_ui::widget::TextNodeFlags> =
+                    let output: V<::bevy_ui::widget::TextNodeFlags> =
                         <::bevy_ui::widget::TextNodeFlags as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -1857,10 +1845,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "anchor",
-            |anchor: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |anchor: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::anchor(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::anchor(
                                 anchor.into_inner(),
                             )
                             .into();
@@ -1875,13 +1863,13 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         .register_documented(
             "at",
             |
-                _self: Val<::bevy_ui::UiPosition>,
-                x: Val<::bevy_ui::Val>,
-                y: Val<::bevy_ui::Val>|
+                _self: V<::bevy_ui::UiPosition>,
+                x: V<::bevy_ui::Val>,
+                y: V<::bevy_ui::Val>|
             {
-                let output: Val<::bevy_ui::UiPosition> = {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at(
                                 _self.into_inner(),
                                 x.into_inner(),
                                 y.into_inner(),
@@ -1897,10 +1885,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "at_percent",
-            |_self: Val<::bevy_ui::UiPosition>, x: f32, y: f32| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |_self: V<::bevy_ui::UiPosition>, x: f32, y: f32| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_percent(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_percent(
                                 _self.into_inner(),
                                 x,
                                 y,
@@ -1916,10 +1904,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "at_px",
-            |_self: Val<::bevy_ui::UiPosition>, x: f32, y: f32| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |_self: V<::bevy_ui::UiPosition>, x: f32, y: f32| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_px(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_px(
                                 _self.into_inner(),
                                 x,
                                 y,
@@ -1935,10 +1923,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "at_x",
-            |_self: Val<::bevy_ui::UiPosition>, x: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |_self: V<::bevy_ui::UiPosition>, x: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_x(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_x(
                                 _self.into_inner(),
                                 x.into_inner(),
                             )
@@ -1953,10 +1941,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "at_y",
-            |_self: Val<::bevy_ui::UiPosition>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |_self: V<::bevy_ui::UiPosition>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_y(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::at_y(
                                 _self.into_inner(),
                                 y.into_inner(),
                             )
@@ -1971,10 +1959,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "bottom",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::bottom(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::bottom(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -1989,10 +1977,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "bottom_left",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::bottom_left(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::bottom_left(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2007,10 +1995,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "bottom_right",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::bottom_right(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::bottom_right(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2025,10 +2013,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "center",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::center(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::center(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2043,10 +2031,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::UiPosition>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |_self: R<::bevy_ui::UiPosition>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = <::bevy_ui::UiPosition as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::UiPosition> = <::bevy_ui::UiPosition as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2060,7 +2048,7 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::UiPosition>, other: Ref<::bevy_ui::UiPosition>| {
+            |_self: R<::bevy_ui::UiPosition>, other: R<::bevy_ui::UiPosition>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::UiPosition as ::std::cmp::PartialEq<
@@ -2077,10 +2065,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "left",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::left(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::left(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2095,14 +2083,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |
-                anchor: Val<::bevy_math::Vec2>,
-                x: Val<::bevy_ui::Val>,
-                y: Val<::bevy_ui::Val>|
-            {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |anchor: V<::bevy_math::Vec2>, x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::new(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::new(
                                 anchor.into_inner(),
                                 x.into_inner(),
                                 y.into_inner(),
@@ -2119,14 +2103,14 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         .register_documented(
             "resolve",
             |
-                _self: Val<::bevy_ui::UiPosition>,
+                _self: V<::bevy_ui::UiPosition>,
                 scale_factor: f32,
-                physical_size: Val<::bevy_math::Vec2>,
-                physical_target_size: Val<::bevy_math::Vec2>|
+                physical_size: V<::bevy_math::Vec2>,
+                physical_target_size: V<::bevy_math::Vec2>|
             {
-                let output: Val<::bevy_math::Vec2> = {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::UiPosition::resolve(
+                        let output: V<::bevy_math::Vec2> = ::bevy_ui::UiPosition::resolve(
                                 _self.into_inner(),
                                 scale_factor,
                                 physical_size.into_inner(),
@@ -2143,10 +2127,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "right",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::right(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::right(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2161,10 +2145,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "top",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::top(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::top(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2179,10 +2163,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "top_left",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::top_left(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::top_left(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2197,10 +2181,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "top_right",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::top_right(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::top_right(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -2215,10 +2199,10 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
         )
         .register_documented(
             "with_anchor",
-            |_self: Val<::bevy_ui::UiPosition>, anchor: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::UiPosition> = {
+            |_self: V<::bevy_ui::UiPosition>, anchor: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_ui::UiPosition> = {
                     {
-                        let output: Val<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::with_anchor(
+                        let output: V<::bevy_ui::UiPosition> = ::bevy_ui::UiPosition::with_anchor(
                                 _self.into_inner(),
                                 anchor.into_inner(),
                             )
@@ -2243,10 +2227,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "all",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::Val::all(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::Val::all(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2260,10 +2244,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "bottom",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::Val::bottom(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::Val::bottom(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2277,10 +2261,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::Val> = {
+            |_self: R<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::Val> = {
                     {
-                        let output: Val<::bevy_ui::Val> = <::bevy_ui::Val as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::Val> = <::bevy_ui::Val as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2294,10 +2278,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "div",
-            |_self: Val<::bevy_ui::Val>, rhs: f32| {
-                let output: Val<::bevy_ui::Val> = {
+            |_self: V<::bevy_ui::Val>, rhs: f32| {
+                let output: V<::bevy_ui::Val> = {
                     {
-                        let output: Val<::bevy_ui::Val> = <::bevy_ui::Val as ::std::ops::Div<
+                        let output: V<::bevy_ui::Val> = <::bevy_ui::Val as ::std::ops::Div<
                             f32,
                         >>::div(_self.into_inner(), rhs)
                             .into();
@@ -2311,7 +2295,7 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::Val>, other: Ref<::bevy_ui::Val>| {
+            |_self: R<::bevy_ui::Val>, other: R<::bevy_ui::Val>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::Val as ::std::cmp::PartialEq<
@@ -2328,10 +2312,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "horizontal",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::Val::horizontal(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::Val::horizontal(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2345,10 +2329,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "left",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::Val::left(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::Val::left(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2362,10 +2346,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: Val<::bevy_ui::Val>, rhs: f32| {
-                let output: Val<::bevy_ui::Val> = {
+            |_self: V<::bevy_ui::Val>, rhs: f32| {
+                let output: V<::bevy_ui::Val> = {
                     {
-                        let output: Val<::bevy_ui::Val> = <::bevy_ui::Val as ::std::ops::Mul<
+                        let output: V<::bevy_ui::Val> = <::bevy_ui::Val as ::std::ops::Mul<
                             f32,
                         >>::mul(_self.into_inner(), rhs)
                             .into();
@@ -2379,10 +2363,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "neg",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::Val> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::Val> = {
                     {
-                        let output: Val<::bevy_ui::Val> = <::bevy_ui::Val as ::std::ops::Neg>::neg(
+                        let output: V<::bevy_ui::Val> = <::bevy_ui::Val as ::std::ops::Neg>::neg(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2396,10 +2380,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "right",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::Val::right(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::Val::right(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2413,10 +2397,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "top",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::Val::top(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::Val::top(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2430,10 +2414,10 @@ pub(crate) fn register_val_functions(world: &mut World) {
         )
         .register_documented(
             "vertical",
-            |_self: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::Val::vertical(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::Val::vertical(
                                 _self.into_inner(),
                             )
                             .into();
@@ -2455,10 +2439,10 @@ pub(crate) fn register_color_stop_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::ColorStop>| {
-                let output: Val<::bevy_ui::ColorStop> = {
+            |_self: R<::bevy_ui::ColorStop>| {
+                let output: V<::bevy_ui::ColorStop> = {
                     {
-                        let output: Val<::bevy_ui::ColorStop> = <::bevy_ui::ColorStop as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::ColorStop> = <::bevy_ui::ColorStop as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2472,7 +2456,7 @@ pub(crate) fn register_color_stop_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::ColorStop>, other: Ref<::bevy_ui::ColorStop>| {
+            |_self: R<::bevy_ui::ColorStop>, other: R<::bevy_ui::ColorStop>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::ColorStop as ::std::cmp::PartialEq<
@@ -2489,10 +2473,10 @@ pub(crate) fn register_color_stop_functions(world: &mut World) {
         )
         .register_documented(
             "with_hint",
-            |_self: Val<::bevy_ui::ColorStop>, hint: f32| {
-                let output: Val<::bevy_ui::ColorStop> = {
+            |_self: V<::bevy_ui::ColorStop>, hint: f32| {
+                let output: V<::bevy_ui::ColorStop> = {
                     {
-                        let output: Val<::bevy_ui::ColorStop> = ::bevy_ui::ColorStop::with_hint(
+                        let output: V<::bevy_ui::ColorStop> = ::bevy_ui::ColorStop::with_hint(
                                 _self.into_inner(),
                                 hint,
                             )
@@ -2516,10 +2500,10 @@ pub(crate) fn register_angular_color_stop_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::AngularColorStop>| {
-                let output: Val<::bevy_ui::AngularColorStop> = {
+            |_self: R<::bevy_ui::AngularColorStop>| {
+                let output: V<::bevy_ui::AngularColorStop> = {
                     {
-                        let output: Val<::bevy_ui::AngularColorStop> = <::bevy_ui::AngularColorStop as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::AngularColorStop> = <::bevy_ui::AngularColorStop as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2534,8 +2518,8 @@ pub(crate) fn register_angular_color_stop_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui::AngularColorStop>,
-                other: Ref<::bevy_ui::AngularColorStop>|
+                _self: R<::bevy_ui::AngularColorStop>,
+                other: R<::bevy_ui::AngularColorStop>|
             {
                 let output: bool = {
                     {
@@ -2553,10 +2537,10 @@ pub(crate) fn register_angular_color_stop_functions(world: &mut World) {
         )
         .register_documented(
             "with_hint",
-            |_self: Val<::bevy_ui::AngularColorStop>, hint: f32| {
-                let output: Val<::bevy_ui::AngularColorStop> = {
+            |_self: V<::bevy_ui::AngularColorStop>, hint: f32| {
+                let output: V<::bevy_ui::AngularColorStop> = {
                     {
-                        let output: Val<::bevy_ui::AngularColorStop> = ::bevy_ui::AngularColorStop::with_hint(
+                        let output: V<::bevy_ui::AngularColorStop> = ::bevy_ui::AngularColorStop::with_hint(
                                 _self.into_inner(),
                                 hint,
                             )
@@ -2583,10 +2567,10 @@ pub(crate) fn register_linear_gradient_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::LinearGradient>| {
-                let output: Val<::bevy_ui::LinearGradient> = {
+            |_self: R<::bevy_ui::LinearGradient>| {
+                let output: V<::bevy_ui::LinearGradient> = {
                     {
-                        let output: Val<::bevy_ui::LinearGradient> = <::bevy_ui::LinearGradient as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::LinearGradient> = <::bevy_ui::LinearGradient as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2600,10 +2584,7 @@ pub(crate) fn register_linear_gradient_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::LinearGradient>,
-                other: Ref<::bevy_ui::LinearGradient>|
-            {
+            |_self: R<::bevy_ui::LinearGradient>, other: R<::bevy_ui::LinearGradient>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::LinearGradient as ::std::cmp::PartialEq<
@@ -2621,12 +2602,12 @@ pub(crate) fn register_linear_gradient_functions(world: &mut World) {
         .register_documented(
             "in_color_space",
             |
-                _self: Val<::bevy_ui::LinearGradient>,
-                color_space: Val<::bevy_ui::InterpolationColorSpace>|
+                _self: V<::bevy_ui::LinearGradient>,
+                color_space: V<::bevy_ui::InterpolationColorSpace>|
             {
-                let output: Val<::bevy_ui::LinearGradient> = {
+                let output: V<::bevy_ui::LinearGradient> = {
                     {
-                        let output: Val<::bevy_ui::LinearGradient> = ::bevy_ui::LinearGradient::in_color_space(
+                        let output: V<::bevy_ui::LinearGradient> = ::bevy_ui::LinearGradient::in_color_space(
                                 _self.into_inner(),
                                 color_space.into_inner(),
                             )
@@ -2653,7 +2634,7 @@ pub(crate) fn register_interpolation_color_space_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::InterpolationColorSpace>| {
+            |_self: R<::bevy_ui::InterpolationColorSpace>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::InterpolationColorSpace as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -2670,10 +2651,10 @@ pub(crate) fn register_interpolation_color_space_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::InterpolationColorSpace>| {
-                let output: Val<::bevy_ui::InterpolationColorSpace> = {
+            |_self: R<::bevy_ui::InterpolationColorSpace>| {
+                let output: V<::bevy_ui::InterpolationColorSpace> = {
                     {
-                        let output: Val<::bevy_ui::InterpolationColorSpace> = <::bevy_ui::InterpolationColorSpace as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::InterpolationColorSpace> = <::bevy_ui::InterpolationColorSpace as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2688,8 +2669,8 @@ pub(crate) fn register_interpolation_color_space_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui::InterpolationColorSpace>,
-                other: Ref<::bevy_ui::InterpolationColorSpace>|
+                _self: R<::bevy_ui::InterpolationColorSpace>,
+                other: R<::bevy_ui::InterpolationColorSpace>|
             {
                 let output: bool = {
                     {
@@ -2719,10 +2700,10 @@ pub(crate) fn register_radial_gradient_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::RadialGradient>| {
-                let output: Val<::bevy_ui::RadialGradient> = {
+            |_self: R<::bevy_ui::RadialGradient>| {
+                let output: V<::bevy_ui::RadialGradient> = {
                     {
-                        let output: Val<::bevy_ui::RadialGradient> = <::bevy_ui::RadialGradient as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::RadialGradient> = <::bevy_ui::RadialGradient as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2736,10 +2717,7 @@ pub(crate) fn register_radial_gradient_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::RadialGradient>,
-                other: Ref<::bevy_ui::RadialGradient>|
-            {
+            |_self: R<::bevy_ui::RadialGradient>, other: R<::bevy_ui::RadialGradient>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::RadialGradient as ::std::cmp::PartialEq<
@@ -2757,12 +2735,12 @@ pub(crate) fn register_radial_gradient_functions(world: &mut World) {
         .register_documented(
             "in_color_space",
             |
-                _self: Val<::bevy_ui::RadialGradient>,
-                color_space: Val<::bevy_ui::InterpolationColorSpace>|
+                _self: V<::bevy_ui::RadialGradient>,
+                color_space: V<::bevy_ui::InterpolationColorSpace>|
             {
-                let output: Val<::bevy_ui::RadialGradient> = {
+                let output: V<::bevy_ui::RadialGradient> = {
                     {
-                        let output: Val<::bevy_ui::RadialGradient> = ::bevy_ui::RadialGradient::in_color_space(
+                        let output: V<::bevy_ui::RadialGradient> = ::bevy_ui::RadialGradient::in_color_space(
                                 _self.into_inner(),
                                 color_space.into_inner(),
                             )
@@ -2789,10 +2767,10 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::RadialGradientShape>| {
-            let output: Val<::bevy_ui::RadialGradientShape> = {
+        |_self: R<::bevy_ui::RadialGradientShape>| {
+            let output: V<::bevy_ui::RadialGradientShape> = {
                 {
-                    let output: Val<::bevy_ui::RadialGradientShape> =
+                    let output: V<::bevy_ui::RadialGradientShape> =
                         <::bevy_ui::RadialGradientShape as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -2805,7 +2783,7 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::RadialGradientShape>, other: Ref<::bevy_ui::RadialGradientShape>| {
+        |_self: R<::bevy_ui::RadialGradientShape>, other: R<::bevy_ui::RadialGradientShape>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::RadialGradientShape as ::std::cmp::PartialEq<
@@ -2822,14 +2800,14 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
     )
     .register_documented(
         "resolve",
-        |_self: Val<::bevy_ui::RadialGradientShape>,
-         position: Val<::bevy_math::Vec2>,
+        |_self: V<::bevy_ui::RadialGradientShape>,
+         position: V<::bevy_math::Vec2>,
          scale_factor: f32,
-         physical_size: Val<::bevy_math::Vec2>,
-         physical_target_size: Val<::bevy_math::Vec2>| {
-            let output: Val<::bevy_math::Vec2> = {
+         physical_size: V<::bevy_math::Vec2>,
+         physical_target_size: V<::bevy_math::Vec2>| {
+            let output: V<::bevy_math::Vec2> = {
                 {
-                    let output: Val<::bevy_math::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
+                    let output: V<::bevy_math::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
                         _self.into_inner(),
                         position.into_inner(),
                         scale_factor,
@@ -2865,10 +2843,10 @@ pub(crate) fn register_conic_gradient_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::ConicGradient>| {
-                let output: Val<::bevy_ui::ConicGradient> = {
+            |_self: R<::bevy_ui::ConicGradient>| {
+                let output: V<::bevy_ui::ConicGradient> = {
                     {
-                        let output: Val<::bevy_ui::ConicGradient> = <::bevy_ui::ConicGradient as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::ConicGradient> = <::bevy_ui::ConicGradient as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -2882,7 +2860,7 @@ pub(crate) fn register_conic_gradient_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::ConicGradient>, other: Ref<::bevy_ui::ConicGradient>| {
+            |_self: R<::bevy_ui::ConicGradient>, other: R<::bevy_ui::ConicGradient>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::ConicGradient as ::std::cmp::PartialEq<
@@ -2900,12 +2878,12 @@ pub(crate) fn register_conic_gradient_functions(world: &mut World) {
         .register_documented(
             "in_color_space",
             |
-                _self: Val<::bevy_ui::ConicGradient>,
-                color_space: Val<::bevy_ui::InterpolationColorSpace>|
+                _self: V<::bevy_ui::ConicGradient>,
+                color_space: V<::bevy_ui::InterpolationColorSpace>|
             {
-                let output: Val<::bevy_ui::ConicGradient> = {
+                let output: V<::bevy_ui::ConicGradient> = {
                     {
-                        let output: Val<::bevy_ui::ConicGradient> = ::bevy_ui::ConicGradient::in_color_space(
+                        let output: V<::bevy_ui::ConicGradient> = ::bevy_ui::ConicGradient::in_color_space(
                                 _self.into_inner(),
                                 color_space.into_inner(),
                             )
@@ -2920,10 +2898,10 @@ pub(crate) fn register_conic_gradient_functions(world: &mut World) {
         )
         .register_documented(
             "with_position",
-            |_self: Val<::bevy_ui::ConicGradient>, position: Val<::bevy_ui::UiPosition>| {
-                let output: Val<::bevy_ui::ConicGradient> = {
+            |_self: V<::bevy_ui::ConicGradient>, position: V<::bevy_ui::UiPosition>| {
+                let output: V<::bevy_ui::ConicGradient> = {
                     {
-                        let output: Val<::bevy_ui::ConicGradient> = ::bevy_ui::ConicGradient::with_position(
+                        let output: V<::bevy_ui::ConicGradient> = ::bevy_ui::ConicGradient::with_position(
                                 _self.into_inner(),
                                 position.into_inner(),
                             )
@@ -2938,10 +2916,10 @@ pub(crate) fn register_conic_gradient_functions(world: &mut World) {
         )
         .register_documented(
             "with_start",
-            |_self: Val<::bevy_ui::ConicGradient>, start: f32| {
-                let output: Val<::bevy_ui::ConicGradient> = {
+            |_self: V<::bevy_ui::ConicGradient>, start: f32| {
+                let output: V<::bevy_ui::ConicGradient> = {
                     {
-                        let output: Val<::bevy_ui::ConicGradient> = ::bevy_ui::ConicGradient::with_start(
+                        let output: V<::bevy_ui::ConicGradient> = ::bevy_ui::ConicGradient::with_start(
                                 _self.into_inner(),
                                 start,
                             )
@@ -2968,10 +2946,10 @@ pub(crate) fn register_gradient_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::Gradient>| {
-            let output: Val<::bevy_ui::Gradient> = {
+        |_self: R<::bevy_ui::Gradient>| {
+            let output: V<::bevy_ui::Gradient> = {
                 {
-                    let output: Val<::bevy_ui::Gradient> =
+                    let output: V<::bevy_ui::Gradient> =
                         <::bevy_ui::Gradient as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -2983,7 +2961,7 @@ pub(crate) fn register_gradient_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::Gradient>, other: Ref<::bevy_ui::Gradient>| {
+        |_self: R<::bevy_ui::Gradient>, other: R<::bevy_ui::Gradient>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::Gradient as ::std::cmp::PartialEq<
@@ -3000,7 +2978,7 @@ pub(crate) fn register_gradient_functions(world: &mut World) {
     )
     .register_documented(
         "is_empty",
-        |_self: Ref<::bevy_ui::Gradient>| {
+        |_self: R<::bevy_ui::Gradient>| {
             let output: bool = {
                 {
                     let output: bool = ::bevy_ui::Gradient::is_empty(&_self).into();
@@ -3023,10 +3001,10 @@ pub(crate) fn register_background_gradient_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::BackgroundGradient>| {
-            let output: Val<::bevy_ui::BackgroundGradient> = {
+        |_self: R<::bevy_ui::BackgroundGradient>| {
+            let output: V<::bevy_ui::BackgroundGradient> = {
                 {
-                    let output: Val<::bevy_ui::BackgroundGradient> =
+                    let output: V<::bevy_ui::BackgroundGradient> =
                         <::bevy_ui::BackgroundGradient as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -3039,7 +3017,7 @@ pub(crate) fn register_background_gradient_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::BackgroundGradient>, other: Ref<::bevy_ui::BackgroundGradient>| {
+        |_self: R<::bevy_ui::BackgroundGradient>, other: R<::bevy_ui::BackgroundGradient>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::BackgroundGradient as ::std::cmp::PartialEq<
@@ -3068,10 +3046,10 @@ pub(crate) fn register_border_gradient_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::BorderGradient>| {
-                let output: Val<::bevy_ui::BorderGradient> = {
+            |_self: R<::bevy_ui::BorderGradient>| {
+                let output: V<::bevy_ui::BorderGradient> = {
                     {
-                        let output: Val<::bevy_ui::BorderGradient> = <::bevy_ui::BorderGradient as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::BorderGradient> = <::bevy_ui::BorderGradient as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3085,10 +3063,7 @@ pub(crate) fn register_border_gradient_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::BorderGradient>,
-                other: Ref<::bevy_ui::BorderGradient>|
-            {
+            |_self: R<::bevy_ui::BorderGradient>, other: R<::bevy_ui::BorderGradient>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::BorderGradient as ::std::cmp::PartialEq<
@@ -3117,10 +3092,10 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::Val2>| {
-                let output: Val<::bevy_ui::Val2> = {
+            |_self: R<::bevy_ui::Val2>| {
+                let output: V<::bevy_ui::Val2> = {
                     {
-                        let output: Val<::bevy_ui::Val2> = <::bevy_ui::Val2 as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::Val2> = <::bevy_ui::Val2 as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3134,7 +3109,7 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::Val2>, other: Ref<::bevy_ui::Val2>| {
+            |_self: R<::bevy_ui::Val2>, other: R<::bevy_ui::Val2>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::Val2 as ::std::cmp::PartialEq<
@@ -3151,10 +3126,10 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
         )
         .register_documented(
             "new",
-            |x: Val<::bevy_ui::Val>, y: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::Val2> = {
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::Val2> = {
                     {
-                        let output: Val<::bevy_ui::Val2> = ::bevy_ui::Val2::new(
+                        let output: V<::bevy_ui::Val2> = ::bevy_ui::Val2::new(
                                 x.into_inner(),
                                 y.into_inner(),
                             )
@@ -3170,9 +3145,9 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
         .register_documented(
             "percent",
             |x: f32, y: f32| {
-                let output: Val<::bevy_ui::Val2> = {
+                let output: V<::bevy_ui::Val2> = {
                     {
-                        let output: Val<::bevy_ui::Val2> = ::bevy_ui::Val2::percent(x, y)
+                        let output: V<::bevy_ui::Val2> = ::bevy_ui::Val2::percent(x, y)
                             .into();
                         output
                     }
@@ -3185,9 +3160,9 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
         .register_documented(
             "px",
             |x: f32, y: f32| {
-                let output: Val<::bevy_ui::Val2> = {
+                let output: V<::bevy_ui::Val2> = {
                     {
-                        let output: Val<::bevy_ui::Val2> = ::bevy_ui::Val2::px(x, y)
+                        let output: V<::bevy_ui::Val2> = ::bevy_ui::Val2::px(x, y)
                             .into();
                         output
                     }
@@ -3200,14 +3175,14 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
         .register_documented(
             "resolve",
             |
-                _self: Ref<::bevy_ui::Val2>,
+                _self: R<::bevy_ui::Val2>,
                 scale_factor: f32,
-                base_size: Val<::bevy_math::Vec2>,
-                viewport_size: Val<::bevy_math::Vec2>|
+                base_size: V<::bevy_math::Vec2>,
+                viewport_size: V<::bevy_math::Vec2>|
             {
-                let output: Val<::bevy_math::Vec2> = {
+                let output: V<::bevy_math::Vec2> = {
                     {
-                        let output: Val<::bevy_math::Vec2> = ::bevy_ui::Val2::resolve(
+                        let output: V<::bevy_math::Vec2> = ::bevy_ui::Val2::resolve(
                                 &_self,
                                 scale_factor,
                                 base_size.into_inner(),
@@ -3232,10 +3207,10 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::UiTransform>| {
-                let output: Val<::bevy_ui::UiTransform> = {
+            |_self: R<::bevy_ui::UiTransform>| {
+                let output: V<::bevy_ui::UiTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiTransform> = <::bevy_ui::UiTransform as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::UiTransform> = <::bevy_ui::UiTransform as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3250,14 +3225,14 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
         .register_documented(
             "compute_affine",
             |
-                _self: Ref<::bevy_ui::UiTransform>,
+                _self: R<::bevy_ui::UiTransform>,
                 scale_factor: f32,
-                base_size: Val<::bevy_math::Vec2>,
-                target_size: Val<::bevy_math::Vec2>|
+                base_size: V<::bevy_math::Vec2>,
+                target_size: V<::bevy_math::Vec2>|
             {
-                let output: Val<::bevy_math::Affine2> = {
+                let output: V<::bevy_math::Affine2> = {
                     {
-                        let output: Val<::bevy_math::Affine2> = ::bevy_ui::UiTransform::compute_affine(
+                        let output: V<::bevy_math::Affine2> = ::bevy_ui::UiTransform::compute_affine(
                                 &_self,
                                 scale_factor,
                                 base_size.into_inner(),
@@ -3274,7 +3249,7 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::UiTransform>, other: Ref<::bevy_ui::UiTransform>| {
+            |_self: R<::bevy_ui::UiTransform>, other: R<::bevy_ui::UiTransform>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::UiTransform as ::std::cmp::PartialEq<
@@ -3291,10 +3266,10 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_rotation",
-            |rotation: Val<::bevy_math::Rot2>| {
-                let output: Val<::bevy_ui::UiTransform> = {
+            |rotation: V<::bevy_math::Rot2>| {
+                let output: V<::bevy_ui::UiTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_rotation(
+                        let output: V<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_rotation(
                                 rotation.into_inner(),
                             )
                             .into();
@@ -3308,10 +3283,10 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_scale",
-            |scale: Val<::bevy_math::Vec2>| {
-                let output: Val<::bevy_ui::UiTransform> = {
+            |scale: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_ui::UiTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_scale(
+                        let output: V<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_scale(
                                 scale.into_inner(),
                             )
                             .into();
@@ -3325,10 +3300,10 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
         )
         .register_documented(
             "from_translation",
-            |translation: Val<::bevy_ui::Val2>| {
-                let output: Val<::bevy_ui::UiTransform> = {
+            |translation: V<::bevy_ui::Val2>| {
+                let output: V<::bevy_ui::UiTransform> = {
                     {
-                        let output: Val<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_translation(
+                        let output: V<::bevy_ui::UiTransform> = ::bevy_ui::UiTransform::from_translation(
                                 translation.into_inner(),
                             )
                             .into();
@@ -3352,10 +3327,10 @@ pub(crate) fn register_relative_cursor_position_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::RelativeCursorPosition>| {
-            let output: Val<::bevy_ui::RelativeCursorPosition> = {
+        |_self: R<::bevy_ui::RelativeCursorPosition>| {
+            let output: V<::bevy_ui::RelativeCursorPosition> = {
                 {
-                    let output: Val<::bevy_ui::RelativeCursorPosition> =
+                    let output: V<::bevy_ui::RelativeCursorPosition> =
                         <::bevy_ui::RelativeCursorPosition as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -3368,7 +3343,7 @@ pub(crate) fn register_relative_cursor_position_functions(world: &mut World) {
     )
     .register_documented(
         "cursor_over",
-        |_self: Ref<::bevy_ui::RelativeCursorPosition>| {
+        |_self: R<::bevy_ui::RelativeCursorPosition>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -3383,8 +3358,8 @@ pub(crate) fn register_relative_cursor_position_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::RelativeCursorPosition>,
-         other: Ref<::bevy_ui::RelativeCursorPosition>| {
+        |_self: R<::bevy_ui::RelativeCursorPosition>,
+         other: R<::bevy_ui::RelativeCursorPosition>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -3414,10 +3389,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "all",
-            |value: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |value: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::all(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::all(
                                 value.into_inner(),
                             )
                             .into();
@@ -3431,10 +3406,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "axes",
-            |horizontal: Val<::bevy_ui::Val>, vertical: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |horizontal: V<::bevy_ui::Val>, vertical: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::axes(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::axes(
                                 horizontal.into_inner(),
                                 vertical.into_inner(),
                             )
@@ -3449,10 +3424,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "bottom",
-            |bottom: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |bottom: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::bottom(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::bottom(
                                 bottom.into_inner(),
                             )
                             .into();
@@ -3466,10 +3441,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::UiRect>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: R<::bevy_ui::UiRect>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = <::bevy_ui::UiRect as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::UiRect> = <::bevy_ui::UiRect as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3483,7 +3458,7 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::UiRect>, other: Ref<::bevy_ui::UiRect>| {
+            |_self: R<::bevy_ui::UiRect>, other: R<::bevy_ui::UiRect>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::UiRect as ::std::cmp::PartialEq<
@@ -3500,10 +3475,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "horizontal",
-            |value: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |value: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::horizontal(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::horizontal(
                                 value.into_inner(),
                             )
                             .into();
@@ -3517,10 +3492,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "left",
-            |left: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |left: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::left(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::left(
                                 left.into_inner(),
                             )
                             .into();
@@ -3535,14 +3510,14 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         .register_documented(
             "new",
             |
-                left: Val<::bevy_ui::Val>,
-                right: Val<::bevy_ui::Val>,
-                top: Val<::bevy_ui::Val>,
-                bottom: Val<::bevy_ui::Val>|
+                left: V<::bevy_ui::Val>,
+                right: V<::bevy_ui::Val>,
+                top: V<::bevy_ui::Val>,
+                bottom: V<::bevy_ui::Val>|
             {
-                let output: Val<::bevy_ui::UiRect> = {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::new(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::new(
                                 left.into_inner(),
                                 right.into_inner(),
                                 top.into_inner(),
@@ -3560,9 +3535,9 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         .register_documented(
             "percent",
             |left: f32, right: f32, top: f32, bottom: f32| {
-                let output: Val<::bevy_ui::UiRect> = {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::percent(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::percent(
                                 left,
                                 right,
                                 top,
@@ -3580,9 +3555,9 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         .register_documented(
             "px",
             |left: f32, right: f32, top: f32, bottom: f32| {
-                let output: Val<::bevy_ui::UiRect> = {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::px(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::px(
                                 left,
                                 right,
                                 top,
@@ -3599,10 +3574,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "right",
-            |right: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |right: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::right(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::right(
                                 right.into_inner(),
                             )
                             .into();
@@ -3616,10 +3591,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "top",
-            |top: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |top: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::top(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::top(
                                 top.into_inner(),
                             )
                             .into();
@@ -3633,10 +3608,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "vertical",
-            |value: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |value: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::vertical(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::vertical(
                                 value.into_inner(),
                             )
                             .into();
@@ -3650,10 +3625,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "with_bottom",
-            |_self: Val<::bevy_ui::UiRect>, bottom: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::UiRect>, bottom: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_bottom(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_bottom(
                                 _self.into_inner(),
                                 bottom.into_inner(),
                             )
@@ -3668,10 +3643,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "with_left",
-            |_self: Val<::bevy_ui::UiRect>, left: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::UiRect>, left: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_left(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_left(
                                 _self.into_inner(),
                                 left.into_inner(),
                             )
@@ -3686,10 +3661,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "with_right",
-            |_self: Val<::bevy_ui::UiRect>, right: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::UiRect>, right: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_right(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_right(
                                 _self.into_inner(),
                                 right.into_inner(),
                             )
@@ -3704,10 +3679,10 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
         )
         .register_documented(
             "with_top",
-            |_self: Val<::bevy_ui::UiRect>, top: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::UiRect> = {
+            |_self: V<::bevy_ui::UiRect>, top: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::UiRect> = {
                     {
-                        let output: Val<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_top(
+                        let output: V<::bevy_ui::UiRect> = ::bevy_ui::UiRect::with_top(
                                 _self.into_inner(),
                                 top.into_inner(),
                             )
@@ -3731,10 +3706,10 @@ pub(crate) fn register_ignore_scroll_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::IgnoreScroll>| {
-                let output: Val<::bevy_ui::IgnoreScroll> = {
+            |_self: R<::bevy_ui::IgnoreScroll>| {
+                let output: V<::bevy_ui::IgnoreScroll> = {
                     {
-                        let output: Val<::bevy_ui::IgnoreScroll> = <::bevy_ui::IgnoreScroll as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::IgnoreScroll> = <::bevy_ui::IgnoreScroll as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3760,10 +3735,10 @@ pub(crate) fn register_layout_config_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::LayoutConfig>| {
-                let output: Val<::bevy_ui::LayoutConfig> = {
+            |_self: R<::bevy_ui::LayoutConfig>| {
+                let output: V<::bevy_ui::LayoutConfig> = {
                     {
-                        let output: Val<::bevy_ui::LayoutConfig> = <::bevy_ui::LayoutConfig as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::LayoutConfig> = <::bevy_ui::LayoutConfig as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3777,7 +3752,7 @@ pub(crate) fn register_layout_config_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::LayoutConfig>, other: Ref<::bevy_ui::LayoutConfig>| {
+            |_self: R<::bevy_ui::LayoutConfig>, other: R<::bevy_ui::LayoutConfig>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::LayoutConfig as ::std::cmp::PartialEq<
@@ -3806,10 +3781,10 @@ pub(crate) fn register_outline_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::Outline>| {
-            let output: Val<::bevy_ui::Outline> = {
+        |_self: R<::bevy_ui::Outline>| {
+            let output: V<::bevy_ui::Outline> = {
                 {
-                    let output: Val<::bevy_ui::Outline> =
+                    let output: V<::bevy_ui::Outline> =
                         <::bevy_ui::Outline as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -3821,7 +3796,7 @@ pub(crate) fn register_outline_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::Outline>, other: Ref<::bevy_ui::Outline>| {
+        |_self: R<::bevy_ui::Outline>, other: R<::bevy_ui::Outline>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::Outline as ::std::cmp::PartialEq<
@@ -3838,12 +3813,10 @@ pub(crate) fn register_outline_functions(world: &mut World) {
     )
     .register_documented(
         "new",
-        |width: Val<::bevy_ui::Val>,
-         offset: Val<::bevy_ui::Val>,
-         color: Val<::bevy_color::Color>| {
-            let output: Val<::bevy_ui::Outline> = {
+        |width: V<::bevy_ui::Val>, offset: V<::bevy_ui::Val>, color: V<::bevy_color::Color>| {
+            let output: V<::bevy_ui::Outline> = {
                 {
-                    let output: Val<::bevy_ui::Outline> = ::bevy_ui::Outline::new(
+                    let output: V<::bevy_ui::Outline> = ::bevy_ui::Outline::new(
                         width.into_inner(),
                         offset.into_inner(),
                         color.into_inner(),
@@ -3868,10 +3841,10 @@ pub(crate) fn register_scroll_position_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::ScrollPosition>| {
-                let output: Val<::bevy_ui::ScrollPosition> = {
+            |_self: R<::bevy_ui::ScrollPosition>| {
+                let output: V<::bevy_ui::ScrollPosition> = {
                     {
-                        let output: Val<::bevy_ui::ScrollPosition> = <::bevy_ui::ScrollPosition as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::ScrollPosition> = <::bevy_ui::ScrollPosition as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3897,7 +3870,7 @@ pub(crate) fn register_position_type_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::PositionType>| {
+            |_self: R<::bevy_ui::PositionType>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::PositionType as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -3914,10 +3887,10 @@ pub(crate) fn register_position_type_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::PositionType>| {
-                let output: Val<::bevy_ui::PositionType> = {
+            |_self: R<::bevy_ui::PositionType>| {
+                let output: V<::bevy_ui::PositionType> = {
                     {
-                        let output: Val<::bevy_ui::PositionType> = <::bevy_ui::PositionType as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::PositionType> = <::bevy_ui::PositionType as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3931,7 +3904,7 @@ pub(crate) fn register_position_type_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::PositionType>, other: Ref<::bevy_ui::PositionType>| {
+            |_self: R<::bevy_ui::PositionType>, other: R<::bevy_ui::PositionType>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::PositionType as ::std::cmp::PartialEq<
@@ -3960,7 +3933,7 @@ pub(crate) fn register_align_self_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::AlignSelf>| {
+            |_self: R<::bevy_ui::AlignSelf>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::AlignSelf as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -3977,10 +3950,10 @@ pub(crate) fn register_align_self_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::AlignSelf>| {
-                let output: Val<::bevy_ui::AlignSelf> = {
+            |_self: R<::bevy_ui::AlignSelf>| {
+                let output: V<::bevy_ui::AlignSelf> = {
                     {
-                        let output: Val<::bevy_ui::AlignSelf> = <::bevy_ui::AlignSelf as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::AlignSelf> = <::bevy_ui::AlignSelf as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -3994,7 +3967,7 @@ pub(crate) fn register_align_self_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::AlignSelf>, other: Ref<::bevy_ui::AlignSelf>| {
+            |_self: R<::bevy_ui::AlignSelf>, other: R<::bevy_ui::AlignSelf>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::AlignSelf as ::std::cmp::PartialEq<
@@ -4020,10 +3993,10 @@ pub(crate) fn register_repeated_grid_track_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::RepeatedGridTrack>| {
-            let output: Val<::bevy_ui::RepeatedGridTrack> = {
+        |_self: R<::bevy_ui::RepeatedGridTrack>| {
+            let output: V<::bevy_ui::RepeatedGridTrack> = {
                 {
-                    let output: Val<::bevy_ui::RepeatedGridTrack> =
+                    let output: V<::bevy_ui::RepeatedGridTrack> =
                         <::bevy_ui::RepeatedGridTrack as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -4035,7 +4008,7 @@ pub(crate) fn register_repeated_grid_track_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::RepeatedGridTrack>, other: Ref<::bevy_ui::RepeatedGridTrack>| {
+        |_self: R<::bevy_ui::RepeatedGridTrack>, other: R<::bevy_ui::RepeatedGridTrack>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::RepeatedGridTrack as ::std::cmp::PartialEq<
@@ -4064,7 +4037,7 @@ pub(crate) fn register_align_content_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::AlignContent>| {
+            |_self: R<::bevy_ui::AlignContent>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::AlignContent as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4081,10 +4054,10 @@ pub(crate) fn register_align_content_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::AlignContent>| {
-                let output: Val<::bevy_ui::AlignContent> = {
+            |_self: R<::bevy_ui::AlignContent>| {
+                let output: V<::bevy_ui::AlignContent> = {
                     {
-                        let output: Val<::bevy_ui::AlignContent> = <::bevy_ui::AlignContent as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::AlignContent> = <::bevy_ui::AlignContent as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4098,7 +4071,7 @@ pub(crate) fn register_align_content_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::AlignContent>, other: Ref<::bevy_ui::AlignContent>| {
+            |_self: R<::bevy_ui::AlignContent>, other: R<::bevy_ui::AlignContent>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::AlignContent as ::std::cmp::PartialEq<
@@ -4127,7 +4100,7 @@ pub(crate) fn register_align_items_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::AlignItems>| {
+            |_self: R<::bevy_ui::AlignItems>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::AlignItems as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4144,10 +4117,10 @@ pub(crate) fn register_align_items_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::AlignItems>| {
-                let output: Val<::bevy_ui::AlignItems> = {
+            |_self: R<::bevy_ui::AlignItems>| {
+                let output: V<::bevy_ui::AlignItems> = {
                     {
-                        let output: Val<::bevy_ui::AlignItems> = <::bevy_ui::AlignItems as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::AlignItems> = <::bevy_ui::AlignItems as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4161,7 +4134,7 @@ pub(crate) fn register_align_items_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::AlignItems>, other: Ref<::bevy_ui::AlignItems>| {
+            |_self: R<::bevy_ui::AlignItems>, other: R<::bevy_ui::AlignItems>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::AlignItems as ::std::cmp::PartialEq<
@@ -4188,7 +4161,7 @@ pub(crate) fn register_box_sizing_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::BoxSizing>| {
+            |_self: R<::bevy_ui::BoxSizing>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::BoxSizing as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4205,10 +4178,10 @@ pub(crate) fn register_box_sizing_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::BoxSizing>| {
-                let output: Val<::bevy_ui::BoxSizing> = {
+            |_self: R<::bevy_ui::BoxSizing>| {
+                let output: V<::bevy_ui::BoxSizing> = {
                     {
-                        let output: Val<::bevy_ui::BoxSizing> = <::bevy_ui::BoxSizing as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::BoxSizing> = <::bevy_ui::BoxSizing as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4222,7 +4195,7 @@ pub(crate) fn register_box_sizing_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::BoxSizing>, other: Ref<::bevy_ui::BoxSizing>| {
+            |_self: R<::bevy_ui::BoxSizing>, other: R<::bevy_ui::BoxSizing>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::BoxSizing as ::std::cmp::PartialEq<
@@ -4248,7 +4221,7 @@ pub(crate) fn register_flex_direction_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::FlexDirection>| {
+            |_self: R<::bevy_ui::FlexDirection>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::FlexDirection as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4265,10 +4238,10 @@ pub(crate) fn register_flex_direction_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::FlexDirection>| {
-                let output: Val<::bevy_ui::FlexDirection> = {
+            |_self: R<::bevy_ui::FlexDirection>| {
+                let output: V<::bevy_ui::FlexDirection> = {
                     {
-                        let output: Val<::bevy_ui::FlexDirection> = <::bevy_ui::FlexDirection as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::FlexDirection> = <::bevy_ui::FlexDirection as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4282,7 +4255,7 @@ pub(crate) fn register_flex_direction_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::FlexDirection>, other: Ref<::bevy_ui::FlexDirection>| {
+            |_self: R<::bevy_ui::FlexDirection>, other: R<::bevy_ui::FlexDirection>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::FlexDirection as ::std::cmp::PartialEq<
@@ -4311,7 +4284,7 @@ pub(crate) fn register_flex_wrap_functions(world: &mut World) {
     )
     .register_documented(
         "assert_receiver_is_total_eq",
-        |_self: Ref<::bevy_ui::FlexWrap>| {
+        |_self: R<::bevy_ui::FlexWrap>| {
             let output: () = {
                 {
                     let output: () =
@@ -4329,10 +4302,10 @@ pub(crate) fn register_flex_wrap_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::FlexWrap>| {
-            let output: Val<::bevy_ui::FlexWrap> = {
+        |_self: R<::bevy_ui::FlexWrap>| {
+            let output: V<::bevy_ui::FlexWrap> = {
                 {
-                    let output: Val<::bevy_ui::FlexWrap> =
+                    let output: V<::bevy_ui::FlexWrap> =
                         <::bevy_ui::FlexWrap as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -4344,7 +4317,7 @@ pub(crate) fn register_flex_wrap_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::FlexWrap>, other: Ref<::bevy_ui::FlexWrap>| {
+        |_self: R<::bevy_ui::FlexWrap>, other: R<::bevy_ui::FlexWrap>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::FlexWrap as ::std::cmp::PartialEq<
@@ -4370,7 +4343,7 @@ pub(crate) fn register_grid_auto_flow_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::GridAutoFlow>| {
+            |_self: R<::bevy_ui::GridAutoFlow>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::GridAutoFlow as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4387,10 +4360,10 @@ pub(crate) fn register_grid_auto_flow_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::GridAutoFlow>| {
-                let output: Val<::bevy_ui::GridAutoFlow> = {
+            |_self: R<::bevy_ui::GridAutoFlow>| {
+                let output: V<::bevy_ui::GridAutoFlow> = {
                     {
-                        let output: Val<::bevy_ui::GridAutoFlow> = <::bevy_ui::GridAutoFlow as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::GridAutoFlow> = <::bevy_ui::GridAutoFlow as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4404,7 +4377,7 @@ pub(crate) fn register_grid_auto_flow_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::GridAutoFlow>, other: Ref<::bevy_ui::GridAutoFlow>| {
+            |_self: R<::bevy_ui::GridAutoFlow>, other: R<::bevy_ui::GridAutoFlow>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::GridAutoFlow as ::std::cmp::PartialEq<
@@ -4433,7 +4406,7 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::GridPlacement>| {
+            |_self: R<::bevy_ui::GridPlacement>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::GridPlacement as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4451,9 +4424,9 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         .register_documented(
             "auto",
             || {
-                let output: Val<::bevy_ui::GridPlacement> = {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::auto()
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::auto()
                             .into();
                         output
                     }
@@ -4465,10 +4438,10 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::GridPlacement>| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+            |_self: R<::bevy_ui::GridPlacement>| {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = <::bevy_ui::GridPlacement as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::GridPlacement> = <::bevy_ui::GridPlacement as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4483,9 +4456,9 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         .register_documented(
             "end",
             |end: i16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::end(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::end(
                                 end,
                             )
                             .into();
@@ -4500,9 +4473,9 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         .register_documented(
             "end_span",
             |end: i16, span: u16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::end_span(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::end_span(
                                 end,
                                 span,
                             )
@@ -4517,7 +4490,7 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::GridPlacement>, other: Ref<::bevy_ui::GridPlacement>| {
+            |_self: R<::bevy_ui::GridPlacement>, other: R<::bevy_ui::GridPlacement>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::GridPlacement as ::std::cmp::PartialEq<
@@ -4534,7 +4507,7 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "get_end",
-            |_self: Val<::bevy_ui::GridPlacement>| {
+            |_self: V<::bevy_ui::GridPlacement>| {
                 let output: ::std::option::Option<i16> = {
                     {
                         let output: ::std::option::Option<i16> = ::bevy_ui::GridPlacement::get_end(
@@ -4551,7 +4524,7 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "get_span",
-            |_self: Val<::bevy_ui::GridPlacement>| {
+            |_self: V<::bevy_ui::GridPlacement>| {
                 let output: ::std::option::Option<u16> = {
                     {
                         let output: ::std::option::Option<u16> = ::bevy_ui::GridPlacement::get_span(
@@ -4568,7 +4541,7 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "get_start",
-            |_self: Val<::bevy_ui::GridPlacement>| {
+            |_self: V<::bevy_ui::GridPlacement>| {
                 let output: ::std::option::Option<i16> = {
                     {
                         let output: ::std::option::Option<i16> = ::bevy_ui::GridPlacement::get_start(
@@ -4585,10 +4558,10 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "set_end",
-            |_self: Val<::bevy_ui::GridPlacement>, end: i16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+            |_self: V<::bevy_ui::GridPlacement>, end: i16| {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::set_end(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::set_end(
                                 _self.into_inner(),
                                 end,
                             )
@@ -4603,10 +4576,10 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "set_span",
-            |_self: Val<::bevy_ui::GridPlacement>, span: u16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+            |_self: V<::bevy_ui::GridPlacement>, span: u16| {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::set_span(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::set_span(
                                 _self.into_inner(),
                                 span,
                             )
@@ -4621,10 +4594,10 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         )
         .register_documented(
             "set_start",
-            |_self: Val<::bevy_ui::GridPlacement>, start: i16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+            |_self: V<::bevy_ui::GridPlacement>, start: i16| {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::set_start(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::set_start(
                                 _self.into_inner(),
                                 start,
                             )
@@ -4640,9 +4613,9 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         .register_documented(
             "span",
             |span: u16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::span(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::span(
                                 span,
                             )
                             .into();
@@ -4657,9 +4630,9 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         .register_documented(
             "start",
             |start: i16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::start(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::start(
                                 start,
                             )
                             .into();
@@ -4674,9 +4647,9 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         .register_documented(
             "start_end",
             |start: i16, end: i16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::start_end(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::start_end(
                                 start,
                                 end,
                             )
@@ -4692,9 +4665,9 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
         .register_documented(
             "start_span",
             |start: i16, span: u16| {
-                let output: Val<::bevy_ui::GridPlacement> = {
+                let output: V<::bevy_ui::GridPlacement> = {
                     {
-                        let output: Val<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::start_span(
+                        let output: V<::bevy_ui::GridPlacement> = ::bevy_ui::GridPlacement::start_span(
                                 start,
                                 span,
                             )
@@ -4721,10 +4694,10 @@ pub(crate) fn register_grid_track_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::GridTrack>| {
-                let output: Val<::bevy_ui::GridTrack> = {
+            |_self: R<::bevy_ui::GridTrack>| {
+                let output: V<::bevy_ui::GridTrack> = {
                     {
-                        let output: Val<::bevy_ui::GridTrack> = <::bevy_ui::GridTrack as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::GridTrack> = <::bevy_ui::GridTrack as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4738,7 +4711,7 @@ pub(crate) fn register_grid_track_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::GridTrack>, other: Ref<::bevy_ui::GridTrack>| {
+            |_self: R<::bevy_ui::GridTrack>, other: R<::bevy_ui::GridTrack>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::GridTrack as ::std::cmp::PartialEq<
@@ -4764,10 +4737,10 @@ pub(crate) fn register_grid_track_repetition_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::GridTrackRepetition>| {
-            let output: Val<::bevy_ui::GridTrackRepetition> = {
+        |_self: R<::bevy_ui::GridTrackRepetition>| {
+            let output: V<::bevy_ui::GridTrackRepetition> = {
                 {
-                    let output: Val<::bevy_ui::GridTrackRepetition> =
+                    let output: V<::bevy_ui::GridTrackRepetition> =
                         <::bevy_ui::GridTrackRepetition as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -4780,7 +4753,7 @@ pub(crate) fn register_grid_track_repetition_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::GridTrackRepetition>, other: Ref<::bevy_ui::GridTrackRepetition>| {
+        |_self: R<::bevy_ui::GridTrackRepetition>, other: R<::bevy_ui::GridTrackRepetition>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::GridTrackRepetition as ::std::cmp::PartialEq<
@@ -4809,7 +4782,7 @@ pub(crate) fn register_justify_content_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::JustifyContent>| {
+            |_self: R<::bevy_ui::JustifyContent>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::JustifyContent as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4826,10 +4799,10 @@ pub(crate) fn register_justify_content_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::JustifyContent>| {
-                let output: Val<::bevy_ui::JustifyContent> = {
+            |_self: R<::bevy_ui::JustifyContent>| {
+                let output: V<::bevy_ui::JustifyContent> = {
                     {
-                        let output: Val<::bevy_ui::JustifyContent> = <::bevy_ui::JustifyContent as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::JustifyContent> = <::bevy_ui::JustifyContent as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4843,10 +4816,7 @@ pub(crate) fn register_justify_content_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::JustifyContent>,
-                other: Ref<::bevy_ui::JustifyContent>|
-            {
+            |_self: R<::bevy_ui::JustifyContent>, other: R<::bevy_ui::JustifyContent>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::JustifyContent as ::std::cmp::PartialEq<
@@ -4875,7 +4845,7 @@ pub(crate) fn register_justify_items_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::JustifyItems>| {
+            |_self: R<::bevy_ui::JustifyItems>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::JustifyItems as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4892,10 +4862,10 @@ pub(crate) fn register_justify_items_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::JustifyItems>| {
-                let output: Val<::bevy_ui::JustifyItems> = {
+            |_self: R<::bevy_ui::JustifyItems>| {
+                let output: V<::bevy_ui::JustifyItems> = {
                     {
-                        let output: Val<::bevy_ui::JustifyItems> = <::bevy_ui::JustifyItems as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::JustifyItems> = <::bevy_ui::JustifyItems as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4909,7 +4879,7 @@ pub(crate) fn register_justify_items_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::JustifyItems>, other: Ref<::bevy_ui::JustifyItems>| {
+            |_self: R<::bevy_ui::JustifyItems>, other: R<::bevy_ui::JustifyItems>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::JustifyItems as ::std::cmp::PartialEq<
@@ -4938,7 +4908,7 @@ pub(crate) fn register_justify_self_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::JustifySelf>| {
+            |_self: R<::bevy_ui::JustifySelf>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::JustifySelf as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -4955,10 +4925,10 @@ pub(crate) fn register_justify_self_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::JustifySelf>| {
-                let output: Val<::bevy_ui::JustifySelf> = {
+            |_self: R<::bevy_ui::JustifySelf>| {
+                let output: V<::bevy_ui::JustifySelf> = {
                     {
-                        let output: Val<::bevy_ui::JustifySelf> = <::bevy_ui::JustifySelf as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::JustifySelf> = <::bevy_ui::JustifySelf as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -4972,7 +4942,7 @@ pub(crate) fn register_justify_self_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::JustifySelf>, other: Ref<::bevy_ui::JustifySelf>| {
+            |_self: R<::bevy_ui::JustifySelf>, other: R<::bevy_ui::JustifySelf>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::JustifySelf as ::std::cmp::PartialEq<
@@ -4999,10 +4969,10 @@ pub(crate) fn register_max_track_sizing_function_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::MaxTrackSizingFunction>| {
-            let output: Val<::bevy_ui::MaxTrackSizingFunction> = {
+        |_self: R<::bevy_ui::MaxTrackSizingFunction>| {
+            let output: V<::bevy_ui::MaxTrackSizingFunction> = {
                 {
-                    let output: Val<::bevy_ui::MaxTrackSizingFunction> =
+                    let output: V<::bevy_ui::MaxTrackSizingFunction> =
                         <::bevy_ui::MaxTrackSizingFunction as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -5015,8 +4985,8 @@ pub(crate) fn register_max_track_sizing_function_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::MaxTrackSizingFunction>,
-         other: Ref<::bevy_ui::MaxTrackSizingFunction>| {
+        |_self: R<::bevy_ui::MaxTrackSizingFunction>,
+         other: R<::bevy_ui::MaxTrackSizingFunction>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -5046,10 +5016,10 @@ pub(crate) fn register_min_track_sizing_function_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::MinTrackSizingFunction>| {
-            let output: Val<::bevy_ui::MinTrackSizingFunction> = {
+        |_self: R<::bevy_ui::MinTrackSizingFunction>| {
+            let output: V<::bevy_ui::MinTrackSizingFunction> = {
                 {
-                    let output: Val<::bevy_ui::MinTrackSizingFunction> =
+                    let output: V<::bevy_ui::MinTrackSizingFunction> =
                         <::bevy_ui::MinTrackSizingFunction as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -5062,8 +5032,8 @@ pub(crate) fn register_min_track_sizing_function_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::MinTrackSizingFunction>,
-         other: Ref<::bevy_ui::MinTrackSizingFunction>| {
+        |_self: R<::bevy_ui::MinTrackSizingFunction>,
+         other: R<::bevy_ui::MinTrackSizingFunction>| {
             let output: bool = {
                 {
                     let output: bool =
@@ -5093,7 +5063,7 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     )
     .register_documented(
         "assert_receiver_is_total_eq",
-        |_self: Ref<::bevy_ui::Overflow>| {
+        |_self: R<::bevy_ui::Overflow>| {
             let output: () = {
                 {
                     let output: () =
@@ -5112,9 +5082,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "clip",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip().into();
                     output
                 }
             };
@@ -5126,9 +5096,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "clip_x",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_x().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_x().into();
                     output
                 }
             };
@@ -5140,9 +5110,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "clip_y",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_y().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_y().into();
                     output
                 }
             };
@@ -5153,10 +5123,10 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::Overflow>| {
-            let output: Val<::bevy_ui::Overflow> = {
+        |_self: R<::bevy_ui::Overflow>| {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> =
+                    let output: V<::bevy_ui::Overflow> =
                         <::bevy_ui::Overflow as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -5168,7 +5138,7 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::Overflow>, other: Ref<::bevy_ui::Overflow>| {
+        |_self: R<::bevy_ui::Overflow>, other: R<::bevy_ui::Overflow>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::Overflow as ::std::cmp::PartialEq<
@@ -5186,9 +5156,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "hidden",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden().into();
                     output
                 }
             };
@@ -5200,9 +5170,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "hidden_x",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_x().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_x().into();
                     output
                 }
             };
@@ -5214,9 +5184,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "hidden_y",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_y().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_y().into();
                     output
                 }
             };
@@ -5227,7 +5197,7 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     )
     .register_documented(
         "is_visible",
-        |_self: Ref<::bevy_ui::Overflow>| {
+        |_self: R<::bevy_ui::Overflow>| {
             let output: bool = {
                 {
                     let output: bool = ::bevy_ui::Overflow::is_visible(&_self).into();
@@ -5242,9 +5212,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "scroll",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll().into();
                     output
                 }
             };
@@ -5256,9 +5226,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "scroll_x",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_x().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_x().into();
                     output
                 }
             };
@@ -5270,9 +5240,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "scroll_y",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_y().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_y().into();
                     output
                 }
             };
@@ -5284,9 +5254,9 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     .register_documented(
         "visible",
         || {
-            let output: Val<::bevy_ui::Overflow> = {
+            let output: V<::bevy_ui::Overflow> = {
                 {
-                    let output: Val<::bevy_ui::Overflow> = ::bevy_ui::Overflow::visible().into();
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::visible().into();
                     output
                 }
             };
@@ -5306,10 +5276,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "all",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::all(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::all(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5323,10 +5293,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "bottom",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5340,10 +5310,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "bottom_left",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_left(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_left(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5357,10 +5327,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "bottom_right",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_right(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_right(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5374,10 +5344,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::BorderRadius>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: R<::bevy_ui::BorderRadius>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = <::bevy_ui::BorderRadius as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::BorderRadius> = <::bevy_ui::BorderRadius as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -5391,7 +5361,7 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::BorderRadius>, other: Ref<::bevy_ui::BorderRadius>| {
+            |_self: R<::bevy_ui::BorderRadius>, other: R<::bevy_ui::BorderRadius>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::BorderRadius as ::std::cmp::PartialEq<
@@ -5408,10 +5378,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "left",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::left(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::left(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5426,14 +5396,14 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         .register_documented(
             "new",
             |
-                top_left: Val<::bevy_ui::Val>,
-                top_right: Val<::bevy_ui::Val>,
-                bottom_right: Val<::bevy_ui::Val>,
-                bottom_left: Val<::bevy_ui::Val>|
+                top_left: V<::bevy_ui::Val>,
+                top_right: V<::bevy_ui::Val>,
+                bottom_right: V<::bevy_ui::Val>,
+                bottom_left: V<::bevy_ui::Val>|
             {
-                let output: Val<::bevy_ui::BorderRadius> = {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::new(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::new(
                                 top_left.into_inner(),
                                 top_right.into_inner(),
                                 bottom_right.into_inner(),
@@ -5451,9 +5421,9 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         .register_documented(
             "percent",
             |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::percent(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::percent(
                                 top_left,
                                 top_right,
                                 bottom_right,
@@ -5471,9 +5441,9 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         .register_documented(
             "px",
             |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::px(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::px(
                                 top_left,
                                 top_right,
                                 bottom_right,
@@ -5491,14 +5461,14 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         .register_documented(
             "resolve",
             |
-                _self: Ref<::bevy_ui::BorderRadius>,
+                _self: R<::bevy_ui::BorderRadius>,
                 scale_factor: f32,
-                node_size: Val<::bevy_math::Vec2>,
-                viewport_size: Val<::bevy_math::Vec2>|
+                node_size: V<::bevy_math::Vec2>,
+                viewport_size: V<::bevy_math::Vec2>|
             {
-                let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+                let output: V<::bevy_ui::ResolvedBorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::BorderRadius::resolve(
+                        let output: V<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::BorderRadius::resolve(
                                 &_self,
                                 scale_factor,
                                 node_size.into_inner(),
@@ -5516,10 +5486,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         .register_documented(
             "resolve_single_corner",
             |
-                radius: Val<::bevy_ui::Val>,
+                radius: V<::bevy_ui::Val>,
                 scale_factor: f32,
                 min_length: f32,
-                viewport_size: Val<::bevy_math::Vec2>|
+                viewport_size: V<::bevy_math::Vec2>|
             {
                 let output: f32 = {
                     {
@@ -5540,10 +5510,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "right",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::right(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::right(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5557,10 +5527,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "top",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5574,10 +5544,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "top_left",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_left(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_left(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5591,10 +5561,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "top_right",
-            |radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_right(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_right(
                                 radius.into_inner(),
                             )
                             .into();
@@ -5608,10 +5578,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_bottom",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5626,10 +5596,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_bottom_left",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_left(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_left(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5644,10 +5614,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_bottom_right",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_right(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_right(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5662,10 +5632,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_left",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_left(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_left(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5680,10 +5650,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_right",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_right(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_right(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5698,10 +5668,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_top",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5716,10 +5686,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_top_left",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_left(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_left(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5734,10 +5704,10 @@ pub(crate) fn register_border_radius_functions(world: &mut World) {
         )
         .register_documented(
             "with_top_right",
-            |_self: Val<::bevy_ui::BorderRadius>, radius: Val<::bevy_ui::Val>| {
-                let output: Val<::bevy_ui::BorderRadius> = {
+            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::BorderRadius> = {
                     {
-                        let output: Val<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_right(
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_right(
                                 _self.into_inner(),
                                 radius.into_inner(),
                             )
@@ -5765,9 +5735,9 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         .register_documented(
             "border_box",
             || {
-                let output: Val<::bevy_ui::OverflowClipMargin> = {
+                let output: V<::bevy_ui::OverflowClipMargin> = {
                     {
-                        let output: Val<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::border_box()
+                        let output: V<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::border_box()
                             .into();
                         output
                     }
@@ -5779,10 +5749,10 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::OverflowClipMargin>| {
-                let output: Val<::bevy_ui::OverflowClipMargin> = {
+            |_self: R<::bevy_ui::OverflowClipMargin>| {
+                let output: V<::bevy_ui::OverflowClipMargin> = {
                     {
-                        let output: Val<::bevy_ui::OverflowClipMargin> = <::bevy_ui::OverflowClipMargin as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::OverflowClipMargin> = <::bevy_ui::OverflowClipMargin as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -5797,9 +5767,9 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         .register_documented(
             "content_box",
             || {
-                let output: Val<::bevy_ui::OverflowClipMargin> = {
+                let output: V<::bevy_ui::OverflowClipMargin> = {
                     {
-                        let output: Val<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::content_box()
+                        let output: V<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::content_box()
                             .into();
                         output
                     }
@@ -5812,8 +5782,8 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         .register_documented(
             "eq",
             |
-                _self: Ref<::bevy_ui::OverflowClipMargin>,
-                other: Ref<::bevy_ui::OverflowClipMargin>|
+                _self: R<::bevy_ui::OverflowClipMargin>,
+                other: R<::bevy_ui::OverflowClipMargin>|
             {
                 let output: bool = {
                     {
@@ -5832,9 +5802,9 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         .register_documented(
             "padding_box",
             || {
-                let output: Val<::bevy_ui::OverflowClipMargin> = {
+                let output: V<::bevy_ui::OverflowClipMargin> = {
                     {
-                        let output: Val<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::padding_box()
+                        let output: V<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::padding_box()
                             .into();
                         output
                     }
@@ -5846,10 +5816,10 @@ pub(crate) fn register_overflow_clip_margin_functions(world: &mut World) {
         )
         .register_documented(
             "with_margin",
-            |_self: Val<::bevy_ui::OverflowClipMargin>, margin: f32| {
-                let output: Val<::bevy_ui::OverflowClipMargin> = {
+            |_self: V<::bevy_ui::OverflowClipMargin>, margin: f32| {
+                let output: V<::bevy_ui::OverflowClipMargin> = {
                     {
-                        let output: Val<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::with_margin(
+                        let output: V<::bevy_ui::OverflowClipMargin> = ::bevy_ui::OverflowClipMargin::with_margin(
                                 _self.into_inner(),
                                 margin,
                             )
@@ -5876,7 +5846,7 @@ pub(crate) fn register_global_z_index_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "assert_receiver_is_total_eq",
-            |_self: Ref<::bevy_ui::GlobalZIndex>| {
+            |_self: R<::bevy_ui::GlobalZIndex>| {
                 let output: () = {
                     {
                         let output: () = <::bevy_ui::GlobalZIndex as ::std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -5893,10 +5863,10 @@ pub(crate) fn register_global_z_index_functions(world: &mut World) {
         )
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::GlobalZIndex>| {
-                let output: Val<::bevy_ui::GlobalZIndex> = {
+            |_self: R<::bevy_ui::GlobalZIndex>| {
+                let output: V<::bevy_ui::GlobalZIndex> = {
                     {
-                        let output: Val<::bevy_ui::GlobalZIndex> = <::bevy_ui::GlobalZIndex as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::GlobalZIndex> = <::bevy_ui::GlobalZIndex as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -5910,7 +5880,7 @@ pub(crate) fn register_global_z_index_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::GlobalZIndex>, other: Ref<::bevy_ui::GlobalZIndex>| {
+            |_self: R<::bevy_ui::GlobalZIndex>, other: R<::bevy_ui::GlobalZIndex>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::GlobalZIndex as ::std::cmp::PartialEq<
@@ -5939,7 +5909,7 @@ pub(crate) fn register_z_index_functions(world: &mut World) {
     )
     .register_documented(
         "assert_receiver_is_total_eq",
-        |_self: Ref<::bevy_ui::ZIndex>| {
+        |_self: R<::bevy_ui::ZIndex>| {
             let output: () = {
                 {
                     let output: () =
@@ -5955,10 +5925,10 @@ pub(crate) fn register_z_index_functions(world: &mut World) {
     )
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::ZIndex>| {
-            let output: Val<::bevy_ui::ZIndex> = {
+        |_self: R<::bevy_ui::ZIndex>| {
+            let output: V<::bevy_ui::ZIndex> = {
                 {
-                    let output: Val<::bevy_ui::ZIndex> =
+                    let output: V<::bevy_ui::ZIndex> =
                         <::bevy_ui::ZIndex as ::std::clone::Clone>::clone(&_self).into();
                     output
                 }
@@ -5970,7 +5940,7 @@ pub(crate) fn register_z_index_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::ZIndex>, other: Ref<::bevy_ui::ZIndex>| {
+        |_self: R<::bevy_ui::ZIndex>, other: R<::bevy_ui::ZIndex>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::ZIndex as ::std::cmp::PartialEq<
@@ -5996,10 +5966,10 @@ pub(crate) fn register_resolved_border_radius_functions(world: &mut World) {
     >::new(world)
     .register_documented(
         "clone",
-        |_self: Ref<::bevy_ui::ResolvedBorderRadius>| {
-            let output: Val<::bevy_ui::ResolvedBorderRadius> = {
+        |_self: R<::bevy_ui::ResolvedBorderRadius>| {
+            let output: V<::bevy_ui::ResolvedBorderRadius> = {
                 {
-                    let output: Val<::bevy_ui::ResolvedBorderRadius> =
+                    let output: V<::bevy_ui::ResolvedBorderRadius> =
                         <::bevy_ui::ResolvedBorderRadius as ::std::clone::Clone>::clone(&_self)
                             .into();
                     output
@@ -6012,8 +5982,7 @@ pub(crate) fn register_resolved_border_radius_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: Ref<::bevy_ui::ResolvedBorderRadius>,
-         other: Ref<::bevy_ui::ResolvedBorderRadius>| {
+        |_self: R<::bevy_ui::ResolvedBorderRadius>, other: R<::bevy_ui::ResolvedBorderRadius>| {
             let output: bool = {
                 {
                     let output: bool = <::bevy_ui::ResolvedBorderRadius as ::std::cmp::PartialEq<
@@ -6042,10 +6011,10 @@ pub(crate) fn register_background_color_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::BackgroundColor>| {
-                let output: Val<::bevy_ui::BackgroundColor> = {
+            |_self: R<::bevy_ui::BackgroundColor>| {
+                let output: V<::bevy_ui::BackgroundColor> = {
                     {
-                        let output: Val<::bevy_ui::BackgroundColor> = <::bevy_ui::BackgroundColor as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::BackgroundColor> = <::bevy_ui::BackgroundColor as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -6059,10 +6028,7 @@ pub(crate) fn register_background_color_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |
-                _self: Ref<::bevy_ui::BackgroundColor>,
-                other: Ref<::bevy_ui::BackgroundColor>|
-            {
+            |_self: R<::bevy_ui::BackgroundColor>, other: R<::bevy_ui::BackgroundColor>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::BackgroundColor as ::std::cmp::PartialEq<
@@ -6091,10 +6057,10 @@ pub(crate) fn register_border_color_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::BorderColor>| {
-                let output: Val<::bevy_ui::BorderColor> = {
+            |_self: R<::bevy_ui::BorderColor>| {
+                let output: V<::bevy_ui::BorderColor> = {
                     {
-                        let output: Val<::bevy_ui::BorderColor> = <::bevy_ui::BorderColor as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::BorderColor> = <::bevy_ui::BorderColor as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -6108,7 +6074,7 @@ pub(crate) fn register_border_color_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::BorderColor>, other: Ref<::bevy_ui::BorderColor>| {
+            |_self: R<::bevy_ui::BorderColor>, other: R<::bevy_ui::BorderColor>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::BorderColor as ::std::cmp::PartialEq<
@@ -6125,7 +6091,7 @@ pub(crate) fn register_border_color_functions(world: &mut World) {
         )
         .register_documented(
             "is_fully_transparent",
-            |_self: Ref<::bevy_ui::BorderColor>| {
+            |_self: R<::bevy_ui::BorderColor>| {
                 let output: bool = {
                     {
                         let output: bool = ::bevy_ui::BorderColor::is_fully_transparent(
@@ -6152,10 +6118,10 @@ pub(crate) fn register_box_shadow_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::BoxShadow>| {
-                let output: Val<::bevy_ui::BoxShadow> = {
+            |_self: R<::bevy_ui::BoxShadow>| {
+                let output: V<::bevy_ui::BoxShadow> = {
                     {
-                        let output: Val<::bevy_ui::BoxShadow> = <::bevy_ui::BoxShadow as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::BoxShadow> = <::bevy_ui::BoxShadow as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -6169,7 +6135,7 @@ pub(crate) fn register_box_shadow_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::BoxShadow>, other: Ref<::bevy_ui::BoxShadow>| {
+            |_self: R<::bevy_ui::BoxShadow>, other: R<::bevy_ui::BoxShadow>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::BoxShadow as ::std::cmp::PartialEq<
@@ -6187,15 +6153,15 @@ pub(crate) fn register_box_shadow_functions(world: &mut World) {
         .register_documented(
             "new",
             |
-                color: Val<::bevy_color::Color>,
-                x_offset: Val<::bevy_ui::Val>,
-                y_offset: Val<::bevy_ui::Val>,
-                spread_radius: Val<::bevy_ui::Val>,
-                blur_radius: Val<::bevy_ui::Val>|
+                color: V<::bevy_color::Color>,
+                x_offset: V<::bevy_ui::Val>,
+                y_offset: V<::bevy_ui::Val>,
+                spread_radius: V<::bevy_ui::Val>,
+                blur_radius: V<::bevy_ui::Val>|
             {
-                let output: Val<::bevy_ui::BoxShadow> = {
+                let output: V<::bevy_ui::BoxShadow> = {
                     {
-                        let output: Val<::bevy_ui::BoxShadow> = ::bevy_ui::BoxShadow::new(
+                        let output: V<::bevy_ui::BoxShadow> = ::bevy_ui::BoxShadow::new(
                                 color.into_inner(),
                                 x_offset.into_inner(),
                                 y_offset.into_inner(),
@@ -6222,10 +6188,10 @@ pub(crate) fn register_shadow_style_functions(world: &mut World) {
     >::new(world)
         .register_documented(
             "clone",
-            |_self: Ref<::bevy_ui::ShadowStyle>| {
-                let output: Val<::bevy_ui::ShadowStyle> = {
+            |_self: R<::bevy_ui::ShadowStyle>| {
+                let output: V<::bevy_ui::ShadowStyle> = {
                     {
-                        let output: Val<::bevy_ui::ShadowStyle> = <::bevy_ui::ShadowStyle as ::std::clone::Clone>::clone(
+                        let output: V<::bevy_ui::ShadowStyle> = <::bevy_ui::ShadowStyle as ::std::clone::Clone>::clone(
                                 &_self,
                             )
                             .into();
@@ -6239,7 +6205,7 @@ pub(crate) fn register_shadow_style_functions(world: &mut World) {
         )
         .register_documented(
             "eq",
-            |_self: Ref<::bevy_ui::ShadowStyle>, other: Ref<::bevy_ui::ShadowStyle>| {
+            |_self: R<::bevy_ui::ShadowStyle>, other: R<::bevy_ui::ShadowStyle>| {
                 let output: bool = {
                     {
                         let output: bool = <::bevy_ui::ShadowStyle as ::std::cmp::PartialEq<
