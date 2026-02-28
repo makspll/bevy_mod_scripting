@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ed0e542a.js";
+            window.path_to_searchindex_js = "../../searchindex-f96fe69c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0144a543.js"></script>
+        <script src="../../toc-f7f5dd85.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -219,32 +219,32 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./rot2/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./rot2/length.html">length</a></td><td>Computes the length or norm of the complex number used to represent the rotation.  The length is ty...</td></tr>
-<tr><td><a href="./rot2/radians.html">radians</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in radians.  A negative argument corresponds to a clockwise rotation.  # Note  Angles larger than or equal to 2π (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.  # Example  ```  # use bevy_math::Rot2;  # use approx::assert_relative_eq;  # use std::f32::consts::{FRAC_PI_2, PI};  let rot1 = Rot2::radians(3.0 * FRAC_PI_2);  let rot2 = Rot2::radians(-FRAC_PI_2);  #[cfg(feature = “approx”)]...</td></tr>
-<tr><td><a href="./rot2/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./rot2/inverse.html">inverse</a></td><td>Returns the inverse of the rotation. This is also the conjugate  of the unit complex number represe...</td></tr>
-<tr><td><a href="./rot2/from_sin_cos.html">from_sin_cos</a></td><td>Creates a [`Rot2`] from the sine and cosine of an angle.  The rotation is only valid if `sin * sin + cos * cos == 1.0`.  # Panics  Panics if `sin * sin + cos * cos != 1.0` when the `glam_assert` feature is enabled.</td></tr>
-<tr><td><a href="./rot2/normalize.html">normalize</a></td><td>Returns `self` with a length of `1.0`.  Note that [`Rot2`] should typically already be normalized by design.  Manual normalization is only needed when successive operations result in  accumulated floating point error, or if the rotation was constructed  with invalid values.  # Panics  Panics if `self` has a length of zero, NaN, or infinity when debug assertions are enabled.</td></tr>
-<tr><td><a href="./rot2/as_degrees.html">as_degrees</a></td><td>Returns a corresponding rotation angle in degrees in the `(-180, 180]` range.</td></tr>
-<tr><td><a href="./rot2/angle_to.html">angle_to</a></td><td>Returns the angle in radians needed to make `self` and `other` coincide.</td></tr>
-<tr><td><a href="./rot2/as_turn_fraction.html">as_turn_fraction</a></td><td>Returns a corresponding rotation angle as a fraction of a full 360 degree turn in the `(-0.5, 0.5]`...</td></tr>
 <tr><td><a href="./rot2/is_near_identity.html">is_near_identity</a></td><td>Returns `true` if the rotation is near [`Rot2::IDENTITY`].</td></tr>
-<tr><td><a href="./rot2/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./rot2/length_recip.html">length_recip</a></td><td>Computes `1.0 / self.length()`.  For valid results, `self` must _not_ have a length of zero.</td></tr>
-<tr><td><a href="./rot2/turn_fraction.html">turn_fraction</a></td><td>Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.  A negative argument corresponds to a clockwise rotation.  # Note  Angles larger than or equal to 1 turn (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.  # Example  ```  # use bevy_math::Rot2;  # use approx::assert_relative_eq;  let rot1 = Rot2::turn_fraction(0.75);  let rot2 = Rot2::turn_fraction(-0.25);  #[cfg(feature = “approx”)]...</td></tr>
-<tr><td><a href="./rot2/is_normalized.html">is_normalized</a></td><td>Returns whether `self` has a length of `1.0` or not.  Uses a precision threshold of approximately `1e-4`...</td></tr>
-<tr><td><a href="./rot2/is_nan.html">is_nan</a></td><td>Returns `true` if the rotation is NaN.</td></tr>
-<tr><td><a href="./rot2/as_radians.html">as_radians</a></td><td>Returns a corresponding rotation angle in radians in the `(-pi, pi]` range.</td></tr>
-<tr><td><a href="./rot2/mul.html">mul</a></td><td>Rotates the [`Dir2`] using a [`Rot2`].</td></tr>
-<tr><td><a href="./rot2/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `end`  based on the value `s`.  This c...</td></tr>
-<tr><td><a href="./rot2/degrees.html">degrees</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in degrees.  A negative argument corresponds to a clockwise rotation.  # Note  Angles larger than or equal to 360° (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.  # Example  ```  # use bevy_math::Rot2;  # use approx::{assert_relative_eq, assert_abs_diff_eq};  let rot1 = Rot2::degrees(270.0);  let rot2 = Rot2::degrees(-90.0);  #[cfg(feature = “approx”)]...</td></tr>
-<tr><td><a href="./rot2/fast_renormalize.html">fast_renormalize</a></td><td>Returns `self` after an approximate normalization, assuming the value is already nearly normalized....</td></tr>
-<tr><td><a href="./rot2/is_finite.html">is_finite</a></td><td>Returns `true` if the rotation is neither infinite nor NaN.</td></tr>
-<tr><td><a href="./rot2/sin_cos.html">sin_cos</a></td><td>Returns the sine and cosine of the rotation angle.</td></tr>
+<tr><td><a href="./rot2/radians.html">radians</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in radians.  A negative argument corresponds to a clockwise rotation.  # Note  Angles larger than or equal to 2π (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.  # Example  ```  # use bevy_math::Rot2;  # use approx::assert_relative_eq;  # use std::f32::consts::{FRAC_PI_2, PI};  let rot1 = Rot2::radians(3.0 * FRAC_PI_2);  let rot2 = Rot2::radians(-FRAC_PI_2);  #[cfg(feature = “approx”)]...</td></tr>
+<tr><td><a href="./rot2/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./rot2/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./rot2/nlerp.html">nlerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on  the value `s`, and normalizes th...</td></tr>
 <tr><td><a href="./rot2/length_squared.html">length_squared</a></td><td>Computes the squared length or norm of the complex number used to represent the rotation.  This is ...</td></tr>
+<tr><td><a href="./rot2/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./rot2/is_finite.html">is_finite</a></td><td>Returns `true` if the rotation is neither infinite nor NaN.</td></tr>
+<tr><td><a href="./rot2/as_turn_fraction.html">as_turn_fraction</a></td><td>Returns a corresponding rotation angle as a fraction of a full 360 degree turn in the `(-0.5, 0.5]`...</td></tr>
+<tr><td><a href="./rot2/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `end`  based on the value `s`.  This c...</td></tr>
+<tr><td><a href="./rot2/as_radians.html">as_radians</a></td><td>Returns a corresponding rotation angle in radians in the `(-pi, pi]` range.</td></tr>
+<tr><td><a href="./rot2/angle_to.html">angle_to</a></td><td>Returns the angle in radians needed to make `self` and `other` coincide.</td></tr>
+<tr><td><a href="./rot2/inverse.html">inverse</a></td><td>Returns the inverse of the rotation. This is also the conjugate  of the unit complex number represe...</td></tr>
+<tr><td><a href="./rot2/sin_cos.html">sin_cos</a></td><td>Returns the sine and cosine of the rotation angle.</td></tr>
+<tr><td><a href="./rot2/mul.html">mul</a></td><td>Rotates the [`Dir2`] using a [`Rot2`].</td></tr>
+<tr><td><a href="./rot2/length_recip.html">length_recip</a></td><td>Computes `1.0 / self.length()`.  For valid results, `self` must _not_ have a length of zero.</td></tr>
+<tr><td><a href="./rot2/is_nan.html">is_nan</a></td><td>Returns `true` if the rotation is NaN.</td></tr>
+<tr><td><a href="./rot2/normalize.html">normalize</a></td><td>Returns `self` with a length of `1.0`.  Note that [`Rot2`] should typically already be normalized by design.  Manual normalization is only needed when successive operations result in  accumulated floating point error, or if the rotation was constructed  with invalid values.  # Panics  Panics if `self` has a length of zero, NaN, or infinity when debug assertions are enabled.</td></tr>
+<tr><td><a href="./rot2/length.html">length</a></td><td>Computes the length or norm of the complex number used to represent the rotation.  The length is ty...</td></tr>
+<tr><td><a href="./rot2/degrees.html">degrees</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in degrees.  A negative argument corresponds to a clockwise rotation.  # Note  Angles larger than or equal to 360° (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.  # Example  ```  # use bevy_math::Rot2;  # use approx::{assert_relative_eq, assert_abs_diff_eq};  let rot1 = Rot2::degrees(270.0);  let rot2 = Rot2::degrees(-90.0);  #[cfg(feature = “approx”)]...</td></tr>
+<tr><td><a href="./rot2/as_degrees.html">as_degrees</a></td><td>Returns a corresponding rotation angle in degrees in the `(-180, 180]` range.</td></tr>
+<tr><td><a href="./rot2/nlerp.html">nlerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on  the value `s`, and normalizes th...</td></tr>
+<tr><td><a href="./rot2/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./rot2/fast_renormalize.html">fast_renormalize</a></td><td>Returns `self` after an approximate normalization, assuming the value is already nearly normalized....</td></tr>
+<tr><td><a href="./rot2/is_normalized.html">is_normalized</a></td><td>Returns whether `self` has a length of `1.0` or not.  Uses a precision threshold of approximately `1e-4`...</td></tr>
+<tr><td><a href="./rot2/from_sin_cos.html">from_sin_cos</a></td><td>Creates a [`Rot2`] from the sine and cosine of an angle.  The rotation is only valid if `sin * sin + cos * cos == 1.0`.  # Panics  Panics if `sin * sin + cos * cos != 1.0` when the `glam_assert` feature is enabled.</td></tr>
+<tr><td><a href="./rot2/turn_fraction.html">turn_fraction</a></td><td>Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.  A negative argument corresponds to a clockwise rotation.  # Note  Angles larger than or equal to 1 turn (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.  # Example  ```  # use bevy_math::Rot2;  # use approx::assert_relative_eq;  let rot1 = Rot2::turn_fraction(0.75);  let rot2 = Rot2::turn_fraction(-0.25);  #[cfg(feature = “approx”)]...</td></tr>
 </tbody>
 </table>
 </div>
@@ -253,11 +253,11 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/urect/center.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/urect/assert_receiver_is_total_eq.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/rot2/clone.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/rot2/is_near_identity.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -267,11 +267,11 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/urect/center.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/urect/assert_receiver_is_total_eq.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/rot2/clone.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/rot2/is_near_identity.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

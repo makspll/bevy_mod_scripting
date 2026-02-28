@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ed0e542a.js";
+            window.path_to_searchindex_js = "../searchindex-f96fe69c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0144a543.js"></script>
+        <script src="../toc-f7f5dd85.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -196,7 +196,7 @@
 <li>Each return type must also implement <code>GetTypeDependencies</code></li>
 </ul>
 <p>The into/from requirements allow us to convert these types to <code>ScriptValue</code>’s, and each supported scripting language can then marshall these into the script.</p>
-<p>Note these types are implemented for primitives, but if you want to interact with one of your <code>Reflect</code> implementing types, you will need to use one of <code>Ref&lt;T&gt;</code>, <code>Mut&lt;T&gt;</code> or <code>Val&lt;T&gt;</code> wrappers in place of <code>&amp;T</code>, <code>&amp;mut T</code> and <code>T</code> respectively.</p>
+<p>Note these types are implemented for primitives, but if you want to interact with one of your <code>Reflect</code> implementing types, you will need to use one of <code>R&lt;T&gt;</code>, <code>M&lt;T&gt;</code> or <code>V&lt;T&gt;</code> wrappers in place of <code>&amp;T</code>, <code>&amp;mut T</code> and <code>T</code> respectively.</p>
 <p>These wrappers enable us to safely interact with bevy, and claim any necessary mutex’es on <code>Resources</code>, <code>Components</code> or <code>Allocations</code>.</p>
 <p>The <code>GetTypeDependencies</code>, trait is simply a local trait alias for <code>GetTypeRegistration</code> with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don’t have to register anything manually. If your type implements <code>GetTypeRegistration</code> you should not face any issues on this front.</p>
 <h2 id="registering-script-functions"><a class="header" href="#registering-script-functions">Registering Script Functions</a></h2>
@@ -232,7 +232,7 @@ impl TestStruct {
     /// * `arg1` - the second argument
     /// Returns:
     /// * `return` - nothing
-    fn test_fn(_self: Ref&lt;TestStruct&gt;, mut arg1: usize) {}
+    fn test_fn(_self: R&lt;TestStruct&gt;, mut arg1: usize) {}
 }
 
 

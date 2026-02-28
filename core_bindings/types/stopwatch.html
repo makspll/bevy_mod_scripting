@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ed0e542a.js";
+            window.path_to_searchindex_js = "../../searchindex-f96fe69c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0144a543.js"></script>
+        <script src="../../toc-f7f5dd85.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -216,18 +216,18 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./stopwatch/new.html">new</a></td><td>Create a new unpaused `Stopwatch` with no elapsed time.  # Examples  ```  # use bevy_time::*;  let stopwatch = Stopwatch::new();  assert_eq!(stopwatch.elapsed_secs(), 0.0);  assert_eq!(stopwatch.is_paused(), false);  ```</td></tr>
-<tr><td><a href="./stopwatch/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./stopwatch/pause.html">pause</a></td><td>Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while  paused will not have any effect on the elapsed time.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.pause();  stopwatch.tick(Duration::from_secs_f32(1.5));  assert!(stopwatch.is_paused());  assert_eq!(stopwatch.elapsed_secs(), 0.0);  ```</td></tr>
-<tr><td><a href="./stopwatch/unpause.html">unpause</a></td><td>Unpauses the stopwatch. Resume the effect of ticking on elapsed time.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.pause();  stopwatch.tick(Duration::from_secs_f32(1.0));  stopwatch.unpause();  stopwatch.tick(Duration::from_secs_f32(1.0));  assert!(!stopwatch.is_paused());  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```</td></tr>
 <tr><td><a href="./stopwatch/elapsed.html">elapsed</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs(1));  assert_eq!(stopwatch.elapsed(), Duration::from_secs(1));  ```  # See Also  [`elapsed_secs`](Stopwatch::elapsed_secs)...</td></tr>
-<tr><td><a href="./stopwatch/elapsed_secs.html">elapsed_secs</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch, in seconds.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs(1));  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```  # See Also  [`elapsed`](Stopwatch::elapsed)...</td></tr>
 <tr><td><a href="./stopwatch/elapsed_secs_f64.html">elapsed_secs_f64</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch, in seconds, as f64.  # See Also  [`elapsed`](Stopwatch::elapsed)...</td></tr>
+<tr><td><a href="./stopwatch/unpause.html">unpause</a></td><td>Unpauses the stopwatch. Resume the effect of ticking on elapsed time.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.pause();  stopwatch.tick(Duration::from_secs_f32(1.0));  stopwatch.unpause();  stopwatch.tick(Duration::from_secs_f32(1.0));  assert!(!stopwatch.is_paused());  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```</td></tr>
 <tr><td><a href="./stopwatch/is_paused.html">is_paused</a></td><td>Returns `true` if the stopwatch is paused.  # Examples  ```  # use bevy_time::*;  let mut stopwatch = Stopwatch::new();  assert!(!stopwatch.is_paused());  stopwatch.pause();  assert!(stopwatch.is_paused());  stopwatch.unpause();  assert!(!stopwatch.is_paused());  ```</td></tr>
+<tr><td><a href="./stopwatch/elapsed_secs.html">elapsed_secs</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch, in seconds.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs(1));  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```  # See Also  [`elapsed`](Stopwatch::elapsed)...</td></tr>
 <tr><td><a href="./stopwatch/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./stopwatch/reset.html">reset</a></td><td>Resets the stopwatch. The reset doesn’t affect the paused state of the stopwatch.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs_f32(1.5));  stopwatch.reset();  assert_eq!(stopwatch.elapsed_secs(), 0.0);  ```</td></tr>
+<tr><td><a href="./stopwatch/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./stopwatch/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./stopwatch/new.html">new</a></td><td>Create a new unpaused `Stopwatch` with no elapsed time.  # Examples  ```  # use bevy_time::*;  let stopwatch = Stopwatch::new();  assert_eq!(stopwatch.elapsed_secs(), 0.0);  assert_eq!(stopwatch.is_paused(), false);  ```</td></tr>
 <tr><td><a href="./stopwatch/set_elapsed.html">set_elapsed</a></td><td>Sets the elapsed time of the stopwatch.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.set_elapsed(Duration::from_secs_f32(1.0));  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```</td></tr>
+<tr><td><a href="./stopwatch/reset.html">reset</a></td><td>Resets the stopwatch. The reset doesn’t affect the paused state of the stopwatch.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs_f32(1.5));  stopwatch.reset();  assert_eq!(stopwatch.elapsed_secs(), 0.0);  ```</td></tr>
+<tr><td><a href="./stopwatch/pause.html">pause</a></td><td>Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while  paused will not have any effect on the elapsed time.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.pause();  stopwatch.tick(Duration::from_secs_f32(1.5));  assert!(stopwatch.is_paused());  assert_eq!(stopwatch.elapsed_secs(), 0.0);  ```</td></tr>
 </tbody>
 </table>
 </div>
@@ -240,7 +240,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/stopwatch/new.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/stopwatch/elapsed.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -254,7 +254,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/stopwatch/new.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/stopwatch/elapsed.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

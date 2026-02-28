@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ed0e542a.js";
+            window.path_to_searchindex_js = "../../searchindex-f96fe69c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0144a543.js"></script>
+        <script src="../../toc-f7f5dd85.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -215,32 +215,32 @@ For non-repeating timers, this will always be 0 or 1.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./timer/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./timer/remaining.html">remaining</a></td><td>Returns the remaining time using Duration  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));  ```</td></tr>
-<tr><td><a href="./timer/fraction.html">fraction</a></td><td>Returns the fraction of the timer elapsed time (goes from 0.0 to 1.0).  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.fraction(), 0.25);  ```</td></tr>
-<tr><td><a href="./timer/elapsed.html">elapsed</a></td><td>Returns the time elapsed on the timer. Guaranteed to be between 0.0 and `duration`.  Will only equa...</td></tr>
-<tr><td><a href="./timer/set_elapsed.html">set_elapsed</a></td><td>Sets the elapsed time of the timer without any other considerations.  See also [`Stopwatch::set`](Stopwatch::set).  #  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  timer.set_elapsed(Duration::from_secs(2));  assert_eq!(timer.elapsed(), Duration::from_secs(2));  // the timer is not finished even if the elapsed time is greater than the duration.  assert!(!timer.is_finished());  ```</td></tr>
-<tr><td><a href="./timer/elapsed_secs.html">elapsed_secs</a></td><td>Returns the time elapsed on the timer as an `f32`.  See also [`Timer::elapsed`](Timer::elapsed).</td></tr>
-<tr><td><a href="./timer/from_seconds.html">from_seconds</a></td><td>Creates a new timer with a given duration in seconds.  # Example  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  ```</td></tr>
-<tr><td><a href="./timer/duration.html">duration</a></td><td>Returns the duration of the timer.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let timer = Timer::new(Duration::from_secs(1), TimerMode::Once);  assert_eq!(timer.duration(), Duration::from_secs(1));  ```</td></tr>
-<tr><td><a href="./timer/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./timer/finish.html">finish</a></td><td>Finishes the timer.  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.5, TimerMode::Once);  timer.finish();  assert!(timer.is_finished());  ```</td></tr>
-<tr><td><a href="./timer/times_finished_this_tick.html">times_finished_this_tick</a></td><td>Returns the number of times a repeating timer  finished during the last [`tick`](Timer<t>::tick) call.  For non repeating-timers, this method will only ever  return 0 or 1.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);  timer.tick(Duration::from_secs_f32(6.0));  assert_eq!(timer.times_finished_this_tick(), 6);  timer.tick(Duration::from_secs_f32(2.0));  assert_eq!(timer.times_finished_this_tick(), 2);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.times_finished_this_tick(), 0);  ```</t></td></tr>
-<tr><td><a href="./timer/remaining_secs.html">remaining_secs</a></td><td>Returns the remaining time in seconds  # Examples  ```  # use bevy_time::*;  use std::cmp::Ordering;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  let result = timer.remaining_secs().total_cmp(&amp;1.5);  assert_eq!(Ordering::Equal, result);  ```</td></tr>
-<tr><td><a href="./timer/almost_finish.html">almost_finish</a></td><td>Almost finishes the timer leaving 1 ns of remaining time.  This can be useful when needing an immed...</td></tr>
 <tr><td><a href="./timer/just_finished.html">just_finished</a></td><td>Returns `true` only on the tick the timer reached its duration.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(1.5));  assert!(timer.just_finished());  timer.tick(Duration::from_secs_f32(0.5));  assert!(!timer.just_finished());  ```</td></tr>
-<tr><td><a href="./timer/fraction_remaining.html">fraction_remaining</a></td><td>Returns the fraction of the timer remaining time (goes from 1.0 to 0.0).  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.fraction_remaining(), 0.75);  ```</td></tr>
-<tr><td><a href="./timer/unpause.html">unpause</a></td><td>Unpauses the Timer. Resumes the ticking of the timer.  See also [`Stopwatch::unpause()`](Stopwatch::unpause).  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  timer.pause();  timer.tick(Duration::from_secs_f32(0.5));  timer.unpause();  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.elapsed_secs(), 0.5);  ```</td></tr>
-<tr><td><a href="./timer/mode.html">mode</a></td><td>Returns the mode of the timer.  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);  assert_eq!(timer.mode(), TimerMode::Repeating);  ```</td></tr>
-<tr><td><a href="./timer/new.html">new</a></td><td>Creates a new timer with a given duration.  See also [`Timer::from_seconds`](Timer::from_seconds).</td></tr>
-<tr><td><a href="./timer/elapsed_secs_f64.html">elapsed_secs_f64</a></td><td>Returns the time elapsed on the timer as an `f64`.  See also [`Timer::elapsed`](Timer::elapsed).</td></tr>
-<tr><td><a href="./timer/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./timer/is_finished.html">is_finished</a></td><td>Returns `true` if the timer has reached its duration.  For repeating timers, this method behaves id...</td></tr>
-<tr><td><a href="./timer/is_paused.html">is_paused</a></td><td>Returns `true` if the timer is paused.  See also [`Stopwatch::is_paused`](Stopwatch::is_paused).  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  assert!(!timer.is_paused());  timer.pause();  assert!(timer.is_paused());  timer.unpause();  assert!(!timer.is_paused());  ```</td></tr>
-<tr><td><a href="./timer/set_mode.html">set_mode</a></td><td>Sets the mode of the timer.  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);  timer.set_mode(TimerMode::Once);  assert_eq!(timer.mode(), TimerMode::Once);  ```</td></tr>
+<tr><td><a href="./timer/remaining.html">remaining</a></td><td>Returns the remaining time using Duration  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));  ```</td></tr>
 <tr><td><a href="./timer/pause.html">pause</a></td><td>Pauses the Timer. Disables the ticking of the timer.  See also [`Stopwatch::pause`](Stopwatch::pause).  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  timer.pause();  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.elapsed_secs(), 0.0);  ```</td></tr>
-<tr><td><a href="./timer/reset.html">reset</a></td><td>Resets the timer. The reset doesn’t affect the `paused` state of the timer.  See also [`Stopwatch::reset`](Stopwatch::reset)...</td></tr>
+<tr><td><a href="./timer/times_finished_this_tick.html">times_finished_this_tick</a></td><td>Returns the number of times a repeating timer  finished during the last [`tick`](Timer<t>::tick) call.  For non repeating-timers, this method will only ever  return 0 or 1.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);  timer.tick(Duration::from_secs_f32(6.0));  assert_eq!(timer.times_finished_this_tick(), 6);  timer.tick(Duration::from_secs_f32(2.0));  assert_eq!(timer.times_finished_this_tick(), 2);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.times_finished_this_tick(), 0);  ```</t></td></tr>
+<tr><td><a href="./timer/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./timer/is_paused.html">is_paused</a></td><td>Returns `true` if the timer is paused.  See also [`Stopwatch::is_paused`](Stopwatch::is_paused).  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  assert!(!timer.is_paused());  timer.pause();  assert!(timer.is_paused());  timer.unpause();  assert!(!timer.is_paused());  ```</td></tr>
+<tr><td><a href="./timer/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./timer/set_duration.html">set_duration</a></td><td>Sets the duration of the timer.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.5, TimerMode::Once);  timer.set_duration(Duration::from_secs(1));  assert_eq!(timer.duration(), Duration::from_secs(1));  ```</td></tr>
+<tr><td><a href="./timer/from_seconds.html">from_seconds</a></td><td>Creates a new timer with a given duration in seconds.  # Example  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  ```</td></tr>
+<tr><td><a href="./timer/new.html">new</a></td><td>Creates a new timer with a given duration.  See also [`Timer::from_seconds`](Timer::from_seconds).</td></tr>
+<tr><td><a href="./timer/finish.html">finish</a></td><td>Finishes the timer.  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.5, TimerMode::Once);  timer.finish();  assert!(timer.is_finished());  ```</td></tr>
+<tr><td><a href="./timer/remaining_secs.html">remaining_secs</a></td><td>Returns the remaining time in seconds  # Examples  ```  # use bevy_time::*;  use std::cmp::Ordering;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  let result = timer.remaining_secs().total_cmp(&amp;1.5);  assert_eq!(Ordering::Equal, result);  ```</td></tr>
+<tr><td><a href="./timer/elapsed.html">elapsed</a></td><td>Returns the time elapsed on the timer. Guaranteed to be between 0.0 and `duration`.  Will only equa...</td></tr>
+<tr><td><a href="./timer/fraction.html">fraction</a></td><td>Returns the fraction of the timer elapsed time (goes from 0.0 to 1.0).  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.fraction(), 0.25);  ```</td></tr>
+<tr><td><a href="./timer/elapsed_secs.html">elapsed_secs</a></td><td>Returns the time elapsed on the timer as an `f32`.  See also [`Timer::elapsed`](Timer::elapsed).</td></tr>
+<tr><td><a href="./timer/reset.html">reset</a></td><td>Resets the timer. The reset doesn’t affect the `paused` state of the timer.  See also [`Stopwatch::reset`](Stopwatch::reset)...</td></tr>
+<tr><td><a href="./timer/set_elapsed.html">set_elapsed</a></td><td>Sets the elapsed time of the timer without any other considerations.  See also [`Stopwatch::set`](Stopwatch::set).  #  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  timer.set_elapsed(Duration::from_secs(2));  assert_eq!(timer.elapsed(), Duration::from_secs(2));  // the timer is not finished even if the elapsed time is greater than the duration.  assert!(!timer.is_finished());  ```</td></tr>
+<tr><td><a href="./timer/is_finished.html">is_finished</a></td><td>Returns `true` if the timer has reached its duration.  For repeating timers, this method behaves id...</td></tr>
+<tr><td><a href="./timer/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./timer/duration.html">duration</a></td><td>Returns the duration of the timer.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let timer = Timer::new(Duration::from_secs(1), TimerMode::Once);  assert_eq!(timer.duration(), Duration::from_secs(1));  ```</td></tr>
+<tr><td><a href="./timer/mode.html">mode</a></td><td>Returns the mode of the timer.  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);  assert_eq!(timer.mode(), TimerMode::Repeating);  ```</td></tr>
+<tr><td><a href="./timer/elapsed_secs_f64.html">elapsed_secs_f64</a></td><td>Returns the time elapsed on the timer as an `f64`.  See also [`Timer::elapsed`](Timer::elapsed).</td></tr>
+<tr><td><a href="./timer/unpause.html">unpause</a></td><td>Unpauses the Timer. Resumes the ticking of the timer.  See also [`Stopwatch::unpause()`](Stopwatch::unpause).  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);  timer.pause();  timer.tick(Duration::from_secs_f32(0.5));  timer.unpause();  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.elapsed_secs(), 0.5);  ```</td></tr>
+<tr><td><a href="./timer/fraction_remaining.html">fraction_remaining</a></td><td>Returns the fraction of the timer remaining time (goes from 1.0 to 0.0).  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);  timer.tick(Duration::from_secs_f32(0.5));  assert_eq!(timer.fraction_remaining(), 0.75);  ```</td></tr>
+<tr><td><a href="./timer/almost_finish.html">almost_finish</a></td><td>Almost finishes the timer leaving 1 ns of remaining time.  This can be useful when needing an immed...</td></tr>
+<tr><td><a href="./timer/set_mode.html">set_mode</a></td><td>Sets the mode of the timer.  # Examples  ```  # use bevy_time::*;  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);  timer.set_mode(TimerMode::Once);  assert_eq!(timer.mode(), TimerMode::Once);  ```</td></tr>
 </tbody>
 </table>
 </div>
@@ -249,11 +249,11 @@ For non-repeating timers, this will always be 0 or 1.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/stopwatch/set_elapsed.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/stopwatch/pause.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/timer/clone.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/timer/just_finished.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -263,11 +263,11 @@ For non-repeating timers, this will always be 0 or 1.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/stopwatch/set_elapsed.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/stopwatch/pause.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/timer/clone.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/timer/just_finished.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

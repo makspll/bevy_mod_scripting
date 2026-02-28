@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ed0e542a.js";
+            window.path_to_searchindex_js = "../searchindex-f96fe69c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0144a543.js"></script>
+        <script src="../toc-f7f5dd85.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -195,6 +195,9 @@
 <h2 id="ironing-out-edge-cases-in-the-script-lifecycle"><a class="header" href="#ironing-out-edge-cases-in-the-script-lifecycle">Ironing out edge cases in the script lifecycle</a></h2>
 <p>Contexts are now stored in a <code>Context</code> enum which also contains the “state” of the context. Contexts which are being processed by the pipeline will be marked as loading/reloading or unloading, allowing us to have more information when trying to run callbakcs against these.</p>
 <p>Callbacks which are loading or unloading for example, will not have callbacks issued to them generally.</p>
+<h2 id="renaming-reflection-rroxies"><a class="header" href="#renaming-reflection-rroxies">Renaming Reflection Rroxies</a></h2>
+<p><code>Val&lt;T&gt;</code>, <code>Ref&lt;T&gt;</code> and <code>Mut&lt;T&gt;</code> have been renamed to prevent clashes with native bevy types, as well as save a few keystrokes.</p>
+<p>You should use: <code>V&lt;T&gt;</code>, <code>R&lt;T&gt;</code> and <code>M&lt;T&gt;</code> instead</p>
 
                     </main>
 

@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ed0e542a.js";
+            window.path_to_searchindex_js = "../searchindex-f96fe69c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0144a543.js"></script>
+        <script src="../toc-f7f5dd85.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -190,6 +190,18 @@
 </code></pre>
 <p>This allows you to use more convenient system parameter syntax to access resources and queries, but you may not use exclusive systems anymore.</p>
 <p>If you want observers to respect ordering between themselves, you should prefer to issue commands in these instead (see <a href="https://github.com/bevyengine/bevy/issues/19569">related bevy issue</a>).</p>
+<h2 id="renaming-reflection-rroxies"><a class="header" href="#renaming-reflection-rroxies">Renaming Reflection Rroxies</a></h2>
+<p><code>Val&lt;T&gt;</code>, <code>Ref&lt;T&gt;</code> and <code>Mut&lt;T&gt;</code> have been renamed to prevent clashes with native bevy types, as well as save a few keystrokes.</p>
+<p>You should use: <code>V&lt;T&gt;</code>, <code>R&lt;T&gt;</code> and <code>M&lt;T&gt;</code> instead</p>
+<pre><code class="language-diff">&gt; V&lt;T&gt;
+&lt; Val&lt;T&gt;
+</code></pre>
+<pre><code class="language-diff">&gt; R&lt;T&gt;
+&lt; Ref&lt;T&gt;
+</code></pre>
+<pre><code class="language-diff">&gt; M&lt;T&gt;
+&lt; Mut&lt;T&gt;
+</code></pre>
 
                     </main>
 
