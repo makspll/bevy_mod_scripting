@@ -93,9 +93,10 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
 
             let scenario_path = find_nearest_ancestor(&path, |p| {
                 p.file_name().and_then(|f| f.to_str()).is_some_and(|p| {
+                    println!("{p}");
                     p == "scenario.txt"
                         || p == "group_scenario.txt"
-                        || p.split(".").last().is_some_and(|ext| ext == ".bmsscenario")
+                        || p.split(".").last().is_some_and(|ext| ext == "bmsscenario")
                 })
             });
 
