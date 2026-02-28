@@ -416,10 +416,7 @@ impl World {
     /// * `entity`: The entity to despawn recursively.
     /// Returns:
     /// * `result`: Nothing if the entity and its descendants were despawned successfully.
-    fn despawn_recursive(
-        ctxt: FunctionCallContext,
-        entity: V<Entity>,
-    ) -> Result<(), InteropError> {
+    fn despawn_recursive(ctxt: FunctionCallContext, entity: V<Entity>) -> Result<(), InteropError> {
         profiling::function_scope!("despawn_recursive");
         let world = ctxt.world()?;
         world.despawn_recursive(*entity)
@@ -1245,10 +1242,7 @@ impl ScriptSystemBuilder {
     /// * `system`: The system to run after.
     /// Returns:
     /// * `builder`: The system builder with the dependency added.
-    fn after(
-        builder: V<ScriptSystemBuilder>,
-        system: V<ReflectSystem>,
-    ) -> V<ScriptSystemBuilder> {
+    fn after(builder: V<ScriptSystemBuilder>, system: V<ReflectSystem>) -> V<ScriptSystemBuilder> {
         profiling::function_scope!("after");
         let mut builder = builder.into_inner();
         builder.after_system(system.into_inner());
@@ -1264,10 +1258,7 @@ impl ScriptSystemBuilder {
     /// * `system`: The system to run before.
     /// Returns:
     /// * `builder`: The system builder with the dependency added.
-    fn before(
-        builder: V<ScriptSystemBuilder>,
-        system: V<ReflectSystem>,
-    ) -> V<ScriptSystemBuilder> {
+    fn before(builder: V<ScriptSystemBuilder>, system: V<ReflectSystem>) -> V<ScriptSystemBuilder> {
         profiling::function_scope!("before");
         let mut builder = builder.into_inner();
         builder.before_system(system.into_inner());

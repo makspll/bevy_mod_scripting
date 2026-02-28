@@ -149,8 +149,7 @@ impl CoreGlobals {
             let type_path = registration.type_info().type_path_table().short_path();
             let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
             let registration = guard.clone().get_type_registration(registration)?;
-            let registration =
-                registration.map_both(V::from, |u| u.map_both(V::from, V::from));
+            let registration = registration.map_both(V::from, |u| u.map_both(V::from, V::from));
             if type_cache
                 .insert(type_path.to_owned(), registration)
                 .is_some()

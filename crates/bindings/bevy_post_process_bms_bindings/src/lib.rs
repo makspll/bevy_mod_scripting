@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyPostProcessScriptingPlugin;
 pub(crate) fn register_auto_exposure_compensation_curve_functions(world: &mut World) {
@@ -87,23 +84,22 @@ pub(crate) fn register_bloom_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_post_process::bloom::Bloom,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_post_process::bloom::Bloom>| {
-                let output: V<::bevy_post_process::bloom::Bloom> = {
-                    {
-                        let output: V<::bevy_post_process::bloom::Bloom> = <::bevy_post_process::bloom::Bloom as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_post_process::bloom::Bloom>| {
+            let output: V<::bevy_post_process::bloom::Bloom> = {
+                {
+                    let output: V<::bevy_post_process::bloom::Bloom> =
+                        <::bevy_post_process::bloom::Bloom as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -182,23 +178,24 @@ pub(crate) fn register_bloom_prefilter_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_post_process::bloom::BloomPrefilter,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_post_process::bloom::BloomPrefilter>| {
-                let output: V<::bevy_post_process::bloom::BloomPrefilter> = {
-                    {
-                        let output: V<::bevy_post_process::bloom::BloomPrefilter> = <::bevy_post_process::bloom::BloomPrefilter as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_post_process::bloom::BloomPrefilter>| {
+            let output: V<::bevy_post_process::bloom::BloomPrefilter> = {
+                {
+                    let output: V<::bevy_post_process::bloom::BloomPrefilter> =
+                        <::bevy_post_process::bloom::BloomPrefilter as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -211,23 +208,24 @@ pub(crate) fn register_depth_of_field_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_post_process::dof::DepthOfField,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_post_process::dof::DepthOfField>| {
-                let output: V<::bevy_post_process::dof::DepthOfField> = {
-                    {
-                        let output: V<::bevy_post_process::dof::DepthOfField> = <::bevy_post_process::dof::DepthOfField as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_post_process::dof::DepthOfField>| {
+            let output: V<::bevy_post_process::dof::DepthOfField> = {
+                {
+                    let output: V<::bevy_post_process::dof::DepthOfField> =
+                        <::bevy_post_process::dof::DepthOfField as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -240,43 +238,43 @@ pub(crate) fn register_depth_of_field_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_post_process::dof::DepthOfFieldMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |mut _self: R<::bevy_post_process::dof::DepthOfFieldMode>| {
-                let output: V<::bevy_post_process::dof::DepthOfFieldMode> = {
-                    {
-                        let output: V<::bevy_post_process::dof::DepthOfFieldMode> = <::bevy_post_process::dof::DepthOfFieldMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                mut _self: R<::bevy_post_process::dof::DepthOfFieldMode>,
-                mut other: R<::bevy_post_process::dof::DepthOfFieldMode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_post_process::dof::DepthOfFieldMode as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |mut _self: R<::bevy_post_process::dof::DepthOfFieldMode>| {
+            let output: V<::bevy_post_process::dof::DepthOfFieldMode> = {
+                {
+                    let output: V<::bevy_post_process::dof::DepthOfFieldMode> =
+                        <::bevy_post_process::dof::DepthOfFieldMode as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |mut _self: R<::bevy_post_process::dof::DepthOfFieldMode>,
+         mut other: R<::bevy_post_process::dof::DepthOfFieldMode>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_post_process::dof::DepthOfFieldMode as ::std::cmp::PartialEq<
                             ::bevy_post_process::dof::DepthOfFieldMode,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

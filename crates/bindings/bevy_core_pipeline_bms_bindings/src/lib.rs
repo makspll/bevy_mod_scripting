@@ -1,41 +1,36 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyCorePipelineScriptingPlugin;
 pub(crate) fn register_skybox_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::Skybox,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_core_pipeline::Skybox>| {
-                let output: V<::bevy_core_pipeline::Skybox> = {
-                    {
-                        let output: V<::bevy_core_pipeline::Skybox> = <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_core_pipeline::Skybox>| {
+            let output: V<::bevy_core_pipeline::Skybox> = {
+                {
+                    let output: V<::bevy_core_pipeline::Skybox> =
+                        <::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -358,9 +353,7 @@ pub(crate) fn register_normal_prepass_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_order_independent_transparency_settings_functions(
-    world: &mut World,
-) {
+pub(crate) fn register_order_independent_transparency_settings_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
     >::new(world)
