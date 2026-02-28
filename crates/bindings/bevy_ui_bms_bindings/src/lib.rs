@@ -1,82 +1,73 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyUiScriptingPlugin;
 pub(crate) fn register_display_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::Display,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_ui::Display>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::Display as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Display>::new(
+        world,
+    )
+    .register_documented(
+        "assert_receiver_is_total_eq",
+        |_self: R<::bevy_ui::Display>| {
+            let output: () = {
+                {
+                    let output: () =
+                        <::bevy_ui::Display as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::Display>| {
-                let output: V<::bevy_ui::Display> = {
-                    {
-                        let output: V<::bevy_ui::Display> = <::bevy_ui::Display as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::Display>, other: R<::bevy_ui::Display>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::Display as ::std::cmp::PartialEq<
-                            ::bevy_ui::Display,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::Display>| {
+            let output: V<::bevy_ui::Display> = {
+                {
+                    let output: V<::bevy_ui::Display> =
+                        <::bevy_ui::Display as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::Display>, other: R<::bevy_ui::Display>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::Display as ::std::cmp::PartialEq<
+                        ::bevy_ui::Display,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::Display,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::Display, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_ui_picking_camera_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -169,43 +160,39 @@ pub(crate) fn register_text_shadow_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::widget::TextShadow,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::widget::TextShadow>| {
-                let output: V<::bevy_ui::widget::TextShadow> = {
-                    {
-                        let output: V<::bevy_ui::widget::TextShadow> = <::bevy_ui::widget::TextShadow as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::widget::TextShadow>| {
+            let output: V<::bevy_ui::widget::TextShadow> = {
+                {
+                    let output: V<::bevy_ui::widget::TextShadow> =
+                        <::bevy_ui::widget::TextShadow as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::widget::TextShadow>,
-                other: R<::bevy_ui::widget::TextShadow>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::widget::TextShadow as ::std::cmp::PartialEq<
-                            ::bevy_ui::widget::TextShadow,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::widget::TextShadow>, other: R<::bevy_ui::widget::TextShadow>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::widget::TextShadow as ::std::cmp::PartialEq<
+                        ::bevy_ui::widget::TextShadow,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -513,40 +500,37 @@ pub(crate) fn register_viewport_node_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::widget::ViewportNode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::widget::ViewportNode>| {
-                let output: V<::bevy_ui::widget::ViewportNode> = {
-                    {
-                        let output: V<::bevy_ui::widget::ViewportNode> = <::bevy_ui::widget::ViewportNode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::widget::ViewportNode>| {
+            let output: V<::bevy_ui::widget::ViewportNode> = {
+                {
+                    let output: V<::bevy_ui::widget::ViewportNode> =
+                        <::bevy_ui::widget::ViewportNode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |camera: V<::bevy_ecs::entity::Entity>| {
-                let output: V<::bevy_ui::widget::ViewportNode> = {
-                    {
-                        let output: V<::bevy_ui::widget::ViewportNode> = ::bevy_ui::widget::ViewportNode::new(
-                                camera.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`ViewportNode`] with a given `camera`.",
-            &["camera"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "new",
+        |camera: V<::bevy_ecs::entity::Entity>| {
+            let output: V<::bevy_ui::widget::ViewportNode> = {
+                {
+                    let output: V<::bevy_ui::widget::ViewportNode> =
+                        ::bevy_ui::widget::ViewportNode::new(camera.into_inner()).into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates a new [`ViewportNode`] with a given `camera`.",
+        &["camera"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -613,64 +597,57 @@ pub(crate) fn register_interaction_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::Interaction,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::Interaction, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_ui_scale_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::UiScale,
-    >::new(world);
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::UiScale>::new(
+        world,
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::UiScale,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::UiScale, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_computed_ui_target_camera_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ComputedUiTargetCamera,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::ComputedUiTargetCamera>| {
-                let output: V<::bevy_ui::ComputedUiTargetCamera> = {
-                    {
-                        let output: V<::bevy_ui::ComputedUiTargetCamera> = <::bevy_ui::ComputedUiTargetCamera as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::ComputedUiTargetCamera>| {
+            let output: V<::bevy_ui::ComputedUiTargetCamera> = {
+                {
+                    let output: V<::bevy_ui::ComputedUiTargetCamera> =
+                        <::bevy_ui::ComputedUiTargetCamera as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::ComputedUiTargetCamera>,
-                other: R<::bevy_ui::ComputedUiTargetCamera>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::ComputedUiTargetCamera as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::ComputedUiTargetCamera>,
+         other: R<::bevy_ui::ComputedUiTargetCamera>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui::ComputedUiTargetCamera as ::std::cmp::PartialEq<
                             ::bevy_ui::ComputedUiTargetCamera,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -683,94 +660,88 @@ pub(crate) fn register_computed_ui_render_target_info_functions(world: &mut Worl
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ComputedUiRenderTargetInfo,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
-                let output: V<::bevy_ui::ComputedUiRenderTargetInfo> = {
-                    {
-                        let output: V<::bevy_ui::ComputedUiRenderTargetInfo> = <::bevy_ui::ComputedUiRenderTargetInfo as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::ComputedUiRenderTargetInfo>,
-                other: R<::bevy_ui::ComputedUiRenderTargetInfo>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::ComputedUiRenderTargetInfo as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: V<::bevy_ui::ComputedUiRenderTargetInfo> = {
+                {
+                    let output: V<::bevy_ui::ComputedUiRenderTargetInfo> =
+                        <::bevy_ui::ComputedUiRenderTargetInfo as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>,
+         other: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui::ComputedUiRenderTargetInfo as ::std::cmp::PartialEq<
                             ::bevy_ui::ComputedUiRenderTargetInfo,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "logical_size",
-            |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
-                let output: V<::bevy_math::Vec2> = {
-                    {
-                        let output: V<::bevy_math::Vec2> = ::bevy_ui::ComputedUiRenderTargetInfo::logical_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of the target camera's viewport in logical pixels.",
-            &["_self"],
-        )
-        .register_documented(
-            "physical_size",
-            |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
-                let output: V<::bevy_math::UVec2> = {
-                    {
-                        let output: V<::bevy_math::UVec2> = ::bevy_ui::ComputedUiRenderTargetInfo::physical_size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of the target camera's viewport in physical pixels.",
-            &["_self"],
-        )
-        .register_documented(
-            "scale_factor",
-            |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_ui::ComputedUiRenderTargetInfo::scale_factor(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "logical_size",
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: V<::bevy_math::Vec2> = {
+                {
+                    let output: V<::bevy_math::Vec2> =
+                        ::bevy_ui::ComputedUiRenderTargetInfo::logical_size(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the size of the target camera's viewport in logical pixels.",
+        &["_self"],
+    )
+    .register_documented(
+        "physical_size",
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: V<::bevy_math::UVec2> = {
+                {
+                    let output: V<::bevy_math::UVec2> =
+                        ::bevy_ui::ComputedUiRenderTargetInfo::physical_size(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the size of the target camera's viewport in physical pixels.",
+        &["_self"],
+    )
+    .register_documented(
+        "scale_factor",
+        |_self: R<::bevy_ui::ComputedUiRenderTargetInfo>| {
+            let output: f32 = {
+                {
+                    let output: f32 =
+                        ::bevy_ui::ComputedUiRenderTargetInfo::scale_factor(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1443,10 +1414,8 @@ pub(crate) fn register_content_size_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::ContentSize,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::ContentSize, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_calculated_clip_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1478,50 +1447,44 @@ pub(crate) fn register_calculated_clip_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_node_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::Node,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::Node>| {
-                let output: V<::bevy_ui::Node> = {
-                    {
-                        let output: V<::bevy_ui::Node> = <::bevy_ui::Node as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::Node>, other: R<::bevy_ui::Node>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::Node as ::std::cmp::PartialEq<
-                            ::bevy_ui::Node,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Node>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::Node>| {
+            let output: V<::bevy_ui::Node> = {
+                {
+                    let output: V<::bevy_ui::Node> =
+                        <::bevy_ui::Node as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::Node>, other: R<::bevy_ui::Node>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::Node as ::std::cmp::PartialEq<
+                        ::bevy_ui::Node,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::Node,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+    registry.register_type_data::<::bevy_ui::Node, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_overflow_axis_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1802,49 +1765,44 @@ pub(crate) fn register_focus_policy_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::FocusPolicy,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::FocusPolicy, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_image_node_size_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::widget::ImageNodeSize,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::widget::ImageNodeSize>| {
-                let output: V<::bevy_ui::widget::ImageNodeSize> = {
-                    {
-                        let output: V<::bevy_ui::widget::ImageNodeSize> = <::bevy_ui::widget::ImageNodeSize as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::widget::ImageNodeSize>| {
+            let output: V<::bevy_ui::widget::ImageNodeSize> = {
+                {
+                    let output: V<::bevy_ui::widget::ImageNodeSize> =
+                        <::bevy_ui::widget::ImageNodeSize as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "size",
-            |_self: R<::bevy_ui::widget::ImageNodeSize>| {
-                let output: V<::bevy_math::UVec2> = {
-                    {
-                        let output: V<::bevy_math::UVec2> = ::bevy_ui::widget::ImageNodeSize::size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " The size of the image's texture",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "size",
+        |_self: R<::bevy_ui::widget::ImageNodeSize>| {
+            let output: V<::bevy_math::UVec2> = {
+                {
+                    let output: V<::bevy_math::UVec2> =
+                        ::bevy_ui::widget::ImageNodeSize::size(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " The size of the image's texture",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1857,23 +1815,22 @@ pub(crate) fn register_text_node_flags_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::widget::TextNodeFlags,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::widget::TextNodeFlags>| {
-                let output: V<::bevy_ui::widget::TextNodeFlags> = {
-                    {
-                        let output: V<::bevy_ui::widget::TextNodeFlags> = <::bevy_ui::widget::TextNodeFlags as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::widget::TextNodeFlags>| {
+            let output: V<::bevy_ui::widget::TextNodeFlags> = {
+                {
+                    let output: V<::bevy_ui::widget::TextNodeFlags> =
+                        <::bevy_ui::widget::TextNodeFlags as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2261,10 +2218,8 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::UiPosition,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::UiPosition, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_val_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2476,11 +2431,7 @@ pub(crate) fn register_val_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::Val,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+    registry.register_type_data::<::bevy_ui::Val, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_color_stop_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2541,10 +2492,7 @@ pub(crate) fn register_color_stop_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::ColorStop,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::ColorStop, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_angular_color_stop_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2817,76 +2765,70 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::RadialGradientShape,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::RadialGradientShape>| {
-                let output: V<::bevy_ui::RadialGradientShape> = {
-                    {
-                        let output: V<::bevy_ui::RadialGradientShape> = <::bevy_ui::RadialGradientShape as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::RadialGradientShape>| {
+            let output: V<::bevy_ui::RadialGradientShape> = {
+                {
+                    let output: V<::bevy_ui::RadialGradientShape> =
+                        <::bevy_ui::RadialGradientShape as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::RadialGradientShape>,
-                other: R<::bevy_ui::RadialGradientShape>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::RadialGradientShape as ::std::cmp::PartialEq<
-                            ::bevy_ui::RadialGradientShape,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "resolve",
-            |
-                _self: V<::bevy_ui::RadialGradientShape>,
-                position: V<::bevy_math::Vec2>,
-                scale_factor: f32,
-                physical_size: V<::bevy_math::Vec2>,
-                physical_target_size: V<::bevy_math::Vec2>|
-            {
-                let output: V<::bevy_math::Vec2> = {
-                    {
-                        let output: V<::bevy_math::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
-                                &_self,
-                                position.into_inner(),
-                                scale_factor,
-                                physical_size.into_inner(),
-                                physical_target_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the physical dimensions of the end shape of the radial gradient",
-            &[
-                "_self",
-                "position",
-                "scale_factor",
-                "physical_size",
-                "physical_target_size",
-            ],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::RadialGradientShape>, other: R<::bevy_ui::RadialGradientShape>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::RadialGradientShape as ::std::cmp::PartialEq<
+                        ::bevy_ui::RadialGradientShape,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "resolve",
+        |_self: V<::bevy_ui::RadialGradientShape>,
+         position: V<::bevy_math::Vec2>,
+         scale_factor: f32,
+         physical_size: V<::bevy_math::Vec2>,
+         physical_target_size: V<::bevy_math::Vec2>| {
+            let output: V<::bevy_math::Vec2> = {
+                {
+                    let output: V<::bevy_math::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
+                        &_self,
+                        position.into_inner(),
+                        scale_factor,
+                        physical_size.into_inner(),
+                        physical_target_size.into_inner(),
+                    )
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        " Resolve the physical dimensions of the end shape of the radial gradient",
+        &[
+            "_self",
+            "position",
+            "scale_factor",
+            "physical_size",
+            "physical_target_size",
+        ],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2999,106 +2941,97 @@ pub(crate) fn register_conic_gradient_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_gradient_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::Gradient,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::Gradient>| {
-                let output: V<::bevy_ui::Gradient> = {
-                    {
-                        let output: V<::bevy_ui::Gradient> = <::bevy_ui::Gradient as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::Gradient>, other: R<::bevy_ui::Gradient>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::Gradient as ::std::cmp::PartialEq<
-                            ::bevy_ui::Gradient,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "is_empty",
-            |_self: R<::bevy_ui::Gradient>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_ui::Gradient::is_empty(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if the gradient has no stops.",
-            &["_self"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Gradient>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::Gradient>| {
+            let output: V<::bevy_ui::Gradient> = {
+                {
+                    let output: V<::bevy_ui::Gradient> =
+                        <::bevy_ui::Gradient as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::Gradient>, other: R<::bevy_ui::Gradient>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::Gradient as ::std::cmp::PartialEq<
+                        ::bevy_ui::Gradient,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "is_empty",
+        |_self: R<::bevy_ui::Gradient>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_ui::Gradient::is_empty(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if the gradient has no stops.",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::Gradient,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::Gradient, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_background_gradient_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::BackgroundGradient,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::BackgroundGradient>| {
-                let output: V<::bevy_ui::BackgroundGradient> = {
-                    {
-                        let output: V<::bevy_ui::BackgroundGradient> = <::bevy_ui::BackgroundGradient as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::BackgroundGradient>| {
+            let output: V<::bevy_ui::BackgroundGradient> = {
+                {
+                    let output: V<::bevy_ui::BackgroundGradient> =
+                        <::bevy_ui::BackgroundGradient as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::BackgroundGradient>,
-                other: R<::bevy_ui::BackgroundGradient>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::BackgroundGradient as ::std::cmp::PartialEq<
-                            ::bevy_ui::BackgroundGradient,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::BackgroundGradient>, other: R<::bevy_ui::BackgroundGradient>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::BackgroundGradient as ::std::cmp::PartialEq<
+                        ::bevy_ui::BackgroundGradient,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -3266,11 +3199,7 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::Val2,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+    registry.register_type_data::<::bevy_ui::Val2, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_ui_transform_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3389,69 +3318,63 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::UiTransform,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::UiTransform, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_relative_cursor_position_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::RelativeCursorPosition,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::RelativeCursorPosition>| {
-                let output: V<::bevy_ui::RelativeCursorPosition> = {
-                    {
-                        let output: V<::bevy_ui::RelativeCursorPosition> = <::bevy_ui::RelativeCursorPosition as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::RelativeCursorPosition>| {
+            let output: V<::bevy_ui::RelativeCursorPosition> = {
+                {
+                    let output: V<::bevy_ui::RelativeCursorPosition> =
+                        <::bevy_ui::RelativeCursorPosition as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "cursor_over",
-            |_self: R<::bevy_ui::RelativeCursorPosition>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_ui::RelativeCursorPosition::cursor_over(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " A helper function to check if the mouse is over the node",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::RelativeCursorPosition>,
-                other: R<::bevy_ui::RelativeCursorPosition>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::RelativeCursorPosition as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "cursor_over",
+        |_self: R<::bevy_ui::RelativeCursorPosition>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        ::bevy_ui::RelativeCursorPosition::cursor_over(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " A helper function to check if the mouse is over the node",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::RelativeCursorPosition>,
+         other: R<::bevy_ui::RelativeCursorPosition>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui::RelativeCursorPosition as ::std::cmp::PartialEq<
                             ::bevy_ui::RelativeCursorPosition,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -3775,10 +3698,7 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::UiRect,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::UiRect, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_ignore_scroll_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3856,73 +3776,64 @@ pub(crate) fn register_layout_config_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_outline_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::Outline,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::Outline>| {
-                let output: V<::bevy_ui::Outline> = {
-                    {
-                        let output: V<::bevy_ui::Outline> = <::bevy_ui::Outline as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::Outline>, other: R<::bevy_ui::Outline>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::Outline as ::std::cmp::PartialEq<
-                            ::bevy_ui::Outline,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "new",
-            |
-                width: V<::bevy_ui::Val>,
-                offset: V<::bevy_ui::Val>,
-                color: V<::bevy_color::Color>|
-            {
-                let output: V<::bevy_ui::Outline> = {
-                    {
-                        let output: V<::bevy_ui::Outline> = ::bevy_ui::Outline::new(
-                                width.into_inner(),
-                                offset.into_inner(),
-                                color.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a new outline",
-            &["width", "offset", "color"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Outline>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::Outline>| {
+            let output: V<::bevy_ui::Outline> = {
+                {
+                    let output: V<::bevy_ui::Outline> =
+                        <::bevy_ui::Outline as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::Outline>, other: R<::bevy_ui::Outline>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::Outline as ::std::cmp::PartialEq<
+                        ::bevy_ui::Outline,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "new",
+        |width: V<::bevy_ui::Val>, offset: V<::bevy_ui::Val>, color: V<::bevy_color::Color>| {
+            let output: V<::bevy_ui::Outline> = {
+                {
+                    let output: V<::bevy_ui::Outline> = ::bevy_ui::Outline::new(
+                        width.into_inner(),
+                        offset.into_inner(),
+                        color.into_inner(),
+                    )
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        " Create a new outline",
+        &["width", "offset", "color"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::Outline,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::Outline, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_scroll_position_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4074,52 +3985,44 @@ pub(crate) fn register_align_self_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::AlignSelf,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::AlignSelf, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_repeated_grid_track_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::RepeatedGridTrack,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::RepeatedGridTrack>| {
-                let output: V<::bevy_ui::RepeatedGridTrack> = {
-                    {
-                        let output: V<::bevy_ui::RepeatedGridTrack> = <::bevy_ui::RepeatedGridTrack as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::RepeatedGridTrack>,
-                other: R<::bevy_ui::RepeatedGridTrack>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::RepeatedGridTrack as ::std::cmp::PartialEq<
-                            ::bevy_ui::RepeatedGridTrack,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::RepeatedGridTrack>| {
+            let output: V<::bevy_ui::RepeatedGridTrack> = {
+                {
+                    let output: V<::bevy_ui::RepeatedGridTrack> =
+                        <::bevy_ui::RepeatedGridTrack as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::RepeatedGridTrack>, other: R<::bevy_ui::RepeatedGridTrack>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::RepeatedGridTrack as ::std::cmp::PartialEq<
+                        ::bevy_ui::RepeatedGridTrack,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -4249,10 +4152,8 @@ pub(crate) fn register_align_items_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::AlignItems,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::AlignItems, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_box_sizing_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4312,10 +4213,7 @@ pub(crate) fn register_box_sizing_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::BoxSizing,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::BoxSizing, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_flex_direction_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4381,67 +4279,63 @@ pub(crate) fn register_flex_direction_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_flex_wrap_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::FlexWrap,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_ui::FlexWrap>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::FlexWrap as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::FlexWrap>| {
-                let output: V<::bevy_ui::FlexWrap> = {
-                    {
-                        let output: V<::bevy_ui::FlexWrap> = <::bevy_ui::FlexWrap as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::FlexWrap>, other: R<::bevy_ui::FlexWrap>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::FlexWrap as ::std::cmp::PartialEq<
-                            ::bevy_ui::FlexWrap,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::FlexWrap>::new(
+        world,
+    )
+    .register_documented(
+        "assert_receiver_is_total_eq",
+        |_self: R<::bevy_ui::FlexWrap>| {
+            let output: () = {
+                {
+                    let output: () =
+                        <::bevy_ui::FlexWrap as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::FlexWrap>| {
+            let output: V<::bevy_ui::FlexWrap> = {
+                {
+                    let output: V<::bevy_ui::FlexWrap> =
+                        <::bevy_ui::FlexWrap as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::FlexWrap>, other: R<::bevy_ui::FlexWrap>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::FlexWrap as ::std::cmp::PartialEq<
+                        ::bevy_ui::FlexWrap,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::FlexWrap,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::FlexWrap, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_grid_auto_flow_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4835,52 +4729,45 @@ pub(crate) fn register_grid_track_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::GridTrack,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::GridTrack, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_grid_track_repetition_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::GridTrackRepetition,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::GridTrackRepetition>| {
-                let output: V<::bevy_ui::GridTrackRepetition> = {
-                    {
-                        let output: V<::bevy_ui::GridTrackRepetition> = <::bevy_ui::GridTrackRepetition as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::GridTrackRepetition>| {
+            let output: V<::bevy_ui::GridTrackRepetition> = {
+                {
+                    let output: V<::bevy_ui::GridTrackRepetition> =
+                        <::bevy_ui::GridTrackRepetition as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::GridTrackRepetition>,
-                other: R<::bevy_ui::GridTrackRepetition>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::GridTrackRepetition as ::std::cmp::PartialEq<
-                            ::bevy_ui::GridTrackRepetition,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::GridTrackRepetition>, other: R<::bevy_ui::GridTrackRepetition>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::GridTrackRepetition as ::std::cmp::PartialEq<
+                        ::bevy_ui::GridTrackRepetition,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -5073,52 +4960,48 @@ pub(crate) fn register_justify_self_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::JustifySelf,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::JustifySelf, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_max_track_sizing_function_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::MaxTrackSizingFunction,
     >::new(world)
-        .register_documented(
-            "clone",
-            |mut _self: R<::bevy_ui::MaxTrackSizingFunction>| {
-                let output: V<::bevy_ui::MaxTrackSizingFunction> = {
-                    {
-                        let output: V<::bevy_ui::MaxTrackSizingFunction> = <::bevy_ui::MaxTrackSizingFunction as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |mut _self: R<::bevy_ui::MaxTrackSizingFunction>| {
+            let output: V<::bevy_ui::MaxTrackSizingFunction> = {
+                {
+                    let output: V<::bevy_ui::MaxTrackSizingFunction> =
+                        <::bevy_ui::MaxTrackSizingFunction as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                mut _self: R<::bevy_ui::MaxTrackSizingFunction>,
-                mut other: R<::bevy_ui::MaxTrackSizingFunction>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::MaxTrackSizingFunction as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |mut _self: R<::bevy_ui::MaxTrackSizingFunction>,
+         mut other: R<::bevy_ui::MaxTrackSizingFunction>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui::MaxTrackSizingFunction as ::std::cmp::PartialEq<
                             ::bevy_ui::MaxTrackSizingFunction,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -5131,43 +5014,41 @@ pub(crate) fn register_min_track_sizing_function_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::MinTrackSizingFunction,
     >::new(world)
-        .register_documented(
-            "clone",
-            |mut _self: R<::bevy_ui::MinTrackSizingFunction>| {
-                let output: V<::bevy_ui::MinTrackSizingFunction> = {
-                    {
-                        let output: V<::bevy_ui::MinTrackSizingFunction> = <::bevy_ui::MinTrackSizingFunction as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |mut _self: R<::bevy_ui::MinTrackSizingFunction>| {
+            let output: V<::bevy_ui::MinTrackSizingFunction> = {
+                {
+                    let output: V<::bevy_ui::MinTrackSizingFunction> =
+                        <::bevy_ui::MinTrackSizingFunction as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                mut _self: R<::bevy_ui::MinTrackSizingFunction>,
-                mut other: R<::bevy_ui::MinTrackSizingFunction>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::MinTrackSizingFunction as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |mut _self: R<::bevy_ui::MinTrackSizingFunction>,
+         mut other: R<::bevy_ui::MinTrackSizingFunction>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui::MinTrackSizingFunction as ::std::cmp::PartialEq<
                             ::bevy_ui::MinTrackSizingFunction,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -5177,232 +5058,217 @@ pub(crate) fn register_min_track_sizing_function_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_overflow_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::Overflow,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_ui::Overflow>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::Overflow as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clip",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Clip overflowing items on both axes",
-            &[],
-        )
-        .register_documented(
-            "clip_x",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_x()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Clip overflowing items on the x axis",
-            &[],
-        )
-        .register_documented(
-            "clip_y",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_y()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Clip overflowing items on the y axis",
-            &[],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::Overflow>| {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = <::bevy_ui::Overflow as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::Overflow>, other: R<::bevy_ui::Overflow>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::Overflow as ::std::cmp::PartialEq<
-                            ::bevy_ui::Overflow,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "hidden",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Hide overflowing items on both axes by influencing layout and then clipping",
-            &[],
-        )
-        .register_documented(
-            "hidden_x",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_x()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Hide overflowing items on the x axis by influencing layout and then clipping",
-            &[],
-        )
-        .register_documented(
-            "hidden_y",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_y()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Hide overflowing items on the y axis by influencing layout and then clipping",
-            &[],
-        )
-        .register_documented(
-            "is_visible",
-            |_self: R<::bevy_ui::Overflow>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_ui::Overflow::is_visible(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Overflow is visible on both axes",
-            &["_self"],
-        )
-        .register_documented(
-            "scroll",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &[],
-        )
-        .register_documented(
-            "scroll_x",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_x()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Scroll overflowing items on the x axis",
-            &[],
-        )
-        .register_documented(
-            "scroll_y",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_y()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Scroll overflowing items on the y axis",
-            &[],
-        )
-        .register_documented(
-            "visible",
-            || {
-                let output: V<::bevy_ui::Overflow> = {
-                    {
-                        let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::visible()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Show overflowing items on both axes",
-            &[],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Overflow>::new(
+        world,
+    )
+    .register_documented(
+        "assert_receiver_is_total_eq",
+        |_self: R<::bevy_ui::Overflow>| {
+            let output: () = {
+                {
+                    let output: () =
+                        <::bevy_ui::Overflow as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "clip",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip().into();
+                    output
+                }
+            };
+            output
+        },
+        " Clip overflowing items on both axes",
+        &[],
+    )
+    .register_documented(
+        "clip_x",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_x().into();
+                    output
+                }
+            };
+            output
+        },
+        " Clip overflowing items on the x axis",
+        &[],
+    )
+    .register_documented(
+        "clip_y",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_y().into();
+                    output
+                }
+            };
+            output
+        },
+        " Clip overflowing items on the y axis",
+        &[],
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::Overflow>| {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> =
+                        <::bevy_ui::Overflow as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::Overflow>, other: R<::bevy_ui::Overflow>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::Overflow as ::std::cmp::PartialEq<
+                        ::bevy_ui::Overflow,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "hidden",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden().into();
+                    output
+                }
+            };
+            output
+        },
+        " Hide overflowing items on both axes by influencing layout and then clipping",
+        &[],
+    )
+    .register_documented(
+        "hidden_x",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_x().into();
+                    output
+                }
+            };
+            output
+        },
+        " Hide overflowing items on the x axis by influencing layout and then clipping",
+        &[],
+    )
+    .register_documented(
+        "hidden_y",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_y().into();
+                    output
+                }
+            };
+            output
+        },
+        " Hide overflowing items on the y axis by influencing layout and then clipping",
+        &[],
+    )
+    .register_documented(
+        "is_visible",
+        |_self: R<::bevy_ui::Overflow>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_ui::Overflow::is_visible(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Overflow is visible on both axes",
+        &["_self"],
+    )
+    .register_documented(
+        "scroll",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll().into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &[],
+    )
+    .register_documented(
+        "scroll_x",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_x().into();
+                    output
+                }
+            };
+            output
+        },
+        " Scroll overflowing items on the x axis",
+        &[],
+    )
+    .register_documented(
+        "scroll_y",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_y().into();
+                    output
+                }
+            };
+            output
+        },
+        " Scroll overflowing items on the y axis",
+        &[],
+    )
+    .register_documented(
+        "visible",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::visible().into();
+                    output
+                }
+            };
+            output
+        },
+        " Show overflowing items on both axes",
+        &[],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::Overflow,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::Overflow, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_border_radius_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -6038,109 +5904,99 @@ pub(crate) fn register_global_z_index_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_z_index_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::ZIndex,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_ui::ZIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::ZIndex as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::ZIndex>::new(
+        world,
+    )
+    .register_documented(
+        "assert_receiver_is_total_eq",
+        |_self: R<::bevy_ui::ZIndex>| {
+            let output: () = {
+                {
+                    let output: () =
+                        <::bevy_ui::ZIndex as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::ZIndex>| {
-                let output: V<::bevy_ui::ZIndex> = {
-                    {
-                        let output: V<::bevy_ui::ZIndex> = <::bevy_ui::ZIndex as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::ZIndex>, other: R<::bevy_ui::ZIndex>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::ZIndex as ::std::cmp::PartialEq<
-                            ::bevy_ui::ZIndex,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::ZIndex>| {
+            let output: V<::bevy_ui::ZIndex> = {
+                {
+                    let output: V<::bevy_ui::ZIndex> =
+                        <::bevy_ui::ZIndex as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::ZIndex>, other: R<::bevy_ui::ZIndex>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::ZIndex as ::std::cmp::PartialEq<
+                        ::bevy_ui::ZIndex,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::ZIndex,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::ZIndex, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_resolved_border_radius_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ResolvedBorderRadius,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::ResolvedBorderRadius>| {
-                let output: V<::bevy_ui::ResolvedBorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::ResolvedBorderRadius> = <::bevy_ui::ResolvedBorderRadius as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::ResolvedBorderRadius>| {
+            let output: V<::bevy_ui::ResolvedBorderRadius> = {
+                {
+                    let output: V<::bevy_ui::ResolvedBorderRadius> =
+                        <::bevy_ui::ResolvedBorderRadius as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui::ResolvedBorderRadius>,
-                other: R<::bevy_ui::ResolvedBorderRadius>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::ResolvedBorderRadius as ::std::cmp::PartialEq<
-                            ::bevy_ui::ResolvedBorderRadius,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::ResolvedBorderRadius>, other: R<::bevy_ui::ResolvedBorderRadius>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::ResolvedBorderRadius as ::std::cmp::PartialEq<
+                        ::bevy_ui::ResolvedBorderRadius,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -6253,10 +6109,8 @@ pub(crate) fn register_border_color_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::BorderColor,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::BorderColor, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_box_shadow_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -6326,10 +6180,7 @@ pub(crate) fn register_box_shadow_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::BoxShadow,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::BoxShadow, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_shadow_style_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -6372,10 +6223,8 @@ pub(crate) fn register_shadow_style_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui::ShadowStyle,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui::ShadowStyle, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 impl Plugin for BevyUiScriptingPlugin {
     fn build(&self, app: &mut App) {

@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTextScriptingPlugin;
 pub(crate) fn register_font_hinting_functions(world: &mut World) {
@@ -199,10 +196,7 @@ pub(crate) fn register_justify_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_text::Justify,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_text::Justify, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_line_break_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -262,10 +256,8 @@ pub(crate) fn register_line_break_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_text::LineBreak,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_text::LineBreak, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_strikethrough_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -300,43 +292,39 @@ pub(crate) fn register_strikethrough_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::StrikethroughColor,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_text::StrikethroughColor>| {
-                let output: V<::bevy_text::StrikethroughColor> = {
-                    {
-                        let output: V<::bevy_text::StrikethroughColor> = <::bevy_text::StrikethroughColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_text::StrikethroughColor>| {
+            let output: V<::bevy_text::StrikethroughColor> = {
+                {
+                    let output: V<::bevy_text::StrikethroughColor> =
+                        <::bevy_text::StrikethroughColor as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_text::StrikethroughColor>,
-                other: R<::bevy_text::StrikethroughColor>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_text::StrikethroughColor as ::std::cmp::PartialEq<
-                            ::bevy_text::StrikethroughColor,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_text::StrikethroughColor>, other: R<::bevy_text::StrikethroughColor>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_text::StrikethroughColor as ::std::cmp::PartialEq<
+                        ::bevy_text::StrikethroughColor,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -386,10 +374,8 @@ pub(crate) fn register_text_color_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_text::TextColor,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_text::TextColor, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_text_font_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -488,10 +474,8 @@ pub(crate) fn register_text_font_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_text::TextFont,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_text::TextFont, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_text_layout_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -666,10 +650,8 @@ pub(crate) fn register_text_span_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_text::TextSpan,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_text::TextSpan, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_underline_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -695,10 +677,8 @@ pub(crate) fn register_underline_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_text::Underline,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_text::Underline, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_underline_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -926,23 +906,22 @@ pub(crate) fn register_glyph_atlas_location_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::GlyphAtlasLocation,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_text::GlyphAtlasLocation>| {
-                let output: V<::bevy_text::GlyphAtlasLocation> = {
-                    {
-                        let output: V<::bevy_text::GlyphAtlasLocation> = <::bevy_text::GlyphAtlasLocation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_text::GlyphAtlasLocation>| {
+            let output: V<::bevy_text::GlyphAtlasLocation> = {
+                {
+                    let output: V<::bevy_text::GlyphAtlasLocation> =
+                        <::bevy_text::GlyphAtlasLocation as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -955,23 +934,21 @@ pub(crate) fn register_positioned_glyph_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::PositionedGlyph,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_text::PositionedGlyph>| {
-                let output: V<::bevy_text::PositionedGlyph> = {
-                    {
-                        let output: V<::bevy_text::PositionedGlyph> = <::bevy_text::PositionedGlyph as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_text::PositionedGlyph>| {
+            let output: V<::bevy_text::PositionedGlyph> = {
+                {
+                    let output: V<::bevy_text::PositionedGlyph> =
+                        <::bevy_text::PositionedGlyph as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1358,43 +1335,40 @@ pub(crate) fn register_text_background_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::TextBackgroundColor,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_text::TextBackgroundColor>| {
-                let output: V<::bevy_text::TextBackgroundColor> = {
-                    {
-                        let output: V<::bevy_text::TextBackgroundColor> = <::bevy_text::TextBackgroundColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_text::TextBackgroundColor>| {
+            let output: V<::bevy_text::TextBackgroundColor> = {
+                {
+                    let output: V<::bevy_text::TextBackgroundColor> =
+                        <::bevy_text::TextBackgroundColor as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_text::TextBackgroundColor>,
-                other: R<::bevy_text::TextBackgroundColor>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_text::TextBackgroundColor as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_text::TextBackgroundColor>, other: R<::bevy_text::TextBackgroundColor>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_text::TextBackgroundColor as ::std::cmp::PartialEq<
                             ::bevy_text::TextBackgroundColor,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

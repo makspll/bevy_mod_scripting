@@ -1,41 +1,37 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevySpriteScriptingPlugin;
 pub(crate) fn register_sprite_picking_camera_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::SpritePickingCamera,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_sprite::SpritePickingCamera>| {
-                let output: V<::bevy_sprite::SpritePickingCamera> = {
-                    {
-                        let output: V<::bevy_sprite::SpritePickingCamera> = <::bevy_sprite::SpritePickingCamera as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_sprite::SpritePickingCamera>| {
+            let output: V<::bevy_sprite::SpritePickingCamera> = {
+                {
+                    let output: V<::bevy_sprite::SpritePickingCamera> =
+                        <::bevy_sprite::SpritePickingCamera as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -48,23 +44,22 @@ pub(crate) fn register_sprite_picking_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::SpritePickingMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |mut _self: R<::bevy_sprite::SpritePickingMode>| {
-                let output: V<::bevy_sprite::SpritePickingMode> = {
-                    {
-                        let output: V<::bevy_sprite::SpritePickingMode> = <::bevy_sprite::SpritePickingMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |mut _self: R<::bevy_sprite::SpritePickingMode>| {
+            let output: V<::bevy_sprite::SpritePickingMode> = {
+                {
+                    let output: V<::bevy_sprite::SpritePickingMode> =
+                        <::bevy_sprite::SpritePickingMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -109,10 +104,8 @@ pub(crate) fn register_text_2_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_sprite::Text2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_sprite::Text2d, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_sprite_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -155,10 +148,8 @@ pub(crate) fn register_sprite_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_sprite::Sprite,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_sprite::Sprite, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -379,43 +370,40 @@ pub(crate) fn register_slice_scale_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::SliceScaleMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |mut _self: R<::bevy_sprite::SliceScaleMode>| {
-                let output: V<::bevy_sprite::SliceScaleMode> = {
-                    {
-                        let output: V<::bevy_sprite::SliceScaleMode> = <::bevy_sprite::SliceScaleMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |mut _self: R<::bevy_sprite::SliceScaleMode>| {
+            let output: V<::bevy_sprite::SliceScaleMode> = {
+                {
+                    let output: V<::bevy_sprite::SliceScaleMode> =
+                        <::bevy_sprite::SliceScaleMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                mut _self: R<::bevy_sprite::SliceScaleMode>,
-                mut other: R<::bevy_sprite::SliceScaleMode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::SliceScaleMode as ::std::cmp::PartialEq<
-                            ::bevy_sprite::SliceScaleMode,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |mut _self: R<::bevy_sprite::SliceScaleMode>,
+         mut other: R<::bevy_sprite::SliceScaleMode>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_sprite::SliceScaleMode as ::std::cmp::PartialEq<
+                        ::bevy_sprite::SliceScaleMode,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -428,43 +416,38 @@ pub(crate) fn register_texture_slicer_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::TextureSlicer,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_sprite::TextureSlicer>| {
-                let output: V<::bevy_sprite::TextureSlicer> = {
-                    {
-                        let output: V<::bevy_sprite::TextureSlicer> = <::bevy_sprite::TextureSlicer as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_sprite::TextureSlicer>,
-                other: R<::bevy_sprite::TextureSlicer>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::TextureSlicer as ::std::cmp::PartialEq<
-                            ::bevy_sprite::TextureSlicer,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_sprite::TextureSlicer>| {
+            let output: V<::bevy_sprite::TextureSlicer> = {
+                {
+                    let output: V<::bevy_sprite::TextureSlicer> =
+                        <::bevy_sprite::TextureSlicer as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_sprite::TextureSlicer>, other: R<::bevy_sprite::TextureSlicer>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_sprite::TextureSlicer as ::std::cmp::PartialEq<
+                        ::bevy_sprite::TextureSlicer,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -477,43 +460,41 @@ pub(crate) fn register_sprite_scaling_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::SpriteScalingMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |mut _self: R<::bevy_sprite::SpriteScalingMode>| {
-                let output: V<::bevy_sprite::SpriteScalingMode> = {
-                    {
-                        let output: V<::bevy_sprite::SpriteScalingMode> = <::bevy_sprite::SpriteScalingMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |mut _self: R<::bevy_sprite::SpriteScalingMode>| {
+            let output: V<::bevy_sprite::SpriteScalingMode> = {
+                {
+                    let output: V<::bevy_sprite::SpriteScalingMode> =
+                        <::bevy_sprite::SpriteScalingMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                mut _self: R<::bevy_sprite::SpriteScalingMode>,
-                mut other: R<::bevy_sprite::SpriteScalingMode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::SpriteScalingMode as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |mut _self: R<::bevy_sprite::SpriteScalingMode>,
+         mut other: R<::bevy_sprite::SpriteScalingMode>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_sprite::SpriteScalingMode as ::std::cmp::PartialEq<
                             ::bevy_sprite::SpriteScalingMode,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -580,10 +561,8 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_sprite::Anchor,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_sprite::Anchor, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_text_2_d_shadow_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
