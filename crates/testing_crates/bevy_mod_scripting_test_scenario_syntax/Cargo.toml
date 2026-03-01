@@ -1,5 +1,6 @@
 [package]
 name = "bevy_mod_scripting_test_scenario_syntax"
+description = "serde models for scenario syntax as used by the bevy_mod_scripting framework"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
