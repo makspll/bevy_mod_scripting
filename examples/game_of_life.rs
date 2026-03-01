@@ -167,9 +167,6 @@ impl Default for Settings {
 pub fn register_script_functions(app: &mut App) -> &mut App {
     let world = app.world_mut();
     NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
-        .register("info", |s: String| {
-            bevy::log::info!(s);
-        })
         .register("rand", rand::random::<f32>);
     app
 }

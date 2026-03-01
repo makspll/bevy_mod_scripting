@@ -13,7 +13,6 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(BMSPlugin)
-        .add_plugins(add_logging)
         .add_systems(
             Startup,
             move |asset_server: Res<AssetServer>, mut commands: Commands| {
@@ -26,26 +25,6 @@ fn main() {
         )
         .add_systems(Update, info_on_asset_event::<ScriptAsset>())
         .run();
-}
-
-fn add_logging(app: &mut App) {
-    let world = app.world_mut();
-    NamespaceBuilder::<World>::new_unregistered(world)
-        .register("info", |s: String| {
-            bevy::log::info!("{}", s);
-        })
-        .register("warn", |s: String| {
-            bevy::log::warn!("{}", s);
-        })
-        .register("error", |s: String| {
-            bevy::log::error!("{}", s);
-        })
-        .register("debug", |s: String| {
-            bevy::log::debug!("{}", s);
-        })
-        .register("trace", |s: String| {
-            bevy::log::trace!("{}", s);
-        });
 }
 
 pub fn info_on_asset_event<T: Asset>() -> impl FnMut(MessageReader<AssetEvent<T>>) {

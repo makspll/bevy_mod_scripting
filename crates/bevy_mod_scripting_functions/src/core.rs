@@ -1372,6 +1372,37 @@ impl GlobalNamespace {
         // to avoid clippy unused errors.
         println!("dummy called!: {callback:?}, {function:?}");
     }
+
+    /// Logs a `Information` level message to the console
+    /// Arguments:
+    /// * `message`: the message to log
+    fn info(message: String) {
+        bevy_log::info!(message)
+    }
+
+    /// Logs a `Warning` level message to the console
+    /// * `message`: the message to log
+    fn warn(message: String) {
+        bevy_log::warn!(message)
+    }
+
+    /// Logs a `Error` level message to the console
+    /// * `message`: the message to log
+    fn error(message: String) {
+        bevy_log::error!(message)
+    }
+
+    /// Logs a `Debug` level message to the console
+    /// * `message`: the message to log
+    fn debug(message: String) {
+        bevy_log::debug!(message)
+    }
+
+    /// Logs a `Trace` level message to the console
+    /// * `message`: the message to log
+    fn trace(message: String) {
+        bevy_log::trace!(message)
+    }
 }
 
 /// Globals registered by us

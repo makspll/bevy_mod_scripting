@@ -61,6 +61,7 @@ bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.19.0
 bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 bevy_app = { workspace = true }
 bevy_asset = { workspace = true }
+bevy_log = { workspace = true }
 bevy_platform = { workspace = true, features = ["std"] }
 bevy_reflect = { workspace = true, features = [] }
 
