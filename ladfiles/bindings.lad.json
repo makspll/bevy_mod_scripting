@@ -31003,6 +31003,73 @@
         "is_operator": false
       }
     },
+    "::debug": {
+      "namespace": null,
+      "identifier": "debug",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "name": "message"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "tuple": []
+        }
+      },
+      "documentation": "Logs a `Debug` level message to the console\n* `message`: the message to log",
+      "metadata": {
+        "is_operator": true
+      }
+    },
+    "::error": {
+      "namespace": null,
+      "identifier": "error",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "name": "message"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "tuple": []
+        }
+      },
+      "documentation": "Logs a `Error` level message to the console\n* `message`: the message to log",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "::info": {
+      "namespace": null,
+      "identifier": "info",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "the message to log",
+          "name": "message"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "tuple": []
+        }
+      },
+      "documentation": "Logs a `Information` level message to the console",
+      "metadata": {
+        "is_operator": false
+      }
+    },
     "::register_callback": {
       "namespace": null,
       "identifier": "register_callback",
@@ -31063,6 +31130,50 @@
         "name": "builder"
       },
       "documentation": "Creates a new script system builder, which can be used to add new systems to the world.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "::trace": {
+      "namespace": null,
+      "identifier": "trace",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "name": "message"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "tuple": []
+        }
+      },
+      "documentation": "Logs a `Trace` level message to the console\n* `message`: the message to log",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "::warn": {
+      "namespace": null,
+      "identifier": "warn",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "name": "message"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "tuple": []
+        }
+      },
+      "documentation": "Logs a `Warning` level message to the console\n* `message`: the message to log",
       "metadata": {
         "is_operator": false
       }
