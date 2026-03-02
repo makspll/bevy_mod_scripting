@@ -199,9 +199,9 @@ pub trait GetFunctionTypeDependencies<Marker> {
 
 macro_rules! impl_script_function_type_dependencies{
     ($( $param:ident ),* ) => {
-        impl<F, $( $param,)* O > GetFunctionTypeDependencies<fn($($param),*) -> O> for F where
+        impl<F, $( $param,)* O > GetFunctionTypeDependencies<fn(($($param,)*)) -> O> for F where
             O: GetTypeDependencies,
-            F: Fn( $( $param ),* ) -> O,
+            F: Fn( FunctionCallContext, ($( $param ,)*) ) -> O,
             $(
                 $param: GetTypeDependencies,
             )*

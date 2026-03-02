@@ -7,7 +7,7 @@ use bevy_mod_scripting_display::{
 };
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::VecDeque};
 
 use super::{
     ReflectReference,
@@ -32,7 +32,7 @@ pub enum ScriptValue {
     /// Represents a string value.
     String(Cow<'static, str>),
     /// Represents a list of other things passed by value
-    List(Vec<ScriptValue>),
+    List(VecDeque<ScriptValue>),
     /// Represents a map of other things passed by value
     Map(HashMap<String, ScriptValue>),
     /// Represents a reference to a value.
@@ -57,6 +57,7 @@ impl DisplayWithTypeInfo for ScriptValue {
             ScriptValue::Integer(v) => write!(f, "{v}"),
             ScriptValue::Float(v) => write!(f, "{v}"),
             ScriptValue::String(v) => write!(f, "{v}"),
+
             ScriptValue::List(v) => {
                 f.write_str("[")?;
                 let mut first = true;
@@ -187,8 +188,8 @@ impl From<Cow<'static, str>> for ScriptValue {
 }
 
 #[profiling::all_functions]
-impl From<Vec<ScriptValue>> for ScriptValue {
-    fn from(value: Vec<ScriptValue>) -> Self {
+impl From<VecDeque<ScriptValue>> for ScriptValue {
+    fn from(value: VecDeque<ScriptValue>) -> Self {
         ScriptValue::List(value)
     }
 }

@@ -19,7 +19,10 @@ pub fn script_bindings(
     for i in &impl_block.items {
         match i {
             syn::ImplItem::Fn(impl_item_fn) => {
-                let fun = impl_fn_to_namespace_builder_registration(impl_item_fn);
+                let fun = impl_fn_to_namespace_builder_registration(
+                    impl_item_fn,
+                    &args.bms_bindings_path,
+                );
                 function_registrations.push(fun);
             }
             _ => continue,

@@ -8,12 +8,30 @@ use bevy_reflect::{FromReflect, Reflect};
 use nonmax::NonMaxU32;
 use std::{
     any::TypeId,
+    collections::VecDeque,
     ffi::OsString,
     ops::{Deref, DerefMut},
     path::PathBuf,
 };
 
 use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
+
+/// Describes the procedure for constructing a value of type `T` from many [`ScriptValue`] instances.
+///
+/// The [`FromScript::This`] associated type is used to allow for the implementation of this trait to return
+/// a type with the lifetime of the world guard. In 99% cases you can just use `Self` as the associated type.
+pub trait FromScriptMulti {
+    /// The type that is constructed from the script value.
+    type This<'w>;
+
+    /// Produces `[FromScriptMulti::This]` value given a list of [`ScriptValue`]'s
+    fn from_script_multi(
+        value: VecDeque<ScriptValue>,
+        world: WorldGuard<'_>,
+    ) -> Result<Self::This<'_>, InteropError>
+    where
+        Self: Sized;
+}
 
 /// Describes the procedure for constructing a value of type `T` from a [`ScriptValue`].
 ///
@@ -495,8 +513,16 @@ macro_rules! impl_from_script_hashmap {
                     ScriptValue::List(list) => {
                         let mut hashmap = <$hashmap_type>::new();
                         for elem in list {
-                            let (key, val) = <(String, V)>::from_script(elem, world.clone())?;
-                            hashmap.insert(key, val);
+                            if let ScriptValue::List(inner) = elem {
+                                let (key, val) =
+                                    <(String, V)>::from_script_multi(inner.into(), world.clone())?;
+                                hashmap.insert(key, val.into());
+                            } else {
+                                return Err(InteropError::value_mismatch(
+                                    std::any::TypeId::of::<V>(),
+                                    elem,
+                                ));
+                            }
                         }
                         Ok(hashmap)
                     }
@@ -615,44 +641,100 @@ where
     }
 }
 
-macro_rules! impl_from_script_tuple {
+// macro_rules! impl_from_script_tuple {
+//     ($($ty:ident),*) => {
+//         #[allow(non_snake_case)]
+//         #[profiling::all_functions]
+//         impl<$($ty: FromScript),*> FromScript for ($($ty,)*)
+//         where
+//             Self: 'static,
+//             $(
+//                 for<'w> $ty::This<'w>: Into<$ty>,
+//             )*
+//         {
+//             type This<'w> = Self;
+
+//             fn from_script(value: ScriptValue, world: WorldGuard<'_>) -> Result<Self, InteropError> {
+//                 match value {
+//                     ScriptValue::List(list) => {
+//                         let expected_arg_count = $crate::function::script_function::count!( $($ty)* );
+//                         if list.len() != expected_arg_count {
+//                             return Err(InteropError::length_mismatch(expected_arg_count, list.len()));
+//                         }
+
+//                         let mut iter = list.into_iter();
+//                         $(
+//                             let next_item = iter.next().ok_or_else(|| InteropError::invariant("list has right amount of elements"))?;
+//                             let $ty = $ty::from_script(next_item, world.clone())?.into();
+//                         )*
+
+//                         Ok(($($ty,)*))
+//                     }
+//                     _ => Err(InteropError::value_mismatch(
+//                         std::any::TypeId::of::<Self>(),
+//                         value,
+//                     )),
+//                 }
+//             }
+//         }
+//     };
+// }
+
+// variadics_please::all_tuples!(impl_from_script_tuple, 1, 14, T);
+
+macro_rules! impl_from_script_multi_tuple {
     ($($ty:ident),*) => {
         #[allow(non_snake_case)]
         #[profiling::all_functions]
-        impl<$($ty: FromScript),*> FromScript for ($($ty,)*)
+        impl<$($ty),*> FromScriptMulti for ($($ty,)*)
         where
-            Self: 'static,
             $(
-                for<'w> $ty::This<'w>: Into<$ty>,
+                $ty: FromScript,
             )*
+            Self: 'static
         {
-            type This<'w> = Self;
+            type This<'w> = (
+                $($ty::This<'w>,)*
+            );
 
-            fn from_script(value: ScriptValue, world: WorldGuard<'_>) -> Result<Self, InteropError> {
-                match value {
-                    ScriptValue::List(list) => {
-                        let expected_arg_count = $crate::function::script_function::count!( $($ty)* );
-                        if list.len() != expected_arg_count {
-                            return Err(InteropError::length_mismatch(expected_arg_count, list.len()));
-                        }
+            fn from_script_multi(
+                value: VecDeque<ScriptValue>,
+                world: WorldGuard<'_>,
+            ) -> Result<Self::This<'_>, InteropError> {
+                let expected_arg_count = $crate::function::script_function::count!( $($ty)* );
 
-                        let mut iter = list.into_iter();
-                        $(
-                            let next_item = iter.next().ok_or_else(|| InteropError::invariant("list has right amount of elements"))?;
-                            let $ty = $ty::from_script(next_item, world.clone())?.into();
-                        )*
-
-
-                        Ok(($($ty,)*))
-                    }
-                    _ => Err(InteropError::value_mismatch(
-                        std::any::TypeId::of::<Self>(),
-                        value,
-                    )),
+                if value.len() != expected_arg_count {
+                    return Err(InteropError::length_mismatch(expected_arg_count, value.len()));
                 }
+
+                let mut iter = value.into_iter();
+
+                $(
+                    let next_item = iter.next().ok_or_else(|| {
+                        InteropError::invariant("list has right amount of elements")
+                    })?;
+
+                    let $ty = $ty::from_script(next_item, world.clone())?;
+                )*
+
+                Ok(($($ty,)*))
             }
         }
     };
 }
 
-variadics_please::all_tuples!(impl_from_script_tuple, 1, 14, T);
+impl<T: FromScript> FromScriptMulti for T {
+    type This<'w> = T::This<'w>;
+
+    fn from_script_multi<'w>(
+        mut value: VecDeque<ScriptValue>,
+        world: WorldGuard<'w>,
+    ) -> Result<Self::This<'w>, InteropError>
+    where
+        Self: Sized,
+    {
+        T::from_script(value.pop_front().unwrap_or_default(), world)
+    }
+}
+
+variadics_please::all_tuples!(impl_from_script_multi_tuple, 1, 14, T);

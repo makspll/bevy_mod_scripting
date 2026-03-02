@@ -1,9 +1,8 @@
 //! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
 
 use super::MagicFunctions;
-use super::{from::FromScript, into::IntoScript, namespace::Namespace};
+use super::{from::FromScriptMulti, into::IntoScriptMulti, namespace::Namespace};
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
-use crate::function::arg_meta::ArgMeta;
 use crate::{ScriptValue, ThreadWorldContainer, WorldGuard, error::InteropError};
 use bevy_ecs::prelude::Resource;
 use bevy_mod_scripting_asset::Language;
@@ -602,124 +601,91 @@ impl ScriptFunctionRegistry {
         );
     }
 }
-
 macro_rules! count {
         () => (0usize);
         ( $x:tt $($xs:tt)* ) => (1usize + $crate::function::script_function::count!($($xs)*));
 }
-
 pub(crate) use count;
 
-macro_rules! impl_script_function {
-
-    ($( $param:ident ),* ) => {
-        // all of this is pretty heavy on the compile time.
-        // ideally we'd do less, but for now this will suffice
-
-        // Fn(T1...Tn) -> O
-        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : -> O => O );
-        // FnMut(T1...Tn) -> O
-        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : -> O => O );
-
-        // Fn(CallerContext, T1...Tn) -> O
-        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : (context: FunctionCallContext) -> O => O);
-        // FnMut(FunctionCallContext, T1...Tn) -> O
-        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : (context: FunctionCallContext) -> O => O);
-
-        // Fn(T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : -> O => Result<O, InteropError> where s);
-        // FnMut(T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : -> O => Result<O, InteropError> where s);
-
-        // Fn(FunctionCallContext, WorldGuard<'w>, T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : (context: FunctionCallContext)-> O => Result<O, InteropError> where s);
-        // FnMut(FunctionCallContext, WorldGuard<'w>, T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : (context: FunctionCallContext) -> O => Result<O, InteropError> where s);
-
-
-    };
-
-    (@ $trait_type:ident $fn_type:ident $dynamic_type:ident $trait_fn_name:ident $( $param:ident ),* :  $(($context:ident: $contextty:ty))? -> O => $res:ty $(where $out:ident)?) => {
-        #[allow(non_snake_case)]
-        impl<
-            'env,
-            $( $param: FromScript + ArgMeta,)*
-            O,
-            F
-        > $trait_type<'env,
-            fn( $($contextty,)? $($param ),* ) -> $res
-        > for F
-        where
-            O: IntoScript,
-            F: $fn_type(  $($contextty,)? $($param ),* ) -> $res + Send + Sync + 'static,
-            $( $param::This<'env>: Into<$param>,)*
-        {
-            #[allow(unused_mut,unused_variables)]
-            #[profiling::function]
-            fn $trait_fn_name(mut self) -> $dynamic_type {
-
-                let func = (move |caller_context: FunctionCallContext, mut args: VecDeque<ScriptValue> | {
-                    let res: Result<ScriptValue, InteropError> = (|| {
-                        profiling::scope!("script function call mechanism");
-                        let received_args_len = args.len();
-                        let expected_arg_count = count!($($param )*);
-
-                        $( let $context = caller_context.clone(); )?
-                        let world = caller_context.world()?;
-                        // Safety: we're not holding any references to the world, the arguments which might have aliased will always be dropped
-                        let ret: Result<ScriptValue, InteropError> = unsafe {
-                            world.with_access_scope(||{
-                                let mut current_arg = 0;
-
-                                $(let $param = {
-                                        profiling::scope!("argument conversion", &format!("argument #{}", current_arg));
-                                        current_arg += 1;
-                                        let $param = args.pop_front();
-                                        let $param = match $param {
-                                            Some($param) => $param,
-                                            None => {
-                                                if let Some(default) = <$param>::default_value() {
-                                                    default
-                                                } else {
-                                                    return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
-                                                }
-                                            }
-                                        };
-                                        let $param = <$param>::from_script($param, world.clone())
-                                            .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
-                                        $param
-                                    };
-                                )*
-
-                                let ret = {
-                                    let out = {
-                                        profiling::scope!("function call");
-                                        self( $( $context,)?  $( $param.into(), )* )
-                                    };
-
-                                    $(
-                                        let $out = out?;
-                                        let out = $out;
-                                    )?
-                                    profiling::scope!("return type conversion");
-                                    out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
-                                };
-                                ret
-                            })?
-                        };
-                        ret
-                    })();
-                    let script_value: ScriptValue = res.into();
-                    script_value
-                });
-
-                func.into()
-            }
-        }
-    };
+trait ScriptFunctionOutput {
+    fn into_values(self, world: WorldGuard) -> Result<VecDeque<ScriptValue>, InteropError>;
 }
 
-variadics_please::all_tuples!(impl_script_function, 0, 13, T);
+impl<T: IntoScriptMulti> ScriptFunctionOutput for T {
+    fn into_values(self, world: WorldGuard) -> Result<VecDeque<ScriptValue>, InteropError> {
+        self.into_script_multi(world)
+    }
+}
+
+impl<T: IntoScriptMulti> ScriptFunctionOutput for Result<T, InteropError> {
+    fn into_values(self, world: WorldGuard) -> Result<VecDeque<ScriptValue>, InteropError> {
+        self?.into_script_multi(world)
+    }
+}
+
+impl<'env, F, Args, Out> ScriptFunction<'env, fn(Args) -> Out> for F
+where
+    Args: FromScriptMulti<This<'env> = Args>,
+    Out: ScriptFunctionOutput,
+    F: Fn(FunctionCallContext, Args) -> Out + Send + Sync + 'static,
+{
+    #[profiling::function]
+    fn into_dynamic_script_function(self) -> DynamicScriptFunction {
+        let func = move |caller_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
+            let result: Result<ScriptValue, InteropError> = (|| {
+                let world = caller_context.world()?;
+
+                let values = unsafe {
+                    world.with_access_scope(|| {
+                        let args_vec: VecDeque<_> = args;
+                        let args = Args::from_script_multi(args_vec, world.clone())?;
+
+                        let ret = self(caller_context, args);
+                        ret.into_values(world.clone())
+                    })?
+                };
+
+                Ok(ScriptValue::List(values?))
+            })();
+
+            result.into()
+        };
+
+        func.into()
+    }
+}
+
+impl<'env, F, Args, Out> ScriptFunctionMut<'env, fn(Args) -> Out> for F
+where
+    Args: FromScriptMulti<This<'env> = Args>,
+    Out: ScriptFunctionOutput,
+    F: FnMut(FunctionCallContext, Args) -> Out + Send + Sync + 'static,
+{
+    #[profiling::function]
+    fn into_dynamic_script_function_mut(mut self) -> DynamicScriptFunctionMut {
+        let func = move |caller_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
+            let result: Result<ScriptValue, InteropError> = (|| {
+                let world = caller_context.world()?;
+
+                let values = unsafe {
+                    world.with_access_scope(|| {
+                        let args_vec: VecDeque<_> = args;
+                        let args = Args::from_script_multi(args_vec, world.clone())?;
+
+                        let ret = self(caller_context, args);
+                        ret.into_values(world.clone())
+                    })?
+                };
+
+                Ok(ScriptValue::List(values?))
+            })();
+
+            result.into()
+        };
+
+        func.into()
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -744,7 +710,7 @@ mod test {
     #[test]
     fn test_register_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
-        let fn_ = |a: usize, b: usize| a + b;
+        let fn_ = |_: FunctionCallContext, (a, b): (usize, usize)| a + b;
 
         let namespace = Namespace::Global;
         registry.register(namespace, "test", fn_);
@@ -758,7 +724,7 @@ mod test {
 
     #[test]
     fn test_optional_argument_not_required() {
-        let fn_ = |a: usize, b: Option<usize>| a + b.unwrap_or(0);
+        let fn_ = |_: FunctionCallContext, (a, b): (usize, Option<usize>)| a + b.unwrap_or(0);
         let script_function = fn_.into_dynamic_script_function();
 
         with_local_world(|| {
@@ -775,7 +741,7 @@ mod test {
 
     #[test]
     fn test_invalid_amount_of_args_errors_nicely() {
-        let fn_ = |a: usize, b: usize| a + b;
+        let fn_ = |_: FunctionCallContext, (a, b): (usize, usize)| a + b;
         let script_function = fn_.into_dynamic_script_function();
 
         with_local_world(|| {
@@ -816,7 +782,7 @@ mod test {
         #[derive(Component, Reflect)]
         struct Comp;
 
-        let fn_ = |_a: crate::function::from::M<Comp>| 0usize;
+        let fn_ = |_: FunctionCallContext, _a: crate::function::from::M<Comp>| 0usize;
         let script_function = fn_.into_dynamic_script_function();
 
         with_local_world(|| {
@@ -835,10 +801,10 @@ mod test {
     #[test]
     fn test_overloaded_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
-        let fn_ = |a: usize, b: usize| a + b;
+        let fn_ = |_: FunctionCallContext, (a, b): (usize, usize)| a + b;
         let namespace = Namespace::Global;
         registry.register(namespace, "test", fn_);
-        let fn_2 = |a: usize, b: i32| a + (b as usize);
+        let fn_2 = |_: FunctionCallContext, (a, b): (usize, isize)| a + (b as usize);
         registry.register(namespace, "test", fn_2);
 
         let first_function = registry
@@ -861,10 +827,10 @@ mod test {
     #[test]
     fn test_overwrite_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
-        let fn_ = |a: usize, b: usize| a + b;
+        let fn_ = |_: FunctionCallContext, (a, b): (usize, usize)| a + b;
         let namespace = Namespace::Global;
         registry.register(namespace, "test", fn_);
-        let fn_2 = |a: usize, b: i32| a + (b as usize);
+        let fn_2 = |_: FunctionCallContext, (a, b): (usize, i32)| a + (b as usize);
         registry.overwrite(namespace, "test", fn_2);
 
         let all_functions = registry
@@ -879,7 +845,7 @@ mod test {
     #[test]
     fn test_remove_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
-        let fn_ = |a: usize, b: usize| a + b;
+        let fn_ = |_: FunctionCallContext, (a, b): (usize, usize)| a + b;
         let namespace = Namespace::Global;
         registry.register(namespace, "test", fn_);
         let removed = registry.remove(namespace, "test");
@@ -891,10 +857,10 @@ mod test {
     #[test]
     fn test_remove_all_overloads() {
         let mut registry = ScriptFunctionRegistry::default();
-        let fn_ = |a: usize, b: usize| a + b;
+        let fn_ = |_: FunctionCallContext, (a, b): (usize, usize)| a + b;
         let namespace = Namespace::Global;
         registry.register(namespace, "test", fn_);
-        let fn_2 = |a: usize, b: i32| a + (b as usize);
+        let fn_2 = |_: FunctionCallContext, (a, b): (usize, i32)| a + (b as usize);
         registry.register(namespace, "test", fn_2);
 
         let removed = registry

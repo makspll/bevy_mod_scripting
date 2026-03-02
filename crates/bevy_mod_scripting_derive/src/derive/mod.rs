@@ -7,7 +7,7 @@ mod typed_through;
 
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote_spanned};
-use syn::{Ident, ImplItemFn, ItemImpl};
+use syn::{FnArg, Ident, ImplItemFn, ItemImpl, LitStr, Path, Type};
 
 pub use self::{
     debug_with_type_info::debug_with_type_info, get_type_dependencies::get_type_dependencies,
@@ -15,19 +15,29 @@ pub use self::{
     typed_through::typed_through,
 };
 
-pub(crate) fn impl_fn_to_namespace_builder_registration(fun: &ImplItemFn) -> TokenStream {
+pub(crate) fn impl_fn_to_namespace_builder_registration(
+    fun: &ImplItemFn,
+    bevy_bindings_path: &Path,
+) -> TokenStream {
     process_impl_fn(
         fun,
         Ident::new("register_documented", Span::call_site()),
         true,
+        true,
+        bevy_bindings_path,
     )
 }
 
-pub(crate) fn impl_fn_to_global_registry_registration(fun: &ImplItemFn) -> TokenStream {
+pub(crate) fn impl_fn_to_global_registry_registration(
+    fun: &ImplItemFn,
+    bevy_bindings_path: &Path,
+) -> TokenStream {
     process_impl_fn(
         fun,
         Ident::new("register_documented", Span::call_site()),
         false,
+        false,
+        bevy_bindings_path,
     )
 }
 
@@ -53,18 +63,15 @@ fn process_impl_fn(
     fun: &ImplItemFn,
     generated_name: Ident,
     include_arg_names: bool,
+    include_context_arg: bool,
+    bevy_bindings_path: &Path,
 ) -> TokenStream {
     let args = &fun.sig.inputs;
     let fun_span = fun.sig.ident.span();
 
     let args_names = match include_arg_names {
         true => {
-            let args = args.iter().map(|arg| match arg {
-                syn::FnArg::Receiver(_) => syn::LitStr::new("self", Span::call_site()),
-                syn::FnArg::Typed(pat_type) => {
-                    syn::LitStr::new(&stringify_pat_type(&pat_type.pat), Span::call_site())
-                }
-            });
+            let args = args.iter().map(arg_name);
 
             quote_spanned!(fun_span=>
                 &[#(#args),*]
@@ -86,16 +93,82 @@ fn process_impl_fn(
             #ty
         },
     };
+
+    let is_func_call_context =
+        |arg| arg_ty_ident(arg).is_some_and(|id| id == "FunctionCallContext");
+
+    let call_context_arg_name = args
+        .iter()
+        .find(|a| is_func_call_context(a))
+        .map(arg_ident)
+        .unwrap_or(Ident::new("_caller_context", Span::call_site()));
+
+    let (arg_names, arg_tys) =
+        collect_fn_args_tuple(args.into_iter().filter(|a| !is_func_call_context(a)));
+
+    let context_arg = if include_context_arg {
+        quote_spanned! {fun_span=>
+            #call_context_arg_name: #bevy_bindings_path::FunctionCallContext,
+        }
+    } else {
+        Default::default()
+    };
+
     quote_spanned! {fun_span=>
         .#generated_name(
             #fun_name,
-            |#args| {
+            #[allow(unused_parens)]
+            |#context_arg (#(#arg_names),*): (#(#arg_tys),*)| {
                 let output: #out_type = {#body};
                 output
             },
             #docstring,
             #args_names
         )
+    }
+}
+
+pub(crate) fn collect_fn_args_tuple<'a>(
+    args: impl IntoIterator<Item = &'a FnArg>,
+) -> (Vec<Ident>, Vec<&'a Type>) {
+    let mut names = Vec::<Ident>::default();
+    let mut tys = Vec::<&'a Type>::default();
+    for a in args {
+        names.push(arg_ident(a));
+        tys.push(arg_ty(a));
+    }
+    (names, tys)
+}
+
+pub(crate) fn arg_name(arg: &FnArg) -> LitStr {
+    match arg {
+        syn::FnArg::Receiver(_) => LitStr::new("self", Span::call_site()),
+        syn::FnArg::Typed(pat_type) => {
+            LitStr::new(&stringify_pat_type(&pat_type.pat), Span::call_site())
+        }
+    }
+}
+
+pub(crate) fn arg_ident(arg: &FnArg) -> Ident {
+    match arg {
+        syn::FnArg::Receiver(_) => Ident::new("self", Span::call_site()),
+        syn::FnArg::Typed(pat_type) => {
+            Ident::new(&stringify_pat_type(&pat_type.pat), Span::call_site())
+        }
+    }
+}
+
+pub(crate) fn arg_ty(arg: &FnArg) -> &Type {
+    match arg {
+        syn::FnArg::Receiver(r) => &r.ty,
+        syn::FnArg::Typed(pat_type) => &pat_type.ty,
+    }
+}
+
+pub(crate) fn arg_ty_ident(arg: &FnArg) -> Option<&Ident> {
+    match arg_ty(arg) {
+        Type::Path(type_path) => type_path.path.get_ident(),
+        _ => None,
     }
 }
 

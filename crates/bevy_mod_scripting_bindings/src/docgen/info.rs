@@ -1,13 +1,13 @@
 //! Information about functions and their arguments.
 
+use super::typed_through::{ThroughTypeInfo, TypedThrough};
+use crate::FunctionCallContext;
 use crate::function::arg_meta::ArgMeta;
 use crate::function::namespace::Namespace;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo, WithTypeInfo};
 use bevy_reflect::Reflect;
 use std::{any::TypeId, borrow::Cow};
-
-use super::typed_through::{ThroughTypeInfo, TypedThrough};
 
 /// for things you can call and provide some introspection capability.
 pub trait GetFunctionInfo<Marker> {
@@ -207,9 +207,10 @@ impl FunctionReturnInfo {
 macro_rules! impl_documentable {
     ($( $param:ident ),*) => {
         #[profiling::all_functions]
-        impl<$($param,)* F, O> GetFunctionInfo<fn($($param),*) -> O> for F
+        #[allow(unused_parens)]
+        impl<$($param,)* F, O> GetFunctionInfo<fn(($($param),*)) -> O> for F
             where
-            F: Fn($($param),*) -> O,
+            F: Fn(FunctionCallContext, ($($param),*)) -> O,
             $($param: ArgMeta + TypedThrough + 'static,)*
             O: TypedThrough + 'static
         {
@@ -223,9 +224,10 @@ macro_rules! impl_documentable {
             }
         }
     };
+
 }
 
-variadics_please::all_tuples!(impl_documentable, 0, 13, T);
+variadics_please::all_tuples!(impl_documentable, 1, 13, T);
 
 #[cfg(test)]
 mod test {
@@ -240,7 +242,7 @@ mod test {
 
     #[test]
     fn test_get_function_info() {
-        fn test_fn(a: i32, b: f32) -> f64 {
+        fn test_fn(_: FunctionCallContext, (a, b): (i32, f32)) -> f64 {
             (a as f64) + (b as f64)
         }
 
@@ -269,8 +271,30 @@ mod test {
     }
 
     #[test]
+    fn test_get_function_info_one_argument() {
+        fn test_fn(_: FunctionCallContext, a: f32) -> f64 {
+            a as f64
+        }
+
+        let info = test_fn.get_function_info(Cow::Borrowed("test_fn"), Namespace::Global);
+        assert_eq!(info.name, "test_fn");
+        assert_eq!(info.namespace, Namespace::Global);
+        assert_eq!(info.arg_info.len(), 2);
+        assert_eq!(info.return_info.type_id, TypeId::of::<f64>());
+
+        assert_eq!(info.arg_info[0].type_id, TypeId::of::<f32>());
+
+        match info.arg_info[0].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::Primitive(prim) => {
+                assert_eq!(*prim, ReflectionPrimitiveKind::I32);
+            }
+            _ => panic!("Expected TypeInfo"),
+        }
+    }
+
+    #[test]
     fn test_get_function_info_references() {
-        let fn_ = |_: R<i32>, _: M<f32>| -> V<f64> { V::new(0.0) };
+        let fn_ = |_: FunctionCallContext, (_, _): (R<i32>, M<f32>)| -> V<f64> { V::new(0.0) };
 
         let info = fn_.get_function_info(Cow::Borrowed("test_fn"), Namespace::Global);
         assert_eq!(info.name, "test_fn");

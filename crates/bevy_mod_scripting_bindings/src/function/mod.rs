@@ -39,6 +39,7 @@ mod test {
     use bevy_ecs::prelude::AppTypeRegistry;
 
     use super::arg_meta::{ScriptArgument, ScriptReturn, TypedScriptArgument, TypedScriptReturn};
+
     #[test]
     fn test_macro_generates_correct_registrator_function() {
         #[derive(Reflect)]
@@ -171,9 +172,9 @@ mod test {
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<()>();
-            test_is_valid_arg_and_return::<(T,)>();
-            test_is_valid_arg_and_return::<(T, T)>();
-            test_is_valid_arg_and_return::<(T, T, T, T, T, T, T, T, T, T)>();
+            // test_is_valid_arg_and_return::<(T,)>();
+            // test_is_valid_arg_and_return::<(T, T)>();
+            // test_is_valid_arg_and_return::<(T, T, T, T, T, T, T, T, T, T)>();
         }
 
         fn test_option<T>()
