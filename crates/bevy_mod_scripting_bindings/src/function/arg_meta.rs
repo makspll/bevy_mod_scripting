@@ -1,10 +1,12 @@
 //! Trait implementations to help with function dispatch.
 
-use std::{ffi::OsString, path::PathBuf};
+use std::{collections::VecDeque, ffi::OsString, path::PathBuf};
 
 use bevy_platform::collections::HashMap;
 
-use crate::{ReflectReference, ScriptValue, docgen::TypedThrough, error::InteropError};
+use crate::{
+    ReflectReference, ScriptValue, VariadicTuple, docgen::TypedThrough, error::InteropError,
+};
 
 use super::{
     from::{FromScript, M, R, Union, V},
@@ -35,9 +37,24 @@ pub trait ArgMeta {
     fn default_value() -> Option<ScriptValue> {
         None
     }
+
+    /// If returns true, will absorb all arguments following itself
+    fn variadic() -> bool {
+        false
+    }
 }
 
 impl ArgMeta for ScriptValue {}
+
+impl ArgMeta for VariadicTuple {
+    fn default_value() -> Option<ScriptValue> {
+        Some(ScriptValue::Tuple(Default::default()))
+    }
+
+    fn variadic() -> bool {
+        true
+    }
+}
 
 macro_rules! impl_arg_info {
     ($($ty:ty),*) => {
@@ -85,6 +102,8 @@ impl<T> ArgMeta for Option<T> {
 }
 
 impl<T> ArgMeta for Vec<T> {}
+impl<T> ArgMeta for VecDeque<T> {}
+
 impl<T, const N: usize> ArgMeta for [T; N] {}
 
 impl<K, V> ArgMeta for HashMap<K, V> {}

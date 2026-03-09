@@ -242,6 +242,13 @@ pub enum LadFunctionNamespace {
     Global,
 }
 
+impl LadFunctionNamespace {
+    /// Retruns true if the namespace is the global namespace
+    pub fn is_global(&self) -> bool {
+        matches!(self, LadFunctionNamespace::Global)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// An argument definition used in a LAD file.
 pub struct LadArgument {
@@ -287,6 +294,8 @@ pub enum LadFieldOrVariableKind {
     InteropResult(Box<LadFieldOrVariableKind>),
     /// A tuple of arguments
     Tuple(Vec<LadFieldOrVariableKind>),
+    /// A variadic tuple
+    UntypedTuple,
     /// An array
     Array(Box<LadFieldOrVariableKind>, usize),
     /// A primitive type, implementing `IntoScript` and `FromScript` natively in BMS.
@@ -332,6 +341,9 @@ pub trait ArgumentVisitor {
     fn visit_unknown(&mut self, type_id: &LadTypeId) {
         self.visit_lad_type_id(type_id);
     }
+
+    /// Visits an untyped tuple
+    fn visit_untyped_tuple(&mut self) {}
 
     /// walks the lad type_id structure, by default simply visits type_id's
     /// Can be used to dispatch to primitives instead of the type maps to these
@@ -431,6 +443,7 @@ pub trait ArgumentVisitor {
             }
             LadFieldOrVariableKind::Union(inner) => self.walk_union(inner),
             LadFieldOrVariableKind::Unknown(type_id) => self.walk_unknown(type_id),
+            LadFieldOrVariableKind::UntypedTuple => self.visit_untyped_tuple(),
         }
     }
 }

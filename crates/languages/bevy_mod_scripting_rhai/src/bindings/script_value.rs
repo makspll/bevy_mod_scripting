@@ -1,7 +1,8 @@
-use std::str::FromStr;
+use std::{collections::VecDeque, str::FromStr};
 
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
+    VariadicTuple,
     error::InteropError,
     function::script_function::{DynamicScriptFunction, FunctionCallContext},
     script_value::ScriptValue,
@@ -80,8 +81,8 @@ impl IntoDynamic for ScriptValue {
                     .into(),
                 )
             })?,
-            ScriptValue::List(_vec) => Dynamic::from_array(
-                _vec.into_iter()
+            ScriptValue::List(vec) | ScriptValue::Tuple(VariadicTuple(vec)) => Dynamic::from_array(
+                vec.into_iter()
                     .map(|v| v.into_dynamic())
                     .collect::<Result<Vec<_>, _>>()?,
             ),
@@ -173,7 +174,7 @@ impl FromDynamic for ScriptValue {
                     .map_err(IntoRhaiError::into_rhai_error)?
                     .into_iter()
                     .map(ScriptValue::from_dynamic)
-                    .collect::<Result<Vec<_>, _>>()?,
+                    .collect::<Result<VecDeque<_>, _>>()?,
             )),
             d => {
                 let type_name = d.type_name();

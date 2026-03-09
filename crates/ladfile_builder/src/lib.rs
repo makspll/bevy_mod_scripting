@@ -450,6 +450,7 @@ impl<'t> LadFileBuilder<'t> {
                         self.add_through_type_info(ti);
                     }
                 }
+                TypedWrapperKind::UntypedTuple => {}
             },
             ThroughTypeInfo::TypeInfo(type_info) => {
                 self.add_type_info(type_info);
@@ -972,6 +973,7 @@ impl<'t> LadFileBuilder<'t> {
                         })
                         .collect(),
                 ),
+                TypedWrapperKind::UntypedTuple => LadFieldOrVariableKind::UntypedTuple,
             },
             ThroughTypeInfo::TypeInfo(type_info) => {
                 match primitive_from_type_id(type_info.type_id()) {

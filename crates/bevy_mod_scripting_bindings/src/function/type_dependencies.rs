@@ -5,11 +5,11 @@ use super::{
     from::{M, R, Union, V},
     script_function::FunctionCallContext,
 };
-use crate::{ReflectReference, ScriptValue, error::InteropError};
+use crate::{ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
 use bevy_mod_scripting_derive::impl_get_type_dependencies;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{FromReflect, GetTypeRegistration, TypeRegistry, Typed};
-use std::collections::HashMap as StdHashMap;
+use std::collections::{HashMap as StdHashMap, VecDeque};
 use std::{ffi::OsString, hash::Hash, path::PathBuf};
 
 macro_rules! impl_get_type_dependencies_primitives {
@@ -119,6 +119,14 @@ impl_get_type_dependencies!(
 
 impl_get_type_dependencies!(
     #[derive(GetTypeDependencies)]
+    #[get_type_dependencies(bms_bindings_path = "crate")]
+    struct VecDeque<T>
+    where
+        T::Underlying: FromReflect + Typed, {}
+);
+
+impl_get_type_dependencies!(
+    #[derive(GetTypeDependencies)]
     #[get_type_dependencies(
         bms_bindings_path = "crate",
         underlying = "Result<T1::Underlying,T2::Underlying>"
@@ -159,6 +167,12 @@ impl_get_type_dependencies!(
     struct FunctionCallContext {}
 );
 
+impl_get_type_dependencies!(
+    #[derive(GetTypeDependencies)]
+    #[get_type_dependencies(bms_bindings_path = "crate")]
+    struct VariadicTuple {}
+);
+
 impl<T, const N: usize> GetTypeDependencies for [T; N]
 where
     T: GetTypeDependencies,
@@ -191,6 +205,10 @@ macro_rules! register_tuple_dependencies {
 
 variadics_please::all_tuples!(register_tuple_dependencies, 1, 14, T);
 
+#[diagnostic::on_unimplemented(
+    message = "This function contains types in its signature which don't implement [`Reflect`].",
+    note = "Reflection is necessary to register nested type dependencies with the type registry"
+)]
 /// A trait collecting type dependency information for a whole function. Used to register everything used by a function with the type registry
 pub trait GetFunctionTypeDependencies<Marker> {
     /// Registers the type dependencies of the implementing type with the given [`TypeRegistry`].

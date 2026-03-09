@@ -80,6 +80,7 @@ pub enum LuaType {
     Union(Vec<LuaType>),
     Array(Box<LuaType>),
     Tuple(Vec<LuaType>),
+    Variadic(Box<LuaType>), // should be converted to varargs
     Dictionary {
         key: Box<LuaType>,
         value: Box<LuaType>,
@@ -113,8 +114,26 @@ pub struct FunctionSignatureShort {
 pub struct FunctionParam {
     pub name: String,
     pub ty: LuaType,
+    pub variadic: bool,
     pub optional: bool,
     pub description: Option<String>,
+}
+
+impl FunctionParam {
+    pub fn new(
+        name: String,
+        ty: LuaType,
+        optional: bool,
+        description: Option<String>,
+    ) -> FunctionParam {
+        Self {
+            name,
+            variadic: matches!(ty, LuaType::Variadic(_)),
+            ty,
+            optional,
+            description,
+        }
+    }
 }
 
 /// Represents a function signature with comprehensive annotation support.
@@ -351,7 +370,7 @@ pub struct TypeInstance {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct LuaModule {
     pub name: String,
-    pub classes: Vec<LuaClass>,
+    pub class: Option<LuaClass>,
     pub globals: Vec<TypeInstance>,
     pub functions: Vec<FunctionSignature>,
     pub documentation: Option<String>,

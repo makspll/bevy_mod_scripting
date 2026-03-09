@@ -1,4 +1,4 @@
-use std::{borrow::Cow, panic::Location, sync::Arc};
+use std::{borrow::Cow, collections::VecDeque, panic::Location, sync::Arc};
 
 use crate::*;
 
@@ -93,6 +93,18 @@ impl<T: DebugWithTypeInfo, E: DebugWithTypeInfo> DebugWithTypeInfo for Result<T,
 }
 
 impl<T: DebugWithTypeInfo> DebugWithTypeInfo for Vec<T> {
+    fn to_string_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
+    ) -> std::fmt::Result {
+        f.debug_list_with_type_info(type_info_provider)
+            .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
+            .finish()
+    }
+}
+
+impl<T: DebugWithTypeInfo> DebugWithTypeInfo for VecDeque<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
@@ -279,6 +291,25 @@ impl DisplayWithTypeInfo for Location<'_> {
 }
 
 impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for Vec<T> {
+    fn display_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&dyn GetTypeInfo>,
+    ) -> std::fmt::Result {
+        f.write_str("[")?;
+        let mut first = true;
+        for var in self {
+            if !first {
+                f.write_str(", ")?;
+            }
+            first = false;
+            var.display_with_type_info(f, type_info_provider)?;
+        }
+        f.write_str("]")
+    }
+}
+
+impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for VecDeque<T> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,

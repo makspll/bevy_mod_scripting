@@ -1,10 +1,10 @@
 //! Implementations of the [`IntoScript`] trait for various types.
 
 use super::{DynamicScriptFunction, DynamicScriptFunctionMut, Union, V};
-use crate::{ReflectReference, ScriptValue, WorldGuard, error::InteropError};
+use crate::{ReflectReference, ScriptValue, VariadicTuple, WorldGuard, error::InteropError};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
-use std::{borrow::Cow, ffi::OsString, path::PathBuf};
+use std::{borrow::Cow, collections::VecDeque, ffi::OsString, path::PathBuf};
 
 /// Converts a value into a [`ScriptValue`].
 pub trait IntoScript {
@@ -136,9 +136,20 @@ impl<T: IntoScript> IntoScript for Option<T> {
 #[profiling::all_functions]
 impl<T: IntoScript> IntoScript for Vec<T> {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        let mut values = Vec::with_capacity(self.len());
+        let mut values = VecDeque::with_capacity(self.len());
         for val in self {
-            values.push(val.into_script(world.clone())?);
+            values.push_back(val.into_script(world.clone())?);
+        }
+        Ok(ScriptValue::List(values))
+    }
+}
+
+#[profiling::all_functions]
+impl<T: IntoScript> IntoScript for VecDeque<T> {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        let mut values = VecDeque::with_capacity(self.len());
+        for val in self {
+            values.push_back(val.into_script(world.clone())?);
         }
         Ok(ScriptValue::List(values))
     }
@@ -147,9 +158,9 @@ impl<T: IntoScript> IntoScript for Vec<T> {
 #[profiling::all_functions]
 impl<T: IntoScript, const N: usize> IntoScript for [T; N] {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        let mut values = Vec::with_capacity(N);
+        let mut values = VecDeque::with_capacity(N);
         for val in self {
-            values.push(val.into_script(world.clone())?);
+            values.push_back(val.into_script(world.clone())?);
         }
         Ok(ScriptValue::List(values))
     }
@@ -194,6 +205,12 @@ impl IntoScript for InteropError {
     }
 }
 
+impl IntoScript for VariadicTuple {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::Tuple(self))
+    }
+}
+
 macro_rules! impl_into_script_tuple {
     ($( $ty:ident ),* ) => {
         #[allow(non_snake_case)]
@@ -201,7 +218,7 @@ macro_rules! impl_into_script_tuple {
         impl<$($ty: IntoScript),*> IntoScript for ($($ty,)*) {
         fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
             let ($($ty,)*) = self;
-            Ok(ScriptValue::List(vec![$($ty.into_script(world.clone())?),*]))
+            Ok(ScriptValue::Tuple(crate::script_value::VariadicTuple(VecDeque::from_iter([$($ty.into_script(world.clone())?),*].into_iter()))))
         }
     }
 }

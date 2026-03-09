@@ -13,18 +13,18 @@ pub fn prepare_tera() -> Result<tera::Tera, anyhow::Error> {
 
         let template_name = file.path().to_string_lossy();
         tera.add_raw_template(&template_name, content_utf8)
-            .map_err(handle_tera_error)?;
+            .map_err(|arg: tera::Error| handle_tera_error(&arg))?;
     }
 
     Ok(tera)
 }
 
-fn handle_tera_error(error: tera::Error) -> anyhow::Error {
+fn handle_tera_error(error: &dyn Error) -> anyhow::Error {
     let inner_error_str = error
         .source()
-        .and_then(|e| e.to_string().into())
-        .unwrap_or_else(|| "No source available".to_string());
-    anyhow::anyhow!("Tera error: {error}, {inner_error_str}")
+        .map(|e| handle_tera_error(e).to_string())
+        .unwrap_or_default();
+    anyhow::anyhow!("{error}\n{inner_error_str}")
 }
 
 pub fn render_template(
@@ -36,5 +36,5 @@ pub fn render_template(
         log::trace!("Available template: {name}");
     });
     tera.render(template_name, context)
-        .map_err(handle_tera_error)
+        .map_err(|arg: tera::Error| handle_tera_error(&arg))
 }

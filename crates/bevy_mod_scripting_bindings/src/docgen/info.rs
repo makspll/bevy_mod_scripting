@@ -10,6 +10,10 @@ use std::{any::TypeId, borrow::Cow};
 use super::typed_through::{ThroughTypeInfo, TypedThrough};
 
 /// for things you can call and provide some introspection capability.
+#[diagnostic::on_unimplemented(
+    message = "This function contains types in its signature which don't implement [`ArgMeta`] or [`TypedThrough`].",
+    note = "These types are necessary to build [`FunctionInfo`] structs for each registered function."
+)]
 pub trait GetFunctionInfo<Marker> {
     /// Get the function info for the function.
     fn get_function_info(&self, name: Cow<'static, str>, namespace: Namespace) -> FunctionInfo;

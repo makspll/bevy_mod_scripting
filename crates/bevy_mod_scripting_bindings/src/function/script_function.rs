@@ -2,6 +2,7 @@
 
 use super::MagicFunctions;
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
+use crate::VariadicTuple;
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
 use crate::{ScriptValue, ThreadWorldContainer, WorldGuard, error::InteropError};
@@ -17,10 +18,8 @@ use std::collections::VecDeque;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
-
 #[diagnostic::on_unimplemented(
-    message = "This function does not fulfil the requirements to be a script callable function. All arguments must implement the ScriptArgument trait and all return values must implement the ScriptReturn trait",
-    note = "If you're trying to return a non-primitive type, you might need to use V<T> R<T> or M<T> wrappers"
+    message = "This function does not fulfil the requirements to be a script callable function. All arguments must implement the ScriptArgument trait and all return values must implement the ScriptReturn trait"
 )]
 /// A trait implemented by functions which can act as dynamic script functions, which can then be registered against a [`ScriptFunctionRegistry`].
 pub trait ScriptFunction<'env, Marker> {
@@ -30,7 +29,7 @@ pub trait ScriptFunction<'env, Marker> {
 
 #[diagnostic::on_unimplemented(
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetTypeDependencies",
-    note = "If you're trying to return a non-primitive type, you might need to use V<T> R<T> or M<T> wrappers"
+    note = "If you're trying to use a non-primitive type, you might need to use V<T> R<T> or M<T> wrappers"
 )]
 /// A trait implemented by functions which can act as mutable dynamic script functions.
 pub trait ScriptFunctionMut<'env, Marker> {
@@ -608,6 +607,22 @@ macro_rules! count {
         ( $x:tt $($xs:tt)* ) => (1usize + $crate::function::script_function::count!($($xs)*));
 }
 
+/// Pops the stack of args depending on how many are requested by the current argument.
+/// If failed to find argument, returns None
+fn pop_args_stack_for_arg<A: ArgMeta>(args: &mut VecDeque<ScriptValue>) -> Option<ScriptValue> {
+    if A::variadic() {
+        // just absorb the rest, tuplify it
+        if !args.is_empty() {
+            return Some(ScriptValue::Tuple(VariadicTuple(std::mem::take(args))));
+        }
+    }
+    if let Some(default) = A::default_value() {
+        return Some(default);
+    }
+
+    args.pop_front()
+}
+
 pub(crate) use count;
 
 macro_rules! impl_script_function {
@@ -674,15 +689,10 @@ macro_rules! impl_script_function {
                                 $(let $param = {
                                         profiling::scope!("argument conversion", &format!("argument #{}", current_arg));
                                         current_arg += 1;
-                                        let $param = args.pop_front();
-                                        let $param = match $param {
+                                        let $param = match pop_args_stack_for_arg::<$param>(&mut args) {
                                             Some($param) => $param,
                                             None => {
-                                                if let Some(default) = <$param>::default_value() {
-                                                    default
-                                                } else {
-                                                    return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
-                                                }
+                                                return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
                                             }
                                         };
                                         let $param = <$param>::from_script($param, world.clone())
