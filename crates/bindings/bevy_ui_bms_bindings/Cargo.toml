@@ -17,7 +17,7 @@ categories.workspace = true
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_ui = { version = "0.18.0", features = ["bevy_picking"], default-features = true}
+bevy_ui = { version = "0.18.1", features = ["bevy_picking"], default-features = true}
 
 
 accesskit = { version = "^0.21", features = [], default-features = true}
