@@ -17,7 +17,7 @@ bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_math = { version = "0.18.0", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
+bevy_math = { version = "0.18.1", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
 
 bevy_reflect = { version = "^0.18.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}

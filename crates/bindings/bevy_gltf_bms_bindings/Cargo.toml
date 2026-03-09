@@ -17,7 +17,7 @@ categories.workspace = true
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_gltf = { version = "0.18.0", features = ["bevy_animation"], default-features = true}
+bevy_gltf = { version = "0.18.1", features = ["bevy_animation"], default-features = true}
 
 
 base64 = { version = "^0.22.0", features = [], default-features = true}

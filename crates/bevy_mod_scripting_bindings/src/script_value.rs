@@ -7,7 +7,7 @@ use bevy_mod_scripting_display::{
 };
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::VecDeque};
 
 use super::{
     ReflectReference,
@@ -32,7 +32,10 @@ pub enum ScriptValue {
     /// Represents a string value.
     String(Cow<'static, str>),
     /// Represents a list of other things passed by value
-    List(Vec<ScriptValue>),
+    List(VecDeque<ScriptValue>),
+    /// Represents a tuple of values, which is best intepreted as multiple non-homogenous values.
+    /// If returned by a function, scripting languages supporting multiple return values can use this type to represent those.
+    Tuple(VariadicTuple),
     /// Represents a map of other things passed by value
     Map(HashMap<String, ScriptValue>),
     /// Represents a reference to a value.
@@ -44,6 +47,12 @@ pub enum ScriptValue {
     /// Represents any error, will be thrown when returned to a script.
     Error(InteropError),
 }
+
+/// A tuple variant of script value
+#[derive(Reflect, Clone, Default, DebugWithTypeInfo)]
+#[reflect(opaque)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+pub struct VariadicTuple(pub VecDeque<ScriptValue>);
 
 impl DisplayWithTypeInfo for ScriptValue {
     fn display_with_type_info(
@@ -57,6 +66,19 @@ impl DisplayWithTypeInfo for ScriptValue {
             ScriptValue::Integer(v) => write!(f, "{v}"),
             ScriptValue::Float(v) => write!(f, "{v}"),
             ScriptValue::String(v) => write!(f, "{v}"),
+            ScriptValue::Tuple(VariadicTuple(v)) => {
+                f.write_str("(")?;
+                let mut first = true;
+                for item in v {
+                    if !first {
+                        f.write_str(", ")?;
+                    }
+                    first = false;
+                    WithTypeInfo::new_with_opt_info(item, type_info_provider)
+                        .display_with_type_info(f, type_info_provider)?;
+                }
+                f.write_str(")")
+            }
             ScriptValue::List(v) => {
                 f.write_str("[")?;
                 let mut first = true;
@@ -128,6 +150,7 @@ impl ScriptValue {
             ScriptValue::Float(_) => "Float".to_owned(),
             ScriptValue::String(_) => "String".to_owned(),
             ScriptValue::List(_) => "List".to_owned(),
+            ScriptValue::Tuple(_) => "Tuple".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
             ScriptValue::FunctionMut(_) => "FunctionMut".to_owned(),
             ScriptValue::Function(_) => "Function".to_owned(),
@@ -187,8 +210,8 @@ impl From<Cow<'static, str>> for ScriptValue {
 }
 
 #[profiling::all_functions]
-impl From<Vec<ScriptValue>> for ScriptValue {
-    fn from(value: Vec<ScriptValue>) -> Self {
+impl From<VecDeque<ScriptValue>> for ScriptValue {
+    fn from(value: VecDeque<ScriptValue>) -> Self {
         ScriptValue::List(value)
     }
 }

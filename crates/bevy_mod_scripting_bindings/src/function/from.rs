@@ -2,12 +2,14 @@
 
 use crate::{
     ReflectReference, ScriptValue, WorldGuard, access_map::ReflectAccessId, error::InteropError,
+    script_value::VariadicTuple,
 };
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{FromReflect, Reflect};
 use nonmax::NonMaxU32;
 use std::{
     any::TypeId,
+    collections::VecDeque,
     ffi::OsString,
     ops::{Deref, DerefMut},
     path::PathBuf,
@@ -412,6 +414,30 @@ where
 }
 
 #[profiling::all_functions]
+impl<T: FromScript + 'static> FromScript for VecDeque<T>
+where
+    for<'w> T::This<'w>: Into<T>,
+{
+    type This<'w> = Self;
+    #[profiling::function]
+    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+        match value {
+            ScriptValue::List(list) => {
+                let mut vec = VecDeque::with_capacity(list.len());
+                for item in list {
+                    vec.push_back(T::from_script(item, world.clone())?.into());
+                }
+                Ok(vec)
+            }
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<VecDeque<T>>(),
+                value,
+            )),
+        }
+    }
+}
+
+#[profiling::all_functions]
 impl<T: FromScript + 'static, const N: usize> FromScript for [T; N]
 where
     for<'w> T::This<'w>: Into<T>,
@@ -615,6 +641,23 @@ where
     }
 }
 
+impl FromScript for VariadicTuple {
+    type This<'w> = Self;
+
+    fn from_script(
+        value: ScriptValue,
+        _world: WorldGuard<'_>,
+    ) -> Result<Self::This<'_>, InteropError>
+    where
+        Self: Sized,
+    {
+        match value {
+            ScriptValue::List(tuple) | ScriptValue::Tuple(VariadicTuple(tuple)) => Ok(Self(tuple)),
+            v => Ok(Self(VecDeque::from_iter([v]))),
+        }
+    }
+}
+
 macro_rules! impl_from_script_tuple {
     ($($ty:ident),*) => {
         #[allow(non_snake_case)]
@@ -630,7 +673,7 @@ macro_rules! impl_from_script_tuple {
 
             fn from_script(value: ScriptValue, world: WorldGuard<'_>) -> Result<Self, InteropError> {
                 match value {
-                    ScriptValue::List(list) => {
+                    ScriptValue::List(list) | ScriptValue::Tuple(VariadicTuple(list)) => {
                         let expected_arg_count = $crate::function::script_function::count!( $($ty)* );
                         if list.len() != expected_arg_count {
                             return Err(InteropError::length_mismatch(expected_arg_count, list.len()));

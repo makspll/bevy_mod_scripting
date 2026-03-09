@@ -2,7 +2,7 @@ extern crate bevy_mod_scripting;
 extern crate script_integration_test_harness;
 extern crate test_utils;
 use bevy_platform::collections::HashMap;
-use std::{path::PathBuf, sync::LazyLock, time::Duration};
+use std::{collections::VecDeque, path::PathBuf, sync::LazyLock, time::Duration};
 
 use bevy::{
     log::{
@@ -173,9 +173,9 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
     perform_benchmark_with_generator(
         "ScriptValue::List",
         &|rng, _| {
-            let mut array = Vec::new();
+            let mut array = VecDeque::new();
             for _ in 0..10 {
-                array.push(ScriptValue::Integer(rng.random()));
+                array.push_back(ScriptValue::Integer(rng.random()));
             }
             ScriptValue::List(array)
         },

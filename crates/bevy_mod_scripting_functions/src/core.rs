@@ -3,7 +3,7 @@
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
-use std::ops::Deref;
+use std::{collections::VecDeque, ops::Deref};
 
 use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
@@ -12,7 +12,7 @@ use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError,
     PartialReflectExt, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
     ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer,
-    Union,
+    Union, VariadicTuple,
     function::{
         from::{R, V},
         from_ref::FromScriptRef,
@@ -847,7 +847,6 @@ impl ReflectReference {
             let (next_ref, _) = infinite_iter.next_ref();
 
             let converted = ReflectReference::into_script_ref(next_ref, world);
-            // println!("idx: {idx:?}, converted: {converted:?}");
             len -= 1;
             // we stop once the reflection path is invalid
             converted
@@ -1372,37 +1371,6 @@ impl GlobalNamespace {
         // to avoid clippy unused errors.
         println!("dummy called!: {callback:?}, {function:?}");
     }
-
-    /// Logs a `Information` level message to the console
-    /// Arguments:
-    /// * `message`: the message to log
-    fn info(message: String) {
-        bevy_log::info!(message)
-    }
-
-    /// Logs a `Warning` level message to the console
-    /// * `message`: the message to log
-    fn warn(message: String) {
-        bevy_log::warn!(message)
-    }
-
-    /// Logs a `Error` level message to the console
-    /// * `message`: the message to log
-    fn error(message: String) {
-        bevy_log::error!(message)
-    }
-
-    /// Logs a `Debug` level message to the console
-    /// * `message`: the message to log
-    fn debug(message: String) {
-        bevy_log::debug!(message)
-    }
-
-    /// Logs a `Trace` level message to the console
-    /// * `message`: the message to log
-    fn trace(message: String) {
-        bevy_log::trace!(message)
-    }
 }
 
 /// Globals registered by us
@@ -1467,6 +1435,57 @@ impl GlobalNamespace {
         attachment: V<ScriptAttachment>,
     ) -> Result<V<ScriptSystemBuilder>, InteropError> {
         Ok(ScriptSystemBuilder::new(callback.into(), attachment.into_inner()).into())
+    }
+
+    /// Unpacks, a list of values, into many separate values.
+    ///
+    /// Arguments:
+    /// * `values`: The list of values to uncurry
+    /// Returns:
+    /// * `tuple`: The tuple of all values provided
+    fn unpack_args(values: VecDeque<ScriptValue>) -> VariadicTuple {
+        VariadicTuple(values)
+    }
+
+    /// Packs, a variable amount of values, into a single list.
+    ///
+    /// Arguments:
+    /// * `tuple`: The tuple of values to curry
+    /// Returns:
+    /// * `values`: The list of values destructured from the tuple
+    fn pack_args(tuple: VariadicTuple) -> VecDeque<ScriptValue> {
+        tuple.0
+    }
+
+    /// Logs a `Information` level message to the console
+    /// Arguments:
+    /// * `message`: the message to log
+    fn log_info(message: String) {
+        bevy_log::info!(message)
+    }
+
+    /// Logs a `Warning` level message to the console
+    /// * `message`: the message to log
+    fn log_warn(message: String) {
+        bevy_log::warn!(message)
+    }
+
+    /// Logs a `Error` level message to the console
+    /// * `message`: the message to log
+    fn log_error(message: String) {
+        bevy_log::error!(message)
+    }
+
+    /// Logs a `Debug` level message to the console
+    /// * `message`: the message to log
+    fn log_debug(message: String) {
+        bevy_log::debug!(message)
+    }
+
+    /// Logs a `Trace` level message to the console
+    /// * `message`: the message to log
+    fn log_trace(message: String) {
+        bevy_log::trace!(message)
     }
 }
 

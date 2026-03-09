@@ -3,16 +3,17 @@
 {# newline #}
 {# newline #}
 {%- for module in modules -%} {# module #}
-{%- for class in module.classes -%}
----@class {{ class.name }} {%- if class.parents %} : {% endif -%}{%- for parent in class.parents -%}{{parent}}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
-{{ self::multiline_description(description=class.documentation) -}}
-{%- for field in class.fields -%}
+{%- if module.class -%} {# class #}
+---@class {{ module.class.name }} {%- if module.class.parents %} : {% endif -%}{%- for parent in module.class.parents -%}{{parent}}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
+{{ self::multiline_description(description=module.class.documentation) -}}
+{%- for field in module.class.fields -%}
 {{- self::class_field(field=field) -}}
 {%- endfor -%} {#- fields -#}
-{%- for operator in class.operators -%}
+{%- for operator in module.class.operators -%}
 ---@operator {{operator.operation}}{% if operator.param_type %}({{self::lua_type(ty=operator.param_type)}}){% endif %}: {{self::lua_type(ty=operator.return_type)}}
 {% endfor -%}
-{{ class.name }} = {}
+{{ module.class.name }} = {}
+{%- endif -%} {# class #}
 {# newline #}
 {%- for function in module.functions -%}
 {# newline #}
@@ -41,16 +42,15 @@
 {{- self::function_param(arg=param) -}}
 {%- endfor -%}
 {%- for return in function.returns -%}
----@return {{ self::lua_type(ty=return) }}
-function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%- endif -%} {{ function.name }}(
+---@return {{ self::lua_type(ty=return, return_position=true) }}
+function {% if module.class -%}{%- if function.has_self -%}{{module.class.name}}:{%- else -%}{{module.class.name}}.{%- endif -%}{%- endif -%} {{ function.name }}(
     {%- for param in function.params -%}
-        {{ param.name }} {%- if not loop.last -%},{%- endif -%}
+        {% if param.variadic -%}... {% endif-%}{{ param.name }} {%- if not loop.last -%},{%- endif -%}
     {%- endfor -%}
 ) end
 {# newline #}
 {%- endfor -%}
 {%- endfor -%} {# functions #}
-{%- endfor -%} {# class #}
 {# newline #}
 {# newline #}
 {%- for global in module.globals -%}
@@ -69,7 +69,7 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
 {# newline -#}
 {%- endmacro class_field -%}
 
-{%- macro lua_type(ty) -%}
+{%- macro lua_type(ty, return_position=false) -%}
     {%- if ty.kind == "Primitive" -%}
         {{ ty.value }}
     {%- elif ty.kind == "Alias" -%}
@@ -92,6 +92,12 @@ function {% if function.has_self -%}{{class.name}}:{%- else -%}{{class.name}}.{%
             {%- if not loop.last %}, {% endif -%}
         {%- endfor -%}
         ]
+    {%- elif ty.kind == "Variadic" -%}
+        {%- if return_position -%}
+        {{- self::lua_type(ty=ty.value) }} ...
+        {%- else -%}
+        ... {{ self::lua_type(ty=ty.value) -}}
+        {%- endif -%}
     {%- elif ty.kind == "Dictionary" -%}
         table<{{ self::lua_type(ty=ty.value.key) }}, {{ self::lua_type(ty=ty.value.value) }}>
     {%- elif ty.kind == "Function" -%}

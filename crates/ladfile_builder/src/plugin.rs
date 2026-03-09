@@ -203,7 +203,7 @@ pub fn generate_lad_file(
     for processor in settings.processors.iter() {
         bevy_log::info!("Running ladfile processor: '{}'", processor.name());
         if let Err(e) = processor.run(&file, directory) {
-            bevy_log::error!("Error in running ladfile processor: {e}")
+            bevy_log::error!("Error in running ladfile processor: {e:#}")
         }
     }
 

@@ -56,7 +56,7 @@ pub fn convert_ladfile_to_lua_declaration_file(
         // .ok_or_else(|| anyhow::anyhow!("Lua class not found for type ID: {}", type_id))?;
         definition_file.modules.push(LuaModule {
             name: lad_type.identifier.to_owned(),
-            classes: vec![lua_class.clone()],
+            class: Some(lua_class.clone()),
             functions,
             ..Default::default()
         });
@@ -93,6 +93,24 @@ pub fn convert_ladfile_to_lua_declaration_file(
                 definition: class,
                 description: Some(description.into()),
             })
+    }
+
+    for (_, function) in ladfile
+        .functions
+        .iter()
+        .filter(|(_, function)| function.namespace.is_global())
+    {
+        let converted = match lad_function_to_lua_function(ladfile, function) {
+            Ok(converted) => converted,
+            Err(err) => {
+                log::warn!(
+                    "Error generating global function {}: {err}. Ignoring function.",
+                    function.identifier,
+                );
+                continue;
+            }
+        };
+        globals_module.functions.push(converted)
     }
     definition_file.modules.push(globals_module);
 
@@ -376,15 +394,15 @@ pub fn lad_function_to_lua_function(
                 .as_ref()
                 .map(|v| v.to_string())
                 .unwrap_or(format!("p{}", idx + 1));
-            Ok(FunctionParam {
-                name: match ForbiddenKeywords::is_forbidden_err(&ident) {
+            Ok(FunctionParam::new(
+                match ForbiddenKeywords::is_forbidden_err(&ident) {
                     Ok(_) => ident,
                     Err(_) => format!("_{ident}"),
                 },
-                ty: lad_instance_to_lua_type(ladfile, &a.kind)?,
-                optional: matches!(a.kind, LadFieldOrVariableKind::Option(..)),
-                description: a.documentation.as_ref().map(|d| d.to_string()),
-            })
+                lad_instance_to_lua_type(ladfile, &a.kind)?,
+                matches!(a.kind, LadFieldOrVariableKind::Option(..)),
+                a.documentation.as_ref().map(|d| d.to_string()),
+            ))
         })
         .collect::<Result<Vec<_>, anyhow::Error>>()?;
 
@@ -472,6 +490,9 @@ pub fn lad_instance_to_lua_type(
                 LuaType::Tuple(to_lua_many(ladfile, lad_type_kinds)?)
             }
         }
+        ladfile::LadFieldOrVariableKind::UntypedTuple => LuaType::Variadic(Box::new(
+            lad_primitive_to_lua_type(&ReflectionPrimitiveKind::ScriptValue),
+        )),
         ladfile::LadFieldOrVariableKind::Array(lad_type_kind, _) => {
             LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
         }

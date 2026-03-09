@@ -1,6 +1,7 @@
 ---@meta
 ---@module "PlainStructType"
 
+
 ---@class PlainStructType : ReflectReference
 ---  I am a simple plain struct type
 ---@field  int_field ? integer
@@ -12,9 +13,11 @@ PlainStructType = {}
 function PlainStructType:plain_struct_function(p1,p2) end
 
 
+
 ---@class Bool
 --- A boolean value
 Bool = {}
+
 
 
 ---@class Char
@@ -22,9 +25,11 @@ Bool = {}
 Char = {}
 
 
+
 ---@class DynamicFunction
 --- A callable dynamic function
 DynamicFunction = {}
+
 
 
 ---@class DynamicFunctionMut
@@ -32,9 +37,11 @@ DynamicFunction = {}
 DynamicFunctionMut = {}
 
 
+
 ---@class F32
 --- A 32-bit floating point number
 F32 = {}
+
 
 
 ---@class F64
@@ -42,9 +49,11 @@ F32 = {}
 F64 = {}
 
 
+
 ---@class FunctionCallContext
 --- Function call context, if accepted by a function, means the function can access the world in arbitrary ways.
 FunctionCallContext = {}
+
 
 
 ---@class I128
@@ -52,9 +61,11 @@ FunctionCallContext = {}
 I128 = {}
 
 
+
 ---@class I16
 --- A signed 16-bit integer
 I16 = {}
+
 
 
 ---@class I32
@@ -62,9 +73,11 @@ I16 = {}
 I32 = {}
 
 
+
 ---@class I64
 --- A signed 64-bit integer
 I64 = {}
+
 
 
 ---@class I8
@@ -72,9 +85,11 @@ I64 = {}
 I8 = {}
 
 
+
 ---@class Isize
 --- A signed pointer-sized integer
 Isize = {}
+
 
 
 ---@class OsString
@@ -82,9 +97,11 @@ Isize = {}
 OsString = {}
 
 
+
 ---@class PathBuf
 --- A heap allocated file path
 PathBuf = {}
+
 
 
 ---@class ReflectReference
@@ -92,9 +109,11 @@ PathBuf = {}
 ReflectReference = {}
 
 
+
 ---@class ScriptValue
 --- A value representing the union of all representable values
 ScriptValue = {}
+
 
 
 ---@class Str
@@ -102,9 +121,11 @@ ScriptValue = {}
 Str = {}
 
 
+
 ---@class String
 --- A heap allocated string
 String = {}
+
 
 
 ---@class U128
@@ -112,9 +133,11 @@ String = {}
 U128 = {}
 
 
+
 ---@class U16
 --- An unsigned 16-bit integer
 U16 = {}
+
 
 
 ---@class U32
@@ -122,9 +145,11 @@ U16 = {}
 U32 = {}
 
 
+
 ---@class U64
 --- An unsigned 64-bit integer
 U64 = {}
+
 
 
 ---@class U8
@@ -132,13 +157,16 @@ U64 = {}
 U8 = {}
 
 
+
 ---@class Usize
 --- An unsigned pointer-sized integer
 Usize = {}
 
 
+
 ---@class EnumType : ReflectReference
 EnumType = {}
+
 
 
 ---@class TupleStructType : ReflectReference
@@ -148,11 +176,17 @@ EnumType = {}
 TupleStructType = {}
 
 
+
 ---@class UnitType : ReflectReference
 ---  I am a unit test type
 UnitType = {}
 
 
+
+
+---@param arg1 integer 
+---@return integer
+function hello_world(arg1) end
 
 
 ---@type any

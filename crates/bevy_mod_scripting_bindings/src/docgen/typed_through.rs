@@ -1,10 +1,10 @@
 //! Defines a set of traits which destruture [`bevy_reflect::TypeInfo`] and implement a light weight wrapper around it, to allow types
 //! which normally can't implement [`bevy_reflect::Typed`] to be used in a reflection context.
 
-use std::{any::TypeId, ffi::OsString, path::PathBuf};
+use std::{any::TypeId, collections::VecDeque, ffi::OsString, path::PathBuf};
 
 use crate::{
-    ReflectReference,
+    ReflectReference, VariadicTuple,
     function::{
         from::{M, R, Union, V},
         script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
@@ -76,6 +76,8 @@ pub enum TypedWrapperKind {
     InteropResult(Box<ThroughTypeInfo>),
     /// Wraps a tuple of through typed types.
     Tuple(Vec<ThroughTypeInfo>),
+    /// Wraps a tuple of script values
+    UntypedTuple,
 }
 
 /// A dynamic version of [`TypedThrough`], which can be used to convert a [`TypeInfo`] into a [`ThroughTypeInfo`].
@@ -248,6 +250,12 @@ impl<T: TypedThrough> TypedThrough for Vec<T> {
     }
 }
 
+impl<T: TypedThrough> TypedThrough for VecDeque<T> {
+    fn through_type_info() -> ThroughTypeInfo {
+        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(Box::new(T::through_type_info())))
+    }
+}
+
 impl<K: TypedThrough, V: TypedThrough> TypedThrough for HashMap<K, V> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
@@ -283,6 +291,12 @@ impl<T: TypedThrough, const N: usize> TypedThrough for [T; N] {
 impl<T: TypedThrough> TypedThrough for Option<T> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Option(Box::new(T::through_type_info())))
+    }
+}
+
+impl TypedThrough for VariadicTuple {
+    fn through_type_info() -> ThroughTypeInfo {
+        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::UntypedTuple)
     }
 }
 
