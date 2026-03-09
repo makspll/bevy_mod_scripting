@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-98200025.js";
+            window.path_to_searchindex_js = "../searchindex-77567a62.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-d289f99b.js"></script>
+        <script src="../toc-6c2b2f7c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -199,7 +199,14 @@
 <p><code>Val&lt;T&gt;</code>, <code>Ref&lt;T&gt;</code> and <code>Mut&lt;T&gt;</code> have been renamed to prevent clashes with native bevy types, as well as save a few keystrokes.</p>
 <p>You should use: <code>V&lt;T&gt;</code>, <code>R&lt;T&gt;</code> and <code>M&lt;T&gt;</code> instead</p>
 <h2 id="addition-of-logging-bindings"><a class="header" href="#addition-of-logging-bindings">Addition of logging bindings</a></h2>
-<p>Standard <code>info</code>, <code>debug</code>, <code>trace</code>, <code>warn</code> and <code>error</code> functions are now available in scripts by default</p>
+<p>Standard <code>log_info</code>, <code>log_debug</code>, <code>log_trace</code>, <code>log_warn</code> and <code>log_error</code> functions are now available in scripts by default</p>
+<h2 id="variadic-bindings--support-for-multiple-return-values"><a class="header" href="#variadic-bindings--support-for-multiple-return-values">Variadic bindings &amp; Support for multiple return values</a></h2>
+<p>The <code>ArgMeta</code> trait now includes: <code>variadic() -&gt; bool</code> which if true, allows an argument in a binding to capture all remaining arguments from the call (effectively only usable as the last argument).</p>
+<p>This is implemented by the brand new <code>VariadicTuple</code> type, which is an untyped wrapper for a variable amount of non-homogenous values.</p>
+<p>New variants in the <code>TypedThrough</code> and <code>LAD</code> file format have ben added to represent variadics, and lua definition files generated from these will support them.</p>
+<p>Two bindings have been added: <code>pack_args</code> and <code>unpack_args</code> to allow script code to directly create/unpack tuple variants if necessary. However for languages like Lua, supporting multiple return values, <code>ScriptValue::Tuple</code> variants (which is what we produce to represent variadic returns), are converted to many return values naturally.</p>
+<h1 id="new-vecdeque-impls"><a class="header" href="#new-vecdeque-impls">New <code>VecDeque</code> impls</a></h1>
+<p><code>VecDeque</code> now implements various BMS traits and can be used in bindings as a normal argument.</p>
 
                     </main>
 
