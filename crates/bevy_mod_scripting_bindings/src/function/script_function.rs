@@ -616,11 +616,8 @@ fn pop_args_stack_for_arg<A: ArgMeta>(args: &mut VecDeque<ScriptValue>) -> Optio
             return Some(ScriptValue::Tuple(VariadicTuple(std::mem::take(args))));
         }
     }
-    if let Some(default) = A::default_value() {
-        return Some(default);
-    }
 
-    args.pop_front()
+    args.pop_front().or_else(A::default_value)
 }
 
 pub(crate) use count;
