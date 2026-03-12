@@ -11,7 +11,7 @@ use parking_lot::Mutex;
 use smallvec::SmallVec;
 use std::hash::{BuildHasherDefault, Hasher};
 
-use crate::error::InteropError;
+use crate::DynWorldAccessError;
 
 use super::{ReflectAllocationId, ReflectBase};
 
@@ -181,9 +181,9 @@ impl ReflectAccessId {
     }
 
     /// Creates a new access id for a resource
-    pub fn for_resource<R: Resource>(cell: &UnsafeWorldCell) -> Result<Self, InteropError> {
+    pub fn for_resource<R: Resource>(cell: &UnsafeWorldCell) -> Result<Self, DynWorldAccessError> {
         let resource_id = cell.components().resource_id::<R>().ok_or_else(|| {
-            InteropError::unregistered_component_or_resource_type(std::any::type_name::<R>())
+            DynWorldAccessError::unregistered_component_or_resource_type(std::any::type_name::<R>())
         })?;
 
         Ok(Self {
@@ -193,9 +193,11 @@ impl ReflectAccessId {
     }
 
     /// Creates a new access id for a component
-    pub fn for_component<C: Component>(cell: &UnsafeWorldCell) -> Result<Self, InteropError> {
+    pub fn for_component<C: Component>(
+        cell: &UnsafeWorldCell,
+    ) -> Result<Self, DynWorldAccessError> {
         let component_id = cell.components().component_id::<C>().ok_or_else(|| {
-            InteropError::unregistered_component_or_resource_type(std::any::type_name::<C>())
+            DynWorldAccessError::unregistered_component_or_resource_type(std::any::type_name::<C>())
         })?;
 
         Ok(Self::for_component_id(component_id))
@@ -789,7 +791,7 @@ impl DisplayCodeLocation for Option<std::panic::Location<'_>> {
 macro_rules! with_access_read {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {{
         if !$crate::access_map::DynamicSystemMeta::claim_read_access($access_map, $id) {
-            Err($crate::error::InteropError::cannot_claim_access(
+            Err($crate::DynWorldAccessError::cannot_claim_access(
                 $id,
                 $crate::access_map::DynamicSystemMeta::access_location($access_map, $id),
                 $msg,
@@ -807,7 +809,7 @@ pub(crate) use with_access_read;
 macro_rules! with_access_write {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {
         if !$crate::access_map::DynamicSystemMeta::claim_write_access($access_map, $id) {
-            Err($crate::error::InteropError::cannot_claim_access(
+            Err($crate::DynWorldAccessError::cannot_claim_access(
                 $id,
                 $crate::access_map::DynamicSystemMeta::access_location($access_map, $id),
                 $msg,
@@ -825,7 +827,7 @@ pub(crate) use with_access_write;
 macro_rules! with_global_access {
     ($access_map:expr, $msg:expr, $body:block) => {
         if !$crate::access_map::DynamicSystemMeta::claim_global_access($access_map) {
-            Err($crate::error::InteropError::cannot_claim_access(
+            Err($crate::DynWorldAccessError::cannot_claim_access(
                 $crate::access_map::ReflectAccessId::for_global(),
                 $crate::access_map::DynamicSystemMeta::access_location(
                     $access_map,

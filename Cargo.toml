@@ -294,7 +294,7 @@ members = [
     "crates/bevy_mod_scripting_script",
     "crates/bevy_mod_scripting_bindings_domain",
     "crates/bindings/*",
-    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax",
+    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world",
 ]
 resolver = "2"
 exclude = ["codegen", "crates/macro_tests", "xtask"]

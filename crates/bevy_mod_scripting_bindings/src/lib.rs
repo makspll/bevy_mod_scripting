@@ -16,6 +16,7 @@ pub mod script_component;
 pub mod script_value;
 pub mod type_data;
 pub mod world;
+// pub mod world_extensions;
 
 pub use access_map::*;
 pub use allocator::*;
@@ -34,3 +35,4 @@ pub use script_component::*;
 pub use script_value::*;
 pub use type_data::*;
 pub use world::*;
+// pub use world_extensions::*;
