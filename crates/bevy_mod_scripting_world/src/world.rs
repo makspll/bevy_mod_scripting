@@ -93,9 +93,10 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     cell: UnsafeWorldCell<'w>,
     // TODO: this is fairly hefty, explore sparse sets, bit fields etc
     pub(crate) accesses: AnyAccessMap,
-    cached_slots: [Rc<dyn Any>; 5],
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
+
+    cached_slots: [Rc<dyn Any>; 5],
     // /// The script allocator for the world
     // allocator: AppReflectAllocator,
     // /// The function registry for the world
