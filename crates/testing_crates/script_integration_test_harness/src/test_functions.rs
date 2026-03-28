@@ -12,7 +12,7 @@ use ::{
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
-    ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue,
+    ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue, WorldExtensions,
     error::InteropError,
     function::{
         namespace::{GlobalNamespace, NamespaceBuilder},

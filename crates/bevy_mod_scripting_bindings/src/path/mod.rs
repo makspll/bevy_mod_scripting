@@ -4,10 +4,11 @@ use std::{borrow::Cow, fmt::Display};
 
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo};
+use bevy_mod_scripting_display::DisplayWithTypeInfo;
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{PartialReflect, ReflectMut, ReflectRef, TypeInfo, TypeRegistry};
 
-use crate::{ScriptValue, WorldGuard, convert};
+use crate::{ScriptValue, convert};
 
 /// A key referencing into a `Reflect` supporting trait object.
 #[derive(DebugWithTypeInfo)]
@@ -296,7 +297,7 @@ impl DisplayWithTypeInfo for ReferencePath {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        _type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         std::fmt::Display::fmt(self, f)
     }

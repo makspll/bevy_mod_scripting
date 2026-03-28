@@ -6,7 +6,7 @@ impl<K: DebugWithTypeInfo, V: DebugWithTypeInfo, S> DebugWithTypeInfo
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn crate::GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_map_with_type_info(type_info_provider)
             .entries(
@@ -21,7 +21,7 @@ impl<K: DebugWithTypeInfo, S> DebugWithTypeInfo for bevy_platform::collections::
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn crate::GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_set_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
@@ -33,7 +33,7 @@ impl<K: DebugWithTypeInfo> DebugWithTypeInfo for bevy_platform::collections::Has
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn crate::GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_set_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))

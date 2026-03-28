@@ -2,9 +2,8 @@
 
 use crate::error::InteropError;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{
-    DisplayWithTypeInfo, GetTypeInfo, ReflectDisplayWithTypeInfo, WithTypeInfo,
-};
+use bevy_mod_scripting_display::{DisplayWithTypeInfo, ReflectDisplayWithTypeInfo, WithTypeInfo};
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
 use std::{borrow::Cow, collections::VecDeque};
@@ -58,7 +57,7 @@ impl DisplayWithTypeInfo for ScriptValue {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
             ScriptValue::Unit => f.write_str("()"),

@@ -6,14 +6,14 @@ use crate::*;
 pub struct ReflectPrinter<'f, 'b: 'f, 't> {
     pub(crate) formatter: &'f mut std::fmt::Formatter<'b>,
     pub(crate) result: std::fmt::Result,
-    pub(crate) type_info: Option<&'t dyn GetTypeInfo>,
+    pub(crate) type_info: Option<&'t WorldAccessGuard<'t>>,
 }
 
 impl<'f, 'b: 'f, 't> ReflectPrinter<'f, 'b, 't> {
     /// Creates a new `ReflectPrinter` with the given formatter.
     pub fn new(
         formatter: &'f mut std::fmt::Formatter<'b>,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> ReflectPrinter<'f, 'b, 't> {
         ReflectPrinter {
             formatter,
@@ -26,8 +26,11 @@ impl<'f, 'b: 'f, 't> ReflectPrinter<'f, 'b, 't> {
     pub fn debug(&mut self, value: &dyn PartialReflect) -> std::fmt::Result {
         if let Some(type_info_provider) = &self.type_info
             && let Some(reflect_type) = value.try_as_reflect()
-            && let Some(display_type_data) = type_info_provider
-                .get_type_data::<ReflectDisplayWithTypeInfo>(reflect_type.type_id())
+            && let Some(display_type_data) =
+                type_info_provider
+                    .type_registry()
+                    .read()
+                    .get_type_data::<ReflectDisplayWithTypeInfo>(reflect_type.type_id())
             && let Some(as_dyn_trait) = display_type_data.get(reflect_type)
         {
             return as_dyn_trait.display_with_type_info(self.formatter, self.type_info);
@@ -188,7 +191,7 @@ impl<T: DynamicTypePath + ?Sized> GetIdentOrPath for T {
 /// A wrapper type that implements `Debug` for any `PartialReflect` by using `ReflectPrinter`.
 ///
 /// For opaque types will optionally seek [`ReflectDisplayWithTypeInfo`] type data in the registry
-pub struct PrintReflectAsDebug<'a, 'g>(&'a dyn PartialReflect, Option<&'g dyn GetTypeInfo>);
+pub struct PrintReflectAsDebug<'a, 'g>(&'a dyn PartialReflect, Option<&'g WorldAccessGuard<'g>>);
 
 impl<'a, 'g> PrintReflectAsDebug<'a, 'g> {
     /// Constructs a new [`PrintReflectAsDebug`] which will use the global type info provider
@@ -199,7 +202,7 @@ impl<'a, 'g> PrintReflectAsDebug<'a, 'g> {
     /// Constructs a new [`PrintReflectAsDebug`] which will use the provided type info provider and fallback to the global
     pub fn new_with_opt_info(
         val: &'a dyn PartialReflect,
-        info: Option<&'g dyn GetTypeInfo>,
+        info: Option<&'g WorldAccessGuard<'g>>,
     ) -> Self {
         Self(val, info)
     }
@@ -209,7 +212,7 @@ impl DebugWithTypeInfo for PrintReflectAsDebug<'_, '_> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         ReflectPrinter::new(f, self.1.or(type_info_provider)).debug(self.0)
     }

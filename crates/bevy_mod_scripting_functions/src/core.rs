@@ -2,6 +2,7 @@
 
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::ThreadWorldContainer;
 use bevy_platform::collections::HashMap;
 use std::{collections::VecDeque, ops::Deref};
 
@@ -11,8 +12,8 @@ use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, wo
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError,
     PartialReflectExt, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer,
-    Union, VariadicTuple,
+    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple,
+    WorldExtensions,
     function::{
         from::{R, V},
         from_ref::FromScriptRef,

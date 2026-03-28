@@ -7,8 +7,9 @@ use std::{
 
 use bevy_ecs::event::Event;
 use bevy_log::trace;
-use bevy_mod_scripting_bindings::{InteropError, ScriptValue};
+use bevy_mod_scripting_bindings::{InteropError, ScriptValue, WorldExtensions};
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 use bevy_platform::collections::HashMap;
 
 use super::*;
@@ -444,7 +445,8 @@ impl<P: IntoScriptPluginParams> MachineState<P> for LoadingInitialized {
         world: &mut World,
     ) -> Box<dyn Future<Output = Result<Box<dyn MachineState<P>>, ScriptError>> + Send + Sync> {
         let attachment = &ctxt.attachment;
-        let guard = WorldGuard::new_exclusive(world);
+        let cache = WorldAccessGuard::setup_cache(world);
+        let guard = WorldGuard::new_exclusive(world, cache);
         let ctxt = P::load(attachment, &self.content, guard.clone());
         Box::new(ready(ctxt.map_err(ScriptError::from).map(|context| {
             Box::new(ContextAssigned::<P> {
@@ -467,7 +469,8 @@ impl<P: IntoScriptPluginParams> MachineState<P> for ReloadingInitialized<P> {
         world: &mut World,
     ) -> Box<dyn Future<Output = Result<Box<dyn MachineState<P>>, ScriptError>> + Send + Sync> {
         let attachment = &ctxt.attachment;
-        let guard = WorldGuard::new_exclusive(world);
+        let cache = WorldAccessGuard::setup_cache(world);
+        let guard = WorldGuard::new_exclusive(world, cache);
         let mut previous_context_guard = self.existing_context.lock();
         let ctxt = P::reload(
             attachment,

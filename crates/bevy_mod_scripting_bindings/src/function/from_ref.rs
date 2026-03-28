@@ -1,9 +1,10 @@
 //! Contains the [`FromScriptRef`] trait and its implementations.
 
 use crate::{
-    FromScript, ScriptValue, WorldGuard, error::InteropError, match_by_type,
+    FromScript, ScriptValue, error::InteropError, match_by_type,
     reflection_extensions::TypeInfoExtensions,
 };
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{
     DynamicEnum, DynamicList, DynamicMap, DynamicSet, DynamicTuple, DynamicVariant, Map,
     PartialReflect, ReflectKind, Set,
@@ -74,7 +75,7 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             let mut dynamic_enum = match value {
                 ScriptValue::Unit => DynamicEnum::new("None", DynamicVariant::Unit),
                 _ => {
-                    let inner = Self::from_script_ref(inner_option_type, value, world)?;
+                    let inner = Self::from_script_ref(inner_option_type, value, world.clone())?;
                     DynamicEnum::new(
                         "Some",
                         DynamicVariant::Tuple(DynamicTuple::from_iter(vec![inner])),
@@ -135,7 +136,9 @@ impl FromScriptRef for Box<dyn PartialReflect> {
         }
 
         match value {
-            ScriptValue::Reference(reflect_reference) => reflect_reference.to_owned_value(world),
+            ScriptValue::Reference(reflect_reference) => {
+                reflect_reference.to_owned_value(world.clone())
+            }
             value => Err(InteropError::value_mismatch(target, value)),
         }
     }

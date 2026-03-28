@@ -10,7 +10,9 @@ use bevy::{
     },
     reflect::Reflect,
 };
-use bevy_mod_scripting_bindings::{FromScript, IntoScript, M, R, ReflectReference, ScriptValue, V};
+use bevy_mod_scripting_bindings::{
+    FromScript, IntoScript, M, R, ReflectReference, ScriptValue, V, WorldExtensions,
+};
 use criterion::{
     BatchSize, BenchmarkFilter, BenchmarkGroup, Criterion, criterion_main, measurement::Measurement,
 };

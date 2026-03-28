@@ -1,10 +1,11 @@
 use std::any::TypeId;
 
 use bevy_mod_scripting_bindings::{
-    ReflectReference, ThreadWorldContainer, error::InteropError, script_value::ScriptValue,
+    ReflectReference, WorldExtensions, error::InteropError, script_value::ScriptValue,
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_display::OrFakeId;
+use bevy_mod_scripting_world::ThreadWorldContainer;
 use mlua::{ExternalError, MetaMethod, UserData, UserDataMethods};
 
 use crate::IntoMluaError;

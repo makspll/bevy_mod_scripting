@@ -5,31 +5,18 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 
-use super::{
-    access_map::{
-        AccessCount, AccessMapKey, AnyAccessMap, DynamicSystemMeta, ReflectAccessId,
-        ReflectAccessKind, SubsetAccessMap,
-    },
-    with_global_access,
-};
-use crate::{with_access_read, with_access_write};
-use ::{
-    bevy_app::AppExit,
-    bevy_ecs::{
-        component::{Component, ComponentId},
-        entity::Entity,
-        prelude::Resource,
-        system::Commands,
-        world::{CommandQueue, Mut, World, unsafe_world_cell::UnsafeWorldCell},
-    },
+use crate::WorldAccessRange;
+
+use super::access_map::{AccessInstance, AnyAccessMap, DynamicSystemMeta, SubsetAccessMap};
+use ::bevy_ecs::{
+    component::ComponentId,
+    world::{World, unsafe_world_cell::UnsafeWorldCell},
 };
 use bevy_ecs::{
-    component::Mutable,
-    hierarchy::{ChildOf, Children},
-    system::Command,
+    component::Component, reflect::AppTypeRegistry, resource::Resource, system::Command,
     world::WorldId,
 };
-use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_reflect::TypeRegistryArc;
 use std::{
     any::{Any, TypeId},
     cell::RefCell,
@@ -44,27 +31,32 @@ pub type WorldGuard<'w> = WorldAccessGuard<'w>;
 /// Similar to [`WorldGuard`], but without the arc, use for when you don't need the outer Arc.
 pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
 
+/// A class of errors related to accessing the world with untyped acccess information
+#[derive(Debug)]
 pub enum DynWorldAccessError {
-    UnregisteredComponent(String),
+    /// World thread local was not set
     MissingWorld,
-    CannotClaimAccess(ReflectAccessId, Option<Location<'static>>, String),
+    /// Could not claim necessary access
+    CannotClaimAccess(WorldAccessRange, Option<Location<'static>>, String),
+    /// Resource was not registered
+    UnregisteredResource(TypeId),
+    /// Component was not registered
+    UnregisteredComponent(TypeId),
 }
 
 impl DynWorldAccessError {
-    pub fn unregistered_component_or_resource_type(type_name: &str) -> Self {
-        Self::UnregisteredComponent(type_name.to_string())
-    }
-
+    /// Creates [`DynWorldAccessError::MissingWorld`]
     pub fn missing_world() -> Self {
         Self::MissingWorld
     }
 
+    /// Creates [`DynWorldAccessError::CannotClaimAccess`]
     pub fn cannot_claim_access(
-        id: ReflectAccessId,
+        key: WorldAccessRange,
         location: Option<Location<'static>>,
         msg: impl ToString,
     ) -> Self {
-        Self::CannotClaimAccess(id, location, msg.to_string())
+        Self::CannotClaimAccess(key, location, msg.to_string())
     }
 }
 
@@ -90,6 +82,8 @@ impl WorldAccessGuard<'_> {
 ///
 /// Allows us to decouple dependencies while retaining some caching benefits.
 pub trait CachedRegistry: Any {
+    /// The cache slot used by this registry.
+    /// Must not be used by another registry to work correctly.
     const SLOT: usize;
 }
 
@@ -100,8 +94,8 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     // TODO: this is fairly hefty, explore sparse sets, bit fields etc
     pub(crate) accesses: AnyAccessMap,
     cached_slots: [Rc<dyn Any>; 5],
-    // /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
-    // type_registry: TypeRegistryArc,
+    /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
+    type_registry: TypeRegistryArc,
     // /// The script allocator for the world
     // allocator: AppReflectAllocator,
     // /// The function registry for the world
@@ -126,8 +120,14 @@ impl WorldAccessGuard<'static> {
         unsafe { std::mem::transmute(self) }
     }
 }
+
 #[profiling::all_functions]
 impl<'w> WorldAccessGuard<'w> {
+    /// Retrieves the cached type registry from this instantiation of the guard
+    pub fn type_registry(&self) -> &TypeRegistryArc {
+        &self.inner.type_registry
+    }
+
     /// creates a new guard derived from this one, which if invalidated, will not invalidate the original
     fn scope(&self) -> Self {
         let mut new_guard = self.clone();
@@ -190,20 +190,17 @@ impl<'w> WorldAccessGuard<'w> {
     /// # Safety
     /// - The caller must ensure that the accesses in subset are not aliased by any other access
     /// - If an access is allowed in this subset, but alised by someone else,
-    /// either by being converted to mutable or non mutable reference, this guard will be unsafe.
     pub unsafe fn new_non_exclusive(
         world: UnsafeWorldCell<'w>,
-        subset: impl IntoIterator<Item = ReflectAccessId>,
+        subset: impl IntoIterator<Item = impl Into<WorldAccessRange>>,
+        type_registry: TypeRegistryArc,
         registry_cache: [Rc<dyn Any>; 5],
     ) -> Self {
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world,
-                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(
-                    subset,
-                    // allocations live beyond the world, and can be safely accessed
-                    |id| ReflectAccessId::from_index(id).kind == ReflectAccessKind::Allocation,
-                )),
+                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(subset)),
+                type_registry,
                 cached_slots: registry_cache,
             }),
             invalid: Rc::new(false.into()),
@@ -214,11 +211,13 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// If these resources do not exist, they will be initialized.
     pub fn new_exclusive(world: &'w mut World, registry_cache: [Rc<dyn Any>; 5]) -> Self {
+        let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world.as_unsafe_world_cell(),
                 accesses: AnyAccessMap::UnlimitedAccessMap(Default::default()),
                 cached_slots: registry_cache,
+                type_registry,
             }),
             invalid: Rc::new(false.into()),
         }
@@ -226,7 +225,7 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Queues a command to the world, which will be executed later.
     pub(crate) fn queue(&self, command: impl Command) -> Result<(), DynWorldAccessError> {
-        self.with_global_access(|w| {
+        self.with_world_mut_access(|w| {
             w.commands().queue(command);
         })
     }
@@ -235,7 +234,7 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// Safety:
     /// - The caller must ensure it's safe to release any potentially locked accesses.
-    pub(crate) unsafe fn with_access_scope<O, F: FnOnce() -> O>(
+    pub unsafe fn with_access_scope<O, F: FnOnce() -> O>(
         &self,
         f: F,
     ) -> Result<O, DynWorldAccessError> {
@@ -243,7 +242,7 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Purely debugging utility to list all accesses currently held.
-    pub fn list_accesses(&self) -> Vec<(ReflectAccessId, AccessCount)> {
+    pub fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)> {
         self.inner.accesses.list_accesses()
     }
 
@@ -295,57 +294,21 @@ impl<'w> WorldAccessGuard<'w> {
             .get_resource_id(id))
     }
 
-    /// A utility for running a closure with scoped read access to the given id
-    pub fn with_read_access<T: Into<ReflectAccessId>, O, F: FnOnce(&Self) -> O>(
-        &self,
-        id: T,
-        closure: F,
-    ) -> Result<O, ()> {
-        let id = id.into();
-        if self.claim_read_access(id) {
-            let out = Ok(closure(self));
-            // Safety: just claimed this access
-            unsafe { self.release_access(id) };
-            out
-        } else {
-            Err(())
-        }
-    }
-
-    /// A utility for running a closure with scoped write access to the given id
-    pub fn with_write_access<T: Into<ReflectAccessId>, O, F: FnOnce(&Self) -> O>(
-        &self,
-        id: T,
-        closure: F,
-    ) -> Result<O, ()> {
-        let id = id.into();
-        if self.claim_write_access(id) {
-            let out = Ok(closure(self));
-            // Safety: just claimed this access
-            unsafe { self.release_access(id) };
-            out
-        } else {
-            Err(())
-        }
-    }
-
-    /// Get the location of the given access
-    pub fn get_access_location(
-        &self,
-        raid: ReflectAccessId,
-    ) -> Option<std::panic::Location<'static>> {
-        self.inner.accesses.access_location(raid)
-    }
-
     #[track_caller]
     /// Claims read access to the given type.
-    pub fn claim_read_access(&self, raid: ReflectAccessId) -> bool {
+    pub fn claim_read_access(
+        &self,
+        raid: impl Into<WorldAccessRange>,
+    ) -> Result<(), AccessInstance> {
         self.inner.accesses.claim_read_access(raid)
     }
 
     #[track_caller]
     /// Claims write access to the given type.
-    pub fn claim_write_access(&self, raid: ReflectAccessId) -> bool {
+    pub fn claim_write_access(
+        &self,
+        raid: impl Into<WorldAccessRange>,
+    ) -> Result<(), AccessInstance> {
         self.inner.accesses.claim_write_access(raid)
     }
 
@@ -355,165 +318,307 @@ impl<'w> WorldAccessGuard<'w> {
     /// - This can only be called safely after all references to the type created using the access have been dropped
     /// - You can only call this if you previously called one of: [`WorldAccessGuard::claim_read_access`] or [`WorldAccessGuard::claim_write_access`]
     /// - The number of claim and release calls for the same id must always match
-    pub unsafe fn release_access(&self, raid: ReflectAccessId) {
+    pub unsafe fn release_access(&self, raid: impl Into<WorldAccessRange>) {
         self.inner.accesses.release_access(raid)
     }
 
-    /// Claims global access to the world
-    pub fn claim_global_access(&self) -> bool {
-        self.inner.accesses.claim_global_access()
-    }
-
-    /// Releases global access to the world
-    ///
-    /// # Safety
-    /// - This can only be called safely after all references created using the access have been dropped
-    pub unsafe fn release_global_access(&self) {
-        self.inner.accesses.release_global_access()
-    }
-
-    /// Claims access to the world for the duration of the closure, allowing for global access to the world.
+    /// Procures and releases the given access key allowing safe read access to world resources
+    /// requiring that key within the given closure
     #[track_caller]
-    pub fn with_global_access<F: FnOnce(&mut World) -> O, O>(
+    pub fn with_read_access<F: FnOnce() -> O, O>(
+        &self,
+        key: impl Into<WorldAccessRange>,
+        f: F,
+    ) -> Result<O, DynWorldAccessError> {
+        let key = key.into();
+        if let Err(conflicting_access) = self.inner.accesses.claim_read_access(key) {
+            Err(DynWorldAccessError::cannot_claim_access(
+                key,
+                Some(conflicting_access.owner.location),
+                "Could not claim read access",
+            ))
+        } else {
+            let res = f();
+            // Safety: we have claimed read access to this key
+            unsafe { self.release_access(key) };
+            Ok(res)
+        }
+    }
+
+    /// Procures and releases the given access key allowing safe read access to world resources
+    /// requiring that key within the given closure.
+    ///
+    /// This is a version of [`WorldAccessGuard::with_read_access`] which flattens errors using into implementations
+    #[track_caller]
+    pub fn with_read_access_and_then<E, F: FnOnce() -> Result<O, E>, O>(
+        &self,
+        key: impl Into<WorldAccessRange>,
+        f: F,
+    ) -> Result<O, E>
+    where
+        DynWorldAccessError: Into<E>,
+    {
+        let key = key.into();
+        if let Err(conflicting_access) = self.inner.accesses.claim_read_access(key) {
+            Err(DynWorldAccessError::cannot_claim_access(
+                key,
+                Some(conflicting_access.owner.location),
+                "Could not claim read access",
+            )
+            .into())
+        } else {
+            let res = f()?;
+            // Safety: we have claimed read access to this key
+            unsafe { self.release_access(key) };
+            Ok(res)
+        }
+    }
+
+    /// Procures and releases the given access key allowing safe write access to world resources
+    /// requiring that key within the given closure
+    #[track_caller]
+    pub fn with_write_access<F: FnOnce() -> O, O>(
+        &self,
+        key: impl Into<WorldAccessRange>,
+        f: F,
+    ) -> Result<O, DynWorldAccessError> {
+        let key = key.into();
+        if let Err(conflicting_access) = self.inner.accesses.claim_write_access(key) {
+            Err(DynWorldAccessError::cannot_claim_access(
+                key,
+                Some(conflicting_access.owner.location),
+                "Could not claim write access",
+            ))
+        } else {
+            let res = f();
+            // Safety: we have claimed read access to this key
+            unsafe { self.release_access(key) };
+            Ok(res)
+        }
+    }
+
+    /// Procures and releases the given access key allowing safe write access to world resources
+    /// requiring that key within the given closure
+    ///
+    /// This is a version of [`WorldAccessGuard::with_write_access`] which flattens errors using into implementations.
+    #[track_caller]
+    pub fn with_write_access_and_then<E, F: FnOnce() -> Result<O, E>, O>(
+        &self,
+        key: impl Into<WorldAccessRange>,
+        f: F,
+    ) -> Result<O, E>
+    where
+        DynWorldAccessError: Into<E>,
+    {
+        let key = key.into();
+        if let Err(conflicting_access) = self.inner.accesses.claim_write_access(key) {
+            Err(DynWorldAccessError::cannot_claim_access(
+                key,
+                Some(conflicting_access.owner.location),
+                "Could not claim write access",
+            )
+            .into())
+        } else {
+            let res = f()?;
+            // Safety: we have claimed read access to this key
+            unsafe { self.release_access(key) };
+            Ok(res)
+        }
+    }
+
+    /// Procures and releases the given access key allowing safe read access to world resources
+    /// requiring that key within the given closure
+    #[track_caller]
+    pub fn with_world_access<F: FnOnce(&World) -> O, O>(
         &self,
         f: F,
     ) -> Result<O, DynWorldAccessError> {
-        with_global_access!(
-            &self.inner.accesses,
-            "Could not claim exclusive world access",
-            {
-                // safety: we have global access for the duration of the closure
-                let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
-                Ok(f(world))
-            }
-        )?
+        self.with_read_access(WorldAccessRange::Global, || {
+            let cell = self.as_unsafe_world_cell()?;
+            // Safety: we have exclusive access
+            Ok(f(unsafe { cell.world() }))
+        })?
     }
 
-    /// Safely accesses the resource by claiming and releasing access to it.
-    ///
-    /// # Panics
-    /// - if the resource does not exist
-    pub fn with_resource<F, R, O>(&self, f: F) -> Result<O, DynWorldAccessError>
-    where
-        R: Resource,
-        F: FnOnce(&R) -> O,
-    {
-        let cell = self.as_unsafe_world_cell()?;
-        let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
-
-        with_access_read!(
-            &self.inner.accesses,
-            access_id,
-            format!("Could not access resource: {}", std::any::type_name::<R>()),
-            {
-                // Safety: we have acquired access for the duration of the closure
-                f(unsafe {
-                    cell.get_resource::<R>().ok_or_else(|| {
-                        DynWorldAccessError::unregistered_component_or_resource_type(
-                            std::any::type_name::<R>(),
-                        )
-                    })?
-                })
-            }
-        )
-    }
-
-    /// Safely accesses the resource by claiming and releasing access to it.
-    ///
-    /// # Panics
-    /// - if the resource does not exist
-    pub fn with_resource_mut<F, R, O>(&self, f: F) -> Result<O, DynWorldAccessError>
-    where
-        R: Resource,
-        F: FnOnce(Mut<R>) -> O,
-    {
-        let cell = self.as_unsafe_world_cell()?;
-        let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
-        with_access_write!(
-            &self.inner.accesses,
-            access_id,
-            format!("Could not access resource: {}", std::any::type_name::<R>()),
-            {
-                // Safety: we have acquired access for the duration of the closure
-                f(unsafe {
-                    cell.get_resource_mut::<R>().ok_or_else(|| {
-                        DynWorldAccessError::unregistered_component_or_resource_type(
-                            std::any::type_name::<R>(),
-                        )
-                    })?
-                })
-            }
-        )
-    }
-
-    /// Safely accesses the component by claiming and releasing access to it.
-    pub fn with_component<F, T, O>(&self, entity: Entity, f: F) -> Result<O, DynWorldAccessError>
-    where
-        T: Component,
-        F: FnOnce(Option<&T>) -> O,
-    {
-        let cell = self.as_unsafe_world_cell()?;
-        let access_id = ReflectAccessId::for_component::<T>(&cell)?;
-        with_access_read!(
-            &self.inner.accesses,
-            access_id,
-            format!("Could not access component: {}", std::any::type_name::<T>()),
-            {
-                // Safety: we have acquired access for the duration of the closure
-                f(unsafe { cell.get_entity(entity).map(|e| e.get::<T>()) }
-                    .ok()
-                    .unwrap_or(None))
-            }
-        )
-    }
-
-    /// Safely accesses the component by claiming and releasing access to it.
-    pub fn with_component_mut<F, T, O>(
+    /// Procures and releases the given access key allowing safe write access to world resources
+    /// requiring that key within the given closure
+    #[track_caller]
+    pub fn with_world_mut_access<F: FnOnce(&mut World) -> O, O>(
         &self,
-        entity: Entity,
         f: F,
-    ) -> Result<O, DynWorldAccessError>
-    where
-        T: Component<Mutability = Mutable>,
-        F: FnOnce(Option<Mut<T>>) -> O,
-    {
-        let cell = self.as_unsafe_world_cell()?;
-        let access_id = ReflectAccessId::for_component::<T>(&cell)?;
-
-        with_access_write!(
-            &self.inner.accesses,
-            access_id,
-            format!("Could not access component: {}", std::any::type_name::<T>()),
-            {
-                // Safety: we have acquired access for the duration of the closure
-                f(unsafe { cell.get_entity(entity).map(|e| e.get_mut::<T>()) }
-                    .ok()
-                    .unwrap_or(None))
-            }
-        )
+    ) -> Result<O, DynWorldAccessError> {
+        self.with_write_access(WorldAccessRange::Global, || {
+            let cell = self.as_unsafe_world_cell()?;
+            // Safety: we have exclusive access
+            Ok(f(unsafe { cell.world_mut() }))
+        })?
     }
 
-    /// Safey modify or insert a component by claiming and releasing global access.
-    pub fn with_or_insert_component_mut<F, T, O>(
+    /// Procures and releases the given access key allowing safe write access to world resources
+    /// requiring that key within the given closure
+    ///
+    /// This is a version of [`WorldAccessGuard::with_world_mut_access`] which flattens errors using into implementations.
+    #[track_caller]
+    pub fn with_world_mut_access_and_then<E, F: FnOnce(&mut World) -> Result<O, E>, O>(
         &self,
-        entity: Entity,
         f: F,
-    ) -> Result<O, DynWorldAccessError>
+    ) -> Result<O, E>
     where
-        T: Component<Mutability = Mutable> + Default,
-        F: FnOnce(&mut T) -> O,
+        DynWorldAccessError: Into<E>,
     {
-        self.with_global_access(|world| match world.get_mut::<T>(entity) {
-            Some(mut component) => f(&mut component),
-            None => {
-                let mut component = T::default();
-                let mut commands = world.commands();
-                let result = f(&mut component);
-                commands.entity(entity).insert(component);
-                result
-            }
+        let cell = self.as_unsafe_world_cell().map_err(Into::into)?;
+        self.with_write_access_and_then(WorldAccessRange::Global, || {
+            // Safety: we have exclusive access
+            f(unsafe { cell.world_mut() })
         })
     }
+
+    /// Procures and releases the given access key allowing safe read access to world resources
+    /// requiring that key within the given closure
+    ///
+    /// This is a version of [`WorldAccessGuard::with_world_access`] which flattens errors using into implementations.
+    #[track_caller]
+    pub fn with_world_access_and_then<E, F: FnOnce(&World) -> Result<O, E>, O>(
+        &self,
+        f: F,
+    ) -> Result<O, E>
+    where
+        DynWorldAccessError: Into<E>,
+    {
+        let cell = self.as_unsafe_world_cell().map_err(Into::into)?;
+        self.with_write_access_and_then(WorldAccessRange::Global, || {
+            // Safety: we have exclusive access
+            f(unsafe { cell.world_mut() })
+        })
+    }
+
+    fn resource_component_id<R: Resource>(&self) -> Result<ComponentId, DynWorldAccessError> {
+        self.as_unsafe_world_cell()?
+            .components()
+            .resource_id::<R>()
+            .ok_or_else(|| DynWorldAccessError::UnregisteredResource(TypeId::of::<R>()))
+    }
+
+    fn component_component_id<R: Component>(&self) -> Result<ComponentId, DynWorldAccessError> {
+        self.as_unsafe_world_cell()?
+            .components()
+            .component_id::<R>()
+            .ok_or_else(|| DynWorldAccessError::UnregisteredComponent(TypeId::of::<R>()))
+    }
+
+    // /// Safely accesses the resource by claiming and releasing access to it.
+    // ///
+    // /// # Panics
+    // /// - if the resource does not exist
+    // pub fn with_resource<F, R, O>(&self, f: F) -> Result<O, DynWorldAccessError>
+    // where
+    //     R: Resource,
+    //     F: FnOnce(&R) -> O,
+    // {
+    //     self.with_read_access(
+    //         WorldAccessRange::ComponentOrResource(self.resource_component_id::<R>()),
+    //         || {
+    //             f(self.)
+    //         },
+    //     )
+    // }
+
+    // /// Safely accesses the resource by claiming and releasing access to it.
+    // ///
+    // /// # Panics
+    // /// - if the resource does not exist
+    // pub fn with_resource_mut<F, R, O>(&self, f: F) -> Result<O, DynWorldAccessError>
+    // where
+    //     R: Resource,
+    //     F: FnOnce(Mut<R>) -> O,
+    // {
+    //     let cell = self.as_unsafe_world_cell()?;
+    //     let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
+    //     with_access_write!(
+    //         &self.inner.accesses,
+    //         access_id,
+    //         format!("Could not access resource: {}", std::any::type_name::<R>()),
+    //         {
+    //             // Safety: we have acquired access for the duration of the closure
+    //             f(unsafe {
+    //                 cell.get_resource_mut::<R>().ok_or_else(|| {
+    //                     DynWorldAccessError::unregistered_component_or_resource_type(
+    //                         std::any::type_name::<R>(),
+    //                     )
+    //                 })?
+    //             })
+    //         }
+    //     )
+    // }
+
+    // /// Safely accesses the component by claiming and releasing access to it.
+    // pub fn with_component<F, T, O>(&self, entity: Entity, f: F) -> Result<O, DynWorldAccessError>
+    // where
+    //     T: Component,
+    //     F: FnOnce(Option<&T>) -> O,
+    // {
+    //     let cell = self.as_unsafe_world_cell()?;
+    //     let access_id = ReflectAccessId::for_component::<T>(&cell)?;
+    //     with_access_read!(
+    //         &self.inner.accesses,
+    //         access_id,
+    //         format!("Could not access component: {}", std::any::type_name::<T>()),
+    //         {
+    //             // Safety: we have acquired access for the duration of the closure
+    //             f(unsafe { cell.get_entity(entity).map(|e| e.get::<T>()) }
+    //                 .ok()
+    //                 .unwrap_or(None))
+    //         }
+    //     )
+    // }
+
+    // /// Safely accesses the component by claiming and releasing access to it.
+    // pub fn with_component_mut<F, T, O>(
+    //     &self,
+    //     entity: Entity,
+    //     f: F,
+    // ) -> Result<O, DynWorldAccessError>
+    // where
+    //     T: Component<Mutability = Mutable>,
+    //     F: FnOnce(Option<Mut<T>>) -> O,
+    // {
+    //     let cell = self.as_unsafe_world_cell()?;
+    //     let access_id = ReflectAccessId::for_component::<T>(&cell)?;
+
+    //     with_access_write!(
+    //         &self.inner.accesses,
+    //         access_id,
+    //         format!("Could not access component: {}", std::any::type_name::<T>()),
+    //         {
+    //             // Safety: we have acquired access for the duration of the closure
+    //             f(unsafe { cell.get_entity(entity).map(|e| e.get_mut::<T>()) }
+    //                 .ok()
+    //                 .unwrap_or(None))
+    //         }
+    //     )
+    // }
+
+    // /// Safey modify or insert a component by claiming and releasing global access.
+    // pub fn with_or_insert_component_mut<F, T, O>(
+    //     &self,
+    //     entity: Entity,
+    //     f: F,
+    // ) -> Result<O, DynWorldAccessError>
+    // where
+    //     T: Component<Mutability = Mutable> + Default,
+    //     F: FnOnce(&mut T) -> O,
+    // {
+    //     self.with_global_access(|world| match world.get_mut::<T>(entity) {
+    //         Some(mut component) => f(&mut component),
+    //         None => {
+    //             let mut component = T::default();
+    //             let mut commands = world.commands();
+    //             let result = f(&mut component);
+    //             commands.entity(entity).insert(component);
+    //             result
+    //         }
+    //     })
+    // }
 }
 
 /// Impl block for higher level world methods
@@ -535,8 +640,8 @@ pub struct ThreadWorldContainer;
 pub struct ThreadScriptContext<'l> {
     /// The world pointer
     pub world: WorldGuard<'l>,
-    /// The currently active script attachment
-    pub attachment: ScriptAttachment,
+    // /// The currently active script attachment
+    // pub attachment: ScriptAttachment,
 }
 
 thread_local! {
@@ -565,7 +670,7 @@ impl ThreadWorldContainer {
             })
             .map(|v| ThreadScriptContext {
                 world: v.world.shorten_lifetime(),
-                attachment: v.attachment,
+                // attachment: v.attachment,
             })
     }
 }
@@ -592,8 +697,8 @@ mod test {
         let scoped_world = world.scope();
 
         // can use scoped & normal worlds
-        scoped_world.spawn().unwrap();
-        world.spawn().unwrap();
+        assert!(scoped_world.is_valid());
+        assert!(world.is_valid());
         pretty_assertions::assert_eq!(scoped_world.is_valid(), true);
         pretty_assertions::assert_eq!(world.is_valid(), true);
 
@@ -602,7 +707,7 @@ mod test {
         // can only use normal world
         pretty_assertions::assert_eq!(scoped_world.is_valid(), false);
         pretty_assertions::assert_eq!(world.is_valid(), true);
-        world.spawn().unwrap();
+        assert!(world.is_valid());
     }
 
     #[test]

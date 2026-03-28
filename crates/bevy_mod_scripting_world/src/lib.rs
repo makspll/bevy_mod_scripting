@@ -1,14 +1,7 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! Abstractions for interacting with the bevy world without knowing compile time type information safely.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+mod access_map;
+mod world;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub use access_map::*;
+pub use world::*;

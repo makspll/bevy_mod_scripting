@@ -1,7 +1,6 @@
 //! Contains abstractions for exposing "globals" to scripts, in a language-agnostic way.
 
 use super::{
-    WorldGuard,
     function::arg_meta::{ScriptReturn, TypedScriptReturn},
     script_value::ScriptValue,
 };
@@ -9,6 +8,7 @@ use crate::{
     docgen::{TypedThrough, into_through_type_info, typed_through::ThroughTypeInfo},
     error::InteropError,
 };
+use bevy_mod_scripting_world::WorldGuard;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 use {bevy_ecs::resource::Resource, bevy_platform::collections::HashMap, bevy_reflect::Typed};
@@ -260,6 +260,8 @@ impl ScriptGlobalsRegistry {
 
 #[cfg(test)]
 mod test {
+    use std::{any::Any, rc::Rc};
+
     use bevy_ecs::world::World;
 
     use super::*;
@@ -279,7 +281,8 @@ mod test {
 
         assert_eq!(
             (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
-                &mut World::new()
+                &mut World::new(),
+                std::array::from_fn(|_| Rc::new(()) as Rc<dyn Any>)
             ))
             .unwrap(),
             ScriptValue::from(42)
@@ -290,7 +293,8 @@ mod test {
 
         assert_eq!(
             (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
-                &mut World::new()
+                &mut World::new(),
+                std::array::from_fn(|_| Rc::new(()) as Rc<dyn Any>)
             ))
             .unwrap(),
             ScriptValue::from(43)

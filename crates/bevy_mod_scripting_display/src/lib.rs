@@ -1,108 +1,103 @@
 //! Abstractions for displaying reflect values, potentially with access to the type registry
 
-use std::{
-    any::{Any, TypeId},
-    ops::Deref,
-};
+use std::{any::TypeId, ops::Deref};
 mod handle;
 mod impls;
 mod printer;
 pub use {handle::*, printer::*};
 
-use bevy_ecs::{
-    component::{ComponentId, ComponentInfo},
-    reflect::AppTypeRegistry,
-    world::World,
-};
-use bevy_reflect::{TypeData, TypeInfo, TypeRegistry, reflect_trait};
+use bevy_mod_scripting_world::ThreadWorldContainer;
+pub use bevy_mod_scripting_world::WorldAccessGuard;
 
-/// An abstraction for getting type information, potentially using the type registry.
-pub trait GetTypeInfo {
-    /// Get a string representation of the type, potentially using the type registry.
-    fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo>;
+use bevy_reflect::reflect_trait;
 
-    /// Queries against arbitrary type data
-    fn query_type_registration(
-        &self,
-        type_id: TypeId,
-        type_data_id: TypeId,
-    ) -> Option<Box<dyn TypeData>>;
+// /// An abstraction for getting type information, potentially using the type registry.
+// pub trait GetTypeInfo {
+//     /// Get a string representation of the type, potentially using the type registry.
+//     fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo>;
 
-    /// Get component info for a given component id, if available
-    fn get_component_info(&self, component_id: ComponentId) -> Option<&ComponentInfo>;
+//     /// Queries against arbitrary type data
+//     fn query_type_registration(
+//         &self,
+//         type_id: TypeId,
+//         type_data_id: TypeId,
+//     ) -> Option<Box<dyn TypeData>>;
 
-    /// A potentially unsafe function depending on the implementation which allows you to downcast to a concrete type without
-    /// requiring 'static on the type.
-    ///
-    /// # Safety
-    /// - Ensure the safety invariants for the concrete type you are expecting are respected
-    unsafe fn as_any_static(&self) -> &dyn Any;
-}
+//     /// Get component info for a given component id, if available
+//     fn get_component_info(&self, component_id: ComponentId) -> Option<&ComponentInfo>;
 
-/// Extension trait for GetTypeInfo which provides non-type safe extensions
-pub trait GetTypeInfoExtensions<'s> {
-    /// Typed equivalent to [`GetTypeInfo::query_type_registration`]
-    fn get_type_data<T: TypeData + 'static>(&'s self, type_id: TypeId) -> Option<T>;
-}
+//     /// A potentially unsafe function depending on the implementation which allows you to downcast to a concrete type without
+//     /// requiring 'static on the type.
+//     ///
+//     /// # Safety
+//     /// - Ensure the safety invariants for the concrete type you are expecting are respected
+//     unsafe fn as_any_static(&self) -> &dyn Any;
+// }
 
-impl<'s> GetTypeInfoExtensions<'s> for &'s dyn GetTypeInfo {
-    fn get_type_data<T: TypeData + 'static>(&'s self, type_id: TypeId) -> Option<T> {
-        self.query_type_registration(type_id, std::any::TypeId::of::<T>())
-            .and_then(|t| t.downcast().ok())
-            .map(|b| *b)
-    }
-}
+// /// Extension trait for GetTypeInfo which provides non-type safe extensions
+// pub trait GetTypeInfoExtensions<'s> {
+//     /// Typed equivalent to [`GetTypeInfo::query_type_registration`]
+//     fn get_type_data<T: TypeData + 'static>(&'s self, type_id: TypeId) -> Option<T>;
+// }
 
-impl GetTypeInfo for TypeRegistry {
-    fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo> {
-        self.get(type_id)
-            .map(|registration| registration.type_info())
-    }
+// impl<'s> GetTypeInfoExtensions<'s> for &'s WorldAccessGuard<'t> {
+//     fn get_type_data<T: TypeData + 'static>(&'s self, type_id: TypeId) -> Option<T> {
+//         self.query_type_registration(type_id, std::any::TypeId::of::<T>())
+//             .and_then(|t| t.downcast().ok())
+//             .map(|b| *b)
+//     }
+// }
 
-    fn query_type_registration(
-        &self,
-        type_id: TypeId,
-        type_data_id: TypeId,
-    ) -> Option<Box<dyn TypeData>> {
-        self.get(type_id)
-            .and_then(|r| r.data_by_id(type_data_id).map(|t| t.clone_type_data()))
-    }
+// impl GetTypeInfo for TypeRegistry {
+//     fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo> {
+//         self.get(type_id)
+//             .map(|registration| registration.type_info())
+//     }
 
-    fn get_component_info(&self, _component_id: ComponentId) -> Option<&ComponentInfo> {
-        None
-    }
+//     fn query_type_registration(
+//         &self,
+//         type_id: TypeId,
+//         type_data_id: TypeId,
+//     ) -> Option<Box<dyn TypeData>> {
+//         self.get(type_id)
+//             .and_then(|r| r.data_by_id(type_data_id).map(|t| t.clone_type_data()))
+//     }
 
-    unsafe fn as_any_static(&self) -> &dyn Any {
-        self
-    }
-}
+//     fn get_component_info(&self, _component_id: ComponentId) -> Option<&ComponentInfo> {
+//         None
+//     }
 
-impl GetTypeInfo for World {
-    fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo> {
-        self.get_resource::<AppTypeRegistry>()
-            .and_then(|r| r.read().get_type_info(type_id))
-    }
+//     unsafe fn as_any_static(&self) -> &dyn Any {
+//         self
+//     }
+// }
 
-    fn query_type_registration(
-        &self,
-        type_id: TypeId,
-        type_data_id: TypeId,
-    ) -> Option<Box<dyn TypeData>> {
-        self.get_resource::<AppTypeRegistry>().and_then(|r| {
-            r.read()
-                .get(type_id)
-                .and_then(|r| r.data_by_id(type_data_id).map(|t| t.clone_type_data()))
-        })
-    }
+// impl GetTypeInfo for World {
+//     fn get_type_info(&self, type_id: TypeId) -> Option<&TypeInfo> {
+//         self.get_resource::<AppTypeRegistry>()
+//             .and_then(|r| r.read().get_type_info(type_id))
+//     }
 
-    fn get_component_info(&self, component_id: ComponentId) -> Option<&ComponentInfo> {
-        self.components().get_info(component_id)
-    }
+//     fn query_type_registration(
+//         &self,
+//         type_id: TypeId,
+//         type_data_id: TypeId,
+//     ) -> Option<Box<dyn TypeData>> {
+//         self.get_resource::<AppTypeRegistry>().and_then(|r| {
+//             r.read()
+//                 .get(type_id)
+//                 .and_then(|r| r.data_by_id(type_data_id).map(|t| t.clone_type_data()))
+//         })
+//     }
 
-    unsafe fn as_any_static(&self) -> &dyn Any {
-        self
-    }
-}
+//     fn get_component_info(&self, component_id: ComponentId) -> Option<&ComponentInfo> {
+//         self.components().get_info(component_id)
+//     }
+
+//     unsafe fn as_any_static(&self) -> &dyn Any {
+//         self
+//     }
+// }
 
 /// An trait for displaying values with access to type information
 #[reflect_trait]
@@ -111,7 +106,7 @@ pub trait DisplayWithTypeInfo {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result;
 }
 
@@ -119,7 +114,7 @@ impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for WithTypeInfo<'_, T> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         self.0.display_with_type_info(f, type_info_provider)
     }
@@ -127,12 +122,11 @@ impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for WithTypeInfo<'_, T> {
 
 impl<T: DisplayWithTypeInfo> std::fmt::Display for WithTypeInfo<'_, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let provider = self.1.or_else(|| {
-            GLOBAL_TYPE_INFO_PROVIDER
-                .get()
-                .and_then(|get_provider| get_provider())
-        });
-        self.0.display_with_type_info(f, provider)
+        if let Some(provider) = self.1 {
+            return self.0.display_with_type_info(f, Some(provider));
+        }
+        let provider = ThreadWorldContainer.try_get_context().ok().map(|c| c.world);
+        self.0.display_with_type_info(f, provider.as_ref())
     }
 }
 
@@ -144,15 +138,9 @@ pub trait DebugWithTypeInfo {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result;
 }
-
-/// A global type info provider that can be set once and used throughout the application
-/// It does not do the retrieval itself, but provides a function that points to the retrieval mechanism.
-pub static GLOBAL_TYPE_INFO_PROVIDER: std::sync::OnceLock<
-    fn() -> Option<&'static dyn GetTypeInfo>,
-> = std::sync::OnceLock::new();
 
 /// newtype adapter for opting into [`DisplayWithTypeInfo`] for any T: [`DisplayWithTypeInfo`]
 /// Use as follows
@@ -163,7 +151,7 @@ pub static GLOBAL_TYPE_INFO_PROVIDER: std::sync::OnceLock<
 /// format!("{:?}", WithTypeInfo::new(&my_value)); // non-pretty print
 /// format!("{:#?}", WithTypeInfo::new(&my_value)); // pretty print
 /// ```
-pub struct WithTypeInfo<'a, T: ?Sized>(&'a T, Option<&'a dyn GetTypeInfo>);
+pub struct WithTypeInfo<'a, T: ?Sized>(&'a T, Option<&'a WorldAccessGuard<'a>>);
 
 impl<'a, T: ?Sized> WithTypeInfo<'a, T> {
     /// Create a new WithTypeInfo wrapper.
@@ -176,13 +164,13 @@ impl<'a, T: ?Sized> WithTypeInfo<'a, T> {
     }
 
     /// Create a new WithTypeInfo wrapper with a specific type info provider
-    pub fn new_with_info(value: &'a T, provider: &'a dyn GetTypeInfo) -> Self {
+    pub fn new_with_info(value: &'a T, provider: &'a WorldAccessGuard<'a>) -> Self {
         Self(value, Some(provider))
     }
 
     /// Create a new WithTypeInfo wrapper passing down an optional type info provider.
     /// Useful for nested implementations which want to avoid multiple retrievals
-    pub fn new_with_opt_info(value: &'a T, provider: Option<&'a dyn GetTypeInfo>) -> Self {
+    pub fn new_with_opt_info(value: &'a T, provider: Option<&'a WorldAccessGuard<'a>>) -> Self {
         Self(value, provider)
     }
 }
@@ -197,12 +185,11 @@ impl<T: DebugWithTypeInfo + ?Sized> Deref for WithTypeInfo<'_, T> {
 
 impl<'a, T: DebugWithTypeInfo + ?Sized> std::fmt::Debug for WithTypeInfo<'a, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let provider = self.1.or_else(|| {
-            GLOBAL_TYPE_INFO_PROVIDER
-                .get()
-                .and_then(|get_provider| get_provider())
-        });
-        self.0.to_string_with_type_info(f, provider)
+        if let Some(provider) = self.1 {
+            return self.0.to_string_with_type_info(f, Some(provider));
+        }
+        let provider = ThreadWorldContainer.try_get_context().ok().map(|c| c.world);
+        self.0.to_string_with_type_info(f, provider.as_ref())
     }
 }
 
@@ -210,7 +197,7 @@ impl<T: DebugWithTypeInfo + ?Sized> DebugWithTypeInfo for WithTypeInfo<'_, T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         self.0.to_string_with_type_info(f, type_info_provider)
     }
@@ -251,7 +238,7 @@ impl<T: Sized> SelfBuilder for T {
 /// each field.
 pub struct DebugStruct<'a, 'b: 'a, 't> {
     builder: std::fmt::DebugStruct<'a, 'b>,
-    type_info: Option<&'t dyn GetTypeInfo>,
+    type_info: Option<&'t WorldAccessGuard<'t>>,
 }
 
 impl<'a, 'b: 'a, 't> DebugStruct<'a, 'b, 't> {
@@ -263,7 +250,7 @@ impl<'a, 'b: 'a, 't> DebugStruct<'a, 'b, 't> {
     pub fn new(
         f: &'a mut std::fmt::Formatter<'b>,
         name: &str,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> Self {
         Self {
             builder: f.debug_struct(name),
@@ -295,7 +282,7 @@ impl<'a, 'b: 'a, 't> DebugStruct<'a, 'b, 't> {
 /// information.
 pub struct DebugTuple<'a, 'b: 'a, 't> {
     builder: std::fmt::DebugTuple<'a, 'b>,
-    type_info: Option<&'t dyn GetTypeInfo>,
+    type_info: Option<&'t WorldAccessGuard<'t>>,
 }
 
 impl<'a, 'b: 'a, 't> DebugTuple<'a, 'b, 't> {
@@ -304,7 +291,7 @@ impl<'a, 'b: 'a, 't> DebugTuple<'a, 'b, 't> {
     pub fn new(
         f: &'a mut std::fmt::Formatter<'b>,
         name: &str,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> Self {
         Self {
             builder: f.debug_tuple(name),
@@ -332,12 +319,15 @@ impl<'a, 'b: 'a, 't> DebugTuple<'a, 'b, 't> {
 /// information during formatting.
 pub struct DebugList<'a, 'b: 'a, 't> {
     builder: std::fmt::DebugList<'a, 'b>,
-    type_info: Option<&'t dyn GetTypeInfo>,
+    type_info: Option<&'t WorldAccessGuard<'t>>,
 }
 
 impl<'a, 'b: 'a, 't> DebugList<'a, 'b, 't> {
     /// Create a new `DebugList` builder.
-    pub fn new(f: &'a mut std::fmt::Formatter<'b>, type_info: Option<&'t dyn GetTypeInfo>) -> Self {
+    pub fn new(
+        f: &'a mut std::fmt::Formatter<'b>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
+    ) -> Self {
         Self {
             builder: f.debug_list(),
             type_info,
@@ -376,12 +366,15 @@ impl<'a, 'b: 'a, 't> DebugList<'a, 'b, 't> {
 /// information.
 pub struct DebugSet<'a, 'b: 'a, 't> {
     builder: std::fmt::DebugSet<'a, 'b>,
-    type_info: Option<&'t dyn GetTypeInfo>,
+    type_info: Option<&'t WorldAccessGuard<'t>>,
 }
 
 impl<'a, 'b: 'a, 't> DebugSet<'a, 'b, 't> {
     /// Create a new `DebugSet` builder.
-    pub fn new(f: &'a mut std::fmt::Formatter<'b>, type_info: Option<&'t dyn GetTypeInfo>) -> Self {
+    pub fn new(
+        f: &'a mut std::fmt::Formatter<'b>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
+    ) -> Self {
         Self {
             builder: f.debug_set(),
             type_info,
@@ -420,12 +413,15 @@ impl<'a, 'b: 'a, 't> DebugSet<'a, 'b, 't> {
 /// with optional type information.
 pub struct DebugMap<'a, 'b: 'a, 't> {
     builder: std::fmt::DebugMap<'a, 'b>,
-    type_info: Option<&'t dyn GetTypeInfo>,
+    type_info: Option<&'t WorldAccessGuard<'t>>,
 }
 
 impl<'a, 'b: 'a, 't> DebugMap<'a, 'b, 't> {
     /// Create a new `DebugMap` builder.
-    pub fn new(f: &'a mut std::fmt::Formatter<'b>, type_info: Option<&'t dyn GetTypeInfo>) -> Self {
+    pub fn new(
+        f: &'a mut std::fmt::Formatter<'b>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
+    ) -> Self {
         Self {
             builder: f.debug_map(),
             type_info,
@@ -496,7 +492,7 @@ pub trait DebugWithTypeInfoBuilder<'a, 'b: 'a, 't> {
     fn debug_struct_with_type_info(
         &'a mut self,
         name: &str,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugStruct<'a, 'b, 't>;
 
     /// Start formatting a tuple-like value with the given name using
@@ -504,25 +500,25 @@ pub trait DebugWithTypeInfoBuilder<'a, 'b: 'a, 't> {
     fn debug_tuple_with_type_info(
         &'a mut self,
         name: &str,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugTuple<'a, 'b, 't>;
 
     /// Start formatting a list using type-aware entry formatting.
     fn debug_list_with_type_info(
         &'a mut self,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugList<'a, 'b, 't>;
 
     /// Start formatting a set using type-aware entry formatting.
     fn debug_set_with_type_info(
         &'a mut self,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugSet<'a, 'b, 't>;
 
     /// Start formatting a map using type-aware key/value formatting.
     fn debug_map_with_type_info(
         &'a mut self,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugMap<'a, 'b, 't>;
 }
 
@@ -530,32 +526,32 @@ impl<'a, 'b: 'a, 't> DebugWithTypeInfoBuilder<'a, 'b, 't> for std::fmt::Formatte
     fn debug_struct_with_type_info(
         &'a mut self,
         name: &str,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugStruct<'a, 'b, 't> {
         DebugStruct::new(self, name, type_info)
     }
     fn debug_tuple_with_type_info(
         &'a mut self,
         name: &str,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugTuple<'a, 'b, 't> {
         DebugTuple::new(self, name, type_info)
     }
     fn debug_list_with_type_info(
         &'a mut self,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugList<'a, 'b, 't> {
         DebugList::new(self, type_info)
     }
     fn debug_set_with_type_info(
         &'a mut self,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugSet<'a, 'b, 't> {
         DebugSet::new(self, type_info)
     }
     fn debug_map_with_type_info(
         &'a mut self,
-        type_info: Option<&'t dyn GetTypeInfo>,
+        type_info: Option<&'t WorldAccessGuard<'t>>,
     ) -> DebugMap<'a, 'b, 't> {
         DebugMap::new(self, type_info)
     }
@@ -567,7 +563,7 @@ macro_rules! impl_debug_with_type_info_via_debug {
             fn to_string_with_type_info(
                 &self,
                 f: &mut std::fmt::Formatter<'_>,
-                _type_info_provider: Option<&dyn $crate::GetTypeInfo>,
+                _type_info_provider: Option<&WorldAccessGuard>,
             ) -> std::fmt::Result {
                 std::fmt::Debug::fmt(self, f)
             }
@@ -582,7 +578,7 @@ macro_rules! impl_debug_with_type_info_via_display {
                 fn to_string_with_type_info(
                     &self,
                     f: &mut std::fmt::Formatter<'_>,
-                    _type_info_provider: Option<&dyn GetTypeInfo>,
+                    _type_info_provider: Option<&WorldAccessGuard>,
                 ) -> std::fmt::Result {
                     <Self as std::fmt::Display>::fmt(self, f)
                 }
@@ -601,7 +597,7 @@ macro_rules! impl_display_with_type_info_via_display {
                 fn display_with_type_info(
                     &self,
                     f: &mut std::fmt::Formatter<'_>,
-                    _type_info_provider: Option<&dyn GetTypeInfo>,
+                    _type_info_provider: Option<&WorldAccessGuard>,
                 ) -> std::fmt::Result {
                     <Self as std::fmt::Display>::fmt(self, f)
                 }

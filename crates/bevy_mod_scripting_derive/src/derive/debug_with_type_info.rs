@@ -138,7 +138,7 @@ pub fn debug_with_type_info(input: proc_macro::TokenStream) -> proc_macro::Token
     let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
     quote::quote! {
         impl #impl_generics #bms_display_path::DebugWithTypeInfo for #name #ty_generics #where_clause {
-            fn to_string_with_type_info(&self, f: &mut std::fmt::Formatter<'_>, type_info_provider: Option<&dyn #bms_display_path::GetTypeInfo>) -> std::fmt::Result {
+            fn to_string_with_type_info(&self, f: &mut std::fmt::Formatter<'_>, type_info_provider: Option<&#bms_display_path::WorldAccessGuard>) -> std::fmt::Result {
                 #builder
             }
         }

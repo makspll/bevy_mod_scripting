@@ -26,11 +26,12 @@ use bevy_ecs::{
 use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptComponentRegistry,
-    AppScriptFunctionRegistry, InteropError, IntoScript, ReflectAccessId, ReflectReference,
-    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, V, WorldAccessGuard,
-    WorldGuard,
+    AppScriptFunctionRegistry, CurrentScriptAttachment, InteropError, IntoScript, ReflectReference,
+    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::{WorldAccessGuard, WorldAccessRange, WorldGuard};
+use bevy_reflect::TypeRegistryArc;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bevy_utils::prelude::DebugName;
 use std::{
@@ -182,12 +183,12 @@ impl ScriptSystemBuilder {
 
 /// TODO: inline world guard into the system state, we should be able to re-use it
 struct ScriptSystemState<P: IntoScriptPluginParams> {
-    type_registry: AppTypeRegistry,
+    type_registry: TypeRegistryArc,
     function_registry: AppScriptFunctionRegistry,
     schedule_registry: AppScheduleRegistry,
     component_registry: AppScriptComponentRegistry,
     allocator: AppReflectAllocator,
-    subset: HashSet<ReflectAccessId>,
+    subset: HashSet<WorldAccessRange>,
     callback_label: CallbackLabel,
     system_params: Vec<ScriptSystemParam>,
     script_contexts: ScriptContexts<P>,
@@ -286,21 +287,24 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         };
 
         let mut payload = Vec::with_capacity(state.system_params.len());
-
+        let cache = WorldAccessGuard::setup_cache_raw(
+            CurrentScriptAttachment(Some(self.target_attachment.clone())),
+            state.allocator.clone(),
+            state.function_registry.clone(),
+            state.schedule_registry.clone(),
+            state.component_registry.clone(),
+        );
         let guard = if self.exclusive {
             // safety: we are an exclusive system, therefore the cell allows us to do this
             let world = unsafe { world.world_mut() };
-            WorldAccessGuard::new_exclusive(world)
+            WorldAccessGuard::new_exclusive(world, cache)
         } else {
             unsafe {
                 WorldAccessGuard::new_non_exclusive(
                     world,
                     state.subset.clone(),
                     state.type_registry.clone(),
-                    state.allocator.clone(),
-                    state.function_registry.clone(),
-                    state.schedule_registry.clone(),
-                    state.component_registry.clone(),
+                    cache,
                 )
             }
         };
@@ -409,7 +413,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
                     access.add_resource_write(component_id);
                     component_access_set.add(access);
-                    let raid = ReflectAccessId::for_component_id(component_id);
+                    let raid: WorldAccessRange = component_id.into();
                     #[allow(
                         clippy::panic,
                         reason = "WIP, to be dealt with in validate params better, but panic will still remain"
@@ -453,7 +457,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         }
 
         self.state = Some(ScriptSystemState {
-            type_registry: world.get_resource_or_init::<AppTypeRegistry>().clone(),
+            type_registry: world.get_resource_or_init::<AppTypeRegistry>().clone().0,
             function_registry: world
                 .get_resource_or_init::<AppScriptFunctionRegistry>()
                 .clone(),
@@ -543,7 +547,7 @@ impl ManageScriptSystems for WorldGuard<'_> {
         label: &ReflectSchedule,
         f: F,
     ) -> Result<O, InteropError> {
-        self.with_global_access(|world| {
+        self.with_world_mut(|world| {
             let mut schedules = world.get_resource_mut::<Schedules>().ok_or_else(|| {
                 InteropError::unsupported_operation(
                     None,
@@ -676,10 +680,11 @@ mod test {
             ScriptAttachment::StaticScript(Handle::default()),
         );
         builder.before_system(test_system);
-
+        let world_mut = app.world_mut();
+        let cache = WorldAccessGuard::setup_cache(world_mut);
         let _ = builder
             .build::<TestPlugin>(
-                WorldAccessGuard::new_exclusive(app.world_mut()),
+                WorldAccessGuard::new_exclusive(world_mut, cache),
                 &ReflectSchedule::from_label(TestSchedule),
             )
             .unwrap();

@@ -13,6 +13,7 @@ use bevy_mod_scripting_bindings::InteropError;
 
 use ::bevy_reflect::Reflect;
 use bevy_mod_scripting_display::{DebugWithTypeInfo, DisplayWithTypeInfo, WithTypeInfo};
+use bevy_mod_scripting_world::WorldGuard;
 
 /// An error with an optional script Context
 #[derive(Debug, Clone, Reflect)]
@@ -23,7 +24,7 @@ impl DisplayWithTypeInfo for ScriptError {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         self.0.display_with_type_info(f, type_info_provider)
     }
@@ -58,7 +59,7 @@ impl DebugWithTypeInfo for Reason {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
             Reason::WithoutTypeInfo(err) => write!(f, "{err}"),
@@ -77,7 +78,7 @@ impl DisplayWithTypeInfo for Reason {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
             Reason::WithoutTypeInfo(err) => write!(f, "{err}"),
@@ -102,7 +103,7 @@ impl DebugWithTypeInfo for Context {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         self.display_with_type_info(f, type_info_provider)
     }
@@ -118,7 +119,7 @@ impl DisplayWithTypeInfo for Context {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
             Context::String(cow) => f.write_str(cow),
@@ -149,7 +150,7 @@ impl DisplayWithTypeInfo for ScriptErrorInner {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         f.write_str("Error ")?;
         if let Some(script) = &self.script {

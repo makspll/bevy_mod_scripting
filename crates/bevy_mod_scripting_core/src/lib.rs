@@ -23,7 +23,7 @@ use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, Script
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptFunctionRegistry,
     DummyScriptFunctionRegistry, DynamicScriptComponentPlugin, MarkAsCore, ReflectReference,
-    ScriptTypeRegistration, ScriptValue, ThreadWorldContainer, garbage_collector,
+    ScriptTypeRegistration, ScriptValue, garbage_collector,
 };
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
@@ -358,9 +358,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         if !self.dont_log_script_event_errors {
             app.add_systems(PostUpdate, script_error_logger);
         }
-
-        let _ = bevy_mod_scripting_display::GLOBAL_TYPE_INFO_PROVIDER
-            .set(|| Some(&ThreadWorldContainer));
 
         DynamicScriptComponentPlugin.build(app);
     }

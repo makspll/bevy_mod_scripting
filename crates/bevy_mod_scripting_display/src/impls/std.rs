@@ -12,7 +12,7 @@ impl DebugWithTypeInfo for TypeId {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         if *self == TypeId::of::<FakeType>() {
             return f.write_str("Unknown Type");
@@ -22,7 +22,11 @@ impl DebugWithTypeInfo for TypeId {
         }
 
         let name = if let Some(type_info_provider) = type_info_provider {
-            if let Some(type_info) = type_info_provider.get_type_info(*self) {
+            if let Some(type_info) = type_info_provider
+                .type_registry()
+                .read()
+                .get_type_info(*self)
+            {
                 type_info.type_path_table().path().to_string()
             } else {
                 format!("Unregistered Type - {self:?}")
@@ -39,7 +43,7 @@ impl<T: DebugWithTypeInfo> DebugWithTypeInfo for Arc<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         (**self).to_string_with_type_info(f, type_info_provider)
     }
@@ -49,7 +53,7 @@ impl<T: DebugWithTypeInfo> DebugWithTypeInfo for Box<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         (**self).to_string_with_type_info(f, type_info_provider)
     }
@@ -59,7 +63,7 @@ impl<T: DebugWithTypeInfo> DebugWithTypeInfo for Option<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         match self {
             Some(value) => f
@@ -77,7 +81,7 @@ impl<T: DebugWithTypeInfo, E: DebugWithTypeInfo> DebugWithTypeInfo for Result<T,
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         match self {
             Ok(v) => f
@@ -96,7 +100,7 @@ impl<T: DebugWithTypeInfo> DebugWithTypeInfo for Vec<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_list_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
@@ -108,7 +112,7 @@ impl<T: DebugWithTypeInfo> DebugWithTypeInfo for VecDeque<T> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_list_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
@@ -122,7 +126,7 @@ impl<K: DebugWithTypeInfo, V: DebugWithTypeInfo, S> DebugWithTypeInfo
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_map_with_type_info(type_info_provider)
             .entries(
@@ -137,7 +141,7 @@ impl<K: DebugWithTypeInfo, S> DebugWithTypeInfo for std::collections::HashSet<K,
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_set_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
@@ -149,7 +153,7 @@ impl<K: DebugWithTypeInfo> DebugWithTypeInfo for std::collections::BTreeSet<K> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_set_with_type_info(type_info_provider)
             .entries(self.iter().map(|v| v as &dyn DebugWithTypeInfo))
@@ -163,7 +167,7 @@ impl<K: DebugWithTypeInfo, V: DebugWithTypeInfo> DebugWithTypeInfo
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_map_with_type_info(type_info_provider)
             .entries(
@@ -178,7 +182,7 @@ impl DebugWithTypeInfo for Location<'_> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        _type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.debug_struct("Location")
             .field("file", &self.file())
@@ -197,7 +201,7 @@ macro_rules! impl_display_with_type_info_via_display {
                 fn display_with_type_info(
                     &self,
                     f: &mut std::fmt::Formatter<'_>,
-                    _type_info_provider: Option<&dyn GetTypeInfo>,
+                    _type_info_provider: Option<&WorldAccessGuard>,
                 ) -> std::fmt::Result {
                     <Self as std::fmt::Display>::fmt(self, f)
                 }
@@ -216,7 +220,7 @@ impl DisplayWithTypeInfo for TypeId {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         if *self == TypeId::of::<FakeType>() {
             return f.write_str("Unknown Type");
@@ -225,7 +229,11 @@ impl DisplayWithTypeInfo for TypeId {
         }
 
         let name = if let Some(type_info_provider) = type_info_provider {
-            if let Some(type_info) = type_info_provider.get_type_info(*self) {
+            if let Some(type_info) = type_info_provider
+                .type_registry()
+                .read()
+                .get_type_info(*self)
+            {
                 type_info.type_path_table().path().to_string()
             } else {
                 format!("Unregistered Type - {self:?}")
@@ -243,7 +251,7 @@ impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for Arc<T> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         (**self).display_with_type_info(f, type_info_provider)
     }
@@ -253,7 +261,7 @@ impl DisplayWithTypeInfo for Arc<dyn DisplayWithTypeInfo> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         (**self).display_with_type_info(f, type_info_provider)
     }
@@ -263,7 +271,7 @@ impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for Box<T> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         (**self).display_with_type_info(f, type_info_provider)
     }
@@ -273,7 +281,7 @@ impl DisplayWithTypeInfo for Box<dyn DisplayWithTypeInfo> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         (**self).display_with_type_info(f, type_info_provider)
     }
@@ -283,7 +291,7 @@ impl DisplayWithTypeInfo for Location<'_> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        _type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         // prettier display: file:line:column
         write!(f, "{}:{}:{}", self.file(), self.line(), self.column())
@@ -294,7 +302,7 @@ impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for Vec<T> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.write_str("[")?;
         let mut first = true;
@@ -313,7 +321,7 @@ impl<T: DisplayWithTypeInfo> DisplayWithTypeInfo for VecDeque<T> {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         f.write_str("[")?;
         let mut first = true;

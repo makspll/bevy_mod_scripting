@@ -1,4 +1,5 @@
-use bevy_ecs::entity::Entity;
+use bevy_ecs::{component::ComponentId, entity::Entity};
+use bevy_utils::prelude::DebugName;
 
 use crate::*;
 
@@ -9,13 +10,14 @@ impl DebugWithTypeInfo for ComponentId {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         let mut builder = f.debug_tuple_with_type_info("ComponentId", type_info_provider);
         match type_info_provider {
             Some(type_info_provider) => match type_info_provider
-                .get_component_info(*self)
-                .map(|info| info.name().to_string())
+                .as_unsafe_world_cell()
+                .ok()
+                .and_then(|i| i.components().get_name(*self))
             {
                 Some(type_info) => builder.field(&type_info),
                 None => builder.field(&format!("Unregistered ComponentId - {self:?}")),
@@ -30,12 +32,13 @@ impl DisplayWithTypeInfo for ComponentId {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         match type_info_provider {
             Some(type_info_provider) => match type_info_provider
-                .get_component_info(*self)
-                .map(|info| info.name().to_string())
+                .as_unsafe_world_cell()
+                .ok()
+                .and_then(|i| i.components().get_name(*self))
             {
                 Some(type_info) => f.write_str(&type_info),
                 None => {
@@ -48,5 +51,15 @@ impl DisplayWithTypeInfo for ComponentId {
                 std::fmt::Debug::fmt(self, f)
             }
         }
+    }
+}
+
+impl DebugWithTypeInfo for DebugName {
+    fn to_string_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        _type_info_provider: Option<&WorldAccessGuard>,
+    ) -> std::fmt::Result {
+        f.write_str(&self.to_string())
     }
 }

@@ -1,20 +1,15 @@
 //! Dynamic scheduling from scripts
 
-use super::WorldAccessGuard;
-use crate::error::InteropError;
 use ::{
     bevy_app::{
         First, FixedFirst, FixedLast, FixedMain, FixedPostUpdate, FixedPreUpdate, FixedUpdate,
         Last, PostStartup, PostUpdate, PreStartup, PreUpdate, RunFixedMainLoop, Startup, Update,
     },
-    bevy_ecs::{
-        schedule::{Schedule, ScheduleLabel, Schedules},
-        world::World,
-    },
+    bevy_ecs::schedule::ScheduleLabel,
 };
 use bevy_ecs::resource::Resource;
 use bevy_platform::collections::HashMap;
-use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
+use bevy_system_reflection::ReflectSchedule;
 use parking_lot::RwLock;
 use std::{any::TypeId, sync::Arc};
 #[derive(Default, Clone, Resource)]
@@ -108,87 +103,6 @@ impl ScheduleRegistry {
     }
 }
 
-#[profiling::all_functions]
-/// Impls to do with dynamically querying systems and schedules
-impl WorldAccessGuard<'_> {
-    /// Temporarilly removes the given schedule from the world, and calls the given function on it, then re-inserts it.
-    ///
-    /// Useful for initializing schedules, or modifying systems
-    pub fn scope_schedule<O, F: FnOnce(&mut World, &mut Schedule) -> O>(
-        &self,
-        label: &ReflectSchedule,
-        f: F,
-    ) -> Result<O, InteropError> {
-        self.with_global_access(|world| {
-            let mut schedules = world.get_resource_mut::<Schedules>().ok_or_else(|| {
-                InteropError::unsupported_operation(
-                    None,
-                    None,
-                    "accessing schedules in a world with no schedules",
-                )
-            })?;
-
-            let mut removed_schedule = schedules
-                .remove(*label.label())
-                .ok_or_else(|| InteropError::missing_schedule(label.identifier()))?;
-
-            let result = f(world, &mut removed_schedule);
-
-            let mut schedules = world.get_resource_mut::<Schedules>().ok_or_else(|| {
-                InteropError::unsupported_operation(
-                    None,
-                    None,
-                    "removing `Schedules` resource within a schedule scope",
-                )
-            })?;
-
-            assert!(
-                removed_schedule.label() == *label.label(),
-                "removed schedule label doesn't match the original"
-            );
-            schedules.insert(removed_schedule);
-
-            Ok(result)
-        })?
-    }
-
-    /// Retrieves all the systems in a schedule
-    pub fn systems(&self, schedule: &ReflectSchedule) -> Result<Vec<ReflectSystem>, InteropError> {
-        self.with_resource(|schedules: &Schedules| {
-            let schedule = schedules
-                .get(*schedule.label())
-                .ok_or_else(|| InteropError::missing_schedule(schedule.identifier()))?;
-
-            let systems = schedule.systems().map_err(|_| {
-                InteropError::string(format!(
-                    "failed to get systems from schedule '{:?}', schedule is not initialized.",
-                    schedule.label()
-                ))
-            })?;
-
-            Ok(systems
-                .map(|(node_id, system)| ReflectSystem::from_system(system.as_ref(), node_id))
-                .collect())
-        })?
-    }
-
-    // /// Creates a system from a system builder and inserts it into the given schedule
-    // pub fn add_system<P: IntoScriptPluginParams>(
-    //     &self,
-    //     schedule: &ReflectSchedule,
-    //     builder: ScriptSystemBuilder,
-    // ) -> Result<ReflectSystem, InteropError> {
-    //     debug!(
-    //         "Adding script system '{}' for script '{}' to schedule '{}'",
-    //         builder.name,
-    //         builder.attachment,
-    //         schedule.identifier()
-    //     );
-
-    //     builder.build::<P>(self.clone(), schedule)
-    // }
-}
-
 #[cfg(test)]
 #[allow(
     dead_code,
@@ -204,6 +118,7 @@ mod tests {
             schedule::{NodeId, Schedules, SystemKey},
             system::IntoSystem,
         },
+        bevy_system_reflection::ReflectSystem,
         std::{cell::OnceCell, rc::Rc},
     };
 

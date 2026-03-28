@@ -3,7 +3,8 @@
 use crate::function::arg_meta::ArgMeta;
 use crate::function::namespace::Namespace;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo, WithTypeInfo};
+use bevy_mod_scripting_display::{DisplayWithTypeInfo, WithTypeInfo};
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::Reflect;
 use std::{any::TypeId, borrow::Cow};
 
@@ -133,7 +134,7 @@ impl DisplayWithTypeInfo for FunctionArgInfo {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         if let Some(name) = &self.name {
             write!(f, "{name}: ")?;
@@ -188,7 +189,7 @@ impl DisplayWithTypeInfo for FunctionReturnInfo {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         let type_id = self.type_id;
         WithTypeInfo::new_with_opt_info(&type_id, type_info_provider)

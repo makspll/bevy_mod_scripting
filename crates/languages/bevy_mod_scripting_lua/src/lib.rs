@@ -15,7 +15,7 @@ use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
-    InteropError, PartialReflectExt, ThreadWorldContainer, function::namespace::Namespace,
+    InteropError, PartialReflectExt, WorldExtensions, function::namespace::Namespace,
     globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
@@ -27,6 +27,7 @@ use bevy_mod_scripting_core::{
     script::ContextPolicy,
 };
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::ThreadWorldContainer;
 use bindings::{
     reference::{LuaReflectReference, LuaStaticReflectReference},
     script_value::LuaScriptValue,
@@ -96,9 +97,14 @@ fn register_plugin_globals(lua: &mut Lua) -> Result<(), mlua::Error> {
         lua.create_function(|_lua: &Lua, (callback, func): (String, Function)| {
             let thread_ctxt = ThreadWorldContainer
                 .try_get_context()
-                .map_err(mlua::Error::external)?;
+                .map_err(IntoMluaError::to_lua_error)?;
             let world = thread_ctxt.world;
-            let attachment = thread_ctxt.attachment;
+            let attachment = world.current_attachment().0.ok_or_else(|| {
+                mlua::Error::external(
+                    "Cannot register callback, missing script attachment context.",
+                )
+            })?;
+
             world
                 .with_resource_mut(|res: Mut<ScriptCallbacks<LuaScriptingPlugin>>| {
                     let mut callbacks = res.callbacks.write();
@@ -391,11 +397,13 @@ pub trait IntoMluaError {
     fn to_lua_error(self) -> mlua::Error;
 }
 
-impl IntoMluaError for InteropError {
+impl<T: Into<InteropError>> IntoMluaError for T {
     fn to_lua_error(self) -> mlua::Error {
-        mlua::Error::external(self)
+        let error: InteropError = self.into();
+        mlua::Error::external(error)
     }
 }
+
 #[cfg(test)]
 mod test {
     use ::bevy_asset::Handle;

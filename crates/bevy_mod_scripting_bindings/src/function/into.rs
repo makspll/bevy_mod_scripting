@@ -1,7 +1,8 @@
 //! Implementations of the [`IntoScript`] trait for various types.
 
 use super::{DynamicScriptFunction, DynamicScriptFunctionMut, Union, V};
-use crate::{ReflectReference, ScriptValue, VariadicTuple, WorldGuard, error::InteropError};
+use crate::{ReflectReference, ScriptValue, VariadicTuple, WorldExtensions, error::InteropError};
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
 use std::{borrow::Cow, collections::VecDeque, ffi::OsString, path::PathBuf};
