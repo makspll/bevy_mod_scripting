@@ -11,6 +11,9 @@ repository.workspace = true
 keywords.workspace = true
 categories.workspace = true
 
+[lib]
+test = false
+
 [dependencies]
 {% if include_bevy_ecs_dep -%}
 bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
