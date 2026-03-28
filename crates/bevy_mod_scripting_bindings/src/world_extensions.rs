@@ -45,7 +45,7 @@ use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{CachedRegistry, WorldAccessGuard, WorldGuard};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{GetTypeRegistration, TypeInfo, VariantInfo};
-use bevy_system_reflection::{ReflectSchedule};
+use bevy_system_reflection::ReflectSchedule;
 use std::{
     alloc::Layout,
     any::{Any, TypeId},
