@@ -42,14 +42,15 @@ use bevy_ecs::{
 };
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
-use bevy_mod_scripting_world::{CachedRegistry, WorldAccessGuard, WorldGuard};
+use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{GetTypeRegistration, TypeInfo, VariantInfo};
 use bevy_system_reflection::ReflectSchedule;
 use std::{
     alloc::Layout,
-    any::{Any, TypeId},
+    any::TypeId,
     borrow::Cow,
+    cell::{Ref, RefCell},
     collections::VecDeque,
     mem::needs_drop,
     rc::Rc,
@@ -269,19 +270,22 @@ pub trait WorldExtensions {
     ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError>;
 
     /// Returns the script function registry.
-    fn script_function_registry(&self) -> &AppScriptFunctionRegistry;
+    fn script_function_registry(&'_ self) -> Ref<'_, AppScriptFunctionRegistry>;
 
     /// Returns the allocator used for reflection.
-    fn allocator(&self) -> &AppReflectAllocator;
+    fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator>;
 
     /// Returns the component registry.
-    fn component_registry(&self) -> &AppScriptComponentRegistry;
+    fn component_registry(&'_ self) -> Ref<'_, AppScriptComponentRegistry>;
 
     /// Returns the schedule registry.
-    fn schedule_registry(&self) -> &AppScheduleRegistry;
+    fn schedule_registry(&'_ self) -> Ref<'_, AppScheduleRegistry>;
 
     /// Returns the current attachment if the guard is being used in the context of one.
     fn current_attachment(&self) -> CurrentScriptAttachment;
+
+    /// Sets the current attachment for the world guard context.
+    fn set_current_attachment(&self, attachment: ScriptAttachment);
 
     /// Registers a dynamic script component, and returns a reference to its registration
     fn register_script_component(
@@ -290,7 +294,7 @@ pub trait WorldExtensions {
     ) -> Result<ScriptComponentRegistration, InteropError>;
 
     /// Initializes cached registries from the world.
-    fn setup_cache(world: &World) -> [Rc<dyn Any>; 5];
+    fn setup_cache(world: &World, attachment: CurrentScriptAttachment) -> RegistryCache;
 
     /// Initializes cached registries from the world, from raw components.
     fn setup_cache_raw(
@@ -299,7 +303,7 @@ pub trait WorldExtensions {
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
-    ) -> [Rc<dyn Any>; 5];
+    ) -> RegistryCache;
 }
 
 impl<'w> WorldExtensions for WorldAccessGuard<'w> {
@@ -1084,7 +1088,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         })
     }
 
-    fn script_function_registry(&self) -> &AppScriptFunctionRegistry {
+    fn script_function_registry(&'_ self) -> Ref<'_, AppScriptFunctionRegistry> {
         #[allow(
             clippy::unwrap_used,
             reason = "internal domain boundary, enforced at creation of the guard"
@@ -1092,7 +1096,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
-    fn allocator(&self) -> &AppReflectAllocator {
+    fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator> {
         #[allow(
             clippy::unwrap_used,
             reason = "internal domain boundary, enforced at creation of the guard"
@@ -1100,7 +1104,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
-    fn component_registry(&self) -> &AppScriptComponentRegistry {
+    fn component_registry(&'_ self) -> Ref<'_, AppScriptComponentRegistry> {
         #[allow(
             clippy::unwrap_used,
             reason = "internal domain boundary, enforced at creation of the guard"
@@ -1108,7 +1112,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
-    fn schedule_registry(&self) -> &AppScheduleRegistry {
+    fn schedule_registry(&'_ self) -> Ref<'_, AppScheduleRegistry> {
         #[allow(
             clippy::unwrap_used,
             reason = "internal domain boundary, enforced at creation of the guard"
@@ -1117,9 +1121,15 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     }
 
     fn current_attachment(&self) -> CurrentScriptAttachment {
-        self.get_cached_registry()
-            .cloned()
+        self.get_cached_registry::<CurrentScriptAttachment>()
+            .map(|r| r.clone())
             .unwrap_or(CurrentScriptAttachment(None))
+    }
+
+    fn set_current_attachment(&self, attachment: ScriptAttachment) {
+        self.set_cached_registry::<CurrentScriptAttachment>(CurrentScriptAttachment(Some(
+            attachment,
+        )));
     }
 
     fn register_script_component(
@@ -1181,7 +1191,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
-    ) -> [Rc<dyn Any>; 5] {
+    ) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
         debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
@@ -1189,15 +1199,15 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
 
         [
-            Rc::new(allocator),
-            Rc::new(function_registry),
-            Rc::new(schedule_registry),
-            Rc::new(component_registry),
-            Rc::new(attachment),
+            Rc::new(RefCell::new(allocator)),
+            Rc::new(RefCell::new(function_registry)),
+            Rc::new(RefCell::new(schedule_registry)),
+            Rc::new(RefCell::new(component_registry)),
+            Rc::new(RefCell::new(attachment)),
         ]
     }
 
-    fn setup_cache(world: &World) -> [Rc<dyn Any>; 5] {
+    fn setup_cache(world: &World, attachment: CurrentScriptAttachment) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
         debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
@@ -1205,31 +1215,31 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
 
         [
-            Rc::new(
+            Rc::new(RefCell::new(
                 world
                     .get_resource::<AppReflectAllocator>()
                     .cloned()
                     .unwrap_or_default(),
-            ),
-            Rc::new(
+            )),
+            Rc::new(RefCell::new(
                 world
                     .get_resource::<AppScriptFunctionRegistry>()
                     .cloned()
                     .unwrap_or_default(),
-            ),
-            Rc::new(
+            )),
+            Rc::new(RefCell::new(
                 world
                     .get_resource::<AppScheduleRegistry>()
                     .cloned()
                     .unwrap_or_default(),
-            ),
-            Rc::new(
+            )),
+            Rc::new(RefCell::new(
                 world
                     .get_resource::<AppScriptComponentRegistry>()
                     .cloned()
                     .unwrap_or_default(),
-            ),
-            Rc::new(CurrentScriptAttachment(None)),
+            )),
+            Rc::new(RefCell::new(attachment)),
         ]
     }
 
@@ -1383,7 +1393,7 @@ mod test {
     #[test]
     fn test_construct_struct() {
         let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
 
         let registry = world.type_registry();
@@ -1403,7 +1413,7 @@ mod test {
     #[test]
     fn test_construct_tuple_struct() {
         let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
 
         let registry = world.type_registry();
@@ -1440,7 +1450,7 @@ mod test {
             // TODO: does this ever get registered on normal types? I don't think so: https://github.com/bevyengine/bevy/issues/17981
             registry.register_type_data::<(usize, usize), ReflectFromReflect>();
         });
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
 
         <usize as GetTypeRegistration>::get_type_registration();
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
@@ -1478,7 +1488,7 @@ mod test {
     #[test]
     fn test_construct_enum() {
         let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
 
         let registry = world.type_registry();

@@ -997,7 +997,8 @@ mod test {
     };
 
     use crate::{
-        AppReflectAllocator, WorldExtensions, function::script_function::AppScriptFunctionRegistry,
+        AppReflectAllocator, CurrentScriptAttachment, WorldExtensions,
+        function::script_function::AppScriptFunctionRegistry,
     };
 
     use super::*;
@@ -1032,7 +1033,7 @@ mod test {
     #[test]
     fn test_component_ref() {
         let mut world = setup_world();
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
 
         let entity = world
             .spawn(TestComponent(vec!["hello".to_owned(), "world".to_owned()]))
@@ -1118,7 +1119,7 @@ mod test {
     #[test]
     fn test_resource_ref() {
         let mut world = setup_world();
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         world.insert_resource(TestResource(vec!["hello".to_owned(), "world".to_owned()]));
 
         let world_guard = WorldGuard::new_exclusive(&mut world, cache);
@@ -1202,7 +1203,7 @@ mod test {
     #[test]
     fn test_allocation_ref() {
         let mut world = setup_world();
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
 
         let value: TestComponent = TestComponent(vec!["hello".to_owned(), "world".to_owned()]);
 

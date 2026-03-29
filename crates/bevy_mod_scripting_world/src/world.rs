@@ -19,7 +19,7 @@ use bevy_ecs::{
 use bevy_reflect::TypeRegistryArc;
 use std::{
     any::{Any, TypeId},
-    cell::RefCell,
+    cell::{Ref, RefCell},
     fmt::Debug,
     panic::Location,
     rc::Rc,
@@ -87,6 +87,9 @@ pub trait CachedRegistry: Any {
     const SLOT: usize;
 }
 
+/// Aliases the type used as the registry cache for the world guard.
+pub type RegistryCache = [Rc<RefCell<dyn Any>>; 5];
+
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
     /// Safety: cannot be used unless the scope depth is less than the max valid scope
@@ -96,7 +99,7 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
 
-    cached_slots: [Rc<dyn Any>; 5],
+    cached_slots: RegistryCache,
     // /// The script allocator for the world
     // allocator: AppReflectAllocator,
     // /// The function registry for the world
@@ -157,12 +160,15 @@ impl<'w> WorldAccessGuard<'w> {
     /// The guard is invalidated at the end of the closure, meaning the world cannot be accessed at all after the closure ends.
     pub fn with_static_guard<O>(
         world: &'w mut World,
-        cached_slots: [Rc<dyn Any>; 5],
+        cached_slots: RegistryCache,
         f: impl FnOnce(WorldGuard<'static>) -> O,
     ) -> O {
         let guard = WorldAccessGuard::new_exclusive(world, cached_slots);
         // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
         let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
+        ThreadWorldContainer.set_context(ThreadScriptContext {
+            world: static_guard.clone(),
+        });
         let o = f(static_guard.clone());
 
         static_guard.invalidate();
@@ -178,6 +184,9 @@ impl<'w> WorldAccessGuard<'w> {
         // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends, from the static guard
         // i.e. even if somebody squirells it away, it will be useless.
         let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard.scope()) };
+        ThreadWorldContainer.set_context(ThreadScriptContext {
+            world: static_guard.clone(),
+        });
         let o = f(static_guard.clone());
         static_guard.invalidate();
         o
@@ -195,7 +204,7 @@ impl<'w> WorldAccessGuard<'w> {
         world: UnsafeWorldCell<'w>,
         subset: impl IntoIterator<Item = impl Into<WorldAccessRange>>,
         type_registry: TypeRegistryArc,
-        registry_cache: [Rc<dyn Any>; 5],
+        registry_cache: RegistryCache,
     ) -> Self {
         Self {
             inner: Rc::new(WorldAccessGuardInner {
@@ -211,7 +220,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
     ///
     /// If these resources do not exist, they will be initialized.
-    pub fn new_exclusive(world: &'w mut World, registry_cache: [Rc<dyn Any>; 5]) -> Self {
+    pub fn new_exclusive(world: &'w mut World, registry_cache: RegistryCache) -> Self {
         let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
         Self {
             inner: Rc::new(WorldAccessGuardInner {
@@ -627,9 +636,23 @@ impl<'w> WorldAccessGuard<'w> {
 impl WorldAccessGuard<'_> {
     /// If a registry has been initialized in this world guard, downcasts it to its original type and returns
     /// a reference to it
-    pub fn get_cached_registry<T: CachedRegistry>(&self) -> Option<&T> {
+    pub fn get_cached_registry<'a, T: CachedRegistry>(&'a self) -> Option<Ref<T, 'a>> {
         let idx = T::SLOT;
-        self.inner.cached_slots[idx].downcast_ref()
+        Ref::filter_map(self.inner.cached_slots[idx].borrow(), |r| r.downcast_ref()).ok()
+    }
+
+    /// If a registry has been initialized in this world guard, downcasts it to its original type and returns
+    /// a reference to it
+    pub fn set_cached_registry<T: CachedRegistry>(&self, registry: T) {
+        let idx = T::SLOT;
+        let mut mutt = RefCell::borrow_mut(&self.inner.cached_slots[idx]);
+
+        #[allow(
+            clippy::unwrap_used,
+            reason = "internal domain boundary, enforced at creation of the guard"
+        )]
+        let mutt = mutt.downcast_mut().unwrap();
+        *mutt = registry;
     }
 }
 
@@ -650,15 +673,11 @@ thread_local! {
 }
 #[profiling::all_functions]
 impl ThreadWorldContainer {
-    /// Tries to set the thread context to the given value
-    pub fn set_context(
-        &mut self,
-        world: ThreadScriptContext<'static>,
-    ) -> Result<(), DynWorldAccessError> {
+    /// Sets the thread context to the given value
+    pub fn set_context(&mut self, world: ThreadScriptContext<'static>) {
         WORLD_CALLBACK_ACCESS.with(|w| {
             w.replace(Some(world));
         });
-        Ok(())
     }
 
     /// Tries to get the world from the container
@@ -693,7 +712,7 @@ mod test {
         let mut world = World::new();
         let world = WorldAccessGuard::new_exclusive(
             &mut world,
-            array::from_fn(|_| Rc::new(TestRegistry) as Rc<dyn Any>),
+            array::from_fn(|_| Rc::new(RefCell::new(TestRegistry)) as Rc<RefCell<dyn Any>>),
         );
         let scoped_world = world.scope();
 
@@ -716,7 +735,7 @@ mod test {
         let mut world = World::new();
         let world = WorldAccessGuard::new_exclusive(
             &mut world,
-            array::from_fn(|_| Rc::new(TestRegistry) as Rc<dyn Any>),
+            array::from_fn(|_| Rc::new(RefCell::new(TestRegistry)) as Rc<RefCell<dyn Any>>),
         );
 
         let mut sneaky_clone = None;
@@ -737,7 +756,7 @@ mod test {
         let mut world = World::new();
         let guard = WorldAccessGuard::new_exclusive(
             &mut world,
-            array::from_fn(|_| Rc::new(TestRegistry) as Rc<dyn Any>),
+            array::from_fn(|_| Rc::new(RefCell::new(TestRegistry)) as Rc<RefCell<dyn Any>>),
         );
 
         // within the access scope, no extra accesses are claimed

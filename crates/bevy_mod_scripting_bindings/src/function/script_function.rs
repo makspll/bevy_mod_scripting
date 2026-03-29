@@ -732,7 +732,7 @@ variadics_please::all_tuples!(impl_script_function, 0, 13, T);
 
 #[cfg(test)]
 mod test {
-    use crate::WorldExtensions;
+    use crate::{CurrentScriptAttachment, WorldExtensions};
 
     use super::*;
     use bevy_ecs::{prelude::Component, world::World};
@@ -740,11 +740,9 @@ mod test {
 
     fn with_local_world<F: Fn()>(f: F) {
         let mut world = World::default();
-        let cache = WorldAccessGuard::setup_cache(&world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         WorldGuard::with_static_guard(&mut world, cache, |world| {
-            ThreadWorldContainer
-                .set_context(ThreadScriptContext { world })
-                .unwrap();
+            ThreadWorldContainer.set_context(ThreadScriptContext { world });
             f()
         });
     }

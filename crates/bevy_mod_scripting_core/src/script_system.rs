@@ -681,7 +681,7 @@ mod test {
         );
         builder.before_system(test_system);
         let world_mut = app.world_mut();
-        let cache = WorldAccessGuard::setup_cache(world_mut);
+        let cache = WorldAccessGuard::setup_cache(world_mut, CurrentScriptAttachment::default());
         let _ = builder
             .build::<TestPlugin>(
                 WorldAccessGuard::new_exclusive(world_mut, cache),

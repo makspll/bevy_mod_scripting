@@ -3,9 +3,9 @@
 use std::any::Any;
 
 use bevy_ecs::world::WorldId;
-use bevy_mod_scripting_bindings::InteropError;
+use bevy_mod_scripting_bindings::{InteropError, WorldExtensions};
 use bevy_mod_scripting_script::ScriptAttachment;
-use bevy_mod_scripting_world::{ThreadScriptContext, ThreadWorldContainer, WorldGuard};
+use bevy_mod_scripting_world::WorldGuard;
 
 use crate::IntoScriptPluginParams;
 
@@ -66,11 +66,8 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         world: WorldGuard,
     ) -> Result<P::C, InteropError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
+            world.set_current_attachment(attachment.clone());
             let world_id = world.id();
-            ThreadWorldContainer.set_context(ThreadScriptContext {
-                world,
-                // attachment: attachment.clone(),
-            })?;
             Self::context_loader()(attachment, content, world_id)
         })
     }
@@ -82,11 +79,8 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         world: WorldGuard,
     ) -> Result<(), InteropError> {
         WorldGuard::with_existing_static_guard(world, |world| {
+            world.set_current_attachment(attachment.clone());
             let world_id = world.id();
-            ThreadWorldContainer.set_context(ThreadScriptContext {
-                world,
-                // attachment: attachment.clone(),
-            })?;
             Self::context_reloader()(attachment, content, previous_context, world_id)
         })
     }

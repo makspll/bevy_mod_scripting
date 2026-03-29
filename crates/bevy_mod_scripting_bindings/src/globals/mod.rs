@@ -260,7 +260,7 @@ impl ScriptGlobalsRegistry {
 
 #[cfg(test)]
 mod test {
-    use std::{any::Any, rc::Rc};
+    use std::{any::Any, cell::RefCell, rc::Rc};
 
     use bevy_ecs::world::World;
 
@@ -282,7 +282,7 @@ mod test {
         assert_eq!(
             (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
                 &mut World::new(),
-                std::array::from_fn(|_| Rc::new(()) as Rc<dyn Any>)
+                std::array::from_fn(|_| Rc::new(RefCell::new(())) as Rc<RefCell<dyn Any>>)
             ))
             .unwrap(),
             ScriptValue::from(42)
@@ -294,7 +294,7 @@ mod test {
         assert_eq!(
             (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
                 &mut World::new(),
-                std::array::from_fn(|_| Rc::new(()) as Rc<dyn Any>)
+                std::array::from_fn(|_| Rc::new(RefCell::new(())) as Rc<RefCell<dyn Any>>)
             ))
             .unwrap(),
             ScriptValue::from(43)

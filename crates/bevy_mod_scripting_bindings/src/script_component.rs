@@ -82,14 +82,14 @@ mod test {
     use bevy_ecs::world::World;
     use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 
-    use crate::WorldExtensions;
+    use crate::{CurrentScriptAttachment, WorldExtensions};
 
     use super::*;
 
     #[test]
     fn test_script_component() {
         let mut world = World::new();
-        let cache = WorldGuard::setup_cache(&world);
+        let cache = WorldGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let registration = {
             let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
 
