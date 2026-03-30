@@ -258,7 +258,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     }
 
     fn flags(&self) -> SystemStateFlags {
-        println!("flags");
         if self.exclusive {
             SystemStateFlags::NON_SEND | SystemStateFlags::EXCLUSIVE
         } else {
