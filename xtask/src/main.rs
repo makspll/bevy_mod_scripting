@@ -933,10 +933,10 @@ impl Xtasks {
             unsafe { std::env::set_var("RUST_LOG", "bevy_mod_scripting=error") };
         }
 
-        let args = if let Some(name) = name {
-            vec!["--".to_owned(), name]
-        } else {
-            vec![]
+        let mut args = vec!["--timings".to_owned()];
+
+        if let Some(name) = name {
+            args.extend(["--".to_owned(), name]);
         };
 
         let output = run_workspace_command(
