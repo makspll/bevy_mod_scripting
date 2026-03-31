@@ -89,6 +89,7 @@ mod test {
     #[test]
     fn test_script_component() {
         let mut world = World::new();
+        world.init_resource::<AppScriptComponentRegistry>();
         let cache = WorldGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let registration = {
             let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
