@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     ffi::OsString,
-    io::Write,
+    io::{Write, stdout},
     path::{Path, PathBuf},
     process::{Command, Output},
     str::FromStr,
@@ -939,9 +939,9 @@ impl Xtasks {
             args.extend(["--".to_owned(), name]);
         };
 
-        let output = run_workspace_command(
+        let mut output = run_workspace_command(
             // run with just lua54
-            &app_settings.with_features(features),
+            &app_settings.clone().with_features(features),
             "bench",
             "Failed to run benchmarks",
             args,
@@ -949,6 +949,24 @@ impl Xtasks {
             capture_streams_in_output,
         )
         .with_context(|| "when executing criterion benchmarks")?;
+
+        let workspace_dir = workspace_dir(&app_settings)?;
+        let metadata = main_workspace_cargo_metadata()?;
+        let crates = metadata
+            .workspace_packages()
+            .iter()
+            .map(|p| p.name.to_string())
+            .collect::<Vec<String>>();
+
+        info!("Gathering build time for crates: {}", crates.join(","));
+
+        let additional_benchmark_lines = xtask::read_cargo_timings_report(&workspace_dir, crates)?;
+
+        if !capture_streams_in_output {
+            stdout().write(additional_benchmark_lines.as_bytes())?;
+        } else {
+            output.stdout.write(additional_benchmark_lines.as_bytes())?;
+        }
 
         Ok(output)
     }
