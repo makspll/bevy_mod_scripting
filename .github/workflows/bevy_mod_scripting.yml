@@ -51,6 +51,8 @@ jobs:
               - 'examples/**'
               - 'assets/**'
               - 'docs/**'
+              - 'xtask/**'
+              - 'codegen/**'
               - '.github/workflows/bevy_mod_scripting.yml'
 
 
