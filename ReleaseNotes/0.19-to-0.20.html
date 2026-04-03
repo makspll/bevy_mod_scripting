@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-4a613034.js";
+            window.path_to_searchindex_js = "../searchindex-8832329e.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-911d3d8b.js"></script>
+        <script src="../toc-55db3f2c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -204,6 +204,10 @@
 </code></pre>
 <h2 id="scriptvaluelist-changes"><a class="header" href="#scriptvaluelist-changes"><code>ScriptValue::List</code> changes</a></h2>
 <p>This variant now uses <code>VecDeque</code> instead of <code>Vec</code></p>
+<h1 id="refactor-of-worldaccessguard-and-related-types"><a class="header" href="#refactor-of-worldaccessguard-and-related-types">Refactor of <code>WorldAccessGuard</code> and related types</a></h1>
+<p>Many functions previously living directly in <code>WorldAccessGuard</code> impls, now need to be accessed via the <code>WorldExtensions</code> trait.</p>
+<p>Functions previously known as <code>with_exclusive_access</code> etc, have been split into: <code>with_world</code> and <code>with_world_mut</code>, allowing read access to the world too in some circumstances.</p>
+<p><code>ReflectAccessId</code> was removed in favour of <code>WorldAccessRange</code> which can be created via <code>Into</code> from <code>ComponentId</code>’s.</p>
 
                     </main>
 

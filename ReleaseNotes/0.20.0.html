@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-4a613034.js";
+            window.path_to_searchindex_js = "../searchindex-8832329e.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-911d3d8b.js"></script>
+        <script src="../toc-55db3f2c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -207,6 +207,25 @@
 <p>Two bindings have been added: <code>pack_args</code> and <code>unpack_args</code> to allow script code to directly create/unpack tuple variants if necessary. However for languages like Lua, supporting multiple return values, <code>ScriptValue::Tuple</code> variants (which is what we produce to represent variadic returns), are converted to many return values naturally.</p>
 <h1 id="new-vecdeque-impls"><a class="header" href="#new-vecdeque-impls">New <code>VecDeque</code> impls</a></h1>
 <p><code>VecDeque</code> now implements various BMS traits and can be used in bindings as a normal argument.</p>
+<h1 id="improved-domain-boundaries---extracted-bevy_mod_scripting_world-crate"><a class="header" href="#improved-domain-boundaries---extracted-bevy_mod_scripting_world-crate">Improved domain boundaries - Extracted <code>bevy_mod_scripting_world</code> crate</a></h1>
+<p>The following types were extracted into their own crate:</p>
+<ul>
+<li><code>ReflectAccessId</code> now known as <code>WorldAccessRange</code></li>
+<li><code>ClaimOwner</code></li>
+<li><code>AccessInstance</code></li>
+<li><code>AccessMap</code></li>
+<li><code>DynamicSystemMeta</code></li>
+<li><code>WorldGuard</code> &amp; <code>WorldAccessGuard</code></li>
+</ul>
+<p>the <code>CachedRegistry</code> trait was introduced to store registries such as:</p>
+<ul>
+<li><code>AppScriptComponentRegistry</code></li>
+<li><code>AppReflectAllocator</code></li>
+<li><code>AppScheduleRegistry</code></li>
+<li><code>AppScriptFunctionRegistry</code></li>
+</ul>
+<p>etc. in a type-erased way.</p>
+<p>This allowed <code>bevy_mod_scripting_display</code> to directly rely on world types, and removed a lot of awkward bridging code.</p>
 
                     </main>
 
