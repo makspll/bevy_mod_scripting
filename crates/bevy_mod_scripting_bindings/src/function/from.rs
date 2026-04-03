@@ -588,6 +588,16 @@ impl<T1, T2> Union<T1, T2> {
         Union(Ok(value))
     }
 
+    /// Returns true if this union represents the left kind of value
+    pub fn is_left(&self) -> bool {
+        matches!(self, Union(Ok(_)))
+    }
+
+    /// Returns true if this union represents the right kind of value
+    pub fn is_right(&self) -> bool {
+        matches!(self, Union(Err(_)))
+    }
+
     /// Create a new union with the right value.
     pub fn new_right(value: T2) -> Self {
         Union(Err(value))

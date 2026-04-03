@@ -34,7 +34,7 @@ use ::{
 use bevy_app::AppExit;
 use bevy_asset::AssetPath;
 use bevy_ecs::{
-    component::{Component, ComponentCloneBehavior, ComponentDescriptor},
+    component::{Component, ComponentCloneBehavior, ComponentDescriptor, Mutable},
     hierarchy::{ChildOf, Children},
     resource::Resource,
     system::Commands,
@@ -119,6 +119,24 @@ pub trait WorldExtensions {
 
     /// Executes a closure with access to a component (if present).
     fn with_component<C: Component, O, F: FnOnce(Option<&C>) -> O>(
+        &self,
+        entity: Entity,
+        f: F,
+    ) -> Result<O, InteropError>;
+
+    /// Executes a closure with access to a component (if present).
+    fn with_component_mut<C: Component<Mutability = Mutable>, O, F: FnOnce(Option<Mut<C>>) -> O>(
+        &self,
+        entity: Entity,
+        f: F,
+    ) -> Result<O, InteropError>;
+
+    /// Executes a closure with access to a component after inserting its default value if it doesn't exist (if present).
+    fn with_or_insert_component_mut<
+        C: Component<Mutability = Mutable> + Default,
+        O,
+        F: FnOnce(&mut C) -> O,
+    >(
         &self,
         entity: Entity,
         f: F,
@@ -513,6 +531,45 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         .map_err(Into::into)
     }
 
+    fn with_component_mut<C: Component<Mutability = Mutable>, O, F: FnOnce(Option<Mut<C>>) -> O>(
+        &self,
+        entity: Entity,
+        f: F,
+    ) -> Result<O, InteropError> {
+        let type_id = std::any::TypeId::of::<C>();
+        let component_id = self.get_component_id(type_id)?.ok_or(
+            InteropError::unregistered_component_or_resource_type(type_id),
+        )?;
+        let cell = self.as_unsafe_world_cell()?;
+        // Safety: we claimed access to this component
+        self.with_write_access(component_id, || {
+            f(unsafe { cell.get_entity(entity).ok().and_then(|e| e.get_mut::<C>()) })
+        })
+        .map_err(Into::into)
+    }
+
+    fn with_or_insert_component_mut<
+        C: Component<Mutability = Mutable> + Default,
+        O,
+        F: FnOnce(&mut C) -> O,
+    >(
+        &self,
+        entity: Entity,
+        f: F,
+    ) -> Result<O, InteropError> {
+        self.with_world_mut(|world| match world.get_mut::<C>(entity) {
+            Some(mut component) => f(&mut component),
+            None => {
+                let mut component = C::default();
+                let mut commands = world.commands();
+                let result = f(&mut component);
+                commands.entity(entity).insert(component);
+                world.flush();
+                result
+            }
+        })
+    }
+
     /// get the given resource
     fn get_resource(
         &self,
@@ -694,63 +751,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             world.write_message(AppExit::Success);
         })
     }
-
-    // fn systems(&self, schedule: &ReflectSchedule) -> Result<Vec<ReflectSystem>, InteropError> {
-    //     self.with_resource(|schedules: &Schedules| {
-    //         let schedule = schedules
-    //             .get(*schedule.label())
-    //             .ok_or_else(|| InteropError::missing_schedule(schedule.identifier()))?;
-
-    //         let systems = schedule.systems().map_err(|_| {
-    //             InteropError::string(format!(
-    //                 "failed to get systems from schedule '{:?}', schedule is not initialized.",
-    //                 schedule.label()
-    //             ))
-    //         })?;
-
-    //         Ok(systems
-    //             .map(|(node_id, system)| ReflectSystem::from_system(system.as_ref(), node_id))
-    //             .collect())
-    //     })?
-    // }
-
-    // fn scope_schedule<O, F: FnOnce(&mut World, &mut Schedule) -> O>(
-    //     &self,
-    //     label: &ReflectSchedule,
-    //     f: F,
-    // ) -> Result<O, InteropError> {
-    //     self.with_world_mut(|world| {
-    //         let mut schedules = world.get_resource_mut::<Schedules>().ok_or_else(|| {
-    //             InteropError::unsupported_operation(
-    //                 None,
-    //                 None,
-    //                 "accessing schedules in a world with no schedules",
-    //             )
-    //         })?;
-
-    //         let mut removed_schedule = schedules
-    //             .remove(*label.label())
-    //             .ok_or_else(|| InteropError::missing_schedule(label.identifier()))?;
-
-    //         let result = f(world, &mut removed_schedule);
-
-    //         let mut schedules = world.get_resource_mut::<Schedules>().ok_or_else(|| {
-    //             InteropError::unsupported_operation(
-    //                 None,
-    //                 None,
-    //                 "removing `Schedules` resource within a schedule scope",
-    //             )
-    //         })?;
-
-    //         assert!(
-    //             removed_schedule.label() == *label.label(),
-    //             "removed schedule label doesn't match the original"
-    //         );
-    //         schedules.insert(removed_schedule);
-
-    //         Ok(result)
-    //     })?
-    // }
 
     fn get_schedule_by_name(&self, schedule_name: String) -> Option<ReflectSchedule> {
         let schedule_registry = self.schedule_registry();
@@ -1387,8 +1387,12 @@ impl CachedRegistry for CurrentScriptAttachment {
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy_reflect::{GetTypeRegistration, ReflectFromReflect};
-    use test_utils::test_data::{SimpleEnum, SimpleStruct, SimpleTupleStruct, setup_world};
+    use bevy_reflect::{GetTypeRegistration, Reflect, ReflectFromReflect};
+    use std::sync::Arc;
+    use test_utils::test_data::{
+        CompWithDefaultAndComponentData, GetTestEntityId, SimpleEnum, SimpleStruct,
+        SimpleTupleStruct, TestResource, UnitStruct, setup_world,
+    };
 
     #[test]
     fn test_construct_struct() {
@@ -1533,5 +1537,468 @@ mod test {
         let result = world.construct(type_registration, payload, false);
         let expected = Ok::<_, InteropError>(Box::new(SimpleEnum::Unit) as Box<dyn PartialReflect>);
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
+    }
+
+    fn make_guard(world: &mut World) -> WorldAccessGuard<'_> {
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
+        WorldAccessGuard::new_exclusive(world, cache)
+    }
+
+    fn comp_reg<C: Component + Reflect>(
+        guard: &WorldAccessGuard<'_>,
+    ) -> ScriptComponentRegistration {
+        let short = std::any::type_name::<C>().split("::").last().unwrap();
+        guard
+            .get_component_type(guard.get_type_by_name(short).unwrap())
+            .unwrap()
+            .unwrap()
+    }
+
+    fn res_reg<R: Resource + Reflect>(guard: &WorldAccessGuard<'_>) -> ScriptResourceRegistration {
+        let short = std::any::type_name::<R>().split("::").last().unwrap();
+        guard
+            .get_resource_type(guard.get_type_by_name(short).unwrap())
+            .unwrap()
+            .unwrap()
+    }
+
+    // ── spawn / is_valid_entity / has_entity ──────────────────────────────────
+
+    #[test]
+    fn spawn_produces_valid_entity() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        assert!(guard.is_valid_entity(e).unwrap());
+        assert_eq!(
+            guard.is_valid_entity(e).unwrap(),
+            guard.has_entity(e).unwrap()
+        );
+    }
+
+    // ── despawn ───────────────────────────────────────────────────────────────
+
+    #[test]
+    fn despawn_invalidates_entity() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        guard.despawn(e).unwrap();
+        assert!(!guard.is_valid_entity(e).unwrap());
+    }
+
+    #[test]
+    fn despawn_missing_entity_errors() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        guard.despawn(e).unwrap();
+        assert!(guard.despawn(e).is_err());
+    }
+
+    // ── despawn_recursive / despawn_descendants ───────────────────────────────
+
+    #[test]
+    fn despawn_recursive_removes_parent_and_child() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let parent = guard.spawn().unwrap();
+        let child = guard.spawn().unwrap();
+        guard.push_children(parent, &[child]).unwrap();
+        guard.despawn_recursive(parent).unwrap();
+        assert!(!guard.is_valid_entity(parent).unwrap());
+        assert!(!guard.is_valid_entity(child).unwrap());
+    }
+
+    #[test]
+    fn despawn_descendants_keeps_parent_removes_child() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let parent = guard.spawn().unwrap();
+        let child = guard.spawn().unwrap();
+        guard.push_children(parent, &[child]).unwrap();
+        guard.despawn_descendants(parent).unwrap();
+        assert!(guard.is_valid_entity(parent).unwrap());
+        assert!(!guard.is_valid_entity(child).unwrap());
+    }
+
+    // ── component CRUD ────────────────────────────────────────────────────────
+
+    #[test]
+    fn add_default_has_get_remove_component_roundtrip() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        let reg = comp_reg::<CompWithDefaultAndComponentData>(&guard);
+
+        assert!(!guard.has_component(e, reg.component_id).unwrap());
+        assert!(guard.get_component(e, reg.clone()).unwrap().is_none());
+
+        guard.add_default_component(e, reg.clone()).unwrap();
+
+        assert!(guard.has_component(e, reg.component_id).unwrap());
+        assert!(guard.get_component(e, reg.clone()).unwrap().is_some());
+
+        guard.remove_component(e, reg.clone()).unwrap();
+
+        assert!(!guard.has_component(e, reg.component_id).unwrap());
+    }
+
+    // ── with_component access-map: all four conflict cases ────────────────────
+
+    #[test]
+    fn with_component_read_read_succeeds() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        guard
+            .add_default_component(e, comp_reg::<CompWithDefaultAndComponentData>(&guard))
+            .unwrap();
+
+        // two shared borrows of the same component must not conflict
+        let result = guard.with_component(e, |_: Option<&CompWithDefaultAndComponentData>| {
+            guard.with_component(e, |_: Option<&CompWithDefaultAndComponentData>| ())
+        });
+        assert!(result.unwrap().is_ok());
+    }
+
+    #[test]
+    fn with_component_write_read_conflicts() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        guard
+            .add_default_component(e, comp_reg::<CompWithDefaultAndComponentData>(&guard))
+            .unwrap();
+
+        let result =
+            guard.with_component_mut(e, |_: Option<Mut<CompWithDefaultAndComponentData>>| {
+                guard.with_component(e, |_: Option<&CompWithDefaultAndComponentData>| ())
+            });
+        assert!(result.unwrap().is_err());
+    }
+
+    #[test]
+    fn with_component_read_write_conflicts() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        guard
+            .add_default_component(e, comp_reg::<CompWithDefaultAndComponentData>(&guard))
+            .unwrap();
+
+        let result = guard.with_component(e, |_: Option<&CompWithDefaultAndComponentData>| {
+            guard.with_component_mut(e, |_: Option<Mut<CompWithDefaultAndComponentData>>| ())
+        });
+        assert!(result.unwrap().is_err());
+    }
+
+    #[test]
+    fn with_component_write_write_conflicts() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+        guard
+            .add_default_component(e, comp_reg::<CompWithDefaultAndComponentData>(&guard))
+            .unwrap();
+
+        let result =
+            guard.with_component_mut(e, |_: Option<Mut<CompWithDefaultAndComponentData>>| {
+                guard.with_component_mut(e, |_: Option<Mut<CompWithDefaultAndComponentData>>| ())
+            });
+        assert!(result.unwrap().is_err());
+    }
+
+    // ── with_or_insert_component_mut ─────────────────────────────────────────
+
+    #[test]
+    fn with_or_insert_inserts_when_absent_and_mutates_when_present() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let e = guard.spawn().unwrap();
+
+        // absent: inserts default then applies mutation
+        guard
+            .with_or_insert_component_mut(e, |c: &mut UnitStruct| {
+                let _ = c;
+            })
+            .unwrap();
+        assert!(
+            guard
+                .has_component(e, comp_reg::<UnitStruct>(&guard).component_id)
+                .unwrap()
+        );
+
+        // present: mutates existing value
+        guard
+            .with_or_insert_component_mut(e, |c: &mut UnitStruct| {
+                let _ = c;
+            })
+            .unwrap();
+    }
+
+    // ── resource operations ───────────────────────────────────────────────────
+
+    #[test]
+    fn has_resource_and_get_resource_and_remove_resource() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let reg = res_reg::<TestResource>(&guard);
+
+        assert!(guard.has_resource(reg.resource_id).unwrap());
+        assert!(guard.get_resource(reg.resource_id).unwrap().is_some());
+
+        guard.remove_resource(reg.clone()).unwrap();
+
+        assert!(!guard.has_resource(reg.resource_id).unwrap());
+        // this might be unexpected but the resource component ID persists for some reason
+        // I guess it gets re-used if the resource is re-inserted, but
+        // the reference will fail
+        let ref_ = guard.get_resource(reg.resource_id).unwrap().unwrap();
+        assert!(ref_.downcast::<TestResource>(guard).is_err());
+    }
+
+    // ── with_resource access-map: all four conflict cases ────────────────────
+
+    #[test]
+    fn with_resource_read_read_succeeds() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        let result =
+            guard.with_resource(|_: &TestResource| guard.with_resource(|_: &TestResource| ()));
+        assert!(result.unwrap().is_ok());
+    }
+
+    #[test]
+    fn with_resource_write_read_conflicts() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        let result = guard
+            .with_resource_mut(|_: Mut<TestResource>| guard.with_resource(|_: &TestResource| ()));
+        assert!(result.unwrap().is_err());
+    }
+
+    #[test]
+    fn with_resource_read_write_conflicts() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        let result = guard
+            .with_resource(|_: &TestResource| guard.with_resource_mut(|_: Mut<TestResource>| ()));
+        assert!(result.unwrap().is_err());
+    }
+
+    #[test]
+    fn with_resource_write_write_conflicts() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        let result = guard.with_resource_mut(|_: Mut<TestResource>| {
+            guard.with_resource_mut(|_: Mut<TestResource>| ())
+        });
+        assert!(result.unwrap().is_err());
+    }
+
+    // ── hierarchy ─────────────────────────────────────────────────────────────
+
+    #[test]
+    fn push_get_remove_children_and_get_parent() {
+        let mut world = setup_world(|_, _| {});
+        world.register_component::<ChildOf>();
+        world.register_component::<Children>();
+        let guard = make_guard(&mut world);
+        let parent = guard.spawn().unwrap();
+        let c1 = guard.spawn().unwrap();
+        let c2 = guard.spawn().unwrap();
+
+        assert_eq!(guard.get_parent(c1).unwrap(), None);
+
+        guard.push_children(parent, &[c1, c2]).unwrap();
+
+        assert_eq!(guard.get_children(parent).unwrap().len(), 2);
+        assert_eq!(guard.get_parent(c1).unwrap(), Some(parent));
+
+        guard.remove_children(parent, &[c1]).unwrap();
+        assert_eq!(guard.get_children(parent).unwrap(), vec![c2]);
+    }
+
+    #[test]
+    fn insert_children_at_index() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let parent = guard.spawn().unwrap();
+        let c1 = guard.spawn().unwrap();
+        let c2 = guard.spawn().unwrap();
+        let c3 = guard.spawn().unwrap();
+        guard.push_children(parent, &[c1, c3]).unwrap();
+        guard.insert_children(parent, 1, &[c2]).unwrap();
+        assert_eq!(guard.get_children(parent).unwrap()[1], c2);
+    }
+
+    #[test]
+    fn hierarchy_ops_error_on_missing_entity() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let ghost = guard.spawn().unwrap();
+        guard.despawn(ghost).unwrap();
+
+        assert!(guard.get_parent(ghost).is_err());
+        assert!(guard.get_children(ghost).is_err());
+        assert!(guard.push_children(ghost, &[]).is_err());
+        assert!(guard.insert_children(ghost, 0, &[]).is_err());
+        assert!(guard.remove_children(ghost, &[]).is_err());
+        assert!(guard.despawn_recursive(ghost).is_err());
+        assert!(guard.despawn_descendants(ghost).is_err());
+    }
+
+    // ── type registry helpers ─────────────────────────────────────────────────
+
+    #[test]
+    fn get_type_by_name_known_and_unknown() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        assert!(guard.get_type_by_name("SimpleStruct").is_some());
+        assert!(guard.get_type_by_name("NoSuchType_XYZ").is_none());
+    }
+
+    #[test]
+    fn get_type_registration_classifies_correctly() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        let plain = guard
+            .get_type_registration(guard.get_type_by_name("usize").unwrap())
+            .unwrap();
+        assert!(plain.is_left());
+
+        // component → Right(Left(_))
+        let comp = guard
+            .get_type_registration(
+                guard
+                    .get_type_by_name("CompWithDefaultAndComponentData")
+                    .unwrap(),
+            )
+            .unwrap();
+        assert!(comp.into_right().unwrap().is_left());
+
+        // resource → Right(Right(_))
+        let res = guard
+            .get_type_registration(guard.get_type_by_name("TestResource").unwrap())
+            .unwrap();
+        assert!(res.into_right().unwrap().is_right());
+    }
+
+    #[test]
+    fn get_type_registration_by_name_unknown_returns_none() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        assert!(
+            guard
+                .get_type_registration_by_name("NoSuchType_XYZ".to_owned())
+                .unwrap()
+                .is_none()
+        );
+    }
+
+    // ── dynamic component registration ────────────────────────────────────────
+
+    #[test]
+    fn register_script_component_and_duplicate_errors() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        guard
+            .register_script_component("MyDynComp".to_owned())
+            .unwrap();
+        assert!(
+            guard
+                .register_script_component("MyDynComp".to_owned())
+                .is_err()
+        );
+        assert!(guard.component_registry().read().get("MyDynComp").is_some());
+    }
+
+    // ── query ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn query_returns_only_matching_entities() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let _without = guard.spawn().unwrap();
+        let reg = comp_reg::<CompWithDefaultAndComponentData>(&guard);
+        let mut builder = ScriptQueryBuilder::new();
+        builder.with_components(vec![reg]);
+
+        let results = guard.query(builder).unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(
+            results[0].entity,
+            CompWithDefaultAndComponentData::test_entity_id()
+        );
+    }
+
+    // ── construct error paths ─────────────────────────────────────────────────
+
+    #[test]
+    fn construct_enum_missing_variant_errors() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let reg = ScriptTypeRegistration::new(Arc::new(
+            guard
+                .type_registry()
+                .read()
+                .get(TypeId::of::<SimpleEnum>())
+                .unwrap()
+                .clone(),
+        ));
+        assert!(guard.construct(reg, HashMap::new(), false).is_err());
+    }
+
+    #[test]
+    fn construct_enum_invalid_variant_errors() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let reg = ScriptTypeRegistration::new(Arc::new(
+            guard
+                .type_registry()
+                .read()
+                .get(TypeId::of::<SimpleEnum>())
+                .unwrap()
+                .clone(),
+        ));
+        let payload = HashMap::from_iter(vec![(
+            "variant".to_owned(),
+            ScriptValue::String("Nonexistent".into()),
+        )]);
+        assert!(guard.construct(reg, payload, false).is_err());
+    }
+
+    // ── setup_cache_raw ───────────────────────────────────────────────────────
+
+    #[test]
+    fn setup_cache_raw_produces_functional_guard() {
+        let mut world = setup_world(|_, _| {});
+        let cache = WorldAccessGuard::setup_cache_raw(
+            CurrentScriptAttachment::default(),
+            world
+                .get_resource::<AppReflectAllocator>()
+                .cloned()
+                .unwrap_or_default(),
+            world
+                .get_resource::<AppScriptFunctionRegistry>()
+                .cloned()
+                .unwrap_or_default(),
+            world
+                .get_resource::<AppScheduleRegistry>()
+                .cloned()
+                .unwrap_or_default(),
+            world
+                .get_resource::<AppScriptComponentRegistry>()
+                .cloned()
+                .unwrap_or_default(),
+        );
+        let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+        assert!(guard.spawn().is_ok());
     }
 }

@@ -264,6 +264,11 @@ pub struct ScriptQueryBuilder {
 
 #[profiling::all_functions]
 impl ScriptQueryBuilder {
+    /// Creates an empty query builder
+    pub fn new() -> Self {
+        Default::default()
+    }
+
     /// Adds components to the query.
     pub fn components(&mut self, components: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.components.extend(components);

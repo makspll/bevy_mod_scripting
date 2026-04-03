@@ -132,178 +132,6 @@ impl<'w> WorldAccessGuard<'w> {
         &self.inner.type_registry
     }
 
-    /// creates a new guard derived from this one, which if invalidated, will not invalidate the original
-    fn scope(&self) -> Self {
-        let mut new_guard = self.clone();
-        new_guard.invalid = Rc::new(
-            new_guard
-                .invalid
-                .load(std::sync::atomic::Ordering::Relaxed)
-                .into(),
-        );
-        new_guard
-    }
-
-    /// Returns true if the guard is valid, false if it is invalid
-    fn is_valid(&self) -> bool {
-        !self.invalid.load(std::sync::atomic::Ordering::Relaxed)
-    }
-
-    /// Invalidates the world access guard, making it and any guards derived from this one unusable.
-    pub fn invalidate(&self) {
-        self.invalid
-            .store(true, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`].
-    ///
-    /// The guard is invalidated at the end of the closure, meaning the world cannot be accessed at all after the closure ends.
-    pub fn with_static_guard<O>(
-        world: &'w mut World,
-        cached_slots: RegistryCache,
-        f: impl FnOnce(WorldGuard<'static>) -> O,
-    ) -> O {
-        let guard = WorldAccessGuard::new_exclusive(world, cached_slots);
-        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
-        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
-        ThreadWorldContainer.set_context(ThreadScriptContext {
-            world: static_guard.clone(),
-        });
-        let o = f(static_guard.clone());
-
-        static_guard.invalidate();
-        o
-    }
-
-    /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`] using a previously lifetimed world guard.
-    /// Will invalidate the static guard at the end but not the original.
-    pub fn with_existing_static_guard<O>(
-        guard: WorldAccessGuard<'w>,
-        f: impl FnOnce(WorldGuard<'static>) -> O,
-    ) -> O {
-        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends, from the static guard
-        // i.e. even if somebody squirells it away, it will be useless.
-        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard.scope()) };
-        ThreadWorldContainer.set_context(ThreadScriptContext {
-            world: static_guard.clone(),
-        });
-        let o = f(static_guard.clone());
-        static_guard.invalidate();
-        o
-    }
-
-    /// Creates a new [`WorldAccessGuard`] from a possibly non-exclusive access to the world.
-    ///
-    /// It requires specyfing the exact accesses that are allowed to be given out by the guard.
-    /// Those accesses need to be safe to be given out to the script, as the guard will assume that it is safe to give them out in any way.
-    ///
-    /// # Safety
-    /// - The caller must ensure that the accesses in subset are not aliased by any other access
-    /// - If an access is allowed in this subset, but alised by someone else,
-    pub unsafe fn new_non_exclusive(
-        world: UnsafeWorldCell<'w>,
-        subset: impl IntoIterator<Item = impl Into<WorldAccessRange>>,
-        type_registry: TypeRegistryArc,
-        registry_cache: RegistryCache,
-    ) -> Self {
-        Self {
-            inner: Rc::new(WorldAccessGuardInner {
-                cell: world,
-                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(subset)),
-                type_registry,
-                cached_slots: registry_cache,
-            }),
-            invalid: Rc::new(false.into()),
-        }
-    }
-
-    /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
-    ///
-    /// If these resources do not exist, they will be initialized.
-    pub fn new_exclusive(world: &'w mut World, registry_cache: RegistryCache) -> Self {
-        let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
-        Self {
-            inner: Rc::new(WorldAccessGuardInner {
-                cell: world.as_unsafe_world_cell(),
-                accesses: AnyAccessMap::UnlimitedAccessMap(Default::default()),
-                cached_slots: registry_cache,
-                type_registry,
-            }),
-            invalid: Rc::new(false.into()),
-        }
-    }
-
-    /// Queues a command to the world, which will be executed later.
-    pub(crate) fn queue(&self, command: impl Command) -> Result<(), DynWorldAccessError> {
-        self.with_world_mut_access(|w| {
-            w.commands().queue(command);
-        })
-    }
-
-    /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
-    ///
-    /// Safety:
-    /// - The caller must ensure it's safe to release any potentially locked accesses.
-    pub unsafe fn with_access_scope<O, F: FnOnce() -> O>(
-        &self,
-        f: F,
-    ) -> Result<O, DynWorldAccessError> {
-        Ok(self.inner.accesses.with_scope(f))
-    }
-
-    /// Purely debugging utility to list all accesses currently held.
-    pub fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)> {
-        self.inner.accesses.list_accesses()
-    }
-
-    /// Should only really be used for testing purposes
-    pub unsafe fn release_all_accesses(&self) {
-        self.inner.accesses.release_all_accesses();
-    }
-
-    /// Returns the number of accesses currently held.
-    pub fn access_len(&self) -> usize {
-        self.inner.accesses.count_accesses()
-    }
-
-    /// Retrieves the underlying unsafe world cell, with no additional guarantees of safety
-    /// proceed with caution and only use this if you understand what you're doing
-    pub fn as_unsafe_world_cell(&self) -> Result<UnsafeWorldCell<'w>, DynWorldAccessError> {
-        if !self.is_valid() {
-            return Err(DynWorldAccessError::missing_world());
-        }
-
-        Ok(self.inner.cell)
-    }
-
-    /// Retrieves the underlying read only unsafe world cell, with no additional guarantees of safety
-    /// proceed with caution and only use this if you understand what you're doing
-    pub fn as_unsafe_world_cell_readonly(
-        &self,
-    ) -> Result<UnsafeWorldCell<'w>, DynWorldAccessError> {
-        if !self.is_valid() {
-            return Err(DynWorldAccessError::missing_world());
-        }
-
-        Ok(self.inner.cell)
-    }
-
-    /// Gets the component id of the given component or resource
-    pub fn get_component_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
-        Ok(self
-            .as_unsafe_world_cell_readonly()?
-            .components()
-            .get_id(id))
-    }
-
-    /// Gets the resource id of the given component or resource
-    pub fn get_resource_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
-        Ok(self
-            .as_unsafe_world_cell_readonly()?
-            .components()
-            .get_resource_id(id))
-    }
-
     #[track_caller]
     /// Claims read access to the given type.
     pub fn claim_read_access(
@@ -502,6 +330,131 @@ impl<'w> WorldAccessGuard<'w> {
         })
     }
 
+    /// Returns true if the guard is valid, false if it is invalid
+    fn is_valid(&self) -> bool {
+        !self.invalid.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// Invalidates the world access guard, making it and any guards derived from this one unusable.
+    pub fn invalidate(&self) {
+        self.invalid
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`].
+    ///
+    /// The guard is invalidated at the end of the closure, meaning the world cannot be accessed at all after the closure ends.
+    pub fn with_static_guard<O>(
+        world: &'w mut World,
+        cached_slots: RegistryCache,
+        f: impl FnOnce(WorldGuard<'static>) -> O,
+    ) -> O {
+        let guard = WorldAccessGuard::new_exclusive(world, cached_slots);
+        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
+        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
+        ThreadWorldContainer.set_context(ThreadScriptContext {
+            world: static_guard.clone(),
+        });
+        let o = f(static_guard.clone());
+
+        static_guard.invalidate();
+        o
+    }
+
+    /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`] using a previously lifetimed world guard.
+    /// Will invalidate the static guard at the end but not the original.
+    pub fn with_existing_static_guard<O>(
+        guard: WorldAccessGuard<'w>,
+        f: impl FnOnce(WorldGuard<'static>) -> O,
+    ) -> O {
+        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends, from the static guard
+        // i.e. even if somebody squirells it away, it will be useless.
+        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard.scope()) };
+        ThreadWorldContainer.set_context(ThreadScriptContext {
+            world: static_guard.clone(),
+        });
+        let o = f(static_guard.clone());
+        static_guard.invalidate();
+        o
+    }
+
+    /// Creates a new [`WorldAccessGuard`] from a possibly non-exclusive access to the world.
+    ///
+    /// It requires specyfing the exact accesses that are allowed to be given out by the guard.
+    /// Those accesses need to be safe to be given out to the script, as the guard will assume that it is safe to give them out in any way.
+    ///
+    /// # Safety
+    /// - The caller must ensure that the accesses in subset are not aliased by any other access
+    /// - If an access is allowed in this subset, but alised by someone else,
+    pub unsafe fn new_non_exclusive(
+        world: UnsafeWorldCell<'w>,
+        subset: impl IntoIterator<Item = impl Into<WorldAccessRange>>,
+        type_registry: TypeRegistryArc,
+        registry_cache: RegistryCache,
+    ) -> Self {
+        Self {
+            inner: Rc::new(WorldAccessGuardInner {
+                cell: world,
+                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(subset)),
+                type_registry,
+                cached_slots: registry_cache,
+            }),
+            invalid: Rc::new(false.into()),
+        }
+    }
+
+    /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
+    ///
+    /// If these resources do not exist, they will be initialized.
+    pub fn new_exclusive(world: &'w mut World, registry_cache: RegistryCache) -> Self {
+        let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
+        Self {
+            inner: Rc::new(WorldAccessGuardInner {
+                cell: world.as_unsafe_world_cell(),
+                accesses: AnyAccessMap::UnlimitedAccessMap(Default::default()),
+                cached_slots: registry_cache,
+                type_registry,
+            }),
+            invalid: Rc::new(false.into()),
+        }
+    }
+
+    /// Queues a command to the world, which will be executed later.
+    ///
+    /// Requires exclusive world access.
+    pub(crate) fn queue(&self, command: impl Command) -> Result<(), DynWorldAccessError> {
+        self.with_world_mut_access(|w| {
+            w.commands().queue(command);
+        })
+    }
+
+    /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
+    ///
+    /// Safety:
+    /// - The caller must ensure it's safe to release any potentially locked accesses.
+    pub unsafe fn with_access_scope<O, F: FnOnce() -> O>(
+        &self,
+        f: F,
+    ) -> Result<O, DynWorldAccessError> {
+        Ok(self.inner.accesses.with_scope(f))
+    }
+
+    /// Gets the component id of the given component or resource
+    pub fn get_component_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
+        Ok(self
+            .as_unsafe_world_cell_readonly()?
+            .components()
+            .get_id(id))
+    }
+
+    /// Gets the resource id of the given component or resource
+    pub fn get_resource_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
+        Ok(self
+            .as_unsafe_world_cell_readonly()?
+            .components()
+            .get_resource_id(id))
+    }
+
     fn resource_component_id<R: Resource>(&self) -> Result<ComponentId, DynWorldAccessError> {
         self.as_unsafe_world_cell()?
             .components()
@@ -516,119 +469,54 @@ impl<'w> WorldAccessGuard<'w> {
             .ok_or_else(|| DynWorldAccessError::UnregisteredComponent(TypeId::of::<R>()))
     }
 
-    // /// Safely accesses the resource by claiming and releasing access to it.
-    // ///
-    // /// # Panics
-    // /// - if the resource does not exist
-    // pub fn with_resource<F, R, O>(&self, f: F) -> Result<O, DynWorldAccessError>
-    // where
-    //     R: Resource,
-    //     F: FnOnce(&R) -> O,
-    // {
-    //     self.with_read_access(
-    //         WorldAccessRange::ComponentOrResource(self.resource_component_id::<R>()),
-    //         || {
-    //             f(self.)
-    //         },
-    //     )
-    // }
+    /// creates a new guard derived from this one, which if invalidated, will not invalidate the original
+    fn scope(&self) -> Self {
+        let mut new_guard = self.clone();
+        new_guard.invalid = Rc::new(
+            new_guard
+                .invalid
+                .load(std::sync::atomic::Ordering::Relaxed)
+                .into(),
+        );
+        new_guard
+    }
 
-    // /// Safely accesses the resource by claiming and releasing access to it.
-    // ///
-    // /// # Panics
-    // /// - if the resource does not exist
-    // pub fn with_resource_mut<F, R, O>(&self, f: F) -> Result<O, DynWorldAccessError>
-    // where
-    //     R: Resource,
-    //     F: FnOnce(Mut<R>) -> O,
-    // {
-    //     let cell = self.as_unsafe_world_cell()?;
-    //     let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
-    //     with_access_write!(
-    //         &self.inner.accesses,
-    //         access_id,
-    //         format!("Could not access resource: {}", std::any::type_name::<R>()),
-    //         {
-    //             // Safety: we have acquired access for the duration of the closure
-    //             f(unsafe {
-    //                 cell.get_resource_mut::<R>().ok_or_else(|| {
-    //                     DynWorldAccessError::unregistered_component_or_resource_type(
-    //                         std::any::type_name::<R>(),
-    //                     )
-    //                 })?
-    //             })
-    //         }
-    //     )
-    // }
+    /// Retrieves the underlying unsafe world cell, with no additional guarantees of safety
+    /// proceed with caution and only use this if you understand what you're doing
+    pub fn as_unsafe_world_cell(&self) -> Result<UnsafeWorldCell<'w>, DynWorldAccessError> {
+        if !self.is_valid() {
+            return Err(DynWorldAccessError::missing_world());
+        }
 
-    // /// Safely accesses the component by claiming and releasing access to it.
-    // pub fn with_component<F, T, O>(&self, entity: Entity, f: F) -> Result<O, DynWorldAccessError>
-    // where
-    //     T: Component,
-    //     F: FnOnce(Option<&T>) -> O,
-    // {
-    //     let cell = self.as_unsafe_world_cell()?;
-    //     let access_id = ReflectAccessId::for_component::<T>(&cell)?;
-    //     with_access_read!(
-    //         &self.inner.accesses,
-    //         access_id,
-    //         format!("Could not access component: {}", std::any::type_name::<T>()),
-    //         {
-    //             // Safety: we have acquired access for the duration of the closure
-    //             f(unsafe { cell.get_entity(entity).map(|e| e.get::<T>()) }
-    //                 .ok()
-    //                 .unwrap_or(None))
-    //         }
-    //     )
-    // }
+        Ok(self.inner.cell)
+    }
 
-    // /// Safely accesses the component by claiming and releasing access to it.
-    // pub fn with_component_mut<F, T, O>(
-    //     &self,
-    //     entity: Entity,
-    //     f: F,
-    // ) -> Result<O, DynWorldAccessError>
-    // where
-    //     T: Component<Mutability = Mutable>,
-    //     F: FnOnce(Option<Mut<T>>) -> O,
-    // {
-    //     let cell = self.as_unsafe_world_cell()?;
-    //     let access_id = ReflectAccessId::for_component::<T>(&cell)?;
+    /// Retrieves the underlying read only unsafe world cell, with no additional guarantees of safety
+    /// proceed with caution and only use this if you understand what you're doing
+    pub fn as_unsafe_world_cell_readonly(
+        &self,
+    ) -> Result<UnsafeWorldCell<'w>, DynWorldAccessError> {
+        if !self.is_valid() {
+            return Err(DynWorldAccessError::missing_world());
+        }
 
-    //     with_access_write!(
-    //         &self.inner.accesses,
-    //         access_id,
-    //         format!("Could not access component: {}", std::any::type_name::<T>()),
-    //         {
-    //             // Safety: we have acquired access for the duration of the closure
-    //             f(unsafe { cell.get_entity(entity).map(|e| e.get_mut::<T>()) }
-    //                 .ok()
-    //                 .unwrap_or(None))
-    //         }
-    //     )
-    // }
+        Ok(self.inner.cell)
+    }
 
-    // /// Safey modify or insert a component by claiming and releasing global access.
-    // pub fn with_or_insert_component_mut<F, T, O>(
-    //     &self,
-    //     entity: Entity,
-    //     f: F,
-    // ) -> Result<O, DynWorldAccessError>
-    // where
-    //     T: Component<Mutability = Mutable> + Default,
-    //     F: FnOnce(&mut T) -> O,
-    // {
-    //     self.with_global_access(|world| match world.get_mut::<T>(entity) {
-    //         Some(mut component) => f(&mut component),
-    //         None => {
-    //             let mut component = T::default();
-    //             let mut commands = world.commands();
-    //             let result = f(&mut component);
-    //             commands.entity(entity).insert(component);
-    //             result
-    //         }
-    //     })
-    // }
+    /// Purely debugging utility to list all accesses currently held.
+    pub fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)> {
+        self.inner.accesses.list_accesses()
+    }
+
+    /// Should only really be used for testing purposes
+    pub unsafe fn release_all_accesses(&self) {
+        self.inner.accesses.release_all_accesses();
+    }
+
+    /// Returns the number of accesses currently held.
+    pub fn access_len(&self) -> usize {
+        self.inner.accesses.count_accesses()
+    }
 }
 
 /// Impl block for higher level world methods
