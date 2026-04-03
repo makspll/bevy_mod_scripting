@@ -5,9 +5,10 @@ use std::{
     cmp::max,
 };
 
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, ReflectRef, TypeInfo};
 
-use crate::{ReflectReference, WorldGuard, error::InteropError};
+use crate::{ReflectReference, WorldExtensions, error::InteropError};
 
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {

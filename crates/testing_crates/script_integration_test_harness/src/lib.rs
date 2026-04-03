@@ -21,10 +21,7 @@ use ::{
 };
 use bevy_asset::Assets;
 use bevy_mod_scripting_asset::ScriptAsset;
-use bevy_mod_scripting_bindings::{
-    CoreScriptGlobalsPlugin, ReflectAccessId, ThreadScriptContext, ThreadWorldContainer,
-    WorldAccessGuard, WorldGuard,
-};
+use bevy_mod_scripting_bindings::{CoreScriptGlobalsPlugin, WorldExtensions};
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
     commands::AttachScript,
@@ -35,6 +32,7 @@ use bevy_mod_scripting_core::{
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 use criterion::{BatchSize, measurement::Measurement};
 use rand::{Rng, SeedableRng};
 use test_functions::{RNG, register_test_functions};
@@ -315,9 +313,13 @@ where
         .world_mut()
         .get_resource_or_init::<ScriptContexts<P>>()
         .clone();
-    let guard = WorldGuard::new_exclusive(app.world_mut());
 
     let context_key = ScriptAttachment::EntityScript(entity, script_handle.clone());
+    let cache = WorldAccessGuard::setup_cache(
+        app.world(),
+        bevy_mod_scripting_bindings::CurrentScriptAttachment(Some(context_key.clone())),
+    );
+    let guard = WorldGuard::new_exclusive(app.world_mut(), cache);
 
     let script_contexts = script_contexts.read();
     let ctxt_arc = script_contexts.get_context(&context_key).unwrap();
@@ -328,13 +330,7 @@ where
     let runtime = P::readonly_configuration(guard.id()).runtime;
 
     let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
-        // Ensure the world is available via ThreadWorldContainer
-        ThreadWorldContainer
-            .set_context(ThreadScriptContext {
-                world: guard.clone(),
-                attachment: ScriptAttachment::StaticScript(script_handle),
-            })
-            .map_err(|e| format!("{e:#?}"))?;
+        guard.set_current_attachment(context_key.clone());
         // Pass the locked context to the closure for benchmarking its Lua (or generic) part
         bench_fn(&mut ctxt_locked, runtime, label, criterion)
     });
@@ -413,8 +409,8 @@ pub fn perform_benchmark_with_generator<
     let f3 = world.register_resource::<Fake3>();
     let f4 = world.register_resource::<Fake4>();
     let f5 = world.register_resource::<Fake5>();
-
-    let world_guard = WorldAccessGuard::new_exclusive(&mut world);
+    let cache = WorldAccessGuard::setup_cache(&world, Default::default());
+    let world_guard = WorldAccessGuard::new_exclusive(&mut world, cache);
     let mut rng_guard = RNG.lock().unwrap();
     *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
     drop(rng_guard);
@@ -433,11 +429,11 @@ pub fn perform_benchmark_with_generator<
                 for _ in 0..rng_guard.random_range(0..=5) {
                     // pick random component
                     match rng_guard.random_range(0..=4) {
-                        0 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f1)),
-                        1 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f2)),
-                        2 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f3)),
-                        3 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f4)),
-                        4 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f5)),
+                        0 => world_guard.claim_write_access(f1).is_ok(),
+                        1 => world_guard.claim_write_access(f2).is_ok(),
+                        2 => world_guard.claim_write_access(f3).is_ok(),
+                        3 => world_guard.claim_write_access(f4).is_ok(),
+                        4 => world_guard.claim_write_access(f5).is_ok(),
                         _ => false,
                     };
                 }

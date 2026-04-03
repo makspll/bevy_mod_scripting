@@ -72,7 +72,7 @@ impl GenericComponent<String> {
 }
 
 /// Test Resource with Reflect and ReflectResource registered
-#[derive(Resource, Reflect, Default, PartialEq, Eq, Debug)]
+#[derive(Resource, Reflect, Default, PartialEq, Eq, Debug, Clone)]
 #[reflect(Resource)]
 pub struct TestResource {
     pub bytes: Vec<u8>,

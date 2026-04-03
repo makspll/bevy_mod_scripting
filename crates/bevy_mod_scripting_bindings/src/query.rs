@@ -1,9 +1,10 @@
 //! Utilities for querying the world.
 
-use bevy_ecs::{ptr::OwningPtr, query::QueryBuilder, world::EntityRef};
+use bevy_ecs::{ptr::OwningPtr, query::QueryBuilder};
+use bevy_mod_scripting_world::WorldGuard;
 
-use super::{DynamicComponent, ReflectReference, WorldAccessGuard, WorldGuard, with_global_access};
-use crate::error::InteropError;
+use super::{DynamicComponent, ReflectReference};
+use crate::{WorldExtensions, error::InteropError};
 use ::{
     bevy_ecs::{
         component::ComponentId,
@@ -14,7 +15,7 @@ use ::{
     },
     bevy_reflect::{Reflect, TypeRegistration},
 };
-use std::{any::TypeId, collections::VecDeque, ptr::NonNull, sync::Arc};
+use std::{any::TypeId, ptr::NonNull, sync::Arc};
 
 /// A reference to a type which is not a `Resource` or `Component`.
 ///
@@ -143,7 +144,7 @@ impl ScriptComponentRegistration {
         world: WorldGuard,
         entity: Entity,
     ) -> Result<(), InteropError> {
-        world.with_global_access(|world| {
+        world.with_world_mut(|world| {
             let mut entity = world
                 .get_entity_mut(entity)
                 .map_err(|_| InteropError::missing_entity(entity))?;
@@ -165,7 +166,7 @@ impl ScriptComponentRegistration {
             // if dynamic we already know the type i.e. `ScriptComponent`
             // so we can just insert it
 
-            world.with_global_access(|world| {
+            world.with_world_mut(|world| {
                 let mut entity = world
                     .get_entity_mut(entity)
                     .map_err(|_| InteropError::missing_entity(entity))?;
@@ -203,7 +204,7 @@ impl ScriptComponentRegistration {
 
             //  TODO: this shouldn't need entire world access it feels
             let type_registry = world.type_registry();
-            world.with_global_access(|world| {
+            world.with_world_mut(|world| {
                 let mut entity = world
                     .get_entity_mut(entity)
                     .map_err(|_| InteropError::missing_entity(entity))?;
@@ -263,6 +264,11 @@ pub struct ScriptQueryBuilder {
 
 #[profiling::all_functions]
 impl ScriptQueryBuilder {
+    /// Creates an empty query builder
+    pub fn new() -> Self {
+        Default::default()
+    }
+
     /// Adds components to the query.
     pub fn components(&mut self, components: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.components.extend(components);
@@ -328,39 +334,4 @@ pub struct ScriptQueryResult {
     pub entity: Entity,
     /// The components that matched the query.
     pub components: Vec<ReflectReference>,
-}
-
-#[profiling::all_functions]
-impl WorldAccessGuard<'_> {
-    /// Queries the world for entities that match the given query.
-    pub fn query(
-        &self,
-        query: ScriptQueryBuilder,
-    ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
-        with_global_access!(&self.inner.accesses, "Could not query", {
-            let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
-            let mut built_query = query.as_query_state::<EntityRef>(world);
-            let query_result = built_query.iter(world);
-
-            Ok(query_result
-                .map(|r| {
-                    let references: Vec<_> = query
-                        .components
-                        .iter()
-                        .map(|c| ReflectReference {
-                            base: super::ReflectBaseType {
-                                type_id: c.type_registration().type_id(),
-                                base_id: super::ReflectBase::Component(r.id(), c.component_id()),
-                            },
-                            reflect_path: Default::default(),
-                        })
-                        .collect();
-                    ScriptQueryResult {
-                        entity: r.id(),
-                        components: references,
-                    }
-                })
-                .collect())
-        })?
-    }
 }

@@ -4,11 +4,9 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use super::{WorldGuard, access_map::ReflectAccessId};
 use crate::{
-    ReferencePart, ReferencePath, ReflectAllocationId, ReflectAllocator, ThreadWorldContainer,
-    error::InteropError, reflection_extensions::PartialReflectExt, with_access_read,
-    with_access_write,
+    ReferencePart, ReferencePath, ReflectAllocationId, ReflectAllocator, WorldExtensions,
+    error::InteropError, reflection_extensions::PartialReflectExt,
 };
 use bevy_asset::{ReflectAsset, UntypedHandle};
 use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
@@ -16,11 +14,9 @@ use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
 };
+use bevy_mod_scripting_world::{WorldAccessGuard, WorldAccessRange, WorldGuard};
 use bevy_reflect::{Access, OffsetAccess, ReflectRef, TypeRegistry};
-use std::{
-    any::{Any, TypeId},
-    fmt::Debug,
-};
+use std::{any::TypeId, fmt::Debug};
 use {
     bevy_ecs::{
         change_detection::MutUntyped, component::ComponentId, entity::Entity,
@@ -55,25 +51,17 @@ impl DisplayWithTypeInfo for ReflectReference {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         // try to display the most information we can, the type info provider happens to be the world guard, we can
         // actually display the reference
-        if let Some(type_info_provider) = type_info_provider {
+        if let Some(guard) = type_info_provider {
             // Safety: should be safe as the guard is invalidated when world is released per iteration
-            let any: &dyn Any = unsafe { type_info_provider.as_any_static() };
 
-            let guard = any.downcast_ref::<WorldGuard>().cloned().or_else(|| {
-                any.downcast_ref::<ThreadWorldContainer>()
-                    .and_then(|t| t.try_get_context().ok().map(|c| c.world))
-            });
-
-            if let Some(guard) = guard
-                && let Ok(r) = self.with_reflect(guard.clone(), |s| {
-                    PrintReflectAsDebug::new_with_opt_info(s, Some(type_info_provider))
-                        .to_string_with_type_info(f, Some(type_info_provider))
-                })
-            {
+            if let Ok(r) = self.with_reflect(guard.clone(), |s| {
+                PrintReflectAsDebug::new_with_opt_info(s, Some(guard))
+                    .to_string_with_type_info(f, Some(guard))
+            }) {
                 return r;
             }
         }
@@ -378,15 +366,14 @@ impl ReflectReference {
                 .remove(id)
                 .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
 
-            let access_id = ReflectAccessId::for_allocation(id.clone());
-            if world.claim_write_access(access_id) {
+            if let Ok(()) = world.claim_write_access(id) {
                 // Safety: we claim write access, nobody else is accessing this
                 if unsafe { &*arc.get_ptr() }.try_as_reflect().is_some() {
                     // Safety: the only accesses exist in this function
-                    unsafe { world.release_access(access_id) };
+                    unsafe { world.release_access(id) };
                     return Ok(unsafe { arc.take() });
                 } else {
-                    unsafe { world.release_access(access_id) };
+                    unsafe { world.release_access(id) };
                 }
             }
             allocator.insert(id.clone(), arc);
@@ -405,22 +392,15 @@ impl ReflectReference {
         world: WorldGuard,
         f: F,
     ) -> Result<O, InteropError> {
-        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone());
-        with_access_read!(
-            &world.inner.accesses,
-            access_id,
-            "could not access reflect reference",
-            {
-                f(
-                    unsafe { self.reflect_unsafe(world.clone()) }?.ok_or_else(|| {
-                        InteropError::reflection_path_error(
-                            "Reference was out of bounds or value is missing".into(),
-                            Some(self.clone()),
-                        )
-                    })?,
-                )
-            }
-        )
+        world.with_read_access_and_then(&self.base.base_id, || {
+            Ok(f(unsafe { self.reflect_unsafe(world.clone()) }?
+                .ok_or_else(|| {
+                    InteropError::reflection_path_error(
+                        "Reference was out of bounds or value is missing".into(),
+                        Some(self.clone()),
+                    )
+                })?))
+        })
     }
 
     /// The way to access the value of the reference, that is the pointed-to value.
@@ -431,22 +411,15 @@ impl ReflectReference {
         world: WorldGuard,
         f: F,
     ) -> Result<O, InteropError> {
-        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone());
-        with_access_write!(
-            &world.inner.accesses,
-            access_id,
-            "Could not access reflect reference mutably",
-            {
-                f(
-                    unsafe { self.reflect_mut_unsafe(world.clone()) }?.ok_or_else(|| {
-                        InteropError::reflection_path_error(
-                            "Reference was out of bounds or value is missing".into(),
-                            Some(self.clone()),
-                        )
-                    })?,
-                )
-            }
-        )
+        world.with_write_access_and_then(&self.base.base_id, || {
+            Ok(f(unsafe { self.reflect_mut_unsafe(world.clone()) }?
+                .ok_or_else(|| {
+                    InteropError::reflection_path_error(
+                        "Reference was out of bounds or value is missing".into(),
+                        Some(self.clone()),
+                    )
+                })?))
+        })
     }
 
     /// Retrieves the type id of the value the reference points to.
@@ -675,7 +648,7 @@ impl DisplayWithTypeInfo for ReflectBaseType {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         f.write_str("base type: ")?;
         WithTypeInfo::new_with_opt_info(&self.type_id, type_info_provider)
@@ -698,19 +671,29 @@ impl ReflectBaseType {
         entity: Entity,
         world: WorldGuard,
     ) -> Result<Self, InteropError> {
-        let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell()?)?;
+        let type_id = TypeId::of::<T>();
+
         Ok(Self {
-            type_id: TypeId::of::<T>(),
-            base_id: ReflectBase::Component(entity, reflect_id.into()),
+            type_id,
+            base_id: ReflectBase::Component(
+                entity,
+                world.get_component_id(type_id)?.ok_or_else(|| {
+                    InteropError::unregistered_component_or_resource_type(type_id)
+                })?,
+            ),
         })
     }
 
     /// Create a new reflection base pointing to a resource
     pub fn new_resource_base<T: Resource>(world: WorldGuard) -> Result<Self, InteropError> {
-        let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell()?)?;
+        let type_id = TypeId::of::<T>();
         Ok(Self {
-            type_id: TypeId::of::<T>(),
-            base_id: ReflectBase::Resource(reflect_id.into()),
+            type_id,
+            base_id: ReflectBase::Resource(
+                world.get_resource_id(type_id)?.ok_or_else(|| {
+                    InteropError::unregistered_component_or_resource_type(type_id)
+                })?,
+            ),
         })
     }
 
@@ -801,11 +784,24 @@ pub enum ReflectBase {
     Asset(UntypedHandle, ComponentId),
 }
 
+impl From<&ReflectBase> for WorldAccessRange {
+    fn from(val: &ReflectBase) -> Self {
+        match val {
+            ReflectBase::Component(_, component_id)
+            | ReflectBase::Resource(component_id)
+            | ReflectBase::Asset(_, component_id) => {
+                WorldAccessRange::ComponentOrResource((*component_id).into())
+            }
+            ReflectBase::Owned(reflect_allocation_id) => reflect_allocation_id.into(),
+        }
+    }
+}
+
 impl DisplayWithTypeInfo for ReflectBase {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn bevy_mod_scripting_display::GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
             ReflectBase::Component(entity, component_id) => {
@@ -821,30 +817,17 @@ impl DisplayWithTypeInfo for ReflectBase {
                     .display_with_type_info(f, type_info_provider)
             }
             ReflectBase::Owned(id) => {
-                if let Some(type_info_provider) = type_info_provider {
-                    // Safety: should generally be safe, as the world guard is invalidated once the world is out of scope for the iteration
-                    let any: &dyn Any = unsafe { type_info_provider.as_any_static() };
-
-                    let guard = any.downcast_ref::<WorldGuard>().cloned().or_else(|| {
-                        any.downcast_ref::<ThreadWorldContainer>()
-                            .and_then(|t| t.try_get_context().ok().map(|c| c.world))
-                    });
-
-                    if let Some(guard) = guard {
-                        let allocator = guard.allocator();
-                        let allocator = allocator.read();
-                        if let Some(allocation) = allocator.get(id) {
-                            let ptr = allocation.get_ptr();
-                            if let Ok(v) = guard.with_read_access(id.clone(), |_| {
-                                // Safety:: have access to this id
-                                PrintReflectAsDebug::new_with_opt_info(
-                                    unsafe { &*ptr },
-                                    Some(type_info_provider),
-                                )
-                                .to_string_with_type_info(f, Some(type_info_provider))
-                            }) {
-                                return v;
-                            }
+                if let Some(guard) = type_info_provider {
+                    let allocator = guard.allocator();
+                    let allocator = allocator.read();
+                    if let Some(allocation) = allocator.get(id) {
+                        let ptr = allocation.get_ptr();
+                        if let Ok(v) = guard.with_read_access(id, || {
+                            // Safety:: have access to this id
+                            PrintReflectAsDebug::new_with_opt_info(unsafe { &*ptr }, Some(guard))
+                                .to_string_with_type_info(f, Some(guard))
+                        }) {
+                            return v;
                         }
                     }
                 }
@@ -1013,7 +996,10 @@ mod test {
         component::Component, reflect::AppTypeRegistry, resource::Resource, world::World,
     };
 
-    use crate::{AppReflectAllocator, function::script_function::AppScriptFunctionRegistry};
+    use crate::{
+        AppReflectAllocator, CurrentScriptAttachment, WorldExtensions,
+        function::script_function::AppScriptFunctionRegistry,
+    };
 
     use super::*;
 
@@ -1047,12 +1033,13 @@ mod test {
     #[test]
     fn test_component_ref() {
         let mut world = setup_world();
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
 
         let entity = world
             .spawn(TestComponent(vec!["hello".to_owned(), "world".to_owned()]))
             .id();
 
-        let world_guard = WorldGuard::new_exclusive(&mut world);
+        let world_guard = WorldGuard::new_exclusive(&mut world, cache);
 
         let mut component_ref =
             ReflectReference::new_component_ref::<TestComponent>(entity, world_guard.clone())
@@ -1132,10 +1119,10 @@ mod test {
     #[test]
     fn test_resource_ref() {
         let mut world = setup_world();
-
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         world.insert_resource(TestResource(vec!["hello".to_owned(), "world".to_owned()]));
 
-        let world_guard = WorldGuard::new_exclusive(&mut world);
+        let world_guard = WorldGuard::new_exclusive(&mut world, cache);
 
         let mut resource_ref =
             ReflectReference::new_resource_ref::<TestResource>(world_guard.clone())
@@ -1216,10 +1203,11 @@ mod test {
     #[test]
     fn test_allocation_ref() {
         let mut world = setup_world();
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
 
         let value: TestComponent = TestComponent(vec!["hello".to_owned(), "world".to_owned()]);
 
-        let world_guard = WorldGuard::new_exclusive(&mut world);
+        let world_guard = WorldGuard::new_exclusive(&mut world, cache);
         let allocator = world_guard.allocator();
         let mut allocator_write = allocator.write();
         let mut allocation_ref = ReflectReference::new_allocated(value, &mut allocator_write);

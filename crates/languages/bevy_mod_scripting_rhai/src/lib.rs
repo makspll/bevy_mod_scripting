@@ -15,7 +15,7 @@ use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
     AppScriptGlobalsRegistry, InteropError, Namespace, PartialReflectExt, ScriptValue,
-    ThreadWorldContainer,
+    WorldExtensions,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
@@ -27,6 +27,7 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::ThreadWorldContainer;
 use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference};
 use parking_lot::RwLock;
 pub use rhai;
@@ -77,11 +78,12 @@ pub trait IntoRhaiError {
     fn into_rhai_error(self) -> Box<EvalAltResult>;
 }
 
-impl IntoRhaiError for InteropError {
+impl<T: Into<InteropError>> IntoRhaiError for T {
     fn into_rhai_error(self) -> Box<EvalAltResult> {
+        let error = self.into();
         Box::new(rhai::EvalAltResult::ErrorSystem(
             "ScriptError".to_owned(),
-            Box::new(self),
+            Box::new(error),
         ))
     }
 }
@@ -134,9 +136,14 @@ fn register_plugin_globals(ctxt: &mut Engine) {
     let register_callback_fn = |callback: String, func: FnPtr| {
         let thread_ctxt = ThreadWorldContainer
             .try_get_context()
-            .map_err(|e| Box::new(EvalAltResult::ErrorSystem("".to_string(), Box::new(e))))?;
+            .map_err(IntoRhaiError::into_rhai_error)?;
         let world = thread_ctxt.world;
-        let attachment = thread_ctxt.attachment;
+        let attachment = world.current_attachment().0.ok_or_else(|| {
+            IntoRhaiError::into_rhai_error(InteropError::str(
+                "Cannot register callback, missing script attachment context.",
+            ))
+        })?;
+
         world
             .with_resource_mut(|res: Mut<ScriptCallbacks<RhaiScriptingPlugin>>| {
                 let mut callbacks = res.callbacks.write();
@@ -216,7 +223,7 @@ impl Default for RhaiScriptingPlugin {
                             }
                         }
 
-                        let mut script_function_registry = world.script_function_registry();
+                        let mut script_function_registry = world.script_function_registry().clone();
                         let mut script_function_registry = script_function_registry.write();
 
                         // iterate all functions, and remap names with reserved keywords

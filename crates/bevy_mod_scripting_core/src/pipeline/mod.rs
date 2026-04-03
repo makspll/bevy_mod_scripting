@@ -14,7 +14,6 @@ use bevy_ecs::{
 };
 use bevy_log::debug;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
-use bevy_mod_scripting_bindings::WorldGuard;
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_platform::collections::HashSet;
 use parking_lot::Mutex;

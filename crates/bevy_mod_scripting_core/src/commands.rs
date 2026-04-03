@@ -16,9 +16,10 @@ use crate::{
 };
 use bevy_ecs::{system::Command, world::World};
 use bevy_log::trace;
-use bevy_mod_scripting_bindings::{ScriptValue, WorldGuard};
+use bevy_mod_scripting_bindings::{CurrentScriptAttachment, ScriptValue, WorldExtensions};
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 use parking_lot::Mutex;
 
 /// Runs a callback on the script with the given ID if it exists
@@ -199,7 +200,11 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     pub fn run(mut self, world: &mut World) -> Result<ScriptValue, ScriptError> {
         let script_contexts = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let guard = WorldGuard::new_exclusive(world);
+        let cache = WorldAccessGuard::setup_cache(
+            world,
+            CurrentScriptAttachment(Some(self.attachment.clone())),
+        );
+        let guard = WorldGuard::new_exclusive(world, cache);
 
         let res = if let Some(context_override) = &self.context_override {
             self.run_with_context(guard.clone(), context_override.clone(), script_callbacks)

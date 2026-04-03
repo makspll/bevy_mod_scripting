@@ -8,7 +8,8 @@ use crate::{
 use ::bevy_reflect::{GetTypeRegistration, Reflect};
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo, WithTypeInfo};
+use bevy_mod_scripting_display::{DisplayWithTypeInfo, WithTypeInfo};
+use bevy_mod_scripting_world::WorldGuard;
 use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 use super::type_dependencies::GetFunctionTypeDependencies;
@@ -188,7 +189,7 @@ impl DisplayWithTypeInfo for Namespace {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
             Namespace::Global => f.write_str("Global Namespace"),

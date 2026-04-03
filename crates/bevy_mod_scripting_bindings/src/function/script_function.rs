@@ -5,11 +5,12 @@ use super::{from::FromScript, into::IntoScript, namespace::Namespace};
 use crate::VariadicTuple;
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
-use crate::{ScriptValue, ThreadWorldContainer, WorldGuard, error::InteropError};
+use crate::{ScriptValue, error::InteropError};
 use bevy_ecs::prelude::Resource;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_mod_scripting_display::{DisplayWithTypeInfo, GetTypeInfo};
+use bevy_mod_scripting_display::DisplayWithTypeInfo;
+use bevy_mod_scripting_world::{ThreadWorldContainer, WorldGuard};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
@@ -18,6 +19,7 @@ use std::collections::VecDeque;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+
 #[diagnostic::on_unimplemented(
     message = "This function does not fulfil the requirements to be a script callable function. All arguments must implement the ScriptArgument trait and all return values must implement the ScriptReturn trait"
 )]
@@ -104,7 +106,7 @@ impl FunctionCallContext {
     /// Tries to access the world, returning an error if the world is not available
     #[profiling::function]
     pub fn world<'l>(&self) -> Result<WorldGuard<'l>, InteropError> {
-        ThreadWorldContainer.try_get_context().map(|c| c.world)
+        Ok(ThreadWorldContainer.try_get_context().map(|c| c.world)?)
     }
     /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
     #[profiling::function]
@@ -161,7 +163,7 @@ impl DisplayWithTypeInfo for DynamicScriptFunction {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         f.write_str("fn ")?;
         let name = &self.info.name;
@@ -182,7 +184,7 @@ impl DisplayWithTypeInfo for DynamicScriptFunctionMut {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         f.write_str("fn mut ")?;
         let name = &self.info.name;
@@ -730,20 +732,17 @@ variadics_please::all_tuples!(impl_script_function, 0, 13, T);
 
 #[cfg(test)]
 mod test {
+    use crate::{CurrentScriptAttachment, WorldExtensions};
+
     use super::*;
-    use bevy_asset::Handle;
     use bevy_ecs::{prelude::Component, world::World};
-    use bevy_mod_scripting_script::ScriptAttachment;
+    use bevy_mod_scripting_world::{ThreadScriptContext, WorldAccessGuard};
 
     fn with_local_world<F: Fn()>(f: F) {
         let mut world = World::default();
-        WorldGuard::with_static_guard(&mut world, |world| {
-            ThreadWorldContainer
-                .set_context(crate::ThreadScriptContext {
-                    world,
-                    attachment: ScriptAttachment::StaticScript(Handle::default()),
-                })
-                .unwrap();
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        WorldGuard::with_static_guard(&mut world, cache, |world| {
+            ThreadWorldContainer.set_context(ThreadScriptContext { world });
             f()
         });
     }

@@ -4,11 +4,11 @@ use bevy_ecs::{
     world::WorldId,
 };
 use bevy_mod_scripting_bindings::{
-    InteropError, ScriptValue, ThreadScriptContext, ThreadWorldContainer, WorldAccessGuard,
-    WorldGuard,
+    CurrentScriptAttachment, InteropError, ScriptValue, WorldExtensions,
 };
 use bevy_mod_scripting_display::{DisplayProxy, WithTypeInfo};
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 
 use crate::{
     IntoScriptPluginParams,
@@ -64,11 +64,8 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
+            world.set_current_attachment(attachment.clone());
             let world_id = world.id();
-            ThreadWorldContainer.set_context(ThreadScriptContext {
-                world,
-                attachment: attachment.clone(),
-            })?;
             let callbacks = script_callbacks.callbacks.read();
             if let Some(callback) = callbacks
                 .get(&(attachment.clone(), callback.to_string()))
@@ -97,7 +94,8 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
         let script_context = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let event_cursor = state.get_mut(world);
-        let guard = WorldAccessGuard::new_exclusive(world);
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
+        let guard = WorldAccessGuard::new_exclusive(world, cache);
         event_handler_inner::<P>(
             L::into_callback_label(),
             event_cursor,
@@ -253,7 +251,8 @@ pub fn script_error_logger(
     world: &mut World,
     mut errors_cursor: Local<MessageCursor<ScriptErrorEvent>>,
 ) {
-    let guard = WorldGuard::new_exclusive(world);
+    let cache = WorldGuard::setup_cache(world, CurrentScriptAttachment::default());
+    let guard = WorldGuard::new_exclusive(world, cache);
     let errors = guard.with_resource(|events: &Messages<ScriptErrorEvent>| {
         errors_cursor
             .read(events)

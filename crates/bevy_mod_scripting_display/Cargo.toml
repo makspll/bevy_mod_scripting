@@ -14,9 +14,11 @@ readme.workspace = true
 [dependencies]
 bevy_reflect = { workspace = true }
 bevy_asset = { workspace = true }
+bevy_utils =  { workspace = true }
 bevy_ecs = { workspace = true, features = ["bevy_reflect"] }
 bevy_platform = { workspace = true }
 parking_lot = { workspace = true }
+bevy_mod_scripting_world = { workspace = true }
 
 [lints]
 workspace = true

@@ -3,11 +3,12 @@
 use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
 use bevy_mod_scripting_display::OrFakeId;
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::PartialReflect;
 
 use crate::{
-    ReferencePart, ReflectReference, ScriptValue, WorldGuard, error::InteropError,
-    function::into::IntoScript, reflection_extensions::PartialReflectExt,
+    ReferencePart, ReflectReference, ScriptValue, error::InteropError, function::into::IntoScript,
+    reflection_extensions::PartialReflectExt,
 };
 
 /// Converts a value represented by a reference into a [`crate::ScriptValue`].

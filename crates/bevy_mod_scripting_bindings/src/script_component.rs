@@ -1,18 +1,16 @@
 //! Everything necessary to support scripts registering their own components
 
-use super::{ScriptComponentRegistration, ScriptTypeRegistration, ScriptValue, WorldAccessGuard};
-use crate::error::InteropError;
+use super::{ScriptComponentRegistration, ScriptValue};
 use ::{
     bevy_app::{App, Plugin},
-    bevy_ecs::component::{
-        Component, ComponentCloneBehavior, ComponentDescriptor, Mutable, StorageType,
-    },
-    bevy_reflect::{GetTypeRegistration, Reflect, prelude::ReflectDefault},
+    bevy_ecs::component::{Component, Mutable, StorageType},
+    bevy_reflect::Reflect,
 };
 use bevy_ecs::resource::Resource;
 use bevy_platform::collections::HashMap;
+use bevy_reflect::std_traits::ReflectDefault;
 use parking_lot::RwLock;
-use std::{alloc::Layout, mem::needs_drop, sync::Arc};
+use std::sync::Arc;
 /// A dynamic script component
 #[derive(Reflect, Clone, Default)]
 #[reflect(Default)]
@@ -69,63 +67,6 @@ impl ScriptComponentRegistry {
     }
 }
 
-#[profiling::all_functions]
-impl WorldAccessGuard<'_> {
-    /// Registers a dynamic script component, and returns a reference to its registration
-    pub fn register_script_component(
-        &self,
-        component_name: String,
-    ) -> Result<ScriptComponentRegistration, InteropError> {
-        let component_registry = self.component_registry();
-        let component_registry_read = component_registry.read();
-        if component_registry_read.get(&component_name).is_some() {
-            return Err(InteropError::unsupported_operation(
-                None,
-                None,
-                "script registered component already exists",
-            ));
-        }
-
-        let component_id = self.with_global_access(|w| {
-            let descriptor = unsafe {
-                // Safety: same safety guarantees as ComponentDescriptor::new
-                // we know the type in advance
-                // we only use this method to name the component
-                ComponentDescriptor::new_with_layout(
-                    component_name.clone(),
-                    DynamicComponent::STORAGE_TYPE,
-                    Layout::new::<DynamicComponent>(),
-                    needs_drop::<DynamicComponent>().then_some(|x| x.drop_as::<DynamicComponent>()),
-                    true,
-                    ComponentCloneBehavior::Default,
-                    None,
-                )
-            };
-            w.register_component_with_descriptor(descriptor)
-        })?;
-        drop(component_registry_read);
-        let mut component_registry = component_registry.write();
-
-        let registration = ScriptComponentRegistration::new(
-            ScriptTypeRegistration::new(Arc::new(
-                <DynamicComponent as GetTypeRegistration>::get_type_registration(),
-            )),
-            component_id,
-        );
-
-        let component_info = DynamicComponentInfo {
-            name: component_name.clone(),
-            registration: registration.clone(),
-        };
-
-        component_registry.register(component_info);
-
-        // TODO: we should probably retrieve this from the registry, but I don't see what people would want to register on this type
-        // in addition to the existing registrations.
-        Ok(registration)
-    }
-}
-
 /// A plugin to support dynamic script components
 pub struct DynamicScriptComponentPlugin;
 
@@ -139,14 +80,19 @@ impl Plugin for DynamicScriptComponentPlugin {
 #[cfg(test)]
 mod test {
     use bevy_ecs::world::World;
+    use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
+
+    use crate::{CurrentScriptAttachment, WorldExtensions};
 
     use super::*;
 
     #[test]
     fn test_script_component() {
         let mut world = World::new();
+        world.init_resource::<AppScriptComponentRegistry>();
+        let cache = WorldGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let registration = {
-            let guard = WorldAccessGuard::new_exclusive(&mut world);
+            let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
 
             guard
                 .register_script_component("ScriptTest".to_string())

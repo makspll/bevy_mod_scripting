@@ -10,11 +10,13 @@ use bevy_app::App;
 use bevy_log::{warn, warn_once};
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_derive::script_globals;
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::{
-    ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, WorldGuard,
+    ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
+    WorldExtensions,
     function::from::{Union, V},
 };
 use crate::{docgen::into_through_type_info, error::InteropError};

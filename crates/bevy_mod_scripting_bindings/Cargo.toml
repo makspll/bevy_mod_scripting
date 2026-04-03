@@ -18,6 +18,7 @@ bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
 bevy_mod_scripting_bindings_domain = { workspace = true }
+bevy_mod_scripting_world = { workspace = true }
 bevy_system_reflection = { workspace = true }
 bevy_diagnostic = { workspace = true }
 bevy_ecs = { workspace = true }

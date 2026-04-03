@@ -1,14 +1,16 @@
 //! Error types for the bindings
 use crate::{
-    FunctionCallContext, Namespace, ReflectBaseType, ReflectReference, access_map::ReflectAccessId,
+    FunctionCallContext, Namespace, ReflectAllocationId, ReflectBaseType, ReflectReference,
     script_value::ScriptValue,
 };
-use bevy_ecs::entity::Entity;
+use bevy_ecs::{component::ComponentId, entity::Entity};
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{
-    DebugWithTypeInfo, DisplayWithTypeInfo, GetTypeInfo, OrFakeId, PrintReflectAsDebug,
-    WithTypeInfo,
+    DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
+};
+use bevy_mod_scripting_world::{
+    DynWorldAccessError, WorldAccessGuard, WorldAccessRange, WorldGuard,
 };
 use bevy_reflect::{ApplyError, PartialReflect, Reflect};
 use std::{any::TypeId, borrow::Cow, error::Error, fmt::Display, panic::Location, sync::Arc};
@@ -21,7 +23,7 @@ impl bevy_mod_scripting_display::DebugWithTypeInfo for ReflectWrapper {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         PrintReflectAsDebug::new_with_opt_info(&*self.0, type_info_provider)
             .to_string_with_type_info(f, type_info_provider)
@@ -32,7 +34,7 @@ impl DisplayWithTypeInfo for ReflectWrapper {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         // TODO: different display?
         PrintReflectAsDebug::new_with_opt_info(&*self.0, type_info_provider)
@@ -48,7 +50,7 @@ impl bevy_mod_scripting_display::DebugWithTypeInfo for ExternalError {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        _type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         write!(f, "External error: {}", self.0)
     }
@@ -58,9 +60,90 @@ impl DisplayWithTypeInfo for ExternalError {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter,
-        _type_info_provider: Option<&dyn GetTypeInfo>,
+        _type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         write!(f, "External error: {}", self.0)
+    }
+}
+
+impl From<DynWorldAccessError> for InteropError {
+    fn from(value: DynWorldAccessError) -> Self {
+        match value {
+            DynWorldAccessError::MissingWorld => Self::MissingWorld,
+            DynWorldAccessError::CannotClaimAccess(key, location, msg) => {
+                Self::cannot_claim_access(key, location, msg)
+            }
+            DynWorldAccessError::UnregisteredResource(type_id)
+            | DynWorldAccessError::UnregisteredComponent(type_id) => {
+                Self::unregistered_component_or_resource_type(type_id)
+            }
+        }
+    }
+}
+
+/// A wrapper around [`WorldAccessRange`] implementing [`DisplayWithTypeInfo`] and family
+#[derive(Clone)]
+pub struct WorldAccessRangeWithDisplay(WorldAccessRange);
+
+impl DisplayWithTypeInfo for WorldAccessRangeWithDisplay {
+    fn display_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&WorldAccessGuard>,
+    ) -> std::fmt::Result {
+        if let Some(provider) = type_info_provider {
+            match self.0 {
+                WorldAccessRange::ComponentOrResource(component_range) => {
+                    f.write_str("Component or Resource: ")?;
+                    let component_id: ComponentId = component_range.into();
+                    write!(
+                        f,
+                        "{}",
+                        WithTypeInfo::new_with_info(&component_id, provider)
+                    )
+                }
+                WorldAccessRange::External(non_zero) => {
+                    f.write_str("Allocation to: ")?;
+
+                    write!(
+                        f,
+                        "{}",
+                        WithTypeInfo::new_with_info(
+                            &ReflectAllocationId::new(non_zero.get()),
+                            provider
+                        )
+                    )
+                }
+                WorldAccessRange::Global => f.write_str("World Access"),
+            }
+        } else {
+            match self.0 {
+                WorldAccessRange::ComponentOrResource(component_range) => {
+                    f.write_str("Component or Resource: ")?;
+                    let component_id: ComponentId = component_range.into();
+                    f.write_str(&component_id.index().to_string())
+                }
+                WorldAccessRange::External(non_zero) => {
+                    f.write_str("Allocation to: ")?;
+                    f.write_str(&non_zero.to_string())
+                }
+                WorldAccessRange::Global => f.write_str("World Access"),
+            }
+        }
+    }
+}
+
+impl DebugWithTypeInfo for WorldAccessRangeWithDisplay {
+    fn to_string_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&WorldAccessGuard>,
+    ) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            WithTypeInfo::new_with_opt_info(self, type_info_provider)
+        )
     }
 }
 
@@ -109,7 +192,7 @@ pub enum InteropError {
     /// Could not claim access to a value
     CannotClaimAccess {
         /// The id of the access
-        base: Box<ReflectAccessId>,
+        base: Box<WorldAccessRangeWithDisplay>,
         /// The location of the access
         location: Box<Option<Location<'static>>>,
         /// The context of the access
@@ -119,8 +202,13 @@ pub enum InteropError {
     Invariant(Box<String>),
     /// An unregistered component or resource type was used
     UnregisteredComponentOrResourceType {
-        /// The name of the type
-        type_name: Box<Cow<'static, str>>,
+        /// The typeId
+        type_: Box<TypeId>,
+    },
+    /// A resource is registered, but not inserted
+    MissingResource {
+        /// The resource type missing.
+        type_: Box<TypeId>,
     },
     /// An unsupported operation was performed
     UnsupportedOperation {
@@ -295,12 +383,12 @@ impl InteropError {
 
     /// Creates a new cannot claim access error.
     pub fn cannot_claim_access(
-        base: ReflectAccessId,
+        base: WorldAccessRange,
         location: Option<Location<'static>>,
         context: impl Into<Cow<'static, str>>,
     ) -> Self {
         Self::CannotClaimAccess {
-            base: Box::new(base),
+            base: Box::new(WorldAccessRangeWithDisplay(base)),
             location: Box::new(location),
             context: Box::new(context.into()),
         }
@@ -312,11 +400,16 @@ impl InteropError {
     }
 
     /// Creates a new unregistered component or resource type error.
-    pub fn unregistered_component_or_resource_type(
-        type_name: impl Into<Cow<'static, str>>,
-    ) -> Self {
+    pub fn unregistered_component_or_resource_type(type_id: TypeId) -> Self {
         Self::UnregisteredComponentOrResourceType {
-            type_name: Box::new(type_name.into()),
+            type_: Box::new(type_id),
+        }
+    }
+
+    /// Creates a new missing resource type error.
+    pub fn missing_resource(type_id: TypeId) -> Self {
+        Self::MissingResource {
+            type_: Box::new(type_id),
         }
     }
 
@@ -454,7 +547,7 @@ impl DisplayWithTypeInfo for InteropError {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
             InteropError::NotImplemented => {
@@ -525,8 +618,12 @@ impl DisplayWithTypeInfo for InteropError {
             InteropError::Invariant(i) => {
                 write!(f, "Invariant broken: {i}")
             }
-            InteropError::UnregisteredComponentOrResourceType { type_name } => {
-                write!(f, "Unregistered component or resource type: {type_name}")
+            InteropError::UnregisteredComponentOrResourceType { type_ } => {
+                write!(
+                    f,
+                    "Unregistered component or resource type: {}",
+                    WithTypeInfo::new_with_opt_info(type_, type_info_provider)
+                )
             }
             InteropError::UnsupportedOperation {
                 base,
@@ -663,26 +760,13 @@ impl DisplayWithTypeInfo for InteropError {
                     WithTypeInfo::new_with_opt_info(interop_error, type_info_provider)
                 )
             }
+            InteropError::MissingResource { type_ } => {
+                write!(
+                    f,
+                    "Resource was not initialized in the world before accessing: {}",
+                    WithTypeInfo::new_with_opt_info(type_, type_info_provider)
+                )
+            }
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use bevy_reflect::TypeRegistry;
-
-    use super::*;
-    #[test]
-    fn test_script_value_prints_using_type_data() {
-        // check script values print fine
-        let mut registry = TypeRegistry::empty();
-        registry.register::<ScriptValue>();
-        pretty_assertions::assert_str_eq!(
-            format!(
-                "{:?}",
-                PrintReflectAsDebug::new_with_opt_info(&ScriptValue::Integer(1), Some(&registry))
-            ),
-            "1",
-        );
     }
 }

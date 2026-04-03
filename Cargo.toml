@@ -147,7 +147,7 @@ bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", versi
 bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.19.0", default-features = false }
 lua_language_server_lad_backend = { path = "crates/lad_backends/lua_language_server_lad_backend", version = "0.19.0", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.19.0" }
-
+bevy_mod_scripting_world = { path = "crates/bevy_mod_scripting_world", version = "0.19.0", default-features = true}
 # bevy
 
 
@@ -203,6 +203,7 @@ smol_str = { version = "0.2.0", default-features = false }
 nonmax = { version = "0.5", default-features = false, features = ["std"] }
 
 # other
+fixedbitset = { version = "0.5" }
 serde_json = { version = "1.0", default-features = false }
 indexmap = { version = "2.7", default-features = false, features = ["std"] }
 profiling = { version = "1.0", default-features = false, features = [
@@ -224,7 +225,6 @@ syn = { version = "2.0", default-features = false }
 proc-macro2 = { version = "1.0", default-features = false }
 smallvec = { version = "1.11", default-features = false }
 itertools = { version = "0.14", default-features = false }
-fixedbitset = { version = "0.5", default-features = false }
 variadics_please = { version = "1.1.0", default-features = false }
 anyhow = { version = "1.0", default-features = false }
 indent_write = { version = "2", default-features = false, features = ["std"] }
@@ -294,7 +294,7 @@ members = [
     "crates/bevy_mod_scripting_script",
     "crates/bevy_mod_scripting_bindings_domain",
     "crates/bindings/*",
-    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax",
+    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world",
 ]
 resolver = "2"
 exclude = ["codegen", "crates/macro_tests", "xtask"]

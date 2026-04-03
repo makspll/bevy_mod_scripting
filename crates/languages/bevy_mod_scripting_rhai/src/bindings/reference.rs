@@ -5,10 +5,11 @@ use std::{
 
 use crate::IntoRhaiError;
 use bevy_mod_scripting_bindings::{
-    ReflectReference, ScriptValue, ThreadWorldContainer, error::InteropError,
+    ReflectReference, ScriptValue, WorldExtensions, error::InteropError,
     function::script_function::DynamicScriptFunctionMut,
 };
 use bevy_mod_scripting_display::OrFakeId;
+use bevy_mod_scripting_world::ThreadWorldContainer;
 use rhai::{CustomType, Dynamic, EvalAltResult};
 use strum::VariantNames;
 

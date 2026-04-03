@@ -1,4 +1,4 @@
-use bevy_reflect::{ParsedPath, PartialReflect};
+use bevy_reflect::{ParsedPath, PartialReflect, TypeInfo};
 
 use crate::*;
 
@@ -12,7 +12,7 @@ impl DebugWithTypeInfo for Box<dyn PartialReflect> {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
-        type_info_provider: Option<&dyn GetTypeInfo>,
+        type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         ReflectPrinter::new(f, type_info_provider).debug(self.as_ref())
     }
