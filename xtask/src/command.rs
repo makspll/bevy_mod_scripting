@@ -8,14 +8,13 @@ use std::{
 
 use crate::GlobalArgs;
 
-pub fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
+pub fn make_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
     app_settings: &GlobalArgs,
     command: &str,
-    context: &str,
     add_args: I,
     dir: Option<&Path>,
     capture_streams_in_output: bool,
-) -> Result<Output> {
+) -> Result<Command> {
     info!("Running system command: {command}");
 
     let working_dir = match dir {
@@ -32,6 +31,24 @@ pub fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
     }
 
     info!("Using command: {cmd:?}");
+    Ok(cmd)
+}
+
+pub fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
+    app_settings: &GlobalArgs,
+    command: &str,
+    context: &str,
+    add_args: I,
+    dir: Option<&Path>,
+    capture_streams_in_output: bool,
+) -> Result<Output> {
+    let mut cmd = make_system_command(
+        app_settings,
+        command,
+        add_args,
+        dir,
+        capture_streams_in_output,
+    )?;
 
     let output = cmd.output();
     if capture_streams_in_output {
