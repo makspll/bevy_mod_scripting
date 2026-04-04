@@ -13,10 +13,7 @@ use ::{
         component::Component, resource::Resource, schedule::IntoScheduleConfigs, system::Command,
         world::FromWorld,
     },
-    bevy_log::{
-        Level,
-        tracing::{self, event},
-    },
+    bevy_log::tracing::{self},
     bevy_reflect::Reflect,
 };
 use bevy_asset::Assets;
@@ -197,6 +194,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
     use bevy_mod_scripting_lua::mlua::Function;
+    let span = tracing::trace_span!("bench_fn");
 
     let plugin = make_test_lua_plugin();
     run_plugin_benchmark(
@@ -212,8 +210,9 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
                     pre_bencher.call::<()>(()).unwrap();
                 }
                 c.iter(|| {
-                    event!(Level::TRACE, "profiling_iter {}", label);
-                    bencher.call::<()>(()).unwrap();
+                    span.in_scope(|| {
+                        bencher.call::<()>(()).unwrap();
+                    })
                 })
             });
             Ok(())
@@ -228,6 +227,7 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
     use bevy_mod_scripting_rhai::rhai::Dynamic;
+    let span = tracing::trace_span!("bench_fn");
 
     let plugin = make_test_rhai_plugin();
     run_plugin_benchmark(
@@ -248,10 +248,11 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
                 }
 
                 c.iter(|| {
-                    event!(Level::TRACE, "profiling_iter {}", label);
-                    let _ = runtime
-                        .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
-                        .unwrap();
+                    span.in_scope(|| {
+                        let _ = runtime
+                            .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
+                            .unwrap();
+                    });
                 })
             });
             Ok(())
@@ -271,6 +272,7 @@ where
     F: Fn(&mut P::C, &P::R, &str, &mut criterion::BenchmarkGroup<M>) -> Result<(), String>,
 {
     let mut app = setup_integration_test(|_, _| {});
+    let span = tracing::trace_span!("bench_fn");
 
     install_test_plugin(&mut app, true);
     app.add_plugins(plugin);
@@ -332,7 +334,7 @@ where
     let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
         guard.set_current_attachment(context_key.clone());
         // Pass the locked context to the closure for benchmarking its Lua (or generic) part
-        bench_fn(&mut ctxt_locked, runtime, label, criterion)
+        span.in_scope(|| bench_fn(&mut ctxt_locked, runtime, label, criterion))
     });
     Ok(())
 }
@@ -348,6 +350,7 @@ pub fn run_plugin_script_load_benchmark<
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) {
     let content_boxed = content.to_string().into_bytes().into_boxed_slice();
+    let span = tracing::trace_span!("bench_fn");
 
     criterion.bench_function(benchmark_id, |c| {
         c.iter_batched(
@@ -371,10 +374,7 @@ pub fn run_plugin_script_load_benchmark<
                     AttachScript::<P>::new(ScriptAttachment::StaticScript(id)),
                 )
             },
-            |(mut app, command)| {
-                tracing::event!(Level::TRACE, "profiling_iter {}", benchmark_id);
-                command.apply(app.world_mut());
-            },
+            |(mut app, command)| span.in_scope(|| command.apply(app.world_mut())),
             BatchSize::LargeInput,
         );
     });
@@ -414,6 +414,7 @@ pub fn perform_benchmark_with_generator<
     let mut rng_guard = RNG.lock().unwrap();
     *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
     drop(rng_guard);
+    let span = tracing::trace_span!("bench_fn");
     group.bench_function(label, |c| {
         c.iter_batched(
             || {
@@ -443,10 +444,7 @@ pub fn perform_benchmark_with_generator<
                     world_guard.clone(),
                 )
             },
-            |(i, w)| {
-                event!(Level::TRACE, "profiling_iter {}", label);
-                bench_fn(w, i)
-            },
+            |(i, w)| span.in_scope(|| bench_fn(w, i)),
             batch_size,
         );
     });
