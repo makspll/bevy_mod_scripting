@@ -11,11 +11,15 @@ function on_test()
     :after(test_system)
   )
 
+  assert_str_eq(system_a:identifier(), "custom_system_a")
+
   local system_b = world.add_system(
     post_update_schedule,
     system_builder("custom_system_b", script_attachment)
     :after(test_system)
   )
+
+  assert_str_eq(system_b:identifier(), "custom_system_b")
 
   -- generate a schedule graph and verify it's what we expect
   local dot_graph = post_update_schedule:render_dot()

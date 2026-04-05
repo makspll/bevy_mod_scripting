@@ -34,9 +34,7 @@ use bevy_mod_scripting_world::{WorldAccessGuard, WorldAccessRange, WorldGuard};
 use bevy_reflect::TypeRegistryArc;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bevy_utils::prelude::DebugName;
-use std::{
-    any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData, ops::Deref,
-};
+use std::{any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData};
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
 pub struct ScriptSystemSet(Cow<'static, str>);
@@ -142,7 +140,6 @@ impl ScriptSystemBuilder {
             // it immediately calls a singular script with a predefined payload
             let before_systems = self.before.clone();
             let after_systems = self.after.clone();
-            let system_name = self.name.to_string();
 
             // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
             // all script systems would be the same
@@ -174,7 +171,7 @@ impl ScriptSystemBuilder {
             let (node_id, system) = schedule
                 .systems()
                 .map_err(InteropError::external)?
-                .find(|(_, b)| b.name().deref() == system_name)
+                .max_by_key(|(n, _)| *n)
                 .ok_or_else(|| InteropError::invariant("After adding the system, it was not found in the schedule, could not return a reference to it"))?;
             Ok(ReflectSystem::from_system(system.as_ref(), node_id))
         })?
