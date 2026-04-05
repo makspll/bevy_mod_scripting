@@ -214,7 +214,7 @@ pub enum ScriptSystemParam {
 
 /// A system specified, created, and added by a script
 pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
-    name: DebugName,
+    name: Cow<'static, str>,
     exclusive: bool,
     pub(crate) last_run: Tick,
     target_attachment: ScriptAttachment,
@@ -252,7 +252,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     type Out = ();
 
     fn name(&self) -> DebugName {
-        self.name.clone()
+        self.name.clone().into()
     }
 
     fn flags(&self) -> SystemStateFlags {
