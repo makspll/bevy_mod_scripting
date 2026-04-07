@@ -5,9 +5,9 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 
-use crate::WorldAccessRange;
+use crate::{AccessMap, WorldAccessRange};
 
-use super::access_map::{AccessInstance, AnyAccessMap, DynamicSystemMeta, SubsetAccessMap};
+use super::access_map::DynamicSystemMeta;
 use ::bevy_ecs::{
     component::ComponentId,
     world::{World, unsafe_world_cell::UnsafeWorldCell},
@@ -17,11 +17,11 @@ use bevy_ecs::{
     world::WorldId,
 };
 use bevy_reflect::TypeRegistryArc;
+use fixedbitset::FixedBitSet;
 use std::{
     any::{Any, TypeId},
     cell::{Ref, RefCell},
     fmt::Debug,
-    panic::Location,
     rc::Rc,
     sync::atomic::AtomicBool,
 };
@@ -37,7 +37,7 @@ pub enum DynWorldAccessError {
     /// World thread local was not set
     MissingWorld,
     /// Could not claim necessary access
-    CannotClaimAccess(WorldAccessRange, Option<Location<'static>>, String),
+    CannotClaimAccess(WorldAccessRange, String),
     /// Resource was not registered
     UnregisteredResource(TypeId),
     /// Component was not registered
@@ -51,12 +51,8 @@ impl DynWorldAccessError {
     }
 
     /// Creates [`DynWorldAccessError::CannotClaimAccess`]
-    pub fn cannot_claim_access(
-        key: WorldAccessRange,
-        location: Option<Location<'static>>,
-        msg: impl ToString,
-    ) -> Self {
-        Self::CannotClaimAccess(key, location, msg.to_string())
+    pub fn cannot_claim_access(key: WorldAccessRange, msg: impl ToString) -> Self {
+        Self::CannotClaimAccess(key, msg.to_string())
     }
 }
 
@@ -95,7 +91,7 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     /// Safety: cannot be used unless the scope depth is less than the max valid scope
     cell: UnsafeWorldCell<'w>,
     // TODO: this is fairly hefty, explore sparse sets, bit fields etc
-    pub(crate) accesses: AnyAccessMap,
+    pub(crate) accesses: AccessMap,
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
 
@@ -134,19 +130,13 @@ impl<'w> WorldAccessGuard<'w> {
 
     #[track_caller]
     /// Claims read access to the given type.
-    pub fn claim_read_access(
-        &self,
-        raid: impl Into<WorldAccessRange>,
-    ) -> Result<(), AccessInstance> {
+    pub fn claim_read_access(&self, raid: impl Into<WorldAccessRange>) -> bool {
         self.inner.accesses.claim_read_access(raid)
     }
 
     #[track_caller]
     /// Claims write access to the given type.
-    pub fn claim_write_access(
-        &self,
-        raid: impl Into<WorldAccessRange>,
-    ) -> Result<(), AccessInstance> {
+    pub fn claim_write_access(&self, raid: impl Into<WorldAccessRange>) -> bool {
         self.inner.accesses.claim_write_access(raid)
     }
 
@@ -169,10 +159,9 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, DynWorldAccessError> {
         let key = key.into();
-        if let Err(conflicting_access) = self.inner.accesses.claim_read_access(key) {
+        if !self.inner.accesses.claim_read_access(key) {
             Err(DynWorldAccessError::cannot_claim_access(
                 key,
-                Some(conflicting_access.owner.location),
                 "Could not claim read access",
             ))
         } else {
@@ -197,13 +186,8 @@ impl<'w> WorldAccessGuard<'w> {
         DynWorldAccessError: Into<E>,
     {
         let key = key.into();
-        if let Err(conflicting_access) = self.inner.accesses.claim_read_access(key) {
-            Err(DynWorldAccessError::cannot_claim_access(
-                key,
-                Some(conflicting_access.owner.location),
-                "Could not claim read access",
-            )
-            .into())
+        if !self.inner.accesses.claim_read_access(key) {
+            Err(DynWorldAccessError::cannot_claim_access(key, "Could not claim read access").into())
         } else {
             let res = f()?;
             // Safety: we have claimed read access to this key
@@ -221,10 +205,9 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, DynWorldAccessError> {
         let key = key.into();
-        if let Err(conflicting_access) = self.inner.accesses.claim_write_access(key) {
+        if !self.inner.accesses.claim_write_access(key) {
             Err(DynWorldAccessError::cannot_claim_access(
                 key,
-                Some(conflicting_access.owner.location),
                 "Could not claim write access",
             ))
         } else {
@@ -249,13 +232,11 @@ impl<'w> WorldAccessGuard<'w> {
         DynWorldAccessError: Into<E>,
     {
         let key = key.into();
-        if let Err(conflicting_access) = self.inner.accesses.claim_write_access(key) {
-            Err(DynWorldAccessError::cannot_claim_access(
-                key,
-                Some(conflicting_access.owner.location),
-                "Could not claim write access",
+        if !self.inner.accesses.claim_write_access(key) {
+            Err(
+                DynWorldAccessError::cannot_claim_access(key, "Could not claim write access")
+                    .into(),
             )
-            .into())
         } else {
             let res = f()?;
             // Safety: we have claimed read access to this key
@@ -388,14 +369,14 @@ impl<'w> WorldAccessGuard<'w> {
     /// - If an access is allowed in this subset, but alised by someone else,
     pub unsafe fn new_non_exclusive(
         world: UnsafeWorldCell<'w>,
-        subset: impl IntoIterator<Item = impl Into<WorldAccessRange>>,
+        subset: FixedBitSet,
         type_registry: TypeRegistryArc,
         registry_cache: RegistryCache,
     ) -> Self {
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world,
-                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(subset)),
+                accesses: AccessMap::new_subset(subset),
                 type_registry,
                 cached_slots: registry_cache,
             }),
@@ -408,10 +389,12 @@ impl<'w> WorldAccessGuard<'w> {
     /// If these resources do not exist, they will be initialized.
     pub fn new_exclusive(world: &'w mut World, registry_cache: RegistryCache) -> Self {
         let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
+        // TODO: do we need more space ? how do we handle new components in the lifecycle ?
+        let map = AccessMap::new(ComponentId::new(world.components().len() + 10));
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world.as_unsafe_world_cell(),
-                accesses: AnyAccessMap::UnlimitedAccessMap(Default::default()),
+                accesses: map,
                 cached_slots: registry_cache,
                 type_registry,
             }),
@@ -504,7 +487,7 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Purely debugging utility to list all accesses currently held.
-    pub fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)> {
+    pub fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)> {
         self.inner.accesses.list_accesses()
     }
 

@@ -13,7 +13,7 @@ use bevy_mod_scripting_world::{
     DynWorldAccessError, WorldAccessGuard, WorldAccessRange, WorldGuard,
 };
 use bevy_reflect::{ApplyError, PartialReflect, Reflect};
-use std::{any::TypeId, borrow::Cow, error::Error, fmt::Display, panic::Location, sync::Arc};
+use std::{any::TypeId, borrow::Cow, error::Error, fmt::Display, sync::Arc};
 
 /// A wrapper around a reflect value to implement various traits useful for error reporting.
 #[derive(Clone)]
@@ -70,9 +70,7 @@ impl From<DynWorldAccessError> for InteropError {
     fn from(value: DynWorldAccessError) -> Self {
         match value {
             DynWorldAccessError::MissingWorld => Self::MissingWorld,
-            DynWorldAccessError::CannotClaimAccess(key, location, msg) => {
-                Self::cannot_claim_access(key, location, msg)
-            }
+            DynWorldAccessError::CannotClaimAccess(key, msg) => Self::cannot_claim_access(key, msg),
             DynWorldAccessError::UnregisteredResource(type_id)
             | DynWorldAccessError::UnregisteredComponent(type_id) => {
                 Self::unregistered_component_or_resource_type(type_id)
@@ -93,34 +91,31 @@ impl DisplayWithTypeInfo for WorldAccessRangeWithDisplay {
     ) -> std::fmt::Result {
         if let Some(provider) = type_info_provider {
             match self.0 {
-                WorldAccessRange::ComponentOrResource(component_range) => {
+                WorldAccessRange::ComponentOrResource(component_id) => {
                     f.write_str("Component or Resource: ")?;
-                    let component_id: ComponentId = component_range.into();
+                    let component_id: ComponentId = component_id;
                     write!(
                         f,
                         "{}",
                         WithTypeInfo::new_with_info(&component_id, provider)
                     )
                 }
-                WorldAccessRange::External(non_zero) => {
+                WorldAccessRange::External(idx) => {
                     f.write_str("Allocation to: ")?;
 
                     write!(
                         f,
                         "{}",
-                        WithTypeInfo::new_with_info(
-                            &ReflectAllocationId::new(non_zero.get()),
-                            provider
-                        )
+                        WithTypeInfo::new_with_info(&ReflectAllocationId::new(idx), provider)
                     )
                 }
                 WorldAccessRange::Global => f.write_str("World Access"),
             }
         } else {
             match self.0 {
-                WorldAccessRange::ComponentOrResource(component_range) => {
+                WorldAccessRange::ComponentOrResource(component_id) => {
                     f.write_str("Component or Resource: ")?;
-                    let component_id: ComponentId = component_range.into();
+                    let component_id: ComponentId = component_id;
                     f.write_str(&component_id.index().to_string())
                 }
                 WorldAccessRange::External(non_zero) => {
@@ -193,8 +188,6 @@ pub enum InteropError {
     CannotClaimAccess {
         /// The id of the access
         base: Box<WorldAccessRangeWithDisplay>,
-        /// The location of the access
-        location: Box<Option<Location<'static>>>,
         /// The context of the access
         context: Box<Cow<'static, str>>,
     },
@@ -384,12 +377,10 @@ impl InteropError {
     /// Creates a new cannot claim access error.
     pub fn cannot_claim_access(
         base: WorldAccessRange,
-        location: Option<Location<'static>>,
         context: impl Into<Cow<'static, str>>,
     ) -> Self {
         Self::CannotClaimAccess {
             base: Box::new(WorldAccessRangeWithDisplay(base)),
-            location: Box::new(location),
             context: Box::new(context.into()),
         }
     }
@@ -591,29 +582,13 @@ impl DisplayWithTypeInfo for InteropError {
                     WithTypeInfo::new_with_opt_info(&got.as_ref().or_fake_id(), type_info_provider)
                 )
             }
-            InteropError::CannotClaimAccess {
-                base,
-                location,
-                context,
-            } => {
-                if let Some(location) = location.as_ref() {
-                    write!(
-                        f,
-                        "Cannot claim access to {} at {}:{}:{}: {}",
-                        WithTypeInfo::new_with_opt_info(base, type_info_provider),
-                        location.file(),
-                        location.line(),
-                        location.column(),
-                        context
-                    )
-                } else {
-                    write!(
-                        f,
-                        "Cannot claim access to {}: {}",
-                        WithTypeInfo::new_with_opt_info(base, type_info_provider),
-                        context
-                    )
-                }
+            InteropError::CannotClaimAccess { base, context } => {
+                write!(
+                    f,
+                    "Cannot claim access to {}: {}",
+                    WithTypeInfo::new_with_opt_info(base, type_info_provider),
+                    context
+                )
             }
             InteropError::Invariant(i) => {
                 write!(f, "Invariant broken: {i}")

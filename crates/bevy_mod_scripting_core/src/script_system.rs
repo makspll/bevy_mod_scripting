@@ -30,10 +30,11 @@ use bevy_mod_scripting_bindings::{
     ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_script::ScriptAttachment;
-use bevy_mod_scripting_world::{WorldAccessGuard, WorldAccessRange, WorldGuard};
+use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 use bevy_reflect::TypeRegistryArc;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bevy_utils::prelude::DebugName;
+use fixedbitset::FixedBitSet;
 use std::{any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData};
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
@@ -185,7 +186,7 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     schedule_registry: AppScheduleRegistry,
     component_registry: AppScriptComponentRegistry,
     allocator: AppReflectAllocator,
-    subset: HashSet<WorldAccessRange>,
+    subset: FixedBitSet,
     callback_label: CallbackLabel,
     system_params: Vec<ScriptSystemParam>,
     script_contexts: ScriptContexts<P>,
@@ -262,10 +263,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             SystemStateFlags::empty()
         }
     }
-
-    // fn component_access(&self) -> &Access {
-    //     self.component_access_set.combined_access()
-    // }
 
     unsafe fn run_unsafe(
         &mut self,
@@ -391,7 +388,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         // - queries, more difficult the queries need to be built, and archetype access registered on top of component access
 
         // start with resources
-        let mut subset = HashSet::default();
+        let mut subset = HashSet::<ComponentId>::new();
         let mut system_params = Vec::with_capacity(self.system_param_descriptors.len());
         let mut component_access_set = FilteredAccessSet::new();
         for param in &self.system_param_descriptors {
@@ -410,15 +407,14 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
                     access.add_resource_write(component_id);
                     component_access_set.add(access);
-                    let raid: WorldAccessRange = component_id.into();
                     #[allow(
                         clippy::panic,
                         reason = "WIP, to be dealt with in validate params better, but panic will still remain"
                     )]
-                    if subset.contains(&raid) {
-                        panic!("Duplicate resource access in system: {raid:?}.");
+                    if subset.contains(&component_id) {
+                        panic!("Duplicate resource access in system: {component_id:?}.");
                     }
-                    subset.insert(raid);
+                    subset.insert(component_id);
                 }
                 ScriptSystemParamDescriptor::EntityQuery(query) => {
                     let components: Vec<_> = query
@@ -453,6 +449,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             }
         }
 
+        let final_subset = FixedBitSet::from_iter(subset.iter().map(|c| c.index()));
+
         self.state = Some(ScriptSystemState {
             type_registry: world.get_resource_or_init::<AppTypeRegistry>().clone().0,
             function_registry: world
@@ -463,7 +461,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             component_registry: world
                 .get_resource_or_init::<AppScriptComponentRegistry>()
                 .clone(),
-            subset,
+            subset: final_subset,
             callback_label: self.name.to_string().into(),
             system_params,
             script_contexts: world.get_resource_or_init::<ScriptContexts<P>>().clone(),
