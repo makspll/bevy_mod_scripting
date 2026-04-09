@@ -5,7 +5,7 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 
-use crate::{AccessMap, WorldAccessRange};
+use crate::{AccessByteSet, AccessMap, WorldAccessRange};
 
 use super::access_map::DynamicSystemMeta;
 use ::bevy_ecs::{
@@ -17,7 +17,6 @@ use bevy_ecs::{
     world::WorldId,
 };
 use bevy_reflect::TypeRegistryArc;
-use fixedbitset::FixedBitSet;
 use std::{
     any::{Any, TypeId},
     cell::{Ref, RefCell},
@@ -369,7 +368,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// - If an access is allowed in this subset, but alised by someone else,
     pub unsafe fn new_non_exclusive(
         world: UnsafeWorldCell<'w>,
-        subset: FixedBitSet,
+        subset: AccessByteSet,
         type_registry: TypeRegistryArc,
         registry_cache: RegistryCache,
     ) -> Self {
@@ -389,8 +388,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// If these resources do not exist, they will be initialized.
     pub fn new_exclusive(world: &'w mut World, registry_cache: RegistryCache) -> Self {
         let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
-        // TODO: do we need more space ? how do we handle new components in the lifecycle ?
-        let map = AccessMap::new(ComponentId::new(world.components().len() + 10));
+        let map = AccessMap::new();
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world.as_unsafe_world_cell(),

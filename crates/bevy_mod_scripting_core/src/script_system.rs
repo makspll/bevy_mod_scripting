@@ -30,11 +30,10 @@ use bevy_mod_scripting_bindings::{
     ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_script::ScriptAttachment;
-use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
+use bevy_mod_scripting_world::{AccessByteSet, WorldAccessGuard, WorldGuard};
 use bevy_reflect::TypeRegistryArc;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bevy_utils::prelude::DebugName;
-use fixedbitset::FixedBitSet;
 use std::{any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData};
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
@@ -186,7 +185,7 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     schedule_registry: AppScheduleRegistry,
     component_registry: AppScriptComponentRegistry,
     allocator: AppReflectAllocator,
-    subset: FixedBitSet,
+    subset: AccessByteSet,
     callback_label: CallbackLabel,
     system_params: Vec<ScriptSystemParam>,
     script_contexts: ScriptContexts<P>,
@@ -449,7 +448,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             }
         }
 
-        let final_subset = FixedBitSet::from_iter(subset.iter().map(|c| c.index()));
+        let final_subset =
+            AccessByteSet::from_allowed_list(&subset.iter().map(|c| c.index()).collect::<Vec<_>>());
 
         self.state = Some(ScriptSystemState {
             type_registry: world.get_resource_or_init::<AppTypeRegistry>().clone().0,
