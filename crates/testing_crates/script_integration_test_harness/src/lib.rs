@@ -430,11 +430,11 @@ pub fn perform_benchmark_with_generator<
                 for _ in 0..rng_guard.random_range(0..=5) {
                     // pick random component
                     match rng_guard.random_range(0..=4) {
-                        0 => world_guard.claim_write_access(f1).is_ok(),
-                        1 => world_guard.claim_write_access(f2).is_ok(),
-                        2 => world_guard.claim_write_access(f3).is_ok(),
-                        3 => world_guard.claim_write_access(f4).is_ok(),
-                        4 => world_guard.claim_write_access(f5).is_ok(),
+                        0 => world_guard.claim_write_access(f1),
+                        1 => world_guard.claim_write_access(f2),
+                        2 => world_guard.claim_write_access(f3),
+                        3 => world_guard.claim_write_access(f4),
+                        4 => world_guard.claim_write_access(f5),
                         _ => false,
                     };
                 }

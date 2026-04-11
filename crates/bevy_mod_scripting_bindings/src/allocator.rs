@@ -19,8 +19,7 @@ use std::{
     cmp::Ordering,
     fmt::{Display, Formatter},
     hash::Hasher,
-    num::NonZero,
-    sync::{Arc, atomic::AtomicU64},
+    sync::{Arc, atomic::AtomicUsize},
 };
 
 /// The path used for the total number of allocations diagnostic
@@ -34,15 +33,11 @@ pub const ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH: DiagnosticPath =
 /// Unique identifier for an allocation
 #[derive(Clone, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-pub struct ReflectAllocationId(pub(crate) Arc<u64>);
+pub struct ReflectAllocationId(pub(crate) Arc<usize>);
 
 impl From<&ReflectAllocationId> for WorldAccessRange {
     fn from(val: &ReflectAllocationId) -> Self {
-        WorldAccessRange::External(unsafe {
-            // Safety: trivially 1 or more
-            // if we run out of u64's we have much bigger problems
-            NonZero::new_unchecked(val.0.checked_add(1).unwrap_or(1))
-        })
+        WorldAccessRange::External(*val.0)
     }
 }
 
@@ -58,12 +53,12 @@ impl DisplayWithTypeInfo for ReflectAllocationId {
 
 impl ReflectAllocationId {
     /// Returns the id of the allocation
-    pub fn id(&self) -> u64 {
+    pub fn id(&self) -> usize {
         *self.0
     }
 
     /// Creates a new [`ReflectAllocationId`] from its id
-    pub(crate) fn new(id: u64) -> Self {
+    pub(crate) fn new(id: usize) -> Self {
         Self(Arc::new(id))
     }
 
@@ -215,7 +210,7 @@ impl ReflectAllocator {
 
     /// Allocates a new boxed `PartialReflect` value and returns an [`ReflectAllocationId`] which can be used to access it later.
     pub fn allocate_boxed(&mut self, value: Box<dyn PartialReflect>) -> ReflectAllocationId {
-        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
         let id =
             ReflectAllocationId::new(COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed));

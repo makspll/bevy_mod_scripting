@@ -274,23 +274,21 @@ impl<T: FromReflect> FromScript for R<'_, T> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
                 let raid: WorldAccessRange = (&reflect_reference.base.base_id).into();
-                match world.claim_read_access(raid) {
-                    Ok(()) => {
-                        // Safety: we just claimed access
-                        let ref_ = unsafe { reflect_reference.reflect_unsafe_non_empty(world) }?;
-                        let cast = ref_.try_downcast_ref::<T>().ok_or_else(|| {
-                            InteropError::type_mismatch(
-                                std::any::TypeId::of::<T>(),
-                                ref_.get_represented_type_info().map(|i| i.type_id()),
-                            )
-                        })?;
-                        Ok(R(cast))
-                    }
-                    Err(access) => Err(InteropError::cannot_claim_access(
+                if world.claim_read_access(raid) {
+                    // Safety: we just claimed access
+                    let ref_ = unsafe { reflect_reference.reflect_unsafe_non_empty(world) }?;
+                    let cast = ref_.try_downcast_ref::<T>().ok_or_else(|| {
+                        InteropError::type_mismatch(
+                            std::any::TypeId::of::<T>(),
+                            ref_.get_represented_type_info().map(|i| i.type_id()),
+                        )
+                    })?;
+                    Ok(R(cast))
+                } else {
+                    Err(InteropError::cannot_claim_access(
                         raid,
-                        Some(access.owner.location),
                         format!("In conversion to type: R<{}>", std::any::type_name::<T>()),
-                    )),
+                    ))
                 }
             }
             _ => Err(InteropError::value_mismatch(
@@ -348,22 +346,19 @@ impl<T: FromReflect> FromScript for M<'_, T> {
             ScriptValue::Reference(reflect_reference) => {
                 let raid: WorldAccessRange = (&reflect_reference.base.base_id).into();
 
-                match world.claim_write_access(raid) {
-                    Ok(()) => {
-                        // Safety: we just claimed write access
-                        let ref_ =
-                            unsafe { reflect_reference.reflect_mut_unsafe_non_empty(world) }?;
-                        let type_id = ref_.get_represented_type_info().map(|i| i.type_id());
-                        let cast = ref_.try_downcast_mut::<T>().ok_or_else(|| {
-                            InteropError::type_mismatch(std::any::TypeId::of::<T>(), type_id)
-                        })?;
-                        Ok(M(cast))
-                    }
-                    Err(access) => Err(InteropError::cannot_claim_access(
+                if world.claim_write_access(raid) {
+                    // Safety: we just claimed write access
+                    let ref_ = unsafe { reflect_reference.reflect_mut_unsafe_non_empty(world) }?;
+                    let type_id = ref_.get_represented_type_info().map(|i| i.type_id());
+                    let cast = ref_.try_downcast_mut::<T>().ok_or_else(|| {
+                        InteropError::type_mismatch(std::any::TypeId::of::<T>(), type_id)
+                    })?;
+                    Ok(M(cast))
+                } else {
+                    Err(InteropError::cannot_claim_access(
                         raid,
-                        Some(access.owner.location),
                         format!("In conversion to type: Mut<{}>", std::any::type_name::<T>()),
-                    )),
+                    ))
                 }
             }
             _ => Err(InteropError::value_mismatch(

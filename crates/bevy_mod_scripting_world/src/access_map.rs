@@ -2,67 +2,16 @@
 
 use bevy_ecs::component::ComponentId;
 
-use fixedbitset::FixedBitSet;
+use bevy_platform::collections::HashMap;
 use parking_lot::Mutex;
-use smallvec::SmallVec;
 
-use std::num::NonZero;
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-/// An owner of an access claim and the code location of the claim.
-pub struct ClaimOwner {
-    /// The code location of the claim
-    pub location: std::panic::Location<'static>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-/// A count of the number of readers and writers of an access claim.
-pub struct AccessInstance {
-    /// The number of readers including thread information
-    pub owner: ClaimOwner,
-    /// If the current read is a write access, this will be set
-    written: bool,
-}
-
-#[profiling::all_functions]
-impl AccessInstance {
-    fn new(owner: ClaimOwner, write: bool) -> Self {
-        Self {
-            owner,
-            written: write,
-        }
-    }
-}
-
-/// A wrapper for conversion between ComponentId's and nonzero indices
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ComponentRange(NonZero<u16>);
-
-impl From<ComponentId> for ComponentRange {
-    fn from(value: ComponentId) -> Self {
-        // Safety: trivially holds that n + 1 cannot be zero
-        Self(unsafe {
-            NonZero::new_unchecked(
-                (value.index() as u16)
-                    .checked_add(1)
-                    .unwrap_or_else(|| unreachable!("Too many components being used")),
-            )
-        })
-    }
-}
-
-impl From<ComponentRange> for ComponentId {
-    fn from(val: ComponentRange) -> Self {
-        ComponentId::new((val.0.get() - 1) as usize)
-    }
-}
 /// Describes access ranges in and outside a bevy world
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum WorldAccessRange {
     /// An access into a resource or component in the world
-    ComponentOrResource(ComponentRange),
+    ComponentOrResource(ComponentId),
     /// An access outside the world, for example into an external allocator
-    External(NonZero<u64>),
+    External(usize),
     /// A whole world read or write
     Global,
 }
@@ -83,33 +32,198 @@ impl WorldAccessRange {
     }
 }
 
-impl From<ComponentId> for WorldAccessRange {
-    fn from(value: ComponentId) -> Self {
-        Self::ComponentOrResource(value.into())
+/// Describes the state of an access lock
+#[derive(Copy, Clone, Debug, Default)]
+pub struct AccessBitField(u8);
+
+#[profiling::all_functions]
+impl AccessBitField {
+    const KIND_MASK: u8 = 0b0000_0001;
+    const FORBIDDEN_MASK: u8 = 0b0000_0010;
+    const COUNT_MASK: u8 = 0b1111_1100;
+    const COUNT_SHIFT: u8 = 2;
+    const MAX_COUNT: u8 = 0b0011_1111; // 63
+
+    /// Claims the given access and returns an adjusted state
+    pub fn claim_if_free(self, write: bool) -> (bool, Self) {
+        let kind_requested = (write as u8) & 1;
+        let kind = self.kind();
+        let count = self.access_count();
+
+        let one_is_exclusive = (kind_requested | kind) == 0b1;
+        let conflicting_exclusive = one_is_exclusive && count != 0;
+        let aliasing_exclusive_access = (kind_requested == 1) && (count != 0);
+        let access_is_forbidden = self.is_forbidden();
+
+        let allowed = !(conflicting_exclusive || aliasing_exclusive_access || access_is_forbidden);
+        let allowed_u8 = allowed as u8;
+
+        // Increment count only if allowed
+        let new_count = count + (allowed_u8 & 1);
+
+        // If count was 0 and we're allowed, adopt requested kind
+        let is_first = (count == 0) as u8;
+        let kind_mask = is_first & allowed_u8;
+
+        // Select new kind branchlessly
+        let new_kind_bits = (kind & !kind_mask) | (kind_requested & kind_mask);
+
+        // Rebuild bitfield
+        let forbidden_bits = self.0 & Self::FORBIDDEN_MASK;
+        let new_count_bits = (new_count << Self::COUNT_SHIFT) & Self::COUNT_MASK;
+
+        let new_bits = (new_kind_bits & Self::KIND_MASK) | forbidden_bits | new_count_bits;
+
+        (allowed, Self(new_bits))
+    }
+
+    #[inline]
+    /// Returns true if the access is a write
+    pub fn is_write(self) -> bool {
+        (self.0 & Self::KIND_MASK) != 0
+    }
+
+    #[inline]
+    /// Returns true if the access is forbidden
+    pub fn is_forbidden(self) -> bool {
+        (self.0 & Self::FORBIDDEN_MASK) != 0
+    }
+
+    #[inline]
+    /// Returns the amount of readers/writers
+    pub fn access_count(self) -> u8 {
+        (self.0 & Self::COUNT_MASK) >> Self::COUNT_SHIFT
+    }
+
+    #[inline]
+    /// Returns the kind of access 1 if write and 0 otherwise
+    pub fn kind(self) -> u8 {
+        self.0 & Self::KIND_MASK
+    }
+
+    #[inline]
+    /// Returns new state with adjusted kind
+    pub fn with_kind(self, is_write: bool) -> Self {
+        let bit = (is_write as u8) & 1;
+        Self((self.0 & !Self::KIND_MASK) | bit)
+    }
+
+    #[inline]
+    /// Returns a new state with adjusted forbidden flag
+    pub fn with_forbidden(self, forbidden: bool) -> Self {
+        let bit = (forbidden as u8) << 1;
+        Self((self.0 & !Self::FORBIDDEN_MASK) | bit)
+    }
+
+    #[inline]
+    /// Returns a new state with increased reader/writer count
+    pub fn increment_count(self) -> Self {
+        let count = self.access_count();
+        debug_assert!(count < Self::MAX_COUNT, "count overflow");
+        let new = count + 1;
+        Self((self.0 & !Self::COUNT_MASK) | (new << Self::COUNT_SHIFT))
+    }
+
+    #[inline]
+    /// Returns a new state with decreased reader/writer count
+    pub fn decrement_count(self) -> Self {
+        let count = self.access_count();
+        debug_assert!(count > 0, "count underflow");
+
+        let new = count - 1;
+
+        // mask = 1 if new != 0, else 0
+        let nonzero_mask = (new != 0) as u8;
+
+        // Preserve kind only if new != 0, otherwise zero it
+        let kind = self.kind() & nonzero_mask;
+
+        let forbidden = self.0 & Self::FORBIDDEN_MASK;
+
+        let new_bits =
+            (kind & Self::KIND_MASK) | forbidden | ((new << Self::COUNT_SHIFT) & Self::COUNT_MASK);
+        Self(new_bits)
+    }
+
+    #[inline]
+    /// Returns a new state with everything but the forbidden mask cleared
+    pub fn clear_accesses(self) -> Self {
+        Self(self.0 & Self::FORBIDDEN_MASK)
     }
 }
 
-// impl<T: Resource> AccessMapKey for T {
-//     /// Convert the key to an index
-//     fn from_world(&self, world: &UnsafeWorldCell) -> WorldAccessRange {
-//         world
-//             .components()
-//             .component_id::<T>()
-//             .map(|c| {
-//                 WorldAccessRange::Component(unsafe {
-//                     NonZero::new_unchecked((c.index() as u16) + 1)
-//                 })
-//             })
-//             .unwrap_or(WorldAccessRange::Unregistered)
-//     }
+#[derive(Clone, Debug, Default)]
+/// A collection of AccessBitFields indexed by id of access.
+/// Must not be used with potentially large ID's as it will allocate large amounts of memory.
+pub struct AccessByteSet {
+    new_capacity_forbidden: bool,
+    data: Vec<AccessBitField>,
+}
 
-//     /// Describes the type of access this key represents
-//     fn describe(&self) -> String {
-//         format!("Component: {}", std::any::type_name::<T>())
-//     }
-// }
+#[profiling::all_functions]
+impl AccessByteSet {
+    #[inline]
+    /// Create a new empty access byte set
+    pub fn new() -> Self {
+        Self {
+            data: Vec::new(),
+            new_capacity_forbidden: false,
+        }
+    }
 
-#[derive(Debug, Default)]
+    /// Generates a new access byte set with the given forbidden list
+    pub fn from_allowed_list(iter: &[usize]) -> Self {
+        let max_index = iter.iter().max().unwrap_or(&0);
+        let mut new = Self::new();
+        new.new_capacity_forbidden = true;
+        new.ensure_capacity(*max_index);
+        for i in iter {
+            new.data[*i] = new.data[*i].with_forbidden(false)
+        }
+
+        new
+    }
+
+    fn ensure_capacity(&mut self, index: usize) {
+        if index + 1 > self.data.len() {
+            self.data.resize_with(index + 1, || {
+                AccessBitField(
+                    AccessBitField::FORBIDDEN_MASK
+                        & ((self.new_capacity_forbidden as u8 & 0b1) << 1),
+                )
+            });
+        }
+    }
+
+    /// Return a mutable reference to the given access index, initializing it if it doesn't exist
+    pub fn entry_mut(&mut self, index: usize) -> &mut AccessBitField {
+        self.ensure_capacity(index);
+
+        &mut self.data[index]
+    }
+
+    /// Iterate over all accesses with non-zero reader/writer counts
+    pub fn iter_accessed(&self) -> impl Iterator<Item = (usize, AccessBitField)> {
+        self.data
+            .iter()
+            .enumerate()
+            .filter(|(_, a)| a.access_count() > 0)
+            .map(|(idx, a)| (idx, *a))
+    }
+
+    /// Clear accesses leaving the current capacity intact
+    pub fn clear(&mut self) {
+        self.data.iter_mut().for_each(|a| _ = a.clear_accesses());
+    }
+}
+
+impl From<ComponentId> for WorldAccessRange {
+    fn from(value: ComponentId) -> Self {
+        Self::ComponentOrResource(value)
+    }
+}
+
+#[derive(Debug)]
 /// A map of access claims
 pub struct AccessMap(Mutex<AccessMapInner>);
 
@@ -130,14 +244,14 @@ pub trait DynamicSystemMeta {
     /// Returns `true` if the read access is successfully claimed. The claim will fail if
     /// the key is currently locked for write or if a global lock is active.
     #[track_caller]
-    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance>;
+    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool;
 
     /// Attempts to claim write access for the given key.
     ///
     /// Returns `true` if the write access is successfully claimed. Write access fails if any
     /// read or write access is active for the key or if a global lock is held.
     #[track_caller]
-    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance>;
+    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool;
 
     /// Releases an access claimed for the provided key.
     ///
@@ -149,7 +263,7 @@ pub trait DynamicSystemMeta {
     /// Returns a list of active accesses.
     ///
     /// The list is provided as key and corresponding access count pairs.
-    fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)>;
+    fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)>;
 
     /// Returns the number of active individual accesses.
     ///
@@ -164,57 +278,73 @@ pub trait DynamicSystemMeta {
 
 #[derive(Default, Debug, Clone)]
 struct AccessMapInner {
-    individual_accesses: SmallVec<[(WorldAccessRange, AccessInstance); 4]>,
+    cant_access_global: bool,
+    component_access: AccessByteSet,
+    world_access: AccessBitField,
+    external_accesses: HashMap<usize, AccessBitField>,
 }
 
 #[profiling::all_functions]
 impl AccessMapInner {
-    #[inline]
-    fn overlapping_access(
-        &self,
-        key: WorldAccessRange,
-        instance: &AccessInstance,
-    ) -> Option<&AccessInstance> {
-        self.individual_accesses
-            .iter()
-            .find_map(|(entry_key, entry_instance)| {
-                let overlaps = key.overlaps_with_access_to(*entry_key);
-                let one_is_exclusive = instance.written || entry_instance.written;
-                (overlaps && one_is_exclusive).then_some(entry_instance)
-            })
+    pub fn claim_component_if_free(&mut self, id: ComponentId, write: bool) -> bool {
+        let idx = id.index();
+        let elem = self.component_access.entry_mut(idx);
+        let (free, new) = elem.claim_if_free(write);
+        *elem = new;
+        return free;
     }
 
-    #[inline]
-    fn overlapping_access_mut(
-        &mut self,
-        key: WorldAccessRange,
-        instance: &AccessInstance,
-    ) -> Option<&mut AccessInstance> {
-        self.individual_accesses
-            .iter_mut()
-            .find_map(|(entry_key, entry_instance)| {
-                (key.overlaps_with_access_to(*entry_key)
-                    && !(instance.written || entry_instance.written))
-                    .then_some(entry_instance)
-            })
-    }
+    fn claim_if_free(&mut self, key: WorldAccessRange, write: bool) -> bool {
+        match key {
+            WorldAccessRange::ComponentOrResource(component_id) => {
+                if self.world_access.is_write() || self.world_access.access_count() != 0 && write {
+                    return false;
+                }
+                self.claim_component_if_free(component_id, write)
+            }
 
-    #[inline]
-    fn insert(&mut self, key: WorldAccessRange, count: AccessInstance) {
-        self.individual_accesses.push((key, count));
-    }
+            WorldAccessRange::External(idx) => {
+                let elem = self.external_accesses.entry(idx).or_default();
+                let (free, new) = elem.claim_if_free(write);
+                *elem = new;
+                return free;
+            }
 
-    #[inline]
-    fn clear_access(&mut self, key: WorldAccessRange) {
-        let idx = self
-            .individual_accesses
-            .iter()
-            .position(|(entry_key, _)| *entry_key == key);
-        if let Some(idx) = idx {
-            self.individual_accesses.remove(idx);
+            WorldAccessRange::Global => {
+                let elem = &mut self.world_access;
+                if self.cant_access_global
+                    || self
+                        .component_access
+                        .iter_accessed()
+                        .any(|(_, a)| a.is_write() || (!a.is_write() && write))
+                {
+                    return false;
+                }
+                let (free, new) = elem.claim_if_free(write);
+                *elem = new;
+                return free;
+            }
         }
     }
+    #[inline]
+    fn clear_access(&mut self, key: WorldAccessRange) {
+        match key {
+            WorldAccessRange::ComponentOrResource(component_id) => {
+                let entry = self.component_access.entry_mut(component_id.index());
+                *entry = entry.decrement_count();
+            }
 
+            WorldAccessRange::External(idx) => {
+                if let Some(field) = self.external_accesses.get_mut(&idx) {
+                    *field = field.decrement_count()
+                }
+            }
+
+            WorldAccessRange::Global => {
+                self.world_access = self.world_access.decrement_count();
+            }
+        }
+    }
     // #[inline]
     // fn entry(&self, key: WorldAccessRange) -> Option<&AccessCount> {
     //     self.individual_accesses
@@ -251,6 +381,30 @@ impl AccessMapInner {
     // }
 }
 
+impl Default for AccessMap {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AccessMap {
+    /// Creates a new access map which will only allow access up to the given component ID
+    pub fn new() -> Self {
+        Self(Mutex::new(AccessMapInner {
+            ..Default::default()
+        }))
+    }
+
+    /// Creates a new access map which will only allow access to the given set of components
+    pub fn new_subset(filter: AccessByteSet) -> Self {
+        Self(Mutex::new(AccessMapInner {
+            component_access: filter,
+            cant_access_global: true,
+            ..Default::default()
+        }))
+    }
+}
+
 #[profiling::all_functions]
 impl DynamicSystemMeta for AccessMap {
     fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
@@ -278,214 +432,52 @@ impl DynamicSystemMeta for AccessMap {
     }
 
     #[track_caller]
-    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance> {
+    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
         let mut inner = self.0.lock();
-
         let key = key.into();
-
-        let instance = AccessInstance {
-            owner: ClaimOwner {
-                location: *std::panic::Location::caller(),
-            },
-            written: false,
-        };
-
-        if let Some(access) = inner.overlapping_access(key, &instance) {
-            Err(access.clone())
-        } else {
-            inner.insert(key, instance);
-            Ok(())
-        }
+        inner.claim_if_free(key, false)
     }
 
     #[track_caller]
-    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance> {
+    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
         let mut inner = self.0.lock();
-
         let key = key.into();
-
-        let instance = AccessInstance {
-            owner: ClaimOwner {
-                location: *std::panic::Location::caller(),
-            },
-            written: true,
-        };
-
-        if let Some(access) = inner.overlapping_access(key, &instance) {
-            Err(access.clone())
-        } else {
-            inner.insert(key, instance);
-            Ok(())
-        }
+        inner.claim_if_free(key, true)
     }
 
-    fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)> {
+    fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)> {
         let inner = self.0.lock();
-        inner
-            .individual_accesses
-            .iter()
-            .map(|(key, a)| (*key, a.clone()))
-            .collect()
-    }
-
-    fn count_accesses(&self) -> usize {
-        let inner = self.0.lock();
-        inner.individual_accesses.len()
-    }
-
-    fn release_all_accesses(&self) {
-        let mut inner = self.0.lock();
-        inner.individual_accesses.clear();
-    }
-}
-
-/// An inverse of [`AccessMap`], It limits the resource/component accesses allowed to be claimed to those in a pre-specified subset.
-pub struct SubsetAccessMap {
-    inner: AccessMap,
-    component_subset: FixedBitSet,
-}
-
-#[profiling::all_functions]
-impl SubsetAccessMap {
-    /// Creates a new subset access map with the provided subset of ID's as well as a exception function.
-    pub fn new(subset: impl IntoIterator<Item = impl Into<WorldAccessRange>>) -> Self {
-        let components = subset.into_iter().filter_map(|a| match a.into() {
-            WorldAccessRange::ComponentOrResource(range) => Some(range.0.get() as usize),
-            _ => None,
+        let comps = inner.component_access.iter_accessed().flat_map(|(idx, a)| {
+            (0..a.access_count()).map(move |_| {
+                (
+                    WorldAccessRange::ComponentOrResource(ComponentId::new(idx)),
+                    a.is_write(),
+                )
+            })
         });
-        Self {
-            inner: Default::default(),
-            component_subset: FixedBitSet::from_iter(components),
-        }
-    }
+        let external = inner.external_accesses.iter().flat_map(|(k, v)| {
+            (0..v.access_count()).map(|_| (WorldAccessRange::External(*k), v.is_write()))
+        });
 
-    fn allowed_access(&self, range: WorldAccessRange) -> bool {
-        match range {
-            WorldAccessRange::ComponentOrResource(s) => {
-                self.component_subset.contains(s.0.get() as usize)
-            }
-            WorldAccessRange::External(_) => true,
-            WorldAccessRange::Global => false,
-        }
-    }
-}
+        let mut accesses = comps.chain(external).collect::<Vec<_>>();
 
-#[profiling::all_functions]
-impl DynamicSystemMeta for SubsetAccessMap {
-    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
-        self.inner.with_scope(f)
-    }
+        accesses.extend(
+            (0..inner.world_access.access_count())
+                .map(|_| (WorldAccessRange::Global, inner.world_access.is_write())),
+        );
 
-    fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
-        let key = key.into();
-        if !self.allowed_access(key) {
-            return;
-        }
-        self.inner.release_access(key);
-    }
-
-    #[track_caller]
-    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance> {
-        let key = key.into();
-        if !self.allowed_access(key) {
-            return Err(AccessInstance {
-                owner: ClaimOwner {
-                    location: *std::panic::Location::caller(),
-                },
-                written: true,
-            });
-        }
-        self.inner.claim_read_access(key)
-    }
-
-    #[track_caller]
-    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance> {
-        let key = key.into();
-        if !self.allowed_access(key) {
-            return Err(AccessInstance {
-                owner: ClaimOwner {
-                    location: *std::panic::Location::caller(),
-                },
-                written: true,
-            });
-        }
-        self.inner.claim_write_access(key)
-    }
-
-    fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)> {
-        self.inner.list_accesses()
+        accesses
     }
 
     fn count_accesses(&self) -> usize {
-        self.inner.count_accesses()
+        self.list_accesses().len()
     }
 
     fn release_all_accesses(&self) {
-        self.inner.release_all_accesses();
-    }
-}
-
-/// A polymorphic enum for access map types.
-///
-/// Equivalent to `dyn DynamicSystemMeta` for most purposes
-pub enum AnyAccessMap {
-    /// A map which allows any and all accesses to be claimed
-    UnlimitedAccessMap(AccessMap),
-    /// A map which only allows accesses to keys in a pre-specified subset
-    SubsetAccessMap(SubsetAccessMap),
-}
-
-#[profiling::all_functions]
-impl DynamicSystemMeta for AnyAccessMap {
-    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
-        match self {
-            AnyAccessMap::UnlimitedAccessMap(map) => map.with_scope(f),
-            AnyAccessMap::SubsetAccessMap(map) => map.with_scope(f),
-        }
-    }
-
-    fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
-        match self {
-            AnyAccessMap::UnlimitedAccessMap(map) => map.release_access(key),
-            AnyAccessMap::SubsetAccessMap(map) => map.release_access(key),
-        }
-    }
-
-    #[track_caller]
-    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance> {
-        match self {
-            AnyAccessMap::UnlimitedAccessMap(map) => map.claim_read_access(key),
-            AnyAccessMap::SubsetAccessMap(map) => map.claim_read_access(key),
-        }
-    }
-
-    #[track_caller]
-    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> Result<(), AccessInstance> {
-        match self {
-            AnyAccessMap::UnlimitedAccessMap(map) => map.claim_write_access(key),
-            AnyAccessMap::SubsetAccessMap(map) => map.claim_write_access(key),
-        }
-    }
-
-    fn list_accesses(&self) -> Vec<(WorldAccessRange, AccessInstance)> {
-        match self {
-            AnyAccessMap::UnlimitedAccessMap(map) => map.list_accesses(),
-            AnyAccessMap::SubsetAccessMap(map) => map.list_accesses(),
-        }
-    }
-
-    fn count_accesses(&self) -> usize {
-        match self {
-            AnyAccessMap::UnlimitedAccessMap(map) => map.count_accesses(),
-            AnyAccessMap::SubsetAccessMap(map) => map.count_accesses(),
-        }
-    }
-
-    fn release_all_accesses(&self) {
-        match self {
-            AnyAccessMap::UnlimitedAccessMap(map) => map.release_all_accesses(),
-            AnyAccessMap::SubsetAccessMap(map) => map.release_all_accesses(),
-        }
+        let mut inner = self.0.lock();
+        inner.component_access.clear();
+        inner.external_accesses.clear();
+        inner.world_access = Default::default();
     }
 }
 
@@ -518,15 +510,13 @@ mod test {
     struct TestAccess(pub usize);
     impl From<TestAccess> for WorldAccessRange {
         fn from(val: TestAccess) -> Self {
-            WorldAccessRange::ComponentOrResource(ComponentRange(unsafe {
-                NonZero::new_unchecked((val.0 + 1) as u16)
-            }))
+            WorldAccessRange::ComponentOrResource(ComponentId::new(val.0))
         }
     }
 
     #[test]
     fn access_map_list_accesses() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
         let _ = access_map.claim_read_access(TestAccess(1));
         let _ = access_map.claim_write_access(TestAccess(2));
@@ -542,154 +532,123 @@ mod test {
             .iter()
             .find(|(k, _)| *k == TestAccess(2).into())
             .unwrap();
-
-        assert!(!access_0.1.written);
-        assert!(access_1.1.written);
-    }
-
-    #[test]
-    fn subset_access_map_list_accesses() {
-        let subset_access_map = SubsetAccessMap::new([TestAccess(1), TestAccess(2)]);
-
-        assert!(subset_access_map.claim_read_access(TestAccess(1)).is_ok());
-        assert!(subset_access_map.claim_write_access(TestAccess(2)).is_ok());
-
-        let accesses = subset_access_map.list_accesses();
-
-        assert_eq!(accesses.len(), 2);
-        let access_0 = accesses
-            .iter()
-            .find(|(k, _)| *k == TestAccess(1).into())
-            .unwrap();
-        let access_1 = accesses
-            .iter()
-            .find(|(k, _)| *k == TestAccess(2).into())
-            .unwrap();
-
-        assert!(!access_0.1.written);
-        assert!(access_1.1.written);
+        assert!(!access_0.1);
+        assert!(access_1.1);
     }
 
     #[test]
     fn access_map_read_access_blocks_write() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
-        assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
-        assert!(access_map.claim_write_access(TestAccess(1)).is_err());
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
         access_map.release_access(TestAccess(1));
-        assert!(access_map.claim_write_access(TestAccess(1)).is_ok());
+        assert!(access_map.claim_write_access(TestAccess(1)));
     }
 
     #[test]
     fn subset_access_map_read_access_blocks_write() {
-        let subset_access_map = SubsetAccessMap::new([TestAccess(1)]);
+        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1]));
 
-        assert!(subset_access_map.claim_read_access(TestAccess(1)).is_ok());
-        assert!(subset_access_map.claim_write_access(TestAccess(1)).is_err());
+        assert!(subset_access_map.claim_read_access(TestAccess(1)));
+        assert!(!subset_access_map.claim_write_access(TestAccess(1)));
         subset_access_map.release_access(TestAccess(1));
-        assert!(subset_access_map.claim_write_access(TestAccess(1)).is_ok());
+        assert!(subset_access_map.claim_write_access(TestAccess(1)));
     }
 
     #[test]
     fn access_map_write_access_blocks_read() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
-        assert!(access_map.claim_write_access(TestAccess(1)).is_ok());
-        assert!(access_map.claim_read_access(TestAccess(1)).is_err());
+        assert!(access_map.claim_write_access(TestAccess(1)));
+        assert!(!access_map.claim_read_access(TestAccess(1)));
         access_map.release_access(TestAccess(1));
-        assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
+        assert!(access_map.claim_read_access(TestAccess(1)));
+    }
+
+    #[test]
+    fn access_map_multiple_reads_block_write() {
+        let access_map = AccessMap::new();
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        access_map.release_access(TestAccess(1));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        access_map.release_access(TestAccess(1));
+        assert!(access_map.claim_write_access(TestAccess(1)));
     }
 
     #[test]
     fn subset_access_map_write_access_blocks_read() {
-        let subset_access_map = SubsetAccessMap::new([TestAccess(1)]);
+        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1]));
 
-        assert!(subset_access_map.claim_write_access(TestAccess(1)).is_ok());
-        assert!(subset_access_map.claim_read_access(TestAccess(1)).is_err());
+        assert!(subset_access_map.claim_write_access(TestAccess(1)));
+        assert!(!subset_access_map.claim_read_access(TestAccess(1)));
         subset_access_map.release_access(TestAccess(1));
-        assert!(subset_access_map.claim_read_access(TestAccess(1)).is_ok());
+        assert!(subset_access_map.claim_read_access(TestAccess(1)));
     }
 
     #[test]
     fn access_map_read_global_access_blocks_all_writes() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
-        assert!(
-            access_map
-                .claim_read_access(WorldAccessRange::Global)
-                .is_ok()
-        );
-        assert!(access_map.claim_write_access(TestAccess(1)).is_err());
-        assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
+        assert!(access_map.claim_read_access(WorldAccessRange::Global));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        assert!(access_map.claim_read_access(TestAccess(1)));
         access_map.release_access(WorldAccessRange::Global);
         access_map.release_access(TestAccess(1));
 
         // can re-claim after releasing global
-        assert!(access_map.claim_write_access(TestAccess(1)).is_ok());
+        assert!(access_map.claim_write_access(TestAccess(1)));
         access_map.release_access(TestAccess(1));
-        assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
+        assert!(access_map.claim_read_access(TestAccess(1)));
     }
 
     #[test]
     fn access_map_write_global_access_blocks_all_access() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
-        assert!(
-            access_map
-                .claim_write_access(WorldAccessRange::Global)
-                .is_ok()
-        );
-        assert!(access_map.claim_write_access(TestAccess(1)).is_err());
-        assert!(access_map.claim_read_access(TestAccess(1)).is_err());
+        assert!(access_map.claim_write_access(WorldAccessRange::Global));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        assert!(!access_map.claim_read_access(TestAccess(1)));
         access_map.release_access(WorldAccessRange::Global);
 
         // can re-claim after releasing global
-        assert!(access_map.claim_write_access(TestAccess(1)).is_ok());
+        assert!(access_map.claim_write_access(TestAccess(1)));
         access_map.release_access(TestAccess(1));
-        assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
+        assert!(access_map.claim_read_access(TestAccess(1)));
     }
 
     #[test]
     fn subset_access_map_cannot_read_global_access() {
-        let subset_access_map = SubsetAccessMap::new([TestAccess(1), TestAccess(2)]);
+        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1, 2]));
 
-        assert!(
-            subset_access_map
-                .claim_read_access(WorldAccessRange::Global)
-                .is_err()
-        );
+        assert!(!subset_access_map.claim_read_access(WorldAccessRange::Global));
     }
 
     #[test]
     fn access_map_any_access_blocks_write_global() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
-        assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
-        assert!(
-            access_map
-                .claim_write_access(WorldAccessRange::Global)
-                .is_err()
-        );
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        assert!(!access_map.claim_write_access(WorldAccessRange::Global));
         access_map.release_access(TestAccess(1));
 
-        assert!(access_map.claim_write_access(TestAccess(1)).is_ok());
-        assert!(
-            access_map
-                .claim_write_access(WorldAccessRange::Global)
-                .is_err()
-        );
+        assert!(access_map.claim_write_access(TestAccess(1)));
+        assert!(!access_map.claim_write_access(WorldAccessRange::Global));
     }
 
     #[test]
     fn access_map_with_scope_unrolls_individual_accesses() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
         // Claim a read access outside the scope
-        assert!(access_map.claim_read_access(TestAccess(3)).is_ok());
+        assert!(access_map.claim_read_access(TestAccess(3)));
 
         // Inside with_scope, claim additional accesses
         access_map.with_scope(|| {
-            assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
-            assert!(access_map.claim_write_access(TestAccess(2)).is_ok());
+            assert!(access_map.claim_read_access(TestAccess(1)));
+            assert!(access_map.claim_write_access(TestAccess(2)));
             // At this point, individual_accesses contains keys 0, 1 and 2.
             let accesses = access_map.list_accesses();
             assert_eq!(accesses.len(), 3);
@@ -701,20 +660,20 @@ mod test {
         assert_eq!(accesses.len(), 1);
         let (k, count) = &accesses[0];
         assert_eq!(*k, TestAccess(3).into());
-        assert!(!count.written);
+        assert!(!count);
     }
 
     #[test]
     fn subset_map_with_scope_unrolls_individual_accesses() {
-        let subset_access_map = SubsetAccessMap::new([TestAccess(1), TestAccess(2), TestAccess(3)]);
+        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1, 2, 3]));
 
         // Claim a read access outside the scope
-        assert!(subset_access_map.claim_read_access(TestAccess(3)).is_ok());
+        assert!(subset_access_map.claim_read_access(TestAccess(3)));
 
         // Inside with_scope, claim additional accesses
         subset_access_map.with_scope(|| {
-            assert!(subset_access_map.claim_read_access(TestAccess(1)).is_ok());
-            assert!(subset_access_map.claim_write_access(TestAccess(2)).is_ok());
+            assert!(subset_access_map.claim_read_access(TestAccess(1)));
+            assert!(subset_access_map.claim_write_access(TestAccess(2)));
             // At this point, individual_accesses contains keys 0, 1 and 2.
             let accesses = subset_access_map.list_accesses();
             assert_eq!(accesses.len(), 3);
@@ -726,21 +685,17 @@ mod test {
         assert_eq!(accesses.len(), 1);
         let (k, count) = &accesses[0];
         assert_eq!(*k, TestAccess(3).into());
-        assert!(!count.written);
+        assert!(!count);
     }
 
     #[test]
     fn access_map_with_scope_unrolls_global_accesses() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
         access_map.with_scope(|| {
-            assert!(
-                access_map
-                    .claim_write_access(WorldAccessRange::Global)
-                    .is_ok()
-            );
+            assert!(access_map.claim_write_access(WorldAccessRange::Global));
             // At this point, global_access is claimed.
-            assert!(access_map.claim_read_access(TestAccess(1)).is_err());
+            assert!(!access_map.claim_read_access(TestAccess(1)));
         });
 
         let accesses = access_map.list_accesses();
@@ -749,24 +704,20 @@ mod test {
 
     #[test]
     fn access_map_count_accesses_counts_globals() {
-        let access_map = AccessMap::default();
+        let access_map = AccessMap::new();
 
         // Initially, no accesses are active.
         assert_eq!(access_map.count_accesses(), 0);
 
         // Claim global access. When global access is active,
         // count_accesses should return 1.
-        assert!(
-            access_map
-                .claim_write_access(WorldAccessRange::Global)
-                .is_ok()
-        );
+        assert!(access_map.claim_write_access(WorldAccessRange::Global));
         assert_eq!(access_map.count_accesses(), 1);
         access_map.release_access(WorldAccessRange::Global);
 
         // Now claim individual accesses.
-        assert!(access_map.claim_read_access(TestAccess(1)).is_ok());
-        assert!(access_map.claim_write_access(TestAccess(2)).is_ok());
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        assert!(access_map.claim_write_access(TestAccess(2)));
         // Since two separate keys were claimed, count_accesses should return 2.
         assert_eq!(access_map.count_accesses(), 2);
 
@@ -777,29 +728,25 @@ mod test {
 
     #[test]
     fn subset_map_prevents_access_to_out_of_subset_access() {
-        let subset_access_map = SubsetAccessMap::new([TestAccess(1)]);
+        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1]));
 
-        assert!(subset_access_map.claim_read_access(TestAccess(2)).is_err());
-        assert!(subset_access_map.claim_write_access(TestAccess(2)).is_err());
-        assert!(
-            subset_access_map
-                .claim_read_access(WorldAccessRange::Global)
-                .is_err()
-        );
+        assert!(!subset_access_map.claim_read_access(TestAccess(2)));
+        assert!(!subset_access_map.claim_write_access(TestAccess(2)));
+        assert!(!subset_access_map.claim_read_access(WorldAccessRange::Global));
     }
 
     #[test]
     fn subset_map_retains_subset_in_scope() {
-        let subset_access_map = SubsetAccessMap::new([TestAccess(1)]);
+        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1]));
 
         subset_access_map.with_scope(|| {
-            assert!(subset_access_map.claim_read_access(TestAccess(1)).is_ok());
-            assert!(subset_access_map.claim_read_access(TestAccess(2)).is_err());
-            assert!(subset_access_map.claim_write_access(TestAccess(2)).is_err());
+            assert!(subset_access_map.claim_read_access(TestAccess(1)));
+            assert!(!subset_access_map.claim_read_access(TestAccess(2)));
+            assert!(!subset_access_map.claim_write_access(TestAccess(2)));
         });
 
-        assert!(subset_access_map.claim_read_access(TestAccess(1)).is_ok());
-        assert!(subset_access_map.claim_read_access(TestAccess(2)).is_err());
-        assert!(subset_access_map.claim_write_access(TestAccess(2)).is_err());
+        assert!(subset_access_map.claim_read_access(TestAccess(1)));
+        assert!(!subset_access_map.claim_read_access(TestAccess(2)));
+        assert!(!subset_access_map.claim_write_access(TestAccess(2)));
     }
 }

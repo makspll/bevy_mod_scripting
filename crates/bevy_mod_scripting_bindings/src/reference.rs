@@ -366,7 +366,7 @@ impl ReflectReference {
                 .remove(id)
                 .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
 
-            if let Ok(()) = world.claim_write_access(id) {
+            if world.claim_write_access(id) {
                 // Safety: we claim write access, nobody else is accessing this
                 if unsafe { &*arc.get_ptr() }.try_as_reflect().is_some() {
                     // Safety: the only accesses exist in this function
@@ -790,7 +790,7 @@ impl From<&ReflectBase> for WorldAccessRange {
             ReflectBase::Component(_, component_id)
             | ReflectBase::Resource(component_id)
             | ReflectBase::Asset(_, component_id) => {
-                WorldAccessRange::ComponentOrResource((*component_id).into())
+                WorldAccessRange::ComponentOrResource(*component_id)
             }
             ReflectBase::Owned(reflect_allocation_id) => reflect_allocation_id.into(),
         }
