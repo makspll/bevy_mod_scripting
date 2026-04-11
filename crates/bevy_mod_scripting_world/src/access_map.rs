@@ -36,6 +36,7 @@ impl WorldAccessRange {
 #[derive(Copy, Clone, Debug, Default)]
 pub struct AccessBitField(u8);
 
+#[profiling::all_functions]
 impl AccessBitField {
     const KIND_MASK: u8 = 0b0000_0001;
     const FORBIDDEN_MASK: u8 = 0b0000_0010;
@@ -159,6 +160,7 @@ pub struct AccessByteSet {
     data: Vec<AccessBitField>,
 }
 
+#[profiling::all_functions]
 impl AccessByteSet {
     #[inline]
     /// Create a new empty access byte set
