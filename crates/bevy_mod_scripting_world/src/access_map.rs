@@ -567,6 +567,19 @@ mod test {
     }
 
     #[test]
+    fn access_map_multiple_reads_block_write() {
+        let access_map = AccessMap::new();
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        access_map.release_access(TestAccess(1));
+        assert!(!access_map.claim_write_access(TestAccess(1)));
+        access_map.release_access(TestAccess(1));
+        assert!(access_map.claim_write_access(TestAccess(1)));
+    }
+
+    #[test]
     fn subset_access_map_write_access_blocks_read() {
         let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1]));
 
