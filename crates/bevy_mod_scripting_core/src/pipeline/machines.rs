@@ -5,7 +5,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use bevy_ecs::event::Event;
+use bevy_ecs::{event::Event, world::Mut};
 use bevy_log::trace;
 use bevy_mod_scripting_bindings::{
     CurrentScriptAttachment, InteropError, ScriptValue, WorldExtensions,
@@ -32,11 +32,8 @@ pub struct ActiveMachinesData(pub HashMap<ScriptAttachment, MachineData>);
 #[derive(Resource)]
 pub struct ActiveMachines<P: IntoScriptPluginParams> {
     active_machine: Option<ScriptMachine<P>>,
-    initialized_machines: VecDeque<Box<dyn MachineState<P>>>,
-    uninitialized_machines: VecDeque<(
-        MachineContext,
-        Box<dyn FnOnce(&mut World) -> Vec<Box<dyn MachineState<P>>> + Send + Sync + 'static>,
-    )>,
+    initialized_machines: VecDeque<(MachineContext, Box<dyn MachineState<P>>)>,
+    uninitialized_machines: VecDeque<ScriptPipelineEvent>,
     /// The current time budget per frame
     pub budget: Option<Duration>,
 }
@@ -49,43 +46,6 @@ impl<P: IntoScriptPluginParams> Default for ActiveMachines<P> {
             uninitialized_machines: Default::default(),
             budget: Default::default(),
         }
-    }
-}
-
-/// Trait describing subscribers to transition events
-pub trait TransitionListener<State>: 'static + Send + Sync {
-    /// The hook to call when entering the state being listened to
-    fn on_enter(
-        &self,
-        state: &mut State,
-        world: &mut World,
-        context: &mut MachineContext,
-    ) -> Result<(), ScriptError>;
-
-    /// type erase the listener
-    fn erased<P: IntoScriptPluginParams>(
-        self,
-    ) -> Box<
-        dyn Fn(&mut dyn MachineState<P>, &mut World, &mut MachineContext) -> Result<(), ScriptError>
-            + Send
-            + Sync,
-    >
-    where
-        Self: Sized,
-        State: 'static,
-    {
-        Box::new(move |state, world, context| {
-            let typed = (state as &mut dyn Any).downcast_mut::<State>();
-            typed
-                .ok_or(ScriptError::new_boxed_without_type_info(
-                    format!(
-                        "could not downcast script machine state to: '{}'. Could not execute transition listener",
-                        std::any::type_name::<State>()
-                    )
-                    .into(),
-                ))
-                .and_then(|typed| self.on_enter(typed, world, context))
-        })
     }
 }
 
@@ -138,33 +98,43 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
                 }
             } else {
                 // initialize a machine and re-check
-                if let Some((context, initializer)) = self.uninitialized_machines.pop_front() {
-                    let machines = initializer(world);
-                    self.initialized_machines.extend(machines);
-                    if let Some(machine) = self.initialized_machines.pop_front() {
-                        trace!(
-                            "State machine '{}' queued. For script: {}",
-                            machine.state_name(),
-                            context.attachment,
-                        );
-                        self.active_machine = Some(ScriptMachine {
-                            context,
-                            internal_state: MachineExecutionState::Initialized(machine),
-                        });
-                    }
+                if let Some(event) = self.uninitialized_machines.pop_front() {
+                    world.resource_scope(|world, mut assets: Mut<Assets<ScriptAsset>>| {
+                        world.resource_scope(|_world, mut contexts: Mut<ScriptContexts<P>>| {
+                            self.initialized_machines.extend(
+                                event.process(&mut assets, &mut contexts).into_iter().map(
+                                    |(attachment, machine)| {
+                                        (MachineContext { attachment }, machine)
+                                    },
+                                ),
+                            );
+                            if let Some((context, machine)) = self.initialized_machines.pop_front()
+                            {
+                                trace!(
+                                    "State machine '{}' queued. For script: {}",
+                                    machine.state_name(),
+                                    context.attachment,
+                                );
+                                self.active_machine = Some(ScriptMachine {
+                                    context,
+                                    internal_state: MachineExecutionState::Initialized(machine),
+                                });
+                            }
+                        })
+                    })
                 }
             }
         }
     }
 
     /// Appends a machine to the end of the queue.
-    pub fn queue_machine(
-        &mut self,
-        context: MachineContext,
-        init: impl FnOnce(&mut World) -> Vec<Box<dyn MachineState<P>>> + Send + Sync + 'static,
-    ) {
-        self.uninitialized_machines
-            .push_back((context, Box::new(init)));
+    pub fn queue_machine(&mut self, event: ScriptPipelineEvent) {
+        self.uninitialized_machines.push_back(event);
+    }
+
+    /// Appends a machine to the end of the queue.
+    pub fn queue_machines(&mut self, events: impl IntoIterator<Item = ScriptPipelineEvent>) {
+        self.uninitialized_machines.extend(events);
     }
 
     /// Returns the amount of queued machines minus any currently processing ones

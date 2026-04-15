@@ -15,7 +15,6 @@ use bevy_ecs::{
 use bevy_log::debug;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_display::DisplayProxy;
-use bevy_platform::collections::HashSet;
 use parking_lot::Mutex;
 
 use crate::{
@@ -157,7 +156,8 @@ pub trait GetScriptHandle {
 ///
 /// Think of this as a proxy for "baby'ing" asset handles
 pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone> {
-    assets: ResMut<'w, Assets<ScriptAsset>>,
+    /// The script assets resource. To allow systems needing both resources to access them in one place
+    pub assets: ResMut<'w, Assets<ScriptAsset>>,
     asset_server: Res<'w, AssetServer>,
     fresh_events: MessageReader<'w, 's, T>,
     loaded_with_handles: Local<'s, VecDeque<(T, StrongScriptHandle, Language)>>,
@@ -252,40 +252,15 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
                 .before(PipelineSet::MachineStartPhase),
         );
 
-        // todo: nicer way to order these, ideall .chain() + conditional newtype?
-        if self.script_component_triggers {
-            app.add_systems(
-                PreUpdate,
-                filter_script_attachments::<P>
-                    .in_set(PipelineSet::ListeningPhase)
-                    .before(filter_script_modifications::<P>)
-                    .before(filter_script_detachments::<P>),
-            );
-            app.add_systems(
-                PreUpdate,
-                filter_script_detachments::<P>
-                    .in_set(PipelineSet::ListeningPhase)
-                    .after(filter_script_attachments::<P>)
-                    .before(filter_script_modifications::<P>),
-            );
-        }
-
-        if self.hot_loading_asset_triggers {
-            app.add_systems(
-                PreUpdate,
-                filter_script_modifications::<P>.in_set(PipelineSet::ListeningPhase),
-            );
-        }
-
+        let sync_components = self.script_component_triggers;
+        let hot_loads = self.hot_loading_asset_triggers;
+        let input_system = move || FilterAssetEventsSettings {
+            sync_components,
+            hot_loads,
+        };
         app.add_systems(
             PreUpdate,
-            (
-                process_attachments::<P>,
-                process_detachments::<P>,
-                process_asset_modifications::<P>,
-            )
-                .chain()
-                .in_set(PipelineSet::MachineStartPhase),
+            (input_system.pipe(filter_asset_events::<P>)).in_set(PipelineSet::ListeningPhase),
         );
 
         app.add_systems(

@@ -2,8 +2,9 @@ use crate::script::Context;
 
 use super::*;
 use bevy_asset::AssetEvent;
-use bevy_ecs::message::{MessageReader, MessageWriter};
+use bevy_ecs::{message::MessageReader, system::In};
 use bevy_log::{debug, trace};
+use bevy_mod_scripting_script::ScriptAttachment;
 
 /// A handle to a script asset which can only be made from a strong handle
 #[derive(Clone, Debug)]
@@ -59,220 +60,220 @@ impl StrongScriptHandle {
     }
 }
 
-/// Generate [`ScriptAssetModifiedEvent`]'s from asset modification events, filtering to only forward those matching the plugin's language
-pub fn filter_script_modifications<P: IntoScriptPluginParams>(
-    mut events: MessageReader<AssetEvent<ScriptAsset>>,
-    mut filtered: MessageWriter<ForPlugin<ScriptAssetModifiedEvent, P>>,
-    assets: Res<Assets<ScriptAsset>>,
-) {
-    let mut batch = events.read().filter_map(|e| {
-        if let AssetEvent::Modified { id } = e
-            && let Some(asset) = assets.get(*id)
-            && asset.language == P::LANGUAGE
-        {
-            Some(ForPlugin::new(ScriptAssetModifiedEvent(*id)))
-        } else {
-            None
-        }
-    });
-
-    if let Some(next) = batch.next() {
-        filtered.write_batch(std::iter::once(next).chain(batch));
-    }
+/// Arguments used to filter out certain sync events
+pub struct FilterAssetEventsSettings {
+    /// Whether or not to trigger component sync events
+    pub sync_components: bool,
+    /// Whether or not to trigger hot load sync events
+    pub hot_loads: bool,
 }
 
-/// Filters incoming [`ScriptAttachedEvent`]'s leaving only those which match the plugin's language
-pub fn filter_script_attachments<P: IntoScriptPluginParams>(
-    mut events: LoadedWithHandles<ScriptAttachedEvent>,
-    mut filtered: MessageWriter<ForPlugin<ScriptAttachedEvent, P>>,
+/// A system that bridges various script events and the script processing pipeline.
+pub fn filter_asset_events<P: IntoScriptPluginParams>(
+    args: In<FilterAssetEventsSettings>,
+    mut script_modified_events: MessageReader<AssetEvent<ScriptAsset>>,
+    mut script_attached_events: LoadedWithHandles<ScriptAttachedEvent>,
+    mut script_detached_events: MessageReader<ScriptDetachedEvent>,
+    mut active_machines: ResMut<ActiveMachines<P>>,
 ) {
-    let mut batch = events
-        .get_loaded()
-        .filter(|(_, _, l)| *l == P::LANGUAGE)
-        .map(|(mut a, b, _)| {
-            trace!(
-                "dispatching script attachment event for: {a:?}, language: {}",
-                P::LANGUAGE
-            );
-            *a.0.script_mut() = b.0;
-            ForPlugin::new(a)
+    if args.hot_loads {
+        let batch = script_modified_events.read().filter_map(|e| {
+            if let AssetEvent::Modified { id } = e
+                && let Some(asset) = script_attached_events.assets.get(*id)
+                && asset.language == P::LANGUAGE
+            {
+                Some(ScriptPipelineEvent::ModifiedAsset(
+                    ScriptAssetModifiedEvent(*id),
+                ))
+            } else {
+                None
+            }
         });
+        active_machines.queue_machines(batch);
+    }
 
-    if let Some(next) = batch.next() {
-        filtered.write_batch(std::iter::once(next).chain(batch));
+    if args.sync_components {
+        let batch = script_attached_events
+            .get_loaded()
+            .filter(|(_, _, l)| *l == P::LANGUAGE)
+            .map(|(mut a, b, _)| {
+                trace!(
+                    "dispatching script attachment event for: {a:?}, language: {}",
+                    P::LANGUAGE
+                );
+                *a.0.script_mut() = b.0;
+                ScriptPipelineEvent::Attached(a)
+            });
+
+        active_machines.queue_machines(batch);
+
+        // we can't actually filter those based on their existence in the script contexts, as processing an attachment might
+        // create the script, so we want to do that in order
+        let batch = script_detached_events
+            .read()
+            .cloned()
+            .map(ScriptPipelineEvent::Detached);
+
+        active_machines.queue_machines(batch);
     }
 }
 
-/// Filters incoming [`ScriptDetachedEvent`]'s leaving only those which are currently attached and match the plugin's language
-pub fn filter_script_detachments<P: IntoScriptPluginParams>(
-    mut events: MessageReader<ScriptDetachedEvent>,
-    mut filtered: MessageWriter<ForPlugin<ScriptDetachedEvent, P>>,
-    contexts: Res<ScriptContexts<P>>,
-) {
-    let contexts_guard = contexts.read();
-    let mut batch = events
-        .read()
-        .filter(|e| contexts_guard.contains(&e.0))
-        .cloned()
-        .map(ForPlugin::new);
-
-    if let Some(next) = batch.next() {
-        trace!("dispatching script dettachments for plugin");
-        filtered.write_batch(std::iter::once(next).chain(batch));
-    }
+/// A discriminated union of all events that can trigger the script processing pipeline.
+pub enum ScriptPipelineEvent {
+    /// [`ScriptAttachedEvent`]
+    Attached(ScriptAttachedEvent),
+    /// [`ScriptDetachedEvent`]
+    Detached(ScriptDetachedEvent),
+    /// [`ScriptAssetModifiedEvent`]
+    ModifiedAsset(ScriptAssetModifiedEvent),
 }
 
-/// Process [`ScriptAttachedEvent`]'s and generate loading machines with the [`LoadingInitialized`] and [`ReloadingInitialized`] states
-pub fn process_attachments<P: IntoScriptPluginParams>(
-    mut events: MessageReader<ForPlugin<ScriptAttachedEvent, P>>,
-    mut machines: ResMut<ActiveMachines<P>>,
-    mut assets: ResMut<Assets<ScriptAsset>>,
-) {
-    // let contexts = contexts.read();
-    events.read().for_each(|wrapper| {
-        let attachment_event = wrapper.event();
+impl ScriptPipelineEvent {
+    fn process_attachment<P: IntoScriptPluginParams>(
+        attachment_event: ScriptAttachedEvent,
+        assets: &mut Assets<ScriptAsset>,
+        contexts: &mut ScriptContexts<P>,
+    ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
+        let mut out = VecDeque::default();
         let attachment = attachment_event.0.clone();
         debug!("received attachment event: {attachment_event:?}");
         let id = attachment_event.0.script();
         let mut context = MachineContext {
             attachment: attachment.clone(),
         };
-        if let Some(strong_handle) = StrongScriptHandle::from_assets(id, &mut assets) {
+        if let Some(strong_handle) = StrongScriptHandle::from_assets(id, assets) {
             // we want the loading process to have access to asset paths
             *context.attachment.script_mut() = strong_handle.0.clone();
-            let content = strong_handle.get(&assets);
+            let content = strong_handle.get(assets);
 
             // we query for the contexts to decide if this is a reload or load at runtime
             // not when queueing, in case another machine before this one affects the state, we do need the asset though
-            machines.queue_machine(context, move |w| {
-                let contexts = w.get_resource_or_init::<ScriptContexts<P>>();
-                let mut contexts = contexts.write();
 
-                match contexts.get_context(&attachment) {
-                    Some(Context::LoadedAndActive(context)) => {
-                        if let Err((attachment, _)) =
-                            contexts.insert(attachment.clone(), Context::Reloading(context.clone()))
-                        {
-                            bevy_log::warn!("Could not insert context for attachment {attachment}. Reloading interrupted.");
-                        };
+            let mut contexts = contexts.write();
 
-                        vec![Box::new(ReloadingInitialized {
+            out.extend(match contexts.get_context(&attachment) {
+                Some(Context::LoadedAndActive(context)) => {
+                    if let Err((attachment, _)) =
+                        contexts.insert(attachment.clone(), Context::Reloading(context.clone()))
+                    {
+                        bevy_log::warn!(
+                            "Could not insert context for attachment {attachment}. Reloading interrupted."
+                        );
+                    };
+
+                    vec![(
+                        attachment.clone(), 
+                        Box::new(ReloadingInitialized {
                             attachment: attachment.clone(),
                             source: strong_handle.handle().clone(),
                             content: content.content,
                             existing_context: context,
-                        })]
-                    }
-                    // context is in an invalid state
-                    Some(_) => vec![],
-                    None => {
-                        if let Err((attachment, _)) =
-                            contexts.insert(attachment.clone(), Context::Loading)
-                        {
-                            bevy_log::warn!("Could not insert context for attachment {attachment}. Loading interrupted.");
-                        };
+                        })
+                     as Box<dyn MachineState<P>>)]
+                }
+                // context is in an invalid state
+                Some(_) => vec![],
+                None => {
+                    if let Err((attachment, _)) =
+                        contexts.insert(attachment.clone(), Context::Loading)
+                    {
+                        bevy_log::warn!(
+                            "Could not insert context for attachment {attachment}. Loading interrupted."
+                        );
+                    };
 
-                        vec![Box::new(LoadingInitialized {
-                            attachment: attachment.clone(),
-                            source: strong_handle.handle().clone(),
-                            content: content.content,
-                        })]
-                    }
+                    vec![(attachment.clone(), 
+                    Box::new(LoadingInitialized {
+                        attachment: attachment.clone(),
+                        source: strong_handle.handle().clone(),
+                        content: content.content,
+                    })as Box<dyn MachineState<P>>)]
                 }
             });
         }
-    });
-}
+        out
+    }
 
-/// Processes [`ScriptAttachedEvent`]'s and initialized unloading state machines with [`UnloadingInitialized`] states
-pub fn process_detachments<P: IntoScriptPluginParams>(
-    mut events: MessageReader<ForPlugin<ScriptDetachedEvent, P>>,
-    mut machines: ResMut<ActiveMachines<P>>,
-    contexts: Res<ScriptContexts<P>>,
-) {
-    events.read().for_each(|wrapper| {
-        let attachment_event = wrapper.event();
+    fn process_detachment<P: IntoScriptPluginParams>(
+        attachment_event: ScriptDetachedEvent,
+        contexts: &ScriptContexts<P>,
+    ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
+        debug!("received detachment event: {attachment_event:?}");
         let attachment = &attachment_event.0;
-        let contexts_guard = contexts.read();
-        contexts_guard
+        let mut contexts = contexts.write();
+        contexts
             .get_context(&attachment_event.0)
             .into_iter()
-            .for_each(|existing_context| {
+            .filter_map(|existing_context| {
                 // for the borrow checker
                 let attachment = attachment.clone();
-                machines.queue_machine(
-                    MachineContext {
-                        attachment: attachment.clone(),
-                    },
-                    move |world| {
-                        let contexts = world.get_resource_or_init::<ScriptContexts<P>>();
-                        let mut contexts = contexts.write();
 
-                        let existing_context = if let Some(context) = existing_context.as_loaded() {
-                            context
-                        } else {
-                            // cannot unload a context which isn't loaded
-                            return vec![];
-                        };
+                let existing_context = existing_context.as_loaded()?;
 
-                        if let Err((attachment, _)) =
-                            contexts.insert(attachment.clone(), Context::Unloading(existing_context.clone()))
-                        {
-                            bevy_log::warn!("Could not insert context for attachment {attachment}. Unloading interrupted.");
-                        };
+                if let Err((attachment, _)) =
+                    contexts.insert(attachment.clone(), Context::Unloading(existing_context.clone()))
+                {
+                    bevy_log::warn!("Could not insert context for attachment {attachment}. Unloading interrupted.");
+                };
 
-                        vec![Box::new(UnloadingInitialized {
-                                    attachment,
-                                    existing_context: existing_context.clone(),
-                                }) as Box<dyn MachineState<P>>
-                            ]
-                    },
-                );
-            })
-    });
-}
+                Some((attachment.clone(), Box::new(UnloadingInitialized {
+                            attachment,
+                            existing_context: existing_context.clone(),
+                        }) as Box<dyn MachineState<P>>))
+            }).collect()
+    }
 
-/// Processes [`ScriptAssetModifiedEvent`]'s and initializes loading state machines with [`ReloadingInitialized`] states
-pub fn process_asset_modifications<P: IntoScriptPluginParams>(
-    mut events: MessageReader<ForPlugin<ScriptAssetModifiedEvent, P>>,
-    mut machines: ResMut<ActiveMachines<P>>,
-    mut assets: ResMut<Assets<ScriptAsset>>,
-    contexts: Res<ScriptContexts<P>>,
-) {
-    let affected_ids = events.read().map(|e| e.event().0).collect::<HashSet<_>>();
+    fn process_modified_asset<P: IntoScriptPluginParams>(
+        event: ScriptAssetModifiedEvent,
+        assets: &mut Assets<ScriptAsset>,
+        contexts: &ScriptContexts<P>,
+    ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
+        let contexts = contexts.read();
+        debug!("received modified event: {event:?}");
 
-    let contexts = contexts.read();
+        let affected_attachments = contexts
+            .all_residents()
+            .filter(|(a, _)| event.0 == a.script().id());
 
-    let affected_attachments = contexts
-        .all_residents()
-        .filter(|(a, _)| affected_ids.contains(&a.script().id()));
-
-    affected_attachments
-        .into_iter()
-        .for_each(|(attachment, existing_context)| {
+        let mut out = VecDeque::default();
+        for (attachment, existing_context) in affected_attachments {
             let id = attachment.script();
-            if let Some(strong_handle) = StrongScriptHandle::from_assets(id, &mut assets) {
-                let content = strong_handle.get(&assets);
-
-                machines.queue_machine(
-                    MachineContext {
-                        attachment: attachment.clone(),
-                    },
-                    move |_| {
-                        existing_context
-                            .as_loaded()
-                            .map(|existing_context| {
-                                Box::new(ReloadingInitialized {
-                                    attachment,
-                                    source: strong_handle.handle().clone(),
-                                    content: content.content,
-                                    existing_context: existing_context.clone(),
-                                }) as Box<dyn MachineState<P>>
-                            })
-                            .into_iter()
-                            .collect::<Vec<_>>()
-                    },
-                );
+            if let Some(strong_handle) = StrongScriptHandle::from_assets(id, assets) {
+                let content = strong_handle.get(assets);
+                if let Some(existing_context) = existing_context.as_loaded() {
+                    out.push_back((
+                        attachment.clone(),
+                        Box::new(ReloadingInitialized {
+                            attachment: attachment.clone(),
+                            source: strong_handle.handle().clone(),
+                            content: content.content,
+                            existing_context: existing_context.clone(),
+                        }) as Box<dyn MachineState<P>>,
+                    ));
+                }
             }
-        });
+        }
+        out
+    }
+
+    /// Initializes a machine that can be run by the script processing pipeline.
+    /// This is the moment we "commit" to the checks required by each machine.
+    /// For example detachments check if the attachment exists and don't do anything otherwise.
+    pub fn process<P: IntoScriptPluginParams>(
+        self,
+        assets: &mut Assets<ScriptAsset>,
+        contexts: &mut ScriptContexts<P>,
+    ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
+        match self {
+            ScriptPipelineEvent::Attached(script_attached_event) => {
+                Self::process_attachment(script_attached_event, assets, contexts)
+            }
+            ScriptPipelineEvent::Detached(script_detached_event) => {
+                Self::process_detachment(script_detached_event, contexts)
+            }
+            ScriptPipelineEvent::ModifiedAsset(script_asset_modified_event) => {
+                Self::process_modified_asset(script_asset_modified_event, assets, contexts)
+            }
+        }
+    }
 }

@@ -316,7 +316,7 @@ impl AccessMapInner {
                     || self
                         .component_access
                         .iter_accessed()
-                        .any(|(_, a)| a.is_write() || (!a.is_write() && write))
+                        .any(|(_, a)| a.is_write() || write)
                 {
                     return false;
                 }
