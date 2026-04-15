@@ -162,7 +162,7 @@ impl ScriptPipelineEvent {
                     };
 
                     vec![(
-                        attachment.clone(), 
+                        attachment.clone(),
                         Box::new(ReloadingInitialized {
                             attachment: attachment.clone(),
                             source: strong_handle.handle().clone(),
@@ -182,7 +182,7 @@ impl ScriptPipelineEvent {
                         );
                     };
 
-                    vec![(attachment.clone(), 
+                    vec![(attachment.clone(),
                     Box::new(LoadingInitialized {
                         attachment: attachment.clone(),
                         source: strong_handle.handle().clone(),
