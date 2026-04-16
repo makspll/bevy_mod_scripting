@@ -7,7 +7,6 @@ const fs = require("fs");
 const path = require("path");
 let schema;
 function activate(context) {
-    // Create output channel
     const output = vscode.window.createOutputChannel("Scenario DSL");
     output.show(true);
     output.appendLine("Activating Scenario DSL extension...");
@@ -20,7 +19,7 @@ function activate(context) {
         output.appendLine("Error loading schema.json:");
         output.appendLine(String(err));
         vscode.window.showErrorMessage("Scenario DSL: Failed to load schema.json. Check Output → Scenario DSL.");
-        return; // don’t register provider if schema fails
+        return;
     }
     const provider = vscode.languages.registerCompletionItemProvider("scenario", {
         provideCompletionItems(document, position) {
@@ -29,9 +28,11 @@ function activate(context) {
                 output.appendLine(`Completion requested for line: "${linePrefix}"`);
                 // Suggest step names if line is empty or whitespace
                 if (/^\s*$/.test(linePrefix)) {
-                    const items = Object.keys(schema.steps).map(step => {
-                        const item = new vscode.CompletionItem(step, vscode.CompletionItemKind.Function);
+                    const items = Object.entries(schema.steps).map(([stepName, step]) => {
+                        const item = new vscode.CompletionItem(stepName, vscode.CompletionItemKind.Function);
                         item.detail = "Scenario step";
+                        if (step.doc)
+                            item.documentation = new vscode.MarkdownString(step.doc);
                         return item;
                     });
                     output.appendLine(`Suggesting ${items.length} steps.`);
@@ -46,8 +47,9 @@ function activate(context) {
                     if (stepSchema) {
                         const items = Object.entries(stepSchema.fields).map(([name, field]) => {
                             const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Property);
-                            item.detail = field.doc;
+                            item.detail = `${field.ty}${field.optional ? " (optional)" : ""}`;
                             item.insertText = `${name}=`;
+                            item.documentation = new vscode.MarkdownString(field.doc);
                             return item;
                         });
                         output.appendLine(`Suggesting ${items.length} fields for step ${stepName}.`);
@@ -65,7 +67,7 @@ function activate(context) {
                 return [];
             }
         }
-    }, " ", "=" // trigger completions on space or '='
+    }, " ", "=" // trigger on space or '='
     );
     context.subscriptions.push(provider);
     context.subscriptions.push(output);

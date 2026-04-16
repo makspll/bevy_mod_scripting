@@ -110,6 +110,20 @@ pub enum ScenarioStepSerialized {
         /// the script to spawn on the entity
         script: String,
     },
+    /// Pushes a script into the existing script component on an entity, or creates a new one and inserts the script
+    AddScriptToEntity {
+        /// the name of the entity to insert into
+        name: String,
+        /// the name of the script to insert
+        script: String,
+    },
+    /// Removes a script from the entity, asserting it exists
+    RemoveScriptFromEntity {
+        /// the name of the entity to remove from
+        name: String,
+        /// the name of the script to remove
+        script: String,
+    },
     /// Attaches a static script
     AttachStaticScript {
         /// the script to be attached

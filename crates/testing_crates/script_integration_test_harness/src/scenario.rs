@@ -298,6 +298,18 @@ impl Scenario {
                     entity: name,
                 }
             }
+            ScenarioStepSerialized::AddScriptToEntity { name, script } => {
+                ScenarioStep::AddScriptToEntity {
+                    script: self.context.get_script_handle(&script)?,
+                    name: self.context.get_entity(&name)?,
+                }
+            }
+            ScenarioStepSerialized::RemoveScriptFromEntity { name, script } => {
+                ScenarioStep::RemoveScriptFromEntity {
+                    script: self.context.get_script_handle(&script)?,
+                    name: self.context.get_entity(&name)?,
+                }
+            }
             ScenarioStepSerialized::ReloadScriptFrom { script, path } => {
                 ScenarioStep::ReloadScriptFrom {
                     script: self.context.get_script_handle(&script)?,
@@ -568,6 +580,14 @@ pub enum ScenarioStep {
     },
     SetNanosecondsBudget {
         nanoseconds_budget: Option<u64>,
+    },
+    AddScriptToEntity {
+        script: Handle<ScriptAsset>,
+        name: Entity,
+    },
+    RemoveScriptFromEntity {
+        script: Handle<ScriptAsset>,
+        name: Entity,
     },
 }
 
@@ -1096,6 +1116,27 @@ impl ScenarioStep {
                         ));
                     }
                 }
+            }
+            ScenarioStep::AddScriptToEntity { script, name } => {
+                let world = app.world_mut();
+                world
+                    .entity_mut(name)
+                    .entry::<ScriptComponent>()
+                    .and_modify(|mut c| c.0.push(script.clone()))
+                    .or_insert_with(|| ScriptComponent(vec![script]));
+            }
+            ScenarioStep::RemoveScriptFromEntity { script, name } => {
+                let world = app.world_mut();
+                let mut entity = world.entity_mut(name);
+                let mut component = match entity.get_mut::<ScriptComponent>() {
+                    Some(component) => component,
+                    None => {
+                        return Err(anyhow!(
+                            "Expected script {script:?} to exist on entity {name}"
+                        ));
+                    }
+                };
+                component.0.retain(|c| c != &script);
             }
         }
         Ok(())
