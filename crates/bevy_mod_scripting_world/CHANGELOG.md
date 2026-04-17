@@ -7,23 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.19.0...lua_language_server_lad_backend-v0.20.0) - 2026-04-17
+## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_world-v0.19.0...bevy_mod_scripting_world-v0.20.0) - 2026-04-17
 
 ### Added
 
-- implement variadics in bindings via `VariadicTuple` and add `ScriptValue::Tuple` ([#527](https://github.com/makspll/bevy_mod_scripting/pull/527))
-
-## [0.19.0](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.18.0...lua_language_server_lad_backend-v0.19.0) - 2026-01-25
-
-### Added
-
+- [**breaking**] extract `bevy_mod_scripting_world` decoupling world abstractions ([#529](https://github.com/makspll/bevy_mod_scripting/pull/529))
 - [**breaking**] bevy 0.18 ([#507](https://github.com/makspll/bevy_mod_scripting/pull/507))
-
-## [0.16.1](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.16.0...lua_language_server_lad_backend-v0.16.1) - 2025-11-06
-
-### Added
-
-- Lua definition file generation, ladfile re-work ([#497](https://github.com/makspll/bevy_mod_scripting/pull/497))
 - Don't panic! ([#216](https://github.com/makspll/bevy_mod_scripting/pull/216))
 - Improvements to BMS in multi-language context ([#194](https://github.com/makspll/bevy_mod_scripting/pull/194))
 - complete plugin re-write
@@ -45,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Improve pipeline robustness, allow same frame attach + detach events. ([#533](https://github.com/makspll/bevy_mod_scripting/pull/533))
 - bump `bevy` to 0.15.1 ([#241](https://github.com/makspll/bevy_mod_scripting/pull/241))
 - Added new version to readme.md ([#164](https://github.com/makspll/bevy_mod_scripting/pull/164))
 - fix doctests
