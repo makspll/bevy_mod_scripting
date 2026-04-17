@@ -102,7 +102,7 @@ impl ScriptComponent {
 
 /// Cache holding the last values of script components
 /// Allows the calculation of what handles have been added or removed since last frame.
-/// 
+///
 /// Any handles in this cache are removed immediately when they are removed via the component
 #[derive(Resource, Default)]
 pub struct ScriptComponentsChangeCache {
