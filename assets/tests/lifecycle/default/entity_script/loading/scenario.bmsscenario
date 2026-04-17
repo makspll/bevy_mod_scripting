@@ -1,3 +1,4 @@
+// #main_script lifecycle.lua
 SetCurrentLanguage language="@this_script_language"
 InstallPlugin emit_responses=true
 FinalizeApp
@@ -17,6 +18,22 @@ RunUpdateOnce
 AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptUnloaded", script="script_a", expect_string_value="unloaded!"
 AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptLoaded", script="script_a", expect_string_value="loaded!"
 AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptReloaded", script="script_a", expect_string_value="reloaded with: unloaded!"
+AssertNoCallbackResponsesEmitted
+
+// insert second.lua into original entity
+LoadScriptAs as_name="script_b", path="second.lua"
+WaitForScriptAssetLoaded name="script_b"
+AddScriptToEntity name="test_entity_a", script="script_b"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptLoaded", script="script_b", expect_string_value="2:loaded!"
+AssertNoCallbackResponsesEmitted
+AssertContextResidents attachment="EntityScript", script="script_a", entity="test_entity_a", residents_num=1
+AssertContextResidents attachment="EntityScript", script="script_b", entity="test_entity_a", residents_num=1
+
+// remove second.lua from original entity
+RemoveScriptFromEntity name="test_entity_a", script="script_b"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptUnloaded", script="script_b", expect_string_value="2:unloaded!"
 AssertNoCallbackResponsesEmitted
 
 // now first drop the script asset, assert that does nothing yet 

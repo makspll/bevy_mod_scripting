@@ -17,7 +17,15 @@ use ::{
 
 mod context_key;
 mod script_context;
-use bevy_ecs::{component::Component, lifecycle::HookContext};
+use bevy_ecs::{
+    component::Component,
+    entity::EntityHashMap,
+    lifecycle::HookContext,
+    message::MessageWriter,
+    query::Changed,
+    system::{Query, ResMut},
+    world::Ref,
+};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -29,7 +37,7 @@ pub use script_context::*;
 /// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
 pub type ScriptId = Handle<ScriptAsset>;
 
-#[derive(Component, Reflect, Clone, Default, Debug)]
+#[derive(Component, Reflect, Clone, Default, Debug, PartialEq, Eq)]
 #[reflect(Component)]
 #[component(on_remove=Self::on_remove, on_add=Self::on_add)]
 /// A component which identifies the scripts existing on an entity.
@@ -65,7 +73,13 @@ impl ScriptComponent {
     /// the removal of the script.
     pub fn on_remove(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
+
         trace!("on remove hook for script components: {context_keys:?}");
+
+        if let Some(mut cache) = world.get_resource_mut::<ScriptComponentsChangeCache>() {
+            cache.last_values.remove(&context.entity);
+        }
+
         world.write_message_batch(context_keys.into_iter().map(ScriptDetachedEvent));
     }
 
@@ -74,7 +88,67 @@ impl ScriptComponent {
     pub fn on_add(mut world: DeferredWorld, context: HookContext) {
         let context_keys = Self::get_context_keys_present(&world, context.entity);
         trace!("on add hook for script components: {context_keys:?}");
+
+        if let Some(mut cache) = world.get_resource_mut::<ScriptComponentsChangeCache>() {
+            cache.last_values.insert(
+                context.entity,
+                context_keys.iter().map(|x| x.script().clone()).collect(),
+            );
+        }
+
         world.write_message_batch(context_keys.into_iter().map(ScriptAttachedEvent));
+    }
+}
+
+/// Cache holding the last values of script components
+/// Allows the calculation of what handles have been added or removed since last frame.
+///
+/// Any handles in this cache are removed immediately when they are removed via the component
+#[derive(Resource, Default)]
+pub struct ScriptComponentsChangeCache {
+    last_values: EntityHashMap<HashSet<Handle<ScriptAsset>>>,
+}
+
+/// A system that handles pure modifications to a [`ScriptComponent`].
+///
+/// Other lifecycle events, such as addition and removal of these components are handled immediately via component hooks.
+pub fn script_component_changed_handler(
+    mut cache: ResMut<ScriptComponentsChangeCache>,
+    changed: Query<(Entity, Ref<ScriptComponent>), Changed<ScriptComponent>>,
+    mut attachment_messages: MessageWriter<ScriptAttachedEvent>,
+    mut detachment_messages: MessageWriter<ScriptDetachedEvent>,
+) {
+    for (entity, current_value) in changed {
+        if let Some(last_value) = cache.last_values.get_mut(&entity) {
+            let mut any_change = false;
+
+            // check removals
+            for old in last_value.iter() {
+                if !current_value.0.contains(old) {
+                    any_change = true;
+                    detachment_messages.write(ScriptDetachedEvent(ScriptAttachment::EntityScript(
+                        entity,
+                        old.clone(),
+                    )));
+                }
+            }
+
+            // check additions
+            for new in current_value.0.iter() {
+                if !last_value.contains(new) {
+                    any_change = true;
+                    attachment_messages.write(ScriptAttachedEvent(ScriptAttachment::EntityScript(
+                        entity,
+                        new.clone(),
+                    )));
+                }
+            }
+
+            if any_change {
+                last_value.clear();
+                last_value.extend(current_value.0.iter().cloned());
+            }
+        }
     }
 }
 

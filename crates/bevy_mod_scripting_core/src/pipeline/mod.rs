@@ -18,7 +18,7 @@ use bevy_mod_scripting_display::DisplayProxy;
 use parking_lot::Mutex;
 
 use crate::{
-    IntoScriptPluginParams,
+    IntoScriptPluginParams, ScriptingSystemSet,
     context::ScriptingLoader,
     error::ScriptError,
     event::{
@@ -249,6 +249,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
             PreUpdate,
             PipelineSet::ListeningPhase
                 .after(bevy_asset::AssetTrackingSystems)
+                .after(ScriptingSystemSet::SyncScriptingComponents) // we want to pick up changes immediately
                 .before(PipelineSet::MachineStartPhase),
         );
 

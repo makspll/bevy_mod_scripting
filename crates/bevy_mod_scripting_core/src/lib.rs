@@ -9,8 +9,9 @@ use crate::{
     event::ScriptErrorEvent,
     handler::script_error_logger,
     pipeline::ScriptLoadingPipeline,
+    script::{ScriptComponentsChangeCache, script_component_changed_handler},
 };
-use bevy_app::{App, Plugin, PostUpdate};
+use bevy_app::{App, Plugin, PostUpdate, PreUpdate};
 use bevy_asset::{AssetApp, Handle};
 use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_ecs::{
@@ -46,16 +47,11 @@ pub mod script_system;
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
 pub enum ScriptingSystemSet {
-    /// Systems which handle the processing of asset events for script assets, and dispatching internal script asset events
-    ScriptAssetDispatch,
-    /// Systems which read incoming internal script asset events and produce script lifecycle commands
-    ScriptCommandDispatch,
-    // /// Systems which read entity removal events and remove contexts associated with them
-    // EntityRemoval,
-    /// One time runtime initialization systems
-    RuntimeInitialization,
-    /// Systems which handle the garbage collection of allocated values
+    /// Systems in [`PostUpdate`] which handle the garbage collection of allocated values
     GarbageCollection,
+
+    /// Systems in [`PreUpdate`] dispatching pipeline events whenever handles are added or removed from [`ScriptComponent`]'s
+    SyncScriptingComponents,
 }
 
 /// Types which act like scripting plugins, by selecting a context and runtime
@@ -172,6 +168,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         P::set_world_local_config(app.world().id(), config);
 
         app.insert_resource(ScriptContexts::<P>::new(self.context_policy.clone()));
+        app.init_resource::<ScriptComponentsChangeCache>();
         app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
         app.add_plugins((
@@ -353,6 +350,11 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         app.add_systems(
             PostUpdate,
             ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
+        );
+
+        app.add_systems(
+            PreUpdate,
+            script_component_changed_handler.in_set(ScriptingSystemSet::SyncScriptingComponents),
         );
 
         if !self.dont_log_script_event_errors {

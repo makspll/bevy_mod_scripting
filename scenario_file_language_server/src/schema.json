@@ -1,5 +1,19 @@
 {
   "steps": {
+    "AddScriptToEntity": {
+      "fields": {
+        "name": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the name of the script to insert"
+        },
+        "script": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the name of the entity to insert into"
+        }
+      }
+    },
     "AssertCallbackSuccess": {
       "fields": {
         "attachment": {
@@ -216,6 +230,20 @@
           "ty": "String",
           "optional": false,
           "doc": "the script to reload"
+        }
+      }
+    },
+    "RemoveScriptFromEntity": {
+      "fields": {
+        "name": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the name of the entity to remove from"
+        },
+        "script": {
+          "ty": "String",
+          "optional": false,
+          "doc": "the name of the script to remove"
         }
       }
     },

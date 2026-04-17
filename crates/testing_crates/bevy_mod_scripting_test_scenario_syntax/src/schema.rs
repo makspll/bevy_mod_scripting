@@ -168,6 +168,28 @@ fn get_schema() -> ScenarioSchema {
                 },
             ),
             (
+                "AddScriptToEntity".into(),
+                StepSchema {
+                    fields: vec![
+                        str_field("name", false, "the name of the script to insert"),
+                        str_field("script", false, "the name of the entity to insert into"),
+                    ]
+                    .into_iter()
+                    .collect(),
+                },
+            ),
+            (
+                "RemoveScriptFromEntity".into(),
+                StepSchema {
+                    fields: vec![
+                        str_field("name", false, "the name of the entity to remove from"),
+                        str_field("script", false, "the name of the script to remove"),
+                    ]
+                    .into_iter()
+                    .collect(),
+                },
+            ),
+            (
                 "DetachStaticScript".into(),
                 StepSchema {
                     fields: vec![str_field("script", false, "the script to be detached")]
