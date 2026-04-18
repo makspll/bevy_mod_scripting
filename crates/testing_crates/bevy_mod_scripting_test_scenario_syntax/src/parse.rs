@@ -110,6 +110,11 @@ pub enum ScenarioStepSerialized {
         /// the script to spawn on the entity
         script: String,
     },
+    /// Spawns an entity with the given name
+    SpawnEntity {
+        /// the name to give this entity for future reference
+        name: String,
+    },
     /// Pushes a script into the existing script component on an entity, or creates a new one and inserts the script
     AddScriptToEntity {
         /// the name of the entity to insert into

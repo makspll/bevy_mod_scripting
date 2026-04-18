@@ -1,7 +1,5 @@
 //! Event handlers and event types for scripting.
 
-use std::marker::PhantomData;
-
 use ::{bevy_ecs::entity::Entity, bevy_reflect::Reflect};
 use bevy_asset::{AssetId, Handle};
 use bevy_ecs::message::Message;
@@ -40,50 +38,6 @@ pub struct ScriptDetachedEvent(pub ScriptAttachment);
 /// Emitted when a script asset is modified and all its attachments require re-loading
 #[derive(Message, Clone, Debug)]
 pub struct ScriptAssetModifiedEvent(pub AssetId<ScriptAsset>);
-
-#[derive(Message)]
-/// Wrapper around a script event making it available to read by a specific plugin only
-pub struct ForPlugin<T, P: IntoScriptPluginParams>(T, PhantomData<fn(P)>);
-
-impl<T: std::fmt::Debug, P: IntoScriptPluginParams> std::fmt::Debug for ForPlugin<T, P> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ForPlugin").field(&self.0).finish()
-    }
-}
-
-impl<T, P: IntoScriptPluginParams> From<T> for ForPlugin<T, P> {
-    fn from(value: T) -> Self {
-        Self::new(value)
-    }
-}
-
-impl<T: Clone, P: IntoScriptPluginParams> Clone for ForPlugin<T, P> {
-    fn clone(&self) -> Self {
-        Self(self.0.clone(), self.1)
-    }
-}
-
-impl<T, P: IntoScriptPluginParams> ForPlugin<T, P> {
-    /// Creates a new wrapper for the specific plugin
-    pub fn new(message: T) -> Self {
-        Self(message, Default::default())
-    }
-
-    /// Retrieves the inner event
-    pub fn event(&self) -> &T {
-        &self.0
-    }
-
-    /// Retrieves the inner event mutably
-    pub fn event_mut(&mut self) -> &mut T {
-        &mut self.0
-    }
-
-    /// Unpacks the inner event
-    pub fn inner(self) -> T {
-        self.0
-    }
-}
 
 /// A string which disallows common invalid characters in callback labels,
 /// particularly at the start of the string

@@ -298,6 +298,9 @@ impl Scenario {
                     entity: name,
                 }
             }
+            ScenarioStepSerialized::SpawnEntity { name } => {
+                ScenarioStep::SpawnEntity { entity: name }
+            }
             ScenarioStepSerialized::AddScriptToEntity { name, script } => {
                 ScenarioStep::AddScriptToEntity {
                     script: self.context.get_script_handle(&script)?,
@@ -522,6 +525,10 @@ pub enum ScenarioStep {
     /// Waits until the script with the given name is loaded.
     WaitForScriptAssetLoaded {
         script: Handle<ScriptAsset>,
+    },
+    /// Spawns an entity with no components
+    SpawnEntity {
+        entity: String,
     },
     /// Spawns an entity with the given name and attaches the given script to it.
     SpawnEntityWithScript {
@@ -829,6 +836,12 @@ impl ScenarioStep {
                     script.display()
                 );
             }
+            ScenarioStep::SpawnEntity { entity: name } => {
+                let entity = app.world_mut().spawn_empty().id();
+                context.entities.insert(name.to_string(), entity);
+                info!("Spawned empty entity '{entity}'");
+            }
+
             ScenarioStep::EmitScriptCallbackEvent { event } => {
                 app.world_mut().write_message(event.clone());
             }
