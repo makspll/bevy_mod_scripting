@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.19.0...v0.20.0) - 2026-04-18
+
+### Added
+
+- [**breaking**] extract `bevy_mod_scripting_world` decoupling world abstractions ([#529](https://github.com/makspll/bevy_mod_scripting/pull/529))
+- implement variadics in bindings via `VariadicTuple` and add `ScriptValue::Tuple` ([#527](https://github.com/makspll/bevy_mod_scripting/pull/527))
+- logging bindings (`info`, `warn`, `debug`, `trace`, `error`) ([#526](https://github.com/makspll/bevy_mod_scripting/pull/526))
+- [**breaking**] Rename `Val`, `Ref`, `Mut`  ([#525](https://github.com/makspll/bevy_mod_scripting/pull/525))
+- [**breaking**] ironing out script pipeline edge cases and observer overhaul ([#523](https://github.com/makspll/bevy_mod_scripting/pull/523))
+
+### Fixed
+
+- script component not syncing correctly when modified ([#534](https://github.com/makspll/bevy_mod_scripting/pull/534))
+- Improve pipeline robustness, allow same frame attach + detach events. ([#533](https://github.com/makspll/bevy_mod_scripting/pull/533))
+- script systems unable to be added when bevy debug feature is disabled ([#531](https://github.com/makspll/bevy_mod_scripting/pull/531))
+
 ## [0.19.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.18.0...v0.19.0) - 2026-01-25
 
 ### Added

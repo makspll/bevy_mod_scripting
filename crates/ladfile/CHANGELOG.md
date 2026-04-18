@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/ladfile-v0.19.0...ladfile-v0.20.0) - 2026-04-18
+
+### Added
+
+- implement variadics in bindings via `VariadicTuple` and add `ScriptValue::Tuple` ([#527](https://github.com/makspll/bevy_mod_scripting/pull/527))
+
 ## [0.6.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.6.0-ladfile...v0.6.1-ladfile) - 2025-11-06
 
 ### Added

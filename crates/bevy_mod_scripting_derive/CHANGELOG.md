@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_derive-v0.19.0...bevy_mod_scripting_derive-v0.20.0) - 2026-04-18
+
+### Added
+
+- [**breaking**] extract `bevy_mod_scripting_world` decoupling world abstractions ([#529](https://github.com/makspll/bevy_mod_scripting/pull/529))
+
 ## [0.19.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_derive-v0.18.0...bevy_mod_scripting_derive-v0.19.0) - 2026-01-25
 
 ### Added
