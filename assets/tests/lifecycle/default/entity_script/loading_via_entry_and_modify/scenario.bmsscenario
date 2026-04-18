@@ -1,0 +1,14 @@
+// #main_script lifecycle.lua
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin emit_responses=true
+FinalizeApp
+
+// load script by inserting empty component and immediately modifying
+SpawnEntity name="test_entity_a"
+LoadScriptAs as_name="script_b", path="lifecycle.lua"
+WaitForScriptAssetLoaded name="script_b"
+AddScriptToEntity name="test_entity_a", script="script_b"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptLoaded", script="script_b", expect_string_value="loaded!"
+AssertNoCallbackResponsesEmitted
+AssertContextResidents attachment="EntityScript", script="script_b", entity="test_entity_a", residents_num=1

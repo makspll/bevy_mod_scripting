@@ -22,7 +22,7 @@ use crate::{
     context::ScriptingLoader,
     error::ScriptError,
     event::{
-        ForPlugin, Recipients, ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptDetachedEvent,
+        Recipients, ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptDetachedEvent,
         ScriptErrorEvent,
     },
     pipeline::hooks::{
@@ -136,13 +136,6 @@ impl<P: IntoScriptPluginParams> std::fmt::Debug for ScriptProcessingSchedule<P> 
     }
 }
 
-impl<P: IntoScriptPluginParams> ScriptLoadingPipeline<P> {
-    fn add_plugin_message<E: Message>(&self, app: &mut App) -> &Self {
-        app.add_message::<E>().add_message::<ForPlugin<E, P>>();
-        self
-    }
-}
-
 /// A trait describing things containing script handles
 pub trait GetScriptHandle {
     /// Retrieve the contained script handle
@@ -204,9 +197,9 @@ impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
     fn build(&self, app: &mut App) {
-        self.add_plugin_message::<ScriptAttachedEvent>(app)
-            .add_plugin_message::<ScriptDetachedEvent>(app)
-            .add_plugin_message::<ScriptAssetModifiedEvent>(app);
+        app.add_message::<ScriptAttachedEvent>()
+            .add_message::<ScriptDetachedEvent>()
+            .add_message::<ScriptAssetModifiedEvent>();
 
         app.init_resource::<ActiveMachinesData>();
 

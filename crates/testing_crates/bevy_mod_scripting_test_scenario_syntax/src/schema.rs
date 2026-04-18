@@ -160,6 +160,18 @@ fn get_schema() -> ScenarioSchema {
                 },
             ),
             (
+                "SpawnEntity".into(),
+                StepSchema {
+                    fields: vec![str_field(
+                        "name",
+                        false,
+                        "the name to give this entity for future reference",
+                    )]
+                    .into_iter()
+                    .collect(),
+                },
+            ),
+            (
                 "AttachStaticScript".into(),
                 StepSchema {
                     fields: vec![str_field("script", false, "the script to be attached")]
