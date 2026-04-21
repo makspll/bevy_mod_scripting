@@ -167,6 +167,12 @@ impl<'f, 'b: 'f, 't> ReflectPrinter<'f, 'b, 't> {
                 }
             }
             ReflectRef::Opaque(o) => o.debug(self.formatter),
+            // here to support feature gated ReflectRef::Function variant
+            #[allow(
+                unreachable_patterns,
+                reason = "feature gated variant breaks things depending on features"
+            )]
+            _ => self.formatter.write_str("Unsupported reflect value"),
         }
     }
 
