@@ -22,6 +22,7 @@ pub use error::*;
 pub use function::*;
 pub use globals::*;
 // pub use pretty_print::*;
+pub use bevy_mod_scripting_world::*;
 pub use conversions::*;
 pub use path::*;
 pub use query::*;

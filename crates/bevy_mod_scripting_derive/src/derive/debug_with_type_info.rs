@@ -1,37 +1,36 @@
 use proc_macro2::{Span, TokenStream};
 use quote::format_ident;
-use syn::{DeriveInput, Ident, parse_macro_input, parse_quote};
+use syn::{DeriveInput, Ident, parse_macro_input};
 
+use crate::derive::SharedArgs;
+
+#[derive(Default)]
 struct Args {
-    bms_display_path: syn::Path,
     remote: bool,
+    shared_args: SharedArgs,
 }
 
 impl Args {
     fn parse(input: &[syn::Attribute]) -> syn::Result<Self> {
         let mut args = Args {
-            bms_display_path: parse_quote!(::bevy_mod_scripting::display),
+            shared_args: Default::default(),
             remote: false,
         };
 
         for attr in input {
             if attr.path().is_ident("debug_with_type_info") {
                 attr.parse_nested_meta(|meta| {
-                    if meta.path.is_ident("bms_display_path") {
-                        let value = meta.value()?;
-                        let string: syn::LitStr = value.parse()?;
-                        args.bms_display_path = string.parse()?;
-                        Ok(())
-                    } else if meta.path.is_ident("remote") {
+                    if meta.path.is_ident("remote") {
                         args.remote = true;
-                        Ok(())
-                    } else {
-                        Err(syn::Error::new_spanned(
-                            meta.path,
-                            "unknown attribute, allowed: bms_display_path,remote",
-                        ))
+                        return Ok(());
                     }
-                })?
+
+                    if args.shared_args.apply_nested_meta(&meta)? {
+                        return Ok(());
+                    }
+
+                    Err(meta.error("Unknown argument to debug_with_type_info"))
+                })?;
             }
         }
 
@@ -48,7 +47,7 @@ pub fn debug_with_type_info(input: proc_macro::TokenStream) -> proc_macro::Token
         Err(e) => return e.to_compile_error().into(),
     };
 
-    let bms_display_path = &args.bms_display_path;
+    let bms_display_path = &args.shared_args.bms_display_path;
 
     // use DebugStruct, DebugTuple, DebugMap, DebugList etc from bevy_mod_scripting_display
     // from the trait DebugWithTypeInfoBuilder trait on the formatter in implementing Debug i.e.:

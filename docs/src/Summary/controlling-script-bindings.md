@@ -84,6 +84,29 @@ pub fn main() {
 
 Note the documentation will automatically be picked up and stored for the purposes of reflection and documentation generation, including argument/return type specific docs.
 
+## Deriving FromScript and IntoScript
+
+Generally all reflect types are wrapped in: `R<T>` `V<T>` or `M<T>` when writing script bindings. However some types may opt in to implement `FromScript` or `IntoScript` directly.
+
+Doing this requires implementing a set of other traits which tell the runtime how to manage your type in conversion and function dispatch.
+
+The most trivial way to allow your type to be used directly in bindings is to apply derive macros like so:
+
+```rust
+#[derive(Clone, TypedThrough, GetTypeDependencies, ArgMeta, IntoScript, FromScript, Reflect)]
+pub struct MyThing(usize);
+
+
+#[script_bindings(remote)]
+impl MyThing {
+    // Can now be used directly without V<> wrapper, acts exactly like V<MyThing>
+    pub fn test(thing: MyThing) -> MyThing {
+        thing
+    }
+}
+```
+
+If you wish to customize the `FromScript` implementation, simply remove that macro and implement it yourself. See [the custom conversions example](https://github.com/makspll/bevy_mod_scripting/blob/main/examples/docgen.rs) for more information.
 
 ## Context Arguments
 

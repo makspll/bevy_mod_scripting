@@ -2,6 +2,8 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote_spanned};
 use syn::{DeriveInput, WhereClause, parse_quote, parse_quote_spanned};
 
+use crate::derive::SharedArgs;
+
 /// Generate a GetTypeDependencies impl like below:
 /// For type:
 ///
@@ -36,7 +38,7 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
         Err(error) => return error.to_compile_error(),
     };
 
-    let bms_core = &args.bms_bindings_path;
+    let bms_bindings_path = &args.shared_args.bms_bindings_path;
 
     let (impl_generics, type_generics, impl_where) = derive_input.generics.split_for_impl();
 
@@ -89,7 +91,7 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
     quote_spanned! {derive_input.ident.span()=>
         #[automatically_derived]
         #[allow(clippy::needless_lifetimes)]
-        impl #impl_generics #bms_core::GetTypeDependencies for #name #type_generics #impl_where
+        impl #impl_generics #bms_bindings_path::GetTypeDependencies for #name #type_generics #impl_where
         {
             type Underlying = #underlying;
             fn register_type_dependencies(registry: &mut TypeRegistry) {
@@ -110,51 +112,47 @@ pub fn get_type_dependencies(input: TokenStream) -> TokenStream {
     get_type_dependencies_from_input(derive_input)
 }
 
+#[derive(Default)]
 struct Args {
-    bms_bindings_path: syn::Path,
     underlying: Option<syn::Type>,
     dont_recurse: bool,
-    // bounds: Vec<syn::TypeParamBound>,
+    shared_args: SharedArgs,
 }
 
 impl Args {
     fn parse(attrs: &[syn::Attribute]) -> syn::Result<Self> {
-        let mut bms_bindings_path = parse_quote!(::bevy_mod_scripting::bindings);
         let mut underlying = None;
         let mut dont_recurse = false;
+        let mut shared_args = SharedArgs::default();
 
         for attr in attrs {
-            // find attr with name `get_type_dependencies`
-            // then parse its meta
             if attr.path().is_ident("get_type_dependencies") {
                 attr.parse_nested_meta(|meta| {
-                    if meta.path.is_ident("bms_bindings_path") {
-                        let value = meta.value()?;
-                        let string: syn::LitStr = value.parse()?;
-                        bms_bindings_path = string.parse()?;
-                        Ok(())
-                    } else if meta.path.is_ident("underlying") {
+                    if meta.path.is_ident("underlying") {
                         let value = meta.value()?;
                         let string: syn::LitStr = value.parse()?;
                         underlying = Some(string.parse()?);
-                        Ok(())
-                    } else if meta.path.is_ident("dont_recurse") {
-                        dont_recurse = true;
-                        Ok(())
-                    } else {
-                        Err(syn::Error::new_spanned(
-                            meta.path,
-                            "unknown attribute, allowed: bms_bindings_path, underlying",
-                        ))
+                        return Ok(());
                     }
+
+                    if meta.path.is_ident("dont_recurse") {
+                        dont_recurse = true;
+                        return Ok(());
+                    }
+
+                    if shared_args.apply_nested_meta(&meta)? {
+                        return Ok(());
+                    }
+
+                    Err(meta.error("Unknown argument to get_type_dependencies"))
                 })?;
             }
         }
 
         Ok(Self {
-            bms_bindings_path,
             underlying,
             dont_recurse,
+            shared_args,
         })
     }
 }

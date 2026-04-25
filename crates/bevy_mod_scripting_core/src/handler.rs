@@ -145,15 +145,21 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             event.recipients,
             Recipients::ScriptEntity(_, _) | Recipients::StaticScript(_)
         );
-
+        let might_not_have_reached_pipeline_if_new = event.iteration == 0;
         for (attachment, ctxt) in recipients {
             // we don't issue callbacks to scripts which are currently loading/unloading/reloading
             let ctxt = if let Some(ctxt) = ctxt.as_loaded() {
                 ctxt
-            } else if highly_specific && ctxt.is_loading_or_reloading() {
+                // due to how the pipeline runs, we might see scripts which have just been
+                // loaded, and attached, but the pipeline hasn't run yet
+                // we want to give those one frame to trigger
+            } else if highly_specific && ctxt.is_loading_or_reloading()
+                || might_not_have_reached_pipeline_if_new
+            {
+                println!("REQUEING");
                 // events with high specificity, have their callbacks re-queued in this case
                 // i.e. we don't want `on_update` to queue up, but a directed `on_collision_with_entity` callback will have
-                events_to_requeue.push(event.clone());
+                events_to_requeue.push(event.clone().with_incremented_iteration());
                 continue;
             } else {
                 continue;

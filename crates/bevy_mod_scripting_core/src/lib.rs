@@ -36,6 +36,9 @@ pub mod callbacks;
 pub mod commands;
 pub mod config;
 pub mod context;
+#[cfg(test)]
+mod derive_tests;
+
 pub mod error;
 pub mod event;
 pub mod extractors;
