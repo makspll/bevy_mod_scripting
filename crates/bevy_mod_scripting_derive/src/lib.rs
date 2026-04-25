@@ -2,16 +2,28 @@
 
 mod derive;
 
-#[proc_macro_derive(TypedThrough)]
+#[proc_macro_derive(TypedThrough, attributes(typed_through))]
 /// Default implementation for the `TypedThrough` trait
 pub fn typed_through(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     derive::typed_through(input.into()).into()
 }
 
-#[proc_macro_derive(IntoScript)]
+#[proc_macro_derive(ArgMeta, attributes(arg_meta))]
+/// Default implementation for the `TypedThrough` trait
+pub fn arg_meta(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::arg_meta(input.into()).into()
+}
+
+#[proc_macro_derive(IntoScript, attributes(into_script))]
 /// Default implementation for the `IntoScript` trait
 pub fn into_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     derive::into_script(input.into()).into()
+}
+
+#[proc_macro_derive(FromScript, attributes(from_script))]
+/// Default implementation for the `IntoScript` trait
+pub fn from_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::from_script(input.into()).into()
 }
 
 /// Derive macro for generating script bindings from an impl block.

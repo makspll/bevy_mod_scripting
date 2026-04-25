@@ -2,14 +2,17 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote_spanned};
 use syn::{ItemImpl, spanned::Spanned};
 
+use crate::derive::SharedArgs;
+
 use super::{impl_fn_to_namespace_builder_registration, is_public_impl};
 
 pub fn script_bindings(
-    args: proc_macro::TokenStream,
+    args_stream: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    let args = syn::parse_macro_input!(args as Args);
-
+    let mut args = Args::default();
+    let parser = syn::meta::parser(|meta| args.apply_nested_meta(&meta));
+    syn::parse_macro_input!(args_stream with parser);
     let impl_block = syn::parse_macro_input!(input as ItemImpl);
     let impl_span = impl_block.span();
     // let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
@@ -42,7 +45,7 @@ pub fn script_bindings(
         },
     };
 
-    let bms_bindings_path = &args.bms_bindings_path;
+    let bms_bindings_path = &args.shared_args.bms_bindings_path;
 
     let function_name = format_ident!("register_{}", args.name);
     let builder_function_name = if args.unregistered {
@@ -112,8 +115,6 @@ struct Args {
     pub name: syn::Ident,
     /// If true the original impl block will be ignored, and only the function registrations will be generated
     pub remote: bool,
-    /// If set the path to override bms imports
-    pub bms_bindings_path: syn::Path,
     /// If true will use `new_unregistered` instead of `new` for the namespace builder
     pub unregistered: bool,
     /// If true registers a marker type against the type registry to state that the type is generated (if unregistered is not set)
@@ -125,88 +126,68 @@ struct Args {
     /// If true will register into the [`DummyScriptFunctionRegistry`] instead of the full one.
     /// This is useful for documenting functions without actually making them available, if you're exposing them another way.
     pub use_dummy_registry: bool,
+
+    pub shared_args: SharedArgs,
 }
 
-impl syn::parse::Parse for Args {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        // parse separated key-value pairs
-        let pairs =
-            syn::punctuated::Punctuated::<syn::Meta, syn::Token![,]>::parse_terminated(input)?;
+impl Default for Args {
+    fn default() -> Self {
+        Self {
+            name: syn::Ident::new("functions", Span::call_site()),
+            remote: Default::default(),
+            unregistered: Default::default(),
+            generated: Default::default(),
+            core: Default::default(),
+            significant: Default::default(),
+            use_dummy_registry: Default::default(),
+            shared_args: Default::default(),
+        }
+    }
+}
 
-        let mut name = syn::Ident::new("functions", Span::call_site());
-        let mut remote = false;
-        let mut unregistered = false;
-        let mut generated = false;
-        let mut core = false;
-        let mut significant = false;
-        let mut use_dummy_registry = false;
-        let mut bms_bindings_path =
-            syn::Path::from(syn::Ident::new("bevy_mod_scripting", Span::call_site()));
-        bms_bindings_path.segments.push(syn::PathSegment {
-            ident: syn::Ident::new("bindings", Span::call_site()),
-            arguments: syn::PathArguments::None,
-        });
-        let mut unknown_spans = Vec::default();
-        for pair in pairs {
-            match &pair {
-                syn::Meta::Path(path) => {
-                    if path.is_ident("remote") {
-                        remote = true;
-                        continue;
-                    } else if path.is_ident("unregistered") {
-                        unregistered = true;
-                        continue;
-                    } else if path.is_ident("generated") {
-                        generated = true;
-                        continue;
-                    } else if path.is_ident("core") {
-                        core = true;
-                        continue;
-                    } else if path.is_ident("significant") {
-                        significant = true;
-                        continue;
-                    } else if path.is_ident("use_dummy_registry") {
-                        use_dummy_registry = true;
-                        continue;
-                    }
-                }
-                syn::Meta::NameValue(name_value) => {
-                    if name_value.path.is_ident("bms_bindings_path")
-                        && let syn::Expr::Lit(path) = &name_value.value
-                        && let syn::Lit::Str(lit_str) = &path.lit
-                    {
-                        bms_bindings_path = syn::parse_str(&lit_str.value())?;
-                        continue;
-                    } else if name_value.path.is_ident("name")
-                        && let syn::Expr::Lit(path) = &name_value.value
-                        && let syn::Lit::Str(lit_str) = &path.lit
-                    {
-                        name = syn::parse_str(&lit_str.value())?;
-                        continue;
-                    }
-                }
-                _ => {
-                    unknown_spans.push((pair.span(), "Unsupported meta kind for script_bindings"));
-                    continue;
-                }
-            }
-
-            unknown_spans.push((pair.span(), "Unknown argument to script_bindings"));
+impl Args {
+    pub fn apply_nested_meta(&mut self, meta: &syn::meta::ParseNestedMeta) -> syn::Result<()> {
+        if meta.path.is_ident("name") {
+            let value = meta.value()?;
+            let lit: syn::LitStr = value.parse()?;
+            self.name = syn::parse_str(&lit.value())?;
+            return Ok(());
         }
 
-        if !unknown_spans.is_empty() {
-            return Err(syn::Error::new(unknown_spans[0].0, unknown_spans[0].1));
+        if meta.path.is_ident("remote") {
+            self.remote = true;
+            return Ok(());
         }
 
-        Ok(Self {
-            remote,
-            bms_bindings_path,
-            name,
-            unregistered,
-            generated,
-            core,
-            significant,
-            use_dummy_registry,
-        })
+        if meta.path.is_ident("unregistered") {
+            self.unregistered = true;
+            return Ok(());
+        }
+
+        if meta.path.is_ident("generated") {
+            self.generated = true;
+            return Ok(());
+        }
+
+        if meta.path.is_ident("core") {
+            self.core = true;
+            return Ok(());
+        }
+
+        if meta.path.is_ident("significant") {
+            self.significant = true;
+            return Ok(());
+        }
+
+        if meta.path.is_ident("use_dummy_registry") {
+            self.use_dummy_registry = true;
+            return Ok(());
+        }
+
+        if self.shared_args.apply_nested_meta(meta)? {
+            return Ok(());
+        }
+
+        Err(meta.error("Unknown argument to script_bindings"))
     }
 }

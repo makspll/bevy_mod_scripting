@@ -1,4 +1,6 @@
+mod arg_meta;
 mod debug_with_type_info;
+mod from_script;
 mod get_type_dependencies;
 mod into_script;
 mod script_bindings;
@@ -10,10 +12,77 @@ use quote::{ToTokens, quote_spanned};
 use syn::{Ident, ImplItemFn, ItemImpl};
 
 pub use self::{
-    debug_with_type_info::debug_with_type_info, get_type_dependencies::get_type_dependencies,
-    into_script::into_script, script_bindings::script_bindings, script_globals::script_globals,
-    typed_through::typed_through,
+    arg_meta::arg_meta, debug_with_type_info::debug_with_type_info, from_script::from_script,
+    get_type_dependencies::get_type_dependencies, into_script::into_script,
+    script_bindings::script_bindings, script_globals::script_globals, typed_through::typed_through,
 };
+
+#[allow(dead_code)]
+pub(crate) struct SharedArgs {
+    /// If set the path to override bms bindings root path
+    pub bms_bindings_path: syn::Path,
+    /// If set the path to override bms core root path
+    pub bms_core_path: syn::Path,
+    /// If set the path to override bms display root path
+    pub bms_display_path: syn::Path,
+}
+
+impl Default for SharedArgs {
+    fn default() -> Self {
+        let bms_path = syn::Path::from(syn::Ident::new("bevy_mod_scripting", Span::call_site()));
+
+        let mut bms_bindings_path = bms_path.clone();
+        bms_bindings_path.segments.push(syn::PathSegment {
+            ident: syn::Ident::new("bindings", Span::call_site()),
+            arguments: syn::PathArguments::None,
+        });
+        let mut bms_core_path = bms_path.clone();
+        bms_core_path.segments.push(syn::PathSegment {
+            ident: syn::Ident::new("core", Span::call_site()),
+            arguments: syn::PathArguments::None,
+        });
+        let mut bms_display_path = bms_path.clone();
+        bms_display_path.segments.push(syn::PathSegment {
+            ident: syn::Ident::new("display", Span::call_site()),
+            arguments: syn::PathArguments::None,
+        });
+        Self {
+            bms_bindings_path,
+            bms_core_path,
+            bms_display_path,
+        }
+    }
+}
+
+impl SharedArgs {
+    const BMS_BINDINGS_PATH: &'static str = "bms_bindings_path";
+    const BMS_CORE_PATH: &'static str = "bms_core_path";
+    const BMS_DISPLAY_PATH: &'static str = "bms_display_path";
+    pub fn apply_nested_meta(&mut self, meta: &syn::meta::ParseNestedMeta) -> syn::Result<bool> {
+        if meta.path.is_ident(Self::BMS_BINDINGS_PATH) {
+            let value = meta.value()?;
+            let lit: syn::LitStr = value.parse()?;
+            self.bms_bindings_path = syn::parse_str(&lit.value())?;
+            return Ok(true);
+        }
+
+        if meta.path.is_ident(Self::BMS_CORE_PATH) {
+            let value = meta.value()?;
+            let lit: syn::LitStr = value.parse()?;
+            self.bms_core_path = syn::parse_str(&lit.value())?;
+            return Ok(true);
+        }
+
+        if meta.path.is_ident(Self::BMS_DISPLAY_PATH) {
+            let value = meta.value()?;
+            let lit: syn::LitStr = value.parse()?;
+            self.bms_display_path = syn::parse_str(&lit.value())?;
+            return Ok(true);
+        }
+
+        Ok(false)
+    }
+}
 
 pub(crate) fn impl_fn_to_namespace_builder_registration(fun: &ImplItemFn) -> TokenStream {
     process_impl_fn(
