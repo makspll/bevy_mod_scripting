@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-8832329e.js";
+            window.path_to_searchindex_js = "../searchindex-de078e9c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-55db3f2c.js"></script>
+        <script src="../toc-83c73022.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -226,6 +226,24 @@
 </ul>
 <p>etc. in a type-erased way.</p>
 <p>This allowed <code>bevy_mod_scripting_display</code> to directly rely on world types, and removed a lot of awkward bridging code.</p>
+<h1 id="more-derive-macros"><a class="header" href="#more-derive-macros">More Derive Macros</a></h1>
+<p>The following macros derive macros are now available: <code>ArgMeta</code>,<code>FromScript</code>.</p>
+<p>This means for types you want to clone into scripts you can make convenient wrappers like so:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Clone, TypedThrough, GetTypeDependencies, ArgMeta, IntoScript, FromScript, Reflect)]
+pub struct MyThing(usize);
+
+
+#[script_bindings(remote)]
+impl MyThing {
+    // Can now be used directly without V&lt;&gt; wrapper, acts exactly like V&lt;MyThing&gt;
+    pub fn test(thing: MyThing) -&gt; MyThing {
+        thing
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>And overriding either the into or from implementations if you wish easilly.</p>
 
                     </main>
 
