@@ -14,7 +14,6 @@ use bevy_mod_scripting::prelude::*;
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, FromScript, InteropError, ReflectReference, WorldExtensions,
 };
-use bevy_mod_scripting_core::event::ScriptCallbackResponseEvent;
 
 #[derive(Clone, TypedThrough, GetTypeDependencies, ArgMeta, IntoScript, Reflect)]
 pub enum MyFunkyArgumentType {
@@ -144,10 +143,7 @@ pub fn main() {
                 );
             },
         )
-        .add_systems(Update, event_handler::<OnExample, LuaScriptingPlugin>)
-        .add_observer(|event: On<ScriptCallbackResponseEvent>| {
-            info!("Response from script: {event:?}");
-        });
+        .add_systems(Update, event_handler::<OnExample, LuaScriptingPlugin>);
 
     app.run();
 }
