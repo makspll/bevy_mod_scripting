@@ -29,4 +29,10 @@ impl ScriptAsset {
     pub fn new(s: impl Into<String>) -> Self {
         s.into().into()
     }
+
+    /// Returns a new script asset with the language provided
+    pub fn with_language(mut self, language: Language) -> Self {
+        self.language = language;
+        self
+    }
 }

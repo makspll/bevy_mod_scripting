@@ -209,6 +209,8 @@ pub struct ScriptCallbackEvent {
     pub args: Vec<ScriptValue>,
     /// Whether the callback should emit a response event
     pub trigger_response: bool,
+    /// How many times was this re-queued, when 0 it's not been processed
+    pub iteration: usize,
 }
 
 impl ScriptCallbackEvent {
@@ -225,6 +227,7 @@ impl ScriptCallbackEvent {
             args,
             recipients,
             trigger_response: false,
+            iteration: 0,
         }
     }
 
@@ -267,6 +270,11 @@ impl ScriptCallbackEvent {
     /// Contexts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
     pub fn new_for_all_contexts<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
         Self::new(label, args, Recipients::AllContexts, None)
+    }
+
+    pub(crate) fn with_incremented_iteration(mut self) -> Self {
+        self.iteration += 1;
+        self
     }
 }
 

@@ -23,3 +23,5 @@ pub use bevy_mod_scripting_lua::LuaScriptingPlugin;
 pub use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 
 pub use crate::{BMSPlugin, ScriptFunctionsPlugin};
+
+pub use bevy_mod_scripting_derive::*;
