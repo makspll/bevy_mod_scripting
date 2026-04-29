@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.19.0...lua_language_server_lad_backend-v0.20.0) - 2026-04-29
+
+### Added
+
+- implement variadics in bindings via `VariadicTuple` and add `ScriptValue::Tuple` ([#527](https://github.com/makspll/bevy_mod_scripting/pull/527))
+
+### Fixed
+
+- LLS generation for `self` parameters ([#540](https://github.com/makspll/bevy_mod_scripting/pull/540))
+
 ## [0.19.0](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.18.0...lua_language_server_lad_backend-v0.19.0) - 2026-01-25
 
 ### Added
