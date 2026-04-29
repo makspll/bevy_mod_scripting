@@ -10,7 +10,7 @@ PlainStructType = {}
 ---@param p1 PlainStructType 
 ---@param p2 integer 
 ---@return any
-function PlainStructType:plain_struct_function(p1,p2) end
+function PlainStructType.plain_struct_function(p1,p2) end
 
 
 
