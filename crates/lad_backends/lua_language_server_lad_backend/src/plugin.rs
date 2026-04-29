@@ -17,7 +17,7 @@ pub struct LuaLanguageServerLadPlugin {
 impl Default for LuaLanguageServerLadPlugin {
     fn default() -> Self {
         Self {
-            filename: PathBuf::from("bindings.lua"),
+            filename: PathBuf::from("bindings.d.lua"),
         }
     }
 }
