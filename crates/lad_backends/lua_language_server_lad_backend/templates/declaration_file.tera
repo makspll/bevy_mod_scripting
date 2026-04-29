@@ -43,7 +43,7 @@
 {%- endfor -%}
 {%- for return in function.returns -%}
 ---@return {{ self::lua_type(ty=return, return_position=true) }}
-function {% if module.class -%}{%- if function.has_self -%}{{module.class.name}}:{%- else -%}{{module.class.name}}.{%- endif -%}{%- endif -%} {{ function.name }}(
+function {% if module.class -%}{{module.class.name}}.{%- endif -%} {{ function.name }}(
     {%- for param in function.params -%}
         {% if param.variadic -%}... {% endif-%}{{ param.name }} {%- if not loop.last -%},{%- endif -%}
     {%- endfor -%}
