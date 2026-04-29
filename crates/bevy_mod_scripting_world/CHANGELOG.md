@@ -7,45 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings-v0.19.0...bevy_mod_scripting_bindings-v0.20.0) - 2026-04-29
+## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_world-v0.19.0...bevy_mod_scripting_world-v0.20.0) - 2026-04-29
 
 ### Added
 
-- Add `ArgMeta` and `FromScript` derive macros, enable queueing callback immediately after attaching script ([#538](https://github.com/makspll/bevy_mod_scripting/pull/538))
 - [**breaking**] extract `bevy_mod_scripting_world` decoupling world abstractions ([#529](https://github.com/makspll/bevy_mod_scripting/pull/529))
-- implement variadics in bindings via `VariadicTuple` and add `ScriptValue::Tuple` ([#527](https://github.com/makspll/bevy_mod_scripting/pull/527))
-- [**breaking**] Rename `Val`, `Ref`, `Mut`  ([#525](https://github.com/makspll/bevy_mod_scripting/pull/525))
-
-## [0.19.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings-v0.18.0...bevy_mod_scripting_bindings-v0.19.0) - 2026-01-25
-
-### Added
-
 - [**breaking**] bevy 0.18 ([#507](https://github.com/makspll/bevy_mod_scripting/pull/507))
-
-## [0.18.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings-v0.17.0...bevy_mod_scripting_bindings-v0.18.0) - 2026-01-25
-
-### Added
-
-- [**breaking**] Bevy 0.17 ([#498](https://github.com/makspll/bevy_mod_scripting/pull/498))
-
-## [0.16.1](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings-v0.16.0...bevy_mod_scripting_bindings-v0.16.1) - 2025-11-06
-
-### Added
-
-- Lua definition file generation, ladfile re-work ([#497](https://github.com/makspll/bevy_mod_scripting/pull/497))
-- add `ScriptPipelineState` system parameter and rust script loading example ([#494](https://github.com/makspll/bevy_mod_scripting/pull/494))
-- add script asset path to function call context ([#493](https://github.com/makspll/bevy_mod_scripting/pull/493))
-- add location information to function call context ([#492](https://github.com/makspll/bevy_mod_scripting/pull/492))
-- Replace `ParsedPath` with custom `ReferencePath`, support `Map` and `Set` references with arbitrary types ([#491](https://github.com/makspll/bevy_mod_scripting/pull/491))
-- registered callbacks via `register_callback`, and `bevy_mod_scripting_script` crate. ([#490](https://github.com/makspll/bevy_mod_scripting/pull/490))
-- Asset references, `world.get_asset` and `world.has_asset` bindings ([#484](https://github.com/makspll/bevy_mod_scripting/pull/484))
-- warn on duplicate globals ([#486](https://github.com/makspll/bevy_mod_scripting/pull/486))
-
-## [0.16.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_bindings-v0.15.1...bevy_mod_scripting_bindings-v0.16.0) - 2025-09-22
-
-### Added
-
-- improved dynamic printing, adds `ReflectDisplayWithTypeInfo` for overriding opaque type printing ([#478](https://github.com/makspll/bevy_mod_scripting/pull/478))
 - Don't panic! ([#216](https://github.com/makspll/bevy_mod_scripting/pull/216))
 - Improvements to BMS in multi-language context ([#194](https://github.com/makspll/bevy_mod_scripting/pull/194))
 - complete plugin re-write
@@ -67,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Improve pipeline robustness, allow same frame attach + detach events. ([#533](https://github.com/makspll/bevy_mod_scripting/pull/533))
 - bump `bevy` to 0.15.1 ([#241](https://github.com/makspll/bevy_mod_scripting/pull/241))
 - Added new version to readme.md ([#164](https://github.com/makspll/bevy_mod_scripting/pull/164))
 - fix doctests
@@ -131,7 +99,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - remove bs in docs
 - updated readme.md
 - added initial functionality
-
-### Refactored
-
-- extract `bevy_mod_scripting_asset` and `bevy_mod_scripting_display` crates, decouple concerns ([#477](https://github.com/makspll/bevy_mod_scripting/pull/477))
