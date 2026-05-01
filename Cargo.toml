@@ -60,6 +60,7 @@ lua_language_server_files = [
     "ladfile_builder/lua_language_server_files",
 ]
 
+
 # bindings 
 core_functions = ["bevy_mod_scripting_functions/core_functions"]
 
@@ -125,6 +126,7 @@ bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
+bevy_mod_scripting_wasmtime = { workspace = true }
 ladfile_builder = { workspace = true, optional = true }
 
 [workspace.dependencies]
@@ -140,12 +142,16 @@ ladfile = { path = "crates/ladfile", version = "0.19.0" }
 ladfile_builder = { path = "crates/ladfile_builder", version = "0.19.0" }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.19.0", default-features = false }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.19.0", default-features = false }
+bevy_mod_scripting_wasmtime = { path = "crates/languages/bevy_mod_scripting_wasmtime", version = "0.19.0", default-features = false }
+
 bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.19.0", default-features = false }
 bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.19.0", default-features = false }
 bevy_mod_scripting_bindings_domain = { path = "crates/bevy_mod_scripting_bindings_domain", version = "0.19.0", default-features = false }
 bevy_mod_scripting_display = { path = "crates/bevy_mod_scripting_display", version = "0.19.0", default-features = false }
 bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version = "0.19.0", default-features = false }
 lua_language_server_lad_backend = { path = "crates/lad_backends/lua_language_server_lad_backend", version = "0.19.0", default-features = false }
+lad_wit_backend = { path = "crates/lad_backends/lad_wit_backend" , version = "0.19.0" }
+
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.19.0" }
 bevy_mod_scripting_world = { path = "crates/bevy_mod_scripting_world", version = "0.19.0", default-features = true}
 # bevy
@@ -293,10 +299,10 @@ members = [
     "crates/bevy_mod_scripting_script",
     "crates/bevy_mod_scripting_bindings_domain",
     "crates/bindings/*",
-    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world",
+    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world", "crates/languages/bevy_mod_scripting_wasmtime", "crates/lad_backends/lad_wit_backend",
 ]
 resolver = "2"
-exclude = ["codegen", "crates/macro_tests", "xtask"]
+exclude = ["codegen", "crates/macro_tests", "xtask", "guest_crate/"]
 
 [profile.dev]
 debug = 1
@@ -339,6 +345,12 @@ required-features = ["lua_language_server_files"]
 [[example]]
 name = "runscript"
 path = "examples/run_script.rs"
+
+
+[[example]]
+name = "run_wasm"
+path = "examples/run_wasm.rs"
+
 
 [[example]]
 name = "script_loading"

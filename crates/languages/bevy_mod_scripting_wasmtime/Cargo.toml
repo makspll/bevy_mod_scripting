@@ -1,0 +1,29 @@
+[package]
+name = "bevy_mod_scripting_wasmtime"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core" }  
+bevy_mod_scripting_bindings = { path = "../../bevy_mod_scripting_bindings" }  
+bevy_mod_scripting_asset = { path = "../../bevy_mod_scripting_asset" }  
+bevy_mod_scripting_script = { path = "../../bevy_mod_scripting_script" }  
+bevy_app = { workspace = true }  
+bevy_ecs = { workspace = true }  
+bevy_log = { workspace = true }  
+parking_lot = { workspace = true }  
+wasmtime = { version = "27", features = ["cranelift"] }  
+slotmap = "1"  
+serde = { version = "1.0", features = ["derive"] }
+anyhow = { workspace = true }
+bevy_platform = {workspace = true}
+
+[lints]
+workspace = true

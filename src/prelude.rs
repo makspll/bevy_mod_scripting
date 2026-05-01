@@ -21,6 +21,7 @@ pub use bevy_mod_scripting_core::commands::*;
 pub use bevy_mod_scripting_lua::LuaScriptingPlugin;
 #[cfg(feature = "rhai")]
 pub use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
+pub use bevy_mod_scripting_wasmtime::WasmtimeScriptingPlugin;
 
 pub use crate::{BMSPlugin, ScriptFunctionsPlugin};
 
