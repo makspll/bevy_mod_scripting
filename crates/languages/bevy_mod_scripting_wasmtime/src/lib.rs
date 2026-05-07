@@ -16,7 +16,7 @@ use std::{any::TypeId, collections::HashMap, sync::Arc};
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::{reflect::AppTypeRegistry, world::WorldId};
-use bevy_log::{error, trace};
+use bevy_log::{error, info, trace};
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
     AppScriptGlobalsRegistry, InteropError, Namespace, ReflectReference, ScriptValue,
@@ -39,6 +39,7 @@ use wasmtime::{
     Store,
     component::{Component, Instance, Linker, Val},
 };
+use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxBuilder, WasiCtxView, WasiView};
 
 make_plugin_config_static!(WasmtimeScriptingPlugin);
 
@@ -55,6 +56,17 @@ pub struct WasmtimeStoreData {
     resources: HashMap<u32, ReflectReference>,
     next_id: u32,
     world_id: WorldId,
+    wasi_ctx: WasiCtx,
+    resource_table: ResourceTable,
+}
+
+impl WasiView for WasmtimeStoreData {
+    fn ctx(&mut self) -> wasmtime_wasi::WasiCtxView<'_> {
+        WasiCtxView {
+            ctx: &mut self.wasi_ctx,
+            table: &mut self.resource_table,
+        }
+    }
 }
 
 impl WasmtimeStoreData {
@@ -63,6 +75,8 @@ impl WasmtimeStoreData {
             resources: HashMap::new(),
             next_id: 1,
             world_id,
+            wasi_ctx: WasiCtxBuilder::new().inherit_stdio().build(),
+            resource_table: ResourceTable::new(),
         }
     }
 
@@ -237,9 +251,10 @@ fn build_linker(
                 .func_new(
                     &func_name,
                     move |mut store: wasmtime::StoreContextMut<WasmtimeStoreData>,
+                          _,
                           args: &[Val],
                           results: &mut [Val]|
-                          -> anyhow::Result<()> {
+                          -> wasmtime::error::Result<()> {
                         let script_args: Vec<ScriptValue> = args
                             .iter()
                             .map(|v| val_to_script_value(v, store.data_mut()))
@@ -249,7 +264,7 @@ fn build_linker(
 
                         let result = func_clone
                             .call(script_args, ctx)
-                            .map_err(|e| anyhow::anyhow!("{e:?}"))?;
+                            .map_err(|e| wasmtime::error::format_err!("{e:?}"))?;
 
                         if !results.is_empty() {
                             results[0] = script_value_to_val(result, store.data_mut());
@@ -262,10 +277,12 @@ fn build_linker(
         }
     }
 
+    wasmtime_wasi::p2::add_to_linker_sync(&mut linker).map_err(to_interop_error)?;
+
     Ok(linker)
 }
 
-fn to_interop_error(error: anyhow::Error) -> InteropError {
+fn to_interop_error(error: wasmtime::Error) -> InteropError {
     InteropError::external_boxed(error.into_boxed_dyn_error())
 }
 
@@ -359,13 +376,17 @@ pub fn wasmtime_handler(
         .try_for_each(|init| init(context_key, context))?;
 
     // Get the exported function by callback name
-    let func = context
-        .instance
-        .get_func(&mut context.store, callback_label.as_ref());
+    let func = context.instance.get_func(
+        &mut context.store,
+        &callback_label.as_ref().replace("_", "-"),
+    );
+    println!("{func:?}");
+    // .and_then(|(item, f)| context.instance.get_func(&mut context.store, f));
+
     let func = match func {
         Some(f) => f,
         None => {
-            trace!(
+            info!(
                 "Context {} is not subscribed to callback {}",
                 context_key,
                 callback_label.as_ref()
@@ -381,7 +402,7 @@ pub fn wasmtime_handler(
         .collect();
 
     // Call the function
-    let mut output_vals = vec![Val::Tuple(vec![])]; // Placeholder for result  
+    let mut output_vals = vec![]; // Placeholder for result  
     func.call(&mut context.store, &input_vals, &mut output_vals)
         .map_err(|e| to_interop_error(e))?;
 
