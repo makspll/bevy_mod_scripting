@@ -156,7 +156,6 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             } else if highly_specific && ctxt.is_loading_or_reloading()
                 || might_not_have_reached_pipeline_if_new
             {
-                println!("REQUEING");
                 // events with high specificity, have their callbacks re-queued in this case
                 // i.e. we don't want `on_update` to queue up, but a directed `on_collision_with_entity` callback will have
                 events_to_requeue.push(event.clone().with_incremented_iteration());
