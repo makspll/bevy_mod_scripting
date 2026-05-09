@@ -16,6 +16,8 @@ pub enum Language {
     Lua,
     /// The Rune scripting language
     Rune,
+    /// Any wasmtime compiled language
+    Wasmtime,
     /// An external scripting language
     External {
         /// The identifier of the language
@@ -52,6 +54,7 @@ impl From<&Language> for Cow<'static, str> {
             Language::Lua => Cow::Borrowed("Lua"),
             Language::Rune => Cow::Borrowed("Rune"),
             Language::External { name, .. } => name.clone(),
+            Language::Wasmtime => Cow::Borrowed("Wasmtime"),
             Language::Unknown => Cow::Borrowed("Unknown"),
         }
     }
