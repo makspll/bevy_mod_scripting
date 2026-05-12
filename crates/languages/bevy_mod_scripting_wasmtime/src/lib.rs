@@ -15,9 +15,11 @@
 
 mod context;
 mod handler;
+mod linker;
 mod plugin;
 mod runtime;
 pub use context::*;
 pub use handler::*;
+pub use linker::*;
 pub use plugin::*;
 pub use runtime::*;

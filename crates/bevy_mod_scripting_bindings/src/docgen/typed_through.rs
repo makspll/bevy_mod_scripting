@@ -206,6 +206,10 @@ pub fn as_reflect_primitive(type_info: &'static TypeInfo) -> Option<ReflectionPr
 pub trait TypedThrough {
     /// Get the [`ThroughTypeInfo`] for the type.
     fn through_type_info() -> ThroughTypeInfo;
+    /// Returns true if this argument is a "proper" passed argument, and false if it's purely injected
+    fn is_passed() -> bool {
+        true
+    }
 }
 
 impl<T1: TypedThrough, T2: TypedThrough> TypedThrough for Union<T1, T2> {
@@ -313,7 +317,6 @@ macro_rules! impl_through_typed {
 }
 
 impl_through_typed!(
-    FunctionCallContext => FunctionCallContext,
     ReflectReference => ReflectReference,
     DynamicScriptFunctionMut => DynamicFunctionMut,
     DynamicScriptFunction => DynamicFunction,
@@ -339,6 +342,16 @@ impl_through_typed!(
     char => Char,
     &'static str => Str
 );
+
+impl TypedThrough for FunctionCallContext {
+    fn through_type_info() -> ThroughTypeInfo {
+        ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
+    }
+
+    fn is_passed() -> bool {
+        false
+    }
+}
 
 macro_rules! impl_through_typed_tuple {
     ($($ty:ident),*) => {

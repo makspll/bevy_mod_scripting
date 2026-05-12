@@ -18,7 +18,6 @@ impl Guest for MyHost {
     /// Called when the script is first loaded  
     fn on_script_loaded() {
         println!("[Rust Guest] Script loaded!");
-        panic!("asd");
 
         // // Spawn an entity with Transform
         // match spawn_entity_with_transform() {
@@ -45,8 +44,9 @@ impl Guest for MyHost {
         }
     }
 
-    fn on_custom_event() -> () {
+    fn on_custom_event(a: Transform) {
         println!("[Rust Guest] Script custom event!");
+        println!("{}", a.up().display());
     }
 }
 

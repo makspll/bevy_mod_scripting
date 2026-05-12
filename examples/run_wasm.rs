@@ -8,6 +8,7 @@
 
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
+use bevy_mod_scripting_bindings::{AppReflectAllocator, ReflectReference};
 use bevy_mod_scripting_core::event::ScriptCallbackResponseEvent;
 
 fn main() {
@@ -53,18 +54,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 callback_labels!(OnCustomEvent => "on_custom_event");
 
 /// System that triggers events for scripts to handle  
-fn trigger_events(mut writer: MessageWriter<ScriptCallbackEvent>) {
+fn trigger_events(
+    mut writer: MessageWriter<ScriptCallbackEvent>,
+    allocator: ResMut<AppReflectAllocator>,
+) {
     // Send a custom event every 60 frames (approximately 1 second at 60 FPS)
     static mut FRAME_COUNTER: u32 = 0;
     unsafe {
         FRAME_COUNTER += 1;
         if FRAME_COUNTER % 60 == 0 {
             println!("Triggering script event...");
-
+            let mut allocator = allocator.write();
+            let test_ref = ReflectReference::new_allocated(Transform::default(), &mut allocator);
+            drop(allocator);
             // Send the event to all scripts
             writer.write(ScriptCallbackEvent::new_for_all_scripts(
                 OnCustomEvent,
-                vec![],
+                vec![test_ref.into()],
             ));
         }
     }

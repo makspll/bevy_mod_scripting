@@ -23,7 +23,7 @@ pub struct WasmtimeScriptingPlugin {
 impl IntoScriptPluginParams for WasmtimeScriptingPlugin {
     type C = WasmtimeContext;
     type R = WasmtimeRuntime;
-    const LANGUAGE: Language = Language::Unknown; // TODO: Add Language::Wasm  
+    const LANGUAGE: Language = Language::Wasmtime; // TODO: Add Language::Wasm  
 
     fn build_runtime() -> Self::R {
         WasmtimeRuntime::new()

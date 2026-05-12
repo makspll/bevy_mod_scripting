@@ -1,14 +1,14 @@
 use bevy_ecs::world::WorldId;
 use bevy_log::info;
-use bevy_mod_scripting_bindings::{InteropError, ScriptValue};
+use bevy_mod_scripting_bindings::{InteropError, ReflectReference, ScriptValue};
 use bevy_mod_scripting_core::{config::GetPluginThreadConfig, event::CallbackLabel};
 use bevy_mod_scripting_script::ScriptAttachment;
-use wasmtime::component::*;
+use wasmtime::{AsContext, AsContextMut, StoreContext, StoreContextMut, component::*};
 
 use crate::{WasmtimeContext, WasmtimeScriptingPlugin, WasmtimeStoreData, to_interop_error};
 
 /// Convert a `ScriptValue` to a wasmtime component `Val`.  
-pub fn script_value_to_val(sv: ScriptValue, data: &mut WasmtimeStoreData) -> Val {
+pub fn script_value_to_val(sv: ScriptValue, data: &mut StoreContextMut<WasmtimeStoreData>) -> Val {
     match sv {
         ScriptValue::Unit => Val::Tuple(vec![]),
         ScriptValue::Bool(b) => Val::Bool(b),
@@ -20,7 +20,11 @@ pub fn script_value_to_val(sv: ScriptValue, data: &mut WasmtimeStoreData) -> Val
                 .map(|v| script_value_to_val(v, data))
                 .collect(),
         ),
-        ScriptValue::Reference(r) => Val::U32(data.push_ref(r)),
+        ScriptValue::Reference(r) => {
+            let res = data.data_mut().push_ref(r);
+            let as_any = res.try_into_resource_any(data).unwrap();
+            Val::Resource(as_any)
+        }
         ScriptValue::Error(e) => {
             Val::Result(Err(Some(Box::new(Val::String(format!("{e:?}").into())))))
         }
@@ -35,17 +39,14 @@ pub fn script_value_to_val(sv: ScriptValue, data: &mut WasmtimeStoreData) -> Val
 }
 
 /// Convert a wasmtime component `Val` to a `ScriptValue`.  
-pub fn val_to_script_value(val: &Val, data: &mut WasmtimeStoreData) -> ScriptValue {
+pub fn val_to_script_value(
+    val: &Val,
+    data: &mut StoreContextMut<WasmtimeStoreData>,
+) -> ScriptValue {
     match val {
         Val::Bool(b) => ScriptValue::Bool(*b),
         Val::S64(i) => ScriptValue::Integer(*i),
-        Val::U32(i) => {
-            if let Some(r) = data.get_ref(*i).cloned() {
-                ScriptValue::Reference(r)
-            } else {
-                ScriptValue::Integer(*i as i64)
-            }
-        }
+        Val::U32(i) => ScriptValue::Integer(*i as i64),
         Val::Float64(f) => ScriptValue::Float(*f),
         Val::String(s) => ScriptValue::String(s.to_string().into()),
         Val::List(list) => {
@@ -54,6 +55,16 @@ pub fn val_to_script_value(val: &Val, data: &mut WasmtimeStoreData) -> ScriptVal
         Val::Tuple(items) if items.is_empty() => ScriptValue::Unit,
         Val::Tuple(items) => {
             ScriptValue::List(items.iter().map(|v| val_to_script_value(v, data)).collect())
+        }
+        Val::Resource(res) => {
+            // reborrow required for some reason due to implt AsContext consuming reference
+
+            if let Ok(res) = res.try_into_resource::<ReflectReference>(&mut *data)
+                && let Some(res) = data.data_mut().get_ref(&res)
+            {
+                return ScriptValue::Reference(res.clone());
+            }
+            return ScriptValue::Unit;
         }
         _ => ScriptValue::Unit,
     }
@@ -79,7 +90,7 @@ pub fn wasmtime_handler(
         &mut context.store,
         &callback_label.as_ref().replace("_", "-"),
     );
-    println!("{func:?}");
+
     // .and_then(|(item, f)| context.instance.get_func(&mut context.store, f));
 
     let func = match func {
@@ -94,21 +105,23 @@ pub fn wasmtime_handler(
         }
     };
 
+    let mut context_mut = context.store.as_context_mut();
+
     // Convert args to Val
     let input_vals: Vec<Val> = args
         .into_iter()
-        .map(|v| script_value_to_val(v, context.store.data_mut()))
+        .map(|v| script_value_to_val(v, &mut context_mut))
         .collect();
 
     // Call the function
     let mut output_vals = vec![]; // Placeholder for result  
-    func.call(&mut context.store, &input_vals, &mut output_vals)
+    func.call(&mut context_mut, &input_vals, &mut output_vals)
         .map_err(|e| to_interop_error(e))?;
 
     // Convert result back to ScriptValue
     let result = output_vals
         .first()
-        .map(|v| val_to_script_value(v, context.store.data_mut()))
+        .map(|v| val_to_script_value(v, &mut context_mut))
         .unwrap_or(ScriptValue::Unit);
 
     Ok(result)

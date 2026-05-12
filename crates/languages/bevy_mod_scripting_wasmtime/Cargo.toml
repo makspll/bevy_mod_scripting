@@ -16,6 +16,7 @@ bevy_mod_scripting_bindings = { path = "../../bevy_mod_scripting_bindings" }
 bevy_mod_scripting_asset = { path = "../../bevy_mod_scripting_asset" }  
 bevy_mod_scripting_script = { path = "../../bevy_mod_scripting_script" }  
 bevy_app = { workspace = true }  
+bevy_reflect = { workspace = true }
 bevy_ecs = { workspace = true }  
 bevy_log = { workspace = true }  
 parking_lot = { workspace = true }  
@@ -25,6 +26,7 @@ slotmap = "1"
 serde = { version = "1.0", features = ["derive"] }
 anyhow = { workspace = true }
 bevy_platform = {workspace = true}
+heck = "0.5"
 
 [lints]
 workspace = true
