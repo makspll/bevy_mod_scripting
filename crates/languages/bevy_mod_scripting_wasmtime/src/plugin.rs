@@ -8,8 +8,8 @@ use bevy_mod_scripting_core::{
 };
 
 use crate::{
-    WasmtimeContext, WasmtimeRuntime, wasmtime_context_load, wasmtime_context_reload,
-    wasmtime_handler,
+    WasmtimeContext, WasmtimeRuntime, WasmtimeRuntimeInner, build_linker, wasmtime_context_load,
+    wasmtime_context_reload, wasmtime_handler,
 };
 
 make_plugin_config_static!(WasmtimeScriptingPlugin);
@@ -26,7 +26,7 @@ impl IntoScriptPluginParams for WasmtimeScriptingPlugin {
     const LANGUAGE: Language = Language::Wasmtime; // TODO: Add Language::Wasm  
 
     fn build_runtime() -> Self::R {
-        WasmtimeRuntime::new()
+        WasmtimeRuntime::new(WasmtimeRuntimeInner::new())
     }
 
     fn handler() -> bevy_mod_scripting_core::handler::HandlerFn<Self> {
@@ -52,10 +52,14 @@ impl Default for WasmtimeScriptingPlugin {
     fn default() -> Self {
         Self {
             scripting_plugin: ScriptingPlugin {
-                runtime_initializers: vec![],
+                runtime_initializers: vec![|runtime: &WasmtimeRuntime| {
+                    let mut runtime = runtime.write();
+                    build_linker(&mut runtime.linker)?;
+                    Ok(())
+                }],
                 context_policy: ContextPolicy::default(),
                 language: Self::LANGUAGE,
-                supported_extensions: vec!["wasm"],
+                supported_extensions: vec!["wasm", "component.wasm"],
                 context_initializers: vec![],
                 context_pre_handling_initializers: vec![],
                 emit_responses: false,

@@ -107,6 +107,10 @@ mlua_async = ["bevy_mod_scripting_lua?/mlua_async"]
 ## rhai
 rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
 
+
+## wasmtime
+wasmtime = ["bevy_mod_scripting_wasmtime"]
+
 ## rune
 # rune = ["bevy_mod_scripting_rune"]
 
@@ -119,6 +123,7 @@ bevy_app = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { workspace = true, optional = true }
 bevy_mod_scripting_rhai = { workspace = true, optional = true }
+bevy_mod_scripting_wasmtime = { workspace = true, optional = true}
 bevy_mod_scripting_functions = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
@@ -126,7 +131,6 @@ bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
-bevy_mod_scripting_wasmtime = { workspace = true }
 ladfile_builder = { workspace = true, optional = true }
 
 [workspace.dependencies]
@@ -350,6 +354,7 @@ path = "examples/run_script.rs"
 [[example]]
 name = "run_wasm"
 path = "examples/run_wasm.rs"
+required-features = ["wasmtime"]
 
 
 [[example]]

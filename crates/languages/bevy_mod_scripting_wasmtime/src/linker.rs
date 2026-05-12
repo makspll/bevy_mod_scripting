@@ -105,9 +105,7 @@ pub fn to_canonical_abi_func_name(
 const REFLECT_REF_RES_NAME: &str = "reflect-ref";
 
 /// Build and populate the wasmtime component linker from the BMS function registry.  
-pub fn build_linker(engine: &Engine) -> Result<Linker<WasmtimeStoreData>, InteropError> {
-    let mut linker = Linker::<WasmtimeStoreData>::new(engine);
-
+pub fn build_linker(linker: &mut Linker<WasmtimeStoreData>) -> Result<(), InteropError> {
     let world = ThreadWorldContainer.try_get_context()?.world;
     let function_registry = world.script_function_registry();
     let function_registry = function_registry.read();
@@ -196,9 +194,8 @@ pub fn build_linker(engine: &Engine) -> Result<Linker<WasmtimeStoreData>, Intero
         link_function(&registry, &mut instance_linker, func_name, func)?;
     }
 
-    wasmtime_wasi::p2::add_to_linker_sync(&mut linker).map_err(to_interop_error)?;
-
-    Ok(linker)
+    wasmtime_wasi::p2::add_to_linker_sync(linker).map_err(to_interop_error)?;
+    Ok(())
 }
 
 fn link_function(

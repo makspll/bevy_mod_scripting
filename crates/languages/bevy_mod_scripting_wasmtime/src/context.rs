@@ -59,22 +59,12 @@ pub fn wasmtime_context_load(
     world_id: WorldId,
 ) -> Result<WasmtimeContext, InteropError> {
     let config = WasmtimeScriptingPlugin::readonly_configuration(world_id);
-    let runtime = config.runtime;
-
-    // Ensure the linker is populated (lazy, once)
-    {
-        let mut guard = runtime.linker.lock();
-        if guard.is_none() {
-            *guard = Some(build_linker(&runtime.engine)?);
-        }
-    }
-
+    let runtime = config.runtime.read();
     let component = Component::new(&runtime.engine, content).map_err(|e| to_interop_error(e))?;
 
     let mut store = Store::new(&runtime.engine, WasmtimeStoreData::new());
 
-    let linker_guard = runtime.linker.lock();
-    let linker = linker_guard.as_ref().unwrap();
+    let linker = &runtime.linker;
     let instance = linker.instantiate(&mut store, &component).map_err(|e| {
         println!("{e:#?}");
         to_interop_error(e)
@@ -102,14 +92,13 @@ pub fn wasmtime_context_reload(
 ) -> Result<(), InteropError> {
     // Re-compile the component (in case it changed)
     let config = WasmtimeScriptingPlugin::readonly_configuration(world_id);
-    let runtime = config.runtime;
+    let runtime = config.runtime.read();
 
     let component = Component::new(&runtime.engine, content).map_err(|e| to_interop_error(e))?;
 
     // Re-instantiate with the same linker
     let mut store = Store::new(&runtime.engine, WasmtimeStoreData::new());
-    let linker_guard = runtime.linker.lock();
-    let linker = linker_guard.as_ref().unwrap();
+    let linker = &runtime.linker;
     let instance = linker
         .instantiate(&mut store, &component)
         .map_err(|e| to_interop_error(e))?;
