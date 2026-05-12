@@ -84,7 +84,7 @@ pub struct LocationContext {
 }
 
 impl FunctionCallContext {
-    /// Create a new FunctionCallContext with the given 1-indexing conversion preference
+    /// Create a new FunctionCallContext
     pub const fn new(language: Language) -> Self {
         Self {
             language,

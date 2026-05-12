@@ -1,0 +1,9 @@
+package bms:scripting@0.1.0;
+
+/// The BMS guest world - what a guest component must implement
+world bms-guest {
+    export on-script-loaded: func();
+    export on-script-unloaded: func();
+    export on-update: func();
+    export on-custom-event: func();
+}

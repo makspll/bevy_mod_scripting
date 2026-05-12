@@ -2,6 +2,7 @@
 
 use crate::function::arg_meta::ArgMeta;
 use crate::function::namespace::Namespace;
+use bevy_ecs::world::World;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{DisplayWithTypeInfo, WithTypeInfo};
 use bevy_mod_scripting_world::WorldGuard;
@@ -44,6 +45,17 @@ impl Default for FunctionInfo {
 
 #[profiling::all_functions]
 impl FunctionInfo {
+    /// returns true if the function is defined with a first non-contextual argument matching its namespace
+    pub fn is_method(&self) -> bool {
+        self.arg_info
+            .iter()
+            .find(|a| a.is_passed)
+            .is_some_and(|a| match self.namespace {
+                Namespace::Global => false,
+                Namespace::OnType(type_id) => type_id == a.through_type_id(),
+            })
+    }
+
     /// Create a new function info with default values.
     pub fn new() -> Self {
         Self {
@@ -128,6 +140,8 @@ pub struct FunctionArgInfo {
     /// The type information of the argument.
     #[reflect(ignore)]
     pub type_info: Option<ThroughTypeInfo>,
+    /// True if this is a passed argument and false if it's purely injected and not interacted with from scripts
+    pub is_passed: bool,
 }
 
 impl DisplayWithTypeInfo for FunctionArgInfo {
@@ -148,12 +162,6 @@ impl DisplayWithTypeInfo for FunctionArgInfo {
 
 #[profiling::all_functions]
 impl FunctionArgInfo {
-    /// Create a new function argument info with a name.
-    pub fn with_name(mut self, name: Cow<'static, str>) -> Self {
-        self.name = Some(name);
-        self
-    }
-
     /// Create a new function argument info for a specific type.
     pub fn for_type<T: TypedThrough + 'static>(
         name: Option<impl Into<Cow<'static, str>>>,
@@ -164,6 +172,15 @@ impl FunctionArgInfo {
             arg_index,
             type_id: TypeId::of::<T>(),
             type_info: Some(T::through_type_info()),
+            is_passed: T::is_passed(),
+        }
+    }
+
+    /// Returns the type id of the first typed argument (i.e. for `R<T>` it would be the type id of `T`, ignoring any context arguments)
+    pub fn through_type_id(&self) -> TypeId {
+        match &self.type_info {
+            Some(ThroughTypeInfo::UntypedWrapper { through_type, .. }) => through_type.type_id(),
+            _ => self.type_id,
         }
     }
 }

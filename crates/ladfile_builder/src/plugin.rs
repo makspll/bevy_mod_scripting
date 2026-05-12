@@ -88,6 +88,9 @@ impl ScriptingFilesGenerationPlugin {
         processors.push(Box::new(
             lua_language_server_lad_backend::LuaLanguageServerLadPlugin::default(),
         ) as Box<dyn LadFilePlugin + Send + Sync + 'static>);
+
+        processors.push(Box::new(lad_wit_backend::WITLadBackendPlugin::default())
+            as Box<dyn LadFilePlugin + Send + Sync + 'static>);
         processors
     }
 

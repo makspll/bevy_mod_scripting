@@ -1,0 +1,30 @@
+package bms:scripting;
+
+interface types {
+    resource reflect-reference {
+        display: func() -> string;
+    }
+
+    resource transform {
+        display: func() -> string;
+        up: func() -> dir3;
+    }
+
+    resource dir3 {
+        display: func() -> string;
+    }
+
+}
+
+
+
+/// The BMS guest world - what a guest component must implement
+world bms-guest {
+    import types;
+    use types.{transform, dir3};
+
+    export on-script-loaded: func();
+    export on-script-unloaded: func();
+    export on-update: func();
+    export on-custom-event: func(some-ref: transform);
+}
