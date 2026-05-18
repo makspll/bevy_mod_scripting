@@ -215,7 +215,7 @@ dot-writer = { version = "0.1.4", default-features = false }
 parking_lot = { version = "0.12.1", default-features = false }
 strum = { version = "0.26", default-features = false }
 rhai = { version = "1.21", default-features = false }
-mlua = { version = "0.10", default-features = false }
+mlua = { version = "0.11", default-features = false }
 log = { version = "0.4", default-features = false }
 env_logger = { version = "0.11", default-features = false }
 clap = { version = "4", default-features = false, features = ["std"] }

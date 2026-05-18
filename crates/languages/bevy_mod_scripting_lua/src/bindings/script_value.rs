@@ -111,10 +111,7 @@ impl FromLua for LuaScriptValue {
             Value::Nil => ScriptValue::Unit,
             Value::Boolean(b) => ScriptValue::Bool(b),
             // Value::LightUserData(light_user_data) => todo!(),
-            #[cfg(not(feature = "luau"))]
             Value::Integer(i) => ScriptValue::Integer(i),
-            #[cfg(feature = "luau")]
-            Value::Integer(i) => ScriptValue::Integer(i as i64),
             Value::Number(n) => ScriptValue::Float(n),
             Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
             Value::Function(f) => ScriptValue::Function(
@@ -187,10 +184,7 @@ impl IntoLua for LuaScriptValue {
         Ok(match self.0 {
             ScriptValue::Unit => Value::Nil,
             ScriptValue::Bool(b) => Value::Boolean(b),
-            #[cfg(not(feature = "luau"))]
             ScriptValue::Integer(i) => Value::Integer(i),
-            #[cfg(feature = "luau")]
-            ScriptValue::Integer(i) => Value::Integer(i as i32),
             ScriptValue::Float(f) => Value::Number(f),
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
@@ -199,8 +193,8 @@ impl IntoLua for LuaScriptValue {
                 .create_function(move |lua, args: MultiLuaScriptValue| {
                     let loc = {
                         profiling::scope!("function call context");
-                        lua.inspect_stack(1).map(|debug| LocationContext {
-                            line: debug.curr_line().try_into().unwrap_or_default(),
+                        lua.inspect_stack(1, |debug| LocationContext {
+                            line: debug.current_line().unwrap_or_default() as u32,
                             col: None,
                             script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
                                 v.last_loaded_script_name.as_ref().map(|n| n.to_string())
@@ -221,8 +215,8 @@ impl IntoLua for LuaScriptValue {
                 .create_function(move |lua, args: MultiLuaScriptValue| {
                     let loc = {
                         profiling::scope!("function call context");
-                        lua.inspect_stack(1).map(|debug| LocationContext {
-                            line: debug.curr_line().try_into().unwrap_or_default(),
+                        lua.inspect_stack(1, |debug| LocationContext {
+                            line: debug.current_line().unwrap_or_default() as u32,
                             col: None,
                             script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
                                 v.last_loaded_script_name.as_ref().map(|n| n.to_string())
