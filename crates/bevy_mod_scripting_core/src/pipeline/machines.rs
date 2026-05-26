@@ -2,7 +2,7 @@ use std::{
     future::ready,
     pin::Pin,
     task::{Poll, Waker},
-    time::{Duration, Instant},
+    time::Duration,
 };
 
 use bevy_ecs::{event::Event, world::Mut};
@@ -12,7 +12,7 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
-use bevy_platform::collections::HashMap;
+use bevy_platform::{collections::HashMap, time::Instant};
 
 use super::*;
 
