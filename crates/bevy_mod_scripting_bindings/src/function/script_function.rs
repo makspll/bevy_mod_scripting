@@ -793,7 +793,7 @@ mod test {
             assert!(out.is_err());
 
             let gotten = out.unwrap_err();
-            let expected_function_name = "<bevy_mod_scripting_bindings::function::script_function::test::test_invalid_amount_of_args_errors_nicely::{{closure}} as bevy_mod_scripting_bindings::function::script_function::ScriptFunction<fn(usize, usize) -> usize>>::into_dynamic_script_function::{{closure}}";
+            let expected_function_name = "<bevy_mod_scripting_bindings::function::script_function::test::test_invalid_amount_of_args_errors_nicely::{{closure}} as bevy_mod_scripting_bindings::function::script_function::ScriptFunction<'_, fn(usize, usize) -> usize>>::into_dynamic_script_function::{{closure}}";
             let expected_namespace = Namespace::Global;
 
             if let InteropError::FunctionInteropError {
