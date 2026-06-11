@@ -1,0 +1,82 @@
+{
+  "version": "0.19.0",
+  "description": "Minimal fixture exercising the Luau backend's opt-in Reg<T> brand: a component, a `world` handle with a context-only `get_component`, and a `VelocityType` registration global.",
+  "globals": {
+    "world": {
+      "type_kind": { "val": "World" },
+      "is_static": false
+    },
+    "VelocityType": {
+      "type_kind": { "val": "ScriptComponentRegistration" },
+      "is_static": false
+    }
+  },
+  "types": {
+    "my_game::Velocity": {
+      "identifier": "Velocity",
+      "crate": "my_game",
+      "path": "my_game::Velocity",
+      "layout": {
+        "kind": "Struct",
+        "name": "Velocity",
+        "fields": [{ "name": "x", "type": { "primitive": "f64" } }]
+      },
+      "metadata": {
+        "is_component": true,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "World": {
+      "identifier": "World",
+      "crate": "bevy_ecs",
+      "path": "bevy_ecs::world::World",
+      "layout": null,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "Entity": {
+      "identifier": "Entity",
+      "crate": "bevy_ecs",
+      "path": "bevy_ecs::entity::Entity",
+      "layout": null,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "ScriptComponentRegistration": {
+      "identifier": "ScriptComponentRegistration",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::ScriptComponentRegistration",
+      "layout": null,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    }
+  },
+  "functions": {
+    "World::get_component": {
+      "namespace": "World",
+      "identifier": "get_component",
+      "overload_index": null,
+      "arguments": [
+        { "kind": { "primitive": "functionCallContext" }, "name": "ctx" },
+        { "kind": { "val": "Entity" }, "name": "entity" },
+        { "kind": { "val": "ScriptComponentRegistration" }, "name": "registration" }
+      ],
+      "return_type": { "kind": { "option": { "val": "ReflectReference" } } },
+      "metadata": { "is_operator": false }
+    }
+  }
+}
