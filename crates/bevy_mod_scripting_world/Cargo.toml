@@ -9,6 +9,7 @@ repository.workspace = true
 keywords.workspace = true
 categories.workspace = true
 readme.workspace = true
+description = "ECS World access abstractions for the BMS framework"
 
 [dependencies]
 bevy_ecs = { workspace = true }
