@@ -15,6 +15,9 @@ readme.workspace = true
 [features]
 default = []
 lua_language_server_files = ["lua_language_server_lad_backend"]
+# Native Luau (.d.luau) definition-file backend. Pure string generation over the
+# LAD types, so it needs no extra dependency.
+luau_files = []
 
 [dependencies]
 bevy_app = { workspace = true, default-features = false, features = [] }

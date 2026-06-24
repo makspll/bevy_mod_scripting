@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Native **Luau** (`.d.luau`) LAD backend (`luau` module, behind the new
+  `luau_files` feature) so Luau scripts can be type-checked with `luau-lsp`.
+  Exposes `lad_to_luau` (a pure `&LadFile -> String` conversion) and
+  `LuauLadPlugin` (a `LadFilePlugin` processor wired into `default_processors()`).
+  Brings no new dependencies. An opt-in `HandleBranding` configuration emits a
+  `Reg<T>` phantom brand for cast-free, statically-typed component access.
+
 ## [0.19.0](https://github.com/makspll/bevy_mod_scripting/compare/ladfile_builder-v0.18.0...ladfile_builder-v0.19.0) - 2026-01-25
 
 ### Added

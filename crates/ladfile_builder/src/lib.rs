@@ -1,4 +1,6 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
+#[cfg(feature = "luau_files")]
+pub mod luau;
 pub mod plugin;
 
 use bevy_ecs::{
