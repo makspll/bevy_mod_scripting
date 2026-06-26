@@ -194,7 +194,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// Equivalent to running the command, but also returns the result of the callback.
     ///
     /// The returned errors will NOT be sent as events or printed unless send errors is set to true
-    pub fn run(mut self, world: &mut World) -> Result<ScriptValue, ScriptError> {
+    fn run(mut self, world: &mut World) -> Result<ScriptValue, ScriptError> {
         let script_contexts = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let cache = WorldAccessGuard::setup_cache(
@@ -220,9 +220,10 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
 }
 
 impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
-    fn apply(self, world: &mut World) {
-        let _ = self.run(world);
+    fn apply(self, world: &mut World) -> Result<ScriptValue, ScriptError> {
+        self.run(world)
     }
+    type Out = Result<ScriptValue, ScriptError>;
 }
 
 /// Command which emits a [`ScriptAttachedEvent`] and then runs the processing pipeline to immediately process it.
@@ -252,6 +253,7 @@ impl<P: IntoScriptPluginParams> Command for AttachScript<P> {
         world.write_message(self.0);
         RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
     }
+    type Out = ();
 }
 
 impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
@@ -259,4 +261,5 @@ impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
         world.write_message(self.0);
         RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
     }
+    type Out = ();
 }

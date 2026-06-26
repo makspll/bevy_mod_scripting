@@ -6,7 +6,9 @@ use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::DisplayWithTypeInfo;
 use bevy_mod_scripting_world::WorldGuard;
-use bevy_reflect::{PartialReflect, ReflectMut, ReflectRef, TypeInfo, TypeRegistry};
+use bevy_reflect::{
+    PartialReflect, ReflectMut, ReflectRef, TypeInfo, TypeRegistry, enums::VariantType,
+};
 
 use crate::{ScriptValue, convert};
 
@@ -149,11 +151,9 @@ impl ReferencePart {
             ReflectRef::List(x) => x.get(self.expect_integer(one_indexed)? as usize),
             ReflectRef::Array(x) => x.get(self.expect_integer(one_indexed)? as usize),
             ReflectRef::Enum(x) => match x.variant_type() {
-                bevy_reflect::VariantType::Struct => x.field(self.expect_string()?),
-                bevy_reflect::VariantType::Tuple => {
-                    x.field_at(self.expect_integer(one_indexed)? as usize)
-                }
-                bevy_reflect::VariantType::Unit => return Err(()),
+                VariantType::Struct => x.field(self.expect_string()?),
+                VariantType::Tuple => x.field_at(self.expect_integer(one_indexed)? as usize),
+                VariantType::Unit => return Err(()),
             },
             ReflectRef::Map(x) => {
                 let id = x.get_represented_map_info().ok_or(())?.key_ty().id();
@@ -190,11 +190,9 @@ impl ReferencePart {
             ReflectMut::List(x) => x.get_mut(self.expect_integer(one_indexed)? as usize),
             ReflectMut::Array(x) => x.get_mut(self.expect_integer(one_indexed)? as usize),
             ReflectMut::Enum(x) => match x.variant_type() {
-                bevy_reflect::VariantType::Struct => x.field_mut(self.expect_string()?),
-                bevy_reflect::VariantType::Tuple => {
-                    x.field_at_mut(self.expect_integer(one_indexed)? as usize)
-                }
-                bevy_reflect::VariantType::Unit => return Err(()),
+                VariantType::Struct => x.field_mut(self.expect_string()?),
+                VariantType::Tuple => x.field_at_mut(self.expect_integer(one_indexed)? as usize),
+                VariantType::Unit => return Err(()),
             },
             ReflectMut::Map(x) => {
                 let id = x.get_represented_map_info().ok_or(())?.key_ty().id();

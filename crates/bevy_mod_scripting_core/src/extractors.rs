@@ -4,11 +4,8 @@
 
 use bevy_ecs::{
     component::ComponentId,
-    query::{Access, AccessConflicts},
-    storage::SparseSetIndex,
+    query::{Access, AccessConflicts, ComponentIdSet},
 };
-
-use fixedbitset::FixedBitSet;
 
 // /// A wrapper around a world which pre-populates access, to safely co-exist with other system params,
 // /// acts exactly like `&mut World` so this should be your only top-level system param
@@ -131,10 +128,10 @@ use fixedbitset::FixedBitSet;
 //     }
 // }
 
-fn individual_conflicts(conflicts: AccessConflicts) -> FixedBitSet {
+fn individual_conflicts(conflicts: AccessConflicts) -> ComponentIdSet {
     match conflicts {
         // todo, not sure what to do here
-        AccessConflicts::All => FixedBitSet::new(),
+        AccessConflicts::All => ComponentIdSet::new(),
         AccessConflicts::Individual(fixed_bit_set) => fixed_bit_set,
     }
 }
@@ -155,106 +152,12 @@ pub(crate) fn get_all_access_ids(access: &Access) -> Vec<(ComponentId, bool)> {
     read.difference_with(&written);
 
     let mut result = Vec::new();
-    for c in read.ones() {
-        result.push((ComponentId::get_sparse_set_index(c), false));
+    for c in read.iter() {
+        result.push((c, false));
     }
-    for c in written.ones() {
-        result.push((ComponentId::get_sparse_set_index(c), true));
+    for c in written.iter() {
+        result.push((c, true));
     }
 
     result
 }
-
-// #[cfg(test)]
-// mod test {
-//     use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
-//     use bevy_ecs::resource::Resource;
-//     use bevy_mod_scripting_bindings::ScriptValue;
-//     use test_utils::make_test_plugin;
-
-//     use {
-//         bevy_app::{App, Plugin, Update},
-//         bevy_ecs::{
-//             component::Component,
-//             entity::Entity,
-//             event::{Event, EventReader},
-//             system::{Query, ResMut},
-//         },
-//     };
-
-//     use super::*;
-
-//     make_test_plugin!(crate);
-
-//     #[derive(Component)]
-//     struct Comp;
-
-//     #[derive(Resource, Default)]
-//     struct Res;
-
-//     #[test]
-//     pub fn check_with_world_correctly_locks_resource_and_component() {
-//         let system_fn = |mut guard: WithWorldGuard<(ResMut<Res>, Query<&'static Comp>)>| {
-//             let (guard, (_res, _entity)) = guard.get_mut();
-//             assert_eq!(guard.list_accesses().len(), 2, "Expected 2 accesses");
-//             assert!(
-//                 !guard.claim_read_access(
-//                     ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
-//                         .unwrap()
-//                 )
-//             );
-//             assert!(
-//                 !guard.claim_write_access(
-//                     ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
-//                         .unwrap()
-//                 )
-//             );
-//         };
-
-//         let mut app = App::new();
-//         app.add_systems(Update, system_fn);
-//         app.insert_resource(Res);
-//         app.world_mut().spawn(Comp);
-
-//         app.cleanup();
-//         app.finish();
-//         app.update();
-//     }
-
-//     #[test]
-//     #[should_panic(
-//         expected = "WithWorldGuard must be the only top-level system param, cannot run system"
-//     )]
-//     pub fn check_with_world_panics_when_used_with_resource_top_level() {
-//         let system_fn = |_res: ResMut<Res>, mut _guard: WithWorldGuard<Query<&'static Comp>>| {};
-
-//         let mut app = App::new();
-//         app.add_systems(Update, system_fn);
-//         app.insert_resource(Res);
-//         app.world_mut().spawn(Comp);
-
-//         app.cleanup();
-//         app.finish();
-//         app.update();
-//     }
-
-//     #[test]
-//     #[should_panic(
-//         expected = "WithWorldGuard must be the only top-level system param, cannot run system"
-//     )]
-//     pub fn check_with_world_panics_when_used_with_event_reader_top_level() {
-//         #[derive(Event)]
-//         struct TestEvent;
-//         let system_fn =
-//             |_res: EventReader<TestEvent>, mut _guard: WithWorldGuard<Query<&'static Comp>>| {};
-
-//         let mut app = App::new();
-//         app.add_systems(Update, system_fn);
-//         app.insert_resource(Res);
-//         app.world_mut().spawn(Comp);
-
-//         app.cleanup();
-//         app.finish();
-//         app.update();
-//     }
-// }

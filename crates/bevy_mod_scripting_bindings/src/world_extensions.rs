@@ -27,8 +27,9 @@ use ::{
         world::World,
     },
     bevy_reflect::{
-        DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct, DynamicVariant,
-        PartialReflect, std_traits::ReflectDefault,
+        PartialReflect,
+        enums::{DynamicEnum, DynamicVariant},
+        std_traits::ReflectDefault,
     },
 };
 use bevy_app::AppExit;
@@ -44,7 +45,10 @@ use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
 use bevy_platform::collections::HashMap;
-use bevy_reflect::{GetTypeRegistration, TypeInfo, VariantInfo};
+use bevy_reflect::{
+    GetTypeRegistration, TypeInfo, enums::VariantInfo, structs::DynamicStruct, tuple::DynamicTuple,
+    tuple_struct::DynamicTupleStruct,
+};
 use bevy_system_reflection::ReflectSchedule;
 use std::{
     alloc::Layout,
@@ -159,7 +163,7 @@ pub trait WorldExtensions {
     fn with_resource<R: Resource, O, F: FnOnce(&R) -> O>(&self, f: F) -> Result<O, InteropError>;
 
     /// Executes a closure with mutable access to a resource.
-    fn with_resource_mut<R: Resource, O, F: FnOnce(Mut<R>) -> O>(
+    fn with_resource_mut<R: Resource<Mutability = Mutable>, O, F: FnOnce(Mut<R>) -> O>(
         &self,
         f: F,
     ) -> Result<O, InteropError>;
@@ -605,7 +609,8 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         &self,
         registration: ScriptResourceRegistration,
     ) -> Result<(), InteropError> {
-        let component_data = registration
+        // check is a resource
+        registration
             .type_registration()
             .type_registration()
             .data::<ReflectResource>()
@@ -617,7 +622,9 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             })?;
 
         //  TODO: this shouldn't need entire world access it feels
-        self.with_world_mut(|world| component_data.remove(world))
+        self.with_world_mut(|world| {
+            let _ = world.remove_resource_by_id(registration.resource_id);
+        })
     }
 
     fn has_resource(&self, resource_id: ComponentId) -> Result<bool, InteropError> {
@@ -642,7 +649,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         })
     }
 
-    fn with_resource_mut<R: Resource, O, F: FnOnce(Mut<R>) -> O>(
+    fn with_resource_mut<R: Resource<Mutability = Mutable>, O, F: FnOnce(Mut<R>) -> O>(
         &self,
         f: F,
     ) -> Result<O, InteropError> {

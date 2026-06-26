@@ -433,13 +433,13 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(self
             .as_unsafe_world_cell_readonly()?
             .components()
-            .get_resource_id(id))
+            .get_id(id))
     }
 
     fn resource_component_id<R: Resource>(&self) -> Result<ComponentId, DynWorldAccessError> {
         self.as_unsafe_world_cell()?
             .components()
-            .resource_id::<R>()
+            .get_id(TypeId::of::<R>())
             .ok_or_else(|| DynWorldAccessError::UnregisteredResource(TypeId::of::<R>()))
     }
 

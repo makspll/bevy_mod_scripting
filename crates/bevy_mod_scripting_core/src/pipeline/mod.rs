@@ -315,6 +315,8 @@ impl<P: IntoScriptPluginParams> Command for RunProcessingPipelineOnce<P> {
             machines.budget = last_setting;
         }
     }
+
+    type Out = ();
 }
 
 /// A system which runs [`RunProcessingPipelineOnce`] command for the plugin only if there are active machines
@@ -422,7 +424,7 @@ mod test {
             SystemState::<LoadedWithHandles<ScriptAttachedEvent>>::from_world(world);
         // start empty
         {
-            let mut state = system_state.get_mut(world);
+            let mut state = system_state.get_mut(world).unwrap();
             let loaded = state.get_loaded().collect::<Vec<_>>();
             assert!(loaded.is_empty())
         }
@@ -443,7 +445,7 @@ mod test {
 
         // expect one loading, one invalid
         {
-            let mut state = system_state.get_mut(world);
+            let mut state = system_state.get_mut(world).unwrap();
             let loaded = state.get_loaded().collect::<Vec<_>>();
             assert!(loaded.is_empty());
             assert_eq!(state.loading.len(), 1);
@@ -451,7 +453,7 @@ mod test {
 
         // now on next call the old ones don't persist
         {
-            let mut state = system_state.get_mut(world);
+            let mut state = system_state.get_mut(world).unwrap();
             let loaded = state.get_loaded().collect::<Vec<_>>();
             assert!(loaded.is_empty())
         }
