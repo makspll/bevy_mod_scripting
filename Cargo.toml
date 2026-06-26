@@ -59,6 +59,7 @@ lua_language_server_files = [
     "ladfile_builder",
     "ladfile_builder/lua_language_server_files",
 ]
+wasmtime_wit_files = ["ladfile_builder", "ladfile_builder/wasmtime_wit_files"]
 
 
 # bindings 
@@ -354,7 +355,7 @@ path = "examples/run_script.rs"
 [[example]]
 name = "run_wasm"
 path = "examples/run_wasm.rs"
-required-features = ["wasmtime"]
+required-features = ["wasmtime", "wasmtime_wit_files"]
 
 
 [[example]]

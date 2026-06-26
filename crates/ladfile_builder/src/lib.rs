@@ -544,6 +544,7 @@ impl<'t> LadFileBuilder<'t> {
                 is_operator: ScriptOperatorNames::parse(identifier).is_some(),
                 misc: Default::default(),
             },
+            is_method: function_info.is_method(),
         };
         self.file.functions.insert(function_id, lad_function);
         self

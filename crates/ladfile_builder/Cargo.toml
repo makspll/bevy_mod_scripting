@@ -15,6 +15,7 @@ readme.workspace = true
 [features]
 default = []
 lua_language_server_files = ["lua_language_server_lad_backend"]
+wasmtime_wit_files = ["lad_wit_backend"]
 
 [dependencies]
 bevy_app = { workspace = true, default-features = false, features = [] }
@@ -26,7 +27,7 @@ bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_reflect = { workspace = true, features = ["reflect_documentation"] }
 lua_language_server_lad_backend = { workspace = true, optional = true }
-lad_wit_backend = { workspace = true }
+lad_wit_backend = { workspace = true, optional = true }
 ladfile = { workspace = true }
 regex = { workspace = true }
 

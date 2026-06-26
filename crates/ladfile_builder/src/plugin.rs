@@ -89,6 +89,7 @@ impl ScriptingFilesGenerationPlugin {
             lua_language_server_lad_backend::LuaLanguageServerLadPlugin::default(),
         ) as Box<dyn LadFilePlugin + Send + Sync + 'static>);
 
+        #[cfg(feature = "wasmtime_wit_files")]
         processors.push(Box::new(lad_wit_backend::WITLadBackendPlugin::default())
             as Box<dyn LadFilePlugin + Send + Sync + 'static>);
         processors

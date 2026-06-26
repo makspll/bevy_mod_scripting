@@ -82,27 +82,33 @@ pub fn to_canonical_abi_func_name(
     match key.namespace {
         Namespace::Global => key.name.clone(),
         Namespace::OnType(type_id) => {
-            let ident = type_reg
+            let type_name = type_reg
                 .get(type_id)
                 .map(|reg| reg.type_info().type_path_table().ident().unwrap())
                 .or_else(|| {
                     if type_id == TypeId::of::<World>() {
-                        Some("world")
+                        Some("World")
                     } else {
                         None
                     }
                 })
                 .expect("missing type");
-            let type_name = to_wit_ident(ident);
-            let is_method = info.is_method();
-            let prefix = if is_method { "[method]" } else { "[static]" };
-            let fname = to_wit_ident(&key.name);
-            format!("{prefix}{type_name}.{fname}").into()
+            to_canonical_abi_func_name_without_reg(&key.name, info.is_method(), type_name)
         }
     }
 }
 
-const REFLECT_REF_RES_NAME: &str = "reflect-ref";
+pub fn to_canonical_abi_func_name_without_reg(
+    name: &str,
+    is_method: bool,
+    type_name: &str,
+) -> Cow<'static, str> {
+    let type_name = to_wit_ident(type_name);
+    let is_method = is_method;
+    let prefix = if is_method { "[method]" } else { "[static]" };
+    let fname = to_wit_ident(&name);
+    format!("{prefix}{type_name}.{fname}").into()
+}
 
 /// Build and populate the wasmtime component linker from the BMS function registry.  
 pub fn build_linker(linker: &mut Linker<WasmtimeStoreData>) -> Result<(), InteropError> {

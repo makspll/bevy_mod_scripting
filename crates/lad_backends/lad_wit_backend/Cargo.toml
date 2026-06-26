@@ -11,13 +11,7 @@ categories.workspace = true
 readme.workspace = true
 
 [dependencies]
-wasmtime = { version = "25", features = ["component-model"] }  
-bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core" }  
-bevy_mod_scripting_bindings = { path = "../../bevy_mod_scripting_bindings" }  
-bevy_mod_scripting_asset = { path = "../../bevy_mod_scripting_asset" }  
-bevy_mod_scripting_script = { path = "../../bevy_mod_scripting_script" }  
-bevy_app = { version = "0.14" }  
-bevy_ecs = { version = "0.14" }  
+bevy_mod_scripting_wasmtime = { workspace = true }
 bevy_log = { version = "0.14" }  
 bevy_reflect = { version = "0.14" }  
 parking_lot = "0.12"  

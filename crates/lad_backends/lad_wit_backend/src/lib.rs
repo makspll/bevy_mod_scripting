@@ -3,6 +3,9 @@
 //! Converts a LAD (Language Agnostic Definition) file to a WIT (WebAssembly Interface Types)  
 //! file that can be used to generate bindings for guest WebAssembly components.  
 
+use bevy_mod_scripting_wasmtime::{
+    to_canonical_abi_func_name, to_canonical_abi_func_name_without_reg, to_wit_ident,
+};
 use ladfile::{
     LadFieldOrVariableKind, LadFile, LadFilePlugin, LadFunctionNamespace, LadTypeId,
     ReflectionPrimitiveKind,
@@ -19,122 +22,51 @@ pub fn generate_wit_from_ladfile(ladfile: &LadFile) -> Result<String, anyhow::Er
 
     writeln!(out, "package bms:scripting@0.1.0;")?;
     writeln!(out)?;
+    writeln!(out, "interface types {{")?;
+
     // Get unique types by grouping polymorphic types together
     let polymorphic_types = ladfile.polymorphizied_types(true); // exclude primitives  
 
-    // Generate one interface per unique type (not per generic instance)
+    // Generate one resource per unique type (not per generic instance)
     for (poly_key, type_instances) in polymorphic_types {
-        // Skip if none of the instances have associated functions
-        if !type_instances.iter().any(|&type_id| {
-            ladfile
-                .types
-                .get(type_id)
-                .map(|t| !t.associated_functions.is_empty())
-                .unwrap_or(false)
-        }) {
+        // exclude generic types
+        if poly_key.arity != 0 || type_instances.len() != 1 {
             continue;
         }
 
-        // Use the first instance to get the type info
-        if let Some(&first_type_id) = type_instances.iter().next() {
-            if let Some(lad_type) = ladfile.types.get(first_type_id) {
-                let interface_name = to_wit_interface_name(&lad_type.identifier);
+        let instance = match type_instances
+            .iter()
+            .next()
+            .and_then(|instance| ladfile.types.get(*instance))
+        {
+            Some(instance) => instance,
+            None => continue,
+        };
+        let wit_type_ident = to_wit_ident(&instance.identifier);
+        writeln!(out, "resource {wit_type_ident} {{")?;
 
-                writeln!(out, "/// Methods for {}", lad_type.identifier)?;
-                writeln!(out, "interface {} {{", interface_name)?;
-                writeln!(out, "    use {{reflect-reference}};")?;
-                writeln!(out)?;
-
-                // Collect all associated functions from all instances
-                let mut all_functions = std::collections::HashSet::new();
-                for &type_id in &type_instances {
-                    if let Some(t) = ladfile.types.get(type_id) {
-                        for func_id in &t.associated_functions {
-                            all_functions.insert(func_id);
-                        }
-                    }
-                }
-
-                // Generate functions
-                for func_id in &all_functions {
-                    if let Some(func) = ladfile.functions.get(*func_id) {
-                        if let Some(doc) = &func.documentation {
-                            for line in doc.lines() {
-                                writeln!(out, "    /// {}", line)?;
-                            }
-                        }
-                        let wit_func = lad_function_to_wit(ladfile, func);
-                        writeln!(out, "    {}", wit_func)?;
-                    }
-                }
-
-                writeln!(out, "}}")?;
-                writeln!(out)?;
+        for assoc_fn in &instance.associated_functions {
+            if let Some(lad_fn) = ladfile.functions.get(assoc_fn) {
+                lad_to_wit_function(ladfile, &mut out, lad_fn)?;
             }
         }
-    }
-    // Global functions interface
-    let global_functions: Vec<_> = ladfile
-        .functions
-        .values()
-        .filter(|f| matches!(f.namespace, LadFunctionNamespace::Global))
-        .collect();
-
-    if !global_functions.is_empty() {
-        writeln!(out, "/// Global BMS functions")?;
-        writeln!(out, "interface globals {{")?;
-        writeln!(
-            out,
-            "    use types.{{reflect-reference, component-registration, entity}};"
-        )?;
-        writeln!(out)?;
-
-        for func in &global_functions {
-            if let Some(doc) = &func.documentation {
-                for line in doc.lines() {
-                    writeln!(out, "    /// {}", line)?;
-                }
-            }
-            let wit_func = lad_function_to_wit(ladfile, func);
-            writeln!(out, "    {}", wit_func)?;
-        }
-
         writeln!(out, "}}")?;
-        writeln!(out)?;
     }
-
-    // World definition
-    writeln!(
-        out,
-        "/// The BMS guest world - what a guest component must implement"
-    )?;
-    writeln!(out, "world bms-guest {{")?;
-
-    if !global_functions.is_empty() {
-        writeln!(out, "    import globals;")?;
-    }
-
-    for (_, lad_type) in ladfile.types.iter() {
-        if lad_type.associated_functions.is_empty() {
-            continue;
-        }
-        let interface_name = to_wit_interface_name(&lad_type.identifier);
-        writeln!(out, "    import {};", interface_name)?;
-    }
-
-    writeln!(out)?;
-    writeln!(out, "    export on-script-loaded: func();")?;
-    writeln!(out, "    export on-script-unloaded: func();")?;
-    writeln!(out, "    export on-update: func();")?;
     writeln!(out, "}}")?;
 
     Ok(out)
 }
-fn lad_function_to_wit(ladfile: &LadFile, func: &ladfile::LadFunction) -> String {
-    let name = to_wit_ident(&func.identifier);
 
-    // Filter out FunctionCallContext args (host-injected)
-    let args: Vec<_> = func
+fn lad_to_wit_function(
+    ladfile: &LadFile,
+    out: &mut String,
+    lad_fn: &ladfile::LadFunction,
+) -> Result<(), anyhow::Error> {
+    let ident = lad_fn.identifier_with_overload();
+    let wit_ident = to_wit_ident(&ident);
+    let is_method = lad_fn.is_method();
+    let static_ = if is_method { "" } else { "static" };
+    let params: Vec<_> = lad_fn
         .arguments
         .iter()
         .filter(|a| {
@@ -143,10 +75,6 @@ fn lad_function_to_wit(ladfile: &LadFile, func: &ladfile::LadFunction) -> String
                 LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
             )
         })
-        .collect();
-
-    let params: Vec<String> = args
-        .iter()
         .enumerate()
         .map(|(i, arg)| {
             // Use to_wit_ident for parameter names to escape reserved keywords
@@ -159,15 +87,20 @@ fn lad_function_to_wit(ladfile: &LadFile, func: &ladfile::LadFunction) -> String
             format!("{}: {}", param_name, wit_type)
         })
         .collect();
-
-    let ret = lad_kind_to_wit_type(ladfile, &func.return_type.kind);
-
-    if ret == "()" || ret == "unit" {
-        format!("{}: func({});", name, params.join(", "))
+    let ret = lad_kind_to_wit_type(ladfile, &lad_fn.return_type.kind);
+    Ok(if ret == "()" || ret == "unit" {
+        writeln!(out, "{}: func({});", wit_ident, params.join(", "))?;
     } else {
-        format!("{}: func({}) -> {};", name, params.join(", "), ret)
-    }
+        writeln!(
+            out,
+            "{}: func({}) -> {};",
+            wit_ident,
+            params.join(", "),
+            ret
+        )?;
+    })
 }
+
 fn lad_kind_to_wit_type(ladfile: &LadFile, kind: &LadFieldOrVariableKind) -> String {
     match kind {
         LadFieldOrVariableKind::Primitive(prim) => primitive_to_wit(prim),
@@ -180,11 +113,11 @@ fn lad_kind_to_wit_type(ladfile: &LadFile, kind: &LadFieldOrVariableKind) -> Str
             }
             // Otherwise use the type identifier
             let ident = ladfile.get_type_identifier(id, Some("reflect-reference"));
-            if ident == "ReflectReference" {
-                "borrow<reflect-reference>".to_string()
-            } else {
-                to_wit_ident(&ident)
-            }
+            // if ident == "ReflectReference" {
+            //     "borrow<reflect-reference>".to_string()
+            // } else {
+            to_wit_ident(&ident)
+            // }
         }
         LadFieldOrVariableKind::Option(inner) => {
             format!("option<{}>", lad_kind_to_wit_type(ladfile, inner))
@@ -321,44 +254,6 @@ const WIT_RESERVED_KEYWORDS: &[&str] = &[
     "with",
 ];
 
-/// Convert a Rust identifier to a WIT-compatible identifier, escaping reserved keywords  
-fn to_wit_ident(name: &str) -> String {
-    let mut result = String::new();
-    let mut prev_upper = false;
-
-    for (i, c) in name.chars().enumerate() {
-        if c == '_' || c == ':' || c == ' ' {
-            if !result.is_empty() && !result.ends_with('-') {
-                result.push('-');
-            }
-            prev_upper = false;
-        } else if c.is_uppercase() {
-            if i > 0 && !prev_upper && !result.is_empty() && !result.ends_with('-') {
-                result.push('-');
-            }
-            #[allow(clippy::unwrap_used)]
-            result.push(c.to_lowercase().next().unwrap());
-            prev_upper = true;
-        } else {
-            result.push(c);
-            prev_upper = false;
-        }
-    }
-
-    result = result.trim_end_matches('-').to_string();
-
-    // Escape reserved keywords by appending an underscore
-    if WIT_RESERVED_KEYWORDS.contains(&result.as_str()) {
-        // TODO: Just make it work for now
-        result.push('a');
-    }
-
-    result
-}
-
-fn to_wit_interface_name(name: &str) -> String {
-    to_wit_ident(name)
-}
 /// A plugin which generates WIT interface definition files from LAD files  
 #[derive(Clone)]
 pub struct WITLadBackendPlugin {
@@ -374,90 +269,6 @@ impl Default for WITLadBackendPlugin {
     }
 }
 
-// /// List of WIT reserved keywords that need to be escaped
-// const WIT_RESERVED_KEYWORDS: &[&str] = &[
-//     // Primitive types
-//     "bool",
-//     "s8",
-//     "s16",
-//     "s32",
-//     "s64",
-//     "u8",
-//     "u16",
-//     "u32",
-//     "u64",
-//     "f32",
-//     "f64",
-//     "char",
-//     "string",
-//     // WIT keywords
-//     "func",
-//     "interface",
-//     "world",
-//     "type",
-//     "resource",
-//     "record",
-//     "variant",
-//     "enum",
-//     "flags",
-//     "tuple",
-//     "list",
-//     "option",
-//     "result",
-//     "borrow",
-//     "own",
-//     "use",
-//     "export",
-//     "import",
-//     "package",
-//     "as",
-//     // Control flow
-//     "if",
-//     "else",
-//     "match",
-//     "for",
-//     "while",
-//     "loop",
-//     "return",
-//     // Other
-//     "true",
-//     "false",
-//     "null",
-//     "undefined",
-// ];
-
-/// Convert a Rust identifier to a WIT-compatible identifier, escaping reserved keywords  
-// fn to_wit_ident(name: &str) -> String {
-//     let mut result = String::new();
-//     let mut prev_upper = false;
-
-//     for (i, c) in name.chars().enumerate() {
-//         if c == '_' || c == ':' || c == ' ' {
-//             if !result.is_empty() && !result.ends_with('-') {
-//                 result.push('-');
-//             }
-//             prev_upper = false;
-//         } else if c.is_uppercase() {
-//             if i > 0 && !prev_upper && !result.is_empty() && !result.ends_with('-') {
-//                 result.push('-');
-//             }
-//             result.push(c.to_lowercase().next().unwrap());
-//             prev_upper = true;
-//         } else {
-//             result.push(c);
-//             prev_upper = false;
-//         }
-//     }
-
-//     result = result.trim_end_matches('-').to_string();
-
-//     // Escape reserved keywords by appending an underscore
-//     if WIT_RESERVED_KEYWORDS.contains(&result.as_str()) {
-//         result.push('_');
-//     }
-
-//     result
-// }
 impl LadFilePlugin for WITLadBackendPlugin {
     fn run(&self, ladfile: &ladfile::LadFile, path: &Path) -> Result<(), Box<dyn Error>> {
         let wit_content = generate_wit_from_ladfile(ladfile)

@@ -203,6 +203,8 @@ pub struct LadFunction {
     pub documentation: Option<Cow<'static, str>>,
     /// Function metadata
     pub metadata: LadFunctionMetadata,
+    /// True if the first argument corresponds to the namespace type
+    pub is_method: bool,
 }
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// Additional data relevant to functions
@@ -229,6 +231,11 @@ impl LadFunction {
         } else {
             self.identifier.clone()
         }
+    }
+
+    /// True if the first argument corresponds to the namespace type
+    pub fn is_method(&self) -> bool {
+        self.is_method
     }
 }
 
