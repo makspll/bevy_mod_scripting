@@ -77,16 +77,3 @@ impl crate::driver::RustcPlugin for BevyAnalyzer {
         log::debug!("Running cargo build command: \n{all_env} {bin_name} {args}",);
     }
 }
-
-fn copy_command_without_args(
-    cmd: &std::process::Command,
-    arg_filter: &[&str],
-) -> std::process::Command {
-    let mut new_cmd = std::process::Command::new(cmd.get_program());
-    new_cmd.args(
-        cmd.get_args()
-            .filter(|a| !arg_filter.iter().any(|f| f == a)),
-    );
-    new_cmd.envs(cmd.get_envs().filter_map(|(a, b)| b.map(|b| (a, b))));
-    new_cmd
-}

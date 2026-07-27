@@ -74,7 +74,7 @@ pub struct Args {
         global = true,
         short,
         long,
-        default_value = "bevy_winit,bevy_window",
+        default_value = "bevy_winit,bevy_window,bevy_clipboard",
         use_value_delimiter = true,
         value_delimiter = ','
     )]

@@ -62,7 +62,7 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         "Looking for impls of the traits: [{}]",
         std_traits
             .iter()
-            .map(|d| tcx.def_path_str(*d))
+            .map(|d| tcx.def_path_str(**d))
             .collect::<Vec<_>>()
             .join(", ")
     );
@@ -97,17 +97,22 @@ fn type_impl_of_trait(
 
     tcx.for_each_relevant_impl(
         trait_did,
-        tcx.type_of(reflect_ty_did).instantiate_identity(),
+        tcx.type_of(*reflect_ty_did)
+            .instantiate_identity()
+            .skip_norm_wip(),
         |impl_did| {
             trace!(
                 "Possible impl for trait: {:?} on type: {:?} found: {:?}",
                 tcx.def_path_str(trait_did),
-                tcx.def_path_str(reflect_ty_did),
+                tcx.def_path_str(*reflect_ty_did),
                 impl_did,
             );
             //TODO: false negatives coming from this inference
 
-            let ty = tcx.type_of(reflect_ty_did).instantiate_identity();
+            let ty = tcx
+                .type_of(*reflect_ty_did)
+                .instantiate_identity()
+                .skip_norm_wip();
             let infcx = tcx.infer_ctxt().build(TypingMode::non_body_analysis());
             let result = impl_matches(&infcx, ty, impl_did);
             log::trace!("Result: {result:#?}");
@@ -155,7 +160,12 @@ fn impl_matches<'tcx>(infcx: &InferCtxt<'tcx>, ty: Ty<'tcx>, impl_def_id: DefId)
 
         let impl_predicates = tcx.predicates_of(impl_def_id).instantiate(tcx, impl_args);
         ocx.register_obligations(impl_predicates.predicates.iter().map(|&predicate| {
-            Obligation::new(tcx, ObligationCause::dummy(), param_env, predicate)
+            Obligation::new(
+                tcx,
+                ObligationCause::dummy(),
+                param_env,
+                predicate.skip_norm_wip(),
+            )
         }));
 
         ocx.try_evaluate_obligations().is_empty()

@@ -1,9 +1,10 @@
 use std::{borrow::Cow, process::Command};
 
 use cargo_metadata::camino::Utf8Path;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 /// Specification of a set of crates.
+#[derive(Serialize, Deserialize)]
 pub enum CrateFilter {
     /// Every crate in the workspace and all transitive dependencies.
     AllCrates,
@@ -12,6 +13,7 @@ pub enum CrateFilter {
 }
 
 /// Arguments from your plugin to the rustc_plugin framework.
+#[derive(Serialize, Deserialize)]
 pub struct RustcPluginArgs<Args> {
     /// Whatever CLI arguments you want to pass along.
     pub args: Args,
@@ -47,7 +49,7 @@ pub trait RustcPlugin: Sized {
     fn modify_cargo(&self, _cargo: &mut Command, _args: &Self::Args) {}
 
     /// Executes the plugin with a set of compiler and plugin args.
-    fn run(self, compiler_args: Vec<String>, plugin_args: Self::Args);
+    fn run(self, compiler_args: Vec<String>, plugin_args: RustcPluginArgs<Self::Args>);
 }
 
 /// The name of the environment variable shared between the CLI and the driver.

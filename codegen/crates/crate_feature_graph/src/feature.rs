@@ -19,7 +19,7 @@ pub struct CrateName(pub(crate) String);
 
 impl<'a, T: Borrow<Package>> From<&'a T> for CrateName {
     fn from(pkg: &'a T) -> Self {
-        CrateName(pkg.borrow().name.clone())
+        CrateName(pkg.borrow().name.to_string())
     }
 }
 
@@ -467,7 +467,7 @@ impl From<Package> for Crate {
         }
 
         Self {
-            name: CrateName(meta.name.clone()),
+            name: CrateName(meta.name.to_string()),
             features,
             dependencies: dependencies
                 .into_iter()

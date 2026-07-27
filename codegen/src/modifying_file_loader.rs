@@ -1,8 +1,8 @@
 use std::{
     io,
     sync::{
-        Arc,
         atomic::{AtomicBool, Ordering},
+        Arc,
     },
 };
 
@@ -32,6 +32,7 @@ impl FileLoader for ModifyingFileLoader {
                     ("bevy_mod_scripting_bindings", vec![]),
                 ] {
                     if !f.contains(&format!("extern crate {crate_}"))
+                        && !f.contains(&format!("extern crate self as {crate_}"))
                         && !excluded_files
                             .iter()
                             .any(|s| path.to_str().unwrap().contains(s))
@@ -57,5 +58,9 @@ impl FileLoader for ModifyingFileLoader {
 
     fn read_binary_file(&self, path: &std::path::Path) -> io::Result<Arc<[u8]>> {
         RealFileLoader.read_binary_file(path)
+    }
+
+    fn current_directory(&self) -> io::Result<std::path::PathBuf> {
+        RealFileLoader.current_directory()
     }
 }

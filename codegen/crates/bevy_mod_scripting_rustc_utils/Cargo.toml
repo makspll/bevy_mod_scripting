@@ -1,0 +1,27 @@
+[package]
+name = "bevy_mod_scripting_rustc_utils"
+version = "0.1.0"
+edition = "2024"
+
+[package.metadata.rust-analyzer]
+rustc_private = true
+
+[[bin]]
+name = "cargo-bms-rustc-utils"
+path = "src/bin/main.rs"
+
+[[bin]]
+name = "bms-rustc-utils-driver"
+path = "src/bin/driver.rs"
+
+
+[dependencies]
+bevy_mod_scripting_rustc_driver = { workspace = true }
+clap = { workspace = true }
+pretty_env_logger = { workspace = true }
+cargo_metadata = { workspace = true}
+log = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
