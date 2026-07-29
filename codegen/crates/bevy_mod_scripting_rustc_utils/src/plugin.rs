@@ -1,7 +1,6 @@
 use bevy_mod_scripting_rustc_driver::{RustcPlugin, RustcPluginArgs, copy_command_without_args};
 use cargo_metadata::camino::Utf8Path;
 use clap::Parser;
-use log::info;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_hir::{
     def_id::{DefId, LOCAL_CRATE},
@@ -40,7 +39,7 @@ impl Callbacks for RustcUtilsCallbacks {
                 {
                     Some(trait_did) => *trait_did,
                     None => {
-                        info!(
+                        println!(
                             "no: trait '{}' not found in crate",
                             arg_implements_args.trait_name
                         );
@@ -62,7 +61,7 @@ impl Callbacks for RustcUtilsCallbacks {
                 let impl_did = match impl_did {
                     Some(impl_did) => impl_did,
                     None => {
-                        info!(
+                        println!(
                             "no: impl block not found for type: {}",
                             arg_implements_args.type_name
                         );
@@ -77,7 +76,7 @@ impl Callbacks for RustcUtilsCallbacks {
                 let func_did = match func_did {
                     Some(func_did) => func_did.def_id,
                     None => {
-                        info!("no: could not find function: {} on any impl block for type: {}", arg_implements_args.function, arg_implements_args.type_name);
+                        println!("no: could not find function: {} on any impl block for type: {}", arg_implements_args.function, arg_implements_args.type_name);
                         return Compilation::Continue;
                     }
                 };              
@@ -86,7 +85,7 @@ impl Callbacks for RustcUtilsCallbacks {
 
  
                 let (typing_env, fn_sig) =
-                    typing_env_function_arg_in_impl(tcx, bound_sig, impl_did);
+                    typing_env_function_arg_in_impl(tcx, bound_sig, func_did, impl_did);
 
 
                 let param = match tcx.fn_arg_idents(func_did).iter().zip(fn_sig.inputs()).find(|(param, _)| {
@@ -94,15 +93,15 @@ impl Callbacks for RustcUtilsCallbacks {
                 }) {
                     Some((_,param)) => param,
                     None => {
-                        info!("no: no parameter named {} found on function", arg_implements_args.arg);
+                        println!("no: no parameter named {} found on function", arg_implements_args.arg);
                         return Compilation::Continue;
                     },
                 };
 
                 match type_implements_trait(tcx, typing_env, *param, trait_did) {
-                    Ok(_) => info!("yes"),
+                    Ok(_) => println!("yes"),
                     Err(err) => {
-                        info!("no: {err}")
+                        println!("no: {err}")
                     },
                 };
 
@@ -153,7 +152,7 @@ impl RustcPlugin for RustcUtilsPlugin {
 
         // // make cargo chatty as well
         // if args.verbose.get_log_level_int() >= 3 {
-            cmd.arg("-vv");
+            // cmd.arg("-q");
         // } else {
         //     cmd.arg("-q");
         // }

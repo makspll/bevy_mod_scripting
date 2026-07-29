@@ -1,22 +1,22 @@
-pub trait TargetTrait {}
+pub trait SimpleTrait {}
 
-impl TargetTrait for usize {}
+pub trait WithAssocItem {
+    type A: SimpleTrait;
+}
+
+impl SimpleTrait for usize {}
+impl WithAssocItem for usize {
+    type A = usize;
+}
 
 pub struct TargetType;
 
 impl TargetType {
-    pub fn test_fn(arg: String) {
+    pub fn simple_fn(arg: usize) {
 
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    pub fn with_assoc_fn<A: WithAssocItem>(arg: A) {
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
     }
 }

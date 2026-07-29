@@ -8,7 +8,7 @@ extern crate rustc_log;
 fn main() -> ExitCode {
     pretty_env_logger::formatted_builder()
         .parse_write_style("always")
-        .parse_filters(&std::env::var("RUST_LOG").unwrap_or_else(|_| "trace".into()))
+        .parse_filters(&std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()))
         .init();
 
     driver_main(RustcUtilsPlugin {})

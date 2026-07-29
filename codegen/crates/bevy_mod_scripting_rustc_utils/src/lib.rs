@@ -16,8 +16,10 @@ extern crate rustc_middle;
 extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_trait_selection;
+extern crate rustc_data_structures;
 
 pub mod plugin;
 pub mod query;
 
+pub(crate) mod emitter;
 mod args;

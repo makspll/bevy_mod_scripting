@@ -1,26 +1,51 @@
 use rustc_hir::def_id::{DefId, LocalDefId};
-use rustc_infer::infer::{TyCtxtInferExt};
-use rustc_middle::ty::{EarlyBinder, FnSig, PolyFnSig, Ty, TyCtxt, TypingEnv};
-use rustc_trait_selection::infer::InferCtxtExt;
+use rustc_infer::{infer::TyCtxtInferExt, traits::ObligationCause};
+use rustc_middle::ty::{EarlyBinder, FnSig, ParamEnv, PolyFnSig, Ty, TyCtxt, TypingEnv, TypingMode, Unnormalized};
+use rustc_trait_selection::{error_reporting::InferCtxtErrorExt, traits::ObligationCtxt};
 
-pub fn typing_env_function_arg_in_impl<'tcx>(tcx: TyCtxt<'tcx>, sig: EarlyBinder<PolyFnSig<'tcx>>, impl_block: DefId) -> (TypingEnv<'tcx>, FnSig<'tcx>){
-    let env = TypingEnv::non_body_analysis(tcx, impl_block);
+use crate::emitter::{Buffer, BufferEmitter};
+
+pub fn typing_env_function_arg_in_impl<'tcx>(tcx: TyCtxt<'tcx>, sig: EarlyBinder<PolyFnSig<'tcx>>, function: DefId, impl_block: DefId) -> (TypingEnv<'tcx>, FnSig<'tcx>){
+    // let env = TypingEnv::non_body_analysis(tcx, impl_block);
+    let impl_predicates = tcx.predicates_of(impl_block).instantiate_identity(tcx).predicates.into_iter().map(Unnormalized::skip_norm_wip);
+    let func_predicates =   tcx.predicates_of(function).instantiate_own_identity().map(|(a, _)| Unnormalized::skip_norm_wip(a));
+    let all_predicates = impl_predicates.chain(func_predicates);
+    let param_env = ParamEnv::new(tcx.mk_clauses_from_iter(all_predicates));  
+    let env = TypingEnv::new(param_env, TypingMode::non_body_analysis());
     (env, sig.skip_binder().skip_binder())
 }
 
 pub fn type_implements_trait<'tcx>(tcx: TyCtxt<'tcx>, ctxt: TypingEnv<'tcx>, self_ty: Ty<'tcx>, trait_did: DefId) -> Result<(), String>{
-    let (infr_ctxt, param_env) = tcx.infer_ctxt()
-        .build_with_typing_env(ctxt);
+    
+    let shared_buffer = Buffer::new();
+    // let bufferEmitter = Box::new(shared_buffer);
+    {
+        let (infr_ctxt, param_env) = tcx.infer_ctxt()
+            .build_with_typing_env(ctxt);
 
+        let ocx = ObligationCtxt::new_with_diagnostics(&infr_ctxt);
 
-    let impls = infr_ctxt
-        .type_implements_trait(trait_did, [self_ty], param_env).must_apply_modulo_regions();
+        ocx.register_bound(
+            ObligationCause::dummy(),
+            param_env,
+            self_ty,
+            trait_did,
+        );
 
-    if impls {
-        Ok(())
-    } else {
-        Err("error".to_owned())
+        let errors = ocx.evaluate_obligations_error_on_ambiguity();
+
+        if errors.is_empty() {
+            return Ok(());
+        }
+
+        let errcx = infr_ctxt.err_ctxt();
+        errcx.dcx().set_emitter(Box::new(BufferEmitter::new(shared_buffer.clone())));
+        errcx.report_fulfillment_errors(errors);
     }
+
+    let lock = shared_buffer.lock();
+
+    Err(lock.buffer())
 }
 
 /// Returns all impls in the crate satisfying a condition, and their trait DefId
