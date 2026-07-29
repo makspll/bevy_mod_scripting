@@ -278,7 +278,7 @@ pub fn send_on_click(
         let pos = window.unwrap().cursor_position().unwrap_or_default();
         let x = pos.x as u32;
         let y = pos.y as u32;
-        
+
         events.write(ScriptCallbackEvent::new_for_all_scripts(
             OnClick,
             vec![
