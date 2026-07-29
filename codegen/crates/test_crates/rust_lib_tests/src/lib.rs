@@ -11,6 +11,7 @@ impl WithAssocItem for usize {
 
 pub struct TargetType;
 
+#[allow(unused_variables)]
 impl TargetType {
     pub fn simple_fn(arg: usize) {
 

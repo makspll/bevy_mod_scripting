@@ -8,7 +8,8 @@ use std::{
     process::{Command, Stdio},
 };
 
-use bevy_mod_scripting_codegen::{driver::*, *};
+use bevy_mod_scripting_codegen::{*};
+use bevy_mod_scripting_rustc_driver::{CHANNEL, WORKSPACE_GRAPH_FILE_ENV, cli_main, fetch_target_directory};
 use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
 use crate_feature_graph::{Workspace, WorkspaceGraph};
@@ -90,7 +91,7 @@ fn main() {
         None
     };
 
-    let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
+    let plugin_subdir = format!("plugin-{}", CHANNEL);
     let plugin_target_dir = metadata.target_directory.join(plugin_subdir);
 
     info!("Computing workspace metadata");
@@ -217,7 +218,7 @@ fn main() {
     // disable incremental compilation
     unsafe { env::set_var("CARGO_INCREMENTAL", "0") };
 
-    driver::cli_main(
+    cli_main(
         BevyAnalyzer,
         workspace_meta.include_crates.unwrap_or_default(),
         &metadata,

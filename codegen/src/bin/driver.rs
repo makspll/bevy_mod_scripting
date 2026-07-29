@@ -1,7 +1,8 @@
 #![feature(rustc_private)]
 use std::process::ExitCode;
 
-use bevy_mod_scripting_codegen::{driver::driver_main, *};
+use bevy_mod_scripting_codegen::{*};
+use bevy_mod_scripting_rustc_driver::driver_main;
 // use rustc_log::LoggerConfig;
 
 extern crate rustc_log;

@@ -3,22 +3,41 @@ use rustc_infer::{infer::TyCtxtInferExt, traits::ObligationCause};
 use rustc_middle::ty::{EarlyBinder, FnSig, ParamEnv, PolyFnSig, Ty, TyCtxt, TypingEnv, TypingMode, Unnormalized};
 use rustc_trait_selection::{error_reporting::InferCtxtErrorExt, traits::ObligationCtxt};
 
-use crate::emitter::{Buffer, BufferEmitter};
+use crate::emitter::{CaptureState};
 
-pub fn typing_env_function_arg_in_impl<'tcx>(tcx: TyCtxt<'tcx>, sig: EarlyBinder<PolyFnSig<'tcx>>, function: DefId, impl_block: DefId) -> (TypingEnv<'tcx>, FnSig<'tcx>){
-    // let env = TypingEnv::non_body_analysis(tcx, impl_block);
-    let impl_predicates = tcx.predicates_of(impl_block).instantiate_identity(tcx).predicates.into_iter().map(Unnormalized::skip_norm_wip);
-    let func_predicates =   tcx.predicates_of(function).instantiate_own_identity().map(|(a, _)| Unnormalized::skip_norm_wip(a));
-    let all_predicates = impl_predicates.chain(func_predicates);
+pub fn typing_env_function_arg_in_impl<'tcx>(  
+    tcx: TyCtxt<'tcx>,  
+    sig: EarlyBinder<'tcx, PolyFnSig<'tcx>>,  
+    function: DefId,  
+    impl_block: DefId,  
+) -> (TypingEnv<'tcx>, FnSig<'tcx>) {  
+    let impl_predicates = tcx  
+        .predicates_of(impl_block)  
+        .instantiate_identity(tcx)  
+        .predicates  
+        .into_iter()  
+        .map(Unnormalized::skip_norm_wip);  
+    let func_predicates = tcx  
+        .predicates_of(function)  
+        .instantiate_own_identity()  
+        .map(|(a, _)| Unnormalized::skip_norm_wip(a));  
+    let all_predicates = impl_predicates.chain(func_predicates);  
     let param_env = ParamEnv::new(tcx.mk_clauses_from_iter(all_predicates));  
-    let env = TypingEnv::new(param_env, TypingMode::non_body_analysis());
-    (env, sig.skip_binder().skip_binder())
-}
+    let env = TypingEnv::new(param_env, TypingMode::non_body_analysis());  
+  
+    // Discharge the EarlyBinder identically, then liberate the late-bound  
+    // lifetimes on the fn sig using `function`'s DefId so no escaping  
+    // bound vars remain in the extracted `FnSig`.  
+    let fn_sig = sig.instantiate_identity();  
+    let fn_sig = tcx.liberate_late_bound_regions(function, fn_sig.skip_norm_wip());  
+  
+    (env, fn_sig)  
+}  
 
 pub fn type_implements_trait<'tcx>(tcx: TyCtxt<'tcx>, ctxt: TypingEnv<'tcx>, self_ty: Ty<'tcx>, trait_did: DefId) -> Result<(), String>{
-    
-    let shared_buffer = Buffer::new();
-    // let bufferEmitter = Box::new(shared_buffer);
+
+    let (_, messages, has_errors) = CaptureState::capture::<()>(|| {  
+
     {
         let (infr_ctxt, param_env) = tcx.infer_ctxt()
             .build_with_typing_env(ctxt);
@@ -34,18 +53,18 @@ pub fn type_implements_trait<'tcx>(tcx: TyCtxt<'tcx>, ctxt: TypingEnv<'tcx>, sel
 
         let errors = ocx.evaluate_obligations_error_on_ambiguity();
 
-        if errors.is_empty() {
-            return Ok(());
-        }
-
         let errcx = infr_ctxt.err_ctxt();
-        errcx.dcx().set_emitter(Box::new(BufferEmitter::new(shared_buffer.clone())));
+
+        // errcx.dcx().set_emitter(Box::new(BufferEmitter::new(shared_buffer.clone())));
         errcx.report_fulfillment_errors(errors);
     }
+    });
 
-    let lock = shared_buffer.lock();
-
-    Err(lock.buffer())
+    if has_errors  {
+        Err(messages)
+    } else {
+        Ok(())
+    }
 }
 
 /// Returns all impls in the crate satisfying a condition, and their trait DefId

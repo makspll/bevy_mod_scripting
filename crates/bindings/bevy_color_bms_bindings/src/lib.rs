@@ -1,15 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyColorScriptingPlugin;
 pub(crate) fn register_color_functions(world: &mut World) {
@@ -399,6 +402,23 @@ pub(crate) fn register_color_functions(world: &mut World) {
             &["array"],
         )
         .register_documented(
+            "srgb_u32",
+            |color: u32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::srgb_u32(
+                                color,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Srgba`] color from a [`u32`] value with an alpha of 1.0.\n For example, a value of `0x000000` results in black, and a value of `0xff0000` results in red.\n # Examples\n ```\n # use bevy_color::Color;\n let black = Color::srgb_u32(0x000000);\n let red = Color::srgb_u32(0xff0000);\n ```",
+            &["color"],
+        )
+        .register_documented(
             "srgb_u8",
             |red: u8, green: u8, blue: u8| {
                 let output: V<::bevy_color::Color> = {
@@ -436,6 +456,23 @@ pub(crate) fn register_color_functions(world: &mut World) {
             },
             " Creates a new [`Color`] object storing a [`Srgba`] color.\n # Arguments\n * `red` - Red channel. [0.0, 1.0]\n * `green` - Green channel. [0.0, 1.0]\n * `blue` - Blue channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
             &["red", "green", "blue", "alpha"],
+        )
+        .register_documented(
+            "srgba_u32",
+            |color: u32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::srgba_u32(
+                                color,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Srgba`] color from a [`u32`] value with the alpha value extracted from the input.\n For example, a value of `0x000000ff` results in black with full opacity, and a value of `0xff000080` results in red with half opacity.\n # Examples\n ```\n # use bevy_color::Color;\n let black = Color::srgba_u32(0x000000ff);\n let semi_transparent_red = Color::srgba_u32(0xff000080);\n ```",
+            &["color"],
         )
         .register_documented(
             "srgba_u8",
@@ -533,29 +570,15 @@ pub(crate) fn register_color_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Color, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Color,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_srgba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::Srgba,
     >::new(world)
-        .register_documented(
-            "add",
-            |_self: V<::bevy_color::Srgba>, rhs: V<::bevy_color::Srgba>| {
-                let output: V<::bevy_color::Srgba> = {
-                    {
-                        let output: V<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Add<
-                            ::bevy_color::Srgba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_color::Srgba>| {
@@ -572,23 +595,6 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             },
             "",
             &["_self"],
-        )
-        .register_documented(
-            "div",
-            |_self: V<::bevy_color::Srgba>, rhs: f32| {
-                let output: V<::bevy_color::Srgba> = {
-                    {
-                        let output: V<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Div<
-                            f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         )
         .register_documented(
             "eq",
@@ -638,40 +644,6 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             },
             " Converts a linear sRGB value to a non-linear one via [gamma correction](https://en.wikipedia.org/wiki/Gamma_correction).",
             &["value"],
-        )
-        .register_documented(
-            "mul",
-            |_self: V<::bevy_color::Srgba>, rhs: f32| {
-                let output: V<::bevy_color::Srgba> = {
-                    {
-                        let output: V<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Mul<
-                            f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "neg",
-            |_self: V<::bevy_color::Srgba>| {
-                let output: V<::bevy_color::Srgba> = {
-                    {
-                        let output: V<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "new",
@@ -752,23 +724,6 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
             &["r", "g", "b", "a"],
         )
         .register_documented(
-            "sub",
-            |_self: V<::bevy_color::Srgba>, rhs: V<::bevy_color::Srgba>| {
-                let output: V<::bevy_color::Srgba> = {
-                    {
-                        let output: V<::bevy_color::Srgba> = <::bevy_color::Srgba as ::core::ops::Sub<
-                            ::bevy_color::Srgba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "to_hex",
             |_self: R<::bevy_color::Srgba>| {
                 let output: ::std::string::String = {
@@ -842,29 +797,15 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Srgba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Srgba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_linear_rgba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::LinearRgba,
     >::new(world)
-        .register_documented(
-            "add",
-            |_self: V<::bevy_color::LinearRgba>, rhs: V<::bevy_color::LinearRgba>| {
-                let output: V<::bevy_color::LinearRgba> = {
-                    {
-                        let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Add<
-                            ::bevy_color::LinearRgba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
         .register_documented(
             "as_u32",
             |_self: R<::bevy_color::LinearRgba>| {
@@ -898,23 +839,6 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "div",
-            |_self: V<::bevy_color::LinearRgba>, rhs: f32| {
-                let output: V<::bevy_color::LinearRgba> = {
-                    {
-                        let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Div<
-                            f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "eq",
             |_self: R<::bevy_color::LinearRgba>, other: R<::bevy_color::LinearRgba>| {
                 let output: bool = {
@@ -930,40 +854,6 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
-        )
-        .register_documented(
-            "mul",
-            |_self: V<::bevy_color::LinearRgba>, rhs: f32| {
-                let output: V<::bevy_color::LinearRgba> = {
-                    {
-                        let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Mul<
-                            f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "neg",
-            |_self: V<::bevy_color::LinearRgba>| {
-                let output: V<::bevy_color::LinearRgba> = {
-                    {
-                        let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "new",
@@ -1003,23 +893,6 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
             },
             " Construct a new [`LinearRgba`] color from (r, g, b) components, with the default alpha (1.0).\n # Arguments\n * `red` - Red channel. [0.0, 1.0]\n * `green` - Green channel. [0.0, 1.0]\n * `blue` - Blue channel. [0.0, 1.0]",
             &["red", "green", "blue"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::bevy_color::LinearRgba>, rhs: V<::bevy_color::LinearRgba>| {
-                let output: V<::bevy_color::LinearRgba> = {
-                    {
-                        let output: V<::bevy_color::LinearRgba> = <::bevy_color::LinearRgba as ::core::ops::Sub<
-                            ::bevy_color::LinearRgba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         )
         .register_documented(
             "with_blue",
@@ -1216,7 +1089,10 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Hsla, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Hsla,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_hsva_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1334,7 +1210,10 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Hsva, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Hsva,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_hwba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1452,29 +1331,15 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Hwba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Hwba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_laba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::Laba,
     >::new(world)
-        .register_documented(
-            "add",
-            |_self: V<::bevy_color::Laba>, rhs: V<::bevy_color::Laba>| {
-                let output: V<::bevy_color::Laba> = {
-                    {
-                        let output: V<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Add<
-                            ::bevy_color::Laba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_color::Laba>| {
@@ -1491,23 +1356,6 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             },
             "",
             &["_self"],
-        )
-        .register_documented(
-            "div",
-            |_self: V<::bevy_color::Laba>, rhs: f32| {
-                let output: V<::bevy_color::Laba> = {
-                    {
-                        let output: V<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Div<
-                            f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         )
         .register_documented(
             "eq",
@@ -1546,40 +1394,6 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             &["lightness", "a", "b"],
         )
         .register_documented(
-            "mul",
-            |_self: V<::bevy_color::Laba>, rhs: f32| {
-                let output: V<::bevy_color::Laba> = {
-                    {
-                        let output: V<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Mul<
-                            f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "neg",
-            |_self: V<::bevy_color::Laba>| {
-                let output: V<::bevy_color::Laba> = {
-                    {
-                        let output: V<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "new",
             |lightness: f32, a: f32, b: f32, alpha: f32| {
                 let output: V<::bevy_color::Laba> = {
@@ -1598,23 +1412,6 @@ pub(crate) fn register_laba_functions(world: &mut World) {
             },
             " Construct a new [`Laba`] color from components.\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.5]\n * `a` - a axis. [-1.5, 1.5]\n * `b` - b axis. [-1.5, 1.5]\n * `alpha` - Alpha channel. [0.0, 1.0]",
             &["lightness", "a", "b", "alpha"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::bevy_color::Laba>, rhs: V<::bevy_color::Laba>| {
-                let output: V<::bevy_color::Laba> = {
-                    {
-                        let output: V<::bevy_color::Laba> = <::bevy_color::Laba as ::core::ops::Sub<
-                            ::bevy_color::Laba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         )
         .register_documented(
             "with_lightness",
@@ -1637,7 +1434,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Laba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Laba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_lcha_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1772,29 +1572,15 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Lcha, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Lcha,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_oklaba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::Oklaba,
     >::new(world)
-        .register_documented(
-            "add",
-            |_self: V<::bevy_color::Oklaba>, rhs: V<::bevy_color::Oklaba>| {
-                let output: V<::bevy_color::Oklaba> = {
-                    {
-                        let output: V<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Add<
-                            ::bevy_color::Oklaba,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_color::Oklaba>| {
@@ -1811,23 +1597,6 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             },
             "",
             &["_self"],
-        )
-        .register_documented(
-            "div",
-            |_self: V<::bevy_color::Oklaba>, rhs: f32| {
-                let output: V<::bevy_color::Oklaba> = {
-                    {
-                        let output: V<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Div<
-                            f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         )
         .register_documented(
             "eq",
@@ -1866,40 +1635,6 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             &["lightness", "a", "b"],
         )
         .register_documented(
-            "mul",
-            |_self: V<::bevy_color::Oklaba>, rhs: f32| {
-                let output: V<::bevy_color::Oklaba> = {
-                    {
-                        let output: V<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Mul<
-                            f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "neg",
-            |_self: V<::bevy_color::Oklaba>| {
-                let output: V<::bevy_color::Oklaba> = {
-                    {
-                        let output: V<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "new",
             |lightness: f32, a: f32, b: f32, alpha: f32| {
                 let output: V<::bevy_color::Oklaba> = {
@@ -1918,23 +1653,6 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
             },
             " Construct a new [`Oklaba`] color from components.\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.0]\n * `a` - Green-red channel. [-1.0, 1.0]\n * `b` - Blue-yellow channel. [-1.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
             &["lightness", "a", "b", "alpha"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::bevy_color::Oklaba>, rhs: V<::bevy_color::Oklaba>| {
-                let output: V<::bevy_color::Oklaba> = {
-                    {
-                        let output: V<::bevy_color::Oklaba> = <::bevy_color::Oklaba as ::core::ops::Sub<
-                            ::bevy_color::Oklaba,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         )
         .register_documented(
             "with_a",
@@ -1993,7 +1711,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Oklaba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Oklaba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_oklcha_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2128,29 +1849,15 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Oklcha, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Oklcha,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_xyza_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_color::Xyza,
     >::new(world)
-        .register_documented(
-            "add",
-            |_self: V<::bevy_color::Xyza>, rhs: V<::bevy_color::Xyza>| {
-                let output: V<::bevy_color::Xyza> = {
-                    {
-                        let output: V<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Add<
-                            ::bevy_color::Xyza,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_color::Xyza>| {
@@ -2169,23 +1876,6 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "div",
-            |_self: V<::bevy_color::Xyza>, rhs: f32| {
-                let output: V<::bevy_color::Xyza> = {
-                    {
-                        let output: V<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Div<
-                            f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "eq",
             |_self: R<::bevy_color::Xyza>, other: R<::bevy_color::Xyza>| {
                 let output: bool = {
@@ -2201,40 +1891,6 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
-        )
-        .register_documented(
-            "mul",
-            |_self: V<::bevy_color::Xyza>, rhs: f32| {
-                let output: V<::bevy_color::Xyza> = {
-                    {
-                        let output: V<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Mul<
-                            f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "neg",
-            |_self: V<::bevy_color::Xyza>| {
-                let output: V<::bevy_color::Xyza> = {
-                    {
-                        let output: V<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "new",
@@ -2255,23 +1911,6 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
             },
             " Construct a new [`Xyza`] color from components.\n # Arguments\n * `x` - x-axis. [0.0, 1.0]\n * `y` - y-axis. [0.0, 1.0]\n * `z` - z-axis. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
             &["x", "y", "z", "alpha"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::bevy_color::Xyza>, rhs: V<::bevy_color::Xyza>| {
-                let output: V<::bevy_color::Xyza> = {
-                    {
-                        let output: V<::bevy_color::Xyza> = <::bevy_color::Xyza as ::core::ops::Sub<
-                            ::bevy_color::Xyza,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         )
         .register_documented(
             "with_x",
@@ -2349,7 +1988,10 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Xyza, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Xyza,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 impl Plugin for BevyColorScriptingPlugin {
     fn build(&self, app: &mut App) {

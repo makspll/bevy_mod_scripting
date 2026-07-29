@@ -1,15 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyImageScriptingPlugin;
 pub(crate) fn register_texture_atlas_functions(world: &mut World) {
@@ -17,11 +20,11 @@ pub(crate) fn register_texture_atlas_functions(world: &mut World) {
         ::bevy_image::TextureAtlas,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::bevy_image::TextureAtlas>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_image::TextureAtlas as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_image::TextureAtlas as ::std::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -119,11 +122,11 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
             &["_self", "rect"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::bevy_image::TextureAtlasLayout>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_image::TextureAtlasLayout as ::std::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_image::TextureAtlasLayout as ::std::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -186,7 +189,7 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
                 };
                 output
             },
-            "",
+            " Returns `true` if the atlas contains no textures.",
             &["_self"],
         )
         .register_documented(
@@ -329,24 +332,6 @@ pub(crate) fn register_image_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "pixel_data_offset",
-            |_self: R<::bevy_image::Image>, coords: V<::bevy_math::UVec3>| {
-                let output: ::std::option::Option<usize> = {
-                    {
-                        let output: ::std::option::Option<usize> = ::bevy_image::Image::pixel_data_offset(
-                                &_self,
-                                coords.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Compute the byte offset where the data of a specific pixel is stored\n Returns None if the provided coordinates are out of bounds.\n For 2D textures, Z is the layer number. For 1D textures, Y and Z are ignored.",
-            &["_self", "coords"],
-        )
-        .register_documented(
             "size",
             |_self: R<::bevy_image::Image>| {
                 let output: V<::bevy_math::UVec2> = {
@@ -412,7 +397,361 @@ pub(crate) fn register_image_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_image::Image, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_image::Image,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_image_sampler_descriptor_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_image::ImageSamplerDescriptor,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_image::ImageSamplerDescriptor>| {
+                let output: V<::bevy_image::ImageSamplerDescriptor> = {
+                    {
+                        let output: V<::bevy_image::ImageSamplerDescriptor> = <::bevy_image::ImageSamplerDescriptor as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_image::ImageSamplerDescriptor>,
+                other: R<::bevy_image::ImageSamplerDescriptor>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::ImageSamplerDescriptor as ::std::cmp::PartialEq<
+                            ::bevy_image::ImageSamplerDescriptor,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "linear",
+            || {
+                let output: V<::bevy_image::ImageSamplerDescriptor> = {
+                    {
+                        let output: V<::bevy_image::ImageSamplerDescriptor> = ::bevy_image::ImageSamplerDescriptor::linear()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a sampler descriptor with [`Linear`](ImageFilterMode::Linear) min and mag filters",
+            &[],
+        )
+        .register_documented(
+            "nearest",
+            || {
+                let output: V<::bevy_image::ImageSamplerDescriptor> = {
+                    {
+                        let output: V<::bevy_image::ImageSamplerDescriptor> = ::bevy_image::ImageSamplerDescriptor::nearest()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a sampler descriptor with [`Nearest`](ImageFilterMode::Nearest) min and mag filters",
+            &[],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_image::ImageSamplerDescriptor,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_image_sampler_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_image::ImageSampler,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_image::ImageSampler>| {
+                let output: V<::bevy_image::ImageSampler> = {
+                    {
+                        let output: V<::bevy_image::ImageSampler> = <::bevy_image::ImageSampler as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_image::ImageSampler>, other: R<::bevy_image::ImageSampler>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::ImageSampler as ::std::cmp::PartialEq<
+                            ::bevy_image::ImageSampler,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "linear",
+            || {
+                let output: V<::bevy_image::ImageSampler> = {
+                    {
+                        let output: V<::bevy_image::ImageSampler> = ::bevy_image::ImageSampler::linear()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns an image sampler with [`ImageFilterMode::Linear`] min and mag filters",
+            &[],
+        )
+        .register_documented(
+            "nearest",
+            || {
+                let output: V<::bevy_image::ImageSampler> = {
+                    {
+                        let output: V<::bevy_image::ImageSampler> = ::bevy_image::ImageSampler::nearest()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns an image sampler with [`ImageFilterMode::Nearest`] min and mag filters",
+            &[],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_image::ImageSampler,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_image_address_mode_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_image::ImageAddressMode,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_image::ImageAddressMode>| {
+                let output: V<::bevy_image::ImageAddressMode> = {
+                    {
+                        let output: V<::bevy_image::ImageAddressMode> = <::bevy_image::ImageAddressMode as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_image::ImageAddressMode>,
+                other: R<::bevy_image::ImageAddressMode>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::ImageAddressMode as ::std::cmp::PartialEq<
+                            ::bevy_image::ImageAddressMode,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_image::ImageAddressMode,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_image_filter_mode_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_image::ImageFilterMode,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_image::ImageFilterMode>| {
+                let output: V<::bevy_image::ImageFilterMode> = {
+                    {
+                        let output: V<::bevy_image::ImageFilterMode> = <::bevy_image::ImageFilterMode as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_image::ImageFilterMode>,
+                other: R<::bevy_image::ImageFilterMode>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::ImageFilterMode as ::std::cmp::PartialEq<
+                            ::bevy_image::ImageFilterMode,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_image::ImageFilterMode,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_image_compare_function_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_image::ImageCompareFunction,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_image::ImageCompareFunction>| {
+                let output: V<::bevy_image::ImageCompareFunction> = {
+                    {
+                        let output: V<::bevy_image::ImageCompareFunction> = <::bevy_image::ImageCompareFunction as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_image::ImageCompareFunction>,
+                other: R<::bevy_image::ImageCompareFunction>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::ImageCompareFunction as ::std::cmp::PartialEq<
+                            ::bevy_image::ImageCompareFunction,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_image::ImageCompareFunction,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_image_sampler_border_color_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_image::ImageSamplerBorderColor,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_image::ImageSamplerBorderColor>| {
+                let output: V<::bevy_image::ImageSamplerBorderColor> = {
+                    {
+                        let output: V<::bevy_image::ImageSamplerBorderColor> = <::bevy_image::ImageSamplerBorderColor as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_image::ImageSamplerBorderColor>,
+                other: R<::bevy_image::ImageSamplerBorderColor>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_image::ImageSamplerBorderColor as ::std::cmp::PartialEq<
+                            ::bevy_image::ImageSamplerBorderColor,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_image::ImageSamplerBorderColor,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 impl Plugin for BevyImageScriptingPlugin {
     fn build(&self, app: &mut App) {
@@ -420,5 +759,11 @@ impl Plugin for BevyImageScriptingPlugin {
         register_texture_atlas_functions(&mut world);
         register_texture_atlas_layout_functions(&mut world);
         register_image_functions(&mut world);
+        register_image_sampler_descriptor_functions(&mut world);
+        register_image_sampler_functions(&mut world);
+        register_image_address_mode_functions(&mut world);
+        register_image_filter_mode_functions(&mut world);
+        register_image_compare_function_functions(&mut world);
+        register_image_sampler_border_color_functions(&mut world);
     }
 }

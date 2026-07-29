@@ -1,64 +1,77 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTimeScriptingPlugin;
 pub(crate) fn register_fixed_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_time::Fixed>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_time::Fixed>| {
-            let output: V<::bevy_time::Fixed> = {
-                {
-                    let output: V<::bevy_time::Fixed> =
-                        <::bevy_time::Fixed as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_time::Fixed,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_time::Fixed>| {
+                let output: V<::bevy_time::Fixed> = {
+                    {
+                        let output: V<::bevy_time::Fixed> = <::bevy_time::Fixed as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Fixed, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Fixed,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_real_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_time::Real>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_time::Real>| {
-            let output: V<::bevy_time::Real> = {
-                {
-                    let output: V<::bevy_time::Real> =
-                        <::bevy_time::Real as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_time::Real,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_time::Real>| {
+                let output: V<::bevy_time::Real> = {
+                    {
+                        let output: V<::bevy_time::Real> = <::bevy_time::Real as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Real, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Real,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_timer_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -80,11 +93,11 @@ pub(crate) fn register_timer_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::bevy_time::Timer>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_time::Timer as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_time::Timer as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -482,18 +495,21 @@ pub(crate) fn register_timer_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Timer, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Timer,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_timer_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_time::TimerMode,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::bevy_time::TimerMode>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_time::TimerMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_time::TimerMode as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -542,8 +558,10 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::TimerMode, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::bevy_time::TimerMode,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_virtual_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -569,18 +587,33 @@ pub(crate) fn register_virtual_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Virtual, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_time::Virtual,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_delayed_command_queue_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_time::DelayedCommandQueue,
+    >::new(world);
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_time::DelayedCommandQueue,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_stopwatch_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_time::Stopwatch,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::bevy_time::Stopwatch>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_time::Stopwatch as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_time::Stopwatch as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -771,8 +804,10 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_time::Stopwatch, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::bevy_time::Stopwatch,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 impl Plugin for BevyTimeScriptingPlugin {
     fn build(&self, app: &mut App) {
@@ -782,6 +817,7 @@ impl Plugin for BevyTimeScriptingPlugin {
         register_timer_functions(&mut world);
         register_timer_mode_functions(&mut world);
         register_virtual_functions(&mut world);
+        register_delayed_command_queue_functions(&mut world);
         register_stopwatch_functions(&mut world);
     }
 }

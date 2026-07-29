@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use indexmap::IndexMap;
 use rustc_hir::def_id::DefId;
-use rustc_middle::ty::{AdtDef, FieldDef, FnSig, TyCtxt, VariantDef, Visibility};
+use rustc_middle::ty::{AdtDef, FieldDef, FnSig, TyCtxt, TypingEnv, VariantDef, Visibility};
 use rustc_span::Symbol;
 
 use crate::ReflectionStrategy;
@@ -67,6 +67,7 @@ pub struct FunctionCandidate<'tcx> {
     pub(crate) notes: Vec<GenerationExclusionNote>,
     pub(crate) arguments: Vec<FunctionArgCandidate>,
     pub(crate) ret: FunctionArgCandidate,
+    pub(crate) typing_env: TypingEnv<'tcx>
 }
 
 #[derive(Debug)]

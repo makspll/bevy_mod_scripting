@@ -1,1290 +1,30 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyReflectScriptingPlugin;
-pub(crate) fn register_atomic_bool_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicBool,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicBool>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::core::sync::atomic::AtomicBool::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\n use std::sync::atomic::AtomicBool;\n let some_bool = AtomicBool::new(true);\n assert_eq!(some_bool.into_inner(), true);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: bool| {
-                let output: V<::core::sync::atomic::AtomicBool> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicBool> = ::core::sync::atomic::AtomicBool::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `AtomicBool`.\n # Examples\n ```\n use std::sync::atomic::AtomicBool;\n let atomic_true = AtomicBool::new(true);\n let atomic_false = AtomicBool::new(false);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicBool,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_i_8_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI8,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicI8>| {
-                let output: i8 = {
-                    {
-                        let output: i8 = ::core::sync::atomic::AtomicI8::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI8;\nlet some_var = AtomicI8::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: i8| {
-                let output: V<::core::sync::atomic::AtomicI8> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicI8> = ::core::sync::atomic::AtomicI8::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI8;\nlet atomic_forty_two = AtomicI8::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicI8,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_i_16_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI16,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicI16>| {
-                let output: i16 = {
-                    {
-                        let output: i16 = ::core::sync::atomic::AtomicI16::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet some_var = AtomicI16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: i16| {
-                let output: V<::core::sync::atomic::AtomicI16> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicI16> = ::core::sync::atomic::AtomicI16::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI16;\nlet atomic_forty_two = AtomicI16::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicI16,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_i_32_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI32,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicI32>| {
-                let output: i32 = {
-                    {
-                        let output: i32 = ::core::sync::atomic::AtomicI32::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet some_var = AtomicI32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: i32| {
-                let output: V<::core::sync::atomic::AtomicI32> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicI32> = ::core::sync::atomic::AtomicI32::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI32;\nlet atomic_forty_two = AtomicI32::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicI32,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_i_64_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicI64,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicI64>| {
-                let output: i64 = {
-                    {
-                        let output: i64 = ::core::sync::atomic::AtomicI64::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet some_var = AtomicI64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: i64| {
-                let output: V<::core::sync::atomic::AtomicI64> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicI64> = ::core::sync::atomic::AtomicI64::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicI64;\nlet atomic_forty_two = AtomicI64::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicI64,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_isize_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicIsize,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicIsize>| {
-                let output: isize = {
-                    {
-                        let output: isize = ::core::sync::atomic::AtomicIsize::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicIsize;\nlet some_var = AtomicIsize::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: isize| {
-                let output: V<::core::sync::atomic::AtomicIsize> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicIsize> = ::core::sync::atomic::AtomicIsize::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicIsize;\nlet atomic_forty_two = AtomicIsize::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicIsize,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_u_8_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU8,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicU8>| {
-                let output: u8 = {
-                    {
-                        let output: u8 = ::core::sync::atomic::AtomicU8::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU8;\nlet some_var = AtomicU8::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: u8| {
-                let output: V<::core::sync::atomic::AtomicU8> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicU8> = ::core::sync::atomic::AtomicU8::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU8;\nlet atomic_forty_two = AtomicU8::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicU8,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_u_16_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU16,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicU16>| {
-                let output: u16 = {
-                    {
-                        let output: u16 = ::core::sync::atomic::AtomicU16::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet some_var = AtomicU16::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: u16| {
-                let output: V<::core::sync::atomic::AtomicU16> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicU16> = ::core::sync::atomic::AtomicU16::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU16;\nlet atomic_forty_two = AtomicU16::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicU16,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_u_32_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU32,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicU32>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::core::sync::atomic::AtomicU32::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet some_var = AtomicU32::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: u32| {
-                let output: V<::core::sync::atomic::AtomicU32> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicU32> = ::core::sync::atomic::AtomicU32::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU32;\nlet atomic_forty_two = AtomicU32::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicU32,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_u_64_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicU64,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicU64>| {
-                let output: u64 = {
-                    {
-                        let output: u64 = ::core::sync::atomic::AtomicU64::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet some_var = AtomicU64::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: u64| {
-                let output: V<::core::sync::atomic::AtomicU64> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicU64> = ::core::sync::atomic::AtomicU64::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicU64;\nlet atomic_forty_two = AtomicU64::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicU64,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_atomic_usize_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::sync::atomic::AtomicUsize,
-    >::new(world)
-        .register_documented(
-            "into_inner",
-            |_self: V<::core::sync::atomic::AtomicUsize>| {
-                let output: usize = {
-                    {
-                        let output: usize = ::core::sync::atomic::AtomicUsize::into_inner(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the atomic and returns the contained value.\n This is safe because passing `self` by value guarantees that no other threads are\n concurrently accessing the atomic data.\n # Examples\n ```\nuse std::sync::atomic::AtomicUsize;\nlet some_var = AtomicUsize::new(5);\n assert_eq!(some_var.into_inner(), 5);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "new",
-            |v: usize| {
-                let output: V<::core::sync::atomic::AtomicUsize> = {
-                    {
-                        let output: V<::core::sync::atomic::AtomicUsize> = ::core::sync::atomic::AtomicUsize::new(
-                                v,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new atomic integer.\n # Examples\n ```\nuse std::sync::atomic::AtomicUsize;\nlet atomic_forty_two = AtomicUsize::new(42);\n ```",
-            &["v"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::core::sync::atomic::AtomicUsize,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_duration_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::core::time::Duration,
-    >::new(world)
-        .register_documented(
-            "abs_diff",
-            |_self: V<::core::time::Duration>, other: V<::core::time::Duration>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::abs_diff(
-                                _self.into_inner(),
-                                other.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Computes the absolute difference between `self` and `other`.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(100, 0).abs_diff(Duration::new(80, 0)), Duration::new(20, 0));\n assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));\n ```",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "add",
-            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Add<
-                            ::core::time::Duration,
-                        >>::add(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "as_micros",
-            |_self: R<::core::time::Duration>| {
-                let output: u128 = {
-                    {
-                        let output: u128 = ::core::time::Duration::as_micros(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the total number of whole microseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_micros(), 5_730_023);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "as_millis",
-            |_self: R<::core::time::Duration>| {
-                let output: u128 = {
-                    {
-                        let output: u128 = ::core::time::Duration::as_millis(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the total number of whole milliseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_millis(), 5_730);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "as_nanos",
-            |_self: R<::core::time::Duration>| {
-                let output: u128 = {
-                    {
-                        let output: u128 = ::core::time::Duration::as_nanos(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the total number of nanoseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_nanos(), 5_730_023_852);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "as_secs",
-            |_self: R<::core::time::Duration>| {
-                let output: u64 = {
-                    {
-                        let output: u64 = ::core::time::Duration::as_secs(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the number of _whole_ seconds contained by this `Duration`.\n The returned value does not include the fractional (nanosecond) part of the\n duration, which can be obtained using [`subsec_nanos`].\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_secs(), 5);\n ```\n To determine the total number of seconds represented by the `Duration`\n including the fractional part, use [`as_secs_f64`] or [`as_secs_f32`]\n [`as_secs_f64`]: Duration::as_secs_f64\n [`as_secs_f32`]: Duration::as_secs_f32\n [`subsec_nanos`]: Duration::subsec_nanos",
-            &["_self"],
-        )
-        .register_documented(
-            "as_secs_f32",
-            |_self: R<::core::time::Duration>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::core::time::Duration::as_secs_f32(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the number of seconds contained by this `Duration` as `f32`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.as_secs_f32(), 2.7);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "as_secs_f64",
-            |_self: R<::core::time::Duration>| {
-                let output: f64 = {
-                    {
-                        let output: f64 = ::core::time::Duration::as_secs_f64(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the number of seconds contained by this `Duration` as `f64`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.as_secs_f64(), 2.7);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::core::time::Duration>| {
-                let output: () = {
-                    {
-                        let output: () = <::core::time::Duration as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::core::time::Duration>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "div",
-            |_self: V<::core::time::Duration>, rhs: u32| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Div<
-                            u32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "div_duration_f32",
-            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::core::time::Duration::div_duration_f32(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Divides `Duration` by `Duration` and returns `f32`.\n # Examples\n ```\n use std::time::Duration;\n let dur1 = Duration::new(2, 700_000_000);\n let dur2 = Duration::new(5, 400_000_000);\n assert_eq!(dur1.div_duration_f32(dur2), 0.5);\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "div_duration_f64",
-            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
-                let output: f64 = {
-                    {
-                        let output: f64 = ::core::time::Duration::div_duration_f64(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Divides `Duration` by `Duration` and returns `f64`.\n # Examples\n ```\n use std::time::Duration;\n let dur1 = Duration::new(2, 700_000_000);\n let dur2 = Duration::new(5, 400_000_000);\n assert_eq!(dur1.div_duration_f64(dur2), 0.5);\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "div_f32",
-            |_self: V<::core::time::Duration>, rhs: f32| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::div_f32(
-                                _self.into_inner(),
-                                rhs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Divides `Duration` by `f32`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n // note that due to rounding errors result is slightly\n // different from 0.859_872_611\n assert_eq!(dur.div_f32(3.14), Duration::new(0, 859_872_580));\n assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "div_f64",
-            |_self: V<::core::time::Duration>, rhs: f64| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::div_f64(
-                                _self.into_inner(),
-                                rhs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Divides `Duration` by `f64`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.div_f64(3.14), Duration::new(0, 859_872_611));\n assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::core::time::Duration>, other: R<::core::time::Duration>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::core::time::Duration as ::core::cmp::PartialEq<
-                            ::core::time::Duration,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "from_micros",
-            |micros: u64| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::from_micros(
-                                micros,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of microseconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_micros(1_000_002);\n assert_eq!(1, duration.as_secs());\n assert_eq!(2_000, duration.subsec_nanos());\n ```",
-            &["micros"],
-        )
-        .register_documented(
-            "from_millis",
-            |millis: u64| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::from_millis(
-                                millis,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of milliseconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(2_569);\n assert_eq!(2, duration.as_secs());\n assert_eq!(569_000_000, duration.subsec_nanos());\n ```",
-            &["millis"],
-        )
-        .register_documented(
-            "from_nanos",
-            |nanos: u64| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::from_nanos(
-                                nanos,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of nanoseconds.\n Note: Using this on the return value of `as_nanos()` might cause unexpected behavior:\n `as_nanos()` returns a u128, and can return values that do not fit in u64, e.g. 585 years.\n Instead, consider using the pattern `Duration::new(d.as_secs(), d.subsec_nanos())`\n if you cannot copy/clone the Duration directly.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_nanos(1_000_000_123);\n assert_eq!(1, duration.as_secs());\n assert_eq!(123, duration.subsec_nanos());\n ```",
-            &["nanos"],
-        )
-        .register_documented(
-            "from_secs",
-            |secs: u64| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::from_secs(
-                                secs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of whole seconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_secs(5);\n assert_eq!(5, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
-            &["secs"],
-        )
-        .register_documented(
-            "from_secs_f32",
-            |secs: f32| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::from_secs_f32(
-                                secs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of seconds represented\n as `f32`.\n # Panics\n This constructor will panic if `secs` is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let res = Duration::from_secs_f32(0.0);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f32(1e-20);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f32(4.2e-7);\n assert_eq!(res, Duration::new(0, 420));\n let res = Duration::from_secs_f32(2.7);\n assert_eq!(res, Duration::new(2, 700_000_048));\n let res = Duration::from_secs_f32(3e10);\n assert_eq!(res, Duration::new(30_000_001_024, 0));\n // subnormal float\n let res = Duration::from_secs_f32(f32::from_bits(1));\n assert_eq!(res, Duration::new(0, 0));\n // conversion uses rounding\n let res = Duration::from_secs_f32(0.999e-9);\n assert_eq!(res, Duration::new(0, 1));\n ```",
-            &["secs"],
-        )
-        .register_documented(
-            "from_secs_f64",
-            |secs: f64| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::from_secs_f64(
-                                secs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of seconds represented\n as `f64`.\n # Panics\n This constructor will panic if `secs` is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let res = Duration::from_secs_f64(0.0);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(1e-20);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(4.2e-7);\n assert_eq!(res, Duration::new(0, 420));\n let res = Duration::from_secs_f64(2.7);\n assert_eq!(res, Duration::new(2, 700_000_000));\n let res = Duration::from_secs_f64(3e10);\n assert_eq!(res, Duration::new(30_000_000_000, 0));\n // subnormal float\n let res = Duration::from_secs_f64(f64::from_bits(1));\n assert_eq!(res, Duration::new(0, 0));\n // conversion uses rounding\n let res = Duration::from_secs_f64(0.999e-9);\n assert_eq!(res, Duration::new(0, 1));\n ```",
-            &["secs"],
-        )
-        .register_documented(
-            "is_zero",
-            |_self: R<::core::time::Duration>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::core::time::Duration::is_zero(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if this `Duration` spans no time.\n # Examples\n ```\n use std::time::Duration;\n assert!(Duration::ZERO.is_zero());\n assert!(Duration::new(0, 0).is_zero());\n assert!(Duration::from_nanos(0).is_zero());\n assert!(Duration::from_secs(0).is_zero());\n assert!(!Duration::new(1, 1).is_zero());\n assert!(!Duration::from_nanos(1).is_zero());\n assert!(!Duration::from_secs(1).is_zero());\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "mul",
-            |_self: V<::core::time::Duration>, rhs: u32| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Mul<
-                            u32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul_f32",
-            |_self: V<::core::time::Duration>, rhs: f32| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::mul_f32(
-                                _self.into_inner(),
-                                rhs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Multiplies `Duration` by `f32`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.mul_f32(3.14), Duration::new(8, 478_000_641));\n assert_eq!(dur.mul_f32(3.14e5), Duration::new(847_800, 0));\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul_f64",
-            |_self: V<::core::time::Duration>, rhs: f64| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::mul_f64(
-                                _self.into_inner(),
-                                rhs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Multiplies `Duration` by `f64`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.mul_f64(3.14), Duration::new(8, 478_000_000));\n assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "new",
-            |secs: u64, nanos: u32| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::new(
-                                secs,
-                                nanos,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new `Duration` from the specified number of whole seconds and\n additional nanoseconds.\n If the number of nanoseconds is greater than 1 billion (the number of\n nanoseconds in a second), then it will carry over into the seconds provided.\n # Panics\n This constructor will panic if the carry from the nanoseconds overflows\n the seconds counter.\n # Examples\n ```\n use std::time::Duration;\n let five_seconds = Duration::new(5, 0);\n ```",
-            &["secs", "nanos"],
-        )
-        .register_documented(
-            "saturating_add",
-            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::saturating_add(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Saturating `Duration` addition. Computes `self + other`, returning [`Duration::MAX`]\n if overflow occurred.\n # Examples\n ```\n #![feature(duration_constants)]\n use std::time::Duration;\n assert_eq!(Duration::new(0, 0).saturating_add(Duration::new(0, 1)), Duration::new(0, 1));\n assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "saturating_mul",
-            |_self: V<::core::time::Duration>, rhs: u32| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::saturating_mul(
-                                _self.into_inner(),
-                                rhs,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Saturating `Duration` multiplication. Computes `self * other`, returning\n [`Duration::MAX`] if overflow occurred.\n # Examples\n ```\n #![feature(duration_constants)]\n use std::time::Duration;\n assert_eq!(Duration::new(0, 500_000_001).saturating_mul(2), Duration::new(1, 2));\n assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "saturating_sub",
-            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::core::time::Duration::saturating_sub(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Saturating `Duration` subtraction. Computes `self - other`, returning [`Duration::ZERO`]\n if the result would be negative or if overflow occurred.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(0, 1).saturating_sub(Duration::new(0, 0)), Duration::new(0, 1));\n assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);\n ```",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Sub<
-                            ::core::time::Duration,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "subsec_micros",
-            |_self: R<::core::time::Duration>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::core::time::Duration::subsec_micros(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the fractional part of this `Duration`, in whole microseconds.\n This method does **not** return the length of the duration when\n represented by microseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one million).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_micros(1_234_567);\n assert_eq!(duration.as_secs(), 1);\n assert_eq!(duration.subsec_micros(), 234_567);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "subsec_millis",
-            |_self: R<::core::time::Duration>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::core::time::Duration::subsec_millis(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the fractional part of this `Duration`, in whole milliseconds.\n This method does **not** return the length of the duration when\n represented by milliseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one thousand).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(5_432);\n assert_eq!(duration.as_secs(), 5);\n assert_eq!(duration.subsec_millis(), 432);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "subsec_nanos",
-            |_self: R<::core::time::Duration>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::core::time::Duration::subsec_nanos(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the fractional part of this `Duration`, in nanoseconds.\n This method does **not** return the length of the duration when\n represented by nanoseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one billion).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(5_010);\n assert_eq!(duration.as_secs(), 5);\n assert_eq!(duration.subsec_nanos(), 10_000_000);\n ```",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<::core::time::Duration, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
-}
-pub(crate) fn register_instant_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::std::time::Instant,
-    >::new(world)
-        .register_documented(
-            "add",
-            |_self: V<::std::time::Instant>, other: V<::core::time::Duration>| {
-                let output: V<::std::time::Instant> = {
-                    {
-                        let output: V<::std::time::Instant> = <::std::time::Instant as ::core::ops::Add<
-                            ::core::time::Duration,
-                        >>::add(_self.into_inner(), other.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " # Panics\n This function may panic if the resulting point in time cannot be represented by the\n underlying data structure. See [`Instant::checked_add`] for a version without panic.",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::std::time::Instant>| {
-                let output: () = {
-                    {
-                        let output: () = <::std::time::Instant as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::std::time::Instant>| {
-                let output: V<::std::time::Instant> = {
-                    {
-                        let output: V<::std::time::Instant> = <::std::time::Instant as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "duration_since",
-            |_self: R<::std::time::Instant>, earlier: V<::std::time::Instant>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::std::time::Instant::duration_since(
-                                &_self,
-                                earlier.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Panics\n Previous Rust versions panicked when `earlier` was later than `self`. Currently this\n method saturates. Future versions may reintroduce the panic in some circumstances.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity\n # Examples\n ```no_run\n use std::time::{Duration, Instant};\n use std::thread::sleep;\n let now = Instant::now();\n sleep(Duration::new(1, 0));\n let new_now = Instant::now();\n println!(\"{:?}\", new_now.duration_since(now));\n println!(\"{:?}\", now.duration_since(new_now)); // 0ns\n ```",
-            &["_self", "earlier"],
-        )
-        .register_documented(
-            "elapsed",
-            |_self: R<::std::time::Instant>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::std::time::Instant::elapsed(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the amount of time elapsed since this instant.\n # Panics\n Previous Rust versions panicked when the current time was earlier than self. Currently this\n method returns a Duration of zero in that case. Future versions may reintroduce the panic.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity\n # Examples\n ```no_run\n use std::thread::sleep;\n use std::time::{Duration, Instant};\n let instant = Instant::now();\n let three_secs = Duration::from_secs(3);\n sleep(three_secs);\n assert!(instant.elapsed() >= three_secs);\n ```",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::std::time::Instant>, other: R<::std::time::Instant>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::std::time::Instant as ::core::cmp::PartialEq<
-                            ::std::time::Instant,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "now",
-            || {
-                let output: V<::std::time::Instant> = {
-                    {
-                        let output: V<::std::time::Instant> = ::std::time::Instant::now()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns an instant corresponding to \"now\".\n # Examples\n ```\n use std::time::Instant;\n let now = Instant::now();\n ```",
-            &[],
-        )
-        .register_documented(
-            "saturating_duration_since",
-            |_self: R<::std::time::Instant>, earlier: V<::std::time::Instant>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = ::std::time::Instant::saturating_duration_since(
-                                &_self,
-                                earlier.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Examples\n ```no_run\n use std::time::{Duration, Instant};\n use std::thread::sleep;\n let now = Instant::now();\n sleep(Duration::new(1, 0));\n let new_now = Instant::now();\n println!(\"{:?}\", new_now.saturating_duration_since(now));\n println!(\"{:?}\", now.saturating_duration_since(new_now)); // 0ns\n ```",
-            &["_self", "earlier"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::std::time::Instant>, other: V<::core::time::Duration>| {
-                let output: V<::std::time::Instant> = {
-                    {
-                        let output: V<::std::time::Instant> = <::std::time::Instant as ::core::ops::Sub<
-                            ::core::time::Duration,
-                        >>::sub(_self.into_inner(), other.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::std::time::Instant>, other: V<::std::time::Instant>| {
-                let output: V<::core::time::Duration> = {
-                    {
-                        let output: V<::core::time::Duration> = <::std::time::Instant as ::core::ops::Sub<
-                            ::std::time::Instant,
-                        >>::sub(_self.into_inner(), other.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Panics\n Previous Rust versions panicked when `other` was later than `self`. Currently this\n method saturates. Future versions may reintroduce the panic in some circumstances.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<::std::time::Instant, bevy_mod_scripting_bindings::MarkAsGenerated>();
-}
 pub(crate) fn register_range_full_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::ops::RangeFull,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::core::ops::RangeFull>| {
                 let output: () = {
                     {
-                        let output: () = <::core::ops::RangeFull as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::core::ops::RangeFull as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -1333,67 +73,73 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::ops::RangeFull, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::core::ops::RangeFull,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_type_id_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::core::any::TypeId>::new(
-        world,
-    )
-    .register_documented(
-        "assert_receiver_is_total_eq",
-        |_self: R<::core::any::TypeId>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::core::any::TypeId as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::core::any::TypeId>| {
-            let output: V<::core::any::TypeId> = {
-                {
-                    let output: V<::core::any::TypeId> =
-                        <::core::any::TypeId as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::core::any::TypeId>, other: R<::core::any::TypeId>| {
-            let output: bool = {
-                {
-                    let output: bool = <::core::any::TypeId as ::core::cmp::PartialEq<
-                        ::core::any::TypeId,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::core::any::TypeId,
+    >::new(world)
+        .register_documented(
+            "assert_fields_are_eq",
+            |_self: R<::core::any::TypeId>| {
+                let output: () = {
+                    {
+                        let output: () = <::core::any::TypeId as ::core::cmp::Eq>::assert_fields_are_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::core::any::TypeId>| {
+                let output: V<::core::any::TypeId> = {
+                    {
+                        let output: V<::core::any::TypeId> = <::core::any::TypeId as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::core::any::TypeId>, other: R<::core::any::TypeId>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::core::any::TypeId as ::core::cmp::PartialEq<
+                            ::core::any::TypeId,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::any::TypeId, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::core::any::TypeId,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_quat_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1575,10 +321,25 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "from_affine3",
-            |a: R<::glam::Affine3A>| {
+            |a: R<::glam::Affine3>| {
                 let output: V<::glam::Quat> = {
                     {
                         let output: V<::glam::Quat> = ::glam::Quat::from_affine3(&a)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.\n Note if the input affine matrix contain scales, shears, or other non-rotation\n transformations then the resulting quaternion will be ill-defined.\n # Panics\n Will panic if any input affine matrix column is not normalized when `glam_assert` is\n enabled.",
+            &["a"],
+        )
+        .register_documented(
+            "from_affine3a",
+            |a: R<::glam::Affine3A>| {
+                let output: V<::glam::Quat> = {
+                    {
+                        let output: V<::glam::Quat> = ::glam::Quat::from_affine3a(&a)
                             .into();
                         output
                     }
@@ -1738,6 +499,25 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             },
             " Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means\n that the resulting quaternion will rotate `from` so that it is colinear with `to`.\n The rotation is in the plane spanned by the two vectors.  Will rotate at most 90\n degrees.\n The inputs must be unit vectors.\n `to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.\n # Panics\n Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.",
             &["from", "to"],
+        )
+        .register_documented(
+            "from_rotation_axes",
+            |x_axis: V<::glam::Vec3>, y_axis: V<::glam::Vec3>, z_axis: V<::glam::Vec3>| {
+                let output: V<::glam::Quat> = {
+                    {
+                        let output: V<::glam::Quat> = ::glam::Quat::from_rotation_axes(
+                                x_axis.into_inner(),
+                                y_axis.into_inner(),
+                                z_axis.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " From the columns of a 3x3 rotation matrix.\n Note if the input axes contain scales, shears, or other non-rotation transformations then\n the output of this function is ill-defined.\n # Panics\n Will panic if any axis is not normalized when `glam_assert` is enabled.",
+            &["x_axis", "y_axis", "z_axis"],
         )
         .register_documented(
             "from_rotation_x",
@@ -2130,40 +910,6 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Quat>, rhs: V<::glam::Vec3>| {
-                let output: V<::glam::Vec3> = {
-                    {
-                        let output: V<::glam::Vec3> = <::glam::Quat as ::core::ops::Mul<
-                            ::glam::Vec3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Multiplies a quaternion and a 3D vector, returning the rotated vector.\n # Panics\n Will panic if `self` is not normalized when `glam_assert` is enabled.",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
-            |_self: V<::glam::Quat>, rhs: V<::glam::Vec3A>| {
-                let output: V<::glam::Vec3A> = {
-                    {
-                        let output: V<::glam::Vec3A> = <::glam::Quat as ::core::ops::Mul<
-                            ::glam::Vec3A,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::Quat>, rhs: f32| {
                 let output: V<::glam::Quat> = {
                     {
@@ -2269,11 +1015,11 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "rotate_towards",
-            |_self: R<::glam::Quat>, rhs: V<::glam::Quat>, max_angle: f32| {
+            |_self: V<::glam::Quat>, rhs: V<::glam::Quat>, max_angle: f32| {
                 let output: V<::glam::Quat> = {
                     {
                         let output: V<::glam::Quat> = ::glam::Quat::rotate_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 max_angle,
                             )
@@ -2341,10 +1087,11 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "to_array",
-            |_self: R<::glam::Quat>| {
+            |_self: V<::glam::Quat>| {
                 let output: [f32; 4] = {
                     {
-                        let output: [f32; 4] = ::glam::Quat::to_array(&_self).into();
+                        let output: [f32; 4] = ::glam::Quat::to_array(_self.into_inner())
+                            .into();
                         output
                     }
                 };
@@ -2407,7 +1154,11 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Quat, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Quat,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2520,11 +1271,11 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "any_orthogonal_vector",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Vec3::any_orthogonal_vector(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -2537,11 +1288,11 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "any_orthonormal_vector",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Vec3::any_orthonormal_vector(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -2554,10 +1305,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::Vec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::Vec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2569,10 +1322,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
-                        let output: V<::glam::I16Vec3> = ::glam::Vec3::as_i16vec3(&_self)
+                        let output: V<::glam::I16Vec3> = ::glam::Vec3::as_i16vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2584,10 +1339,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
-                        let output: V<::glam::I64Vec3> = ::glam::Vec3::as_i64vec3(&_self)
+                        let output: V<::glam::I64Vec3> = ::glam::Vec3::as_i64vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2599,10 +1356,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
-                        let output: V<::glam::I8Vec3> = ::glam::Vec3::as_i8vec3(&_self)
+                        let output: V<::glam::I8Vec3> = ::glam::Vec3::as_i8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2614,10 +1373,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::Vec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::Vec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2629,10 +1390,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
-                        let output: V<::glam::U16Vec3> = ::glam::Vec3::as_u16vec3(&_self)
+                        let output: V<::glam::U16Vec3> = ::glam::Vec3::as_u16vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2644,10 +1407,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
-                        let output: V<::glam::U64Vec3> = ::glam::Vec3::as_u64vec3(&_self)
+                        let output: V<::glam::U64Vec3> = ::glam::Vec3::as_u64vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2659,10 +1424,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
-                        let output: V<::glam::U8Vec3> = ::glam::Vec3::as_u8vec3(&_self)
+                        let output: V<::glam::U8Vec3> = ::glam::Vec3::as_u8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2674,10 +1441,12 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::Vec3>| {
+            |_self: V<::glam::Vec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::Vec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::Vec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -2920,6 +1689,23 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             },
             " Returns a vector with signs of `rhs` and the magnitudes of `self`.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "cos",
+            |_self: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Vec3::cos(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the cosine for each element of `self`.",
+            &["_self"],
         )
         .register_documented(
             "cross",
@@ -3581,11 +2367,11 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "move_towards",
-            |_self: R<::glam::Vec3>, rhs: V<::glam::Vec3>, d: f32| {
+            |_self: V<::glam::Vec3>, rhs: V<::glam::Vec3>, d: f32| {
                 let output: V<::glam::Vec3> = {
                     {
                         let output: V<::glam::Vec3> = ::glam::Vec3::move_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 d,
                             )
@@ -4074,6 +2860,23 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "saturate",
+            |_self: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Vec3::saturate(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.",
+            &["_self"],
+        )
+        .register_documented(
             "select",
             |
                 mask: V<::glam::BVec3>,
@@ -4114,6 +2917,23 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "sin",
+            |_self: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Vec3::sin(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the sine for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "slerp",
             |_self: V<::glam::Vec3>, rhs: V<::glam::Vec3>, s: f32| {
                 let output: V<::glam::Vec3> = {
@@ -4145,6 +2965,41 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             },
             " Creates a vector with all elements set to `v`.",
             &["v"],
+        )
+        .register_documented(
+            "sqrt",
+            |_self: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Vec3::sqrt(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the square root for each element of `self`.\n This returns NaN when the element is negative.",
+            &["_self"],
+        )
+        .register_documented(
+            "step",
+            |_self: V<::glam::Vec3>, rhs: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Vec3::step(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.\n Similar to glsl's step(edge, x), which translates into edge.step(x)",
+            &["_self", "rhs"],
         )
         .register_documented(
             "sub",
@@ -4335,18 +3190,333 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_offset_access_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::OffsetAccess,
+    >::new(world)
+        .register_documented(
+            "assert_fields_are_eq",
+            |_self: R<::bevy_reflect::OffsetAccess>| {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_reflect::OffsetAccess as ::core::cmp::Eq>::assert_fields_are_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_reflect::OffsetAccess>| {
+                let output: V<::bevy_reflect::OffsetAccess> = {
+                    {
+                        let output: V<::bevy_reflect::OffsetAccess> = <::bevy_reflect::OffsetAccess as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_reflect::OffsetAccess>,
+                other: R<::bevy_reflect::OffsetAccess>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_reflect::OffsetAccess as ::core::cmp::PartialEq<
+                            ::bevy_reflect::OffsetAccess,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::OffsetAccess,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_parsed_path_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_reflect::ParsedPath,
+    >::new(world)
+        .register_documented(
+            "assert_fields_are_eq",
+            |_self: R<::bevy_reflect::ParsedPath>| {
+                let output: () = {
+                    {
+                        let output: () = <::bevy_reflect::ParsedPath as ::core::cmp::Eq>::assert_fields_are_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_reflect::ParsedPath>| {
+                let output: V<::bevy_reflect::ParsedPath> = {
+                    {
+                        let output: V<::bevy_reflect::ParsedPath> = <::bevy_reflect::ParsedPath as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_reflect::ParsedPath>, other: R<::bevy_reflect::ParsedPath>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_reflect::ParsedPath as ::core::cmp::PartialEq<
+                            ::bevy_reflect::ParsedPath,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_reflect::ParsedPath,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_instant_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::std::time::Instant,
+    >::new(world)
+        .register_documented(
+            "add",
+            |_self: V<::std::time::Instant>, other: V<::core::time::Duration>| {
+                let output: V<::std::time::Instant> = {
+                    {
+                        let output: V<::std::time::Instant> = <::std::time::Instant as ::core::ops::Add<
+                            ::core::time::Duration,
+                        >>::add(_self.into_inner(), other.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " # Panics\n This function may panic if the resulting point in time cannot be represented by the\n underlying data structure. See [`Instant::checked_add`] for a version without panic.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "assert_fields_are_eq",
+            |_self: R<::std::time::Instant>| {
+                let output: () = {
+                    {
+                        let output: () = <::std::time::Instant as ::core::cmp::Eq>::assert_fields_are_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::std::time::Instant>| {
+                let output: V<::std::time::Instant> = {
+                    {
+                        let output: V<::std::time::Instant> = <::std::time::Instant as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "duration_since",
+            |_self: R<::std::time::Instant>, earlier: V<::std::time::Instant>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::std::time::Instant::duration_since(
+                                &_self,
+                                earlier.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Panics\n Previous Rust versions panicked when `earlier` was later than `self`. Currently this\n method saturates. Future versions may reintroduce the panic in some circumstances.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity\n # Examples\n ```no_run\n use std::time::{Duration, Instant};\n use std::thread::sleep;\n let now = Instant::now();\n sleep(Duration::new(1, 0));\n let new_now = Instant::now();\n println!(\"{:?}\", new_now.duration_since(now));\n println!(\"{:?}\", now.duration_since(new_now)); // 0ns\n ```",
+            &["_self", "earlier"],
+        )
+        .register_documented(
+            "elapsed",
+            |_self: R<::std::time::Instant>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::std::time::Instant::elapsed(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of time elapsed since this instant.\n # Panics\n Previous Rust versions panicked when the current time was earlier than self. Currently this\n method returns a Duration of zero in that case. Future versions may reintroduce the panic.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity\n # Examples\n ```no_run\n use std::thread::sleep;\n use std::time::{Duration, Instant};\n let instant = Instant::now();\n let three_secs = Duration::from_secs(3);\n sleep(three_secs);\n assert!(instant.elapsed() >= three_secs);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::std::time::Instant>, other: R<::std::time::Instant>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::std::time::Instant as ::core::cmp::PartialEq<
+                            ::std::time::Instant,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "now",
+            || {
+                let output: V<::std::time::Instant> = {
+                    {
+                        let output: V<::std::time::Instant> = ::std::time::Instant::now()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns an instant corresponding to \"now\".\n # Examples\n ```\n use std::time::Instant;\n let now = Instant::now();\n ```",
+            &[],
+        )
+        .register_documented(
+            "saturating_duration_since",
+            |_self: R<::std::time::Instant>, earlier: V<::std::time::Instant>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::std::time::Instant::saturating_duration_since(
+                                &_self,
+                                earlier.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Examples\n ```no_run\n use std::time::{Duration, Instant};\n use std::thread::sleep;\n let now = Instant::now();\n sleep(Duration::new(1, 0));\n let new_now = Instant::now();\n println!(\"{:?}\", new_now.saturating_duration_since(now));\n println!(\"{:?}\", now.saturating_duration_since(new_now)); // 0ns\n ```",
+            &["_self", "earlier"],
+        )
+        .register_documented(
+            "sub",
+            |_self: V<::std::time::Instant>, other: V<::core::time::Duration>| {
+                let output: V<::std::time::Instant> = {
+                    {
+                        let output: V<::std::time::Instant> = <::std::time::Instant as ::core::ops::Sub<
+                            ::core::time::Duration,
+                        >>::sub(_self.into_inner(), other.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "sub",
+            |_self: V<::std::time::Instant>, other: V<::std::time::Instant>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = <::std::time::Instant as ::core::ops::Sub<
+                            ::std::time::Instant,
+                        >>::sub(_self.into_inner(), other.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the amount of time elapsed from another instant to this one,\n or zero duration if that instant is later than this one.\n # Panics\n Previous Rust versions panicked when `other` was later than `self`. Currently this\n method saturates. Future versions may reintroduce the panic in some circumstances.\n See [Monotonicity].\n [Monotonicity]: Instant#monotonicity",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::std::time::Instant,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_socket_addr_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::net::SocketAddr,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::core::net::SocketAddr>| {
                 let output: () = {
                     {
-                        let output: () = <::core::net::SocketAddr as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::core::net::SocketAddr as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -4462,6 +3632,586 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_duration_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::core::time::Duration,
+    >::new(world)
+        .register_documented(
+            "abs_diff",
+            |_self: V<::core::time::Duration>, other: V<::core::time::Duration>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::abs_diff(
+                                _self.into_inner(),
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Computes the absolute difference between `self` and `other`.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(100, 0).abs_diff(Duration::new(80, 0)), Duration::new(20, 0));\n assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));\n ```",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "add",
+            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Add<
+                            ::core::time::Duration,
+                        >>::add(_self.into_inner(), rhs.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "as_micros",
+            |_self: R<::core::time::Duration>| {
+                let output: u128 = {
+                    {
+                        let output: u128 = ::core::time::Duration::as_micros(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the total number of whole microseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_micros(), 5_730_023);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_millis",
+            |_self: R<::core::time::Duration>| {
+                let output: u128 = {
+                    {
+                        let output: u128 = ::core::time::Duration::as_millis(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the total number of whole milliseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_millis(), 5_730);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_nanos",
+            |_self: R<::core::time::Duration>| {
+                let output: u128 = {
+                    {
+                        let output: u128 = ::core::time::Duration::as_nanos(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the total number of nanoseconds contained by this `Duration`.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_nanos(), 5_730_023_852);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_secs",
+            |_self: R<::core::time::Duration>| {
+                let output: u64 = {
+                    {
+                        let output: u64 = ::core::time::Duration::as_secs(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of _whole_ seconds contained by this `Duration`.\n The returned value does not include the fractional (nanosecond) part of the\n duration, which can be obtained using [`subsec_nanos`].\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::new(5, 730_023_852);\n assert_eq!(duration.as_secs(), 5);\n ```\n To determine the total number of seconds represented by the `Duration`\n including the fractional part, use [`as_secs_f64`] or [`as_secs_f32`]\n [`as_secs_f64`]: Duration::as_secs_f64\n [`as_secs_f32`]: Duration::as_secs_f32\n [`subsec_nanos`]: Duration::subsec_nanos",
+            &["_self"],
+        )
+        .register_documented(
+            "as_secs_f32",
+            |_self: R<::core::time::Duration>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::core::time::Duration::as_secs_f32(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of seconds contained by this `Duration` as `f32`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.as_secs_f32(), 2.7);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "as_secs_f64",
+            |_self: R<::core::time::Duration>| {
+                let output: f64 = {
+                    {
+                        let output: f64 = ::core::time::Duration::as_secs_f64(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the number of seconds contained by this `Duration` as `f64`.\n The returned value includes the fractional (nanosecond) part of the duration.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.as_secs_f64(), 2.7);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "assert_fields_are_eq",
+            |_self: R<::core::time::Duration>| {
+                let output: () = {
+                    {
+                        let output: () = <::core::time::Duration as ::core::cmp::Eq>::assert_fields_are_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::core::time::Duration>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "div",
+            |_self: V<::core::time::Duration>, rhs: u32| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Div<
+                            u32,
+                        >>::div(_self.into_inner(), rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "div_duration_f32",
+            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::core::time::Duration::div_duration_f32(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `Duration` and returns `f32`.\n # Examples\n ```\n use std::time::Duration;\n let dur1 = Duration::new(2, 700_000_000);\n let dur2 = Duration::new(5, 400_000_000);\n assert_eq!(dur1.div_duration_f32(dur2), 0.5);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "div_duration_f64",
+            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
+                let output: f64 = {
+                    {
+                        let output: f64 = ::core::time::Duration::div_duration_f64(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `Duration` and returns `f64`.\n # Examples\n ```\n use std::time::Duration;\n let dur1 = Duration::new(2, 700_000_000);\n let dur2 = Duration::new(5, 400_000_000);\n assert_eq!(dur1.div_duration_f64(dur2), 0.5);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "div_f32",
+            |_self: V<::core::time::Duration>, rhs: f32| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::div_f32(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `f32`.\n Since the significand of `f32` is quite limited compared to the range of `Duration`\n -- only about 16.8ms of exact nanosecond precision -- this method currently forwards\n to [`div_f64`][Self::div_f64] for greater accuracy.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n // Note that this `3.14_f32` argument already has more floating-point\n // representation error than a direct `3.14_f64` would, so the result\n // is slightly different from the ideally rounded 0.859_872_611.\n assert_eq!(dur.div_f32(3.14), Duration::new(0, 859_872_583));\n assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "div_f64",
+            |_self: V<::core::time::Duration>, rhs: f64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::div_f64(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Divides `Duration` by `f64`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.div_f64(3.14), Duration::new(0, 859_872_611));\n assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));\n ```\n Note that `f64` does not have enough bits ([`f64::MANTISSA_DIGITS`]) to represent the full\n range of possible `Duration` with nanosecond precision, so rounding may occur even for\n trivial operations like dividing by 1.\n ```\n # #![feature(float_exact_integer_constants)]\n use std::time::Duration;\n // This is about 14.9 weeks, remaining precise to the nanosecond:\n let weeks = Duration::from_nanos(f64::MAX_EXACT_INTEGER as u64);\n assert_eq!(weeks, weeks.div_f64(1.0));\n // A larger value incurs rounding in the floating-point operation:\n let weeks = Duration::from_nanos(u64::MAX);\n assert_ne!(weeks, weeks.div_f64(1.0));\n // This is over 285 million years, remaining precise to the second:\n let years = Duration::from_secs(f64::MAX_EXACT_INTEGER as u64);\n assert_eq!(years, years.div_f64(1.0));\n // And again larger values incur rounding:\n let years = Duration::from_secs(u64::MAX / 2);\n assert_ne!(years, years.div_f64(1.0));\n ```\n ```should_panic\n # use std::time::Duration;\n // In the extreme, rounding can even overflow `Duration`, which panics.\n let _ = Duration::from_secs(u64::MAX).div_f64(1.0);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::core::time::Duration>, other: R<::core::time::Duration>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::core::time::Duration as ::core::cmp::PartialEq<
+                            ::core::time::Duration,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "from_micros",
+            |micros: u64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_micros(
+                                micros,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of microseconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_micros(1_000_002);\n assert_eq!(1, duration.as_secs());\n assert_eq!(2_000, duration.subsec_nanos());\n ```",
+            &["micros"],
+        )
+        .register_documented(
+            "from_millis",
+            |millis: u64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_millis(
+                                millis,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of milliseconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(2_569);\n assert_eq!(2, duration.as_secs());\n assert_eq!(569_000_000, duration.subsec_nanos());\n ```",
+            &["millis"],
+        )
+        .register_documented(
+            "from_nanos",
+            |nanos: u64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_nanos(
+                                nanos,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of nanoseconds.\n Note: Using this on the return value of `as_nanos()` might cause unexpected behavior:\n `as_nanos()` returns a u128, and can return values that do not fit in u64, e.g. 585 years.\n Instead, consider using the pattern `Duration::new(d.as_secs(), d.subsec_nanos())`\n if you cannot copy/clone the Duration directly.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_nanos(1_000_000_123);\n assert_eq!(1, duration.as_secs());\n assert_eq!(123, duration.subsec_nanos());\n ```",
+            &["nanos"],
+        )
+        .register_documented(
+            "from_secs",
+            |secs: u64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_secs(
+                                secs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of whole seconds.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_secs(5);\n assert_eq!(5, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["secs"],
+        )
+        .register_documented(
+            "from_secs_f32",
+            |secs: f32| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_secs_f32(
+                                secs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of seconds represented\n as `f32`.\n # Panics\n This constructor will panic if `secs` is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let res = Duration::from_secs_f32(0.0);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f32(1e-20);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f32(4.2e-7);\n assert_eq!(res, Duration::new(0, 420));\n let res = Duration::from_secs_f32(2.7);\n assert_eq!(res, Duration::new(2, 700_000_048));\n let res = Duration::from_secs_f32(3e10);\n assert_eq!(res, Duration::new(30_000_001_024, 0));\n // subnormal float\n let res = Duration::from_secs_f32(f32::from_bits(1));\n assert_eq!(res, Duration::new(0, 0));\n // conversion uses rounding\n let res = Duration::from_secs_f32(0.999e-9);\n assert_eq!(res, Duration::new(0, 1));\n ```",
+            &["secs"],
+        )
+        .register_documented(
+            "from_secs_f64",
+            |secs: f64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_secs_f64(
+                                secs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of seconds represented\n as `f64`.\n # Panics\n This constructor will panic if `secs` is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let res = Duration::from_secs_f64(0.0);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(1e-20);\n assert_eq!(res, Duration::new(0, 0));\n let res = Duration::from_secs_f64(4.2e-7);\n assert_eq!(res, Duration::new(0, 420));\n let res = Duration::from_secs_f64(2.7);\n assert_eq!(res, Duration::new(2, 700_000_000));\n let res = Duration::from_secs_f64(3e10);\n assert_eq!(res, Duration::new(30_000_000_000, 0));\n // subnormal float\n let res = Duration::from_secs_f64(f64::from_bits(1));\n assert_eq!(res, Duration::new(0, 0));\n // conversion uses rounding\n let res = Duration::from_secs_f64(0.999e-9);\n assert_eq!(res, Duration::new(0, 1));\n ```",
+            &["secs"],
+        )
+        .register_documented(
+            "is_zero",
+            |_self: R<::core::time::Duration>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::core::time::Duration::is_zero(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if this `Duration` spans no time.\n # Examples\n ```\n use std::time::Duration;\n assert!(Duration::ZERO.is_zero());\n assert!(Duration::new(0, 0).is_zero());\n assert!(Duration::from_nanos(0).is_zero());\n assert!(Duration::from_secs(0).is_zero());\n assert!(!Duration::new(1, 1).is_zero());\n assert!(!Duration::from_nanos(1).is_zero());\n assert!(!Duration::from_secs(1).is_zero());\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "mul",
+            |_self: V<::core::time::Duration>, rhs: u32| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Mul<
+                            u32,
+                        >>::mul(_self.into_inner(), rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_f32",
+            |_self: V<::core::time::Duration>, rhs: f32| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::mul_f32(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiplies `Duration` by `f32`.\n Since the significand of `f32` is quite limited compared to the range of `Duration`\n -- only about 16.8ms of exact nanosecond precision -- this method currently forwards\n to [`mul_f64`][Self::mul_f64] for greater accuracy.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n // Note that this `3.14_f32` argument already has more floating-point\n // representation error than a direct `3.14_f64` would, so the result\n // is slightly different from the ideal 8.478s.\n assert_eq!(dur.mul_f32(3.14), Duration::new(8, 478_000_283));\n assert_eq!(dur.mul_f32(3.14e5), Duration::new(847_800, 0));\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_f64",
+            |_self: V<::core::time::Duration>, rhs: f64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::mul_f64(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiplies `Duration` by `f64`.\n # Panics\n This method will panic if result is negative, overflows `Duration` or not finite.\n # Examples\n ```\n use std::time::Duration;\n let dur = Duration::new(2, 700_000_000);\n assert_eq!(dur.mul_f64(3.14), Duration::new(8, 478_000_000));\n assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));\n ```\n Note that `f64` does not have enough bits ([`f64::MANTISSA_DIGITS`]) to represent the full\n range of possible `Duration` with nanosecond precision, so rounding may occur even for\n trivial operations like multiplying by 1.\n ```\n # #![feature(float_exact_integer_constants)]\n use std::time::Duration;\n // This is about 14.9 weeks, remaining precise to the nanosecond:\n let weeks = Duration::from_nanos(f64::MAX_EXACT_INTEGER as u64);\n assert_eq!(weeks, weeks.mul_f64(1.0));\n // A larger value incurs rounding in the floating-point operation:\n let weeks = Duration::from_nanos(u64::MAX);\n assert_ne!(weeks, weeks.mul_f64(1.0));\n // This is over 285 million years, remaining precise to the second:\n let years = Duration::from_secs(f64::MAX_EXACT_INTEGER as u64);\n assert_eq!(years, years.mul_f64(1.0));\n // And again larger values incur rounding:\n let years = Duration::from_secs(u64::MAX / 2);\n assert_ne!(years, years.mul_f64(1.0));\n ```\n ```should_panic\n # use std::time::Duration;\n // In the extreme, rounding can even overflow `Duration`, which panics.\n let _ = Duration::from_secs(u64::MAX).mul_f64(1.0);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "new",
+            |secs: u64, nanos: u32| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::new(
+                                secs,
+                                nanos,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of whole seconds and\n additional nanoseconds.\n If the number of nanoseconds is greater than 1 billion (the number of\n nanoseconds in a second), then it will carry over into the seconds provided.\n # Panics\n This constructor will panic if the carry from the nanoseconds overflows\n the seconds counter.\n # Examples\n ```\n use std::time::Duration;\n let five_seconds = Duration::new(5, 0);\n ```",
+            &["secs", "nanos"],
+        )
+        .register_documented(
+            "saturating_add",
+            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::saturating_add(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Saturating `Duration` addition. Computes `self + other`, returning [`Duration::MAX`]\n if overflow occurred.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(0, 0).saturating_add(Duration::new(0, 1)), Duration::new(0, 1));\n assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "saturating_mul",
+            |_self: V<::core::time::Duration>, rhs: u32| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::saturating_mul(
+                                _self.into_inner(),
+                                rhs,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Saturating `Duration` multiplication. Computes `self * other`, returning\n [`Duration::MAX`] if overflow occurred.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(0, 500_000_001).saturating_mul(2), Duration::new(1, 2));\n assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "saturating_sub",
+            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::saturating_sub(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Saturating `Duration` subtraction. Computes `self - other`, returning [`Duration::ZERO`]\n if the result would be negative or if overflow occurred.\n # Examples\n ```\n use std::time::Duration;\n assert_eq!(Duration::new(0, 1).saturating_sub(Duration::new(0, 0)), Duration::new(0, 1));\n assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);\n ```",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "sub",
+            |_self: V<::core::time::Duration>, rhs: V<::core::time::Duration>| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = <::core::time::Duration as ::core::ops::Sub<
+                            ::core::time::Duration,
+                        >>::sub(_self.into_inner(), rhs.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "subsec_micros",
+            |_self: R<::core::time::Duration>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::core::time::Duration::subsec_micros(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the fractional part of this `Duration`, in whole microseconds.\n This method does **not** return the length of the duration when\n represented by microseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one million).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_micros(1_234_567);\n assert_eq!(duration.as_secs(), 1);\n assert_eq!(duration.subsec_micros(), 234_567);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "subsec_millis",
+            |_self: R<::core::time::Duration>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::core::time::Duration::subsec_millis(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the fractional part of this `Duration`, in whole milliseconds.\n This method does **not** return the length of the duration when\n represented by milliseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one thousand).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(5_432);\n assert_eq!(duration.as_secs(), 5);\n assert_eq!(duration.subsec_millis(), 432);\n ```",
+            &["_self"],
+        )
+        .register_documented(
+            "subsec_nanos",
+            |_self: R<::core::time::Duration>| {
+                let output: u32 = {
+                    {
+                        let output: u32 = ::core::time::Duration::subsec_nanos(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the fractional part of this `Duration`, in nanoseconds.\n This method does **not** return the length of the duration when\n represented by nanoseconds. The returned number always represents a\n fractional portion of a second (i.e., it is less than one billion).\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_millis(5_010);\n assert_eq!(duration.as_secs(), 5);\n assert_eq!(duration.subsec_nanos(), 10_000_000);\n ```",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::core::time::Duration,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_i_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::glam::IVec2,
@@ -4536,10 +4286,12 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::IVec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::IVec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -4551,11 +4303,11 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::IVec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -4568,11 +4320,11 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::IVec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -4585,10 +4337,12 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
-                        let output: V<::glam::I8Vec2> = ::glam::IVec2::as_i8vec2(&_self)
+                        let output: V<::glam::I8Vec2> = ::glam::IVec2::as_i8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -4600,11 +4354,11 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::IVec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -4617,11 +4371,11 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::IVec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -4634,10 +4388,12 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
-                        let output: V<::glam::U8Vec2> = ::glam::IVec2::as_u8vec2(&_self)
+                        let output: V<::glam::U8Vec2> = ::glam::IVec2::as_u8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -4649,10 +4405,12 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::IVec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::IVec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -4664,10 +4422,12 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::IVec2>| {
+            |_self: V<::glam::IVec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::IVec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::IVec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -4678,11 +4438,11 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::IVec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::IVec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::IVec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -5808,7 +5568,11 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::IVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::IVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -5884,10 +5648,12 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::IVec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::IVec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -5899,11 +5665,11 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::IVec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -5916,11 +5682,11 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::IVec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -5933,10 +5699,12 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
-                        let output: V<::glam::I8Vec3> = ::glam::IVec3::as_i8vec3(&_self)
+                        let output: V<::glam::I8Vec3> = ::glam::IVec3::as_i8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -5948,11 +5716,11 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::IVec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -5965,11 +5733,11 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::IVec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -5982,10 +5750,12 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
-                        let output: V<::glam::U8Vec3> = ::glam::IVec3::as_u8vec3(&_self)
+                        let output: V<::glam::U8Vec3> = ::glam::IVec3::as_u8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -5997,10 +5767,12 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::IVec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::IVec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -6012,10 +5784,12 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::IVec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::IVec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -6027,10 +5801,12 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::IVec3>| {
+            |_self: V<::glam::IVec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::IVec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::IVec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -6041,11 +5817,11 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::IVec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::IVec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::IVec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -7172,7 +6948,11 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::IVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::IVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -7248,10 +7028,12 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::IVec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::IVec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -7263,11 +7045,11 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::IVec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -7280,11 +7062,11 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::IVec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -7297,10 +7079,12 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
-                        let output: V<::glam::I8Vec4> = ::glam::IVec4::as_i8vec4(&_self)
+                        let output: V<::glam::I8Vec4> = ::glam::IVec4::as_i8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -7312,11 +7096,11 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::IVec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -7329,11 +7113,11 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::IVec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -7346,10 +7130,12 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
-                        let output: V<::glam::U8Vec4> = ::glam::IVec4::as_u8vec4(&_self)
+                        let output: V<::glam::U8Vec4> = ::glam::IVec4::as_u8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -7361,10 +7147,12 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::IVec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::IVec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -7376,10 +7164,12 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::IVec4>| {
+            |_self: V<::glam::IVec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::IVec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::IVec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -7390,11 +7180,11 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::IVec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::IVec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::IVec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -8503,7 +8293,11 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::IVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::IVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -8579,10 +8373,12 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::I8Vec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::I8Vec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -8594,11 +8390,11 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::I8Vec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -8611,11 +8407,11 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::I8Vec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -8628,10 +8424,12 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::I8Vec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::I8Vec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -8643,11 +8441,11 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::I8Vec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -8660,11 +8458,11 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::I8Vec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -8677,10 +8475,12 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
-                        let output: V<::glam::U8Vec2> = ::glam::I8Vec2::as_u8vec2(&_self)
+                        let output: V<::glam::U8Vec2> = ::glam::I8Vec2::as_u8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -8692,10 +8492,12 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::I8Vec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::I8Vec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -8707,10 +8509,12 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::I8Vec2>| {
+            |_self: V<::glam::I8Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::I8Vec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::I8Vec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -8721,11 +8525,11 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I8Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I8Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I8Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -9851,7 +9655,11 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I8Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I8Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -9927,10 +9735,12 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::I8Vec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::I8Vec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -9942,11 +9752,11 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::I8Vec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -9959,11 +9769,11 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::I8Vec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -9976,10 +9786,12 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::I8Vec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::I8Vec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -9991,11 +9803,11 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::I8Vec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -10008,11 +9820,11 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::I8Vec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -10025,10 +9837,12 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
-                        let output: V<::glam::U8Vec3> = ::glam::I8Vec3::as_u8vec3(&_self)
+                        let output: V<::glam::U8Vec3> = ::glam::I8Vec3::as_u8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -10040,10 +9854,12 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::I8Vec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::I8Vec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -10055,10 +9871,12 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::I8Vec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::I8Vec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -10070,10 +9888,12 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::I8Vec3>| {
+            |_self: V<::glam::I8Vec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::I8Vec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::I8Vec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -10084,11 +9904,11 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I8Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I8Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I8Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -11215,7 +11035,11 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I8Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I8Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -11291,10 +11115,12 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::I8Vec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::I8Vec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -11306,11 +11132,11 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::I8Vec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -11323,11 +11149,11 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::I8Vec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -11340,10 +11166,12 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::I8Vec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::I8Vec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -11355,11 +11183,11 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::I8Vec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -11372,11 +11200,11 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::I8Vec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -11389,10 +11217,12 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
-                        let output: V<::glam::U8Vec4> = ::glam::I8Vec4::as_u8vec4(&_self)
+                        let output: V<::glam::U8Vec4> = ::glam::I8Vec4::as_u8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -11404,10 +11234,12 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::I8Vec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::I8Vec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -11419,10 +11251,12 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::I8Vec4>| {
+            |_self: V<::glam::I8Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::I8Vec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::I8Vec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -11433,11 +11267,11 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I8Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I8Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I8Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -12546,7 +12380,11 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I8Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I8Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -12622,10 +12460,12 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::I16Vec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::I16Vec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -12637,11 +12477,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::I16Vec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -12654,11 +12494,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
                         let output: V<::glam::I8Vec2> = ::glam::I16Vec2::as_i8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -12671,10 +12511,12 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::I16Vec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::I16Vec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -12686,11 +12528,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::I16Vec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -12703,11 +12545,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::I16Vec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -12720,11 +12562,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
                         let output: V<::glam::U8Vec2> = ::glam::I16Vec2::as_u8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -12737,10 +12579,12 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::I16Vec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::I16Vec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -12752,10 +12596,12 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::I16Vec2>| {
+            |_self: V<::glam::I16Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::I16Vec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::I16Vec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -12766,11 +12612,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I16Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I16Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I16Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -13908,7 +13754,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I16Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I16Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -13984,10 +13834,12 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::I16Vec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::I16Vec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -13999,11 +13851,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::I16Vec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -14016,11 +13868,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
                         let output: V<::glam::I8Vec3> = ::glam::I16Vec3::as_i8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -14033,10 +13885,12 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::I16Vec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::I16Vec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -14048,11 +13902,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::I16Vec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -14065,11 +13919,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::I16Vec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -14082,11 +13936,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
                         let output: V<::glam::U8Vec3> = ::glam::I16Vec3::as_u8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -14099,10 +13953,12 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::I16Vec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::I16Vec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -14114,10 +13970,12 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::I16Vec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::I16Vec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -14129,10 +13987,12 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::I16Vec3>| {
+            |_self: V<::glam::I16Vec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::I16Vec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::I16Vec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -14143,11 +14003,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I16Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I16Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I16Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -15285,7 +15145,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I16Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I16Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -15361,10 +15225,12 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::I16Vec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::I16Vec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -15376,11 +15242,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::I16Vec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -15393,11 +15259,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
                         let output: V<::glam::I8Vec4> = ::glam::I16Vec4::as_i8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -15410,10 +15276,12 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::I16Vec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::I16Vec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -15425,11 +15293,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::I16Vec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -15442,11 +15310,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::I16Vec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -15459,11 +15327,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
                         let output: V<::glam::U8Vec4> = ::glam::I16Vec4::as_u8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -15476,10 +15344,12 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::I16Vec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::I16Vec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -15491,10 +15361,12 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::I16Vec4>| {
+            |_self: V<::glam::I16Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::I16Vec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::I16Vec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -15505,11 +15377,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I16Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I16Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I16Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -16629,7 +16501,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I16Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I16Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -16705,10 +16581,12 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::I64Vec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::I64Vec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -16720,11 +16598,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::I64Vec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -16737,11 +16615,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
                         let output: V<::glam::I8Vec2> = ::glam::I64Vec2::as_i8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -16754,10 +16632,12 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::I64Vec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::I64Vec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -16769,11 +16649,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::I64Vec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -16786,11 +16666,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::I64Vec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -16803,11 +16683,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
                         let output: V<::glam::U8Vec2> = ::glam::I64Vec2::as_u8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -16820,10 +16700,12 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::I64Vec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::I64Vec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -16835,10 +16717,12 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::I64Vec2>| {
+            |_self: V<::glam::I64Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::I64Vec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::I64Vec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -16849,11 +16733,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I64Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I64Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I64Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -17991,7 +17875,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I64Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I64Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -18067,10 +17955,12 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::I64Vec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::I64Vec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -18082,11 +17972,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::I64Vec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -18099,11 +17989,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
                         let output: V<::glam::I8Vec3> = ::glam::I64Vec3::as_i8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -18116,10 +18006,12 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::I64Vec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::I64Vec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -18131,11 +18023,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::I64Vec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -18148,11 +18040,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::I64Vec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -18165,11 +18057,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
                         let output: V<::glam::U8Vec3> = ::glam::I64Vec3::as_u8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -18182,10 +18074,12 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::I64Vec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::I64Vec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -18197,10 +18091,12 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::I64Vec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::I64Vec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -18212,10 +18108,12 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::I64Vec3>| {
+            |_self: V<::glam::I64Vec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::I64Vec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::I64Vec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -18226,11 +18124,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I64Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I64Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I64Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -19368,7 +19266,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I64Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I64Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -19444,10 +19346,12 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::I64Vec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::I64Vec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -19459,11 +19363,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::I64Vec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -19476,11 +19380,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
                         let output: V<::glam::I8Vec4> = ::glam::I64Vec4::as_i8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -19493,10 +19397,12 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::I64Vec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::I64Vec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -19508,11 +19414,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::I64Vec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -19525,11 +19431,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::I64Vec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -19542,11 +19448,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
                         let output: V<::glam::U8Vec4> = ::glam::I64Vec4::as_u8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -19559,10 +19465,12 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::I64Vec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::I64Vec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -19574,10 +19482,12 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::I64Vec4>| {
+            |_self: V<::glam::I64Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::I64Vec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::I64Vec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -19588,11 +19498,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::I64Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::I64Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::I64Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -20712,7 +20622,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I64Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I64Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -20771,10 +20685,12 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::UVec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::UVec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -20786,11 +20702,11 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::UVec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -20803,11 +20719,11 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::UVec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -20820,10 +20736,12 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
-                        let output: V<::glam::I8Vec2> = ::glam::UVec2::as_i8vec2(&_self)
+                        let output: V<::glam::I8Vec2> = ::glam::UVec2::as_i8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -20835,10 +20753,12 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::UVec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::UVec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -20850,11 +20770,11 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::UVec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -20867,11 +20787,11 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::UVec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -20884,10 +20804,12 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
-                        let output: V<::glam::U8Vec2> = ::glam::UVec2::as_u8vec2(&_self)
+                        let output: V<::glam::U8Vec2> = ::glam::UVec2::as_u8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -20899,10 +20821,12 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::UVec2>| {
+            |_self: V<::glam::UVec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::UVec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::UVec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -20913,11 +20837,11 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::UVec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::UVec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::UVec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -21849,7 +21773,11 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::UVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::UVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -21908,10 +21836,12 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::UVec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::UVec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -21923,11 +21853,11 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::UVec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -21940,11 +21870,11 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::UVec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -21957,10 +21887,12 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
-                        let output: V<::glam::I8Vec3> = ::glam::UVec3::as_i8vec3(&_self)
+                        let output: V<::glam::I8Vec3> = ::glam::UVec3::as_i8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -21972,10 +21904,12 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::UVec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::UVec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -21987,11 +21921,11 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::UVec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -22004,11 +21938,11 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::UVec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -22021,10 +21955,12 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
-                        let output: V<::glam::U8Vec3> = ::glam::UVec3::as_u8vec3(&_self)
+                        let output: V<::glam::U8Vec3> = ::glam::UVec3::as_u8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -22036,10 +21972,12 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::UVec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::UVec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -22051,10 +21989,12 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::UVec3>| {
+            |_self: V<::glam::UVec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::UVec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::UVec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -22065,11 +22005,11 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::UVec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::UVec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::UVec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -23055,7 +22995,11 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::UVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::UVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -23114,10 +23058,12 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::UVec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::UVec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -23129,11 +23075,11 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::UVec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -23146,11 +23092,11 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::UVec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -23163,10 +23109,12 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
-                        let output: V<::glam::I8Vec4> = ::glam::UVec4::as_i8vec4(&_self)
+                        let output: V<::glam::I8Vec4> = ::glam::UVec4::as_i8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -23178,10 +23126,12 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::UVec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::UVec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -23193,11 +23143,11 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::UVec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -23210,11 +23160,11 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::UVec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -23227,10 +23177,12 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
-                        let output: V<::glam::U8Vec4> = ::glam::UVec4::as_u8vec4(&_self)
+                        let output: V<::glam::U8Vec4> = ::glam::UVec4::as_u8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -23242,10 +23194,12 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::UVec4>| {
+            |_self: V<::glam::UVec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::UVec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::UVec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -23256,11 +23210,11 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::UVec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::UVec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::UVec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -24228,7 +24182,11 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::UVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::UVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -24287,10 +24245,12 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::U8Vec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::U8Vec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -24302,11 +24262,11 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::U8Vec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -24319,11 +24279,11 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::U8Vec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -24336,10 +24296,12 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
-                        let output: V<::glam::I8Vec2> = ::glam::U8Vec2::as_i8vec2(&_self)
+                        let output: V<::glam::I8Vec2> = ::glam::U8Vec2::as_i8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -24351,10 +24313,12 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::U8Vec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::U8Vec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -24366,11 +24330,11 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::U8Vec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -24383,11 +24347,11 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::U8Vec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -24400,10 +24364,12 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::U8Vec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::U8Vec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -24415,10 +24381,12 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::U8Vec2>| {
+            |_self: V<::glam::U8Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::U8Vec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::U8Vec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -24429,11 +24397,11 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U8Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U8Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U8Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -25365,7 +25333,11 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U8Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U8Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -25424,10 +25396,12 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::U8Vec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::U8Vec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -25439,11 +25413,11 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::U8Vec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -25456,11 +25430,11 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::U8Vec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -25473,10 +25447,12 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
-                        let output: V<::glam::I8Vec3> = ::glam::U8Vec3::as_i8vec3(&_self)
+                        let output: V<::glam::I8Vec3> = ::glam::U8Vec3::as_i8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -25488,10 +25464,12 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::U8Vec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::U8Vec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -25503,11 +25481,11 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::U8Vec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -25520,11 +25498,11 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::U8Vec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -25537,10 +25515,12 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::U8Vec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::U8Vec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -25552,10 +25532,12 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::U8Vec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::U8Vec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -25567,10 +25549,12 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::U8Vec3>| {
+            |_self: V<::glam::U8Vec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::U8Vec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::U8Vec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -25581,11 +25565,11 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U8Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U8Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U8Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -26571,7 +26555,11 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U8Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U8Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -26630,10 +26618,12 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::U8Vec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::U8Vec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -26645,11 +26635,11 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::U8Vec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -26662,11 +26652,11 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::U8Vec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -26679,10 +26669,12 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
-                        let output: V<::glam::I8Vec4> = ::glam::U8Vec4::as_i8vec4(&_self)
+                        let output: V<::glam::I8Vec4> = ::glam::U8Vec4::as_i8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -26694,10 +26686,12 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::U8Vec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::U8Vec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -26709,11 +26703,11 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::U8Vec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -26726,11 +26720,11 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::U8Vec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -26743,10 +26737,12 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::U8Vec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::U8Vec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -26758,10 +26754,12 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::U8Vec4>| {
+            |_self: V<::glam::U8Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::U8Vec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::U8Vec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -26772,11 +26770,11 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U8Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U8Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U8Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -27744,7 +27742,11 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U8Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U8Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -27803,10 +27805,12 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::U16Vec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::U16Vec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -27818,11 +27822,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::U16Vec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -27835,11 +27839,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::U16Vec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -27852,11 +27856,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
                         let output: V<::glam::I8Vec2> = ::glam::U16Vec2::as_i8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -27869,10 +27873,12 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::U16Vec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::U16Vec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -27884,11 +27890,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::U16Vec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -27901,11 +27907,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
                         let output: V<::glam::U8Vec2> = ::glam::U16Vec2::as_u8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -27918,10 +27924,12 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::U16Vec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::U16Vec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -27933,10 +27941,12 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::U16Vec2>| {
+            |_self: V<::glam::U16Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::U16Vec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::U16Vec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -27947,11 +27957,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U16Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U16Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U16Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -28895,7 +28905,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U16Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U16Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -28954,10 +28968,12 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::U16Vec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::U16Vec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -28969,11 +28985,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::U16Vec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -28986,11 +29002,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::U16Vec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -29003,11 +29019,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
                         let output: V<::glam::I8Vec3> = ::glam::U16Vec3::as_i8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -29020,10 +29036,12 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::U16Vec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::U16Vec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -29035,11 +29053,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::U16Vec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -29052,11 +29070,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
                         let output: V<::glam::U8Vec3> = ::glam::U16Vec3::as_u8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -29069,10 +29087,12 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::U16Vec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::U16Vec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -29084,10 +29104,12 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::U16Vec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::U16Vec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -29099,10 +29121,12 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::U16Vec3>| {
+            |_self: V<::glam::U16Vec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::U16Vec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::U16Vec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -29113,11 +29137,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U16Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U16Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U16Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -30114,7 +30138,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U16Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U16Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -30173,10 +30201,12 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::U16Vec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::U16Vec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -30188,11 +30218,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::U16Vec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -30205,11 +30235,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::U16Vec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -30222,11 +30252,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
                         let output: V<::glam::I8Vec4> = ::glam::U16Vec4::as_i8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -30239,10 +30269,12 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::U16Vec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::U16Vec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -30254,11 +30286,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::U16Vec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -30271,11 +30303,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
                         let output: V<::glam::U8Vec4> = ::glam::U16Vec4::as_u8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -30288,10 +30320,12 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::U16Vec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::U16Vec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -30303,10 +30337,12 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::U16Vec4>| {
+            |_self: V<::glam::U16Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::U16Vec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::U16Vec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -30317,11 +30353,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U16Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U16Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U16Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -31300,7 +31336,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U16Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U16Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -31359,10 +31399,12 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::U64Vec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::U64Vec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -31374,11 +31416,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::U64Vec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -31391,11 +31433,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::U64Vec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -31408,11 +31450,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
                         let output: V<::glam::I8Vec2> = ::glam::U64Vec2::as_i8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -31425,10 +31467,12 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::U64Vec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::U64Vec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -31440,11 +31484,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::U64Vec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -31457,11 +31501,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
                         let output: V<::glam::U8Vec2> = ::glam::U64Vec2::as_u8vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -31474,10 +31518,12 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::U64Vec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::U64Vec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -31489,10 +31535,12 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::U64Vec2>| {
+            |_self: V<::glam::U64Vec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::U64Vec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::U64Vec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -31503,11 +31551,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U64Vec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U64Vec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U64Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -32451,7 +32499,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U64Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U64Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -32510,10 +32562,12 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::U64Vec3::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::U64Vec3::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -32525,11 +32579,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::U64Vec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -32542,11 +32596,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::U64Vec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -32559,11 +32613,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
                         let output: V<::glam::I8Vec3> = ::glam::U64Vec3::as_i8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -32576,10 +32630,12 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::U64Vec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::U64Vec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -32591,11 +32647,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::U64Vec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -32608,11 +32664,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
                         let output: V<::glam::U8Vec3> = ::glam::U64Vec3::as_u8vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -32625,10 +32681,12 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::U64Vec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::U64Vec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -32640,10 +32698,12 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::U64Vec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::U64Vec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -32655,10 +32715,12 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::U64Vec3>| {
+            |_self: V<::glam::U64Vec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::U64Vec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::U64Vec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -32669,11 +32731,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U64Vec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U64Vec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U64Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -33670,7 +33732,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U64Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U64Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -33729,10 +33795,12 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::U64Vec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::U64Vec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -33744,11 +33812,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::U64Vec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -33761,11 +33829,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::U64Vec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -33778,11 +33846,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
                         let output: V<::glam::I8Vec4> = ::glam::U64Vec4::as_i8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -33795,10 +33863,12 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::U64Vec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::U64Vec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -33810,11 +33880,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::U64Vec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -33827,11 +33897,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
                         let output: V<::glam::U8Vec4> = ::glam::U64Vec4::as_u8vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -33844,10 +33914,12 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::U64Vec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::U64Vec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -33859,10 +33931,12 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::U64Vec4>| {
+            |_self: V<::glam::U64Vec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::U64Vec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::U64Vec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -33873,11 +33947,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::U64Vec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::U64Vec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::U64Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -34856,7 +34930,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U64Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U64Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -34950,24 +35028,6 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "angle_between",
-            |_self: V<::glam::Vec2>, rhs: V<::glam::Vec2>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::glam::Vec2::angle_between(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "angle_to",
             |_self: V<::glam::Vec2>, rhs: V<::glam::Vec2>| {
                 let output: f32 = {
@@ -34987,10 +35047,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::DVec2> = {
                     {
-                        let output: V<::glam::DVec2> = ::glam::Vec2::as_dvec2(&_self)
+                        let output: V<::glam::DVec2> = ::glam::Vec2::as_dvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35002,10 +35064,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
-                        let output: V<::glam::I16Vec2> = ::glam::Vec2::as_i16vec2(&_self)
+                        let output: V<::glam::I16Vec2> = ::glam::Vec2::as_i16vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35017,10 +35081,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
-                        let output: V<::glam::I64Vec2> = ::glam::Vec2::as_i64vec2(&_self)
+                        let output: V<::glam::I64Vec2> = ::glam::Vec2::as_i64vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35032,10 +35098,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
-                        let output: V<::glam::I8Vec2> = ::glam::Vec2::as_i8vec2(&_self)
+                        let output: V<::glam::I8Vec2> = ::glam::Vec2::as_i8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35047,10 +35115,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::Vec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::Vec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35062,10 +35132,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
-                        let output: V<::glam::U16Vec2> = ::glam::Vec2::as_u16vec2(&_self)
+                        let output: V<::glam::U16Vec2> = ::glam::Vec2::as_u16vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35077,10 +35149,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
-                        let output: V<::glam::U64Vec2> = ::glam::Vec2::as_u64vec2(&_self)
+                        let output: V<::glam::U64Vec2> = ::glam::Vec2::as_u64vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35092,10 +35166,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
-                        let output: V<::glam::U8Vec2> = ::glam::Vec2::as_u8vec2(&_self)
+                        let output: V<::glam::U8Vec2> = ::glam::Vec2::as_u8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35107,10 +35183,12 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::Vec2>| {
+            |_self: V<::glam::Vec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::Vec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::Vec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -35353,6 +35431,23 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             },
             " Returns a vector with signs of `rhs` and the magnitudes of `self`.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "cos",
+            |_self: V<::glam::Vec2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::cos(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the cosine for each element of `self`.",
+            &["_self"],
         )
         .register_documented(
             "distance",
@@ -35994,11 +36089,11 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "move_towards",
-            |_self: R<::glam::Vec2>, rhs: V<::glam::Vec2>, d: f32| {
+            |_self: V<::glam::Vec2>, rhs: V<::glam::Vec2>, d: f32| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Vec2::move_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 d,
                             )
@@ -36432,11 +36527,11 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "rotate_towards",
-            |_self: R<::glam::Vec2>, rhs: V<::glam::Vec2>, max_angle: f32| {
+            |_self: V<::glam::Vec2>, rhs: V<::glam::Vec2>, max_angle: f32| {
                 let output: V<::glam::Vec2> = {
                     {
                         let output: V<::glam::Vec2> = ::glam::Vec2::rotate_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 max_angle,
                             )
@@ -36464,6 +36559,23 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 output
             },
             " Returns a vector containing the nearest integer to a number for each element of `self`.\n Round half-way cases away from 0.0.",
+            &["_self"],
+        )
+        .register_documented(
+            "saturate",
+            |_self: V<::glam::Vec2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::saturate(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.",
             &["_self"],
         )
         .register_documented(
@@ -36507,6 +36619,23 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "sin",
+            |_self: V<::glam::Vec2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::sin(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the sine for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "splat",
             |v: f32| {
                 let output: V<::glam::Vec2> = {
@@ -36519,6 +36648,41 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             },
             " Creates a vector with all elements set to `v`.",
             &["v"],
+        )
+        .register_documented(
+            "sqrt",
+            |_self: V<::glam::Vec2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::sqrt(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the square root for each element of `self`.\n This returns NaN when the element is negative.",
+            &["_self"],
+        )
+        .register_documented(
+            "step",
+            |_self: V<::glam::Vec2>, rhs: V<::glam::Vec2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::step(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.\n Similar to glsl's step(edge, x), which translates into edge.step(x)",
+            &["_self", "rhs"],
         )
         .register_documented(
             "sub",
@@ -36655,7 +36819,11 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -36768,11 +36936,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "any_orthogonal_vector",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Vec3A::any_orthogonal_vector(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -36785,11 +36953,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "any_orthonormal_vector",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Vec3A::any_orthonormal_vector(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -36802,10 +36970,12 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::DVec3> = {
                     {
-                        let output: V<::glam::DVec3> = ::glam::Vec3A::as_dvec3(&_self)
+                        let output: V<::glam::DVec3> = ::glam::Vec3A::as_dvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -36817,11 +36987,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::Vec3A::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -36834,11 +37004,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::Vec3A::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -36851,10 +37021,12 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::I8Vec3> = {
                     {
-                        let output: V<::glam::I8Vec3> = ::glam::Vec3A::as_i8vec3(&_self)
+                        let output: V<::glam::I8Vec3> = ::glam::Vec3A::as_i8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -36866,10 +37038,12 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::Vec3A::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::Vec3A::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -36881,11 +37055,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::Vec3A::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -36898,11 +37072,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::Vec3A::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -36915,10 +37089,12 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::U8Vec3> = {
                     {
-                        let output: V<::glam::U8Vec3> = ::glam::Vec3A::as_u8vec3(&_self)
+                        let output: V<::glam::U8Vec3> = ::glam::Vec3A::as_u8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -36930,10 +37106,12 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::Vec3A>| {
+            |_self: V<::glam::Vec3A>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::Vec3A::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::Vec3A::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -37176,6 +37354,23 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             },
             " Returns a vector with signs of `rhs` and the magnitudes of `self`.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "cos",
+            |_self: V<::glam::Vec3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Vec3A::cos(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the cosine for each element of `self`.",
+            &["_self"],
         )
         .register_documented(
             "cross",
@@ -37855,11 +38050,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "move_towards",
-            |_self: R<::glam::Vec3A>, rhs: V<::glam::Vec3A>, d: f32| {
+            |_self: V<::glam::Vec3A>, rhs: V<::glam::Vec3A>, d: f32| {
                 let output: V<::glam::Vec3A> = {
                     {
                         let output: V<::glam::Vec3A> = ::glam::Vec3A::move_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 d,
                             )
@@ -38349,6 +38544,23 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "saturate",
+            |_self: V<::glam::Vec3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Vec3A::saturate(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.",
+            &["_self"],
+        )
+        .register_documented(
             "select",
             |
                 mask: V<::glam::BVec3A>,
@@ -38389,6 +38601,23 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "sin",
+            |_self: V<::glam::Vec3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Vec3A::sin(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the sine for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "slerp",
             |_self: V<::glam::Vec3A>, rhs: V<::glam::Vec3A>, s: f32| {
                 let output: V<::glam::Vec3A> = {
@@ -38420,6 +38649,41 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             },
             " Creates a vector with all elements set to `v`.",
             &["v"],
+        )
+        .register_documented(
+            "sqrt",
+            |_self: V<::glam::Vec3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Vec3A::sqrt(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the square root for each element of `self`.\n This returns NaN when the element is negative.",
+            &["_self"],
+        )
+        .register_documented(
+            "step",
+            |_self: V<::glam::Vec3A>, rhs: V<::glam::Vec3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Vec3A::step(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.\n Similar to glsl's step(edge, x), which translates into edge.step(x)",
+            &["_self", "rhs"],
         )
         .register_documented(
             "sub",
@@ -38610,7 +38874,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -38705,10 +38973,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_dvec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::DVec4> = {
                     {
-                        let output: V<::glam::DVec4> = ::glam::Vec4::as_dvec4(&_self)
+                        let output: V<::glam::DVec4> = ::glam::Vec4::as_dvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38720,10 +38990,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
-                        let output: V<::glam::I16Vec4> = ::glam::Vec4::as_i16vec4(&_self)
+                        let output: V<::glam::I16Vec4> = ::glam::Vec4::as_i16vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38735,10 +39007,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
-                        let output: V<::glam::I64Vec4> = ::glam::Vec4::as_i64vec4(&_self)
+                        let output: V<::glam::I64Vec4> = ::glam::Vec4::as_i64vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38750,10 +39024,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
-                        let output: V<::glam::I8Vec4> = ::glam::Vec4::as_i8vec4(&_self)
+                        let output: V<::glam::I8Vec4> = ::glam::Vec4::as_i8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38765,10 +39041,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::Vec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::Vec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38780,10 +39058,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
-                        let output: V<::glam::U16Vec4> = ::glam::Vec4::as_u16vec4(&_self)
+                        let output: V<::glam::U16Vec4> = ::glam::Vec4::as_u16vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38795,10 +39075,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
-                        let output: V<::glam::U64Vec4> = ::glam::Vec4::as_u64vec4(&_self)
+                        let output: V<::glam::U64Vec4> = ::glam::Vec4::as_u64vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38810,10 +39092,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
-                        let output: V<::glam::U8Vec4> = ::glam::Vec4::as_u8vec4(&_self)
+                        let output: V<::glam::U8Vec4> = ::glam::Vec4::as_u8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -38825,10 +39109,12 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::Vec4>| {
+            |_self: V<::glam::Vec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::Vec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::Vec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -39071,6 +39357,23 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             },
             " Returns a vector with signs of `rhs` and the magnitudes of `self`.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "cos",
+            |_self: V<::glam::Vec4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Vec4::cos(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the cosine for each element of `self`.",
+            &["_self"],
         )
         .register_documented(
             "distance",
@@ -39679,11 +39982,11 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "move_towards",
-            |_self: R<::glam::Vec4>, rhs: V<::glam::Vec4>, d: f32| {
+            |_self: V<::glam::Vec4>, rhs: V<::glam::Vec4>, d: f32| {
                 let output: V<::glam::Vec4> = {
                     {
                         let output: V<::glam::Vec4> = ::glam::Vec4::move_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 d,
                             )
@@ -40098,6 +40401,23 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "saturate",
+            |_self: V<::glam::Vec4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Vec4::saturate(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.",
+            &["_self"],
+        )
+        .register_documented(
             "select",
             |
                 mask: V<::glam::BVec4A>,
@@ -40138,6 +40458,23 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "sin",
+            |_self: V<::glam::Vec4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Vec4::sin(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the sine for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "splat",
             |v: f32| {
                 let output: V<::glam::Vec4> = {
@@ -40150,6 +40487,41 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             },
             " Creates a vector with all elements set to `v`.",
             &["v"],
+        )
+        .register_documented(
+            "sqrt",
+            |_self: V<::glam::Vec4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Vec4::sqrt(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the square root for each element of `self`.\n This returns NaN when the element is negative.",
+            &["_self"],
+        )
+        .register_documented(
+            "step",
+            |_self: V<::glam::Vec4>, rhs: V<::glam::Vec4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Vec4::step(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.\n Similar to glsl's step(edge, x), which translates into edge.step(x)",
+            &["_self", "rhs"],
         )
         .register_documented(
             "sub",
@@ -40324,7 +40696,11 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40359,11 +40735,11 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::BVec2>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::BVec2 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::BVec2 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -40484,10 +40860,11 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "test",
-            |_self: R<::glam::BVec2>, index: usize| {
+            |_self: V<::glam::BVec2>, index: usize| {
                 let output: bool = {
                     {
-                        let output: bool = ::glam::BVec2::test(&_self, index).into();
+                        let output: bool = ::glam::BVec2::test(_self.into_inner(), index)
+                            .into();
                         output
                     }
                 };
@@ -40498,7 +40875,11 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40533,11 +40914,11 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::BVec3>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::BVec3 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::BVec3 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -40659,10 +41040,11 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "test",
-            |_self: R<::glam::BVec3>, index: usize| {
+            |_self: V<::glam::BVec3>, index: usize| {
                 let output: bool = {
                     {
-                        let output: bool = ::glam::BVec3::test(&_self, index).into();
+                        let output: bool = ::glam::BVec3::test(_self.into_inner(), index)
+                            .into();
                         output
                     }
                 };
@@ -40673,7 +41055,11 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40708,11 +41094,11 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::glam::BVec4>| {
                 let output: () = {
                     {
-                        let output: () = <::glam::BVec4 as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::glam::BVec4 as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -40834,10 +41220,11 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "test",
-            |_self: R<::glam::BVec4>, index: usize| {
+            |_self: V<::glam::BVec4>, index: usize| {
                 let output: bool = {
                     {
-                        let output: bool = ::glam::BVec4::test(&_self, index).into();
+                        let output: bool = ::glam::BVec4::test(_self.into_inner(), index)
+                            .into();
                         output
                     }
                 };
@@ -40848,7 +41235,11 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40942,24 +41333,6 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "angle_between",
-            |_self: V<::glam::DVec2>, rhs: V<::glam::DVec2>| {
-                let output: f64 = {
-                    {
-                        let output: f64 = ::glam::DVec2::angle_between(
-                                _self.into_inner(),
-                                rhs.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "angle_to",
             |_self: V<::glam::DVec2>, rhs: V<::glam::DVec2>| {
                 let output: f64 = {
@@ -40979,11 +41352,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::I16Vec2> = {
                     {
                         let output: V<::glam::I16Vec2> = ::glam::DVec2::as_i16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -40996,11 +41369,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::I64Vec2> = {
                     {
                         let output: V<::glam::I64Vec2> = ::glam::DVec2::as_i64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -41013,10 +41386,12 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::I8Vec2> = {
                     {
-                        let output: V<::glam::I8Vec2> = ::glam::DVec2::as_i8vec2(&_self)
+                        let output: V<::glam::I8Vec2> = ::glam::DVec2::as_i8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -41028,10 +41403,12 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::IVec2> = {
                     {
-                        let output: V<::glam::IVec2> = ::glam::DVec2::as_ivec2(&_self)
+                        let output: V<::glam::IVec2> = ::glam::DVec2::as_ivec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -41043,11 +41420,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::U16Vec2> = {
                     {
                         let output: V<::glam::U16Vec2> = ::glam::DVec2::as_u16vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -41060,11 +41437,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::U64Vec2> = {
                     {
                         let output: V<::glam::U64Vec2> = ::glam::DVec2::as_u64vec2(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -41077,10 +41454,12 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::U8Vec2> = {
                     {
-                        let output: V<::glam::U8Vec2> = ::glam::DVec2::as_u8vec2(&_self)
+                        let output: V<::glam::U8Vec2> = ::glam::DVec2::as_u8vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -41092,10 +41471,12 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::UVec2> = {
                     {
-                        let output: V<::glam::UVec2> = ::glam::DVec2::as_uvec2(&_self)
+                        let output: V<::glam::UVec2> = ::glam::DVec2::as_uvec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -41107,10 +41488,12 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec2",
-            |_self: R<::glam::DVec2>| {
+            |_self: V<::glam::DVec2>| {
                 let output: V<::glam::Vec2> = {
                     {
-                        let output: V<::glam::Vec2> = ::glam::DVec2::as_vec2(&_self)
+                        let output: V<::glam::Vec2> = ::glam::DVec2::as_vec2(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -41353,6 +41736,23 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             },
             " Returns a vector with signs of `rhs` and the magnitudes of `self`.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "cos",
+            |_self: V<::glam::DVec2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::cos(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the cosine for each element of `self`.",
+            &["_self"],
         )
         .register_documented(
             "distance",
@@ -41995,11 +42395,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "move_towards",
-            |_self: R<::glam::DVec2>, rhs: V<::glam::DVec2>, d: f64| {
+            |_self: V<::glam::DVec2>, rhs: V<::glam::DVec2>, d: f64| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = ::glam::DVec2::move_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 d,
                             )
@@ -42433,11 +42833,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         )
         .register_documented(
             "rotate_towards",
-            |_self: R<::glam::DVec2>, rhs: V<::glam::DVec2>, max_angle: f64| {
+            |_self: V<::glam::DVec2>, rhs: V<::glam::DVec2>, max_angle: f64| {
                 let output: V<::glam::DVec2> = {
                     {
                         let output: V<::glam::DVec2> = ::glam::DVec2::rotate_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 max_angle,
                             )
@@ -42465,6 +42865,23 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 output
             },
             " Returns a vector containing the nearest integer to a number for each element of `self`.\n Round half-way cases away from 0.0.",
+            &["_self"],
+        )
+        .register_documented(
+            "saturate",
+            |_self: V<::glam::DVec2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::saturate(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.",
             &["_self"],
         )
         .register_documented(
@@ -42508,6 +42925,23 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "sin",
+            |_self: V<::glam::DVec2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::sin(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the sine for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "splat",
             |v: f64| {
                 let output: V<::glam::DVec2> = {
@@ -42520,6 +42954,41 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             },
             " Creates a vector with all elements set to `v`.",
             &["v"],
+        )
+        .register_documented(
+            "sqrt",
+            |_self: V<::glam::DVec2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::sqrt(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the square root for each element of `self`.\n This returns NaN when the element is negative.",
+            &["_self"],
+        )
+        .register_documented(
+            "step",
+            |_self: V<::glam::DVec2>, rhs: V<::glam::DVec2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::step(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.\n Similar to glsl's step(edge, x), which translates into edge.step(x)",
+            &["_self", "rhs"],
         )
         .register_documented(
             "sub",
@@ -42656,7 +43125,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -42769,11 +43242,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "any_orthogonal_vector",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DVec3::any_orthogonal_vector(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -42786,11 +43259,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "any_orthonormal_vector",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DVec3::any_orthonormal_vector(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -42803,11 +43276,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::I16Vec3> = {
                     {
                         let output: V<::glam::I16Vec3> = ::glam::DVec3::as_i16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -42820,11 +43293,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::I64Vec3> = {
                     {
                         let output: V<::glam::I64Vec3> = ::glam::DVec3::as_i64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -42837,10 +43310,12 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::I8Vec3> = {
                     {
-                        let output: V<::glam::I8Vec3> = ::glam::DVec3::as_i8vec3(&_self)
+                        let output: V<::glam::I8Vec3> = ::glam::DVec3::as_i8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -42852,10 +43327,12 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::IVec3> = {
                     {
-                        let output: V<::glam::IVec3> = ::glam::DVec3::as_ivec3(&_self)
+                        let output: V<::glam::IVec3> = ::glam::DVec3::as_ivec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -42867,11 +43344,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::U16Vec3> = {
                     {
                         let output: V<::glam::U16Vec3> = ::glam::DVec3::as_u16vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -42884,11 +43361,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::U64Vec3> = {
                     {
                         let output: V<::glam::U64Vec3> = ::glam::DVec3::as_u64vec3(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -42901,10 +43378,12 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::U8Vec3> = {
                     {
-                        let output: V<::glam::U8Vec3> = ::glam::DVec3::as_u8vec3(&_self)
+                        let output: V<::glam::U8Vec3> = ::glam::DVec3::as_u8vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -42916,10 +43395,12 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::UVec3> = {
                     {
-                        let output: V<::glam::UVec3> = ::glam::DVec3::as_uvec3(&_self)
+                        let output: V<::glam::UVec3> = ::glam::DVec3::as_uvec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -42931,10 +43412,12 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::Vec3> = {
                     {
-                        let output: V<::glam::Vec3> = ::glam::DVec3::as_vec3(&_self)
+                        let output: V<::glam::Vec3> = ::glam::DVec3::as_vec3(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -42946,10 +43429,12 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec3a",
-            |_self: R<::glam::DVec3>| {
+            |_self: V<::glam::DVec3>| {
                 let output: V<::glam::Vec3A> = {
                     {
-                        let output: V<::glam::Vec3A> = ::glam::DVec3::as_vec3a(&_self)
+                        let output: V<::glam::Vec3A> = ::glam::DVec3::as_vec3a(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -43192,6 +43677,23 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             },
             " Returns a vector with signs of `rhs` and the magnitudes of `self`.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "cos",
+            |_self: V<::glam::DVec3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DVec3::cos(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the cosine for each element of `self`.",
+            &["_self"],
         )
         .register_documented(
             "cross",
@@ -43854,11 +44356,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         )
         .register_documented(
             "move_towards",
-            |_self: R<::glam::DVec3>, rhs: V<::glam::DVec3>, d: f64| {
+            |_self: V<::glam::DVec3>, rhs: V<::glam::DVec3>, d: f64| {
                 let output: V<::glam::DVec3> = {
                     {
                         let output: V<::glam::DVec3> = ::glam::DVec3::move_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 d,
                             )
@@ -44348,6 +44850,23 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "saturate",
+            |_self: V<::glam::DVec3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DVec3::saturate(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.",
+            &["_self"],
+        )
+        .register_documented(
             "select",
             |
                 mask: V<::glam::BVec3>,
@@ -44388,6 +44907,23 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "sin",
+            |_self: V<::glam::DVec3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DVec3::sin(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the sine for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "slerp",
             |_self: V<::glam::DVec3>, rhs: V<::glam::DVec3>, s: f64| {
                 let output: V<::glam::DVec3> = {
@@ -44419,6 +44955,41 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             },
             " Creates a vector with all elements set to `v`.",
             &["v"],
+        )
+        .register_documented(
+            "sqrt",
+            |_self: V<::glam::DVec3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DVec3::sqrt(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the square root for each element of `self`.\n This returns NaN when the element is negative.",
+            &["_self"],
+        )
+        .register_documented(
+            "step",
+            |_self: V<::glam::DVec3>, rhs: V<::glam::DVec3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DVec3::step(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.\n Similar to glsl's step(edge, x), which translates into edge.step(x)",
+            &["_self", "rhs"],
         )
         .register_documented(
             "sub",
@@ -44592,7 +45163,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -44687,11 +45262,11 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i16vec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::I16Vec4> = {
                     {
                         let output: V<::glam::I16Vec4> = ::glam::DVec4::as_i16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -44704,11 +45279,11 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i64vec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::I64Vec4> = {
                     {
                         let output: V<::glam::I64Vec4> = ::glam::DVec4::as_i64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -44721,10 +45296,12 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_i8vec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::I8Vec4> = {
                     {
-                        let output: V<::glam::I8Vec4> = ::glam::DVec4::as_i8vec4(&_self)
+                        let output: V<::glam::I8Vec4> = ::glam::DVec4::as_i8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -44736,10 +45313,12 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_ivec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::IVec4> = {
                     {
-                        let output: V<::glam::IVec4> = ::glam::DVec4::as_ivec4(&_self)
+                        let output: V<::glam::IVec4> = ::glam::DVec4::as_ivec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -44751,11 +45330,11 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u16vec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::U16Vec4> = {
                     {
                         let output: V<::glam::U16Vec4> = ::glam::DVec4::as_u16vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -44768,11 +45347,11 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u64vec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::U64Vec4> = {
                     {
                         let output: V<::glam::U64Vec4> = ::glam::DVec4::as_u64vec4(
-                                &_self,
+                                _self.into_inner(),
                             )
                             .into();
                         output
@@ -44785,10 +45364,12 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_u8vec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::U8Vec4> = {
                     {
-                        let output: V<::glam::U8Vec4> = ::glam::DVec4::as_u8vec4(&_self)
+                        let output: V<::glam::U8Vec4> = ::glam::DVec4::as_u8vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -44800,10 +45381,12 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_uvec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::UVec4> = {
                     {
-                        let output: V<::glam::UVec4> = ::glam::DVec4::as_uvec4(&_self)
+                        let output: V<::glam::UVec4> = ::glam::DVec4::as_uvec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -44815,10 +45398,12 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "as_vec4",
-            |_self: R<::glam::DVec4>| {
+            |_self: V<::glam::DVec4>| {
                 let output: V<::glam::Vec4> = {
                     {
-                        let output: V<::glam::Vec4> = ::glam::DVec4::as_vec4(&_self)
+                        let output: V<::glam::Vec4> = ::glam::DVec4::as_vec4(
+                                _self.into_inner(),
+                            )
                             .into();
                         output
                     }
@@ -45061,6 +45646,23 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             },
             " Returns a vector with signs of `rhs` and the magnitudes of `self`.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "cos",
+            |_self: V<::glam::DVec4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DVec4::cos(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the cosine for each element of `self`.",
+            &["_self"],
         )
         .register_documented(
             "distance",
@@ -45670,11 +46272,11 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         )
         .register_documented(
             "move_towards",
-            |_self: R<::glam::DVec4>, rhs: V<::glam::DVec4>, d: f64| {
+            |_self: V<::glam::DVec4>, rhs: V<::glam::DVec4>, d: f64| {
                 let output: V<::glam::DVec4> = {
                     {
                         let output: V<::glam::DVec4> = ::glam::DVec4::move_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 d,
                             )
@@ -46089,6 +46691,23 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "saturate",
+            |_self: V<::glam::DVec4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DVec4::saturate(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.",
+            &["_self"],
+        )
+        .register_documented(
             "select",
             |
                 mask: V<::glam::BVec4>,
@@ -46129,6 +46748,23 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "sin",
+            |_self: V<::glam::DVec4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DVec4::sin(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the sine for each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "splat",
             |v: f64| {
                 let output: V<::glam::DVec4> = {
@@ -46141,6 +46777,41 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             },
             " Creates a vector with all elements set to `v`.",
             &["v"],
+        )
+        .register_documented(
+            "sqrt",
+            |_self: V<::glam::DVec4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DVec4::sqrt(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing the square root for each element of `self`.\n This returns NaN when the element is negative.",
+            &["_self"],
+        )
+        .register_documented(
+            "step",
+            |_self: V<::glam::DVec4>, rhs: V<::glam::DVec4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DVec4::step(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.\n Similar to glsl's step(edge, x), which translates into edge.step(x)",
+            &["_self", "rhs"],
         )
         .register_documented(
             "sub",
@@ -46315,7 +46986,11 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -46465,6 +47140,21 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
                 output
             },
             " Returns the determinant of `self`.",
+            &["_self"],
+        )
+        .register_documented(
+            "diagonal",
+            |_self: R<::glam::Mat2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Mat2::diagonal(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the diagonal of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -46675,6 +47365,23 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "inverse_or_zero",
+            |_self: R<::glam::Mat2>| {
+                let output: V<::glam::Mat2> = {
+                    {
+                        let output: V<::glam::Mat2> = ::glam::Mat2::inverse_or_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of `self` or `Mat2::ZERO` if the matrix is not invertible.",
+            &["_self"],
+        )
+        .register_documented(
             "is_finite",
             |_self: R<::glam::Mat2>| {
                 let output: bool = {
@@ -46755,23 +47462,6 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Mat2>, rhs: V<::glam::Vec2>| {
-                let output: V<::glam::Vec2> = {
-                    {
-                        let output: V<::glam::Vec2> = <::glam::Mat2 as ::core::ops::Mul<
-                            ::glam::Vec2,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::Mat2>, rhs: f32| {
                 let output: V<::glam::Mat2> = {
                     {
@@ -46786,6 +47476,24 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_diagonal_scale",
+            |_self: R<::glam::Mat2>, scale: V<::glam::Vec2>| {
+                let output: V<::glam::Mat2> = {
+                    {
+                        let output: V<::glam::Mat2> = ::glam::Mat2::mul_diagonal_scale(
+                                &_self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiply `self` by a scaling vector `scale`.\n This is faster than creating a whole diagonal scaling matrix and then multiplying that.\n This operation is commutative.",
+            &["_self", "scale"],
         )
         .register_documented(
             "mul_mat2",
@@ -46824,6 +47532,24 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "mul_transpose_vec2",
+            |_self: R<::glam::Mat2>, rhs: V<::glam::Vec2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Mat2::mul_transpose_vec2(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a 2D vector by the transpose of `self`.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul_vec2",
             |_self: R<::glam::Mat2>, rhs: V<::glam::Vec2>| {
                 let output: V<::glam::Vec2> = {
@@ -46842,20 +47568,17 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "neg",
-            |_self: V<::glam::Mat2>| {
+            "recip",
+            |_self: R<::glam::Mat2>| {
                 let output: V<::glam::Mat2> = {
                     {
-                        let output: V<::glam::Mat2> = <::glam::Mat2 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
+                        let output: V<::glam::Mat2> = ::glam::Mat2::recip(&_self).into();
                         output
                     }
                 };
                 output
             },
-            "",
+            " Returns a matrix containing the reciprocal `1.0/n` of each element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -46974,7 +47697,11 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -47124,6 +47851,21 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 output
             },
             " Returns the determinant of `self`.",
+            &["_self"],
+        )
+        .register_documented(
+            "diagonal",
+            |_self: R<::glam::Mat3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Mat3::diagonal(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the diagonal of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -47457,6 +48199,23 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "inverse_or_zero",
+            |_self: R<::glam::Mat3>| {
+                let output: V<::glam::Mat3> = {
+                    {
+                        let output: V<::glam::Mat3> = ::glam::Mat3::inverse_or_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of `self` or `Mat3::ZERO` if the matrix is not invertible.",
+            &["_self"],
+        )
+        .register_documented(
             "is_finite",
             |_self: R<::glam::Mat3>| {
                 let output: bool = {
@@ -47662,23 +48421,6 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Mat3>, rhs: V<::glam::Vec3>| {
-                let output: V<::glam::Vec3> = {
-                    {
-                        let output: V<::glam::Vec3> = <::glam::Mat3 as ::core::ops::Mul<
-                            ::glam::Vec3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::Mat3>, rhs: V<::glam::Vec3A>| {
                 let output: V<::glam::Vec3A> = {
                     {
@@ -47710,6 +48452,24 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_diagonal_scale",
+            |_self: R<::glam::Mat3>, scale: V<::glam::Vec3>| {
+                let output: V<::glam::Mat3> = {
+                    {
+                        let output: V<::glam::Mat3> = ::glam::Mat3::mul_diagonal_scale(
+                                &_self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiply `self` by a scaling vector `scale`.\n This is faster than creating a whole diagonal scaling matrix and then multiplying that.\n This operation is commutative.",
+            &["_self", "scale"],
         )
         .register_documented(
             "mul_mat3",
@@ -47745,6 +48505,24 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 output
             },
             " Multiplies a 3x3 matrix by a scalar.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_transpose_vec3",
+            |_self: R<::glam::Mat3>, rhs: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Mat3::mul_transpose_vec3(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a 3D vector by the transpose of `self`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -47784,20 +48562,17 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "neg",
-            |_self: V<::glam::Mat3>| {
+            "recip",
+            |_self: R<::glam::Mat3>| {
                 let output: V<::glam::Mat3> = {
                     {
-                        let output: V<::glam::Mat3> = <::glam::Mat3 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
+                        let output: V<::glam::Mat3> = ::glam::Mat3::recip(&_self).into();
                         output
                     }
                 };
                 output
             },
-            "",
+            " Returns a matrix containing the reciprocal `1.0/n` of each element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -47970,7 +48745,11 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -48120,6 +48899,21 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 output
             },
             " Returns the determinant of `self`.",
+            &["_self"],
+        )
+        .register_documented(
+            "diagonal",
+            |_self: R<::glam::Mat3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Mat3A::diagonal(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the diagonal of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -48457,6 +49251,23 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "inverse_or_zero",
+            |_self: R<::glam::Mat3A>| {
+                let output: V<::glam::Mat3A> = {
+                    {
+                        let output: V<::glam::Mat3A> = ::glam::Mat3A::inverse_or_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of `self` or `Mat3A::ZERO` if the matrix is not invertible.",
+            &["_self"],
+        )
+        .register_documented(
             "is_finite",
             |_self: R<::glam::Mat3A>| {
                 let output: bool = {
@@ -48679,23 +49490,6 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Mat3A>, rhs: V<::glam::Vec3A>| {
-                let output: V<::glam::Vec3A> = {
-                    {
-                        let output: V<::glam::Vec3A> = <::glam::Mat3A as ::core::ops::Mul<
-                            ::glam::Vec3A,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::Mat3A>, rhs: f32| {
                 let output: V<::glam::Mat3A> = {
                     {
@@ -48710,6 +49504,24 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_diagonal_scale",
+            |_self: R<::glam::Mat3A>, scale: V<::glam::Vec3>| {
+                let output: V<::glam::Mat3A> = {
+                    {
+                        let output: V<::glam::Mat3A> = ::glam::Mat3A::mul_diagonal_scale(
+                                &_self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiply `self` by a scaling vector `scale`.\n This is faster than creating a whole diagonal scaling matrix and then multiplying that.\n This operation is commutative.",
+            &["_self", "scale"],
         )
         .register_documented(
             "mul_mat3",
@@ -48745,6 +49557,42 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 output
             },
             " Multiplies a 3x3 matrix by a scalar.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_transpose_vec3",
+            |_self: R<::glam::Mat3A>, rhs: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Mat3A::mul_transpose_vec3(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a 3D vector by the transpose of `self`.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_transpose_vec3a",
+            |_self: R<::glam::Mat3A>, rhs: V<::glam::Vec3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Mat3A::mul_transpose_vec3a(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a [`Vec3A`] by the transpose of `self`.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -48784,20 +49632,18 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "neg",
-            |_self: V<::glam::Mat3A>| {
+            "recip",
+            |_self: R<::glam::Mat3A>| {
                 let output: V<::glam::Mat3A> = {
                     {
-                        let output: V<::glam::Mat3A> = <::glam::Mat3A as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
+                        let output: V<::glam::Mat3A> = ::glam::Mat3A::recip(&_self)
                             .into();
                         output
                     }
                 };
                 output
             },
-            "",
+            " Returns a matrix containing the reciprocal `1.0/n` of each element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -48970,7 +49816,11 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -49120,6 +49970,21 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 output
             },
             " Returns the determinant of `self`.",
+            &["_self"],
+        )
+        .register_documented(
+            "diagonal",
+            |_self: R<::glam::Mat4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Mat4::diagonal(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the diagonal of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -49531,6 +50396,23 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "inverse_or_zero",
+            |_self: R<::glam::Mat4>| {
+                let output: V<::glam::Mat4> = {
+                    {
+                        let output: V<::glam::Mat4> = ::glam::Mat4::inverse_or_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of `self` or `Mat4::ZERO` if the matrix is not invertible.",
+            &["_self"],
+        )
+        .register_documented(
             "is_finite",
             |_self: R<::glam::Mat4>| {
                 let output: bool = {
@@ -49636,6 +50518,23 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: V<::glam::Mat4>, rhs: R<::glam::Affine3>| {
+                let output: V<::glam::Mat4> = {
+                    {
+                        let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
+                            &::glam::Affine3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: V<::glam::Mat4>, rhs: R<::glam::Affine3A>| {
                 let output: V<::glam::Mat4> = {
                     {
@@ -49687,6 +50586,23 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
+            |_self: V<::glam::Mat4>, rhs: V<::glam::Affine3>| {
+                let output: V<::glam::Mat4> = {
+                    {
+                        let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Mul<
+                            ::glam::Affine3,
+                        >>::mul(_self.into_inner(), rhs.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
             |_self: V<::glam::Mat4>, rhs: V<::glam::Affine3A>| {
                 let output: V<::glam::Mat4> = {
                     {
@@ -49721,23 +50637,6 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::Mat4>, rhs: V<::glam::Vec4>| {
-                let output: V<::glam::Vec4> = {
-                    {
-                        let output: V<::glam::Vec4> = <::glam::Mat4 as ::core::ops::Mul<
-                            ::glam::Vec4,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::Mat4>, rhs: f32| {
                 let output: V<::glam::Mat4> = {
                     {
@@ -49752,6 +50651,24 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_diagonal_scale",
+            |_self: R<::glam::Mat4>, scale: V<::glam::Vec4>| {
+                let output: V<::glam::Mat4> = {
+                    {
+                        let output: V<::glam::Mat4> = ::glam::Mat4::mul_diagonal_scale(
+                                &_self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiply `self` by a scaling vector `scale`.\n This is faster than creating a whole diagonal scaling matrix and then multiplying that.\n This operation is commutative.",
+            &["_self", "scale"],
         )
         .register_documented(
             "mul_mat4",
@@ -49790,6 +50707,24 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "mul_transpose_vec4",
+            |_self: R<::glam::Mat4>, rhs: V<::glam::Vec4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Mat4::mul_transpose_vec4(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a 4D vector by the transpose of `self`.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul_vec4",
             |_self: R<::glam::Mat4>, rhs: V<::glam::Vec4>| {
                 let output: V<::glam::Vec4> = {
@@ -49806,23 +50741,6 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             },
             " Transforms a 4D vector.",
             &["_self", "rhs"],
-        )
-        .register_documented(
-            "neg",
-            |_self: V<::glam::Mat4>| {
-                let output: V<::glam::Mat4> = {
-                    {
-                        let output: V<::glam::Mat4> = <::glam::Mat4 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "orthographic_lh",
@@ -50063,6 +50981,20 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "recip",
+            |_self: R<::glam::Mat4>| {
+                let output: V<::glam::Mat4> = {
+                    {
+                        let output: V<::glam::Mat4> = ::glam::Mat4::recip(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a matrix containing the reciprocal `1.0/n` of each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "row",
             |_self: R<::glam::Mat4>, index: usize| {
                 let output: V<::glam::Vec4> = {
@@ -50268,7 +51200,11 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -50418,6 +51354,21 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
                 output
             },
             " Returns the determinant of `self`.",
+            &["_self"],
+        )
+        .register_documented(
+            "diagonal",
+            |_self: R<::glam::DMat2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DMat2::diagonal(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the diagonal of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -50592,6 +51543,23 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "inverse_or_zero",
+            |_self: R<::glam::DMat2>| {
+                let output: V<::glam::DMat2> = {
+                    {
+                        let output: V<::glam::DMat2> = ::glam::DMat2::inverse_or_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of `self` or `DMat2::ZERO` if the matrix is not invertible.",
+            &["_self"],
+        )
+        .register_documented(
             "is_finite",
             |_self: R<::glam::DMat2>| {
                 let output: bool = {
@@ -50672,23 +51640,6 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DMat2>, rhs: V<::glam::DVec2>| {
-                let output: V<::glam::DVec2> = {
-                    {
-                        let output: V<::glam::DVec2> = <::glam::DMat2 as ::core::ops::Mul<
-                            ::glam::DVec2,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::DMat2>, rhs: f64| {
                 let output: V<::glam::DMat2> = {
                     {
@@ -50703,6 +51654,24 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_diagonal_scale",
+            |_self: R<::glam::DMat2>, scale: V<::glam::DVec2>| {
+                let output: V<::glam::DMat2> = {
+                    {
+                        let output: V<::glam::DMat2> = ::glam::DMat2::mul_diagonal_scale(
+                                &_self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiply `self` by a scaling vector `scale`.\n This is faster than creating a whole diagonal scaling matrix and then multiplying that.\n This operation is commutative.",
+            &["_self", "scale"],
         )
         .register_documented(
             "mul_mat2",
@@ -50741,6 +51710,24 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "mul_transpose_vec2",
+            |_self: R<::glam::DMat2>, rhs: V<::glam::DVec2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DMat2::mul_transpose_vec2(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a 2D vector by the transpose of `self`.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul_vec2",
             |_self: R<::glam::DMat2>, rhs: V<::glam::DVec2>| {
                 let output: V<::glam::DVec2> = {
@@ -50759,20 +51746,18 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "neg",
-            |_self: V<::glam::DMat2>| {
+            "recip",
+            |_self: R<::glam::DMat2>| {
                 let output: V<::glam::DMat2> = {
                     {
-                        let output: V<::glam::DMat2> = <::glam::DMat2 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
+                        let output: V<::glam::DMat2> = ::glam::DMat2::recip(&_self)
                             .into();
                         output
                     }
                 };
                 output
             },
-            "",
+            " Returns a matrix containing the reciprocal `1.0/n` of each element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -50891,7 +51876,11 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DMat2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DMat2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -51041,6 +52030,21 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 output
             },
             " Returns the determinant of `self`.",
+            &["_self"],
+        )
+        .register_documented(
+            "diagonal",
+            |_self: R<::glam::DMat3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DMat3::diagonal(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the diagonal of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -51378,6 +52382,23 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "inverse_or_zero",
+            |_self: R<::glam::DMat3>| {
+                let output: V<::glam::DMat3> = {
+                    {
+                        let output: V<::glam::DMat3> = ::glam::DMat3::inverse_or_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of `self` or `DMat3::ZERO` if the matrix is not invertible.",
+            &["_self"],
+        )
+        .register_documented(
             "is_finite",
             |_self: R<::glam::DMat3>| {
                 let output: bool = {
@@ -51566,23 +52587,6 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DMat3>, rhs: V<::glam::DVec3>| {
-                let output: V<::glam::DVec3> = {
-                    {
-                        let output: V<::glam::DVec3> = <::glam::DMat3 as ::core::ops::Mul<
-                            ::glam::DVec3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::DMat3>, rhs: f64| {
                 let output: V<::glam::DMat3> = {
                     {
@@ -51597,6 +52601,24 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_diagonal_scale",
+            |_self: R<::glam::DMat3>, scale: V<::glam::DVec3>| {
+                let output: V<::glam::DMat3> = {
+                    {
+                        let output: V<::glam::DMat3> = ::glam::DMat3::mul_diagonal_scale(
+                                &_self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiply `self` by a scaling vector `scale`.\n This is faster than creating a whole diagonal scaling matrix and then multiplying that.\n This operation is commutative.",
+            &["_self", "scale"],
         )
         .register_documented(
             "mul_mat3",
@@ -51635,6 +52657,24 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "mul_transpose_vec3",
+            |_self: R<::glam::DMat3>, rhs: V<::glam::DVec3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DMat3::mul_transpose_vec3(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a 3D vector by the transpose of `self`.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul_vec3",
             |_self: R<::glam::DMat3>, rhs: V<::glam::DVec3>| {
                 let output: V<::glam::DVec3> = {
@@ -51653,20 +52693,18 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "neg",
-            |_self: V<::glam::DMat3>| {
+            "recip",
+            |_self: R<::glam::DMat3>| {
                 let output: V<::glam::DMat3> = {
                     {
-                        let output: V<::glam::DMat3> = <::glam::DMat3 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
+                        let output: V<::glam::DMat3> = ::glam::DMat3::recip(&_self)
                             .into();
                         output
                     }
                 };
                 output
             },
-            "",
+            " Returns a matrix containing the reciprocal `1.0/n` of each element of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -51839,7 +52877,11 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DMat3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DMat3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -51989,6 +53031,21 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 output
             },
             " Returns the determinant of `self`.",
+            &["_self"],
+        )
+        .register_documented(
+            "diagonal",
+            |_self: R<::glam::DMat4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DMat4::diagonal(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the diagonal of `self`.",
             &["_self"],
         )
         .register_documented(
@@ -52383,6 +53440,23 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "inverse_or_zero",
+            |_self: R<::glam::DMat4>| {
+                let output: V<::glam::DMat4> = {
+                    {
+                        let output: V<::glam::DMat4> = ::glam::DMat4::inverse_or_zero(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the inverse of `self` or `DMat4::ZERO` if the matrix is not invertible.",
+            &["_self"],
+        )
+        .register_documented(
             "is_finite",
             |_self: R<::glam::DMat4>| {
                 let output: bool = {
@@ -52573,23 +53647,6 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DMat4>, rhs: V<::glam::DVec4>| {
-                let output: V<::glam::DVec4> = {
-                    {
-                        let output: V<::glam::DVec4> = <::glam::DMat4 as ::core::ops::Mul<
-                            ::glam::DVec4,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::DMat4>, rhs: f64| {
                 let output: V<::glam::DMat4> = {
                     {
@@ -52604,6 +53661,24 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             },
             "",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul_diagonal_scale",
+            |_self: R<::glam::DMat4>, scale: V<::glam::DVec4>| {
+                let output: V<::glam::DMat4> = {
+                    {
+                        let output: V<::glam::DMat4> = ::glam::DMat4::mul_diagonal_scale(
+                                &_self,
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Multiply `self` by a scaling vector `scale`.\n This is faster than creating a whole diagonal scaling matrix and then multiplying that.\n This operation is commutative.",
+            &["_self", "scale"],
         )
         .register_documented(
             "mul_mat4",
@@ -52642,6 +53717,24 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "mul_transpose_vec4",
+            |_self: R<::glam::DMat4>, rhs: V<::glam::DVec4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DMat4::mul_transpose_vec4(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms a 4D vector by the transpose of `self`.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
             "mul_vec4",
             |_self: R<::glam::DMat4>, rhs: V<::glam::DVec4>| {
                 let output: V<::glam::DVec4> = {
@@ -52658,23 +53751,6 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             },
             " Transforms a 4D vector.",
             &["_self", "rhs"],
-        )
-        .register_documented(
-            "neg",
-            |_self: V<::glam::DMat4>| {
-                let output: V<::glam::DMat4> = {
-                    {
-                        let output: V<::glam::DMat4> = <::glam::DMat4 as ::core::ops::Neg>::neg(
-                                _self.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "orthographic_lh",
@@ -52897,6 +53973,21 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "recip",
+            |_self: R<::glam::DMat4>| {
+                let output: V<::glam::DMat4> = {
+                    {
+                        let output: V<::glam::DMat4> = ::glam::DMat4::recip(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a matrix containing the reciprocal `1.0/n` of each element of `self`.",
+            &["_self"],
+        )
+        .register_documented(
             "row",
             |_self: R<::glam::DMat4>, index: usize| {
                 let output: V<::glam::DVec4> = {
@@ -53066,7 +54157,11 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DMat4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DMat4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -53430,40 +54525,6 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "mul",
-            |_self: V<::glam::Affine2>, rhs: V<::glam::Mat3>| {
-                let output: V<::glam::Mat3> = {
-                    {
-                        let output: V<::glam::Mat3> = <::glam::Affine2 as ::core::ops::Mul<
-                            ::glam::Mat3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
-            |_self: V<::glam::Affine2>, rhs: V<::glam::Mat3A>| {
-                let output: V<::glam::Mat3A> = {
-                    {
-                        let output: V<::glam::Mat3A> = <::glam::Affine2 as ::core::ops::Mul<
-                            ::glam::Mat3A,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "to_cols_array",
             |_self: R<::glam::Affine2>| {
                 let output: [f32; 6] = {
@@ -53533,7 +54594,569 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Affine2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Affine2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_affine_3_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::glam::Affine3,
+    >::new(world)
+        .register_documented(
+            "abs_diff_eq",
+            |_self: R<::glam::Affine3>, rhs: V<::glam::Affine3>, max_abs_diff: f32| {
+                let output: bool = {
+                    {
+                        let output: bool = ::glam::Affine3::abs_diff_eq(
+                                &_self,
+                                rhs.into_inner(),
+                                max_abs_diff,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the absolute difference of all elements between `self` and `rhs`\n is less than or equal to `max_abs_diff`.\n This can be used to compare if two 3x4 matrices contain similar elements. It works\n best when comparing with a known value. The `max_abs_diff` that should be used used\n depends on the values being compared against.\n For more see\n [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).",
+            &["_self", "rhs", "max_abs_diff"],
+        )
+        .register_documented(
+            "as_daffine3",
+            |_self: R<::glam::Affine3>| {
+                let output: V<::glam::DAffine3> = {
+                    {
+                        let output: V<::glam::DAffine3> = ::glam::Affine3::as_daffine3(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Casts all elements of `self` to `f64`.",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::glam::Affine3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = <::glam::Affine3 as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::glam::Affine3>, rhs: R<::glam::Affine3>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::glam::Affine3 as ::core::cmp::PartialEq<
+                            ::glam::Affine3,
+                        >>::eq(&_self, &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "from_axis_angle",
+            |axis: V<::glam::Vec3>, angle: f32| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_axis_angle(
+                                axis.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform containing a 3D rotation around a normalized\n rotation `axis` of `angle` (in radians).",
+            &["axis", "angle"],
+        )
+        .register_documented(
+            "from_cols",
+            |
+                x_axis: V<::glam::Vec3>,
+                y_axis: V<::glam::Vec3>,
+                z_axis: V<::glam::Vec3>,
+                w_axis: V<::glam::Vec3>|
+            {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_cols(
+                                x_axis.into_inner(),
+                                y_axis.into_inner(),
+                                z_axis.into_inner(),
+                                w_axis.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform from three column vectors.",
+            &["x_axis", "y_axis", "z_axis", "w_axis"],
+        )
+        .register_documented(
+            "from_mat3",
+            |mat3: V<::glam::Mat3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_mat3(
+                                mat3.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform from a 3x3 matrix (expressing scale, shear and\n rotation)",
+            &["mat3"],
+        )
+        .register_documented(
+            "from_mat3_translation",
+            |mat3: V<::glam::Mat3>, translation: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_mat3_translation(
+                                mat3.into_inner(),
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform from a 3x3 matrix (expressing scale, shear and rotation)\n and a translation vector.\n Equivalent to `Affine3::from_translation(translation) * Affine3::from_mat3(mat3)`",
+            &["mat3", "translation"],
+        )
+        .register_documented(
+            "from_mat4",
+            |m: V<::glam::Mat4>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_mat4(
+                                m.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The given `Mat4` must be an affine transform,\n i.e. contain no perspective transform.",
+            &["m"],
+        )
+        .register_documented(
+            "from_quat",
+            |rotation: V<::glam::Quat>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_quat(
+                                rotation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform from the given `rotation` quaternion.",
+            &["rotation"],
+        )
+        .register_documented(
+            "from_rotation_translation",
+            |rotation: V<::glam::Quat>, translation: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_rotation_translation(
+                                rotation.into_inner(),
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform from the given 3D `rotation` and `translation`.\n Equivalent to `Affine3::from_translation(translation) * Affine3::from_quat(rotation)`",
+            &["rotation", "translation"],
+        )
+        .register_documented(
+            "from_rotation_x",
+            |angle: f32| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_rotation_x(
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform containing a 3D rotation around the x axis of\n `angle` (in radians).",
+            &["angle"],
+        )
+        .register_documented(
+            "from_rotation_y",
+            |angle: f32| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_rotation_y(
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform containing a 3D rotation around the y axis of\n `angle` (in radians).",
+            &["angle"],
+        )
+        .register_documented(
+            "from_rotation_z",
+            |angle: f32| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_rotation_z(
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform containing a 3D rotation around the z axis of\n `angle` (in radians).",
+            &["angle"],
+        )
+        .register_documented(
+            "from_scale",
+            |scale: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_scale(
+                                scale.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform that changes scale.\n Note that if any scale is zero the transform will be non-invertible.",
+            &["scale"],
+        )
+        .register_documented(
+            "from_scale_rotation_translation",
+            |
+                scale: V<::glam::Vec3>,
+                rotation: V<::glam::Quat>,
+                translation: V<::glam::Vec3>|
+            {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_scale_rotation_translation(
+                                scale.into_inner(),
+                                rotation.into_inner(),
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transform from the given 3D `scale`, `rotation` and\n `translation`.\n Equivalent to `Affine3::from_translation(translation) *\n Affine3::from_quat(rotation) * Affine3::from_scale(scale)`",
+            &["scale", "rotation", "translation"],
+        )
+        .register_documented(
+            "from_translation",
+            |translation: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::from_translation(
+                                translation.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates an affine transformation from the given 3D `translation`.",
+            &["translation"],
+        )
+        .register_documented(
+            "inverse",
+            |_self: R<::glam::Affine3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::inverse(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_finite",
+            |_self: R<::glam::Affine3>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::glam::Affine3::is_finite(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if, and only if, all elements are finite.\n If any element is either `NaN`, positive or negative infinity, this will return\n `false`.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_nan",
+            |_self: R<::glam::Affine3>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::glam::Affine3::is_nan(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` if any elements are `NaN`.",
+            &["_self"],
+        )
+        .register_documented(
+            "look_at_lh",
+            |eye: V<::glam::Vec3>, center: V<::glam::Vec3>, up: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::look_at_lh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_at_rh",
+            |eye: V<::glam::Vec3>, center: V<::glam::Vec3>, up: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::look_at_rh(
+                                eye.into_inner(),
+                                center.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            &["eye", "center", "up"],
+        )
+        .register_documented(
+            "look_to_lh",
+            |eye: V<::glam::Vec3>, dir: V<::glam::Vec3>, up: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::look_to_lh(
+                                eye.into_inner(),
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a left-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.",
+            &["eye", "dir", "up"],
+        )
+        .register_documented(
+            "look_to_rh",
+            |eye: V<::glam::Vec3>, dir: V<::glam::Vec3>, up: V<::glam::Vec3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::Affine3::look_to_rh(
+                                eye.into_inner(),
+                                dir.into_inner(),
+                                up.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a right-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.",
+            &["eye", "dir", "up"],
+        )
+        .register_documented(
+            "mul",
+            |_self: V<::glam::Affine3>, rhs: R<::glam::Affine3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = <::glam::Affine3 as ::core::ops::Mul<
+                            &::glam::Affine3,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: V<::glam::Affine3>, rhs: R<::glam::Mat4>| {
+                let output: V<::glam::Mat4> = {
+                    {
+                        let output: V<::glam::Mat4> = <::glam::Affine3 as ::core::ops::Mul<
+                            &::glam::Mat4,
+                        >>::mul(_self.into_inner(), &rhs)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "mul",
+            |_self: V<::glam::Affine3>, rhs: V<::glam::Affine3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = <::glam::Affine3 as ::core::ops::Mul<
+                            ::glam::Affine3,
+                        >>::mul(_self.into_inner(), rhs.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "to_cols_array",
+            |_self: R<::glam::Affine3>| {
+                let output: [f32; 12] = {
+                    {
+                        let output: [f32; 12] = ::glam::Affine3::to_cols_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f32; 12]` array storing data in column major order.",
+            &["_self"],
+        )
+        .register_documented(
+            "to_cols_array_2d",
+            |_self: R<::glam::Affine3>| {
+                let output: [[f32; 3]; 4] = {
+                    {
+                        let output: [[f32; 3]; 4] = ::glam::Affine3::to_cols_array_2d(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[[f32; 3]; 4]` 3D array storing data in\n column major order.\n If you require data in row major order `transpose` the matrix first.",
+            &["_self"],
+        )
+        .register_documented(
+            "transform_point3",
+            |_self: R<::glam::Affine3>, rhs: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Affine3::transform_point3(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms the given 3D points, applying shear, scale, rotation and translation.",
+            &["_self", "rhs"],
+        )
+        .register_documented(
+            "transform_vector3",
+            |_self: R<::glam::Affine3>, rhs: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Affine3::transform_vector3(
+                                &_self,
+                                rhs.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms the given 3D vector, applying shear, scale and rotation (but NOT\n translation).\n To also apply translation, use [`Self::transform_point3()`] instead.",
+            &["_self", "rhs"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::glam::Affine3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -54020,23 +55643,6 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "mul",
-            |_self: V<::glam::Affine3A>, rhs: V<::glam::Mat4>| {
-                let output: V<::glam::Mat4> = {
-                    {
-                        let output: V<::glam::Mat4> = <::glam::Affine3A as ::core::ops::Mul<
-                            ::glam::Mat4,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "to_cols_array",
             |_self: R<::glam::Affine3A>| {
                 let output: [f32; 12] = {
@@ -54142,7 +55748,11 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Affine3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Affine3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_affine_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -54478,23 +56088,6 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "mul",
-            |_self: V<::glam::DAffine2>, rhs: V<::glam::DMat3>| {
-                let output: V<::glam::DMat3> = {
-                    {
-                        let output: V<::glam::DMat3> = <::glam::DAffine2 as ::core::ops::Mul<
-                            ::glam::DMat3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "to_cols_array",
             |_self: R<::glam::DAffine2>| {
                 let output: [f64; 6] = {
@@ -54564,7 +56157,11 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DAffine2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DAffine2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_affine_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -54588,6 +56185,23 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
             },
             " Returns true if the absolute difference of all elements between `self` and `rhs`\n is less than or equal to `max_abs_diff`.\n This can be used to compare if two 3x4 matrices contain similar elements. It works\n best when comparing with a known value. The `max_abs_diff` that should be used used\n depends on the values being compared against.\n For more see\n [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).",
             &["_self", "rhs", "max_abs_diff"],
+        )
+        .register_documented(
+            "as_affine3",
+            |_self: R<::glam::DAffine3>| {
+                let output: V<::glam::Affine3> = {
+                    {
+                        let output: V<::glam::Affine3> = ::glam::DAffine3::as_affine3(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Casts all elements of `self` to `f32`.",
+            &["_self"],
         )
         .register_documented(
             "as_affine3a",
@@ -55051,23 +56665,6 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
-            "mul",
-            |_self: V<::glam::DAffine3>, rhs: V<::glam::DMat4>| {
-                let output: V<::glam::DMat4> = {
-                    {
-                        let output: V<::glam::DMat4> = <::glam::DAffine3 as ::core::ops::Mul<
-                            ::glam::DMat4,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "to_cols_array",
             |_self: R<::glam::DAffine3>| {
                 let output: [f64; 12] = {
@@ -55137,7 +56734,11 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DAffine3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DAffine3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_quat_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -55468,6 +57069,29 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             },
             " Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means\n that the resulting quaternion will rotate `from` so that it is colinear with `to`.\n The rotation is in the plane spanned by the two vectors.  Will rotate at most 90\n degrees.\n The inputs must be unit vectors.\n `to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.\n # Panics\n Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.",
             &["from", "to"],
+        )
+        .register_documented(
+            "from_rotation_axes",
+            |
+                x_axis: V<::glam::DVec3>,
+                y_axis: V<::glam::DVec3>,
+                z_axis: V<::glam::DVec3>|
+            {
+                let output: V<::glam::DQuat> = {
+                    {
+                        let output: V<::glam::DQuat> = ::glam::DQuat::from_rotation_axes(
+                                x_axis.into_inner(),
+                                y_axis.into_inner(),
+                                z_axis.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " From the columns of a 3x3 rotation matrix.\n Note if the input axes contain scales, shears, or other non-rotation transformations then\n the output of this function is ill-defined.\n # Panics\n Will panic if any axis is not normalized when `glam_assert` is enabled.",
+            &["x_axis", "y_axis", "z_axis"],
         )
         .register_documented(
             "from_rotation_x",
@@ -55848,23 +57472,6 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "mul",
-            |_self: V<::glam::DQuat>, rhs: V<::glam::DVec3>| {
-                let output: V<::glam::DVec3> = {
-                    {
-                        let output: V<::glam::DVec3> = <::glam::DQuat as ::core::ops::Mul<
-                            ::glam::DVec3,
-                        >>::mul(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Multiplies a quaternion and a 3D vector, returning the rotated vector.\n # Panics\n Will panic if `self` is not normalized when `glam_assert` is enabled.",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "mul",
             |_self: V<::glam::DQuat>, rhs: f64| {
                 let output: V<::glam::DQuat> = {
                     {
@@ -55952,11 +57559,11 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "rotate_towards",
-            |_self: R<::glam::DQuat>, rhs: V<::glam::DQuat>, max_angle: f64| {
+            |_self: V<::glam::DQuat>, rhs: V<::glam::DQuat>, max_angle: f64| {
                 let output: V<::glam::DQuat> = {
                     {
                         let output: V<::glam::DQuat> = ::glam::DQuat::rotate_towards(
-                                &_self,
+                                _self.into_inner(),
                                 rhs.into_inner(),
                                 max_angle,
                             )
@@ -56024,10 +57631,13 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "to_array",
-            |_self: R<::glam::DQuat>| {
+            |_self: V<::glam::DQuat>| {
                 let output: [f64; 4] = {
                     {
-                        let output: [f64; 4] = ::glam::DQuat::to_array(&_self).into();
+                        let output: [f64; 4] = ::glam::DQuat::to_array(
+                                _self.into_inner(),
+                            )
+                            .into();
                         output
                     }
                 };
@@ -56090,63 +57700,74 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DQuat, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DQuat,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_euler_rot_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::glam::EulerRot>::new(
-        world,
-    )
-    .register_documented(
-        "assert_receiver_is_total_eq",
-        |_self: R<::glam::EulerRot>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::glam::EulerRot as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self)
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::glam::EulerRot,
+    >::new(world)
+        .register_documented(
+            "assert_fields_are_eq",
+            |_self: R<::glam::EulerRot>| {
+                let output: () = {
+                    {
+                        let output: () = <::glam::EulerRot as ::core::cmp::Eq>::assert_fields_are_eq(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::glam::EulerRot>| {
-            let output: V<::glam::EulerRot> = {
-                {
-                    let output: V<::glam::EulerRot> =
-                        <::glam::EulerRot as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::glam::EulerRot>, other: R<::glam::EulerRot>| {
-            let output: bool = {
-                {
-                    let output: bool = <::glam::EulerRot as ::core::cmp::PartialEq<
-                        ::glam::EulerRot,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::glam::EulerRot>| {
+                let output: V<::glam::EulerRot> = {
+                    {
+                        let output: V<::glam::EulerRot> = <::glam::EulerRot as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::glam::EulerRot>, other: R<::glam::EulerRot>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::glam::EulerRot as ::core::cmp::PartialEq<
+                            ::glam::EulerRot,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::EulerRot, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::EulerRot,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -56292,10 +57913,14 @@ pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
         )
         .register_documented(
             "test",
-            |_self: R<::glam::BVec3A>, index: usize| {
+            |_self: V<::glam::BVec3A>, index: usize| {
                 let output: bool = {
                     {
-                        let output: bool = ::glam::BVec3A::test(&_self, index).into();
+                        let output: bool = ::glam::BVec3A::test(
+                                _self.into_inner(),
+                                index,
+                            )
+                            .into();
                         output
                     }
                 };
@@ -56306,7 +57931,11 @@ pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -56452,10 +58081,14 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
         )
         .register_documented(
             "test",
-            |_self: R<::glam::BVec4A>, index: usize| {
+            |_self: V<::glam::BVec4A>, index: usize| {
                 let output: bool = {
                     {
-                        let output: bool = ::glam::BVec4A::test(&_self, index).into();
+                        let output: bool = ::glam::BVec4A::test(
+                                _self.into_inner(),
+                                index,
+                            )
+                            .into();
                         output
                     }
                 };
@@ -56466,105 +58099,117 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec4A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec4A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_smol_str_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::smol_str::SmolStr>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: V<::smol_str::SmolStr> = {
-                {
-                    let output: V<::smol_str::SmolStr> =
-                        <::smol_str::SmolStr as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::smol_str::SmolStr>, other: R<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = <::smol_str::SmolStr as ::core::cmp::PartialEq<
-                        ::smol_str::SmolStr,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "is_empty",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "is_heap_allocated",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "len",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: usize = {
-                {
-                    let output: usize = ::smol_str::SmolStr::len(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "to_string",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: ::std::string::String = {
-                {
-                    let output: ::std::string::String =
-                        ::smol_str::SmolStr::to_string(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::smol_str::SmolStr,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: V<::smol_str::SmolStr> = {
+                    {
+                        let output: V<::smol_str::SmolStr> = <::smol_str::SmolStr as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::smol_str::SmolStr>, other: R<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::smol_str::SmolStr as ::core::cmp::PartialEq<
+                            ::smol_str::SmolStr,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "is_empty",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "is_heap_allocated",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "len",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::smol_str::SmolStr::len(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "to_string",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: ::std::string::String = {
+                    {
+                        let output: ::std::string::String = ::smol_str::SmolStr::to_string(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::smol_str::SmolStr, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::smol_str::SmolStr,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_uuid_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -56600,11 +58245,11 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::uuid::Uuid>| {
                 let output: () = {
                     {
-                        let output: () = <::uuid::Uuid as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::uuid::Uuid as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -56906,98 +58551,108 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::uuid::Uuid, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::uuid::Uuid,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_non_nil_uuid_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::uuid::NonNilUuid>::new(
-        world,
-    )
-    .register_documented(
-        "assert_receiver_is_total_eq",
-        |_self: R<::uuid::NonNilUuid>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::uuid::NonNilUuid as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::uuid::NonNilUuid>| {
-            let output: V<::uuid::NonNilUuid> = {
-                {
-                    let output: V<::uuid::NonNilUuid> =
-                        <::uuid::NonNilUuid as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::uuid::NonNilUuid>, other: R<::uuid::NonNilUuid>| {
-            let output: bool = {
-                {
-                    let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
-                        ::uuid::NonNilUuid,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::uuid::NonNilUuid>, other: R<::uuid::Uuid>| {
-            let output: bool = {
-                {
-                    let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
-                        ::uuid::Uuid,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "get",
-        |_self: V<::uuid::NonNilUuid>| {
-            let output: V<::uuid::Uuid> = {
-                {
-                    let output: V<::uuid::Uuid> =
-                        ::uuid::NonNilUuid::get(_self.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the underlying [`Uuid`] value.",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::uuid::NonNilUuid,
+    >::new(world)
+        .register_documented(
+            "assert_fields_are_eq",
+            |_self: R<::uuid::NonNilUuid>| {
+                let output: () = {
+                    {
+                        let output: () = <::uuid::NonNilUuid as ::core::cmp::Eq>::assert_fields_are_eq(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::uuid::NonNilUuid>| {
+                let output: V<::uuid::NonNilUuid> = {
+                    {
+                        let output: V<::uuid::NonNilUuid> = <::uuid::NonNilUuid as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::uuid::NonNilUuid>, other: R<::uuid::NonNilUuid>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
+                            ::uuid::NonNilUuid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::uuid::NonNilUuid>, other: R<::uuid::Uuid>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
+                            ::uuid::Uuid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get",
+            |_self: V<::uuid::NonNilUuid>| {
+                let output: V<::uuid::Uuid> = {
+                    {
+                        let output: V<::uuid::Uuid> = ::uuid::NonNilUuid::get(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the underlying [`Uuid`] value.",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::uuid::NonNilUuid, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::uuid::NonNilUuid,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_texture_format_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -57021,11 +58676,11 @@ pub(crate) fn register_texture_format_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::wgpu_types::TextureFormat>| {
                 let output: () = {
                     {
-                        let output: () = <::wgpu_types::TextureFormat as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::wgpu_types::TextureFormat as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -57339,8 +58994,26 @@ pub(crate) fn register_texture_format_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the size multiple requirement for a texture using this format.",
+            " Returns the size multiple requirement for a texture using this format.\n `create_texture` currently enforces a stricter restriction than this for\n mipmapped multi-planar formats.\n TODO(<https://github.com/gfx-rs/wgpu/issues/8491>): Remove this note.",
             &["_self"],
+        )
+        .register_documented(
+            "subsampling_factors",
+            |_self: R<::wgpu_types::TextureFormat>, plane: ::core::option::Option<u32>| {
+                let output: (u32, u32) = {
+                    {
+                        let output: (u32, u32) = ::wgpu_types::TextureFormat::subsampling_factors(
+                                &_self,
+                                plane,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the subsampling factor for the indicated plane of a multi-planar format.",
+            &["_self", "plane"],
         )
         .register_documented(
             "target_component_alignment",
@@ -57389,11 +59062,11 @@ pub(crate) fn register_blend_state_functions(world: &mut World) {
         ::wgpu_types::BlendState,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::wgpu_types::BlendState>| {
                 let output: () = {
                     {
-                        let output: () = <::wgpu_types::BlendState as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::wgpu_types::BlendState as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -57450,24 +59123,15 @@ pub(crate) fn register_blend_state_functions(world: &mut World) {
 impl Plugin for BevyReflectScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
-        register_atomic_bool_functions(&mut world);
-        register_atomic_i_8_functions(&mut world);
-        register_atomic_i_16_functions(&mut world);
-        register_atomic_i_32_functions(&mut world);
-        register_atomic_i_64_functions(&mut world);
-        register_atomic_isize_functions(&mut world);
-        register_atomic_u_8_functions(&mut world);
-        register_atomic_u_16_functions(&mut world);
-        register_atomic_u_32_functions(&mut world);
-        register_atomic_u_64_functions(&mut world);
-        register_atomic_usize_functions(&mut world);
-        register_duration_functions(&mut world);
-        register_instant_functions(&mut world);
         register_range_full_functions(&mut world);
         register_type_id_functions(&mut world);
         register_quat_functions(&mut world);
         register_vec_3_functions(&mut world);
+        register_offset_access_functions(&mut world);
+        register_parsed_path_functions(&mut world);
+        register_instant_functions(&mut world);
         register_socket_addr_functions(&mut world);
+        register_duration_functions(&mut world);
         register_i_vec_2_functions(&mut world);
         register_i_vec_3_functions(&mut world);
         register_i_vec_4_functions(&mut world);
@@ -57509,6 +59173,7 @@ impl Plugin for BevyReflectScriptingPlugin {
         register_d_mat_3_functions(&mut world);
         register_d_mat_4_functions(&mut world);
         register_affine_2_functions(&mut world);
+        register_affine_3_functions(&mut world);
         register_affine_3_a_functions(&mut world);
         register_d_affine_2_functions(&mut world);
         register_d_affine_3_functions(&mut world);

@@ -8,8 +8,7 @@ use rustc_hir::{
 use rustc_span::Ident;
 
 use crate::{
-    args::Cli,
-    query::{query_crate_non_trait_impls, type_implements_trait, typing_env_function_arg_in_impl},
+    args::Cli, emitter::{CaptureState}, query::{query_crate_non_trait_impls, type_implements_trait, typing_env_function_arg_in_impl},
 };
 
 pub struct RustcUtilsPlugin {}
@@ -29,6 +28,8 @@ impl Callbacks for RustcUtilsCallbacks {
         if sess.dcx().has_errors().is_some() {
             sess.dcx().fatal("compilation failed, aborting analysis.");
         }
+
+        CaptureState::install(sess);
 
         match &self.args.command {
             crate::args::Command::ArgImplements(arg_implements_args) => {

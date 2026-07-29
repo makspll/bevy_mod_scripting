@@ -1,12 +1,13 @@
 use std::path::PathBuf;
 
+use bevy_mod_scripting_rustc_driver::WORKSPACE_GRAPH_FILE_ENV;
 use crate_feature_graph::WorkspaceGraph;
 use log::{info, trace};
 use rustc_hir::def_id::LOCAL_CRATE;
 use tera::Context;
 
 use crate::{
-    ALL_PASSES, Args, TemplateKind, WorkspaceMeta, driver::WORKSPACE_GRAPH_FILE_ENV,
+    ALL_PASSES, Args, TemplateKind, WorkspaceMeta,
     modifying_file_loader::ModifyingFileLoader,
 };
 

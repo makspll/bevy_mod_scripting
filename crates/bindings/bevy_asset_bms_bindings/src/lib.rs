@@ -1,15 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAssetScriptingPlugin;
 pub(crate) fn register_untyped_handle_functions(world: &mut World) {
@@ -32,6 +35,23 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "default_for_type",
+            |type_id: V<::core::any::TypeId>| {
+                let output: V<::bevy_asset::UntypedHandle> = {
+                    {
+                        let output: V<::bevy_asset::UntypedHandle> = ::bevy_asset::UntypedHandle::default_for_type(
+                                type_id.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the equivalent of [`Handle`]'s default implementation for the given type ID.",
+            &["type_id"],
         )
         .register_documented(
             "eq",
@@ -99,54 +119,60 @@ pub(crate) fn register_untyped_asset_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_asset::UntypedAssetId,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_asset::UntypedAssetId>| {
-            let output: V<::bevy_asset::UntypedAssetId> = {
-                {
-                    let output: V<::bevy_asset::UntypedAssetId> =
-                        <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_asset::UntypedAssetId>| {
+                let output: V<::bevy_asset::UntypedAssetId> = {
+                    {
+                        let output: V<::bevy_asset::UntypedAssetId> = <::bevy_asset::UntypedAssetId as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::bevy_asset::UntypedAssetId>, other: R<::bevy_asset::UntypedAssetId>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
-                        ::bevy_asset::UntypedAssetId,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "type_id",
-        |_self: R<::bevy_asset::UntypedAssetId>| {
-            let output: V<::core::any::TypeId> = {
-                {
-                    let output: V<::core::any::TypeId> =
-                        ::bevy_asset::UntypedAssetId::type_id(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Returns the stored [`TypeId`] of the referenced [`Asset`].",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_asset::UntypedAssetId>,
+                other: R<::bevy_asset::UntypedAssetId>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_asset::UntypedAssetId as ::core::cmp::PartialEq<
+                            ::bevy_asset::UntypedAssetId,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "type_id",
+            |_self: R<::bevy_asset::UntypedAssetId>| {
+                let output: V<::core::any::TypeId> = {
+                    {
+                        let output: V<::core::any::TypeId> = ::bevy_asset::UntypedAssetId::type_id(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the stored [`TypeId`] of the referenced [`Asset`].",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -160,11 +186,11 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
         ::bevy_asset::AssetIndex,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::bevy_asset::AssetIndex>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_asset::AssetIndex as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_asset::AssetIndex as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -272,11 +298,11 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             &[],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
+            "assert_fields_are_eq",
             |_self: R<::bevy_asset::RenderAssetUsages>| {
                 let output: () = {
                     {
-                        let output: () = <::bevy_asset::RenderAssetUsages as ::core::cmp::Eq>::assert_receiver_is_total_eq(
+                        let output: () = <::bevy_asset::RenderAssetUsages as ::core::cmp::Eq>::assert_fields_are_eq(
                                 &_self,
                             )
                             .into();
@@ -334,7 +360,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise negation (`!`) of the bits in a flags value, truncating the result.",
+            " The bitwise negation (`!`) of the bits in `self`, truncating the result.",
             &["_self"],
         )
         .register_documented(
@@ -355,7 +381,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " Whether all set bits in a source flags value are also set in a target flags value.",
+            " Whether all set bits in `other` are also set in `self`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -376,7 +402,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The intersection of a source flags value with the complement of a target flags\n value (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
             &["_self", "other"],
         )
         .register_documented(
@@ -466,7 +492,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise or (`|`) of the bits in two flags values.",
+            " The bitwise or (`|`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -487,7 +513,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise and (`&`) of the bits in two flags values.",
+            " The bitwise and (`&`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -508,7 +534,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " Whether any set bits in a source flags value are also set in a target flags value.",
+            " Whether any set bits in `other` are also set in `self`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -542,7 +568,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " Whether all bits in this flags value are unset.",
+            " Whether all bits in `self` are unset.",
             &["_self"],
         )
         .register_documented(
@@ -563,7 +589,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The intersection of a source flags value with the complement of a target flags\n value (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `remove` won't truncate `other`, but the `!` operator will.",
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `remove` won't truncate `other`, but the `!` operator will.",
             &["_self", "other"],
         )
         .register_documented(
@@ -606,7 +632,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The intersection of a source flags value with the complement of a target flags value (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
             &["_self", "other"],
         )
         .register_documented(
@@ -627,7 +653,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise exclusive-or (`^`) of the bits in two flags values.",
+            " The bitwise exclusive-or (`^`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -648,7 +674,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise exclusive-or (`^`) of the bits in two flags values.",
+            " The bitwise exclusive-or (`^`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -669,7 +695,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise or (`|`) of the bits in two flags values.",
+            " The bitwise or (`|`) of the bits in `self` and `other`.",
             &["_self", "other"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
