@@ -251,7 +251,7 @@ pub fn update_rendered_state(
     query: Query<(&LifeState, &Sprite)>,
 ) {
     for (new_state, old_rendered_state) in query.iter() {
-        let old_rendered_state = assets
+        let mut old_rendered_state = assets
             .get_mut(&old_rendered_state.image)
             .expect("World is not setup correctly");
         old_rendered_state.data = Some(new_state.cells.clone());
