@@ -40,6 +40,7 @@ bevy_time = ["bevy_time_bms_bindings"]
 bevy_transform = ["bevy_transform_bms_bindings"]
 bevy_ui = ["bevy_ui_bms_bindings"]
 bevy_ui_render = ["bevy_ui_render_bms_bindings"]
+bevy_ui_widgets = ["bevy_ui_widgets_bms_bindings"]
 
 core_functions = []
 lua_bindings = ["bevy_mod_scripting_lua"]
@@ -94,6 +95,7 @@ bevy_time_bms_bindings = { path = "../bindings/bevy_time_bms_bindings", version 
 bevy_transform_bms_bindings = { path = "../bindings/bevy_transform_bms_bindings", version = "0.20.0", optional = true }
 bevy_ui_bms_bindings = { path = "../bindings/bevy_ui_bms_bindings", version = "0.20.0", optional = true }
 bevy_ui_render_bms_bindings = { path = "../bindings/bevy_ui_render_bms_bindings", version = "0.20.0", optional = true }
+bevy_ui_widgets_bms_bindings = { path = "../bindings/bevy_ui_widgets_bms_bindings", version = "0.20.0", optional = true }
 
 [lints]
 workspace = true
