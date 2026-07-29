@@ -2,6 +2,7 @@ use std::{io, sync::{Arc, Mutex, OnceLock, atomic::{AtomicBool, Ordering}}};
 
 use rustc_data_structures::sync::DynSend;
 use rustc_errors::{DiagInner, annotate_snippet_emitter_writer::AnnotateSnippetEmitter, emitter::{DynEmitter, Emitter, HumanReadableErrorType, OutputTheme, stderr_destination}, json::JsonEmitter};
+use rustc_middle::ty::{TyCtxt, layout::HasTyCtxt};
 use rustc_session::{Session, config::ErrorOutputType};
 use rustc_span::source_map::SourceMap;
 
@@ -34,7 +35,7 @@ pub struct CaptureState {
   
 /// Global, process-wide handle to the capture state. Populated once when  
 /// `DelegatingBufferEmitter` is constructed and wrapped into the real `DiagCtxt`.  
-pub static CAPTURE_STATE: OnceLock<Arc<CaptureState>> = OnceLock::new();  
+static CAPTURE_STATE: OnceLock<Arc<CaptureState>> = OnceLock::new();  
   
 impl CaptureState {  
     fn get_or_init() -> &'static Arc<CaptureState> {  
@@ -61,7 +62,7 @@ impl CaptureState {
     /// Turn capturing on, run `f`, turn it back off, and return the  
     /// captured messages. Panics loudly if the delegating emitter was  
     /// never installed, instead of silently emitting to stderr.  
-    pub fn capture<T>(f: impl FnOnce() -> T) -> (T, String, bool) {  
+    pub fn capture<T>(ctxt: TyCtxt<'_>, f: impl FnOnce() -> T) -> (T, String, bool) {  
         assert!(  
             Self::is_installed(),  
             "DelegatingBufferEmitter was never installed on the DiagCtxt; 
@@ -70,7 +71,12 @@ impl CaptureState {
   
         let state = Self::get_or_init();  
         state.capture.store(true, Ordering::SeqCst);  
+        let had_errors_before = ctxt.dcx().has_errors().is_some();
         let result = f();  
+        
+        if !had_errors_before {
+            ctxt.dcx().reset_err_count();
+        }
         state.capture.store(false, Ordering::SeqCst);  
   
         let mut buffer = state.buffer.lock().unwrap();  

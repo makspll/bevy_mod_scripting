@@ -20,6 +20,7 @@ extern crate rustc_data_structures;
 
 pub mod plugin;
 pub mod query;
+pub use emitter::CaptureState;
 
 pub(crate) mod emitter;
 mod args;

@@ -36,7 +36,7 @@ pub fn typing_env_function_arg_in_impl<'tcx>(
 
 pub fn type_implements_trait<'tcx>(tcx: TyCtxt<'tcx>, ctxt: TypingEnv<'tcx>, self_ty: Ty<'tcx>, trait_did: DefId) -> Result<(), String>{
 
-    let (_, messages, has_errors) = CaptureState::capture::<()>(|| {  
+    let (_, messages, has_errors) = CaptureState::capture::<()>(tcx, || {  
 
     {
         let (infr_ctxt, param_env) = tcx.infer_ctxt()

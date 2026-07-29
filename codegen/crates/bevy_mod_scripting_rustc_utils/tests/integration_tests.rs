@@ -56,3 +56,23 @@ pub fn test_complex_trait() {
     assert_eq!(String::from_utf8(output.stdout).unwrap(), "yes\n");
     assert!(output.status.success());
 }
+
+
+#[test]
+pub fn test_not_implementing_arg() {
+    let output = test_harness([
+        "arg-implements",
+        "--trait",
+        "SimpleTrait",
+        "--type",
+        "TargetType",
+        "--function",
+        "simple_fn_negative",
+        "--arg",
+        "arg"
+    ].into_iter().map(String::from).collect::<Vec<_>>());
+    
+    assert_eq!(String::from_utf8(output.stdout).unwrap(), "no: the trait bound `std::string::String: SimpleTrait` is not satisfied\n");
+    assert!(output.status.success());
+}
+

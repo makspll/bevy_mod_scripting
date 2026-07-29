@@ -17,6 +17,11 @@ impl TargetType {
 
     }
 
+    pub fn simple_fn_negative(arg: String) {
+
+    }
+
+
     pub fn with_assoc_fn<A: WithAssocItem>(arg: A) {
 
     }

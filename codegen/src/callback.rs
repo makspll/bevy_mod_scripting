@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use bevy_mod_scripting_rustc_driver::WORKSPACE_GRAPH_FILE_ENV;
+use bevy_mod_scripting_rustc_utils::CaptureState;
 use crate_feature_graph::WorkspaceGraph;
 use log::{info, trace};
 use rustc_hir::def_id::LOCAL_CRATE;
@@ -34,6 +35,8 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         if sess.dcx().has_errors().is_some() {
             sess.dcx().fatal("compilation failed, aborting analysis.");
         }
+
+        CaptureState::install(sess);
 
         let mut meta_dirs = Vec::default();
         let mut templates_dir = None;
