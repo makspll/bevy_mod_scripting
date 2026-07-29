@@ -203,13 +203,21 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
 
         app.init_resource::<ActiveMachinesData>();
 
+        // bevy considers the ordering on observers watching the same event to be arbitrary, this order
+        // flipped in bevy 0.19,
+        // now the first observer registered is the last/
+        // we probably shouldn't rely on that, but it's convenient for separation of concerns
+
+
+
+        // reloaded observer goes last
+        if self.on_script_reloaded_callback {
+            app.add_observer(on_script_reloaded_pipeline_handler::<P>);
+        }
+
         // load observer goes first
         if self.on_script_loaded_callback {
             app.add_observer(on_script_loaded_pipeline_handler::<P>);
-        }
-        // then reload
-        if self.on_script_reloaded_callback {
-            app.add_observer(on_script_reloaded_pipeline_handler::<P>);
         }
 
         // these are the only triggers on their events
