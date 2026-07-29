@@ -15,8 +15,8 @@
         <link rel="icon" href="../../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../../css/general-0392ca55.css">
-        <link rel="stylesheet" href="../../css/chrome-fc474251.css">
+        <link rel="stylesheet" href="../../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b1ac4d0a.js";
+            window.path_to_searchindex_js = "../../searchindex-4df4eb9d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-55fd8eee.js"></script>
+        <script src="../../toc-0806cffb.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -193,6 +193,35 @@
 <p>The viewport defines the area on the render target to which the camera renders its image.
 You can overlay multiple cameras in a single window using viewports to create effects like
 split screen, minimaps, and character viewers.</p>
+ 
+<div class="warning">
+<p>Note that the physical position is in actual screen coordinates and not virtual pixels for window targets.<br>You should use the scaling factor reported by the window, which on some OS’s defaults to a value other than 1.
+Please see the example code (which assumes a single camera and window)</p>
+<pre><code class="language-no_run"># use bevy_camera::{Camera, Projection, Viewport};
+# use bevy_transform::prelude::Transform;
+# use bevy_ecs::prelude::*;
+# use bevy_math::UVec2;
+# use bevy_window::Window;
+# use bevy_utils::default;
+
+fn update_viewport(
+   mut camera_query: Query&lt;(&amp;mut Camera, &amp;mut Transform, &amp;mut Projection)&gt;,
+   windows: Query&lt;&amp;Window&gt;
+) {
+    let Ok((mut camera, _, _)) = camera_query.single_mut() else { return; };
+
+    let window = windows.single().expect("Window not found");
+    let scale = window.resolution.scale_factor();
+
+    camera.viewport = Some(Viewport {
+        physical_position: (UVec2::new(10, 10).as_vec2() * scale).as_uvec2(),
+        physical_size: (UVec2::new(100, 100).as_vec2() * scale).as_uvec2(),
+        ..default()
+    });
+}
+</code></pre>
+ </div>
+
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -245,7 +274,7 @@ split screen, minimaps, and character viewers.</p>
 
         <script src="../../clipboard-1626706a.min.js"></script>
         <script src="../../highlight-abc7f01d.js"></script>
-        <script src="../../book-c22b7243.js"></script>
+        <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
         <script src="../../multi-code-block-02be4b76.js"></script>

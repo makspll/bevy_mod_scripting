@@ -15,8 +15,8 @@
         <link rel="icon" href="../../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../../css/general-0392ca55.css">
-        <link rel="stylesheet" href="../../css/chrome-fc474251.css">
+        <link rel="stylesheet" href="../../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b1ac4d0a.js";
+            window.path_to_searchindex_js = "../../searchindex-4df4eb9d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-55fd8eee.js"></script>
+        <script src="../../toc-0806cffb.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -201,8 +201,9 @@ generic [<code>Time</code>] resource for the update.</p>
 and slowed down. It also limits how much it can advance in a single update
 in order to prevent unexpected behavior in cases where updates do not happen
 at regular intervals (e.g. coming back after the program was suspended a long time).</p>
-<p>The virtual clock can be paused by calling <a href="Time::pause"><code>pause()</code></a> and
-unpaused by calling <a href="Time::unpause"><code>unpause()</code></a>. When the game clock is
+<p>The virtual clock can be paused by calling <a href="Time::pause"><code>pause()</code></a>,
+unpaused by calling <a href="Time::unpause"><code>unpause()</code></a>, or toggled by calling
+<a href="Time::toggle"><code>toggle()</code></a>. When the game clock is
 paused <a href="Time::delta"><code>delta()</code></a> will be zero on each update, and
 <a href="Time::elapsed"><code>elapsed()</code></a> will not grow.
 <a href="Time::effective_speed"><code>effective_speed()</code></a> will return <code>0.0</code>. Calling
@@ -307,7 +308,7 @@ falling behind real time.</p>
 
         <script src="../../clipboard-1626706a.min.js"></script>
         <script src="../../highlight-abc7f01d.js"></script>
-        <script src="../../book-c22b7243.js"></script>
+        <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
         <script src="../../multi-code-block-02be4b76.js"></script>

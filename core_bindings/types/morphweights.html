@@ -15,8 +15,8 @@
         <link rel="icon" href="../../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../../css/general-0392ca55.css">
-        <link rel="stylesheet" href="../../css/chrome-fc474251.css">
+        <link rel="stylesheet" href="../../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b1ac4d0a.js";
+            window.path_to_searchindex_js = "../../searchindex-4df4eb9d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-55fd8eee.js"></script>
+        <script src="../../toc-0806cffb.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,15 +188,37 @@
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>Controls the <a href="https://en.wikipedia.org/wiki/Morph_target_animation">morph targets</a> for all child <a href="crate::Mesh3d"><code>Mesh3d</code></a> entities. In most cases, [<code>MorphWeights</code>] should be considered
-the “source of truth” when writing morph targets for meshes. However you can choose to write child [<code>MeshMorphWeights</code>]
-if your situation requires more granularity. Just note that if you set [<code>MorphWeights</code>], it will overwrite child
-[<code>MeshMorphWeights</code>] values.</p>
-<p>This exists because Bevy’s [<code>Mesh</code>] corresponds to a <em>single</em> surface / material, whereas morph targets
-as defined in the GLTF spec exist on “multi-primitive meshes” (where each primitive is its own surface with its own material).
-Therefore in Bevy [<code>MorphWeights</code>] an a parent entity are the “canonical weights” from a GLTF perspective, which then
-synchronized to child <a href="crate::Mesh3d"><code>Mesh3d</code></a> / [<code>MeshMorphWeights</code>] (which correspond to “primitives” / “surfaces” from a GLTF perspective).</p>
-<p>Add this to the parent of one or more <a href="`Entity`"><code>Entities</code></a> with a <a href="crate::Mesh3d"><code>Mesh3d</code></a> with a [<code>MeshMorphWeights</code>].</p>
+<p>Controls the <a href="https://en.wikipedia.org/wiki/Morph_target_animation">morph targets</a> for all child <a href="crate::Mesh3d"><code>Mesh3d</code></a>
+entities. In most cases, [<code>MorphWeights</code>] should be considered the “source
+of truth” when writing <a href="https://en.wikipedia.org/wiki/Morph_target_animation">morph targets</a> for meshes. However you can choose to
+write child [<code>MeshMorphWeights</code>] if your situation requires more
+granularity. Just note that if you set [<code>MorphWeights</code>], it will overwrite
+child [<code>MeshMorphWeights</code>] values.</p>
+<p><code>MorphWeights</code> works together with the [<code>MeshMorphWeights</code>] component. When
+a <code>MeshMorphWeights</code> is set to <code>MeshMorphWeights::Reference</code>, it references
+another entity that is expected to contain a <code>MorphWeights</code> component. This
+allows multiple meshes to share a single <code>MorphWeights</code> component.</p>
+<pre><code># use bevy_asset::prelude::*;
+# use bevy_ecs::prelude::*;
+# use bevy_mesh::Mesh;
+# use bevy_mesh::morph::*;
+# #[derive(Component)]
+# struct Mesh3d(Handle&lt;Mesh&gt;);
+fn setup(mut commands: Commands, mesh_handle: Handle&lt;Mesh&gt;) {
+    // Create the `MorphWeights` component.
+    let weights_component = MorphWeights::new(vec![0.0, 0.5, 1.0], None).unwrap();
+
+    // Spawn an entity that contains the `MorphWeights` component.
+    let weights_entity = commands.spawn(weights_component).id();
+
+    // Spawn another entity with a mesh and a `MeshMorphWeights` component
+    // that references `weights_entity`.
+    let mesh_entity = commands.spawn((
+        Mesh3d(mesh_handle.clone()),
+        MeshMorphWeights::Reference(weights_entity),
+    ));
+}
+</code></pre>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -205,7 +227,7 @@ synchronized to child <a href="crate::Mesh3d"><code>Mesh3d</code></a> / [<code>M
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/meshmorphweights.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/morphattributes.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -219,7 +241,7 @@ synchronized to child <a href="crate::Mesh3d"><code>Mesh3d</code></a> / [<code>M
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/meshmorphweights.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/morphattributes.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
@@ -249,7 +271,7 @@ synchronized to child <a href="crate::Mesh3d"><code>Mesh3d</code></a> / [<code>M
 
         <script src="../../clipboard-1626706a.min.js"></script>
         <script src="../../highlight-abc7f01d.js"></script>
-        <script src="../../book-c22b7243.js"></script>
+        <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
         <script src="../../multi-code-block-02be4b76.js"></script>

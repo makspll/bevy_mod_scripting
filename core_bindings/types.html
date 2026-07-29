@@ -15,8 +15,8 @@
         <link rel="icon" href="../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-0392ca55.css">
-        <link rel="stylesheet" href="../css/chrome-fc474251.css">
+        <link rel="stylesheet" href="../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-b1ac4d0a.js";
+            window.path_to_searchindex_js = "../searchindex-4df4eb9d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-55fd8eee.js"></script>
+        <script src="../toc-0806cffb.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -232,7 +232,7 @@
 <tr><td><a href="././types/depthprepassdoublebuffer.html"><code>DepthPrepassDoubleBuffer</code></a></td><td>Allows querying the previous frame’s [`DepthPrepass`].</td></tr>
 <tr><td><a href="././types/motionvectorprepass.html"><code>MotionVectorPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then screen space motion vectors will be copied to a separate texture available to the main pass.   Motion vectors are stored in the range -1,1, with +x right and +y down.  A value of (1.0,1.0) indicates a pixel moved from the top left corner to the bottom right corner of the screen.</td></tr>
 <tr><td><a href="././types/normalprepass.html"><code>NormalPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then vertex world normals will be copied to a separate texture available to the main pass.  Normals will have normal map textures already applied.</td></tr>
-<tr><td><a href="././types/skybox.html"><code>Skybox</code></a></td><td>Adds a skybox to a 3D camera, based on a cubemap texture.   Note that this component does not (curr...</td></tr>
+<tr><td><a href="././types/nobackgroundmotionvectors.html"><code>NoBackgroundMotionVectors</code></a></td><td>When added to a camera with [`MotionVectorPrepass`], disables the automatic background motion  vector prepass.   By default, any camera with [`MotionVectorPrepass`]...</td></tr>
 <tr><td><a href="././types/debanddither.html"><code>DebandDither</code></a></td><td>Enables a debanding shader that applies dithering to mitigate color banding in the final image for ...</td></tr>
 <tr><td><a href="././types/tonemapping.html"><code>Tonemapping</code></a></td><td>Optionally enables a tonemapping shader that attempts to map linear input stimulus into a perceptua...</td></tr>
 <tr><td><a href="././types/componentticks.html"><code>ComponentTicks</code></a></td><td>Records when a component or resource was added and when it was last mutably dereferenced (or added)...</td></tr>
@@ -250,11 +250,13 @@
 <tr><td><a href="././types/children.html"><code>Children</code></a></td><td>Tracks which entities are children of this parent entity.   A [`RelationshipTarget`] collection component that is populated  with entities that “target” this entity with the [`ChildOf`]...</td></tr>
 <tr><td><a href="././types/add.html"><code>Add</code></a></td><td>Trigger emitted when a component is inserted onto an entity that does not already have that  compon...</td></tr>
 <tr><td><a href="././types/despawn.html"><code>Despawn</code></a></td><td>[`EntityEvent`] emitted for each component on an entity when it is despawned.  See [`ComponentHooks::on_despawn`](`crate::lifecycle::ComponentHooks::on_...</td></tr>
+<tr><td><a href="././types/discard.html"><code>Discard</code></a></td><td>Trigger emitted when a component is removed from an entity, regardless  of whether or not it is lat...</td></tr>
 <tr><td><a href="././types/insert.html"><code>Insert</code></a></td><td>Trigger emitted when a component is inserted, regardless of whether or not the entity already  had ...</td></tr>
 <tr><td><a href="././types/remove.html"><code>Remove</code></a></td><td>Trigger emitted when a component is removed from an entity, and runs before the component is  remov...</td></tr>
 <tr><td><a href="././types/removedcomponententity.html"><code>RemovedComponentEntity</code></a></td><td>Wrapper around [`Entity`] for [`RemovedComponents`].  Internally, `RemovedComponents` uses these as...</td></tr>
-<tr><td><a href="././types/replace.html"><code>Replace</code></a></td><td>Trigger emitted when a component is removed from an entity, regardless  of whether or not it is lat...</td></tr>
+<tr><td><a href="././types/hashedstr.html"><code>HashedStr</code></a></td><td>A wrapper over Hashed. This exists to make Name(“value”.into()) possible, which plays nicely with c...</td></tr>
 <tr><td><a href="././types/name.html"><code>Name</code></a></td><td>Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r...</td></tr>
+<tr><td><a href="././types/isresource.html"><code>IsResource</code></a></td><td>A marker component for entities that have a Resource component.</td></tr>
 <tr><td><a href="././types/buttonstate.html"><code>ButtonState</code></a></td><td>The current “press” state of an element</td></tr>
 <tr><td><a href="././types/axissettings.html"><code>AxisSettings</code></a></td><td>Settings for a [`GamepadAxis`].   It is used inside the [`GamepadSettings`] to define the sensitivi...</td></tr>
 <tr><td><a href="././types/buttonaxissettings.html"><code>ButtonAxisSettings</code></a></td><td>Settings for a [`GamepadButton`].   It is used inside the [`GamepadSettings`] to define the sensiti...</td></tr>
@@ -349,6 +351,8 @@
 <tr><td><a href="././types/tetrahedron.html"><code>Tetrahedron</code></a></td><td>A tetrahedron primitive.</td></tr>
 <tr><td><a href="././types/torus.html"><code>Torus</code></a></td><td>A torus primitive, often representing a ring or donut shape  The set of points some distance from a...</td></tr>
 <tr><td><a href="././types/triangle3d.html"><code>Triangle3d</code></a></td><td>A 3D triangle primitive.</td></tr>
+<tr><td><a href="././types/halfspace.html"><code>HalfSpace</code></a></td><td>A region of 3D space, specifically an open set whose border is a bisecting 2D plane.   This bisecti...</td></tr>
+<tr><td><a href="././types/viewfrustum.html"><code>ViewFrustum</code></a></td><td>A region of 3D space defined by the intersection of 6 [`HalfSpace`]s.   View Frustums are typically an apex-truncated square pyramid (a pyramid without the top) or a cuboid.   Half spaces are ordered left, right, top, bottom, near, far. The normal vectors  of the half-spaces point towards the interior of the frustum.</td></tr>
 <tr><td><a href="././types/ray2d.html"><code>Ray2d</code></a></td><td>An infinite half-line starting at `origin` and going in `direction` in 2D space.</td></tr>
 <tr><td><a href="././types/ray3d.html"><code>Ray3d</code></a></td><td>An infinite half-line starting at `origin` and going in `direction` in 3D space.</td></tr>
 <tr><td><a href="././types/irect.html"><code>IRect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
@@ -356,6 +360,8 @@
 <tr><td><a href="././types/urect.html"><code>URect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
 <tr><td><a href="././types/rot2.html"><code>Rot2</code></a></td><td>A 2D rotation.   # Example   ```  # use approx::assert_relative_eq;  # use bevy_math::{Rot2, Vec2};  use std::f32::consts::PI;   // Create rotations from counterclockwise angles in radians or degrees  let rotation1 = Rot2::radians(PI / 2.0);  let rotation2 = Rot2::degrees(45.0);   // Get the angle back as radians or degrees  assert_eq!(rotation1.as_degrees(), 90.0);  assert_eq!(rotation2.as_radians(), PI / 4.0);   // “Add” rotations together using `*`  #[cfg(feature = “approx”)]  assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));   // Rotate vectors  #[cfg(feature = “approx”)]  assert_...</td></tr>
 <tr><td><a href="././types/instant.html"><code>Instant</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/offsetaccess.html"><code>OffsetAccess</code></a></td><td>An [`Access`] combined with an `offset` for more helpful error reporting.</td></tr>
+<tr><td><a href="././types/parsedpath.html"><code>ParsedPath</code></a></td><td>A pre-parsed path to an element within a type.   This struct can be constructed manually from its [`Access`]...</td></tr>
 <tr><td><a href="././types/fixed.html"><code>Fixed</code></a></td><td>The fixed timestep game clock following virtual time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<fixed>#impl-Time<fixed>`]...</fixed></fixed></td></tr>
 <tr><td><a href="././types/real.html"><code>Real</code></a></td><td>Real time clock representing elapsed wall clock time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<real>#impl-Time<real>`]...</real></real></td></tr>
 <tr><td><a href="././types/stopwatch.html"><code>Stopwatch</code></a></td><td>A Stopwatch is a struct that tracks elapsed time when started.   Note that in order to advance the ...</td></tr>
@@ -369,19 +375,9 @@
 <tr><td><a href="././types/typeid.html"><code>TypeId</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/socketaddr.html"><code>SocketAddr</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/rangefull.html"><code>RangeFull</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomicbool.html"><code>AtomicBool</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomici16.html"><code>AtomicI16</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomici32.html"><code>AtomicI32</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomici64.html"><code>AtomicI64</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomici8.html"><code>AtomicI8</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomicisize.html"><code>AtomicIsize</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomicu16.html"><code>AtomicU16</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomicu32.html"><code>AtomicU32</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomicu64.html"><code>AtomicU64</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomicu8.html"><code>AtomicU8</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/atomicusize.html"><code>AtomicUsize</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/duration.html"><code>Duration</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/affine2.html"><code>Affine2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/affine3.html"><code>Affine3</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/affine3a.html"><code>Affine3A</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/bvec2.html"><code>BVec2</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/bvec3.html"><code>BVec3</code></a></td><td>No Documentation 🚧</td></tr>
@@ -463,6 +459,7 @@
 <tr><td><a href="././types/accessibilityrequested.html"><code>AccessibilityRequested</code></a></td><td>Tracks whether an assistive technology has requested accessibility  information.   This type is a [`Resource`]...</td></tr>
 <tr><td><a href="././types/accessibilitysystems.html"><code>AccessibilitySystems</code></a></td><td>A system set relating to accessibility.   Helps run accessibility updates all at once.</td></tr>
 <tr><td><a href="././types/manageaccessibilityupdates.html"><code>ManageAccessibilityUpdates</code></a></td><td>Determines whether Bevy’s ECS updates the accessibility tree.   This [`Resource`] tells Bevy internals whether it should be handling  `AccessKit` updates (`true`), or if something else is doing that (`false`).   It defaults to `true`. So, by default, Bevy is configured to maintain the  `AccessKit` tree.   Set to `false` in cases where an external GUI library is sending  accessibility updates instead. When this option is set inconsistently with  that requirement, the external library and ECS will generate conflicting  updates.   [`Resource`]...</td></tr>
+<tr><td><a href="././types/appexit.html"><code>AppExit</code></a></td><td>A [`Message`] that indicates the [`App`] should exit. If one or more of these are present at the en...</td></tr>
 <tr><td><a href="././types/assetindex.html"><code>AssetIndex</code></a></td><td>A generational runtime-only identifier for a specific [`Asset`] stored in [`Assets`]. This is optim...</td></tr>
 <tr><td><a href="././types/untypedhandle.html"><code>UntypedHandle</code></a></td><td>An untyped variant of [`Handle`], which internally stores the [`Asset`] type information at runtime...</td></tr>
 <tr><td><a href="././types/untypedassetid.html"><code>UntypedAssetId</code></a></td><td>An “untyped” / “generic-less” [`Asset`] identifier that behaves much like [`AssetId`], but stores t...</td></tr>
@@ -471,14 +468,19 @@
 <tr><td><a href="././types/camera.html"><code>Camera</code></a></td><td>The defining [`Component`] for camera entities,  storing information about how and what to render through this camera.   The [`Camera`]...</td></tr>
 <tr><td><a href="././types/cameramaintextureusages.html"><code>CameraMainTextureUsages</code></a></td><td>This component lets you control the [`TextureUsages`] field of the main texture generated for the camera</td></tr>
 <tr><td><a href="././types/cameraoutputmode.html"><code>CameraOutputMode</code></a></td><td>Control how this [`Camera`] outputs once rendering is completed.</td></tr>
+<tr><td><a href="././types/computedcameravalues.html"><code>ComputedCameraValues</code></a></td><td>Holds internally computed [`Camera`] values.</td></tr>
 <tr><td><a href="././types/exposure.html"><code>Exposure</code></a></td><td>How much energy a [`Camera3d`](crate::Camera3d) absorbs from incoming light.   <a href="https://en&#92;.wikipedia&#92;.org/wiki/Exposure&#92;_&#92;(photography&#92;)">https://en\.wikipedia\.org/wiki/Exposure\_\(photography\)</a></td></tr>
 <tr><td><a href="././types/imagerendertarget.html"><code>ImageRenderTarget</code></a></td><td>A render target that renders to an [`Image`].</td></tr>
 <tr><td><a href="././types/mainpassresolutionoverride.html"><code>MainPassResolutionOverride</code></a></td><td>Override the resolution a 3d camera’s main pass is rendered at.   Does not affect post processing. ...</td></tr>
 <tr><td><a href="././types/manualtextureviewhandle.html"><code>ManualTextureViewHandle</code></a></td><td>A unique id that corresponds to a specific `ManualTextureView` in the `ManualTextureViews` collecti...</td></tr>
 <tr><td><a href="././types/normalizedrendertarget.html"><code>NormalizedRenderTarget</code></a></td><td>Normalized version of the render target.   Once we have this we shouldn’t need to resolve it down a...</td></tr>
 <tr><td><a href="././types/rendertarget.html"><code>RenderTarget</code></a></td><td>The “target” that a [`Camera`] will render to. For example, this could be a `Window`  swapchain or an [`Image`]...</td></tr>
+<tr><td><a href="././types/rendertargetinfo.html"><code>RenderTargetInfo</code></a></td><td>Information about the current [`RenderTarget`].</td></tr>
+<tr><td><a href="././types/shadowlodorigin.html"><code>ShadowLodOrigin</code></a></td><td>The entity that Bevy uses to resolve visibility ranges when no specific  camera is applicable.   Fo...</td></tr>
 <tr><td><a href="././types/subcameraview.html"><code>SubCameraView</code></a></td><td>Settings to define a camera sub view.   When [`Camera::sub_camera_view`] is `Some`, only the sub-section of the  image defined by `size` and `offset` (relative to the `full_size` of the  whole image) is projected to the cameras viewport.   Take the example of the following multi-monitor setup:  ```css  ┌───┬───┐  │ A │ B │  ├───┼───┤  │ C │ D │  └───┴───┘  ```  If each monitor is 1920x1080, the whole image will have a resolution of  3840x2160. For each monitor we can use a single camera with a viewport of  the same size as the monitor it corresponds to. To ensure that the image is  cohesive, we can use a different sub view on each camera:  - Camera A: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,0  - Camera B: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 1920,0  - Camera C: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,1080  - Camera D: `full_size` = 3840x2160, `size` = 1920x1080, `offset` =    1920,1080   However since only the ratio between the values is important, they could all  be divided by 120 and still produce the same image. Camera D would for  example have the following values:  `full_size` = 32x18, `size` = 16x9, `offset` = 16,9</td></tr>
-<tr><td><a href="././types/viewport.html"><code>Viewport</code></a></td><td>Render viewport configuration for the [`Camera`] component.   The viewport defines the area on the render target to which the camera renders its image.  You can overlay multiple cameras in a single window using viewports to create effects like  split screen, minimaps, and character viewers.</td></tr>
+<tr><td><a href="././types/viewport.html"><code>Viewport</code></a></td><td>Render viewport configuration for the [`Camera`] component.   The viewport defines the area on the render target to which the camera renders its image.  You can overlay multiple cameras in a single window using viewports to create effects like  split screen, minimaps, and character viewers.   
+<div class="warning">   Note that the physical position is in actual screen coordinates and not virtual pixels for window targets.    You should use the scaling factor reported by the window, which on some OS’s defaults to a value other than 1.  Please see the example code (which assumes a single camera and window)   ```no_run  # use bevy_camera::{Camera, Projection, Viewport};  # use bevy_transform::prelude::Transform;  # use bevy_ecs::prelude::*;  # use bevy_math::UVec2;  # use bevy_window::Window;  # use bevy_utils::default;   fn update_viewport(     mut camera_query: Query&lt;(&amp;mut Camera, &amp;mut Transform, &amp;mut Projection)&gt;,     windows: Query&lt;&amp;Window&gt;  ) {      let Ok((mut camera, _, _)) = camera_query.single_mut() else { return; };       let window = windows.single().expect(“Window not found”);      let scale = window.resolution.scale_factor();       camera.viewport = Some(Viewport {          physical_position: (UVec2::new(10, 10).as_vec2() * scale).as_uvec2(),          physical_size: (UVec2::new(100, 100).as_vec2() * scale).as_uvec2(),          ..default()      });  }  ```   </div>
+</td></tr>
 <tr><td><a href="././types/clearcolor.html"><code>ClearColor</code></a></td><td>A [`Resource`] that stores the default color that cameras use to clear the screen between frames.   This color appears as the “background” color for simple apps,  when there are portions of the screen with nothing rendered.   Individual cameras may use [`Camera.clear_color`]...</td></tr>
 <tr><td><a href="././types/clearcolorconfig.html"><code>ClearColorConfig</code></a></td><td>For a camera, specifies the color used to clear the viewport  [before rendering](crate::camera::Camera::clear_color)  or when [writing to the final render target texture](crate::camera::Camera::output_mode)...</td></tr>
 <tr><td><a href="././types/msaawriteback.html"><code>MsaaWriteback</code></a></td><td>Controls when MSAA writeback occurs for a camera.   MSAA writeback copies the previous camera’s out...</td></tr>
@@ -486,12 +488,14 @@
 <tr><td><a href="././types/camera3d.html"><code>Camera3d</code></a></td><td>A 3D camera component. Enables the main 3D render graph for a [`Camera`].   The camera coordinate space is right-handed X-right, Y-up, Z-back.  This means “forward” is -Z.</td></tr>
 <tr><td><a href="././types/camera3ddepthloadop.html"><code>Camera3dDepthLoadOp</code></a></td><td>The depth clear operation to perform for the main 3d pass.</td></tr>
 <tr><td><a href="././types/camera3ddepthtextureusage.html"><code>Camera3dDepthTextureUsage</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/screenspacetransmissionquality.html"><code>ScreenSpaceTransmissionQuality</code></a></td><td>The quality of the screen space transmission blur effect, applied to whatever’s “behind” transm...</td></tr>
+<tr><td><a href="././types/compositingspace.html"><code>CompositingSpace</code></a></td><td>Color space for alpha compositing. Affects how overlapping semi-transparent layers blend.</td></tr>
+<tr><td><a href="././types/hdr.html"><code>Hdr</code></a></td><td>If this component is added to a camera, the camera will use an intermediate “high dynamic range” re...</td></tr>
 <tr><td><a href="././types/aabb.html"><code>Aabb</code></a></td><td>An axis-aligned bounding box, defined by:  - a center,  - the distances from the center to each fac...</td></tr>
 <tr><td><a href="././types/cascadesfrusta.html"><code>CascadesFrusta</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/cubemapfrusta.html"><code>CubemapFrusta</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/cubemaplayout.html"><code>CubemapLayout</code></a></td><td>Cubemap layout defines the order of images in a packed cubemap image.</td></tr>
-<tr><td><a href="././types/frustum.html"><code>Frustum</code></a></td><td>A region of 3D space defined by the intersection of 6 [`HalfSpace`]s.   Frustums are typically an apex-truncated square pyramid (a pyramid without the top) or a cuboid.   Half spaces are ordered left, right, top, bottom, near, far. The normal vectors  of the half-spaces point towards the interior of the frustum.   A frustum component is used on an entity with a [`Camera`]...</td></tr>
+<tr><td><a href="././types/frustum.html"><code>Frustum</code></a></td><td>A frustum component is used on an entity with a [`Camera`] component to  determine which entities will be considered for rendering by this camera.  All entities with an [`Aabb`]...</td></tr>
+<tr><td><a href="././types/sphere.html"><code>Sphere</code></a></td><td>A sphere, defined by a center and a radius.   This is typically used as a component on an entity to...</td></tr>
 <tr><td><a href="././types/customprojection.html"><code>CustomProjection</code></a></td><td>Holds a dynamic [`CameraProjection`] trait object. Use [`Projection::custom()`] to construct a  cus...</td></tr>
 <tr><td><a href="././types/orthographicprojection.html"><code>OrthographicProjection</code></a></td><td>Project a 3D space onto a 2D surface using parallel lines, i.e., unlike [`PerspectiveProjection`],  the size of objects remains the same regardless of their distance to the camera.   The volume contained in the projection is called the *view frustum*. Since the viewport is rectangular  and projection lines are parallel, the view frustum takes the shape of a cuboid.   Note that the scale of the projection and the apparent size of objects are inversely proportional.  As the size of the projection increases, the size of objects decreases.   # Examples   Configure the orthographic projection to one world unit per 100 window pixels:   ```  # use bevy_camera::{OrthographicProjection, Projection, ScalingMode};  let projection = Projection::Orthographic(OrthographicProjection {      scaling_mode: ScalingMode::WindowSize,      scale: 0.01,      ..OrthographicProjection::default_2d()  });  ```</td></tr>
 <tr><td><a href="././types/perspectiveprojection.html"><code>PerspectiveProjection</code></a></td><td>A 3D camera projection in which distant objects appear smaller than close objects.</td></tr>
@@ -499,7 +503,8 @@
 <tr><td><a href="././types/scalingmode.html"><code>ScalingMode</code></a></td><td>Scaling mode for [`OrthographicProjection`].   The effect of these scaling modes are combined with the [`OrthographicProjection::scale`]...</td></tr>
 <tr><td><a href="././types/cascadesvisibleentities.html"><code>CascadesVisibleEntities</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/cubemapvisibleentities.html"><code>CubemapVisibleEntities</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/inheritedvisibility.html"><code>InheritedVisibility</code></a></td><td>Whether or not an entity is visible in the hierarchy.  This will not be accurate until [`VisibilityPropagate`]...</td></tr>
+<tr><td><a href="././types/dynamicskinnedmeshbounds.html"><code>DynamicSkinnedMeshBounds</code></a></td><td>Use this component to enable dynamic skinned mesh bounds. The [`Aabb`]  component of the skinned mesh will be automatically updated each frame based  on the current joint transforms.   `DynamicSkinnedMeshBounds` depends on data from `Mesh::skinned_mesh_bounds`  and `SkinnedMesh`. The resulting `Aabb` will reliably enclose meshes where  vertex positions are only affected by skinning. But the `Aabb` may be larger  than is optimal, and doesn’t account for morph targets, vertex shaders, and  anything else that modifies vertex positions.</td></tr>
+<tr><td><a href="././types/inheritedvisibility.html"><code>InheritedVisibility</code></a></td><td>Whether or not an entity is visible in the hierarchy.   This is a computed component that users sho...</td></tr>
 <tr><td><a href="././types/noautoaabb.html"><code>NoAutoAabb</code></a></td><td>Add this component to an entity to prevent its `AABB` from being automatically recomputed.   This i...</td></tr>
 <tr><td><a href="././types/nofrustumculling.html"><code>NoFrustumCulling</code></a></td><td>Use this component to opt-out of built-in frustum culling for entities, see  [`Frustum`].   It can be used for example:  - when a [`Mesh`]...</td></tr>
 <tr><td><a href="././types/viewvisibility.html"><code>ViewVisibility</code></a></td><td>Algorithmically computed indication of whether an entity is visible and should be extracted for  re...</td></tr>
@@ -510,27 +515,96 @@
 <tr><td><a href="././types/visibilityrange.html"><code>VisibilityRange</code></a></td><td>Specifies the range of distances that this entity must be from the camera in  order to be rendered....</td></tr>
 <tr><td><a href="././types/renderlayers.html"><code>RenderLayers</code></a></td><td>Defines which rendering layers an entity belongs to.   A camera renders an entity only when their r...</td></tr>
 <tr><td><a href="././types/deferredprepass.html"><code>DeferredPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then deferred materials will be rendered to the deferred gbuffer texture and will be available to subsequent passes.  Note the default deferred lighting plugin also requires `DepthPrepass` to work correctly.</td></tr>
+<tr><td><a href="././types/rootnoncameraview.html"><code>RootNonCameraView</code></a></td><td>A render-world marker component for a view that corresponds to neither a  camera nor a camera-assoc...</td></tr>
 <tr><td><a href="././types/observedby.html"><code>ObservedBy</code></a></td><td>Tracks a list of entity observers for the [`Entity`] [`ObservedBy`] is added to.</td></tr>
+<tr><td><a href="././types/aabbgizmoconfiggroup.html"><code>AabbGizmoConfigGroup</code></a></td><td>The [`GizmoConfigGroup`] used for debug visualizations of [`Aabb`] components on entities</td></tr>
+<tr><td><a href="././types/showaabbgizmo.html"><code>ShowAabbGizmo</code></a></td><td>Add this [`Component`] to an entity to draw its [`Aabb`] component.</td></tr>
+<tr><td><a href="././types/defaultgizmoconfiggroup.html"><code>DefaultGizmoConfigGroup</code></a></td><td>The default gizmo config group.</td></tr>
+<tr><td><a href="././types/erasedgizmoconfiggroup.html"><code>ErasedGizmoConfigGroup</code></a></td><td>Used when the gizmo config group needs to be type-erased.  Also used for retained gizmos, which can...</td></tr>
+<tr><td><a href="././types/gizmoconfig.html"><code>GizmoConfig</code></a></td><td>A struct that stores configuration for gizmos.</td></tr>
+<tr><td><a href="././types/gizmoconfigstore.html"><code>GizmoConfigStore</code></a></td><td>A [`Resource`] storing [`GizmoConfig`] and [`GizmoConfigGroup`] structs   Use `app.init_gizmo_group::<t>()` to register a custom config group.</t></td></tr>
+<tr><td><a href="././types/gizmolineconfig.html"><code>GizmoLineConfig</code></a></td><td>A struct that stores configuration for gizmos.</td></tr>
+<tr><td><a href="././types/gizmolinejoint.html"><code>GizmoLineJoint</code></a></td><td>An enum configuring how line joints will be drawn.</td></tr>
+<tr><td><a href="././types/gizmolinestyle.html"><code>GizmoLineStyle</code></a></td><td>An enum used to configure the style of gizmo lines, similar to CSS line-style</td></tr>
+<tr><td><a href="././types/frustumgizmoconfiggroup.html"><code>FrustumGizmoConfigGroup</code></a></td><td>The [`GizmoConfigGroup`] used for debug visualizations of [`Frustum`] components on entities</td></tr>
+<tr><td><a href="././types/showfrustumgizmo.html"><code>ShowFrustumGizmo</code></a></td><td>Add this [`Component`] to an entity to draw its [`Frustum`] component.</td></tr>
+<tr><td><a href="././types/gizmo.html"><code>Gizmo</code></a></td><td>A component that draws the gizmos of a [`GizmoAsset`].   When drawing a greater number of static lines a [`Gizmo`]...</td></tr>
+<tr><td><a href="././types/transformgizmoaxis.html"><code>TransformGizmoAxis</code></a></td><td>Which axis the user is interacting with.</td></tr>
+<tr><td><a href="././types/transformgizmocamera.html"><code>TransformGizmoCamera</code></a></td><td>Marker component for the camera the transform gizmo should use.   When exactly one camera exists, t...</td></tr>
+<tr><td><a href="././types/transformgizmofocus.html"><code>TransformGizmoFocus</code></a></td><td>Component that marks the entity the transform gizmo operates on.   Only one entity should carry thi...</td></tr>
+<tr><td><a href="././types/transformgizmomode.html"><code>TransformGizmoMode</code></a></td><td>Which manipulation mode the gizmo is in.</td></tr>
+<tr><td><a href="././types/transformgizmosettings.html"><code>TransformGizmoSettings</code></a></td><td>Configuration and preferences for the transform gizmo.</td></tr>
+<tr><td><a href="././types/transformgizmospace.html"><code>TransformGizmoSpace</code></a></td><td>Whether the gizmo transforms the object using world or local space axes.</td></tr>
+<tr><td><a href="././types/transformgizmostate.html"><code>TransformGizmoState</code></a></td><td>Runtime state of the transform gizmo (drag and hover).</td></tr>
 <tr><td><a href="././types/image.html"><code>Image</code></a></td><td>An image, optimized for usage in rendering.   ## Remote Inspection   To transmit an [`Image`] between two running Bevy apps, e.g. through BRP, use [`SerializedImage`](crate::SerializedImage)...</td></tr>
+<tr><td><a href="././types/imageaddressmode.html"><code>ImageAddressMode</code></a></td><td>How edges should be handled in texture addressing.   See [`ImageSamplerDescriptor`] for information how to configure this.   This type mirrors [`AddressMode`]...</td></tr>
+<tr><td><a href="././types/imagecomparefunction.html"><code>ImageCompareFunction</code></a></td><td>Comparison function used for depth and stencil operations.   This type mirrors [`CompareFunction`].</td></tr>
+<tr><td><a href="././types/imagefiltermode.html"><code>ImageFilterMode</code></a></td><td>Texel mixing mode when sampling between texels.   This type mirrors [`FilterMode`].</td></tr>
+<tr><td><a href="././types/imagesampler.html"><code>ImageSampler</code></a></td><td>Used in [`Image`], this determines what image sampler to use when rendering. The default setting,  ...</td></tr>
+<tr><td><a href="././types/imagesamplerbordercolor.html"><code>ImageSamplerBorderColor</code></a></td><td>Color variation to use when the sampler addressing mode is [`ImageAddressMode::ClampToBorder`].   This type mirrors [`SamplerBorderColor`]...</td></tr>
+<tr><td><a href="././types/imagesamplerdescriptor.html"><code>ImageSamplerDescriptor</code></a></td><td>Indicates to an `ImageLoader` how an [`Image`] should be sampled.   As this type is part of the `ImageLoaderSettings`,  it will be serialized to an image asset `.meta` file which might require a migration in case of  a breaking change.   This types mirrors [`SamplerDescriptor`]...</td></tr>
 <tr><td><a href="././types/textureatlas.html"><code>TextureAtlas</code></a></td><td>An index into a [`TextureAtlasLayout`], which corresponds to a specific section of a texture.   It stores a handle to [`TextureAtlasLayout`]...</td></tr>
 <tr><td><a href="././types/textureatlaslayout.html"><code>TextureAtlasLayout</code></a></td><td>Stores a map used to lookup the position of a texture in a [`TextureAtlas`].  This can be used to either use and look up a specific section of a texture, or animate frame-by-frame as a sprite sheet.   Optionally it can store a mapping from sub texture handles to the related area index (see  [`TextureAtlasBuilder`]...</td></tr>
+<tr><td><a href="././types/acquirefocus.html"><code>AcquireFocus</code></a></td><td>An event which is used to set input focus. Trigger this on an entity, and it will bubble  until it ...</td></tr>
 <tr><td><a href="././types/inputfocus.html"><code>InputFocus</code></a></td><td>Resource representing which entity has input focus, if any. Input events (other than pointer-like i...</td></tr>
 <tr><td><a href="././types/inputfocusvisible.html"><code>InputFocusVisible</code></a></td><td>Resource representing whether the input focus indicator should be visible on UI elements.   Note th...</td></tr>
 <tr><td><a href="././types/autofocus.html"><code>AutoFocus</code></a></td><td>Indicates that this widget should automatically receive [`InputFocus`].   This can be useful for things like dialog boxes, the first text input in a form,  or the first button in a game menu.   The focus is swapped when this component is added  or an entity with this component is spawned.</td></tr>
 <tr><td><a href="././types/autonavigationconfig.html"><code>AutoNavigationConfig</code></a></td><td>Configuration resource for automatic directional navigation and for generating manual  navigation e...</td></tr>
 <tr><td><a href="././types/directionalnavigationmap.html"><code>DirectionalNavigationMap</code></a></td><td>A resource that stores the manually specified traversable graph of focusable entities.   Each entit...</td></tr>
 <tr><td><a href="././types/focusablearea.html"><code>FocusableArea</code></a></td><td>A focusable area with position and size information.   This struct represents a UI element used dur...</td></tr>
+<tr><td><a href="././types/navneighbor.html"><code>NavNeighbor</code></a></td><td>Represents what’s near a focusable entity.</td></tr>
 <tr><td><a href="././types/navneighbors.html"><code>NavNeighbors</code></a></td><td>The up-to-eight neighbors of a focusable entity, one for each [`CompassOctant`].</td></tr>
+<tr><td><a href="././types/focuscause.html"><code>FocusCause</code></a></td><td>The cause for a [`FocusGained`]   Sometimes widgets would like to know how their focus was gained so they can act accordingly.   For example, a text input may want to select all text when navigated into, but not when pressed.</td></tr>
+<tr><td><a href="././types/focusgained.html"><code>FocusGained</code></a></td><td>An [`EntityEvent`] that is sent when an entity gains [`InputFocus`].   This event bubbles up the en...</td></tr>
+<tr><td><a href="././types/focuslost.html"><code>FocusLost</code></a></td><td>An [`EntityEvent`] that is sent when an entity loses [`InputFocus`].   This event bubbles up the en...</td></tr>
+<tr><td><a href="././types/navaction.html"><code>NavAction</code></a></td><td>A navigation action that users might take to navigate your user interface in a cyclic fashion.   Th...</td></tr>
 <tr><td><a href="././types/tabgroup.html"><code>TabGroup</code></a></td><td>A component used to mark a tree of entities as containing tabbable elements.</td></tr>
 <tr><td><a href="././types/tabindex.html"><code>TabIndex</code></a></td><td>A component which indicates that an entity wants to participate in tab navigation.   Note that you ...</td></tr>
-<tr><td><a href="././types/affine3.html"><code>Affine3</code></a></td><td>Reduced-size version of `glam::Affine3A` for use when storage has  significant performance impact. ...</td></tr>
+<tr><td><a href="././types/notshadowcaster.html"><code>NotShadowCaster</code></a></td><td>Add this component to make a [`Mesh3d`] not cast shadows.</td></tr>
+<tr><td><a href="././types/notshadowreceiver.html"><code>NotShadowReceiver</code></a></td><td>Add this component to make a [`Mesh3d`] not receive shadows.   **Note:** If you’re using diffuse transmission, setting [`NotShadowReceiver`]...</td></tr>
+<tr><td><a href="././types/shadowfilteringmethod.html"><code>ShadowFilteringMethod</code></a></td><td>Add this component to a [`Camera3d`]  to control how to anti-alias shadow edges.   The different modes use different approaches to  [Percentage Closer Filtering](https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing)...</td></tr>
+<tr><td><a href="././types/transmittedshadowreceiver.html"><code>TransmittedShadowReceiver</code></a></td><td>Add this component to make a [`Mesh3d`] using a PBR material with `StandardMaterial::diffuse_transmission &gt; 0.0`  receive shadows on its diffuse transmission lobe. (i.e. its “backside”)   Not enabled by default, as it requires carefully setting up `StandardMaterial::thickness`  (and potentially even baking a thickness texture!) to match the geometry of the mesh, in order to avoid self-shadow artifacts.   **Note:** Using [`NotShadowReceiver`] overrides this component.</td></tr>
+<tr><td><a href="././types/ambientlight.html"><code>AmbientLight</code></a></td><td>An ambient light, which lights the entire scene equally.   It can be added to a camera to override [`GlobalAmbientLight`]...</td></tr>
+<tr><td><a href="././types/globalambientlight.html"><code>GlobalAmbientLight</code></a></td><td>The global ambient light, which lights the entire scene equally.   This resource is inserted by the...</td></tr>
+<tr><td><a href="././types/cascade.html"><code>Cascade</code></a></td><td>A single cascade of a view’s shadow map cascade. Several of these are  used to cover most of the vi...</td></tr>
+<tr><td><a href="././types/cascadeshadowconfig.html"><code>CascadeShadowConfig</code></a></td><td>Controls how cascaded shadow mapping works.  Prefer using [`CascadeShadowConfigBuilder`] to construct an instance.   ```  # use bevy_light::CascadeShadowConfig;  # use bevy_light::CascadeShadowConfigBuilder;  # use bevy_utils::default;  #  let config: CascadeShadowConfig = CascadeShadowConfigBuilder {    maximum_distance: 100.0,    ..default()  }.into();  ```</td></tr>
+<tr><td><a href="././types/cascades.html"><code>Cascades</code></a></td><td>A [`DirectionalLight`]’s per-view list of [`Cascade`]s.</td></tr>
+<tr><td><a href="././types/clusterconfig.html"><code>ClusterConfig</code></a></td><td>Configuration of the clustering strategy for clustered forward rendering</td></tr>
+<tr><td><a href="././types/clusterfarzmode.html"><code>ClusterFarZMode</code></a></td><td>Configure the far z-plane mode used for the furthest depth slice for clustered forward  rendering</td></tr>
+<tr><td><a href="././types/clusterzconfig.html"><code>ClusterZConfig</code></a></td><td>Configure the depth-slicing strategy for clustered forward rendering</td></tr>
+<tr><td><a href="././types/clustereddecal.html"><code>ClusteredDecal</code></a></td><td>An object that projects a decal onto surfaces within its bounds.   Conceptually, a clustered decal ...</td></tr>
+<tr><td><a href="././types/directionallight.html"><code>DirectionalLight</code></a></td><td>A Directional light.   Directional lights don’t exist in reality but they are a good  approximation...</td></tr>
+<tr><td><a href="././types/directionallightshadowmap.html"><code>DirectionalLightShadowMap</code></a></td><td>Controls the resolution of [`DirectionalLight`] and [`SpotLight`](crate::SpotLight) shadow maps.   ``...</td></tr>
+<tr><td><a href="././types/directionallighttexture.html"><code>DirectionalLightTexture</code></a></td><td>Add to a [`DirectionalLight`] to add a light texture effect.  A texture mask is applied to the light source to modulate its intensity,    simulating patterns like window shadows, gobo/cookie effects, or soft falloffs.</td></tr>
+<tr><td><a href="././types/lightgizmocolor.html"><code>LightGizmoColor</code></a></td><td>Configures how a color is attributed to a light gizmo.</td></tr>
+<tr><td><a href="././types/lightgizmoconfiggroup.html"><code>LightGizmoConfigGroup</code></a></td><td>The [`GizmoConfigGroup`] used to configure the visualization of lights.</td></tr>
+<tr><td><a href="././types/showlightgizmo.html"><code>ShowLightGizmo</code></a></td><td>Add this [`Component`] to an entity to draw any of its lights components  ([`PointLight`], [`SpotLight`]...</td></tr>
+<tr><td><a href="././types/pointlight.html"><code>PointLight</code></a></td><td>A light that emits light in all directions from a central point.   Real-world values for `intensity...</td></tr>
+<tr><td><a href="././types/pointlightshadowmap.html"><code>PointLightShadowMap</code></a></td><td>Controls the resolution of [`PointLight`] shadow maps.   ```  # use bevy_app::prelude::*;  # use bevy_light::PointLightShadowMap;  App::new()      .insert_resource(PointLightShadowMap { size: 2048 });  ```</td></tr>
+<tr><td><a href="././types/pointlighttexture.html"><code>PointLightTexture</code></a></td><td>Add to a [`PointLight`] to add a light texture effect.  A texture mask is applied to the light source to modulate its intensity,    simulating patterns like window shadows, gobo/cookie effects, or soft falloffs.</td></tr>
+<tr><td><a href="././types/environmentmaplight.html"><code>EnvironmentMapLight</code></a></td><td>A pair of cubemap textures that represent the surroundings of a specific  area in space.   See `bevy_pbr::environment_map`...</td></tr>
+<tr><td><a href="././types/generatedenvironmentmaplight.html"><code>GeneratedEnvironmentMapLight</code></a></td><td>A generated environment map that is filtered at runtime.   See `bevy_pbr::light_probe::generate` fo...</td></tr>
+<tr><td><a href="././types/irradiancevolume.html"><code>IrradianceVolume</code></a></td><td>The component that defines an irradiance volume.   See `bevy_pbr::irradiance_volume` for detailed i...</td></tr>
+<tr><td><a href="././types/lightprobe.html"><code>LightProbe</code></a></td><td>A marker component for a light probe, which is a cuboid region that provides  global illumination t...</td></tr>
+<tr><td><a href="././types/parallaxcorrection.html"><code>ParallaxCorrection</code></a></td><td>Add this component to a reflection probe to customize *parallax correction*.   For environment maps...</td></tr>
+<tr><td><a href="././types/skybox.html"><code>Skybox</code></a></td><td>Adds a skybox to a 3D camera, based on a cubemap texture.   Note that this component does not (curr...</td></tr>
+<tr><td><a href="././types/rectlight.html"><code>RectLight</code></a></td><td>A rectangular area light.   The rectangle lies in the XY plane of the entity’s local coordinate fra...</td></tr>
+<tr><td><a href="././types/spotlight.html"><code>SpotLight</code></a></td><td>A light that emits light in a given direction from a central point.   Behaves like a point light in...</td></tr>
+<tr><td><a href="././types/spotlighttexture.html"><code>SpotLightTexture</code></a></td><td>Add to a [`SpotLight`] to add a light texture effect.  A texture mask is applied to the light source to modulate its intensity,    simulating patterns like window shadows, gobo/cookie effects, or soft falloffs.</td></tr>
+<tr><td><a href="././types/fogvolume.html"><code>FogVolume</code></a></td><td>A unit cube of fog at the origin. Can be positioned and scaled with a [`Transform`].  Only visible by cameras with a [`VolumetricFog`]...</td></tr>
+<tr><td><a href="././types/volumetricfog.html"><code>VolumetricFog</code></a></td><td>When placed on a [`bevy_camera::Camera3d`], enables  volumetric fog and volumetric lighting, also known as light shafts or god  rays.   Requires using WebGPU on Wasm builds.</td></tr>
+<tr><td><a href="././types/volumetriclight.html"><code>VolumetricLight</code></a></td><td>Add this component to a [`DirectionalLight`](crate::DirectionalLight) with a shadow map  (`shadow_maps_enabled: true`) to make volumetric fog interact with it.   This allows the light to generate light shafts/god rays.</td></tr>
+<tr><td><a href="././types/alphamode.html"><code>AlphaMode</code></a></td><td>Sets how a material’s base color alpha channel is used for transparency.</td></tr>
+<tr><td><a href="././types/opaquerenderermethod.html"><code>OpaqueRendererMethod</code></a></td><td>Render method used for opaque materials.   The forward rendering main pass draws each mesh entity a...</td></tr>
 <tr><td><a href="././types/mesh2d.html"><code>Mesh2d</code></a></td><td>A component for 2D meshes. Requires a [`MeshMaterial2d`] to be rendered, commonly using a [`ColorMaterial`...</td></tr>
 <tr><td><a href="././types/mesh3d.html"><code>Mesh3d</code></a></td><td>A component for 3D meshes. Requires a [`MeshMaterial3d`] to be rendered, commonly using a [`StandardMaterial`...</td></tr>
 <tr><td><a href="././types/meshtag.html"><code>MeshTag</code></a></td><td>A component that stores an arbitrary index used to identify the mesh instance when rendering.</td></tr>
 <tr><td><a href="././types/indices.html"><code>Indices</code></a></td><td>An array of indices into the [`VertexAttributeValues`](super::VertexAttributeValues) for a mesh.   It describes the order in which the vertex attributes should be joined into faces.</td></tr>
 <tr><td><a href="././types/mesh.html"><code>Mesh</code></a></td><td>A 3D object made out of vertices representing triangles, lines, or points,  with “attribute” values...</td></tr>
-<tr><td><a href="././types/meshmorphweights.html"><code>MeshMorphWeights</code></a></td><td>Control a specific [`Mesh`] instance’s [morph targets]. These control the weights of  specific “mes...</td></tr>
-<tr><td><a href="././types/morphweights.html"><code>MorphWeights</code></a></td><td>Controls the [morph targets] for all child [`Mesh3d`](crate::Mesh3d) entities. In most cases, [`MorphWeights`]...</td></tr>
+<tr><td><a href="././types/uvchannel.html"><code>UvChannel</code></a></td><td>An enum to define which UV attribute to use for a texture.   It only supports two UV attributes, [`Mesh::ATTRIBUTE_UV_0`]...</td></tr>
+<tr><td><a href="././types/meshmorphweights.html"><code>MeshMorphWeights</code></a></td><td>A component that controls the [morph targets] of a mesh. Must be assigned  to an entity with a [`Mesh3d`...</td></tr>
+<tr><td><a href="././types/morphattributes.html"><code>MorphAttributes</code></a></td><td>Attributes **differences** used for morph targets.</td></tr>
+<tr><td><a href="././types/morphweights.html"><code>MorphWeights</code></a></td><td>Controls the [morph targets] for all child [`Mesh3d`](crate::Mesh3d)  entities. In most cases, [`MorphWeights`]...</td></tr>
 <tr><td><a href="././types/annulusmeshbuilder.html"><code>AnnulusMeshBuilder</code></a></td><td>A builder for creating a [`Mesh`] with an [`Annulus`] shape.</td></tr>
 <tr><td><a href="././types/capsule2dmeshbuilder.html"><code>Capsule2dMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Capsule2d`] shape.</td></tr>
 <tr><td><a href="././types/circlemeshbuilder.html"><code>CircleMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Circle`] shape.</td></tr>
@@ -560,7 +634,10 @@
 <tr><td><a href="././types/tetrahedronmeshbuilder.html"><code>TetrahedronMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Tetrahedron`] shape.</td></tr>
 <tr><td><a href="././types/torusmeshbuilder.html"><code>TorusMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Torus`] shape.</td></tr>
 <tr><td><a href="././types/triangle3dmeshbuilder.html"><code>Triangle3dMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Triangle3d`] shape.</td></tr>
+<tr><td><a href="././types/jointaabb.html"><code>JointAabb</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/jointindex.html"><code>JointIndex</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/skinnedmesh.html"><code>SkinnedMesh</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/skinnedmeshbounds.html"><code>SkinnedMeshBounds</code></a></td><td>Data that can be used to calculate the AABB of a skinned mesh.</td></tr>
 <tr><td><a href="././types/scriptasset.html"><code>ScriptAsset</code></a></td><td>Represents a script loaded into memory as an asset</td></tr>
 <tr><td><a href="././types/functionarginfo.html"><code>FunctionArgInfo</code></a></td><td>Information about a function argument.</td></tr>
 <tr><td><a href="././types/functioninfo.html"><code>FunctionInfo</code></a></td><td>Information about a function.</td></tr>
@@ -574,14 +651,14 @@
 <tr><td><a href="././types/callbacklabel.html"><code>CallbackLabel</code></a></td><td>A string which disallows common invalid characters in callback labels,  particularly at the start o...</td></tr>
 <tr><td><a href="././types/scriptcomponent.html"><code>ScriptComponent</code></a></td><td>A component which identifies the scripts existing on an entity.   Event handlers search for compone...</td></tr>
 <tr><td><a href="././types/contextkey.html"><code>ContextKey</code></a></td><td>The key for a context. The context key is used for:  - Identifying the script itself, uniquely.  - ...</td></tr>
-<tr><td><a href="././types/alphamode.html"><code>AlphaMode</code></a></td><td>Sets how a material’s base color alpha channel is used for transparency.</td></tr>
-<tr><td><a href="././types/camerarendergraph.html"><code>CameraRenderGraph</code></a></td><td>Configures the [`RenderGraph`] name assigned to be run for a given [`Camera`] entity.</td></tr>
+<tr><td><a href="././types/access.html"><code>Access</code></a></td><td>A singular element access within a path.  Multiple accesses can be combined into a [`ParsedPath`](super::ParsedPath).   Can be applied to a [`dyn Reflect`](crate::Reflect)...</td></tr>
+<tr><td><a href="././types/camerarendergraph.html"><code>CameraRenderGraph</code></a></td><td>Configures the render schedule to be run for a given [`Camera`] entity.</td></tr>
 <tr><td><a href="././types/mipbias.html"><code>MipBias</code></a></td><td>Camera component specifying a mip bias to apply when sampling from material textures.   Often used ...</td></tr>
 <tr><td><a href="././types/temporaljitter.html"><code>TemporalJitter</code></a></td><td>A subpixel offset to jitter a perspective camera’s frustum by.   Useful for temporal rendering tech...</td></tr>
-<tr><td><a href="././types/occlusionculling.html"><code>OcclusionCulling</code></a></td><td>Add this component to a view in order to enable experimental GPU occlusion  culling.   *Bevy’s occlusion culling is currently marked as experimental.*...</td></tr>
 <tr><td><a href="././types/globalsuniform.html"><code>GlobalsUniform</code></a></td><td>Contains global values useful when writing shaders.  Currently only contains values related to time...</td></tr>
 <tr><td><a href="././types/readbackcomplete.html"><code>ReadbackComplete</code></a></td><td>An event that is triggered when a gpu readback is complete.   The event contains the data as a `Vec<u8>`...</u8></td></tr>
-<tr><td><a href="././types/shaderstoragebuffer.html"><code>ShaderStorageBuffer</code></a></td><td>A storage buffer that is prepared as a [`RenderAsset`] and uploaded to the GPU.</td></tr>
+<tr><td><a href="././types/occlusionculling.html"><code>OcclusionCulling</code></a></td><td>Add this component to a view in order to enable GPU occlusion culling.   *Occlusion culling* allows...</td></tr>
+<tr><td><a href="././types/shaderbuffer.html"><code>ShaderBuffer</code></a></td><td>A storage buffer that is prepared as a [`RenderAsset`] and uploaded to the GPU.</td></tr>
 <tr><td><a href="././types/mainentity.html"><code>MainEntity</code></a></td><td>Component added on the render world entities to keep track of the corresponding main world entity. ...</td></tr>
 <tr><td><a href="././types/renderentity.html"><code>RenderEntity</code></a></td><td>Component added on the main world entities that are synced to the Render World in order to keep tra...</td></tr>
 <tr><td><a href="././types/synctorenderworld.html"><code>SyncToRenderWorld</code></a></td><td>Marker component that indicates that its entity needs to be synchronized to the render world.   Thi...</td></tr>
@@ -589,15 +666,17 @@
 <tr><td><a href="././types/colorgrading.html"><code>ColorGrading</code></a></td><td>Configures filmic color grading parameters to adjust the image appearance.   Color grading is appli...</td></tr>
 <tr><td><a href="././types/colorgradingglobal.html"><code>ColorGradingGlobal</code></a></td><td>Filmic color grading values applied to the image as a whole (as opposed to  individual sections, li...</td></tr>
 <tr><td><a href="././types/colorgradingsection.html"><code>ColorGradingSection</code></a></td><td>A section of color grading values that can be selectively applied to  shadows, midtones, and highli...</td></tr>
-<tr><td><a href="././types/hdr.html"><code>Hdr</code></a></td><td>If this component is added to a camera, the camera will use an intermediate “high dynamic range” re...</td></tr>
 <tr><td><a href="././types/msaa.html"><code>Msaa</code></a></td><td>Component for configuring the number of samples for [Multi-Sample Anti-Aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing)  for a [`Camera`](bevy_camera::Camera)...</td></tr>
-<tr><td><a href="././types/rendervisibleentities.html"><code>RenderVisibleEntities</code></a></td><td>Collection of entities visible from the current view.   This component is extracted from [`VisibleEntities`]...</td></tr>
+<tr><td><a href="././types/rendershadowmapvisibleentities.html"><code>RenderShadowMapVisibleEntities</code></a></td><td>Collection of entities visible from a single light.   This component contains one [`RenderVisibleEntities`]...</td></tr>
+<tr><td><a href="././types/rendervisibleentitiesclass.html"><code>RenderVisibleEntitiesClass</code></a></td><td>Stores a list of all entities that are visible from a single view for a  single [`VisibilityClass`], as well as the change lists.   Note that all lists in this component are guaranteed to be sorted. Thus you  can test for the presence of an entity in these lists via binary search.   Note also that, for 3D meshes, the render-world [`Entity`]...</td></tr>
 <tr><td><a href="././types/screenshot.html"><code>Screenshot</code></a></td><td>A component that signals to the renderer to capture a screenshot this frame.   This component shoul...</td></tr>
 <tr><td><a href="././types/screenshotcaptured.html"><code>ScreenshotCaptured</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/anchor.html"><code>Anchor</code></a></td><td>Normalized (relative to its size) offset of a 2d renderable entity from its [`Transform`].</td></tr>
 <tr><td><a href="././types/sprite.html"><code>Sprite</code></a></td><td>Describes a sprite to be rendered to a 2D camera</td></tr>
 <tr><td><a href="././types/spriteimagemode.html"><code>SpriteImageMode</code></a></td><td>Controls how the image is altered when scaled.</td></tr>
 <tr><td><a href="././types/spritescalingmode.html"><code>SpriteScalingMode</code></a></td><td>Represents various modes for proportional scaling of a texture.   Can be used in [`SpriteImageMode::Scale`]...</td></tr>
+<tr><td><a href="././types/spritealphamode.html"><code>SpriteAlphaMode</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/spritemesh.html"><code>SpriteMesh</code></a></td><td>This is a carbon copy of [`Sprite`](crate::sprite::Sprite) that uses the  Mesh backend instead of the Sprite backend.   The only API difference is the added [`alpha mode`](SpriteMesh::alpha_mode)...</td></tr>
 <tr><td><a href="././types/text2d.html"><code>Text2d</code></a></td><td>The top-level 2D text component.   Adding `Text2d` to an entity will pull in required components fo...</td></tr>
 <tr><td><a href="././types/text2dshadow.html"><code>Text2dShadow</code></a></td><td>Adds a shadow behind `Text2d` text   Use `TextShadow` for text drawn with `bevy_ui`</td></tr>
 <tr><td><a href="././types/borderrect.html"><code>BorderRect</code></a></td><td>Defines border insets that shrink a rectangle from its minimum and maximum corners.   This struct i...</td></tr>
@@ -611,10 +690,12 @@
 <tr><td><a href="././types/wireframe2dcolor.html"><code>Wireframe2dColor</code></a></td><td>Sets the color of the [`Wireframe2d`] of the entity it is attached to.   If this component is present but there’s no [`Wireframe2d`]...</td></tr>
 <tr><td><a href="././types/wireframe2dconfig.html"><code>Wireframe2dConfig</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/wireframe2dmaterial.html"><code>Wireframe2dMaterial</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/spritematerial.html"><code>SpriteMaterial</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/tiledata.html"><code>TileData</code></a></td><td>Data for a single tile in the tilemap chunk.</td></tr>
 <tr><td><a href="././types/tilemapchunk.html"><code>TilemapChunk</code></a></td><td>A component representing a chunk of a tilemap.  Each chunk is a rectangular section of tiles that i...</td></tr>
 <tr><td><a href="././types/tilemapchunkmeshcache.html"><code>TilemapChunkMeshCache</code></a></td><td>A resource storing the meshes for each tilemap chunk size.</td></tr>
 <tr><td><a href="././types/tilemapchunktiledata.html"><code>TilemapChunkTileData</code></a></td><td>Component storing the data of tiles within a chunk.  Each index corresponds to a specific tile in t...</td></tr>
+<tr><td><a href="././types/tileorientation.html"><code>TileOrientation</code></a></td><td>The set of possible tile orientations.  These represent all possible results of mirroring the tile ...</td></tr>
 <tr><td><a href="././types/edge.html"><code>Edge</code></a></td><td>An edge in the graph</td></tr>
 <tr><td><a href="././types/reflectnodeid.html"><code>ReflectNodeId</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/reflectsystemgraph.html"><code>ReflectSystemGraph</code></a></td><td>A graph of systems and system sets for a single schedule</td></tr>
@@ -630,10 +711,17 @@
 <tr><td><a href="././types/computedtextblock.html"><code>ComputedTextBlock</code></a></td><td>Computed information for a text block.   See [`TextLayout`].   Automatically updated by 2d and UI text systems.</td></tr>
 <tr><td><a href="././types/fontfeaturetag.html"><code>FontFeatureTag</code></a></td><td>An OpenType font feature tag.</td></tr>
 <tr><td><a href="././types/fontfeatures.html"><code>FontFeatures</code></a></td><td>OpenType features for .otf fonts that support them.   Examples features include ligatures, small-ca...</td></tr>
-<tr><td><a href="././types/fonthinting.html"><code>FontHinting</code></a></td><td>Font hinting strategy.   The text bounds can underflow or overflow slightly with `FontHinting::Enabled`...</td></tr>
+<tr><td><a href="././types/fonthinting.html"><code>FontHinting</code></a></td><td>Font hinting strategy, which controls the rasterization for fonts.   Font hinting specializes the v...</td></tr>
+<tr><td><a href="././types/fontsize.html"><code>FontSize</code></a></td><td>The vertical height of rasterized glyphs in the font atlas in pixels.   This is multiplied by the s...</td></tr>
 <tr><td><a href="././types/fontsmoothing.html"><code>FontSmoothing</code></a></td><td>Determines which antialiasing method to use when rendering text. By default, text is  rendered with...</td></tr>
+<tr><td><a href="././types/fontsource.html"><code>FontSource</code></a></td><td>Determines how the font face for a text sections is selected.   A [`FontSource`] can be a handle to a font asset, a font family name,  or a generic font category that is resolved using Parley’s font database.   Font family fallback (selection of a font when the requested font is not found)  is automatically handled by [`parley::fontique`]...</td></tr>
+<tr><td><a href="././types/fontstyle.html"><code>FontStyle</code></a></td><td>The slant style of a font face: normal, italic, or oblique.</td></tr>
+<tr><td><a href="././types/fontvariationtag.html"><code>FontVariationTag</code></a></td><td>An OpenType font variation tag.</td></tr>
+<tr><td><a href="././types/fontvariations.html"><code>FontVariations</code></a></td><td>OpenType font variations for variable fonts that support them.   Variable fonts expose named axes (...</td></tr>
 <tr><td><a href="././types/fontweight.html"><code>FontWeight</code></a></td><td>How thick or bold the strokes of a font appear.   Valid font weights range from 1 to 1000, inclusiv...</td></tr>
+<tr><td><a href="././types/fontwidth.html"><code>FontWidth</code></a></td><td>The visual width of a font as a ratio of its normal width, typically 0.5 to 2.0.  `<a href="https://docs&#92;.microsoft&#92;.com/en&#92;-us/typography/opentype/spec/os2&#92;#uswidthclass">https://docs\.microsoft\.com/en\-us/typography/opentype/spec/os2\#uswidthclass</a>`...</td></tr>
 <tr><td><a href="././types/justify.html"><code>Justify</code></a></td><td>Describes the horizontal alignment of multiple lines of text relative to each other.   This only af...</td></tr>
+<tr><td><a href="././types/letterspacing.html"><code>LetterSpacing</code></a></td><td>Specifies the space between each letter of text for `Text` and `Text2d`   Default is 0</td></tr>
 <tr><td><a href="././types/linebreak.html"><code>LineBreak</code></a></td><td>Determines how lines will be broken when preventing text from running out of bounds.</td></tr>
 <tr><td><a href="././types/lineheight.html"><code>LineHeight</code></a></td><td>Specifies the height of each line of text for `Text` and `Text2d`   Default is 1.2x the font size</td></tr>
 <tr><td><a href="././types/strikethrough.html"><code>Strikethrough</code></a></td><td>A text entity with this component is drawn with strikethrough.</td></tr>
@@ -646,7 +734,11 @@
 <tr><td><a href="././types/textspan.html"><code>TextSpan</code></a></td><td>A span of text in a tree of spans.   A `TextSpan` is only valid when it exists as a child of a pare...</td></tr>
 <tr><td><a href="././types/underline.html"><code>Underline</code></a></td><td>Add to a text entity to draw its text with underline.</td></tr>
 <tr><td><a href="././types/underlinecolor.html"><code>UnderlineColor</code></a></td><td>Color for the text’s underline. If this component is not present, its `TextColor` will be used.</td></tr>
+<tr><td><a href="././types/preeditcursor.html"><code>PreeditCursor</code></a></td><td>A selection within IME preedit text, expressed as byte offsets from the start of the preedit.   The...</td></tr>
+<tr><td><a href="././types/textedit.html"><code>TextEdit</code></a></td><td>Deferred text input edit and navigation actions applied by the `apply_text_edits` system.</td></tr>
+<tr><td><a href="././types/delayedcommandqueue.html"><code>DelayedCommandQueue</code></a></td><td>A component with a [`CommandQueue`] to be submitted later.   Queues in these components are checked automatically by the  [`check_delayed_command_queues`]...</td></tr>
 <tr><td><a href="././types/uiscale.html"><code>UiScale</code></a></td><td>The current scale of the UI.   A multiplier to fixed-sized ui values.  **Note:** This will only aff...</td></tr>
+<tr><td><a href="././types/accessiblelabel.html"><code>AccessibleLabel</code></a></td><td>A component which permits the a11y label to be specified independently from other a11y  attributes....</td></tr>
 <tr><td><a href="././types/autodirectionalnavigation.html"><code>AutoDirectionalNavigation</code></a></td><td>Marker component to enable automatic directional navigation to and from the entity.   Simply add th...</td></tr>
 <tr><td><a href="././types/focuspolicy.html"><code>FocusPolicy</code></a></td><td>Describes whether the node should block interactions with lower nodes</td></tr>
 <tr><td><a href="././types/interaction.html"><code>Interaction</code></a></td><td>Describes what type of input interaction has occurred for a UI node.   This is commonly queried wit...</td></tr>
@@ -664,7 +756,13 @@
 <tr><td><a href="././types/lineargradient.html"><code>LinearGradient</code></a></td><td>A linear gradient   <a href="https://developer&#92;.mozilla&#92;.org/en&#92;-US/docs/Web/CSS/gradient/linear&#92;-gradient">https://developer\.mozilla\.org/en\-US/docs/Web/CSS/gradient/linear\-gradient</a></td></tr>
 <tr><td><a href="././types/radialgradient.html"><code>RadialGradient</code></a></td><td>A radial gradient   <a href="https://developer&#92;.mozilla&#92;.org/en&#92;-US/docs/Web/CSS/gradient/radial&#92;-gradient">https://developer\.mozilla\.org/en\-US/docs/Web/CSS/gradient/radial\-gradient</a></td></tr>
 <tr><td><a href="././types/radialgradientshape.html"><code>RadialGradientShape</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/checkable.html"><code>Checkable</code></a></td><td>Component that indicates that a widget can be checked.</td></tr>
+<tr><td><a href="././types/checked.html"><code>Checked</code></a></td><td>Component that indicates whether a checkbox or radio button is in a checked state.</td></tr>
+<tr><td><a href="././types/interactiondisabled.html"><code>InteractionDisabled</code></a></td><td>A component indicating that a widget is disabled and should be “grayed out”.  This is used to preve...</td></tr>
+<tr><td><a href="././types/pressed.html"><code>Pressed</code></a></td><td>Component that indicates whether a button or widget is currently in a pressed or “held down”  state...</td></tr>
 <tr><td><a href="././types/contentsize.html"><code>ContentSize</code></a></td><td>A node with a `ContentSize` component is a node where its size  is based on its content.</td></tr>
+<tr><td><a href="././types/computedstackindex.html"><code>ComputedStackIndex</code></a></td><td>The order of the node in the UI layout.  Nodes with a higher stack index are drawn on top of and re...</td></tr>
+<tr><td><a href="././types/uistack.html"><code>UiStack</code></a></td><td>The current UI stack, which contains all UI nodes ordered by their depth (back-to-front).   The fir...</td></tr>
 <tr><td><a href="././types/aligncontent.html"><code>AlignContent</code></a></td><td>Used to control how items are distributed.  - For Flexbox containers, controls alignment of lines i...</td></tr>
 <tr><td><a href="././types/alignitems.html"><code>AlignItems</code></a></td><td>Used to control how each individual item is aligned by default within the space they’re given.  - F...</td></tr>
 <tr><td><a href="././types/alignself.html"><code>AlignSelf</code></a></td><td>Used to control how the specified item is aligned within the space it’s given.  - For Flexbox items...</td></tr>
@@ -686,6 +784,8 @@
 <tr><td><a href="././types/gridtrack.html"><code>GridTrack</code></a></td><td>A [`GridTrack`] is a Row or Column of a CSS Grid. This struct specifies what size the track should be.  See below for the different “track sizing functions” you can specify.</td></tr>
 <tr><td><a href="././types/gridtrackrepetition.html"><code>GridTrackRepetition</code></a></td><td>How many times to repeat a repeated grid track   &lt;https://developer.mozilla.org/en-US/docs/Web/CSS/...</td></tr>
 <tr><td><a href="././types/ignorescroll.html"><code>IgnoreScroll</code></a></td><td>Controls whether a UI element ignores its parent’s [`ScrollPosition`] along specific axes.   When an axis is set to `true`, the node will not have the parent’s scroll position applied  on that axis. This can be used to keep an element visually fixed along one or both axes  even when its parent UI element is scrolled.</td></tr>
+<tr><td><a href="././types/inlinedirection.html"><code>InlineDirection</code></a></td><td>Sets the inline axis direction (LTR or RTL) used for layout.</td></tr>
+<tr><td><a href="././types/isdefaultuicamera.html"><code>IsDefaultUiCamera</code></a></td><td>Marker used to identify default cameras, they will have priority over the [`PrimaryWindow`] camera.   This is useful if the [`PrimaryWindow`]...</td></tr>
 <tr><td><a href="././types/justifycontent.html"><code>JustifyContent</code></a></td><td>Used to control how items are distributed.  - For Flexbox containers, controls alignment of items i...</td></tr>
 <tr><td><a href="././types/justifyitems.html"><code>JustifyItems</code></a></td><td>Used to control how each individual item is aligned by default within the space they’re given.  - F...</td></tr>
 <tr><td><a href="././types/justifyself.html"><code>JustifySelf</code></a></td><td>Used to control how the specified item is aligned within the space it’s given.  - For children of f...</td></tr>
@@ -693,17 +793,19 @@
 <tr><td><a href="././types/maxtracksizingfunction.html"><code>MaxTrackSizingFunction</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/mintracksizingfunction.html"><code>MinTrackSizingFunction</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/node.html"><code>Node</code></a></td><td>The base component for UI entities. It describes UI layout and style properties.   When defining ne...</td></tr>
+<tr><td><a href="././types/outercolor.html"><code>OuterColor</code></a></td><td>Sets a color to fill the regions outside the Node’s border created when a border radius is set.   T...</td></tr>
 <tr><td><a href="././types/outline.html"><code>Outline</code></a></td><td>The [`Outline`] component adds an outline outside the edge of a UI node.  Outlines do not take up space in the layout.   To add an [`Outline`]...</td></tr>
 <tr><td><a href="././types/overflow.html"><code>Overflow</code></a></td><td>Whether to show or hide overflowing items</td></tr>
 <tr><td><a href="././types/overflowaxis.html"><code>OverflowAxis</code></a></td><td>Whether to show or hide overflowing items</td></tr>
-<tr><td><a href="././types/overflowclipbox.html"><code>OverflowClipBox</code></a></td><td>Used to determine the bounds of the visible area when a UI node is clipped.</td></tr>
 <tr><td><a href="././types/overflowclipmargin.html"><code>OverflowClipMargin</code></a></td><td>The bounds of the visible area when a UI node is clipped.</td></tr>
+<tr><td><a href="././types/overrideclip.html"><code>OverrideClip</code></a></td><td>UI node entities with this component will ignore any clipping rect they inherit,  the node will not...</td></tr>
 <tr><td><a href="././types/positiontype.html"><code>PositionType</code></a></td><td>The strategy used to position this node</td></tr>
 <tr><td><a href="././types/repeatedgridtrack.html"><code>RepeatedGridTrack</code></a></td><td>Represents a *possibly* repeated [`GridTrack`].   The repetition parameter can either be:    - The integer `1`, in which case the track is non-repeated.    - a `u16` count to repeat the track N times.    - A `GridTrackRepetition::AutoFit` or `GridTrackRepetition::AutoFill`.   Note: that in the common case you want a non-repeating track (repetition count 1), you may use the constructor methods on [`GridTrack`]...</td></tr>
 <tr><td><a href="././types/resolvedborderradius.html"><code>ResolvedBorderRadius</code></a></td><td>Represents the resolved border radius values for a UI node.   The values are in physical pixels.</td></tr>
 <tr><td><a href="././types/scrollposition.html"><code>ScrollPosition</code></a></td><td>The scroll position of the node. Values are in logical pixels, increasing from top-left to bottom-r...</td></tr>
 <tr><td><a href="././types/shadowstyle.html"><code>ShadowStyle</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/uitargetcamera.html"><code>UiTargetCamera</code></a></td><td>Indicates that this root [`Node`] entity should be rendered to a specific camera.   UI then will be laid out respecting the camera’s viewport and scale factor, and  rendered to this camera’s [`bevy_camera::RenderTarget`]...</td></tr>
+<tr><td><a href="././types/visualbox.html"><code>VisualBox</code></a></td><td>Used to determine which region of a UI node is used for visual bounds.</td></tr>
 <tr><td><a href="././types/zindex.html"><code>ZIndex</code></a></td><td>Indicates that this [`Node`] entity’s front-to-back ordering is not controlled solely  by its location in the UI hierarchy. A node with a higher z-index will appear on top  of sibling nodes with a lower z-index.   UI nodes that have the same z-index will appear according to the order in which they  appear in the UI hierarchy. In such a case, the last node to be added to its parent  will appear in front of its siblings.   Nodes without this component will be treated as if they had a value of  <code>[ZIndex]...</code></td></tr>
 <tr><td><a href="././types/uiglobaltransform.html"><code>UiGlobalTransform</code></a></td><td>Absolute 2D transform for UI nodes   [`UiGlobalTransform`]s are updated from [`UiTransform`] and [`Node`](crate::ui_node::Node)...</td></tr>
 <tr><td><a href="././types/uitransform.html"><code>UiTransform</code></a></td><td>Relative 2D transform for UI nodes   [`UiGlobalTransform`] is automatically inserted whenever [`UiTransform`...</td></tr>
@@ -716,6 +818,7 @@
 <tr><td><a href="././types/text.html"><code>Text</code></a></td><td>The top-level UI text component.   Adding [`Text`] to an entity will pull in required components for setting up a UI text node.   The string in this component is the first ‘text span’ in a hierarchy of text spans that are collected into  a [`ComputedTextBlock`]...</td></tr>
 <tr><td><a href="././types/textnodeflags.html"><code>TextNodeFlags</code></a></td><td>UI text system flags.   Used internally by [`measure_text_system`] and [`text_system`] to schedule text for processing.</td></tr>
 <tr><td><a href="././types/textshadow.html"><code>TextShadow</code></a></td><td>Adds a shadow behind text   Use the `Text2dShadow` component for `Text2d` shadows</td></tr>
+<tr><td><a href="././types/textscroll.html"><code>TextScroll</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/viewportnode.html"><code>ViewportNode</code></a></td><td>Component used to render a [`RenderTarget`]  to a node.   # See Also   [`update_viewport_render_target_size`...</td></tr>
 <tr><td><a href="././types/cursoricon.html"><code>CursorIcon</code></a></td><td>Insert into a window entity to set the cursor for that window.</td></tr>
 <tr><td><a href="././types/customcursor.html"><code>CustomCursor</code></a></td><td>Custom cursor image data.</td></tr>
@@ -778,15 +881,27 @@
 <tr><td><a href="././types/nonzerou8.html"><code>NonZeroU8</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzerousize.html"><code>NonZeroUsize</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/cow.html"><code>Cow</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/arcmutexvalue.html"><code>ArcMutexValue</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
+<tr><td><a href="././types/arcmutexvalue.html"><code>ArcMutexValue</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
+<tr><td><a href="././types/arcmutexvalue.html"><code>ArcMutexValue</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
+<tr><td><a href="././types/arcmutexvalue.html"><code>ArcMutexValue</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
+<tr><td><a href="././types/arcmutexvalue.html"><code>ArcMutexValue</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
+<tr><td><a href="././types/arcmutexvalue.html"><code>ArcMutexValue</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
 <tr><td><a href="././types/handle().html"><code>Handle&lt;Unknown&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
 <tr><td><a href="././types/handleimage.html"><code>Handle&lt;Image&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
 <tr><td><a href="././types/handletextureatlaslayout.html"><code>Handle&lt;TextureAtlasLayout&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
 <tr><td><a href="././types/handlemesh.html"><code>Handle&lt;Mesh&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
-<tr><td><a href="././types/handleshaderstoragebuffer.html"><code>Handle&lt;ShaderStorageBuffer&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handleshaderbuffer.html"><code>Handle&lt;ShaderBuffer&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
 <tr><td><a href="././types/handlecolormaterial.html"><code>Handle&lt;ColorMaterial&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
 <tr><td><a href="././types/handlewireframe2dmaterial.html"><code>Handle&lt;Wireframe2dMaterial&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handlespritematerial.html"><code>Handle&lt;SpriteMaterial&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`](crate::prelude::Assets)...</a></td></tr>
+<tr><td><a href="././types/handletemplateimage.html"><code>HandleTemplate&lt;Image&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
+<tr><td><a href="././types/handletemplatetextureatlaslayout.html"><code>HandleTemplate&lt;TextureAtlasLayout&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
+<tr><td><a href="././types/handletemplatemesh.html"><code>HandleTemplate&lt;Mesh&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
+<tr><td><a href="././types/handletemplateshaderbuffer.html"><code>HandleTemplate&lt;ShaderBuffer&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
+<tr><td><a href="././types/handletemplatecolormaterial.html"><code>HandleTemplate&lt;ColorMaterial&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
+<tr><td><a href="././types/handletemplatespritematerial.html"><code>HandleTemplate&lt;SpriteMaterial&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
 <tr><td><a href="././types/assetidimage.html"><code>AssetId&lt;Image&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
-<tr><td><a href="././types/assetidtextureatlaslayout.html"><code>AssetId&lt;TextureAtlasLayout&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidscriptasset.html"><code>AssetId&lt;ScriptAsset&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/entityhashmapnavneighbors.html"><code>EntityHashMap&lt;NavNeighbors&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/axisgamepadinput.html"><code>Axis&lt;GamepadInput&gt;</code></a></td><td>Stores the position data of the input devices of type `T`.   The values are stored as `f32`s, using...</td></tr>
@@ -795,17 +910,22 @@
 <tr><td><a href="././types/arc.html"><code>Arc</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/arc.html"><code>Arc</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/meshmaterial2dcolormaterial.html"><code>MeshMaterial2d&lt;ColorMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_math::primitives::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
+<tr><td><a href="././types/meshmaterial2dspritematerial.html"><code>MeshMaterial2d&lt;SpriteMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_math::primitives::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
 <tr><td><a href="././types/time().html"><code>Time&lt;Unknown&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
 <tr><td><a href="././types/timefixed.html"><code>Time&lt;Fixed&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
 <tr><td><a href="././types/timereal.html"><code>Time&lt;Real&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
 <tr><td><a href="././types/timevirtual.html"><code>Time&lt;Virtual&gt;</code></a></td><td>A generic clock resource that tracks how much it has advanced since its  previous update and since ...</td></tr>
 <tr><td><a href="././types/range.html"><code>Range</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/range.html"><code>Range</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/rangeinclusive.html"><code>RangeInclusive</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/entityhashmapalloc::vec::vecbevy_camera::primitives::frustum.html"><code>EntityHashMap&lt;Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
+<tr><td><a href="././types/entityhashmapalloc::vec::vecbevy_light::cascade::cascade.html"><code>EntityHashMap&lt;Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/meshextractabledataalloc::vec::vecalloc::string::string.html"><code>MeshExtractableData&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/meshextractabledatahandleimage.html"><code>MeshExtractableData&lt;Handle&lt;Image&gt;&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/meshextractabledataalloc::vec::vecbevy_mesh::morph::morphattributes.html"><code>MeshExtractableData&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetentity.html"><code>HashSet&lt;Entity&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetgamepadbutton.html"><code>HashSet&lt;GamepadButton&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/indexsetentity.html"><code>IndexSet&lt;Entity&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/hashed.html"><code>Hashed</code></a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -858,7 +978,7 @@
 
         <script src="../clipboard-1626706a.min.js"></script>
         <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-c22b7243.js"></script>
+        <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
         <script src="../multi-code-block-02be4b76.js"></script>
