@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -176,60 +177,41 @@ pub(crate) fn register_gamepad_axis_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadAxis,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::gamepad::GamepadAxis>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadAxis as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::gamepad::GamepadAxis>| {
+            let output: V<::bevy_input::gamepad::GamepadAxis> = {
+                {
+                    let output: V<::bevy_input::gamepad::GamepadAxis> =
+                        <::bevy_input::gamepad::GamepadAxis as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::gamepad::GamepadAxis>| {
-                let output: V<::bevy_input::gamepad::GamepadAxis> = {
-                    {
-                        let output: V<::bevy_input::gamepad::GamepadAxis> = <::bevy_input::gamepad::GamepadAxis as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::gamepad::GamepadAxis>,
-                other: R<::bevy_input::gamepad::GamepadAxis>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::gamepad::GamepadAxis as ::core::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::gamepad::GamepadAxis>,
+         other: R<::bevy_input::gamepad::GamepadAxis>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::gamepad::GamepadAxis as ::core::cmp::PartialEq<
                             ::bevy_input::gamepad::GamepadAxis,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -242,60 +224,43 @@ pub(crate) fn register_gamepad_button_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadButton,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::gamepad::GamepadButton>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadButton as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::gamepad::GamepadButton>| {
-                let output: V<::bevy_input::gamepad::GamepadButton> = {
-                    {
-                        let output: V<::bevy_input::gamepad::GamepadButton> = <::bevy_input::gamepad::GamepadButton as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::gamepad::GamepadButton>,
-                other: R<::bevy_input::gamepad::GamepadButton>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::gamepad::GamepadButton as ::core::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::gamepad::GamepadButton>| {
+            let output: V<::bevy_input::gamepad::GamepadButton> = {
+                {
+                    let output: V<::bevy_input::gamepad::GamepadButton> =
+                        <::bevy_input::gamepad::GamepadButton as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::gamepad::GamepadButton>,
+         other: R<::bevy_input::gamepad::GamepadButton>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::gamepad::GamepadButton as ::core::cmp::PartialEq<
                             ::bevy_input::gamepad::GamepadButton,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -338,60 +303,40 @@ pub(crate) fn register_key_code_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::KeyCode,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::keyboard::KeyCode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::KeyCode as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::keyboard::KeyCode>| {
+            let output: V<::bevy_input::keyboard::KeyCode> = {
+                {
+                    let output: V<::bevy_input::keyboard::KeyCode> =
+                        <::bevy_input::keyboard::KeyCode as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::keyboard::KeyCode>| {
-                let output: V<::bevy_input::keyboard::KeyCode> = {
-                    {
-                        let output: V<::bevy_input::keyboard::KeyCode> = <::bevy_input::keyboard::KeyCode as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::keyboard::KeyCode>,
-                other: R<::bevy_input::keyboard::KeyCode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::keyboard::KeyCode as ::core::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::keyboard::KeyCode>, other: R<::bevy_input::keyboard::KeyCode>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::keyboard::KeyCode as ::core::cmp::PartialEq<
                             ::bevy_input::keyboard::KeyCode,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -404,60 +349,40 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseButton,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::mouse::MouseButton>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::mouse::MouseButton as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::mouse::MouseButton>| {
+            let output: V<::bevy_input::mouse::MouseButton> = {
+                {
+                    let output: V<::bevy_input::mouse::MouseButton> =
+                        <::bevy_input::mouse::MouseButton as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::mouse::MouseButton>| {
-                let output: V<::bevy_input::mouse::MouseButton> = {
-                    {
-                        let output: V<::bevy_input::mouse::MouseButton> = <::bevy_input::mouse::MouseButton as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::mouse::MouseButton>,
-                other: R<::bevy_input::mouse::MouseButton>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::mouse::MouseButton as ::core::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::mouse::MouseButton>, other: R<::bevy_input::mouse::MouseButton>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::mouse::MouseButton as ::core::cmp::PartialEq<
                             ::bevy_input::mouse::MouseButton,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -517,23 +442,6 @@ pub(crate) fn register_key_functions(world: &mut World) {
         ::bevy_input::keyboard::Key,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::keyboard::Key>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::Key as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::keyboard::Key>| {
                 let output: V<::bevy_input::keyboard::Key> = {
@@ -582,60 +490,43 @@ pub(crate) fn register_keyboard_focus_lost_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::KeyboardFocusLost,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::keyboard::KeyboardFocusLost>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::KeyboardFocusLost as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::keyboard::KeyboardFocusLost>| {
-                let output: V<::bevy_input::keyboard::KeyboardFocusLost> = {
-                    {
-                        let output: V<::bevy_input::keyboard::KeyboardFocusLost> = <::bevy_input::keyboard::KeyboardFocusLost as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::keyboard::KeyboardFocusLost>,
-                other: R<::bevy_input::keyboard::KeyboardFocusLost>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::keyboard::KeyboardFocusLost as ::core::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::keyboard::KeyboardFocusLost>| {
+            let output: V<::bevy_input::keyboard::KeyboardFocusLost> = {
+                {
+                    let output: V<::bevy_input::keyboard::KeyboardFocusLost> =
+                        <::bevy_input::keyboard::KeyboardFocusLost as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::keyboard::KeyboardFocusLost>,
+         other: R<::bevy_input::keyboard::KeyboardFocusLost>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::keyboard::KeyboardFocusLost as ::core::cmp::PartialEq<
                             ::bevy_input::keyboard::KeyboardFocusLost,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -648,60 +539,43 @@ pub(crate) fn register_keyboard_input_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::KeyboardInput,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::keyboard::KeyboardInput>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::KeyboardInput as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::keyboard::KeyboardInput>| {
-                let output: V<::bevy_input::keyboard::KeyboardInput> = {
-                    {
-                        let output: V<::bevy_input::keyboard::KeyboardInput> = <::bevy_input::keyboard::KeyboardInput as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::keyboard::KeyboardInput>,
-                other: R<::bevy_input::keyboard::KeyboardInput>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::keyboard::KeyboardInput as ::core::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::keyboard::KeyboardInput>| {
+            let output: V<::bevy_input::keyboard::KeyboardInput> = {
+                {
+                    let output: V<::bevy_input::keyboard::KeyboardInput> =
+                        <::bevy_input::keyboard::KeyboardInput as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::keyboard::KeyboardInput>,
+         other: R<::bevy_input::keyboard::KeyboardInput>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::keyboard::KeyboardInput as ::core::cmp::PartialEq<
                             ::bevy_input::keyboard::KeyboardInput,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -812,60 +686,43 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseButtonInput,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::mouse::MouseButtonInput>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::mouse::MouseButtonInput as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::mouse::MouseButtonInput>| {
-                let output: V<::bevy_input::mouse::MouseButtonInput> = {
-                    {
-                        let output: V<::bevy_input::mouse::MouseButtonInput> = <::bevy_input::mouse::MouseButtonInput as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::mouse::MouseButtonInput>,
-                other: R<::bevy_input::mouse::MouseButtonInput>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::mouse::MouseButtonInput as ::core::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::mouse::MouseButtonInput>| {
+            let output: V<::bevy_input::mouse::MouseButtonInput> = {
+                {
+                    let output: V<::bevy_input::mouse::MouseButtonInput> =
+                        <::bevy_input::mouse::MouseButtonInput as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::mouse::MouseButtonInput>,
+         other: R<::bevy_input::mouse::MouseButtonInput>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::mouse::MouseButtonInput as ::core::cmp::PartialEq<
                             ::bevy_input::mouse::MouseButtonInput,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1120,23 +977,6 @@ pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut 
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadButtonStateChangedEvent,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadButtonStateChangedEvent as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
@@ -1808,23 +1648,6 @@ pub(crate) fn register_button_state_functions(world: &mut World) {
         ::bevy_input::ButtonState,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::ButtonState>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::ButtonState as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::ButtonState>| {
                 let output: V<::bevy_input::ButtonState> = {
@@ -1934,60 +1757,43 @@ pub(crate) fn register_gamepad_input_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadInput,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::gamepad::GamepadInput>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadInput as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::gamepad::GamepadInput>| {
-                let output: V<::bevy_input::gamepad::GamepadInput> = {
-                    {
-                        let output: V<::bevy_input::gamepad::GamepadInput> = <::bevy_input::gamepad::GamepadInput as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::gamepad::GamepadInput>,
-                other: R<::bevy_input::gamepad::GamepadInput>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::gamepad::GamepadInput as ::core::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::gamepad::GamepadInput>| {
+            let output: V<::bevy_input::gamepad::GamepadInput> = {
+                {
+                    let output: V<::bevy_input::gamepad::GamepadInput> =
+                        <::bevy_input::gamepad::GamepadInput as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::gamepad::GamepadInput>,
+         other: R<::bevy_input::gamepad::GamepadInput>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::gamepad::GamepadInput as ::core::cmp::PartialEq<
                             ::bevy_input::gamepad::GamepadInput,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2510,60 +2316,43 @@ pub(crate) fn register_native_key_code_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::NativeKeyCode,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::keyboard::NativeKeyCode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::NativeKeyCode as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::keyboard::NativeKeyCode>| {
-                let output: V<::bevy_input::keyboard::NativeKeyCode> = {
-                    {
-                        let output: V<::bevy_input::keyboard::NativeKeyCode> = <::bevy_input::keyboard::NativeKeyCode as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::keyboard::NativeKeyCode>,
-                other: R<::bevy_input::keyboard::NativeKeyCode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::keyboard::NativeKeyCode as ::core::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::keyboard::NativeKeyCode>| {
+            let output: V<::bevy_input::keyboard::NativeKeyCode> = {
+                {
+                    let output: V<::bevy_input::keyboard::NativeKeyCode> =
+                        <::bevy_input::keyboard::NativeKeyCode as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::keyboard::NativeKeyCode>,
+         other: R<::bevy_input::keyboard::NativeKeyCode>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::keyboard::NativeKeyCode as ::core::cmp::PartialEq<
                             ::bevy_input::keyboard::NativeKeyCode,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2576,60 +2365,41 @@ pub(crate) fn register_native_key_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::NativeKey,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::keyboard::NativeKey>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::NativeKey as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::keyboard::NativeKey>| {
+            let output: V<::bevy_input::keyboard::NativeKey> = {
+                {
+                    let output: V<::bevy_input::keyboard::NativeKey> =
+                        <::bevy_input::keyboard::NativeKey as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::keyboard::NativeKey>| {
-                let output: V<::bevy_input::keyboard::NativeKey> = {
-                    {
-                        let output: V<::bevy_input::keyboard::NativeKey> = <::bevy_input::keyboard::NativeKey as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::keyboard::NativeKey>,
-                other: R<::bevy_input::keyboard::NativeKey>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::keyboard::NativeKey as ::core::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::keyboard::NativeKey>,
+         other: R<::bevy_input::keyboard::NativeKey>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::keyboard::NativeKey as ::core::cmp::PartialEq<
                             ::bevy_input::keyboard::NativeKey,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2638,135 +2408,98 @@ pub(crate) fn register_native_key_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_input::mouse::MouseScrollUnit,
-    >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::mouse::MouseScrollUnit as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
-                let output: V<::bevy_input::mouse::MouseScrollUnit> = {
-                    {
-                        let output: V<::bevy_input::mouse::MouseScrollUnit> = <::bevy_input::mouse::MouseScrollUnit as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::mouse::MouseScrollUnit>,
-                other: R<::bevy_input::mouse::MouseScrollUnit>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::mouse::MouseScrollUnit as ::core::cmp::PartialEq<
-                            ::bevy_input::mouse::MouseScrollUnit,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_input::mouse::MouseScrollUnit,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_touch_phase_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::touch::TouchPhase,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_input::touch::TouchPhase>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::touch::TouchPhase as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::touch::TouchPhase>| {
+            let output: V<::bevy_input::touch::TouchPhase> = {
+                {
+                    let output: V<::bevy_input::touch::TouchPhase> =
+                        <::bevy_input::touch::TouchPhase as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_input::touch::TouchPhase>| {
-                let output: V<::bevy_input::touch::TouchPhase> = {
-                    {
-                        let output: V<::bevy_input::touch::TouchPhase> = <::bevy_input::touch::TouchPhase as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_input::touch::TouchPhase>,
-                other: R<::bevy_input::touch::TouchPhase>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_input::touch::TouchPhase as ::core::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::touch::TouchPhase>, other: R<::bevy_input::touch::TouchPhase>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::touch::TouchPhase as ::core::cmp::PartialEq<
                             ::bevy_input::touch::TouchPhase,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_input::touch::TouchPhase,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_input::mouse::MouseScrollUnit,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
+            let output: V<::bevy_input::mouse::MouseScrollUnit> = {
+                {
+                    let output: V<::bevy_input::mouse::MouseScrollUnit> =
+                        <::bevy_input::mouse::MouseScrollUnit as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_input::mouse::MouseScrollUnit>,
+         other: R<::bevy_input::mouse::MouseScrollUnit>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_input::mouse::MouseScrollUnit as ::core::cmp::PartialEq<
+                            ::bevy_input::mouse::MouseScrollUnit,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_input::mouse::MouseScrollUnit,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -2856,8 +2589,8 @@ impl Plugin for BevyInputScriptingPlugin {
         register_gamepad_rumble_intensity_functions(&mut world);
         register_native_key_code_functions(&mut world);
         register_native_key_functions(&mut world);
-        register_mouse_scroll_unit_functions(&mut world);
         register_touch_phase_functions(&mut world);
+        register_mouse_scroll_unit_functions(&mut world);
         register_force_touch_functions(&mut world);
     }
 }

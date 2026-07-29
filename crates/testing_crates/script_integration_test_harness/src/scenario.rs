@@ -915,7 +915,7 @@ impl ScenarioStep {
 
                 let absolute_path = context.absolute_scenario_path(&path);
 
-                if let Some(existing) = assets.get_mut(&script) {
+                if let Some(mut existing) = assets.get_mut(&script) {
                     let content = std::fs::read_to_string(&absolute_path).with_context(|| {
                         format!("Failed to read script file: {}", absolute_path.display())
                     })?;

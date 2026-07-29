@@ -8,6 +8,7 @@ use crate::{
 };
 
 /// Finds all reflect types which we can wrap in the crate as well as sorts the final list.
+#[allow(clippy::result_large_err)]
 pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     let tcx = &ctxt.tcx;
     let ignored_types = match &args.cmd {
@@ -16,18 +17,19 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
         _ => return true,
     };
 
+
     for trait_did in tcx.all_local_trait_impls(()).keys() {
         // we want to find the canonical `Reflect` trait's implemenations across crates, so let's check all impls and choose those
         // whose def_path is equal to what we know the Reflect trait's is
 
-        let def_path_str = tcx.def_path_str(trait_did);
+        let def_path_str = tcx.def_path_str(*trait_did);
 
         if !DEF_PATHS_REFLECT.contains(&def_path_str.as_str()) {
             continue;
         }
 
         // this returns non-local impls as well
-        let reflect_trait_impls = tcx.trait_impls_of(trait_did);
+        let reflect_trait_impls = tcx.trait_impls_of(*trait_did);
 
         // blanket impls are implementations on generics directly, i.e. `impl From<T> for T`
         // non blanket impls may also contain generics but those will be contained within another type i.e. `impl Default for Vec<T>`
@@ -56,6 +58,7 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                         format!("impl block {impl_did:?}, is not local"),
                     )));
                 }
+
 
                 let generics = tcx.generics_of(*impl_did);
                 if generics.count() > 0 {

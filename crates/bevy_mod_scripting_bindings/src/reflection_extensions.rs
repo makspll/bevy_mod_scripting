@@ -495,7 +495,7 @@ impl TypeInfoExtensions for TypeInfo {
 #[cfg(test)]
 mod test {
     use bevy_platform::collections::HashMap;
-    use bevy_reflect::{DynamicMap, Map};
+    use bevy_reflect::map::{DynamicMap, Map};
 
     use super::*;
 

@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -162,60 +163,43 @@ pub(crate) fn register_pointer_button_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerButton,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::pointer::PointerButton>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PointerButton as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::pointer::PointerButton>| {
-                let output: V<::bevy_picking::pointer::PointerButton> = {
-                    {
-                        let output: V<::bevy_picking::pointer::PointerButton> = <::bevy_picking::pointer::PointerButton as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::pointer::PointerButton>,
-                other: R<::bevy_picking::pointer::PointerButton>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::pointer::PointerButton as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::pointer::PointerButton>| {
+            let output: V<::bevy_picking::pointer::PointerButton> = {
+                {
+                    let output: V<::bevy_picking::pointer::PointerButton> =
+                        <::bevy_picking::pointer::PointerButton as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::pointer::PointerButton>,
+         other: R<::bevy_picking::pointer::PointerButton>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_picking::pointer::PointerButton as ::std::cmp::PartialEq<
                             ::bevy_picking::pointer::PointerButton,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -228,23 +212,6 @@ pub(crate) fn register_pickable_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::Pickable,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::Pickable>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::Pickable as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_picking::Pickable>| {
@@ -1033,6 +1000,96 @@ pub(crate) fn register_over_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_leave_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_picking::events::Leave,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::events::Leave>| {
+            let output: V<::bevy_picking::events::Leave> = {
+                {
+                    let output: V<::bevy_picking::events::Leave> =
+                        <::bevy_picking::events::Leave as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::events::Leave>, other: R<::bevy_picking::events::Leave>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_picking::events::Leave as ::std::cmp::PartialEq<
+                        ::bevy_picking::events::Leave,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_picking::events::Leave,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_enter_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_picking::events::Enter,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::events::Enter>| {
+            let output: V<::bevy_picking::events::Enter> = {
+                {
+                    let output: V<::bevy_picking::events::Enter> =
+                        <::bevy_picking::events::Enter as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::events::Enter>, other: R<::bevy_picking::events::Enter>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_picking::events::Enter as ::std::cmp::PartialEq<
+                        ::bevy_picking::events::Enter,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_picking::events::Enter,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_scroll_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::events::Scroll,
@@ -1128,128 +1185,98 @@ pub(crate) fn register_pointer_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerId,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::pointer::PointerId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PointerId as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::pointer::PointerId>| {
+            let output: V<::bevy_picking::pointer::PointerId> = {
+                {
+                    let output: V<::bevy_picking::pointer::PointerId> =
+                        <::bevy_picking::pointer::PointerId as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::pointer::PointerId>| {
-                let output: V<::bevy_picking::pointer::PointerId> = {
-                    {
-                        let output: V<::bevy_picking::pointer::PointerId> = <::bevy_picking::pointer::PointerId as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::pointer::PointerId>,
-                other: R<::bevy_picking::pointer::PointerId>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::pointer::PointerId as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::pointer::PointerId>,
+         other: R<::bevy_picking::pointer::PointerId>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_picking::pointer::PointerId as ::std::cmp::PartialEq<
                             ::bevy_picking::pointer::PointerId,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "get_touch_id",
-            |_self: R<::bevy_picking::pointer::PointerId>| {
-                let output: ::std::option::Option<u64> = {
-                    {
-                        let output: ::std::option::Option<u64> = ::bevy_picking::pointer::PointerId::get_touch_id(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the touch id if the pointer is a touch input.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_custom",
-            |_self: R<::bevy_picking::pointer::PointerId>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::pointer::PointerId::is_custom(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if the pointer is a custom input.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_mouse",
-            |_self: R<::bevy_picking::pointer::PointerId>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::pointer::PointerId::is_mouse(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if the pointer is the mouse.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_touch",
-            |_self: R<::bevy_picking::pointer::PointerId>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::pointer::PointerId::is_touch(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if the pointer is a touch input.",
-            &["_self"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "get_touch_id",
+        |_self: R<::bevy_picking::pointer::PointerId>| {
+            let output: ::std::option::Option<u64> = {
+                {
+                    let output: ::std::option::Option<u64> =
+                        ::bevy_picking::pointer::PointerId::get_touch_id(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the touch id if the pointer is a touch input.",
+        &["_self"],
+    )
+    .register_documented(
+        "is_custom",
+        |_self: R<::bevy_picking::pointer::PointerId>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_picking::pointer::PointerId::is_custom(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if the pointer is a custom input.",
+        &["_self"],
+    )
+    .register_documented(
+        "is_mouse",
+        |_self: R<::bevy_picking::pointer::PointerId>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_picking::pointer::PointerId::is_mouse(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if the pointer is the mouse.",
+        &["_self"],
+    )
+    .register_documented(
+        "is_touch",
+        |_self: R<::bevy_picking::pointer::PointerId>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_picking::pointer::PointerId::is_touch(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if the pointer is a touch input.",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1326,81 +1353,60 @@ pub(crate) fn register_ray_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::ray::RayId,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::backend::ray::RayId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::backend::ray::RayId as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::backend::ray::RayId>| {
+            let output: V<::bevy_picking::backend::ray::RayId> = {
+                {
+                    let output: V<::bevy_picking::backend::ray::RayId> =
+                        <::bevy_picking::backend::ray::RayId as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::backend::ray::RayId>| {
-                let output: V<::bevy_picking::backend::ray::RayId> = {
-                    {
-                        let output: V<::bevy_picking::backend::ray::RayId> = <::bevy_picking::backend::ray::RayId as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::backend::ray::RayId>,
-                other: R<::bevy_picking::backend::ray::RayId>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::backend::ray::RayId as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::backend::ray::RayId>,
+         other: R<::bevy_picking::backend::ray::RayId>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_picking::backend::ray::RayId as ::std::cmp::PartialEq<
                             ::bevy_picking::backend::ray::RayId,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "new",
-            |
-                camera: V<::bevy_ecs::entity::Entity>,
-                pointer: V<::bevy_picking::pointer::PointerId>|
-            {
-                let output: V<::bevy_picking::backend::ray::RayId> = {
-                    {
-                        let output: V<::bevy_picking::backend::ray::RayId> = ::bevy_picking::backend::ray::RayId::new(
-                                camera.into_inner(),
-                                pointer.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Construct a [`RayId`].",
-            &["camera", "pointer"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "new",
+        |camera: V<::bevy_ecs::entity::Entity>, pointer: V<::bevy_picking::pointer::PointerId>| {
+            let output: V<::bevy_picking::backend::ray::RayId> = {
+                {
+                    let output: V<::bevy_picking::backend::ray::RayId> =
+                        ::bevy_picking::backend::ray::RayId::new(
+                            camera.into_inner(),
+                            pointer.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Construct a [`RayId`].",
+        &["camera", "pointer"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1566,128 +1572,103 @@ pub(crate) fn register_pointer_press_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PointerPress,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::pointer::PointerPress>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PointerPress as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::pointer::PointerPress>| {
-                let output: V<::bevy_picking::pointer::PointerPress> = {
-                    {
-                        let output: V<::bevy_picking::pointer::PointerPress> = <::bevy_picking::pointer::PointerPress as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::pointer::PointerPress>,
-                other: R<::bevy_picking::pointer::PointerPress>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::pointer::PointerPress as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::pointer::PointerPress>| {
+            let output: V<::bevy_picking::pointer::PointerPress> = {
+                {
+                    let output: V<::bevy_picking::pointer::PointerPress> =
+                        <::bevy_picking::pointer::PointerPress as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::pointer::PointerPress>,
+         other: R<::bevy_picking::pointer::PointerPress>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_picking::pointer::PointerPress as ::std::cmp::PartialEq<
                             ::bevy_picking::pointer::PointerPress,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "is_any_pressed",
-            |_self: R<::bevy_picking::pointer::PointerPress>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::pointer::PointerPress::is_any_pressed(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if any pointer button is pressed.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_middle_pressed",
-            |_self: R<::bevy_picking::pointer::PointerPress>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::pointer::PointerPress::is_middle_pressed(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if the middle (tertiary) pointer button is pressed.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_primary_pressed",
-            |_self: R<::bevy_picking::pointer::PointerPress>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::pointer::PointerPress::is_primary_pressed(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if the primary pointer button is pressed.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_secondary_pressed",
-            |_self: R<::bevy_picking::pointer::PointerPress>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::pointer::PointerPress::is_secondary_pressed(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns true if the secondary pointer button is pressed.",
-            &["_self"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "is_any_pressed",
+        |_self: R<::bevy_picking::pointer::PointerPress>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        ::bevy_picking::pointer::PointerPress::is_any_pressed(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if any pointer button is pressed.",
+        &["_self"],
+    )
+    .register_documented(
+        "is_middle_pressed",
+        |_self: R<::bevy_picking::pointer::PointerPress>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        ::bevy_picking::pointer::PointerPress::is_middle_pressed(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if the middle (tertiary) pointer button is pressed.",
+        &["_self"],
+    )
+    .register_documented(
+        "is_primary_pressed",
+        |_self: R<::bevy_picking::pointer::PointerPress>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        ::bevy_picking::pointer::PointerPress::is_primary_pressed(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if the primary pointer button is pressed.",
+        &["_self"],
+    )
+    .register_documented(
+        "is_secondary_pressed",
+        |_self: R<::bevy_picking::pointer::PointerPress>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        ::bevy_picking::pointer::PointerPress::is_secondary_pressed(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns true if the secondary pointer button is pressed.",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1700,60 +1681,43 @@ pub(crate) fn register_picking_interaction_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::hover::PickingInteraction,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::hover::PickingInteraction>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::hover::PickingInteraction as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::hover::PickingInteraction>| {
-                let output: V<::bevy_picking::hover::PickingInteraction> = {
-                    {
-                        let output: V<::bevy_picking::hover::PickingInteraction> = <::bevy_picking::hover::PickingInteraction as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::hover::PickingInteraction>,
-                other: R<::bevy_picking::hover::PickingInteraction>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::hover::PickingInteraction as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::hover::PickingInteraction>| {
+            let output: V<::bevy_picking::hover::PickingInteraction> = {
+                {
+                    let output: V<::bevy_picking::hover::PickingInteraction> =
+                        <::bevy_picking::hover::PickingInteraction as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::hover::PickingInteraction>,
+         other: R<::bevy_picking::hover::PickingInteraction>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_picking::hover::PickingInteraction as ::std::cmp::PartialEq<
                             ::bevy_picking::hover::PickingInteraction,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1766,75 +1730,53 @@ pub(crate) fn register_hovered_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::hover::Hovered,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::hover::Hovered>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::hover::Hovered as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::hover::Hovered>| {
+            let output: V<::bevy_picking::hover::Hovered> = {
+                {
+                    let output: V<::bevy_picking::hover::Hovered> =
+                        <::bevy_picking::hover::Hovered as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::hover::Hovered>| {
-                let output: V<::bevy_picking::hover::Hovered> = {
-                    {
-                        let output: V<::bevy_picking::hover::Hovered> = <::bevy_picking::hover::Hovered as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::hover::Hovered>,
-                other: R<::bevy_picking::hover::Hovered>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::hover::Hovered as ::std::cmp::PartialEq<
-                            ::bevy_picking::hover::Hovered,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "get",
-            |_self: R<::bevy_picking::hover::Hovered>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::hover::Hovered::get(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get whether the entity is currently hovered.",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::hover::Hovered>, other: R<::bevy_picking::hover::Hovered>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_picking::hover::Hovered as ::std::cmp::PartialEq<
+                        ::bevy_picking::hover::Hovered,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "get",
+        |_self: R<::bevy_picking::hover::Hovered>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_picking::hover::Hovered::get(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Get whether the entity is currently hovered.",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1847,77 +1789,57 @@ pub(crate) fn register_directly_hovered_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::hover::DirectlyHovered,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::hover::DirectlyHovered>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::hover::DirectlyHovered as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::hover::DirectlyHovered>| {
-                let output: V<::bevy_picking::hover::DirectlyHovered> = {
-                    {
-                        let output: V<::bevy_picking::hover::DirectlyHovered> = <::bevy_picking::hover::DirectlyHovered as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::hover::DirectlyHovered>,
-                other: R<::bevy_picking::hover::DirectlyHovered>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::hover::DirectlyHovered as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::hover::DirectlyHovered>| {
+            let output: V<::bevy_picking::hover::DirectlyHovered> = {
+                {
+                    let output: V<::bevy_picking::hover::DirectlyHovered> =
+                        <::bevy_picking::hover::DirectlyHovered as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::hover::DirectlyHovered>,
+         other: R<::bevy_picking::hover::DirectlyHovered>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_picking::hover::DirectlyHovered as ::std::cmp::PartialEq<
                             ::bevy_picking::hover::DirectlyHovered,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "get",
-            |_self: R<::bevy_picking::hover::DirectlyHovered>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_picking::hover::DirectlyHovered::get(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get whether the entity is currently hovered.",
-            &["_self"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "get",
+        |_self: R<::bevy_picking::hover::DirectlyHovered>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_picking::hover::DirectlyHovered::get(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Get whether the entity is currently hovered.",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2052,60 +1974,43 @@ pub(crate) fn register_press_direction_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PressDirection,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_picking::pointer::PressDirection>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PressDirection as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_picking::pointer::PressDirection>| {
-                let output: V<::bevy_picking::pointer::PressDirection> = {
-                    {
-                        let output: V<::bevy_picking::pointer::PressDirection> = <::bevy_picking::pointer::PressDirection as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_picking::pointer::PressDirection>,
-                other: R<::bevy_picking::pointer::PressDirection>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_picking::pointer::PressDirection as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_picking::pointer::PressDirection>| {
+            let output: V<::bevy_picking::pointer::PressDirection> = {
+                {
+                    let output: V<::bevy_picking::pointer::PressDirection> =
+                        <::bevy_picking::pointer::PressDirection as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_picking::pointer::PressDirection>,
+         other: R<::bevy_picking::pointer::PressDirection>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_picking::pointer::PressDirection as ::std::cmp::PartialEq<
                             ::bevy_picking::pointer::PressDirection,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -2140,6 +2045,8 @@ impl Plugin for BevyPickingScriptingPlugin {
         register_move_functions(&mut world);
         register_out_functions(&mut world);
         register_over_functions(&mut world);
+        register_leave_functions(&mut world);
+        register_enter_functions(&mut world);
         register_scroll_functions(&mut world);
         register_hit_data_functions(&mut world);
         register_pointer_id_functions(&mut world);

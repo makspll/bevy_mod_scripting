@@ -88,12 +88,12 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     state: &mut SystemState<Local<MessageCursor<ScriptCallbackEvent>>>,
-) {
+) -> bevy_ecs::error::Result {
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
         let script_context = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let event_cursor = state.get_mut(world);
+        let event_cursor = state.get_mut(world)?;
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
         let guard = WorldAccessGuard::new_exclusive(world, cache);
         event_handler_inner::<P>(
@@ -103,6 +103,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
             script_callbacks,
             guard,
         );
+        Ok(())
     }
 }
 
@@ -116,13 +117,14 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     guard: WorldAccessGuard,
 ) {
     let mut errors = Vec::default();
-    let events = guard.with_resource(|events: &Messages<ScriptCallbackEvent>| {
-        event_cursor
-            .read(events)
-            .filter(|e| e.label == callback_label)
-            .cloned()
-            .collect::<Vec<_>>()
-    });
+    let events: Result<Vec<ScriptCallbackEvent>, InteropError> =
+        guard.with_resource(|events: &Messages<ScriptCallbackEvent>| {
+            event_cursor
+                .read(events)
+                .filter(|e| e.label == callback_label)
+                .cloned()
+                .collect::<Vec<_>>()
+        });
 
     let events = match events {
         Ok(events) => events,
@@ -180,6 +182,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     .with_type_info_context(Some("args: "), event.args.clone())
                     .with_language(P::LANGUAGE)
             });
+
             drop(ctxt);
 
             if event.trigger_response {

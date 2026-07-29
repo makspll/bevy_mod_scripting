@@ -321,7 +321,7 @@ macro_rules! impl_test_component_ids {
             $(
                 world.insert_resource::<$res_type>(<$res_type>::init());
                 registry.register::<$res_type>();
-                let registered_id = world.resource_id::<$res_type>().unwrap().index();
+                let registered_id = world.components().get_id(std::any::TypeId::of::<$res_type>()).unwrap().index();
                 assert_eq!(registered_id, TEST_COMPONENT_ID_START + $res_id, "Test setup failed. Did you register components before running setup_world?: {}", stringify!($res_type));
             )*
         }

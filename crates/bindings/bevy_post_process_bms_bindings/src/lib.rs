@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -112,23 +113,6 @@ pub(crate) fn register_bloom_composite_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_post_process::bloom::BloomCompositeMode,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_post_process::bloom::BloomCompositeMode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_post_process::bloom::BloomCompositeMode as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_post_process::bloom::BloomCompositeMode>| {
@@ -314,6 +298,66 @@ pub(crate) fn register_chromatic_aberration_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_lens_distortion_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_post_process::effect_stack::LensDistortion,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_post_process::effect_stack::LensDistortion>| {
+                let output: V<::bevy_post_process::effect_stack::LensDistortion> = {
+                    {
+                        let output: V<
+                            ::bevy_post_process::effect_stack::LensDistortion,
+                        > = <::bevy_post_process::effect_stack::LensDistortion as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_post_process::effect_stack::LensDistortion,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_vignette_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_post_process::effect_stack::Vignette,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_post_process::effect_stack::Vignette>| {
+                let output: V<::bevy_post_process::effect_stack::Vignette> = {
+                    {
+                        let output: V<::bevy_post_process::effect_stack::Vignette> = <::bevy_post_process::effect_stack::Vignette as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_post_process::effect_stack::Vignette,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_motion_blur_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_post_process::motion_blur::MotionBlur,
@@ -354,6 +398,8 @@ impl Plugin for BevyPostProcessScriptingPlugin {
         register_depth_of_field_functions(&mut world);
         register_depth_of_field_mode_functions(&mut world);
         register_chromatic_aberration_functions(&mut world);
+        register_lens_distortion_functions(&mut world);
+        register_vignette_functions(&mut world);
         register_motion_blur_functions(&mut world);
     }
 }

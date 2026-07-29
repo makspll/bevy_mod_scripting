@@ -52,7 +52,7 @@ impl ReflectSystem {
     ) -> Self {
         ReflectSystem {
             name: system.name().into(),
-            type_id: system.type_id(),
+            type_id: system.system_type(),
             node_id: ReflectNodeId(NodeId::System(node_id)),
             default_system_sets: system.default_system_sets(),
         }

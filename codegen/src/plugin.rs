@@ -1,16 +1,16 @@
 use std::env;
 
+use bevy_mod_scripting_rustc_driver::{CrateFilter, RustcPlugin, RustcPluginArgs, copy_command_without_args};
 use cargo_metadata::camino::Utf8Path;
 use clap::Parser;
 use log::debug;
 
 use crate::{
     BevyAnalyzerCallbacks, WorkspaceMeta,
-    driver::{CrateFilter, RustcPluginArgs},
 };
 
 pub struct BevyAnalyzer;
-impl crate::driver::RustcPlugin for BevyAnalyzer {
+impl RustcPlugin for BevyAnalyzer {
     type Args = crate::Args;
 
     fn version(&self) -> std::borrow::Cow<'static, str> {
@@ -30,8 +30,8 @@ impl crate::driver::RustcPlugin for BevyAnalyzer {
         }
     }
 
-    fn run(self, compiler_args: Vec<String>, plugin_args: Self::Args) {
-        let mut callbacks = BevyAnalyzerCallbacks::new(plugin_args);
+    fn run(self, compiler_args: Vec<String>, plugin_args: RustcPluginArgs<Self::Args>) {
+        let mut callbacks = BevyAnalyzerCallbacks::new(plugin_args.args);
 
         rustc_driver_impl::run_compiler(&compiler_args, &mut callbacks);
         log::trace!("Finished compiling with plugin");
@@ -76,17 +76,4 @@ impl crate::driver::RustcPlugin for BevyAnalyzer {
             .join(" ");
         log::debug!("Running cargo build command: \n{all_env} {bin_name} {args}",);
     }
-}
-
-fn copy_command_without_args(
-    cmd: &std::process::Command,
-    arg_filter: &[&str],
-) -> std::process::Command {
-    let mut new_cmd = std::process::Command::new(cmd.get_program());
-    new_cmd.args(
-        cmd.get_args()
-            .filter(|a| !arg_filter.iter().any(|f| f == a)),
-    );
-    new_cmd.envs(cmd.get_envs().filter_map(|(a, b)| b.map(|b| (a, b))));
-    new_cmd
 }

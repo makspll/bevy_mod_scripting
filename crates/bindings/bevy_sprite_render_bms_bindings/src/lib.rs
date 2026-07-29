@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -37,6 +38,71 @@ pub(crate) fn register_color_material_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite_render::ColorMaterial,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_sprite_material_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_sprite_render::SpriteMaterial,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_sprite_render::SpriteMaterial>| {
+            let output: V<::bevy_sprite_render::SpriteMaterial> = {
+                {
+                    let output: V<::bevy_sprite_render::SpriteMaterial> =
+                        <::bevy_sprite_render::SpriteMaterial as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_sprite_render::SpriteMaterial>,
+         other: R<::bevy_sprite_render::SpriteMaterial>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_sprite_render::SpriteMaterial as ::std::cmp::PartialEq<
+                            ::bevy_sprite_render::SpriteMaterial,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "from_sprite_mesh",
+        |sprite: V<::bevy_sprite::SpriteMesh>| {
+            let output: V<::bevy_sprite_render::SpriteMaterial> = {
+                {
+                    let output: V<::bevy_sprite_render::SpriteMaterial> =
+                        ::bevy_sprite_render::SpriteMaterial::from_sprite_mesh(sprite.into_inner())
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        " Use the [`SpriteMesh`] to build a new material.",
+        &["sprite"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_sprite_render::SpriteMaterial,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -151,60 +217,41 @@ pub(crate) fn register_wireframe_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite_render::Wireframe2d,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_sprite_render::Wireframe2d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite_render::Wireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_sprite_render::Wireframe2d>| {
+            let output: V<::bevy_sprite_render::Wireframe2d> = {
+                {
+                    let output: V<::bevy_sprite_render::Wireframe2d> =
+                        <::bevy_sprite_render::Wireframe2d as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_sprite_render::Wireframe2d>| {
-                let output: V<::bevy_sprite_render::Wireframe2d> = {
-                    {
-                        let output: V<::bevy_sprite_render::Wireframe2d> = <::bevy_sprite_render::Wireframe2d as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_sprite_render::Wireframe2d>,
-                other: R<::bevy_sprite_render::Wireframe2d>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite_render::Wireframe2d as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_sprite_render::Wireframe2d>,
+         other: R<::bevy_sprite_render::Wireframe2d>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_sprite_render::Wireframe2d as ::std::cmp::PartialEq<
                             ::bevy_sprite_render::Wireframe2d,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -247,60 +294,41 @@ pub(crate) fn register_no_wireframe_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite_render::NoWireframe2d,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_sprite_render::NoWireframe2d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite_render::NoWireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_sprite_render::NoWireframe2d>| {
+            let output: V<::bevy_sprite_render::NoWireframe2d> = {
+                {
+                    let output: V<::bevy_sprite_render::NoWireframe2d> =
+                        <::bevy_sprite_render::NoWireframe2d as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_sprite_render::NoWireframe2d>| {
-                let output: V<::bevy_sprite_render::NoWireframe2d> = {
-                    {
-                        let output: V<::bevy_sprite_render::NoWireframe2d> = <::bevy_sprite_render::NoWireframe2d as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_sprite_render::NoWireframe2d>,
-                other: R<::bevy_sprite_render::NoWireframe2d>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite_render::NoWireframe2d as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_sprite_render::NoWireframe2d>,
+         other: R<::bevy_sprite_render::NoWireframe2d>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_sprite_render::NoWireframe2d as ::std::cmp::PartialEq<
                             ::bevy_sprite_render::NoWireframe2d,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -313,60 +341,43 @@ pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite_render::Mesh2dWireframe,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_sprite_render::Mesh2dWireframe>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite_render::Mesh2dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_sprite_render::Mesh2dWireframe>| {
-                let output: V<::bevy_sprite_render::Mesh2dWireframe> = {
-                    {
-                        let output: V<::bevy_sprite_render::Mesh2dWireframe> = <::bevy_sprite_render::Mesh2dWireframe as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_sprite_render::Mesh2dWireframe>,
-                other: R<::bevy_sprite_render::Mesh2dWireframe>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite_render::Mesh2dWireframe as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_sprite_render::Mesh2dWireframe>| {
+            let output: V<::bevy_sprite_render::Mesh2dWireframe> = {
+                {
+                    let output: V<::bevy_sprite_render::Mesh2dWireframe> =
+                        <::bevy_sprite_render::Mesh2dWireframe as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_sprite_render::Mesh2dWireframe>,
+         other: R<::bevy_sprite_render::Mesh2dWireframe>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_sprite_render::Mesh2dWireframe as ::std::cmp::PartialEq<
                             ::bevy_sprite_render::Mesh2dWireframe,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -477,6 +488,184 @@ pub(crate) fn register_tile_data_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_tile_orientation_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_sprite_render::TileOrientation,
+    >::new(world)
+        .register_documented(
+            "and_then",
+            |
+                _self: R<::bevy_sprite_render::TileOrientation>,
+                then: V<::bevy_sprite_render::TileOrientation>|
+            {
+                let output: V<::bevy_sprite_render::TileOrientation> = {
+                    {
+                        let output: V<::bevy_sprite_render::TileOrientation> = ::bevy_sprite_render::TileOrientation::and_then(
+                                &_self,
+                                then.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " This method treats each [`TileOrientation`] as the transform from\n [`TileOrientation::Default`] to that orientation.\n Produce a [`TileOrientation`] that will give the same effect as\n applying this transform, then applying `then`.",
+            &["_self", "then"],
+        )
+        .register_documented(
+            "apply_to_ivec2",
+            |
+                _self: R<::bevy_sprite_render::TileOrientation>,
+                pos: R<::bevy_math::IVec2>|
+            {
+                let output: V<::bevy_math::IVec2> = {
+                    {
+                        let output: V<::bevy_math::IVec2> = ::bevy_sprite_render::TileOrientation::apply_to_ivec2(
+                                &_self,
+                                &pos,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " This method treats the [`TileOrientation`] as the transform from\n [`TileOrientation::Default`] to this orientation.\n Apply this transformation to an [`IVec2`]",
+            &["_self", "pos"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_sprite_render::TileOrientation>| {
+                let output: V<::bevy_sprite_render::TileOrientation> = {
+                    {
+                        let output: V<::bevy_sprite_render::TileOrientation> = <::bevy_sprite_render::TileOrientation as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_sprite_render::TileOrientation>,
+                other: R<::bevy_sprite_render::TileOrientation>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_sprite_render::TileOrientation as ::std::cmp::PartialEq<
+                            ::bevy_sprite_render::TileOrientation,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "from_bools",
+            |mirror_h: bool, mirror_v: bool, mirror_d: bool| {
+                let output: V<::bevy_sprite_render::TileOrientation> = {
+                    {
+                        let output: V<::bevy_sprite_render::TileOrientation> = ::bevy_sprite_render::TileOrientation::from_bools(
+                                mirror_h,
+                                mirror_v,
+                                mirror_d,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a [`TileOrientation`] based on whether each mirror is applied",
+            &["mirror_h", "mirror_v", "mirror_d"],
+        )
+        .register_documented(
+            "inverse",
+            |_self: R<::bevy_sprite_render::TileOrientation>| {
+                let output: V<::bevy_sprite_render::TileOrientation> = {
+                    {
+                        let output: V<::bevy_sprite_render::TileOrientation> = ::bevy_sprite_render::TileOrientation::inverse(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " This method treats each [`TileOrientation`] as the transform from\n [`TileOrientation::Default`] to that orientation.\n Find the [`TileOrientation`] that when applied will undo the effect\n of this [`TileOrientation`]",
+            &["_self"],
+        )
+        .register_documented(
+            "mirror_d",
+            |_self: R<::bevy_sprite_render::TileOrientation>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_sprite_render::TileOrientation::mirror_d(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " True if the tile is mirrored diagonally",
+            &["_self"],
+        )
+        .register_documented(
+            "mirror_h",
+            |_self: R<::bevy_sprite_render::TileOrientation>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_sprite_render::TileOrientation::mirror_h(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " True if the tile is mirrored horizontally",
+            &["_self"],
+        )
+        .register_documented(
+            "mirror_v",
+            |_self: R<::bevy_sprite_render::TileOrientation>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_sprite_render::TileOrientation::mirror_v(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " True if the tile is mirrored vertically",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_sprite_render::TileOrientation,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_tilemap_chunk_tile_data_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite_render::TilemapChunkTileData,
@@ -511,6 +700,7 @@ impl Plugin for BevySpriteRenderScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_color_material_functions(&mut world);
+        register_sprite_material_functions(&mut world);
         register_alpha_mode_2_d_functions(&mut world);
         register_wireframe_2_d_material_functions(&mut world);
         register_wireframe_2_d_config_functions(&mut world);
@@ -521,6 +711,7 @@ impl Plugin for BevySpriteRenderScriptingPlugin {
         register_tilemap_chunk_mesh_cache_functions(&mut world);
         register_tilemap_chunk_functions(&mut world);
         register_tile_data_functions(&mut world);
+        register_tile_orientation_functions(&mut world);
         register_tilemap_chunk_tile_data_functions(&mut world);
     }
 }

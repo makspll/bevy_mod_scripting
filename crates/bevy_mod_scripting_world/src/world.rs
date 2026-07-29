@@ -430,16 +430,23 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Gets the resource id of the given component or resource
     pub fn get_resource_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
-        Ok(self
-            .as_unsafe_world_cell_readonly()?
+        let cell = self.as_unsafe_world_cell_readonly()?;
+        Ok(cell
             .components()
-            .get_resource_id(id))
+            .get_id(id)
+            // Safety: we are not updating the cache
+            .and_then(|id| {
+                unsafe { cell.resource_entities() }
+                    .get(id)
+                    .is_some()
+                    .then_some(id)
+            }))
     }
 
     fn resource_component_id<R: Resource>(&self) -> Result<ComponentId, DynWorldAccessError> {
         self.as_unsafe_world_cell()?
             .components()
-            .resource_id::<R>()
+            .get_id(TypeId::of::<R>())
             .ok_or_else(|| DynWorldAccessError::UnregisteredResource(TypeId::of::<R>()))
     }
 

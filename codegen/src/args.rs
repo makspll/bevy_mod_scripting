@@ -74,18 +74,29 @@ pub struct Args {
         global = true,
         short,
         long,
-        default_value = "bevy_winit,bevy_window",
+        default_value = "bevy_winit,bevy_window,bevy_clipboard",
         use_value_delimiter = true,
         value_delimiter = ','
     )]
     pub exclude_crates: Option<Vec<String>>,
+
+        /// Crates to exclude from code generation
+    #[arg(
+        global = true,
+        short,
+        long,
+        default_value = "assert_fields_are_eq",
+        use_value_delimiter = true,
+        value_delimiter = ','
+    )]
+    pub exclude_functions: Option<Vec<String>>,
 
     #[arg(
         global = true,
         short,
         long,
         help = "The rust version to consider when looking at stability tags etc",
-        default_value = "1.89.0"
+        default_value = "1.96.0"
     )]
     pub minimum_supported_rust_version_target: Option<String>,
 }
@@ -172,6 +183,7 @@ impl Verbosity {
 
 fn default_ignored_types() -> String {
     [
+        "bevy_core_pipeline::RootNonCameraView",
         "std::any::TypeId",
         "bevy_reflect::DynamicArray",
         "bevy_reflect::DynamicList",

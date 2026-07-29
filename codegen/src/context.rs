@@ -65,6 +65,11 @@ pub(crate) const DEF_PATHS_BMS_FROM_SCRIPT: [&str; 2] =
 pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] =
     ["bevy_mod_scripting_bindings::IntoScript", "IntoScript"];
 
+pub(crate) const DEF_PATHS_BMS_TYPED_SCRIPT_ARGUMENT: [&str; 2] =
+    ["bevy_mod_scripting_bindings::TypedScriptArgument", "TypedScriptArgument"];
+pub(crate) const DEF_PATHS_BMS_TYPED_SCRIPT_RETURN: [&str; 2] =
+    ["bevy_mod_scripting_bindings::TypedScriptReturn", "TypedScriptReturn"];
+
 pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
     ["bevy_reflect::PartialReflect", "reflect::PartialReflect"];
 pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
@@ -100,6 +105,8 @@ pub(crate) const STD_OR_CORE_TRAITS: [&str; 13] = [
 pub(crate) struct CachedTraits {
     pub(crate) bms_into_script: Option<DefId>,
     pub(crate) bms_from_script: Option<DefId>,
+    pub(crate) bms_script_argument: Option<DefId>,
+    pub(crate) bms_script_return: Option<DefId>,
     pub(crate) bevy_reflect_reflect: Option<DefId>,
     pub(crate) bevy_reflect_get_type_registration: Option<DefId>,
     /// Map from def_path_str to DefId of common std traits we work with

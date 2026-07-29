@@ -1,13 +1,19 @@
+#![feature(rustc_private)]
+#![deny(rustc::internal)]
+
 //! The module dealing with how the CLI interacts with each instantiation of the
 //! plugin across the workspace.
 
 mod plugin;
+extern crate rustc_session;
+extern crate rustc_driver;
+extern crate rustc_driver_impl;
 
 use std::{
     env,
     ops::Deref,
     path::{Path, PathBuf},
-    process::{Command, Stdio, exit},
+    process::{Command, ExitCode, Stdio, exit},
 };
 
 use cargo_metadata::{Metadata, camino::Utf8PathBuf};
@@ -17,6 +23,8 @@ use rustc_session::{EarlyDiagCtxt, config::ErrorOutputType};
 pub const CRATES_TO_RUN_PLUGIN_ON_ENV: &str = "CRATES_TO_RUN_PLUGIN_ON";
 pub const CARGO_VERBOSE: &str = "CARGO_VERBOSE";
 pub const WORKSPACE_GRAPH_FILE_ENV: &str = "WORKSPACE_GRAPH_FILE";
+/// The rustc toolchain this crate was built with and needs to work with
+pub const CHANNEL: &str = env!("RUSTC_CHANNEL");
 
 pub fn fetch_target_directory(metadata: &Metadata) -> Utf8PathBuf {
     let plugin_subdir = format!("plugin-{}", crate::CHANNEL);
@@ -58,7 +66,7 @@ pub fn cli_main<T: RustcPlugin>(plugin: T, include_crates: Vec<String>, metadata
 
     cmd.env(CRATES_TO_RUN_PLUGIN_ON_ENV, include_crates.join(","));
 
-    let args_str = serde_json::to_string(&args.args).unwrap();
+    let args_str = serde_json::to_string::<RustcPluginArgs<T::Args>>(&args).unwrap();
     log::debug!("{PLUGIN_ARGS}={args_str}");
     cmd.env(PLUGIN_ARGS, args_str);
 
@@ -68,6 +76,21 @@ pub fn cli_main<T: RustcPlugin>(plugin: T, include_crates: Vec<String>, metadata
 
     exit(exit_status.code().unwrap_or(-1));
 }
+
+
+pub fn copy_command_without_args(
+    cmd: &std::process::Command,
+    arg_filter: &[&str],
+) -> std::process::Command {
+    let mut new_cmd = std::process::Command::new(cmd.get_program());
+    new_cmd.args(
+        cmd.get_args()
+            .filter(|a| !arg_filter.iter().any(|f| f == a)),
+    );
+    new_cmd.envs(cmd.get_envs().filter_map(|(a, b)| b.map(|b| (a, b))));
+    new_cmd
+}
+
 
 // use std::{
 //     env,
@@ -169,18 +192,18 @@ struct DefaultCallbacks;
 impl rustc_driver::Callbacks for DefaultCallbacks {}
 
 /// The top-level function that should be called by your internal driver binary.
-pub fn driver_main<T: RustcPlugin>(plugin: T) {
+pub fn driver_main<T: RustcPlugin>(plugin: T) -> ExitCode {
     let early_dcx = EarlyDiagCtxt::new(ErrorOutputType::default());
     rustc_driver::init_rustc_env_logger(&early_dcx);
 
-    exit(rustc_driver::catch_with_exit_code(move || {
+    rustc_driver::catch_with_exit_code(move || {
         let mut orig_args: Vec<String> = env::args().collect();
 
         let (have_sys_root_arg, sys_root) = get_sysroot(&orig_args);
 
         if orig_args.iter().any(|a| a == "--version" || a == "-V") {
             println!("{}", plugin.version());
-            exit(0);
+            return ExitCode::SUCCESS;
         }
 
         // Setting RUSTC_WRAPPER causes Cargo to pass 'rustc' as the first argument.
@@ -209,8 +232,11 @@ pub fn driver_main<T: RustcPlugin>(plugin: T) {
             .as_ref()
             .map(|s| s.to_string())
             .unwrap_or_default();
+
+        let plugin_args: Result<RustcPluginArgs<T::Args>, _> =
+                serde_json::from_str(&env::var(PLUGIN_ARGS).unwrap_or_default());
         let is_target_crate = env::var(CRATES_TO_RUN_PLUGIN_ON_ENV)
-            .is_ok_and(|crates| crates.split(',').any(|c| c == crate_being_built));
+            .is_ok_and(|crates| crates.split(',').any(|c| c == crate_being_built)) || plugin_args.as_ref().is_ok_and(|plugin_args| matches!(plugin_args.filter, CrateFilter::AllCrates));
         let normal_rustc = arg_value(&args, "--print", |_| true).is_some();
 
         let run_plugin = !normal_rustc && is_target_crate;
@@ -220,9 +246,7 @@ pub fn driver_main<T: RustcPlugin>(plugin: T) {
         // args.extend([String::from("--cap-lints"), String::from("warn")]);
         if run_plugin {
             log::debug!("Running plugin on crate: {crate_being_built}");
-            let plugin_args: T::Args =
-                serde_json::from_str(&env::var(PLUGIN_ARGS).unwrap()).unwrap();
-            plugin.run(args, plugin_args);
+            plugin.run(args, plugin_args.unwrap());
         } else {
             log::debug!(
                 "Running normal Rust. Relevant variables:\
@@ -232,5 +256,6 @@ primary_package={primary_package}"
             );
             rustc_driver_impl::run_compiler(&args, &mut DefaultCallbacks);
         }
-    }))
+        ExitCode::SUCCESS
+    })
 }

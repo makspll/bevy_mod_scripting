@@ -78,7 +78,7 @@ fn setup_loading_ui(mut commands: Commands) {
                     column.spawn((
                         Text::new("Loading: (none)"),
                         TextFont {
-                            font_size: 24.0,
+                            font_size: 24.0.into(),
                             ..default()
                         },
                         TextColor(Color::WHITE),
@@ -114,7 +114,7 @@ fn setup_loading_ui(mut commands: Commands) {
                     column.spawn((
                         Text::new("0%"),
                         TextFont {
-                            font_size: 20.0,
+                            font_size: 20.0.into(),
                             ..default()
                         },
                         TextColor(Color::WHITE),

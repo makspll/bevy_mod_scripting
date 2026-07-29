@@ -1,4 +1,7 @@
-use bevy_reflect::{DynamicTypePath, PartialReflect, ReflectRef, VariantField};
+use bevy_reflect::{
+    DynamicTypePath, PartialReflect, ReflectRef,
+    enums::{VariantField, VariantType},
+};
 
 use crate::*;
 
@@ -42,9 +45,9 @@ impl<'f, 'b: 'f, 't> ReflectPrinter<'f, 'b, 't> {
                 .formatter
                 .debug_struct_with_type_info(s.reflect_ident_or_short_path(), self.type_info)
                 .build_with(|mut b| {
-                    for (i, field) in s.iter_fields().enumerate() {
+                    for (field_name, field) in s.iter_fields() {
                         b.field(
-                            s.name_at(i).unwrap_or("unknown"),
+                            field_name,
                             &PrintReflectAsDebug::new_with_opt_info(field, self.type_info),
                         );
                     }
@@ -127,7 +130,7 @@ impl<'f, 'b: 'f, 't> ReflectPrinter<'f, 'b, 't> {
                 })
                 .finish(),
             ReflectRef::Enum(e) => {
-                let is_tuple = !matches!(e.variant_type(), bevy_reflect::VariantType::Struct);
+                let is_tuple = !matches!(e.variant_type(), VariantType::Struct);
                 let variant_path = e.variant_name();
                 if is_tuple {
                     self.formatter

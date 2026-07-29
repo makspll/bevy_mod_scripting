@@ -233,7 +233,7 @@ mod tests {
                     NodeId::System(system_key) => graph
                         .systems
                         .get(system_key)
-                        .map(|system| system.system.name().clone().to_string()),
+                        .map(|system| system.system().name().clone().to_string()),
                     NodeId::Set(system_set_key) => graph
                         .system_sets
                         .get(system_set_key)

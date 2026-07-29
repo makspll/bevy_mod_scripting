@@ -753,15 +753,13 @@ impl ReflectBaseType {
         // Convert the TypeId to ComponentId via unsafe world cell
         let world_cell = world.as_unsafe_world_cell()?;
         let components = world_cell.components();
-        let assets_resource_id = components
-            .get_resource_id(assets_resource_type_id)
-            .ok_or_else(|| {
-                InteropError::unsupported_operation(
-                    Some(assets_resource_type_id),
-                    None,
-                    "Assets<T> resource is not registered in the world",
-                )
-            })?;
+        let assets_resource_id = components.get_id(assets_resource_type_id).ok_or_else(|| {
+            InteropError::unsupported_operation(
+                Some(assets_resource_type_id),
+                None,
+                "Assets<T> resource is not registered in the world",
+            )
+        })?;
 
         Ok(Self {
             type_id: asset_type_id,

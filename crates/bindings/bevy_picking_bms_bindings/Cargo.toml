@@ -20,35 +20,35 @@ test = false
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_picking = { version = "0.18.1", features = ["mesh_picking"], default-features = true}
+bevy_picking = { version = "0.19.0", features = ["mesh_picking"], default-features = true}
 
 
-bevy_app = { version = "^0.18.0", features = ["bevy_reflect", "error_panic_hook", "reflect_auto_register", "std"], default-features = true}
+bevy_app = { version = "^0.19.0", features = ["bevy_reflect", "error_panic_hook", "reflect_auto_register", "std"], default-features = true}
 
-bevy_asset = { version = "^0.18.0", features = ["file_watcher", "multi_threaded", "notify-debouncer-full", "watch"], default-features = true}
+bevy_asset = { version = "^0.19.0", features = ["file_watcher", "multi_threaded", "notify-debouncer-full", "watch"], default-features = true}
 
-bevy_camera = { version = "^0.18.0", features = [], default-features = true}
+bevy_camera = { version = "^0.19.0", features = [], default-features = true}
 
-bevy_derive = { version = "^0.18.0", features = [], default-features = true}
+bevy_derive = { version = "^0.19.0", features = [], default-features = true}
 
-bevy_ecs = { version = "^0.18.0", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
+bevy_ecs = { version = "^0.19.0", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
 
-bevy_input = { version = "^0.18.0", features = ["bevy_reflect", "gamepad", "gestures", "keyboard", "mouse", "smol_str", "std", "touch"], default-features = true}
+bevy_input = { version = "^0.19.0", features = ["bevy_reflect", "gamepad", "gestures", "keyboard", "mouse", "smol_str", "std", "touch"], default-features = true}
 
-bevy_math = { version = "^0.18.0", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
+bevy_math = { version = "^0.19.0", features = ["alloc", "bevy_reflect", "curve", "rand", "std"], default-features = true}
 
-bevy_mesh = { version = "^0.18.0", features = ["bevy_mikktspace", "morph"], default-features = true}
+bevy_mesh = { version = "^0.19.0", features = ["bevy_mikktspace", "morph"], default-features = true}
 
-bevy_reflect = { version = "^0.18.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}
+bevy_reflect = { version = "^0.19.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}
 
-bevy_time = { version = "^0.18.0", features = ["bevy_reflect", "std"], default-features = true}
+bevy_time = { version = "^0.19.0", features = ["bevy_reflect", "std"], default-features = true}
 
-bevy_transform = { version = "^0.18.0", features = ["alloc", "async_executor", "bevy-support", "bevy_log", "bevy_reflect", "std"], default-features = true}
+bevy_transform = { version = "^0.19.0", features = ["alloc", "async_executor", "bevy-support", "bevy_reflect", "multi_threaded", "std"], default-features = true}
 
-bevy_window = { version = "^0.18.0", features = ["bevy_asset", "bevy_image", "bevy_reflect", "custom_cursor", "std"], default-features = true}
+bevy_window = { version = "^0.19.0", features = ["bevy_asset", "bevy_image", "bevy_reflect", "custom_cursor", "std"], default-features = true}
 
 crossbeam-channel = { version = "^0.5", features = [], default-features = true}
 
-uuid = { version = "^1.13.1", features = [], default-features = true}
+uuid = { version = "^1.21.0", features = [], default-features = true}
 
 

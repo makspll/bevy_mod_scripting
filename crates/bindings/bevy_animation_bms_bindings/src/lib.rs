@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -46,23 +47,6 @@ pub(crate) fn register_animation_graph_handle_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::graph::AnimationGraphHandle,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_animation::graph::AnimationGraphHandle>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_animation::graph::AnimationGraphHandle as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_animation::graph::AnimationGraphHandle>| {
@@ -325,77 +309,56 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::AnimationTargetId,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_animation::AnimationTargetId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_animation::AnimationTargetId as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_animation::AnimationTargetId>| {
+            let output: V<::bevy_animation::AnimationTargetId> = {
+                {
+                    let output: V<::bevy_animation::AnimationTargetId> =
+                        <::bevy_animation::AnimationTargetId as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_animation::AnimationTargetId>| {
-                let output: V<::bevy_animation::AnimationTargetId> = {
-                    {
-                        let output: V<::bevy_animation::AnimationTargetId> = <::bevy_animation::AnimationTargetId as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_animation::AnimationTargetId>,
-                other: R<::bevy_animation::AnimationTargetId>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_animation::AnimationTargetId as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_animation::AnimationTargetId>,
+         other: R<::bevy_animation::AnimationTargetId>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_animation::AnimationTargetId as ::std::cmp::PartialEq<
                             ::bevy_animation::AnimationTargetId,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "from_name",
-            |name: R<::bevy_ecs::name::Name>| {
-                let output: V<::bevy_animation::AnimationTargetId> = {
-                    {
-                        let output: V<::bevy_animation::AnimationTargetId> = ::bevy_animation::AnimationTargetId::from_name(
-                                &name,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new [`AnimationTargetId`] by hashing a single name.",
-            &["name"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "from_name",
+        |name: R<::bevy_ecs::name::Name>| {
+            let output: V<::bevy_animation::AnimationTargetId> = {
+                {
+                    let output: V<::bevy_animation::AnimationTargetId> =
+                        ::bevy_animation::AnimationTargetId::from_name(&name).into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates a new [`AnimationTargetId`] by hashing a single name.",
+        &["name"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -435,60 +398,41 @@ pub(crate) fn register_repeat_animation_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::RepeatAnimation,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_animation::RepeatAnimation>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_animation::RepeatAnimation as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_animation::RepeatAnimation>| {
+            let output: V<::bevy_animation::RepeatAnimation> = {
+                {
+                    let output: V<::bevy_animation::RepeatAnimation> =
+                        <::bevy_animation::RepeatAnimation as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_animation::RepeatAnimation>| {
-                let output: V<::bevy_animation::RepeatAnimation> = {
-                    {
-                        let output: V<::bevy_animation::RepeatAnimation> = <::bevy_animation::RepeatAnimation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_animation::RepeatAnimation>,
-                other: R<::bevy_animation::RepeatAnimation>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_animation::RepeatAnimation as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_animation::RepeatAnimation>,
+         other: R<::bevy_animation::RepeatAnimation>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_animation::RepeatAnimation as ::std::cmp::PartialEq<
                             ::bevy_animation::RepeatAnimation,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -601,6 +545,40 @@ pub(crate) fn register_active_animation_functions(world: &mut World) {
                 output
             },
             " Returns true if the animation is playing in reverse.",
+            &["_self"],
+        )
+        .register_documented(
+            "just_completed",
+            |_self: R<::bevy_animation::ActiveAnimation>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_animation::ActiveAnimation::just_completed(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the animation was completed at least once this tick.",
+            &["_self"],
+        )
+        .register_documented(
+            "last_seek_time",
+            |_self: R<::bevy_animation::ActiveAnimation>| {
+                let output: ::std::option::Option<f32> = {
+                    {
+                        let output: ::std::option::Option<f32> = ::bevy_animation::ActiveAnimation::last_seek_time(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the last seek time of the animation.",
             &["_self"],
         )
         .register_documented(
@@ -768,6 +746,18 @@ pub(crate) fn register_threaded_animation_graph_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_weights_curve_sample_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_animation::animation_curves::WeightsCurveSample,
+    >::new(world);
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_animation::animation_curves::WeightsCurveSample,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_animation_transitions_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::transition::AnimationTransitions,
@@ -884,6 +874,7 @@ impl Plugin for BevyAnimationScriptingPlugin {
         register_cubic_rotation_curve_functions(&mut world);
         register_animation_graph_node_functions(&mut world);
         register_threaded_animation_graph_functions(&mut world);
+        register_weights_curve_sample_functions(&mut world);
         register_animation_transitions_functions(&mut world);
         register_animation_transition_functions(&mut world);
     }

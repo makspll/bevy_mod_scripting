@@ -1,0 +1,40 @@
+[package]
+name = "bevy_app_bms_bindings"
+description = "Automatically generated bindings for bevy_app crate"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+test = false
+
+[dependencies]
+
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_app = { version = "0.19.0", features = ["bevy_reflect", "error_panic_hook", "reflect_auto_register", "std"], default-features = true}
+
+
+bevy_derive = { version = "^0.19.0", features = [], default-features = true}
+
+bevy_ecs = { version = "^0.19.0", features = ["async_executor", "backtrace", "bevy_reflect", "multi_threaded", "reflect_auto_register", "serialize", "std"], default-features = true}
+
+bevy_platform = { version = "^0.19.0", features = ["alloc", "futures-lite", "serialize", "std"], default-features = true}
+
+bevy_reflect = { version = "^0.19.0", features = ["auto_register", "auto_register_inventory", "debug", "debug_stack", "glam", "indexmap", "smallvec", "smol_str", "std", "uuid", "wgpu-types"], default-features = true}
+
+ctrlc = { version = "^3.4.4", features = [], default-features = true}
+
+downcast-rs = { version = "^2", features = ["std"], default-features = false}
+
+variadics_please = { version = "^1.1", features = [], default-features = true}
+
+

@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -225,6 +226,60 @@ pub(crate) fn register_light_probe_functions(world: &mut World) {
             ::bevy_light::LightProbe,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
+}
+pub(crate) fn register_parallax_correction_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_light::ParallaxCorrection,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_light::ParallaxCorrection>| {
+            let output: V<::bevy_light::ParallaxCorrection> = {
+                {
+                    let output: V<::bevy_light::ParallaxCorrection> =
+                        <::bevy_light::ParallaxCorrection as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_light::ParallaxCorrection,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_skybox_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_light::Skybox,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_light::Skybox>| {
+                let output: V<::bevy_light::Skybox> = {
+                    {
+                        let output: V<::bevy_light::Skybox> = <::bevy_light::Skybox as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_light::Skybox, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_fog_volume_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -597,6 +652,106 @@ pub(crate) fn register_directional_light_texture_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_rect_light_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_light::RectLight,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_light::RectLight>| {
+                let output: V<::bevy_light::RectLight> = {
+                    {
+                        let output: V<::bevy_light::RectLight> = <::bevy_light::RectLight as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_light::RectLight,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_light_gizmo_color_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_light::gizmos::LightGizmoColor,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_light::gizmos::LightGizmoColor>| {
+            let output: V<::bevy_light::gizmos::LightGizmoColor> = {
+                {
+                    let output: V<::bevy_light::gizmos::LightGizmoColor> =
+                        <::bevy_light::gizmos::LightGizmoColor as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_light::gizmos::LightGizmoColor,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_light_gizmo_config_group_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_light::gizmos::LightGizmoConfigGroup,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_light::gizmos::LightGizmoConfigGroup>| {
+                let output: V<::bevy_light::gizmos::LightGizmoConfigGroup> = {
+                    {
+                        let output: V<::bevy_light::gizmos::LightGizmoConfigGroup> = <::bevy_light::gizmos::LightGizmoConfigGroup as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_light::gizmos::LightGizmoConfigGroup,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_show_light_gizmo_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_light::gizmos::ShowLightGizmo,
+    >::new(world);
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_light::gizmos::ShowLightGizmo,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_not_shadow_caster_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_light::NotShadowCaster,
@@ -645,7 +800,23 @@ pub(crate) fn register_not_shadow_caster_functions(world: &mut World) {
 pub(crate) fn register_not_shadow_receiver_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_light::NotShadowReceiver,
-    >::new(world);
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_light::NotShadowReceiver>| {
+            let output: V<::bevy_light::NotShadowReceiver> = {
+                {
+                    let output: V<::bevy_light::NotShadowReceiver> =
+                        <::bevy_light::NotShadowReceiver as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -657,7 +828,25 @@ pub(crate) fn register_not_shadow_receiver_functions(world: &mut World) {
 pub(crate) fn register_transmitted_shadow_receiver_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_light::TransmittedShadowReceiver,
-    >::new(world);
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_light::TransmittedShadowReceiver>| {
+            let output: V<::bevy_light::TransmittedShadowReceiver> = {
+                {
+                    let output: V<::bevy_light::TransmittedShadowReceiver> =
+                        <::bevy_light::TransmittedShadowReceiver as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -670,60 +859,41 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_light::ShadowFilteringMethod,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_light::ShadowFilteringMethod>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_light::ShadowFilteringMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_light::ShadowFilteringMethod>| {
+            let output: V<::bevy_light::ShadowFilteringMethod> = {
+                {
+                    let output: V<::bevy_light::ShadowFilteringMethod> =
+                        <::bevy_light::ShadowFilteringMethod as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_light::ShadowFilteringMethod>| {
-                let output: V<::bevy_light::ShadowFilteringMethod> = {
-                    {
-                        let output: V<::bevy_light::ShadowFilteringMethod> = <::bevy_light::ShadowFilteringMethod as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_light::ShadowFilteringMethod>,
-                other: R<::bevy_light::ShadowFilteringMethod>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_light::ShadowFilteringMethod as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_light::ShadowFilteringMethod>,
+         other: R<::bevy_light::ShadowFilteringMethod>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_light::ShadowFilteringMethod as ::std::cmp::PartialEq<
                             ::bevy_light::ShadowFilteringMethod,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -860,6 +1030,8 @@ impl Plugin for BevyLightScriptingPlugin {
         register_generated_environment_map_light_functions(&mut world);
         register_irradiance_volume_functions(&mut world);
         register_light_probe_functions(&mut world);
+        register_parallax_correction_functions(&mut world);
+        register_skybox_functions(&mut world);
         register_fog_volume_functions(&mut world);
         register_volumetric_fog_functions(&mut world);
         register_volumetric_light_functions(&mut world);
@@ -873,6 +1045,10 @@ impl Plugin for BevyLightScriptingPlugin {
         register_directional_light_functions(&mut world);
         register_directional_light_shadow_map_functions(&mut world);
         register_directional_light_texture_functions(&mut world);
+        register_rect_light_functions(&mut world);
+        register_light_gizmo_color_functions(&mut world);
+        register_light_gizmo_config_group_functions(&mut world);
+        register_show_light_gizmo_functions(&mut world);
         register_not_shadow_caster_functions(&mut world);
         register_not_shadow_receiver_functions(&mut world);
         register_transmitted_shadow_receiver_functions(&mut world);

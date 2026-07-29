@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -594,24 +595,6 @@ pub(crate) fn register_mesh_2_d_functions(world: &mut World) {
         world,
     )
     .register_documented(
-        "assert_receiver_is_total_eq",
-        |_self: R<::bevy_mesh::Mesh2d>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::bevy_mesh::Mesh2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
         "clone",
         |_self: R<::bevy_mesh::Mesh2d>| {
             let output: V<::bevy_mesh::Mesh2d> = {
@@ -651,24 +634,6 @@ pub(crate) fn register_mesh_2_d_functions(world: &mut World) {
 pub(crate) fn register_mesh_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_mesh::Mesh3d>::new(
         world,
-    )
-    .register_documented(
-        "assert_receiver_is_total_eq",
-        |_self: R<::bevy_mesh::Mesh3d>| {
-            let output: () = {
-                {
-                    let output: () =
-                        <::bevy_mesh::Mesh3d as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
     )
     .register_documented(
         "clone",
@@ -711,23 +676,6 @@ pub(crate) fn register_mesh_tag_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::MeshTag,
     >::new(world)
-        .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_mesh::MeshTag>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_mesh::MeshTag as ::std::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_mesh::MeshTag>| {
@@ -853,17 +801,20 @@ pub(crate) fn register_indices_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_mesh::Indices, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
-pub(crate) fn register_mesh_morph_weights_functions(world: &mut World) {
+pub(crate) fn register_skinned_mesh_bounds_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_mesh::morph::MeshMorphWeights,
+        ::bevy_mesh::skinning::SkinnedMeshBounds,
     >::new(world)
     .register_documented(
-        "clear_weights",
-        |mut _self: M<::bevy_mesh::morph::MeshMorphWeights>| {
-            let output: () = {
+        "clone",
+        |_self: R<::bevy_mesh::skinning::SkinnedMeshBounds>| {
+            let output: V<::bevy_mesh::skinning::SkinnedMeshBounds> = {
                 {
-                    let output: () =
-                        ::bevy_mesh::morph::MeshMorphWeights::clear_weights(&mut _self).into();
+                    let output: V<::bevy_mesh::skinning::SkinnedMeshBounds> =
+                        <::bevy_mesh::skinning::SkinnedMeshBounds as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
                     output
                 }
             };
@@ -872,6 +823,150 @@ pub(crate) fn register_mesh_morph_weights_functions(world: &mut World) {
         "",
         &["_self"],
     )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_mesh::skinning::SkinnedMeshBounds>,
+         other: R<::bevy_mesh::skinning::SkinnedMeshBounds>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_mesh::skinning::SkinnedMeshBounds as ::std::cmp::PartialEq<
+                            ::bevy_mesh::skinning::SkinnedMeshBounds,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::skinning::SkinnedMeshBounds,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_morph_attributes_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::morph::MorphAttributes,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_mesh::morph::MorphAttributes>| {
+            let output: V<::bevy_mesh::morph::MorphAttributes> = {
+                {
+                    let output: V<::bevy_mesh::morph::MorphAttributes> =
+                        <::bevy_mesh::morph::MorphAttributes as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_mesh::morph::MorphAttributes>,
+         other: R<::bevy_mesh::morph::MorphAttributes>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_mesh::morph::MorphAttributes as ::std::cmp::PartialEq<
+                            ::bevy_mesh::morph::MorphAttributes,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "new",
+        |position: V<::bevy_math::Vec3>,
+         normal: V<::bevy_math::Vec3>,
+         tangent: V<::bevy_math::Vec3>| {
+            let output: V<::bevy_mesh::morph::MorphAttributes> = {
+                {
+                    let output: V<::bevy_mesh::morph::MorphAttributes> =
+                        ::bevy_mesh::morph::MorphAttributes::new(
+                            position.into_inner(),
+                            normal.into_inner(),
+                            tangent.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["position", "normal", "tangent"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::morph::MorphAttributes,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_uv_channel_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::UvChannel,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_mesh::UvChannel>| {
+                let output: V<::bevy_mesh::UvChannel> = {
+                    {
+                        let output: V<::bevy_mesh::UvChannel> = <::bevy_mesh::UvChannel as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_mesh::UvChannel>, other: R<::bevy_mesh::UvChannel>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_mesh::UvChannel as ::std::cmp::PartialEq<
+                            ::bevy_mesh::UvChannel,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_mesh::UvChannel, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
+}
+pub(crate) fn register_mesh_morph_weights_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::morph::MeshMorphWeights,
+    >::new(world)
     .register_documented(
         "clone",
         |_self: R<::bevy_mesh::morph::MeshMorphWeights>| {
@@ -2271,6 +2366,42 @@ pub(crate) fn register_plane_mesh_builder_functions(world: &mut World) {
             },
             " Sets the subdivisions of the plane mesh.\n 0 - is the original plane geometry, the 4 points in the XZ plane.\n 1 - is split by 1 line in the middle of the plane on both the X axis and the Z axis,\n     resulting in a plane with 4 quads / 8 triangles.\n 2 - is a plane split by 2 lines on both the X and Z axes, subdividing the plane into 3\n     equal sections along each axis, resulting in a plane with 9 quads / 18 triangles.",
             &["_self", "subdivisions"],
+        )
+        .register_documented(
+            "subdivisions_x",
+            |_self: V<::bevy_mesh::PlaneMeshBuilder>, subdivisions: u32| {
+                let output: V<::bevy_mesh::PlaneMeshBuilder> = {
+                    {
+                        let output: V<::bevy_mesh::PlaneMeshBuilder> = ::bevy_mesh::PlaneMeshBuilder::subdivisions_x(
+                                _self.into_inner(),
+                                subdivisions,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The number of subdivisions along the X axis.\n 0 - is the original plane geometry, the 4 points in the XZ plane.\n 1 - adds a vertex in the middle of the X axis, resulting in a plane with 2 quads / 4 triangles, and a new edge along the Z axis.\n 2 - adds 2 vertices along the X axis, resulting in a plane with 3 quads / 6 triangles.\n and so on...",
+            &["_self", "subdivisions"],
+        )
+        .register_documented(
+            "subdivisions_z",
+            |_self: V<::bevy_mesh::PlaneMeshBuilder>, subdivisions: u32| {
+                let output: V<::bevy_mesh::PlaneMeshBuilder> = {
+                    {
+                        let output: V<::bevy_mesh::PlaneMeshBuilder> = ::bevy_mesh::PlaneMeshBuilder::subdivisions_z(
+                                _self.into_inner(),
+                                subdivisions,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The number of subdivisions along the Z axis.\n 0 - is the original plane geometry, the 4 points in the XZ plane.\n 1 - adds a vertex in the middle of the Z axis, resulting in a plane with 2 quads / 4 triangles, and a new edge along the X axis.\n 2 - adds 2 vertices along the Z axis, resulting in a plane with 3 quads / 6 triangles.\n and so on...",
+            &["_self", "subdivisions"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -2560,6 +2691,99 @@ pub(crate) fn register_skinned_mesh_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_joint_aabb_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::skinning::JointAabb,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_mesh::skinning::JointAabb>| {
+            let output: V<::bevy_mesh::skinning::JointAabb> = {
+                {
+                    let output: V<::bevy_mesh::skinning::JointAabb> =
+                        <::bevy_mesh::skinning::JointAabb as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_mesh::skinning::JointAabb>, other: R<::bevy_mesh::skinning::JointAabb>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_mesh::skinning::JointAabb as ::std::cmp::PartialEq<
+                            ::bevy_mesh::skinning::JointAabb,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::skinning::JointAabb,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_joint_index_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::skinning::JointIndex,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_mesh::skinning::JointIndex>| {
+            let output: V<::bevy_mesh::skinning::JointIndex> = {
+                {
+                    let output: V<::bevy_mesh::skinning::JointIndex> =
+                        <::bevy_mesh::skinning::JointIndex as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_mesh::skinning::JointIndex>,
+         other: R<::bevy_mesh::skinning::JointIndex>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_mesh::skinning::JointIndex as ::std::cmp::PartialEq<
+                            ::bevy_mesh::skinning::JointIndex,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::skinning::JointIndex,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 impl Plugin for BevyMeshScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
@@ -2569,6 +2793,9 @@ impl Plugin for BevyMeshScriptingPlugin {
         register_mesh_3_d_functions(&mut world);
         register_mesh_tag_functions(&mut world);
         register_indices_functions(&mut world);
+        register_skinned_mesh_bounds_functions(&mut world);
+        register_morph_attributes_functions(&mut world);
+        register_uv_channel_functions(&mut world);
         register_mesh_morph_weights_functions(&mut world);
         register_circle_mesh_builder_functions(&mut world);
         register_circular_mesh_uv_mode_functions(&mut world);
@@ -2598,5 +2825,7 @@ impl Plugin for BevyMeshScriptingPlugin {
         register_torus_mesh_builder_functions(&mut world);
         register_triangle_3_d_mesh_builder_functions(&mut world);
         register_skinned_mesh_functions(&mut world);
+        register_joint_aabb_functions(&mut world);
+        register_joint_index_functions(&mut world);
     }
 }

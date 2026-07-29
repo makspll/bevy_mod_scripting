@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -217,18 +218,18 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_border_rect_functions(world: &mut World) {
+pub(crate) fn register_sprite_mesh_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::BorderRect,
+        ::bevy_sprite::SpriteMesh,
     >::new(world)
         .register_documented(
-            "add",
-            |_self: V<::bevy_sprite::BorderRect>, rhs: V<::bevy_sprite::BorderRect>| {
-                let output: V<::bevy_sprite::BorderRect> = {
+            "clone",
+            |_self: R<::bevy_sprite::SpriteMesh>| {
+                let output: V<::bevy_sprite::SpriteMesh> = {
                     {
-                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Add<
-                            ::bevy_sprite::BorderRect,
-                        >>::add(_self.into_inner(), rhs.into_inner())
+                        let output: V<::bevy_sprite::SpriteMesh> = <::bevy_sprite::SpriteMesh as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
                         output
                     }
@@ -236,8 +237,54 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
                 output
             },
             "",
-            &["_self", "rhs"],
+            &["_self"],
         )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_sprite::SpriteMesh>, other: R<::bevy_sprite::SpriteMesh>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_sprite::SpriteMesh as ::std::cmp::PartialEq<
+                            ::bevy_sprite::SpriteMesh,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "sized",
+            |custom_size: V<::bevy_math::Vec2>| {
+                let output: V<::bevy_sprite::SpriteMesh> = {
+                    {
+                        let output: V<::bevy_sprite::SpriteMesh> = ::bevy_sprite::SpriteMesh::sized(
+                                custom_size.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a Sprite with a custom size",
+            &["custom_size"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_sprite::SpriteMesh,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_border_rect_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_sprite::BorderRect,
+    >::new(world)
         .register_documented(
             "all",
             |inset: f32| {
@@ -291,23 +338,6 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "div",
-            |_self: V<::bevy_sprite::BorderRect>, rhs: f32| {
-                let output: V<::bevy_sprite::BorderRect> = {
-                    {
-                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Div<
-                            f32,
-                        >>::div(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
             "eq",
             |_self: R<::bevy_sprite::BorderRect>, other: R<::bevy_sprite::BorderRect>| {
                 let output: bool = {
@@ -323,40 +353,6 @@ pub(crate) fn register_border_rect_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
-        )
-        .register_documented(
-            "mul",
-            |_self: V<::bevy_sprite::BorderRect>, rhs: f32| {
-                let output: V<::bevy_sprite::BorderRect> = {
-                    {
-                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Mul<
-                            f32,
-                        >>::mul(_self.into_inner(), rhs)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
-        )
-        .register_documented(
-            "sub",
-            |_self: V<::bevy_sprite::BorderRect>, rhs: V<::bevy_sprite::BorderRect>| {
-                let output: V<::bevy_sprite::BorderRect> = {
-                    {
-                        let output: V<::bevy_sprite::BorderRect> = <::bevy_sprite::BorderRect as ::std::ops::Sub<
-                            ::bevy_sprite::BorderRect,
-                        >>::sub(_self.into_inner(), rhs.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "rhs"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -562,6 +558,51 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
         .register_type_data::<::bevy_sprite::Anchor, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
 }
+pub(crate) fn register_sprite_alpha_mode_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_sprite::SpriteAlphaMode,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_sprite::SpriteAlphaMode>| {
+            let output: V<::bevy_sprite::SpriteAlphaMode> = {
+                {
+                    let output: V<::bevy_sprite::SpriteAlphaMode> =
+                        <::bevy_sprite::SpriteAlphaMode as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_sprite::SpriteAlphaMode>, other: R<::bevy_sprite::SpriteAlphaMode>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_sprite::SpriteAlphaMode as ::std::cmp::PartialEq<
+                        ::bevy_sprite::SpriteAlphaMode,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_sprite::SpriteAlphaMode,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_text_2_d_shadow_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite::Text2dShadow,
@@ -620,11 +661,13 @@ impl Plugin for BevySpriteScriptingPlugin {
         register_text_2_d_functions(&mut world);
         register_sprite_functions(&mut world);
         register_sprite_image_mode_functions(&mut world);
+        register_sprite_mesh_functions(&mut world);
         register_border_rect_functions(&mut world);
         register_slice_scale_mode_functions(&mut world);
         register_texture_slicer_functions(&mut world);
         register_sprite_scaling_mode_functions(&mut world);
         register_anchor_functions(&mut world);
+        register_sprite_alpha_mode_functions(&mut world);
         register_text_2_d_shadow_functions(&mut world);
     }
 }

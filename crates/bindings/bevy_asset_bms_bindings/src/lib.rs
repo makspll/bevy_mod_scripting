@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -32,6 +33,23 @@ pub(crate) fn register_untyped_handle_functions(world: &mut World) {
             },
             "",
             &["_self"],
+        )
+        .register_documented(
+            "default_for_type",
+            |type_id: V<::core::any::TypeId>| {
+                let output: V<::bevy_asset::UntypedHandle> = {
+                    {
+                        let output: V<::bevy_asset::UntypedHandle> = ::bevy_asset::UntypedHandle::default_for_type(
+                                type_id.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the equivalent of [`Handle`]'s default implementation for the given type ID.",
+            &["type_id"],
         )
         .register_documented(
             "eq",
@@ -160,23 +178,6 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
         ::bevy_asset::AssetIndex,
     >::new(world)
         .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_asset::AssetIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_asset::AssetIndex as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_asset::AssetIndex>| {
                 let output: V<::bevy_asset::AssetIndex> = {
@@ -272,23 +273,6 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             &[],
         )
         .register_documented(
-            "assert_receiver_is_total_eq",
-            |_self: R<::bevy_asset::RenderAssetUsages>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_asset::RenderAssetUsages as ::core::cmp::Eq>::assert_receiver_is_total_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "bits",
             |_self: R<::bevy_asset::RenderAssetUsages>| {
                 let output: u8 = {
@@ -334,7 +318,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise negation (`!`) of the bits in a flags value, truncating the result.",
+            " The bitwise negation (`!`) of the bits in `self`, truncating the result.",
             &["_self"],
         )
         .register_documented(
@@ -355,7 +339,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " Whether all set bits in a source flags value are also set in a target flags value.",
+            " Whether all set bits in `other` are also set in `self`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -376,7 +360,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The intersection of a source flags value with the complement of a target flags\n value (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
             &["_self", "other"],
         )
         .register_documented(
@@ -466,7 +450,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise or (`|`) of the bits in two flags values.",
+            " The bitwise or (`|`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -487,7 +471,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise and (`&`) of the bits in two flags values.",
+            " The bitwise and (`&`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -508,7 +492,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " Whether any set bits in a source flags value are also set in a target flags value.",
+            " Whether any set bits in `other` are also set in `self`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -542,7 +526,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " Whether all bits in this flags value are unset.",
+            " Whether all bits in `self` are unset.",
             &["_self"],
         )
         .register_documented(
@@ -563,7 +547,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The intersection of a source flags value with the complement of a target flags\n value (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `remove` won't truncate `other`, but the `!` operator will.",
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `remove` won't truncate `other`, but the `!` operator will.",
             &["_self", "other"],
         )
         .register_documented(
@@ -606,7 +590,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The intersection of a source flags value with the complement of a target flags value (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
             &["_self", "other"],
         )
         .register_documented(
@@ -627,7 +611,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise exclusive-or (`^`) of the bits in two flags values.",
+            " The bitwise exclusive-or (`^`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -648,7 +632,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise exclusive-or (`^`) of the bits in two flags values.",
+            " The bitwise exclusive-or (`^`) of the bits in `self` and `other`.",
             &["_self", "other"],
         )
         .register_documented(
@@ -669,7 +653,7 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
                 };
                 output
             },
-            " The bitwise or (`|`) of the bits in two flags values.",
+            " The bitwise or (`|`) of the bits in `self` and `other`.",
             &["_self", "other"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();

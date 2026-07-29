@@ -190,6 +190,7 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     system_params: Vec<ScriptSystemParam>,
     script_contexts: ScriptContexts<P>,
     script_callbacks: ScriptCallbacks<P>,
+    initialization_errors: Result<(), Vec<SystemParamValidationError>>,
 }
 
 /// Equivalent of [`bevy_ecs::system::SystemParam`] but for dynamic systems, these are the kinds of things
@@ -302,6 +303,10 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             }
         };
 
+        if let Err(Some(first)) = state.initialization_errors.as_mut().map_err(|e| e.pop()) {
+            return Err(RunSystemError::Skipped(first));
+        }
+
         // TODO: cache references which don't change once we have benchmarks
         for param in &mut state.system_params {
             match param {
@@ -390,6 +395,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         let mut subset = HashSet::<ComponentId>::new();
         let mut system_params = Vec::with_capacity(self.system_param_descriptors.len());
         let mut component_access_set = FilteredAccessSet::new();
+        let mut initialization_errors: Result<(), Vec<SystemParamValidationError>> = Ok(());
         for param in &self.system_param_descriptors {
             match param {
                 ScriptSystemParamDescriptor::Res(res) => {
@@ -404,14 +410,17 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
                     let mut access = FilteredAccess::matches_nothing();
 
-                    access.add_resource_write(component_id);
+                    access.add_write(component_id);
                     component_access_set.add(access);
-                    #[allow(
-                        clippy::panic,
-                        reason = "WIP, to be dealt with in validate params better, but panic will still remain"
-                    )]
                     if subset.contains(&component_id) {
-                        panic!("Duplicate resource access in system: {component_id:?}.");
+                        initialization_errors = Err(initialization_errors
+                            .err()
+                            .unwrap_or_default()
+                            .into_iter()
+                            .chain([SystemParamValidationError::skipped::<()>(format!(
+                                "Duplicate resource access in system: {component_id:?}."
+                            ))])
+                            .collect());
                     }
                     subset.insert(component_id);
                 }
@@ -431,12 +440,15 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                         .map(|(a, _)| a)
                         .collect::<HashSet<_>>();
 
-                    #[allow(
-                        clippy::panic,
-                        reason = "WIP, to be dealt with in validate params better, but panic will still remain"
-                    )]
                     if !subset.is_disjoint(&new_raids) {
-                        panic!("Non-disjoint query in dynamic system parameters.");
+                        initialization_errors = Err(initialization_errors
+                            .err()
+                            .unwrap_or_default()
+                            .into_iter()
+                            .chain([SystemParamValidationError::skipped::<()>(
+                                "Non-disjoint query in dynamic system parameters.".to_string(),
+                            )])
+                            .collect());
                     }
 
                     system_params.push(ScriptSystemParam::EntityQuery {
@@ -466,6 +478,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             system_params,
             script_contexts: world.get_resource_or_init::<ScriptContexts<P>>().clone(),
             script_callbacks: world.get_resource_or_init::<ScriptCallbacks<P>>().clone(),
+            initialization_errors,
         });
 
         component_access_set
@@ -487,27 +500,12 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
     fn queue_deferred(&mut self, _world: DeferredWorld) {}
 
-    unsafe fn validate_param_unsafe(
-        &mut self,
-        _world: UnsafeWorldCell,
-    ) -> Result<(), SystemParamValidationError> {
-        Ok(())
-    }
-
     fn default_system_sets(&self) -> Vec<InternedSystemSet> {
         vec![ScriptSystemSet::new(self.name.clone()).intern()]
     }
 
     fn type_id(&self) -> TypeId {
         TypeId::of::<Self>()
-    }
-
-    fn validate_param(&mut self, world: &World) -> Result<(), SystemParamValidationError> {
-        let world_cell = world.as_unsafe_world_cell_readonly();
-        // SAFETY:
-        // - We have exclusive access to the entire world.
-        // - `update_archetype_component_access` has been called.
-        unsafe { self.validate_param_unsafe(world_cell) }
     }
 }
 

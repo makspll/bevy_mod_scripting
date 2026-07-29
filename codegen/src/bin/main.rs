@@ -3,12 +3,13 @@ use std::{
     collections::HashMap,
     env,
     fs::{File, create_dir_all},
-    io::{BufRead, Write},
+    io::Write,
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
 
-use bevy_mod_scripting_codegen::{driver::*, *};
+use bevy_mod_scripting_codegen::{*};
+use bevy_mod_scripting_rustc_driver::{CHANNEL, WORKSPACE_GRAPH_FILE_ENV, cli_main, fetch_target_directory};
 use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
 use crate_feature_graph::{Workspace, WorkspaceGraph};
@@ -46,7 +47,7 @@ fn main() {
     let crates = metadata
         .workspace_packages()
         .iter()
-        .map(|p| p.name.to_owned())
+        .map(|p| p.name.to_string())
         .collect::<Vec<_>>();
 
     info!("Computing active features");
@@ -90,7 +91,7 @@ fn main() {
         None
     };
 
-    let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
+    let plugin_subdir = format!("plugin-{}", CHANNEL);
     let plugin_target_dir = metadata.target_directory.join(plugin_subdir);
 
     info!("Computing workspace metadata");
@@ -181,7 +182,7 @@ fn main() {
 
     let temp_dir = find_bootstrap_dir();
 
-    debug!("Bootstrap directory: {}", &temp_dir.as_path().display());
+    debug!("Bootstrap directory: {}", temp_dir.as_path().display());
 
     write_bootstrap_files(args.bms_bindings_path, temp_dir.as_path());
 
@@ -217,7 +218,7 @@ fn main() {
     // disable incremental compilation
     unsafe { env::set_var("CARGO_INCREMENTAL", "0") };
 
-    driver::cli_main(
+    cli_main(
         BevyAnalyzer,
         workspace_meta.include_crates.unwrap_or_default(),
         &metadata,
@@ -250,18 +251,17 @@ fn build_bootstrap(
     let mut cmd = Command::new("cargo")
         .current_dir(temp_dir)
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stderr(Stdio::inherit())
         .args(["build", "--message-format=json"])
         .spawn()
         .unwrap();
 
-    info!(
+    println!(
         "cd {} && cargo build --message-format=json",
         temp_dir.display()
     );
 
     let reader = std::io::BufReader::new(cmd.stdout.take().unwrap());
-    let err_reader = std::io::BufReader::new(cmd.stderr.take().unwrap());
 
     std::fs::create_dir_all(cache_dir).unwrap();
 
@@ -285,15 +285,10 @@ fn build_bootstrap(
                 cargo_metadata::Message::CompilerMessage(msg) => {
                     info!("{msg}");
                 }
-                _ => {}
+                a => {
+                    println!("{a:?}");
+                }
             }
-        }
-    }
-    for msg in err_reader.lines() {
-        if let Ok(line) = msg {
-            info!("{line}");
-        } else {
-            panic!("Failed to read cargo stderr");
         }
     }
 
@@ -370,8 +365,10 @@ fn write_bootstrap_files(bms_bindings_path: Utf8PathBuf, path: &Path) {
         String::from_utf8(include_bytes!("../../Cargo.bootstrap.toml").to_vec())
             .expect("Could not read manifest template as utf8");
 
-    manifest_content =
-        manifest_content.replace(BMS_BINDINGS_PATH_PLACEHOLDER, bms_bindings_path.as_str());
+    manifest_content = manifest_content.replace(
+        BMS_BINDINGS_PATH_PLACEHOLDER,
+        &bms_bindings_path.as_str().replace("\\", "/"),
+    );
 
     let manifest_path = path.join("Cargo.toml");
 

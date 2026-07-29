@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -65,6 +66,35 @@ pub(crate) fn register_gltf_scene_extras_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_gltf::GltfSceneExtras,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_gltf_scene_name_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_gltf::GltfSceneName,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_gltf::GltfSceneName>| {
+                let output: V<::bevy_gltf::GltfSceneName> = {
+                    {
+                        let output: V<::bevy_gltf::GltfSceneName> = <::bevy_gltf::GltfSceneName as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_gltf::GltfSceneName,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -187,6 +217,7 @@ impl Plugin for BevyGltfScriptingPlugin {
         let mut world = app.world_mut();
         register_gltf_extras_functions(&mut world);
         register_gltf_scene_extras_functions(&mut world);
+        register_gltf_scene_name_functions(&mut world);
         register_gltf_mesh_extras_functions(&mut world);
         register_gltf_mesh_name_functions(&mut world);
         register_gltf_material_extras_functions(&mut world);

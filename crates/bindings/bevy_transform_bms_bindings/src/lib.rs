@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
+extern crate std;
 
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
@@ -17,42 +18,32 @@ pub(crate) fn register_static_transform_optimizations_functions(world: &mut Worl
         ::bevy_transform::StaticTransformOptimizations,
     >::new(world)
         .register_documented(
-            "disabled",
-            || {
-                let output: V<::bevy_transform::StaticTransformOptimizations> = {
+            "eq",
+            |
+                _self: R<::bevy_transform::StaticTransformOptimizations>,
+                other: R<::bevy_transform::StaticTransformOptimizations>|
+            {
+                let output: bool = {
                     {
-                        let output: V<::bevy_transform::StaticTransformOptimizations> = ::bevy_transform::StaticTransformOptimizations::disabled()
+                        let output: bool = <::bevy_transform::StaticTransformOptimizations as ::core::cmp::PartialEq<
+                            ::bevy_transform::StaticTransformOptimizations,
+                        >>::eq(&_self, &other)
                             .into();
                         output
                     }
                 };
                 output
             },
-            " Unconditionally disable static scene optimizations.",
-            &[],
+            "",
+            &["_self", "other"],
         )
         .register_documented(
-            "enabled",
-            || {
-                let output: V<::bevy_transform::StaticTransformOptimizations> = {
+            "is_enabled",
+            |_self: R<::bevy_transform::StaticTransformOptimizations>| {
+                let output: bool = {
                     {
-                        let output: V<::bevy_transform::StaticTransformOptimizations> = ::bevy_transform::StaticTransformOptimizations::enabled()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Unconditionally enable static scene optimizations.",
-            &[],
-        )
-        .register_documented(
-            "from_threshold",
-            |threshold: f32| {
-                let output: V<::bevy_transform::StaticTransformOptimizations> = {
-                    {
-                        let output: V<::bevy_transform::StaticTransformOptimizations> = ::bevy_transform::StaticTransformOptimizations::from_threshold(
-                                threshold,
+                        let output: bool = ::bevy_transform::StaticTransformOptimizations::is_enabled(
+                                &_self,
                             )
                             .into();
                         output
@@ -60,8 +51,8 @@ pub(crate) fn register_static_transform_optimizations_functions(world: &mut Worl
                 };
                 output
             },
-            " If the percentage of moving objects exceeds this threshold, disable static [`Transform`]\n optimizations. This is done because the scene is so dynamic that the cost of tracking static\n trees exceeds the performance benefit of skipping propagation for these trees.\n - Setting this to `0.0` will result in never running static scene tracking.\n - Setting this to `1.0` will result in always tracking static transform trees.",
-            &["threshold"],
+            " Returns `true` if static scene optimizations are enabled.",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -300,66 +291,6 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
             },
             "Return the local left vector (-X).",
             &["_self"],
-        )
-        .register_documented(
-            "mul",
-            |
-                _self: V<::bevy_transform::components::GlobalTransform>,
-                value: V<::bevy_math::Vec3>|
-            {
-                let output: V<::bevy_math::Vec3> = {
-                    {
-                        let output: V<::bevy_math::Vec3> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
-                            ::bevy_math::Vec3,
-                        >>::mul(_self.into_inner(), value.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "value"],
-        )
-        .register_documented(
-            "mul",
-            |
-                _self: V<::bevy_transform::components::GlobalTransform>,
-                global_transform: V<::bevy_transform::components::GlobalTransform>|
-            {
-                let output: V<::bevy_transform::components::GlobalTransform> = {
-                    {
-                        let output: V<::bevy_transform::components::GlobalTransform> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
-                            ::bevy_transform::components::GlobalTransform,
-                        >>::mul(_self.into_inner(), global_transform.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "global_transform"],
-        )
-        .register_documented(
-            "mul",
-            |
-                _self: V<::bevy_transform::components::GlobalTransform>,
-                transform: V<::bevy_transform::components::Transform>|
-            {
-                let output: V<::bevy_transform::components::GlobalTransform> = {
-                    {
-                        let output: V<::bevy_transform::components::GlobalTransform> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
-                            ::bevy_transform::components::Transform,
-                        >>::mul(_self.into_inner(), transform.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "transform"],
         )
         .register_documented(
             "mul_transform",
@@ -886,66 +817,6 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             },
             " Get the unit vector in the local `Z` direction.",
             &["_self"],
-        )
-        .register_documented(
-            "mul",
-            |
-                _self: V<::bevy_transform::components::Transform>,
-                value: V<::bevy_math::Vec3>|
-            {
-                let output: V<::bevy_math::Vec3> = {
-                    {
-                        let output: V<::bevy_math::Vec3> = <::bevy_transform::components::Transform as ::core::ops::Mul<
-                            ::bevy_math::Vec3,
-                        >>::mul(_self.into_inner(), value.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "value"],
-        )
-        .register_documented(
-            "mul",
-            |
-                _self: V<::bevy_transform::components::Transform>,
-                global_transform: V<::bevy_transform::components::GlobalTransform>|
-            {
-                let output: V<::bevy_transform::components::GlobalTransform> = {
-                    {
-                        let output: V<::bevy_transform::components::GlobalTransform> = <::bevy_transform::components::Transform as ::core::ops::Mul<
-                            ::bevy_transform::components::GlobalTransform,
-                        >>::mul(_self.into_inner(), global_transform.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "global_transform"],
-        )
-        .register_documented(
-            "mul",
-            |
-                _self: V<::bevy_transform::components::Transform>,
-                transform: V<::bevy_transform::components::Transform>|
-            {
-                let output: V<::bevy_transform::components::Transform> = {
-                    {
-                        let output: V<::bevy_transform::components::Transform> = <::bevy_transform::components::Transform as ::core::ops::Mul<
-                            ::bevy_transform::components::Transform,
-                        >>::mul(_self.into_inner(), transform.into_inner())
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "transform"],
         )
         .register_documented(
             "mul_transform",

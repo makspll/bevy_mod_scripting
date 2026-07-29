@@ -2,7 +2,10 @@ use std::{borrow::Cow, convert::identity, panic};
 
 use log::{trace, warn};
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
-use rustc_middle::ty::{AdtDef, GenericArg, GenericParamDefKind, TraitRef, Ty, TyKind, TypingEnv};
+use rustc_middle::ty::{
+    AdtDef, AliasTyKind, GenericArg, GenericParamDefKind, TraitRef, Ty, TyKind, TypingEnv,
+    Unnormalized,
+};
 use rustc_span::Symbol;
 
 use crate::{
@@ -51,6 +54,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
             .variants
             .iter()
             .map(|variant| Variant {
+                #[allow(deprecated)]
                 docstrings: docstrings(ctxt.tcx.get_all_attrs(variant.def.def_id)),
                 name: variant.def.name.to_ident_string().into(),
                 fields: process_fields(ctxt, variant),
@@ -66,6 +70,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
             is_enum: variants.len() > 1,
             variants,
             is_tuple_struct,
+            #[allow(deprecated)]
             docstrings: docstrings(tcx.get_all_attrs(reflect_ty_did)),
             impls_clone: trait_impls.contains_key(&clone_diagnostic),
             impls_debug: trait_impls.contains_key(&debug_diagnostic),
@@ -106,6 +111,7 @@ pub(crate) fn process_fields<'ctx>(
         .fields
         .iter()
         .map(|field| Field {
+            #[allow(deprecated)]
             docstrings: docstrings(ctxt.tcx.get_all_attrs(field.did)),
             ident: field.name.to_ident_string(),
             ty: ty_to_string(ctxt, ctxt.tcx.type_of(field.did).skip_binder(), false),
@@ -127,10 +133,13 @@ pub(crate) fn process_functions<'tcx>(
                 .zip(fn_ctxt.sig.inputs())
                 .enumerate()
                 .map(|(idx, (ident, ty))| {
-                    let normalized_ty = ctxt.tcx.normalize_erasing_regions(
-                        TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.did),
-                        *ty,
-                    );
+                    let normalized_ty = ctxt
+                        .tcx
+                        .try_normalize_erasing_regions(
+                            TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.did),
+                            Unnormalized::new_wip(*ty),
+                        )
+                        .unwrap_or(*ty);
                     Arg {
                         ident: ident.map(|s| s.to_string()).unwrap_or(format!("arg_{idx}")),
                         ty: ty_to_string(ctxt, normalized_ty, false),
@@ -140,10 +149,13 @@ pub(crate) fn process_functions<'tcx>(
                 })
                 .collect();
 
-            let out_ty = ctxt.tcx.normalize_erasing_regions(
-                TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.did),
-                fn_ctxt.sig.output(),
-            );
+            let out_ty = ctxt
+                .tcx
+                .try_normalize_erasing_regions(
+                    TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.did),
+                    Unnormalized::new_wip(fn_ctxt.sig.output()),
+                )
+                .unwrap_or(fn_ctxt.sig.output());
 
             let output = Output {
                 ty: ty_to_string(ctxt, out_ty, false),
@@ -159,6 +171,7 @@ pub(crate) fn process_functions<'tcx>(
                 args,
                 output,
                 has_self: fn_ctxt.has_self,
+                #[allow(deprecated)]
                 docstrings: docstrings(ctxt.tcx.get_all_attrs(fn_ctxt.did)),
                 from_trait_path: fn_ctxt.kind.as_trait_fn().map(|(_, impl_did)| {
                     let trait_ref = ctxt.tcx.impl_trait_ref(impl_did).skip_binder();
@@ -405,7 +418,12 @@ impl<'a> TyPrinter<'a> {
                 self.buffer.push(')');
             }
             TyKind::Alias(_, ty) => {
-                self.buffer.push_str(&(self.path_finder)(ty.def_id));
+                self.buffer.push_str(&(self.path_finder)(match ty.kind {
+                    AliasTyKind::Projection { def_id }
+                    | AliasTyKind::Inherent { def_id }
+                    | AliasTyKind::Opaque { def_id }
+                    | AliasTyKind::Free { def_id } => def_id,
+                }));
                 self.print_args(ty.args.iter());
             }
             // self is one I think

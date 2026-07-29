@@ -4,8 +4,7 @@ use rustc_middle::ty::TyCtxt;
 use rustc_span::Symbol;
 
 use crate::{
-    Args, BevyCtxt, DEF_PATHS_BMS_FROM_SCRIPT, DEF_PATHS_BMS_INTO_SCRIPT,
-    DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_REFLECT, STD_ONLY_TRAITS, STD_OR_CORE_TRAITS,
+    Args, BevyCtxt, DEF_PATHS_BMS_FROM_SCRIPT, DEF_PATHS_BMS_INTO_SCRIPT, DEF_PATHS_BMS_TYPED_SCRIPT_ARGUMENT, DEF_PATHS_BMS_TYPED_SCRIPT_RETURN, DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_REFLECT, STD_ONLY_TRAITS, STD_OR_CORE_TRAITS,
 };
 
 fn dump_traits(tcx: &TyCtxt) -> String {
@@ -48,6 +47,12 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         } else if DEF_PATHS_BMS_FROM_SCRIPT.contains(&def_path_str.as_str()) {
             trace!("found FromScript trait def id: {trait_did:?}");
             ctxt.cached_traits.bms_from_script = Some(trait_did);
+        }else if DEF_PATHS_BMS_TYPED_SCRIPT_ARGUMENT.contains(&def_path_str.as_str()) {
+            trace!("found TypedScriptArgument trait def id: {trait_did:?}");
+            ctxt.cached_traits.bms_script_argument = Some(trait_did);
+        } else if DEF_PATHS_BMS_TYPED_SCRIPT_RETURN.contains(&def_path_str.as_str()) {
+            trace!("found TypedScriptReturn trait def id: {trait_did:?}");
+            ctxt.cached_traits.bms_script_return = Some(trait_did);
         }
     }
 

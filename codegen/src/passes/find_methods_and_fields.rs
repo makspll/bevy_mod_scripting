@@ -1,16 +1,15 @@
 use std::io::Write;
 
+use bevy_mod_scripting_rustc_utils::query::{type_implements_trait, typing_env_function_arg_in_impl};
 use indexmap::IndexMap;
 use itertools::Itertools;
-use log::trace;
+use log::{trace};
 use rustc_hir::{
     StableSince,
     def_id::{DefId, LOCAL_CRATE},
 };
-use rustc_infer::infer::TyCtxtInferExt;
-use rustc_middle::ty::{AdtDef, AssocKind, FnSig, GenericArgs, Ty, TyCtxt, TyKind, TypingEnv};
+use rustc_middle::ty::{AdtDef, AssocKind, GenericArgs, Ty, TyCtxt, TyKind, TypingEnv};
 use rustc_span::Symbol;
-use rustc_trait_selection::infer::InferCtxtExt;
 
 use crate::{
     Args, BevyCtxt, CachedTraits, MetaLoader, ReflectionStrategy,
@@ -71,7 +70,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, args: &Args) -> b
         )
         .unwrap();
         for (did, candidate) in ctxt.reflect_types.iter() {
-            writeln!(handle, "{:?}", ctxt.tcx.def_path_str(did)).unwrap();
+            writeln!(handle, "{:?}", ctxt.tcx.def_path_str(*did)).unwrap();
             writeln!(handle, "Exclusions: ").unwrap();
             let mut annotator = AnnotationContextCollector::new(ctxt.tcx);
             annotator.annotate(candidate);
@@ -104,10 +103,11 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, args: &Args) -> b
     true
 }
 
+#[allow(clippy::result_large_err)]
 fn generate_functions<'tcx>(
     ctxt: &mut BevyCtxt<'tcx>,
     args: &Args,
-    def_id: DefId,
+    _def_id: DefId,
     impl_did: DefId,
 ) -> (Vec<FunctionCandidate<'tcx>>, Vec<FunctionCandidate<'tcx>>) {
     let (functions, excluded_functions): (Vec<_>, Vec<_>) = ctxt
@@ -128,31 +128,32 @@ fn generate_functions<'tcx>(
                 .tcx
                 .impl_opt_trait_ref(impl_did)
                 .map(|tr| tr.skip_binder().def_id);
-            let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
             let fn_did = assoc_item.def_id;
-            let fn_sig = ctxt.tcx.fn_sig(fn_did).instantiate_identity();
-            let sig: FnSig = ctxt
-                .tcx
-                .normalize_erasing_late_bound_regions(param_env, fn_sig);
+            let (typing_env, sig) = typing_env_function_arg_in_impl(ctxt.tcx, ctxt.tcx.fn_sig(fn_did), fn_did, impl_did);
             Some(FunctionCandidate {
                 fn_name,
                 did: fn_did,
                 visibility: assoc_item.visibility(ctxt.tcx),
                 sig,
                 has_self,
-                is_unsafe: sig.safety.is_unsafe(),
+                is_unsafe: sig.safety().is_unsafe(),
                 kind: trait_did
                     .map(|trait_did| FunctionCandidateKind::TraitImplMethod {trait_did,impl_did})
                     .unwrap_or(FunctionCandidateKind::Method { impl_did }),
                 notes: vec![],
                 arguments: vec![],
                 ret: FunctionArgCandidate::new(String::from("Return value")),
+                typing_env
             })
         })
         .map(|mut fn_candidate| {
 
             if !fn_candidate.visibility.is_public() {
                 return Err(fn_candidate.with_note(GenerationExclusionNote::Reason(String::from("function is not public"))))
+            }
+
+            if args.exclude_functions.as_ref().is_some_and(|fns|  fns.contains(&fn_candidate.fn_name.to_ident_string())) {
+                return Err(fn_candidate.with_note(GenerationExclusionNote::Reason(String::from("function excluded through cli argument"))))
             }
 
             let function_generics =
@@ -190,14 +191,12 @@ fn generate_functions<'tcx>(
                 return Err(fn_candidate.with_note(GenerationExclusionNote::Reason("Function is not public and does not come from a trait impl".to_string())));
             }
 
-            let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
-
             let arg_names = ctxt.tcx.fn_arg_idents(fn_candidate.did);
             fn_candidate.arguments = fn_candidate.sig.inputs().iter().zip(arg_names).enumerate().map(|(index, (arg_ty, ident))| {
                 let candidate_input = FunctionArgCandidate::new(ident.map(|id| id.to_string()).unwrap_or(index.to_string()));
                 if type_is_supported_as_non_proxy_arg(
                     ctxt.tcx,
-                    param_env,
+                    fn_candidate.typing_env,
                     &ctxt.cached_traits,
                     *arg_ty,
                 ) {
@@ -216,7 +215,7 @@ fn generate_functions<'tcx>(
 
             if type_is_supported_as_non_proxy_return_val(
                 ctxt.tcx,
-                param_env,
+                fn_candidate.typing_env,
                 &ctxt.cached_traits,
                 fn_candidate.sig.output(),
             ) {
@@ -254,6 +253,7 @@ fn generate_variants<'tcx>(
         .iter()
         .map(|variant| {
             let variant_candidate = VariantCandidate::new(variant);
+            #[allow(deprecated)]
             if has_reflect_ignore_attr(ctxt.tcx.get_all_attrs(variant.def_id)) {
                 return Err(variant_candidate.with_note(GenerationExclusionNote::Reason(
                     "variant has 'reflect(ignore)' attribute".to_string(),
@@ -280,7 +280,7 @@ fn generate_variants<'tcx>(
                         field.did
                     ))));
                 }
-
+                #[allow(deprecated)]
                 if has_reflect_ignore_attr(ctxt.tcx.get_all_attrs(field.did)) {
                     return Err(candidate.with_note(GenerationExclusionNote::Reason(
                         "field has 'reflect(ignore)' attribute".to_string(),
@@ -288,7 +288,10 @@ fn generate_variants<'tcx>(
                 }
 
                 let field_ty = ctxt.tcx.erase_and_anonymize_regions(
-                    ctxt.tcx.type_of(field.did).instantiate_identity(),
+                    ctxt.tcx
+                        .type_of(field.did)
+                        .instantiate_identity()
+                        .skip_norm_wip(),
                 );
 
                 Ok(
@@ -473,8 +476,9 @@ pub(crate) fn impls_trait<'tcx>(
     ty: Ty<'tcx>,
     trait_did: DefId,
 ) -> bool {
-    tcx.infer_ctxt()
-        .build(param_env.typing_mode)
-        .type_implements_trait(trait_did, [ty], param_env.param_env)
-        .must_apply_modulo_regions()
+    type_implements_trait(tcx, param_env, ty, trait_did).inspect_err(|e| {
+        trace!(
+            "Type impls check: '{ty:?}' error: {e}"
+        );
+    }).is_ok()
 }

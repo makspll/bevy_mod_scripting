@@ -6,8 +6,12 @@ use crate::{
 };
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{
-    DynamicEnum, DynamicList, DynamicMap, DynamicSet, DynamicTuple, DynamicVariant, Map,
-    PartialReflect, ReflectKind, Set,
+    PartialReflect, ReflectKind,
+    enums::{DynamicEnum, DynamicVariant},
+    list::DynamicList,
+    map::{DynamicMap, Map},
+    set::{DynamicSet, Set},
+    tuple::DynamicTuple,
 };
 use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
