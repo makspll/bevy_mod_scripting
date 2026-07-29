@@ -220,8 +220,8 @@ pub fn sync_window_size(
     {
         let primary_window = primary_windows.get(e.window).unwrap();
         settings.display_grid_dimensions = (
-            primary_window.physical_width(),
-            primary_window.physical_height(),
+            primary_window.width() as u32,
+            primary_window.height() as u32,
         );
 
         // resize all game's of life, retain aspect ratio and fit the entire game in the window
@@ -278,6 +278,7 @@ pub fn send_on_click(
         let pos = window.unwrap().cursor_position().unwrap_or_default();
         let x = pos.x as u32;
         let y = pos.y as u32;
+        
         events.write(ScriptCallbackEvent::new_for_all_scripts(
             OnClick,
             vec![

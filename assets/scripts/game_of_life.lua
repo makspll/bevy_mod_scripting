@@ -1,7 +1,7 @@
 LifeState = world.get_type_by_name("LifeState")
 Settings = world.get_type_by_name("Settings")
 
-info("Lua: The game_of_life.lua script just got loaded")
+log_warn("Lua: The game_of_life.lua script just got loaded")
 math.randomseed(os.time())
 
 function fetch_life_state()
@@ -11,8 +11,8 @@ function fetch_life_state()
 end
 
 function on_script_loaded()
-    info("Lua: Hello! I am initiating the game of life simulation state with randomness!")
-    info("Lua: Click on the screen to set cells alive after running the `gol start` command")
+    log_warn("Lua: Hello! I am initiating the game of life simulation state with randomness!")
+    log_warn("Lua: Click on the screen to set cells alive after running the `gol start` command")
 
     local life_state = fetch_life_state()
 
@@ -27,12 +27,10 @@ end
 
 function on_click(x, y)
     -- get the settings
-    info("Lua: Clicked at x: " .. x .. " y: " .. y)
+    log_warn("Lua: Clicked at x: " .. x .. " y: " .. y)
     local life_state = fetch_life_state()
     local cells = life_state.cells
-
     local settings = world.get_resource(Settings)
-
     local dimensions = settings.physical_grid_dimensions
     local screen = settings.display_grid_dimensions
 
@@ -42,11 +40,14 @@ function on_click(x, y)
     local screen_x = screen[1]
     local screen_y = screen[2]
 
+
     local cell_width = screen_x / dimension_x
     local cell_height = screen_y / dimension_y
 
     local cell_x = math.floor(x / cell_width)
     local cell_y = math.floor(y / cell_height)
+    print(x, y)
+    print(screen_x, screen_y)
 
     local index = (cell_y * dimension_x) + cell_x
 
@@ -110,7 +111,7 @@ function on_update()
 end
 
 function on_script_unloaded()
-    info("Lua: I am being unloaded, goodbye!")
+    log_warn("Lua: I am being unloaded, goodbye!")
 
     -- set state to 0's
     local life_state = fetch_life_state()
