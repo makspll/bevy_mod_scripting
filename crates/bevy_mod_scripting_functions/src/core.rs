@@ -86,6 +86,8 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_ui_bms_bindings::BevyUiScriptingPlugin);
     #[cfg(feature = "bevy_ui_render")]
     app.add_plugins(bevy_ui_renderer_bms_bindings::BevyUiRendererScriptingPlugin);
+    #[cfg(feature = "bevy_ui_widgets")]
+    app.add_plugins(bevy_ui_widgets_bms_bindings::BevyUiWidgetsScriptingPlugin);
 }
 
 #[script_bindings(

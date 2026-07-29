@@ -95,6 +95,7 @@ bevy_time_bindings = ["bevy_mod_scripting_functions/bevy_time"]
 bevy_transform_bindings = ["bevy_mod_scripting_functions/bevy_transform"]
 bevy_ui_bindings = ["bevy_mod_scripting_functions/bevy_ui"]
 bevy_ui_render_bindings = ["bevy_mod_scripting_functions/bevy_ui_render"]
+bevy_ui_widgets_bindings = ["bevy_mod_scripting_functions/bevy_ui_widgets"]
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua?/unsafe_lua_modules"]
