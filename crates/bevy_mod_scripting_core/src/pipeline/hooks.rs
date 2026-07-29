@@ -29,7 +29,6 @@ pub(crate) fn process_machine_failure<P: IntoScriptPluginParams>(
     let _ = script_contexts.mark_active_if_not_loading(&attachment);
 }
 
-
 pub fn on_script_loaded_pipeline_handler<P: IntoScriptPluginParams>(
     trigger: On<ContextAssigned<P>>,
     mut commands: Commands,

@@ -1,18 +1,16 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyPbrScriptingPlugin;
 pub(crate) fn register_contact_shadows_functions(world: &mut World) {
@@ -276,52 +274,48 @@ pub(crate) fn register_fog_falloff_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_pbr::FogFalloff,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_pbr::FogFalloff, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::ParallaxMappingMethod,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
-                let output: V<::bevy_pbr::ParallaxMappingMethod> = {
-                    {
-                        let output: V<::bevy_pbr::ParallaxMappingMethod> = <::bevy_pbr::ParallaxMappingMethod as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
+            let output: V<::bevy_pbr::ParallaxMappingMethod> = {
+                {
+                    let output: V<::bevy_pbr::ParallaxMappingMethod> =
+                        <::bevy_pbr::ParallaxMappingMethod as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::ParallaxMappingMethod>,
-                other: R<::bevy_pbr::ParallaxMappingMethod>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::ParallaxMappingMethod as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::ParallaxMappingMethod>,
+         other: R<::bevy_pbr::ParallaxMappingMethod>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::ParallaxMappingMethod as ::std::cmp::PartialEq<
                             ::bevy_pbr::ParallaxMappingMethod,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -334,65 +328,56 @@ pub(crate) fn register_standard_material_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::StandardMaterial,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::StandardMaterial>| {
-                let output: V<::bevy_pbr::StandardMaterial> = {
-                    {
-                        let output: V<::bevy_pbr::StandardMaterial> = <::bevy_pbr::StandardMaterial as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "flip",
-            |
-                mut _self: M<::bevy_pbr::StandardMaterial>,
-                horizontal: bool,
-                vertical: bool|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_pbr::StandardMaterial::flip(
-                                &mut _self,
-                                horizontal,
-                                vertical,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Flip the texture coordinates of the material.",
-            &["_self", "horizontal", "vertical"],
-        )
-        .register_documented(
-            "flipped",
-            |_self: V<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
-                let output: V<::bevy_pbr::StandardMaterial> = {
-                    {
-                        let output: V<::bevy_pbr::StandardMaterial> = ::bevy_pbr::StandardMaterial::flipped(
-                                _self.into_inner(),
-                                horizontal,
-                                vertical,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Consumes the material and returns a material with flipped texture coordinates",
-            &["_self", "horizontal", "vertical"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::StandardMaterial>| {
+            let output: V<::bevy_pbr::StandardMaterial> = {
+                {
+                    let output: V<::bevy_pbr::StandardMaterial> =
+                        <::bevy_pbr::StandardMaterial as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "flip",
+        |mut _self: M<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
+            let output: () = {
+                {
+                    let output: () =
+                        ::bevy_pbr::StandardMaterial::flip(&mut _self, horizontal, vertical).into();
+                    output
+                }
+            };
+            output
+        },
+        " Flip the texture coordinates of the material.",
+        &["_self", "horizontal", "vertical"],
+    )
+    .register_documented(
+        "flipped",
+        |_self: V<::bevy_pbr::StandardMaterial>, horizontal: bool, vertical: bool| {
+            let output: V<::bevy_pbr::StandardMaterial> = {
+                {
+                    let output: V<::bevy_pbr::StandardMaterial> =
+                        ::bevy_pbr::StandardMaterial::flipped(
+                            _self.into_inner(),
+                            horizontal,
+                            vertical,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Consumes the material and returns a material with flipped texture coordinates",
+        &["_self", "horizontal", "vertical"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -405,87 +390,84 @@ pub(crate) fn register_default_opaque_renderer_method_functions(world: &mut Worl
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::DefaultOpaqueRendererMethod,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::DefaultOpaqueRendererMethod>| {
-                let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
-                    {
-                        let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = <::bevy_pbr::DefaultOpaqueRendererMethod as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "deferred",
-            || {
-                let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
-                    {
-                        let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = ::bevy_pbr::DefaultOpaqueRendererMethod::deferred()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &[],
-        )
-        .register_documented(
-            "forward",
-            || {
-                let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
-                    {
-                        let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = ::bevy_pbr::DefaultOpaqueRendererMethod::forward()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &[],
-        )
-        .register_documented(
-            "set_to_deferred",
-            |mut _self: M<::bevy_pbr::DefaultOpaqueRendererMethod>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_deferred(
-                                &mut _self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "set_to_forward",
-            |mut _self: M<::bevy_pbr::DefaultOpaqueRendererMethod>| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_forward(
-                                &mut _self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::DefaultOpaqueRendererMethod>| {
+            let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
+                {
+                    let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> =
+                        <::bevy_pbr::DefaultOpaqueRendererMethod as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "deferred",
+        || {
+            let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
+                {
+                    let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> =
+                        ::bevy_pbr::DefaultOpaqueRendererMethod::deferred().into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &[],
+    )
+    .register_documented(
+        "forward",
+        || {
+            let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> = {
+                {
+                    let output: V<::bevy_pbr::DefaultOpaqueRendererMethod> =
+                        ::bevy_pbr::DefaultOpaqueRendererMethod::forward().into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &[],
+    )
+    .register_documented(
+        "set_to_deferred",
+        |mut _self: M<::bevy_pbr::DefaultOpaqueRendererMethod>| {
+            let output: () = {
+                {
+                    let output: () =
+                        ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_deferred(&mut _self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "set_to_forward",
+        |mut _self: M<::bevy_pbr::DefaultOpaqueRendererMethod>| {
+            let output: () = {
+                {
+                    let output: () =
+                        ::bevy_pbr::DefaultOpaqueRendererMethod::set_to_forward(&mut _self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -498,23 +480,24 @@ pub(crate) fn register_wireframe_material_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::WireframeMaterial,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::WireframeMaterial>| {
-                let output: V<::bevy_pbr::wireframe::WireframeMaterial> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::WireframeMaterial> = <::bevy_pbr::wireframe::WireframeMaterial as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::WireframeMaterial>| {
+            let output: V<::bevy_pbr::wireframe::WireframeMaterial> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::WireframeMaterial> =
+                        <::bevy_pbr::wireframe::WireframeMaterial as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -527,23 +510,24 @@ pub(crate) fn register_wireframe_config_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::WireframeConfig,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::WireframeConfig>| {
-                let output: V<::bevy_pbr::wireframe::WireframeConfig> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::WireframeConfig> = <::bevy_pbr::wireframe::WireframeConfig as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::WireframeConfig>| {
+            let output: V<::bevy_pbr::wireframe::WireframeConfig> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::WireframeConfig> =
+                        <::bevy_pbr::wireframe::WireframeConfig as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -556,23 +540,24 @@ pub(crate) fn register_wireframe_line_width_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::WireframeLineWidth,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::WireframeLineWidth>| {
-                let output: V<::bevy_pbr::wireframe::WireframeLineWidth> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::WireframeLineWidth> = <::bevy_pbr::wireframe::WireframeLineWidth as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::WireframeLineWidth>| {
+            let output: V<::bevy_pbr::wireframe::WireframeLineWidth> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::WireframeLineWidth> =
+                        <::bevy_pbr::wireframe::WireframeLineWidth as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -585,43 +570,43 @@ pub(crate) fn register_wireframe_topology_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::WireframeTopology,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::WireframeTopology>| {
-                let output: V<::bevy_pbr::wireframe::WireframeTopology> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::WireframeTopology> = <::bevy_pbr::wireframe::WireframeTopology as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::wireframe::WireframeTopology>,
-                other: R<::bevy_pbr::wireframe::WireframeTopology>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::wireframe::WireframeTopology as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::WireframeTopology>| {
+            let output: V<::bevy_pbr::wireframe::WireframeTopology> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::WireframeTopology> =
+                        <::bevy_pbr::wireframe::WireframeTopology as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::wireframe::WireframeTopology>,
+         other: R<::bevy_pbr::wireframe::WireframeTopology>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::wireframe::WireframeTopology as ::std::cmp::PartialEq<
                             ::bevy_pbr::wireframe::WireframeTopology,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -634,43 +619,40 @@ pub(crate) fn register_wireframe_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::Wireframe,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::Wireframe>| {
-                let output: V<::bevy_pbr::wireframe::Wireframe> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::Wireframe> = <::bevy_pbr::wireframe::Wireframe as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::Wireframe>| {
+            let output: V<::bevy_pbr::wireframe::Wireframe> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::Wireframe> =
+                        <::bevy_pbr::wireframe::Wireframe as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::wireframe::Wireframe>,
-                other: R<::bevy_pbr::wireframe::Wireframe>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::wireframe::Wireframe as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::wireframe::Wireframe>, other: R<::bevy_pbr::wireframe::Wireframe>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::wireframe::Wireframe as ::std::cmp::PartialEq<
                             ::bevy_pbr::wireframe::Wireframe,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -683,23 +665,24 @@ pub(crate) fn register_wireframe_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::WireframeColor,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::WireframeColor>| {
-                let output: V<::bevy_pbr::wireframe::WireframeColor> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::WireframeColor> = <::bevy_pbr::wireframe::WireframeColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::WireframeColor>| {
+            let output: V<::bevy_pbr::wireframe::WireframeColor> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::WireframeColor> =
+                        <::bevy_pbr::wireframe::WireframeColor as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -712,43 +695,41 @@ pub(crate) fn register_no_wireframe_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::NoWireframe,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::NoWireframe>| {
-                let output: V<::bevy_pbr::wireframe::NoWireframe> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::NoWireframe> = <::bevy_pbr::wireframe::NoWireframe as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::NoWireframe>| {
+            let output: V<::bevy_pbr::wireframe::NoWireframe> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::NoWireframe> =
+                        <::bevy_pbr::wireframe::NoWireframe as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::wireframe::NoWireframe>,
-                other: R<::bevy_pbr::wireframe::NoWireframe>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::wireframe::NoWireframe as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::wireframe::NoWireframe>,
+         other: R<::bevy_pbr::wireframe::NoWireframe>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::wireframe::NoWireframe as ::std::cmp::PartialEq<
                             ::bevy_pbr::wireframe::NoWireframe,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -761,43 +742,43 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::Mesh3dWireframe,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
-                let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> = {
-                    {
-                        let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::wireframe::Mesh3dWireframe>,
-                other: R<::bevy_pbr::wireframe::Mesh3dWireframe>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
+            let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> = {
+                {
+                    let output: V<::bevy_pbr::wireframe::Mesh3dWireframe> =
+                        <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>,
+         other: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::cmp::PartialEq<
                             ::bevy_pbr::wireframe::Mesh3dWireframe,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -810,23 +791,22 @@ pub(crate) fn register_atmosphere_settings_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::AtmosphereSettings,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::AtmosphereSettings>| {
-                let output: V<::bevy_pbr::AtmosphereSettings> = {
-                    {
-                        let output: V<::bevy_pbr::AtmosphereSettings> = <::bevy_pbr::AtmosphereSettings as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::AtmosphereSettings>| {
+            let output: V<::bevy_pbr::AtmosphereSettings> = {
+                {
+                    let output: V<::bevy_pbr::AtmosphereSettings> =
+                        <::bevy_pbr::AtmosphereSettings as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -839,23 +819,22 @@ pub(crate) fn register_gpu_atmosphere_settings_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::GpuAtmosphereSettings,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::GpuAtmosphereSettings>| {
-                let output: V<::bevy_pbr::GpuAtmosphereSettings> = {
-                    {
-                        let output: V<::bevy_pbr::GpuAtmosphereSettings> = <::bevy_pbr::GpuAtmosphereSettings as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::GpuAtmosphereSettings>| {
+            let output: V<::bevy_pbr::GpuAtmosphereSettings> = {
+                {
+                    let output: V<::bevy_pbr::GpuAtmosphereSettings> =
+                        <::bevy_pbr::GpuAtmosphereSettings as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -909,43 +888,43 @@ pub(crate) fn register_screen_space_ambient_occlusion_functions(world: &mut Worl
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::ScreenSpaceAmbientOcclusion,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>| {
-                let output: V<::bevy_pbr::ScreenSpaceAmbientOcclusion> = {
-                    {
-                        let output: V<::bevy_pbr::ScreenSpaceAmbientOcclusion> = <::bevy_pbr::ScreenSpaceAmbientOcclusion as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>,
-                other: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::ScreenSpaceAmbientOcclusion as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>| {
+            let output: V<::bevy_pbr::ScreenSpaceAmbientOcclusion> = {
+                {
+                    let output: V<::bevy_pbr::ScreenSpaceAmbientOcclusion> =
+                        <::bevy_pbr::ScreenSpaceAmbientOcclusion as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>,
+         other: R<::bevy_pbr::ScreenSpaceAmbientOcclusion>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::ScreenSpaceAmbientOcclusion as ::std::cmp::PartialEq<
                             ::bevy_pbr::ScreenSpaceAmbientOcclusion,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -958,23 +937,22 @@ pub(crate) fn register_screen_space_transmission_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::ScreenSpaceTransmission,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::ScreenSpaceTransmission>| {
-                let output: V<::bevy_pbr::ScreenSpaceTransmission> = {
-                    {
-                        let output: V<::bevy_pbr::ScreenSpaceTransmission> = <::bevy_pbr::ScreenSpaceTransmission as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::ScreenSpaceTransmission>| {
+            let output: V<::bevy_pbr::ScreenSpaceTransmission> = {
+                {
+                    let output: V<::bevy_pbr::ScreenSpaceTransmission> =
+                        <::bevy_pbr::ScreenSpaceTransmission as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1007,32 +985,28 @@ pub(crate) fn register_lightmap_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_pbr::Lightmap,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_pbr::Lightmap, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_material_binding_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::MaterialBindingId,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::MaterialBindingId>| {
-                let output: V<::bevy_pbr::MaterialBindingId> = {
-                    {
-                        let output: V<::bevy_pbr::MaterialBindingId> = <::bevy_pbr::MaterialBindingId as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::MaterialBindingId>| {
+            let output: V<::bevy_pbr::MaterialBindingId> = {
+                {
+                    let output: V<::bevy_pbr::MaterialBindingId> =
+                        <::bevy_pbr::MaterialBindingId as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1045,43 +1019,41 @@ pub(crate) fn register_material_bind_group_slot_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::MaterialBindGroupSlot,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::MaterialBindGroupSlot>| {
-                let output: V<::bevy_pbr::MaterialBindGroupSlot> = {
-                    {
-                        let output: V<::bevy_pbr::MaterialBindGroupSlot> = <::bevy_pbr::MaterialBindGroupSlot as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::MaterialBindGroupSlot>| {
+            let output: V<::bevy_pbr::MaterialBindGroupSlot> = {
+                {
+                    let output: V<::bevy_pbr::MaterialBindGroupSlot> =
+                        <::bevy_pbr::MaterialBindGroupSlot as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::MaterialBindGroupSlot>,
-                other: R<::bevy_pbr::MaterialBindGroupSlot>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::MaterialBindGroupSlot as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::MaterialBindGroupSlot>,
+         other: R<::bevy_pbr::MaterialBindGroupSlot>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::MaterialBindGroupSlot as ::std::cmp::PartialEq<
                             ::bevy_pbr::MaterialBindGroupSlot,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1094,43 +1066,41 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::MaterialBindGroupIndex,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
-                let output: V<::bevy_pbr::MaterialBindGroupIndex> = {
-                    {
-                        let output: V<::bevy_pbr::MaterialBindGroupIndex> = <::bevy_pbr::MaterialBindGroupIndex as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
+            let output: V<::bevy_pbr::MaterialBindGroupIndex> = {
+                {
+                    let output: V<::bevy_pbr::MaterialBindGroupIndex> =
+                        <::bevy_pbr::MaterialBindGroupIndex as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::MaterialBindGroupIndex>,
-                other: R<::bevy_pbr::MaterialBindGroupIndex>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::MaterialBindGroupIndex as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::MaterialBindGroupIndex>,
+         other: R<::bevy_pbr::MaterialBindGroupIndex>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::MaterialBindGroupIndex as ::std::cmp::PartialEq<
                             ::bevy_pbr::MaterialBindGroupIndex,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1139,9 +1109,7 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_screen_space_ambient_occlusion_quality_level_functions(
-    world: &mut World,
-) {
+pub(crate) fn register_screen_space_ambient_occlusion_quality_level_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel,
     >::new(world)
@@ -1196,23 +1164,22 @@ pub(crate) fn register_screen_space_reflections_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::ScreenSpaceReflections,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::ScreenSpaceReflections>| {
-                let output: V<::bevy_pbr::ScreenSpaceReflections> = {
-                    {
-                        let output: V<::bevy_pbr::ScreenSpaceReflections> = <::bevy_pbr::ScreenSpaceReflections as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::ScreenSpaceReflections>| {
+            let output: V<::bevy_pbr::ScreenSpaceReflections> = {
+                {
+                    let output: V<::bevy_pbr::ScreenSpaceReflections> =
+                        <::bevy_pbr::ScreenSpaceReflections as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1225,43 +1192,43 @@ pub(crate) fn register_screen_space_transmission_quality_functions(world: &mut W
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::ScreenSpaceTransmissionQuality,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_pbr::ScreenSpaceTransmissionQuality>| {
-                let output: V<::bevy_pbr::ScreenSpaceTransmissionQuality> = {
-                    {
-                        let output: V<::bevy_pbr::ScreenSpaceTransmissionQuality> = <::bevy_pbr::ScreenSpaceTransmissionQuality as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_pbr::ScreenSpaceTransmissionQuality>,
-                other: R<::bevy_pbr::ScreenSpaceTransmissionQuality>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_pbr::ScreenSpaceTransmissionQuality as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_pbr::ScreenSpaceTransmissionQuality>| {
+            let output: V<::bevy_pbr::ScreenSpaceTransmissionQuality> = {
+                {
+                    let output: V<::bevy_pbr::ScreenSpaceTransmissionQuality> =
+                        <::bevy_pbr::ScreenSpaceTransmissionQuality as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_pbr::ScreenSpaceTransmissionQuality>,
+         other: R<::bevy_pbr::ScreenSpaceTransmissionQuality>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_pbr::ScreenSpaceTransmissionQuality as ::std::cmp::PartialEq<
                             ::bevy_pbr::ScreenSpaceTransmissionQuality,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

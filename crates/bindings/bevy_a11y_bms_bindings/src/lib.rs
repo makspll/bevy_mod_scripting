@@ -1,18 +1,16 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyA11YScriptingPlugin;
 pub(crate) fn register_accessibility_requested_functions(world: &mut World) {
@@ -83,58 +81,53 @@ pub(crate) fn register_manage_accessibility_updates_functions(world: &mut World)
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_a11y::ManageAccessibilityUpdates,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
-                let output: V<::bevy_a11y::ManageAccessibilityUpdates> = {
-                    {
-                        let output: V<::bevy_a11y::ManageAccessibilityUpdates> = <::bevy_a11y::ManageAccessibilityUpdates as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "get",
-            |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_a11y::ManageAccessibilityUpdates::get(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns `true` if Bevy's ECS should update the accessibility tree.",
-            &["_self"],
-        )
-        .register_documented(
-            "set",
-            |mut _self: M<::bevy_a11y::ManageAccessibilityUpdates>, value: bool| {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_a11y::ManageAccessibilityUpdates::set(
-                                &mut _self,
-                                value,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets whether Bevy's ECS should update the accessibility tree.",
-            &["_self", "value"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
+            let output: V<::bevy_a11y::ManageAccessibilityUpdates> = {
+                {
+                    let output: V<::bevy_a11y::ManageAccessibilityUpdates> =
+                        <::bevy_a11y::ManageAccessibilityUpdates as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "get",
+        |_self: R<::bevy_a11y::ManageAccessibilityUpdates>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_a11y::ManageAccessibilityUpdates::get(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns `true` if Bevy's ECS should update the accessibility tree.",
+        &["_self"],
+    )
+    .register_documented(
+        "set",
+        |mut _self: M<::bevy_a11y::ManageAccessibilityUpdates>, value: bool| {
+            let output: () = {
+                {
+                    let output: () =
+                        ::bevy_a11y::ManageAccessibilityUpdates::set(&mut _self, value).into();
+                    output
+                }
+            };
+            output
+        },
+        " Sets whether Bevy's ECS should update the accessibility tree.",
+        &["_self", "value"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -147,43 +140,41 @@ pub(crate) fn register_accessibility_systems_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_a11y::AccessibilitySystems,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_a11y::AccessibilitySystems>| {
-                let output: V<::bevy_a11y::AccessibilitySystems> = {
-                    {
-                        let output: V<::bevy_a11y::AccessibilitySystems> = <::bevy_a11y::AccessibilitySystems as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_a11y::AccessibilitySystems>| {
+            let output: V<::bevy_a11y::AccessibilitySystems> = {
+                {
+                    let output: V<::bevy_a11y::AccessibilitySystems> =
+                        <::bevy_a11y::AccessibilitySystems as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_a11y::AccessibilitySystems>,
-                other: R<::bevy_a11y::AccessibilitySystems>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_a11y::AccessibilitySystems as ::core::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_a11y::AccessibilitySystems>,
+         other: R<::bevy_a11y::AccessibilitySystems>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_a11y::AccessibilitySystems as ::core::cmp::PartialEq<
                             ::bevy_a11y::AccessibilitySystems,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

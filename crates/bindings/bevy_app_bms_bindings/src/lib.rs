@@ -1,18 +1,16 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAppScriptingPlugin;
 pub(crate) fn register_app_exit_functions(world: &mut World) {
@@ -117,10 +115,7 @@ pub(crate) fn register_app_exit_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_app::AppExit,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_app::AppExit, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 impl Plugin for BevyAppScriptingPlugin {
     fn build(&self, app: &mut App) {

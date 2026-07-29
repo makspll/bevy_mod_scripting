@@ -11,7 +11,11 @@ use crate::{
     pipeline::RunProcessingPipelineOnce,
     script::Context,
 };
-use bevy_ecs::{error::{BevyError, Severity}, system::Command, world::World};
+use bevy_ecs::{
+    error::{BevyError, Severity},
+    system::Command,
+    world::World,
+};
 use bevy_log::trace;
 use bevy_mod_scripting_bindings::{CurrentScriptAttachment, ScriptValue, WorldExtensions};
 use bevy_mod_scripting_display::DisplayProxy;
@@ -222,7 +226,8 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
 impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
     fn apply(self, world: &mut World) -> Self::Out {
         // inner handling already logs
-        self.run(world).map_err(|e| BevyError::from(e).with_severity(Severity::Ignore))
+        self.run(world)
+            .map_err(|e| BevyError::from(e).with_severity(Severity::Ignore))
     }
     type Out = Result<ScriptValue, BevyError>;
 }

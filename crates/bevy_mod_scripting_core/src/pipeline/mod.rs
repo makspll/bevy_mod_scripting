@@ -208,8 +208,6 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
         // now the first observer registered is the last/
         // we probably shouldn't rely on that, but it's convenient for separation of concerns
 
-
-
         // reloaded observer goes last
         if self.on_script_reloaded_callback {
             app.add_observer(on_script_reloaded_pipeline_handler::<P>);

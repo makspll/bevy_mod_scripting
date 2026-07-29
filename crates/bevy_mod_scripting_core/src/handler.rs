@@ -117,14 +117,14 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     guard: WorldAccessGuard,
 ) {
     let mut errors = Vec::default();
-    let events: Result<Vec<ScriptCallbackEvent>, InteropError> = guard.with_resource(|events: &Messages<ScriptCallbackEvent>| {
-        event_cursor
-            .read(events)
-            .filter(|e| e.label == callback_label)
-            .cloned()
-            .collect::<Vec<_>>()
-    });
-
+    let events: Result<Vec<ScriptCallbackEvent>, InteropError> =
+        guard.with_resource(|events: &Messages<ScriptCallbackEvent>| {
+            event_cursor
+                .read(events)
+                .filter(|e| e.label == callback_label)
+                .cloned()
+                .collect::<Vec<_>>()
+        });
 
     let events = match events {
         Ok(events) => events,
@@ -142,7 +142,6 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     for event in events.into_iter().filter(|e| {
         e.label == callback_label && e.language.as_ref().is_none_or(|l| l == &P::LANGUAGE)
     }) {
-
         let recipients = event.recipients.get_recipients(script_context.clone());
         let highly_specific = matches!(
             event.recipients,
@@ -183,7 +182,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     .with_type_info_context(Some("args: "), event.args.clone())
                     .with_language(P::LANGUAGE)
             });
-            
+
             drop(ctxt);
 
             if event.trigger_response {
