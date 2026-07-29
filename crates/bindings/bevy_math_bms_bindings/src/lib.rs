@@ -142,23 +142,6 @@ pub(crate) fn register_compass_octant_functions(world: &mut World) {
         ::bevy_math::CompassOctant,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_math::CompassOctant>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_math::CompassOctant as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_math::CompassOctant>| {
                 let output: V<::bevy_math::CompassOctant> = {
@@ -261,23 +244,6 @@ pub(crate) fn register_compass_quadrant_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::CompassQuadrant,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_math::CompassQuadrant>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_math::CompassQuadrant as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_math::CompassQuadrant>| {
@@ -1863,23 +1829,6 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_math::IRect>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_math::IRect as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "center",
             |_self: R<::bevy_math::IRect>| {
                 let output: V<::bevy_math::IVec2> = {
@@ -2601,23 +2550,6 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
                 output
             },
             " Returns self as [`Rect`] (f32)",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_math::URect>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_math::URect as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -9158,23 +9090,6 @@ pub(crate) fn register_jump_at_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_math::curve::JumpAt,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_math::curve::JumpAt>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_math::curve::JumpAt as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_math::curve::JumpAt>| {

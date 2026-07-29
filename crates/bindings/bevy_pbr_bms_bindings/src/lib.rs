@@ -286,23 +286,6 @@ pub(crate) fn register_parallax_mapping_method_functions(world: &mut World) {
         ::bevy_pbr::ParallaxMappingMethod,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_pbr::ParallaxMappingMethod as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_pbr::ParallaxMappingMethod>| {
                 let output: V<::bevy_pbr::ParallaxMappingMethod> = {
@@ -603,23 +586,6 @@ pub(crate) fn register_wireframe_topology_functions(world: &mut World) {
         ::bevy_pbr::wireframe::WireframeTopology,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_pbr::wireframe::WireframeTopology>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_pbr::wireframe::WireframeTopology as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_pbr::wireframe::WireframeTopology>| {
                 let output: V<::bevy_pbr::wireframe::WireframeTopology> = {
@@ -668,23 +634,6 @@ pub(crate) fn register_wireframe_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::Wireframe,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_pbr::wireframe::Wireframe>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_pbr::wireframe::Wireframe as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_pbr::wireframe::Wireframe>| {
@@ -764,23 +713,6 @@ pub(crate) fn register_no_wireframe_functions(world: &mut World) {
         ::bevy_pbr::wireframe::NoWireframe,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_pbr::wireframe::NoWireframe>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_pbr::wireframe::NoWireframe as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_pbr::wireframe::NoWireframe>| {
                 let output: V<::bevy_pbr::wireframe::NoWireframe> = {
@@ -829,23 +761,6 @@ pub(crate) fn register_mesh_3_d_wireframe_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::wireframe::Mesh3dWireframe,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_pbr::wireframe::Mesh3dWireframe as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_pbr::wireframe::Mesh3dWireframe>| {
@@ -1180,23 +1095,6 @@ pub(crate) fn register_material_bind_group_index_functions(world: &mut World) {
         ::bevy_pbr::MaterialBindGroupIndex,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_pbr::MaterialBindGroupIndex as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_pbr::MaterialBindGroupIndex>| {
                 let output: V<::bevy_pbr::MaterialBindGroupIndex> = {
@@ -1247,23 +1145,6 @@ pub(crate) fn register_screen_space_ambient_occlusion_quality_level_functions(
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>| {

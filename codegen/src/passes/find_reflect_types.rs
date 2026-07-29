@@ -17,6 +17,7 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
         _ => return true,
     };
 
+
     for trait_did in tcx.all_local_trait_impls(()).keys() {
         // we want to find the canonical `Reflect` trait's implemenations across crates, so let's check all impls and choose those
         // whose def_path is equal to what we know the Reflect trait's is
@@ -57,6 +58,7 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                         format!("impl block {impl_did:?}, is not local"),
                     )));
                 }
+
 
                 let generics = tcx.generics_of(*impl_did);
                 if generics.count() > 0 {

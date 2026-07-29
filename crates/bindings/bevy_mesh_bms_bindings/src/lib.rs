@@ -601,23 +601,6 @@ pub(crate) fn register_mesh_2_d_functions(world: &mut World) {
         ::bevy_mesh::Mesh2d,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_mesh::Mesh2d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_mesh::Mesh2d as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_mesh::Mesh2d>| {
                 let output: V<::bevy_mesh::Mesh2d> = {
@@ -664,23 +647,6 @@ pub(crate) fn register_mesh_3_d_functions(world: &mut World) {
         ::bevy_mesh::Mesh3d,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_mesh::Mesh3d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_mesh::Mesh3d as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_mesh::Mesh3d>| {
                 let output: V<::bevy_mesh::Mesh3d> = {
@@ -726,23 +692,6 @@ pub(crate) fn register_mesh_tag_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::MeshTag,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_mesh::MeshTag>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_mesh::MeshTag as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_mesh::MeshTag>| {
@@ -999,23 +948,6 @@ pub(crate) fn register_uv_channel_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::UvChannel,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_mesh::UvChannel>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_mesh::UvChannel as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_mesh::UvChannel>| {

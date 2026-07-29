@@ -20,23 +20,6 @@ pub(crate) fn register_texture_atlas_functions(world: &mut World) {
         ::bevy_image::TextureAtlas,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_image::TextureAtlas>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_image::TextureAtlas as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_image::TextureAtlas>| {
                 let output: V<::bevy_image::TextureAtlas> = {
@@ -120,23 +103,6 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
             },
             " Add a *section* to the list in the layout and returns its index\n which can be used with [`TextureAtlas`]\n # Arguments\n * `rect` - The section of the texture to be added\n [`TextureAtlas`]: crate::TextureAtlas",
             &["_self", "rect"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_image::TextureAtlasLayout>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_image::TextureAtlasLayout as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "clone",

@@ -20,23 +20,6 @@ pub(crate) fn register_dynamic_world_root_functions(world: &mut World) {
         ::bevy_world_serialization::DynamicWorldRoot,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_world_serialization::DynamicWorldRoot>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_world_serialization::DynamicWorldRoot as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_world_serialization::DynamicWorldRoot>| {
                 let output: V<::bevy_world_serialization::DynamicWorldRoot> = {
@@ -85,23 +68,6 @@ pub(crate) fn register_world_asset_root_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_world_serialization::WorldAssetRoot,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_world_serialization::WorldAssetRoot>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_world_serialization::WorldAssetRoot as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_world_serialization::WorldAssetRoot>| {
@@ -152,23 +118,6 @@ pub(crate) fn register_world_instance_ready_functions(world: &mut World) {
         ::bevy_world_serialization::WorldInstanceReady,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_world_serialization::WorldInstanceReady>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_world_serialization::WorldInstanceReady as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_world_serialization::WorldInstanceReady>| {
                 let output: V<::bevy_world_serialization::WorldInstanceReady> = {
@@ -217,23 +166,6 @@ pub(crate) fn register_instance_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_world_serialization::InstanceId,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_world_serialization::InstanceId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_world_serialization::InstanceId as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_world_serialization::InstanceId>| {

@@ -879,23 +879,6 @@ pub(crate) fn register_shadow_filtering_method_functions(world: &mut World) {
         ::bevy_light::ShadowFilteringMethod,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_light::ShadowFilteringMethod>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_light::ShadowFilteringMethod as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_light::ShadowFilteringMethod>| {
                 let output: V<::bevy_light::ShadowFilteringMethod> = {

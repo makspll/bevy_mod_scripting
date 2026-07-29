@@ -20,23 +20,6 @@ pub(crate) fn register_display_functions(world: &mut World) {
         ::bevy_ui::Display,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::Display>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::Display as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::Display>| {
                 let output: V<::bevy_ui::Display> = {
@@ -393,23 +376,6 @@ pub(crate) fn register_button_functions(world: &mut World) {
         ::bevy_ui::widget::Button,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::widget::Button>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::widget::Button as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::widget::Button>| {
                 let output: V<::bevy_ui::widget::Button> = {
@@ -734,23 +700,6 @@ pub(crate) fn register_interaction_functions(world: &mut World) {
         ::bevy_ui::Interaction,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::Interaction>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::Interaction as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::Interaction>| {
                 let output: V<::bevy_ui::Interaction> = {
@@ -808,23 +757,6 @@ pub(crate) fn register_computed_stack_index_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ComputedStackIndex,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::ComputedStackIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::ComputedStackIndex as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "eq",
             |
@@ -1755,23 +1687,6 @@ pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
         ::bevy_ui::UiTargetCamera,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::UiTargetCamera>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::UiTargetCamera as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::UiTargetCamera>| {
                 let output: V<::bevy_ui::UiTargetCamera> = {
@@ -1847,23 +1762,6 @@ pub(crate) fn register_focus_policy_functions(world: &mut World) {
         ::bevy_ui::FocusPolicy,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::FocusPolicy>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::FocusPolicy as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::FocusPolicy>| {
                 let output: V<::bevy_ui::FocusPolicy> = {
@@ -1909,23 +1807,6 @@ pub(crate) fn register_visual_box_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::VisualBox,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::VisualBox>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::VisualBox as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::VisualBox>| {
@@ -2018,23 +1899,6 @@ pub(crate) fn register_box_sizing_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::BoxSizing,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::BoxSizing>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::BoxSizing as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::BoxSizing>| {
@@ -2877,23 +2741,6 @@ pub(crate) fn register_interpolation_color_space_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::InterpolationColorSpace,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::InterpolationColorSpace>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::InterpolationColorSpace as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::InterpolationColorSpace>| {
@@ -4127,23 +3974,6 @@ pub(crate) fn register_overflow_axis_functions(world: &mut World) {
         ::bevy_ui::OverflowAxis,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::OverflowAxis>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::OverflowAxis as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::OverflowAxis>| {
                 let output: V<::bevy_ui::OverflowAxis> = {
@@ -4234,23 +4064,6 @@ pub(crate) fn register_position_type_functions(world: &mut World) {
         ::bevy_ui::PositionType,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::PositionType>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::PositionType as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::PositionType>| {
                 let output: V<::bevy_ui::PositionType> = {
@@ -4296,23 +4109,6 @@ pub(crate) fn register_align_self_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::AlignSelf,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::AlignSelf>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::AlignSelf as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::AlignSelf>| {
@@ -4409,23 +4205,6 @@ pub(crate) fn register_align_content_functions(world: &mut World) {
         ::bevy_ui::AlignContent,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::AlignContent>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::AlignContent as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::AlignContent>| {
                 let output: V<::bevy_ui::AlignContent> = {
@@ -4471,23 +4250,6 @@ pub(crate) fn register_align_items_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::AlignItems,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::AlignItems>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::AlignItems as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::AlignItems>| {
@@ -4535,23 +4297,6 @@ pub(crate) fn register_flex_direction_functions(world: &mut World) {
         ::bevy_ui::FlexDirection,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::FlexDirection>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::FlexDirection as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::FlexDirection>| {
                 let output: V<::bevy_ui::FlexDirection> = {
@@ -4597,23 +4342,6 @@ pub(crate) fn register_flex_wrap_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::FlexWrap,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::FlexWrap>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::FlexWrap as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::FlexWrap>| {
@@ -4661,23 +4389,6 @@ pub(crate) fn register_grid_auto_flow_functions(world: &mut World) {
         ::bevy_ui::GridAutoFlow,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::GridAutoFlow>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::GridAutoFlow as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::GridAutoFlow>| {
                 let output: V<::bevy_ui::GridAutoFlow> = {
@@ -4723,23 +4434,6 @@ pub(crate) fn register_grid_placement_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::GridPlacement,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::GridPlacement>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::GridPlacement as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "auto",
             || {
@@ -5107,23 +4801,6 @@ pub(crate) fn register_inline_direction_functions(world: &mut World) {
         ::bevy_ui::InlineDirection,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::InlineDirection>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::InlineDirection as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::InlineDirection>| {
                 let output: V<::bevy_ui::InlineDirection> = {
@@ -5169,23 +4846,6 @@ pub(crate) fn register_justify_content_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::JustifyContent,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::JustifyContent>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::JustifyContent as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::JustifyContent>| {
@@ -5233,23 +4893,6 @@ pub(crate) fn register_justify_items_functions(world: &mut World) {
         ::bevy_ui::JustifyItems,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::JustifyItems>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::JustifyItems as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::JustifyItems>| {
                 let output: V<::bevy_ui::JustifyItems> = {
@@ -5295,23 +4938,6 @@ pub(crate) fn register_justify_self_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::JustifySelf,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::JustifySelf>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::JustifySelf as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::JustifySelf>| {
@@ -5456,23 +5082,6 @@ pub(crate) fn register_overflow_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::Overflow,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::Overflow>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::Overflow as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clip",
             || {
@@ -6255,23 +5864,6 @@ pub(crate) fn register_global_z_index_functions(world: &mut World) {
         ::bevy_ui::GlobalZIndex,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::GlobalZIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::GlobalZIndex as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui::GlobalZIndex>| {
                 let output: V<::bevy_ui::GlobalZIndex> = {
@@ -6317,23 +5909,6 @@ pub(crate) fn register_z_index_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::ZIndex,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui::ZIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui::ZIndex as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui::ZIndex>| {

@@ -392,9 +392,9 @@ pub fn perform_benchmark_with_generator<
     group: &mut criterion::BenchmarkGroup<M>,
     batch_size: BatchSize,
 ) {
-    #[derive(Reflect, Component, Resource)]
+    #[derive(Reflect, Component)]
     struct Fake1;
-    #[derive(Reflect, Component, Resource)]
+    #[derive(Reflect, Component)]
     struct Fake2;
     #[derive(Reflect, Resource)]
     struct Fake3;
@@ -406,9 +406,9 @@ pub fn perform_benchmark_with_generator<
     let mut world = std::mem::take(setup_integration_test(|_, _| {}).world_mut());
     let f1 = world.register_component::<Fake1>();
     let f2 = world.register_component::<Fake2>();
-    let f3 = world.register_resource::<Fake3>();
-    let f4 = world.register_resource::<Fake4>();
-    let f5 = world.register_resource::<Fake5>();
+    let f3 = world.register_component::<Fake3>();
+    let f4 = world.register_component::<Fake4>();
+    let f5 = world.register_component::<Fake5>();
     let cache = WorldAccessGuard::setup_cache(&world, Default::default());
     let world_guard = WorldAccessGuard::new_exclusive(&mut world, cache);
     let mut rng_guard = RNG.lock().unwrap();

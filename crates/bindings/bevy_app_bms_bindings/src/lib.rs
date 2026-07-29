@@ -20,23 +20,6 @@ pub(crate) fn register_app_exit_functions(world: &mut World) {
         ::bevy_app::AppExit,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_app::AppExit>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_app::AppExit as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_app::AppExit>| {
                 let output: V<::bevy_app::AppExit> = {

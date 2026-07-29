@@ -189,23 +189,6 @@ pub(crate) fn register_child_of_functions(world: &mut World) {
         ::bevy_ecs::hierarchy::ChildOf,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ecs::hierarchy::ChildOf>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ecs::hierarchy::ChildOf as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ecs::hierarchy::ChildOf>| {
                 let output: V<::bevy_ecs::hierarchy::ChildOf> = {
@@ -271,23 +254,6 @@ pub(crate) fn register_children_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::hierarchy::Children,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ecs::hierarchy::Children>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ecs::hierarchy::Children as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "eq",
             |
@@ -550,23 +516,6 @@ pub(crate) fn register_entity_hash_set_functions(world: &mut World) {
         ::bevy_ecs::entity::EntityHashSet,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ecs::entity::EntityHashSet>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ecs::entity::EntityHashSet as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ecs::entity::EntityHashSet>| {
                 let output: V<::bevy_ecs::entity::EntityHashSet> = {
@@ -715,23 +664,6 @@ pub(crate) fn register_component_id_functions(world: &mut World) {
         ::bevy_ecs::component::ComponentId,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ecs::component::ComponentId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ecs::component::ComponentId as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ecs::component::ComponentId>| {
                 let output: V<::bevy_ecs::component::ComponentId> = {
@@ -814,23 +746,6 @@ pub(crate) fn register_tick_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::change_detection::Tick,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ecs::change_detection::Tick>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ecs::change_detection::Tick as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ecs::change_detection::Tick>| {
@@ -1150,23 +1065,6 @@ pub(crate) fn register_entity_index_functions(world: &mut World) {
         ::bevy_ecs::entity::EntityIndex,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ecs::entity::EntityIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ecs::entity::EntityIndex as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ecs::entity::EntityIndex>| {
                 let output: V<::bevy_ecs::entity::EntityIndex> = {
@@ -1249,23 +1147,6 @@ pub(crate) fn register_entity_generation_functions(world: &mut World) {
             },
             " Returns the [`EntityGeneration`] that would result from this many more `versions` of the corresponding [`EntityIndex`] from passing.",
             &["_self", "versions"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ecs::entity::EntityGeneration>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ecs::entity::EntityGeneration as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "clone",

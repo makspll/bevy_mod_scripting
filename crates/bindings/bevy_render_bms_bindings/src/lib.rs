@@ -20,23 +20,6 @@ pub(crate) fn register_msaa_functions(world: &mut World) {
         ::bevy_render::view::Msaa,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_render::view::Msaa>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_render::view::Msaa as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_render::view::Msaa>| {
                 let output: V<::bevy_render::view::Msaa> = {
@@ -175,23 +158,6 @@ pub(crate) fn register_main_entity_functions(world: &mut World) {
         ::bevy_render::sync_world::MainEntity,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_render::sync_world::MainEntity>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_render::sync_world::MainEntity as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_render::sync_world::MainEntity>| {
                 let output: V<::bevy_render::sync_world::MainEntity> = {
@@ -288,23 +254,6 @@ pub(crate) fn register_render_entity_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_render::sync_world::RenderEntity,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_render::sync_world::RenderEntity>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_render::sync_world::RenderEntity as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_render::sync_world::RenderEntity>| {

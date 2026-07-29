@@ -168,23 +168,6 @@ pub(crate) fn register_pointer_button_functions(world: &mut World) {
         ::bevy_picking::pointer::PointerButton,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::pointer::PointerButton>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PointerButton as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_picking::pointer::PointerButton>| {
                 let output: V<::bevy_picking::pointer::PointerButton> = {
@@ -233,23 +216,6 @@ pub(crate) fn register_pickable_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::Pickable,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::Pickable>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::Pickable as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_picking::Pickable>| {
@@ -1282,23 +1248,6 @@ pub(crate) fn register_pointer_id_functions(world: &mut World) {
         ::bevy_picking::pointer::PointerId,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::pointer::PointerId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PointerId as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_picking::pointer::PointerId>| {
                 let output: V<::bevy_picking::pointer::PointerId> = {
@@ -1481,23 +1430,6 @@ pub(crate) fn register_ray_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::backend::ray::RayId,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::backend::ray::RayId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::backend::ray::RayId as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_picking::backend::ray::RayId>| {
@@ -1725,23 +1657,6 @@ pub(crate) fn register_pointer_press_functions(world: &mut World) {
         ::bevy_picking::pointer::PointerPress,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::pointer::PointerPress>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PointerPress as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_picking::pointer::PointerPress>| {
                 let output: V<::bevy_picking::pointer::PointerPress> = {
@@ -1859,23 +1774,6 @@ pub(crate) fn register_picking_interaction_functions(world: &mut World) {
         ::bevy_picking::hover::PickingInteraction,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::hover::PickingInteraction>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::hover::PickingInteraction as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_picking::hover::PickingInteraction>| {
                 let output: V<::bevy_picking::hover::PickingInteraction> = {
@@ -1924,23 +1822,6 @@ pub(crate) fn register_hovered_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::hover::Hovered,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::hover::Hovered>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::hover::Hovered as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_picking::hover::Hovered>| {
@@ -2005,23 +1886,6 @@ pub(crate) fn register_directly_hovered_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::hover::DirectlyHovered,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::hover::DirectlyHovered>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::hover::DirectlyHovered as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_picking::hover::DirectlyHovered>| {
@@ -2210,23 +2074,6 @@ pub(crate) fn register_press_direction_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_picking::pointer::PressDirection,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_picking::pointer::PressDirection>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_picking::pointer::PressDirection as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_picking::pointer::PressDirection>| {

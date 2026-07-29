@@ -20,23 +20,6 @@ pub(crate) fn register_deband_dither_functions(world: &mut World) {
         ::bevy_core_pipeline::tonemapping::DebandDither,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_core_pipeline::tonemapping::DebandDither>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_core_pipeline::tonemapping::DebandDither as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_core_pipeline::tonemapping::DebandDither>| {
                 let output: V<::bevy_core_pipeline::tonemapping::DebandDither> = {
@@ -85,23 +68,6 @@ pub(crate) fn register_tonemapping_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::tonemapping::Tonemapping,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_core_pipeline::tonemapping::Tonemapping>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_core_pipeline::tonemapping::Tonemapping as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_core_pipeline::tonemapping::Tonemapping>| {
@@ -397,37 +363,6 @@ pub(crate) fn register_no_background_motion_vectors_functions(world: &mut World)
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_root_non_camera_view_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_core_pipeline::schedule::RootNonCameraView,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_core_pipeline::schedule::RootNonCameraView>| {
-                let output: V<::bevy_core_pipeline::schedule::RootNonCameraView> = {
-                    {
-                        let output: V<
-                            ::bevy_core_pipeline::schedule::RootNonCameraView,
-                        > = <::bevy_core_pipeline::schedule::RootNonCameraView as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_core_pipeline::schedule::RootNonCameraView,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 impl Plugin for BevyCorePipelineScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
@@ -441,6 +376,5 @@ impl Plugin for BevyCorePipelineScriptingPlugin {
         register_normal_prepass_functions(&mut world);
         register_order_independent_transparency_settings_functions(&mut world);
         register_no_background_motion_vectors_functions(&mut world);
-        register_root_non_camera_view_functions(&mut world);
     }
 }

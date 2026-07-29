@@ -49,23 +49,6 @@ pub(crate) fn register_inherited_visibility_functions(world: &mut World) {
         ::bevy_camera::visibility::InheritedVisibility,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::visibility::InheritedVisibility>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::visibility::InheritedVisibility as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_camera::visibility::InheritedVisibility>| {
                 let output: V<::bevy_camera::visibility::InheritedVisibility> = {
@@ -132,23 +115,6 @@ pub(crate) fn register_view_visibility_functions(world: &mut World) {
         ::bevy_camera::visibility::ViewVisibility,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::visibility::ViewVisibility>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::visibility::ViewVisibility as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_camera::visibility::ViewVisibility>| {
                 let output: V<::bevy_camera::visibility::ViewVisibility> = {
@@ -214,23 +180,6 @@ pub(crate) fn register_visibility_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::visibility::Visibility,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::visibility::Visibility>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::visibility::Visibility as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_camera::visibility::Visibility>| {
@@ -563,23 +512,6 @@ pub(crate) fn register_compositing_space_functions(world: &mut World) {
         ::bevy_camera::CompositingSpace,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::CompositingSpace>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::CompositingSpace as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_camera::CompositingSpace>| {
                 let output: V<::bevy_camera::CompositingSpace> = {
@@ -628,23 +560,6 @@ pub(crate) fn register_msaa_writeback_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::MsaaWriteback,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::MsaaWriteback>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::MsaaWriteback as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_camera::MsaaWriteback>| {
@@ -1480,23 +1395,6 @@ pub(crate) fn register_manual_texture_view_handle_functions(world: &mut World) {
         ::bevy_camera::ManualTextureViewHandle,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::ManualTextureViewHandle>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::ManualTextureViewHandle as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_camera::ManualTextureViewHandle>| {
                 let output: V<::bevy_camera::ManualTextureViewHandle> = {
@@ -1545,23 +1443,6 @@ pub(crate) fn register_normalized_render_target_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::NormalizedRenderTarget,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::NormalizedRenderTarget>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::NormalizedRenderTarget as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_camera::NormalizedRenderTarget>| {
@@ -1669,23 +1550,6 @@ pub(crate) fn register_hdr_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::Hdr,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::Hdr>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::Hdr as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_camera::Hdr>| {
@@ -2324,23 +2188,6 @@ pub(crate) fn register_render_layers_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_camera::visibility::RenderLayers,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_camera::visibility::RenderLayers>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_camera::visibility::RenderLayers as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_camera::visibility::RenderLayers>| {

@@ -117,23 +117,6 @@ pub(crate) fn register_bloom_composite_mode_functions(world: &mut World) {
         ::bevy_post_process::bloom::BloomCompositeMode,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_post_process::bloom::BloomCompositeMode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_post_process::bloom::BloomCompositeMode as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_post_process::bloom::BloomCompositeMode>| {
                 let output: V<::bevy_post_process::bloom::BloomCompositeMode> = {

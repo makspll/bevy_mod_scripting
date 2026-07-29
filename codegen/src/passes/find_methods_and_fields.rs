@@ -152,6 +152,10 @@ fn generate_functions<'tcx>(
                 return Err(fn_candidate.with_note(GenerationExclusionNote::Reason(String::from("function is not public"))))
             }
 
+            if args.exclude_functions.as_ref().is_some_and(|fns|  fns.contains(&fn_candidate.fn_name.to_ident_string())) {
+                return Err(fn_candidate.with_note(GenerationExclusionNote::Reason(String::from("function excluded through cli argument"))))
+            }
+
             let function_generics =
                 get_function_generics(ctxt.tcx, fn_candidate.did, fn_candidate.kind.impl_did());
 

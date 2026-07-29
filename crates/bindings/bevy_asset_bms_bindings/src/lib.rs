@@ -186,23 +186,6 @@ pub(crate) fn register_asset_index_functions(world: &mut World) {
         ::bevy_asset::AssetIndex,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_asset::AssetIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_asset::AssetIndex as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_asset::AssetIndex>| {
                 let output: V<::bevy_asset::AssetIndex> = {
@@ -296,23 +279,6 @@ pub(crate) fn register_render_asset_usages_functions(world: &mut World) {
             },
             " Get a flags value with all known bits set.",
             &[],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_asset::RenderAssetUsages>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_asset::RenderAssetUsages as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "bits",

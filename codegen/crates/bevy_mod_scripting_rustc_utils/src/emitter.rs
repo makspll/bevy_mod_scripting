@@ -2,7 +2,7 @@ use std::{io, sync::{Arc, Mutex, OnceLock, atomic::{AtomicBool, Ordering}}};
 
 use rustc_data_structures::sync::DynSend;
 use rustc_errors::{DiagInner, annotate_snippet_emitter_writer::AnnotateSnippetEmitter, emitter::{DynEmitter, Emitter, HumanReadableErrorType, OutputTheme, stderr_destination}, json::JsonEmitter};
-use rustc_middle::ty::{TyCtxt, layout::HasTyCtxt};
+use rustc_middle::ty::{TyCtxt};
 use rustc_session::{Session, config::ErrorOutputType};
 use rustc_span::source_map::SourceMap;
 

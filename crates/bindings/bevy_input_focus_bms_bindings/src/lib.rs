@@ -126,23 +126,6 @@ pub(crate) fn register_focus_cause_functions(world: &mut World) {
         ::bevy_input_focus::FocusCause,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input_focus::FocusCause>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input_focus::FocusCause as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input_focus::FocusCause>| {
                 let output: V<::bevy_input_focus::FocusCause> = {
@@ -820,23 +803,6 @@ pub(crate) fn register_tab_index_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::tab_navigation::TabIndex,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input_focus::tab_navigation::TabIndex>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input_focus::tab_navigation::TabIndex as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input_focus::tab_navigation::TabIndex>| {

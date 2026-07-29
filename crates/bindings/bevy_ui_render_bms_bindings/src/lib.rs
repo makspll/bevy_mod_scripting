@@ -112,23 +112,6 @@ pub(crate) fn register_box_shadow_samples_functions(world: &mut World) {
         ::bevy_ui_render::BoxShadowSamples,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui_render::BoxShadowSamples>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui_render::BoxShadowSamples as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_ui_render::BoxShadowSamples>| {
                 let output: V<::bevy_ui_render::BoxShadowSamples> = {
@@ -177,23 +160,6 @@ pub(crate) fn register_ui_anti_alias_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_render::UiAntiAlias,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_ui_render::UiAntiAlias>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_ui_render::UiAntiAlias as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_ui_render::UiAntiAlias>| {

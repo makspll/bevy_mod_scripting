@@ -20,23 +20,6 @@ pub(crate) fn register_static_transform_optimizations_functions(world: &mut Worl
         ::bevy_transform::StaticTransformOptimizations,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_transform::StaticTransformOptimizations>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_transform::StaticTransformOptimizations as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "eq",
             |
                 _self: R<::bevy_transform::StaticTransformOptimizations>,

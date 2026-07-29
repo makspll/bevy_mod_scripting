@@ -21,7 +21,7 @@ use bevy_mod_scripting_bindings::{
 };
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
 use bevy_platform::collections::{HashMap, HashSet};
-use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
+use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -839,19 +839,19 @@ impl<'t> LadFileBuilder<'t> {
                     if let Some(variant) = enum_info.variant_at(i) {
                         let variant_name = variant.name();
                         let variant = match variant {
-                            bevy_reflect::VariantInfo::Struct(struct_variant_info) => {
+                            VariantInfo::Struct(struct_variant_info) => {
                                 let fields = (0..struct_variant_info.field_len())
                                     .filter_map(|i| struct_variant_info.field_at(i));
 
                                 self.struct_variant_from_named_fields(variant_name.into(), fields)
                             }
-                            bevy_reflect::VariantInfo::Tuple(tuple_variant_info) => {
+                            VariantInfo::Tuple(tuple_variant_info) => {
                                 let fields = (0..tuple_variant_info.field_len())
                                     .filter_map(|i| tuple_variant_info.field_at(i));
 
                                 self.tuple_struct_variant_from_fields(variant_name.into(), fields)
                             }
-                            bevy_reflect::VariantInfo::Unit(_) => LadVariant::Unit {
+                            VariantInfo::Unit(_) => LadVariant::Unit {
                                 name: variant_name.into(),
                             },
                         };

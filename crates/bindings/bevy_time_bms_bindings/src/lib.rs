@@ -93,23 +93,6 @@ pub(crate) fn register_timer_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_time::Timer>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_time::Timer as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_time::Timer>| {
                 let output: V<::bevy_time::Timer> = {
@@ -505,23 +488,6 @@ pub(crate) fn register_timer_mode_functions(world: &mut World) {
         ::bevy_time::TimerMode,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_time::TimerMode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_time::TimerMode as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_time::TimerMode>| {
                 let output: V<::bevy_time::TimerMode> = {
@@ -608,23 +574,6 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_time::Stopwatch,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_time::Stopwatch>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_time::Stopwatch as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_time::Stopwatch>| {

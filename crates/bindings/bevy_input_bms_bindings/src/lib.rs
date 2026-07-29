@@ -180,23 +180,6 @@ pub(crate) fn register_gamepad_axis_functions(world: &mut World) {
         ::bevy_input::gamepad::GamepadAxis,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::gamepad::GamepadAxis>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadAxis as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::gamepad::GamepadAxis>| {
                 let output: V<::bevy_input::gamepad::GamepadAxis> = {
@@ -245,23 +228,6 @@ pub(crate) fn register_gamepad_button_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadButton,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::gamepad::GamepadButton>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadButton as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::gamepad::GamepadButton>| {
@@ -341,23 +307,6 @@ pub(crate) fn register_key_code_functions(world: &mut World) {
         ::bevy_input::keyboard::KeyCode,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::keyboard::KeyCode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::KeyCode as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::keyboard::KeyCode>| {
                 let output: V<::bevy_input::keyboard::KeyCode> = {
@@ -406,23 +355,6 @@ pub(crate) fn register_mouse_button_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseButton,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::mouse::MouseButton>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::mouse::MouseButton as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::mouse::MouseButton>| {
@@ -522,23 +454,6 @@ pub(crate) fn register_key_functions(world: &mut World) {
         ::bevy_input::keyboard::Key,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::keyboard::Key>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::Key as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::keyboard::Key>| {
                 let output: V<::bevy_input::keyboard::Key> = {
@@ -588,23 +503,6 @@ pub(crate) fn register_keyboard_focus_lost_functions(world: &mut World) {
         ::bevy_input::keyboard::KeyboardFocusLost,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::keyboard::KeyboardFocusLost>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::KeyboardFocusLost as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::keyboard::KeyboardFocusLost>| {
                 let output: V<::bevy_input::keyboard::KeyboardFocusLost> = {
@@ -653,23 +551,6 @@ pub(crate) fn register_keyboard_input_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::KeyboardInput,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::keyboard::KeyboardInput>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::KeyboardInput as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::keyboard::KeyboardInput>| {
@@ -817,23 +698,6 @@ pub(crate) fn register_mouse_button_input_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseButtonInput,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::mouse::MouseButtonInput>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::mouse::MouseButtonInput as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::mouse::MouseButtonInput>| {
@@ -1131,23 +995,6 @@ pub(crate) fn register_gamepad_button_state_changed_event_functions(world: &mut 
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadButtonStateChangedEvent,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadButtonStateChangedEvent as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::gamepad::GamepadButtonStateChangedEvent>| {
@@ -1821,23 +1668,6 @@ pub(crate) fn register_button_state_functions(world: &mut World) {
         ::bevy_input::ButtonState,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::ButtonState>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::ButtonState as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::ButtonState>| {
                 let output: V<::bevy_input::ButtonState> = {
@@ -1947,23 +1777,6 @@ pub(crate) fn register_gamepad_input_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::gamepad::GamepadInput,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::gamepad::GamepadInput>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::gamepad::GamepadInput as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::gamepad::GamepadInput>| {
@@ -2523,23 +2336,6 @@ pub(crate) fn register_native_key_code_functions(world: &mut World) {
         ::bevy_input::keyboard::NativeKeyCode,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::keyboard::NativeKeyCode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::NativeKeyCode as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::keyboard::NativeKeyCode>| {
                 let output: V<::bevy_input::keyboard::NativeKeyCode> = {
@@ -2588,23 +2384,6 @@ pub(crate) fn register_native_key_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::keyboard::NativeKey,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::keyboard::NativeKey>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::keyboard::NativeKey as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::keyboard::NativeKey>| {
@@ -2655,23 +2434,6 @@ pub(crate) fn register_touch_phase_functions(world: &mut World) {
         ::bevy_input::touch::TouchPhase,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::touch::TouchPhase>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::touch::TouchPhase as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_input::touch::TouchPhase>| {
                 let output: V<::bevy_input::touch::TouchPhase> = {
@@ -2720,23 +2482,6 @@ pub(crate) fn register_mouse_scroll_unit_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input::mouse::MouseScrollUnit,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_input::mouse::MouseScrollUnit>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_input::mouse::MouseScrollUnit as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_input::mouse::MouseScrollUnit>| {

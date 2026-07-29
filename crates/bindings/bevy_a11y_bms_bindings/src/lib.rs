@@ -148,23 +148,6 @@ pub(crate) fn register_accessibility_systems_functions(world: &mut World) {
         ::bevy_a11y::AccessibilitySystems,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_a11y::AccessibilitySystems>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_a11y::AccessibilitySystems as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_a11y::AccessibilitySystems>| {
                 let output: V<::bevy_a11y::AccessibilitySystems> = {

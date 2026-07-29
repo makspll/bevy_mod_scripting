@@ -222,23 +222,6 @@ pub(crate) fn register_wireframe_2_d_functions(world: &mut World) {
         ::bevy_sprite_render::Wireframe2d,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_sprite_render::Wireframe2d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite_render::Wireframe2d as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_sprite_render::Wireframe2d>| {
                 let output: V<::bevy_sprite_render::Wireframe2d> = {
@@ -317,23 +300,6 @@ pub(crate) fn register_no_wireframe_2_d_functions(world: &mut World) {
         ::bevy_sprite_render::NoWireframe2d,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_sprite_render::NoWireframe2d>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite_render::NoWireframe2d as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_sprite_render::NoWireframe2d>| {
                 let output: V<::bevy_sprite_render::NoWireframe2d> = {
@@ -382,23 +348,6 @@ pub(crate) fn register_mesh_2_d_wireframe_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_sprite_render::Mesh2dWireframe,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_sprite_render::Mesh2dWireframe>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite_render::Mesh2dWireframe as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_sprite_render::Mesh2dWireframe>| {
@@ -597,23 +546,6 @@ pub(crate) fn register_tile_orientation_functions(world: &mut World) {
             },
             " This method treats the [`TileOrientation`] as the transform from\n [`TileOrientation::Default`] to this orientation.\n Apply this transformation to an [`IVec2`]",
             &["_self", "pos"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_sprite_render::TileOrientation>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_sprite_render::TileOrientation as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "clone",

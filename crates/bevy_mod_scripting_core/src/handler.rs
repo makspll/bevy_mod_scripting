@@ -1,7 +1,6 @@
 //! Contains the logic for handling script callback events
 use bevy_ecs::{
     message::{MessageCursor, Messages},
-    system::SystemParamValidationError,
     world::WorldId,
 };
 use bevy_mod_scripting_bindings::{
@@ -89,7 +88,7 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     state: &mut SystemState<Local<MessageCursor<ScriptCallbackEvent>>>,
-) -> Result<(), SystemParamValidationError> {
+) -> bevy_ecs::error::Result {
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
         let script_context = world.get_resource_or_init::<ScriptContexts<P>>().clone();

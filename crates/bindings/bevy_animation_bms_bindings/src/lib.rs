@@ -49,23 +49,6 @@ pub(crate) fn register_animation_graph_handle_functions(world: &mut World) {
         ::bevy_animation::graph::AnimationGraphHandle,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_animation::graph::AnimationGraphHandle>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_animation::graph::AnimationGraphHandle as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_animation::graph::AnimationGraphHandle>| {
                 let output: V<::bevy_animation::graph::AnimationGraphHandle> = {
@@ -342,23 +325,6 @@ pub(crate) fn register_animation_target_id_functions(world: &mut World) {
         ::bevy_animation::AnimationTargetId,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_animation::AnimationTargetId>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_animation::AnimationTargetId as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_animation::AnimationTargetId>| {
                 let output: V<::bevy_animation::AnimationTargetId> = {
@@ -453,23 +419,6 @@ pub(crate) fn register_repeat_animation_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::RepeatAnimation,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_animation::RepeatAnimation>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_animation::RepeatAnimation as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_animation::RepeatAnimation>| {

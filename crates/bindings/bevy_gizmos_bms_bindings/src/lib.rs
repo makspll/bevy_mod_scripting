@@ -235,23 +235,6 @@ pub(crate) fn register_gizmo_line_joint_functions(world: &mut World) {
         ::bevy_gizmos::config::GizmoLineJoint,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_gizmos::config::GizmoLineJoint>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_gizmos::config::GizmoLineJoint as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_gizmos::config::GizmoLineJoint>| {
                 let output: V<::bevy_gizmos::config::GizmoLineJoint> = {
@@ -379,23 +362,6 @@ pub(crate) fn register_transform_gizmo_axis_functions(world: &mut World) {
         ::bevy_gizmos::transform_gizmo::TransformGizmoAxis,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_gizmos::transform_gizmo::TransformGizmoAxis>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_gizmos::transform_gizmo::TransformGizmoAxis as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_gizmos::transform_gizmo::TransformGizmoAxis>| {
                 let output: V<::bevy_gizmos::transform_gizmo::TransformGizmoAxis> = {
@@ -509,23 +475,6 @@ pub(crate) fn register_transform_gizmo_mode_functions(world: &mut World) {
         ::bevy_gizmos::transform_gizmo::TransformGizmoMode,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_gizmos::transform_gizmo::TransformGizmoMode>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_gizmos::transform_gizmo::TransformGizmoMode as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_gizmos::transform_gizmo::TransformGizmoMode>| {
                 let output: V<::bevy_gizmos::transform_gizmo::TransformGizmoMode> = {
@@ -588,23 +537,6 @@ pub(crate) fn register_transform_gizmo_space_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_gizmos::transform_gizmo::TransformGizmoSpace,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_gizmos::transform_gizmo::TransformGizmoSpace>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_gizmos::transform_gizmo::TransformGizmoSpace as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_gizmos::transform_gizmo::TransformGizmoSpace>| {

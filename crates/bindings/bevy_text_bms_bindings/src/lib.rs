@@ -20,23 +20,6 @@ pub(crate) fn register_font_hinting_functions(world: &mut World) {
         ::bevy_text::FontHinting,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::FontHinting>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::FontHinting as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_text::FontHinting>| {
                 let output: V<::bevy_text::FontHinting> = {
@@ -168,23 +151,6 @@ pub(crate) fn register_font_smoothing_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::FontSmoothing,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::FontSmoothing>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::FontSmoothing as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_text::FontSmoothing>| {
@@ -324,23 +290,6 @@ pub(crate) fn register_font_weight_functions(world: &mut World) {
         ::bevy_text::FontWeight,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::FontWeight>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::FontWeight as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clamp",
             |_self: V<::bevy_text::FontWeight>| {
                 let output: V<::bevy_text::FontWeight> = {
@@ -450,23 +399,6 @@ pub(crate) fn register_justify_functions(world: &mut World) {
         ::bevy_text::Justify,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::Justify>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::Justify as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_text::Justify>| {
                 let output: V<::bevy_text::Justify> = {
@@ -512,23 +444,6 @@ pub(crate) fn register_line_break_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::LineBreak,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::LineBreak>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::LineBreak as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_text::LineBreak>| {
@@ -1661,23 +1576,6 @@ pub(crate) fn register_font_feature_tag_functions(world: &mut World) {
         ::bevy_text::FontFeatureTag,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::FontFeatureTag>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::FontFeatureTag as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_text::FontFeatureTag>| {
                 let output: V<::bevy_text::FontFeatureTag> = {
@@ -1726,23 +1624,6 @@ pub(crate) fn register_font_variation_tag_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::FontVariationTag,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::FontVariationTag>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::FontVariationTag as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_text::FontVariationTag>| {
@@ -1841,23 +1722,6 @@ pub(crate) fn register_preedit_cursor_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::PreeditCursor,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_text::PreeditCursor>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_text::PreeditCursor as ::std::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_text::PreeditCursor>| {

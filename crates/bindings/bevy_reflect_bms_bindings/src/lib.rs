@@ -20,23 +20,6 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
         ::core::ops::RangeFull,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::core::ops::RangeFull>| {
-                let output: () = {
-                    {
-                        let output: () = <::core::ops::RangeFull as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::core::ops::RangeFull>| {
                 let output: V<::core::ops::RangeFull> = {
@@ -82,23 +65,6 @@ pub(crate) fn register_type_id_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::any::TypeId,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::core::any::TypeId>| {
-                let output: () = {
-                    {
-                        let output: () = <::core::any::TypeId as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::core::any::TypeId>| {
@@ -3201,23 +3167,6 @@ pub(crate) fn register_offset_access_functions(world: &mut World) {
         ::bevy_reflect::OffsetAccess,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_reflect::OffsetAccess>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_reflect::OffsetAccess as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::bevy_reflect::OffsetAccess>| {
                 let output: V<::bevy_reflect::OffsetAccess> = {
@@ -3266,23 +3215,6 @@ pub(crate) fn register_parsed_path_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::ParsedPath,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::bevy_reflect::ParsedPath>| {
-                let output: () = {
-                    {
-                        let output: () = <::bevy_reflect::ParsedPath as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::bevy_reflect::ParsedPath>| {
@@ -3345,23 +3277,6 @@ pub(crate) fn register_instant_functions(world: &mut World) {
             },
             " # Panics\n This function may panic if the resulting point in time cannot be represented by the\n underlying data structure. See [`Instant::checked_add`] for a version without panic.",
             &["_self", "other"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::std::time::Instant>| {
-                let output: () = {
-                    {
-                        let output: () = <::std::time::Instant as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
         )
         .register_documented(
             "clone",
@@ -3511,23 +3426,6 @@ pub(crate) fn register_socket_addr_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::core::net::SocketAddr,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::core::net::SocketAddr>| {
-                let output: () = {
-                    {
-                        let output: () = <::core::net::SocketAddr as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::core::net::SocketAddr>| {
@@ -3761,23 +3659,6 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::core::time::Duration>| {
-                let output: () = {
-                    {
-                        let output: () = <::core::time::Duration as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::core::time::Duration>| {
                 let output: V<::core::time::Duration> = {
@@ -3901,6 +3782,23 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
+            "from_hours",
+            |hours: u64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_hours(
+                                hours,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of hours.\n # Panics\n Panics if the given number of hours overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_hours(6);\n assert_eq!(6 * 60 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["hours"],
+        )
+        .register_documented(
             "from_micros",
             |micros: u64| {
                 let output: V<::core::time::Duration> = {
@@ -3935,6 +3833,23 @@ pub(crate) fn register_duration_functions(world: &mut World) {
             &["millis"],
         )
         .register_documented(
+            "from_mins",
+            |mins: u64| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_mins(
+                                mins,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of minutes.\n # Panics\n Panics if the given number of minutes overflows the `Duration` size.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_mins(10);\n assert_eq!(10 * 60, duration.as_secs());\n assert_eq!(0, duration.subsec_nanos());\n ```",
+            &["mins"],
+        )
+        .register_documented(
             "from_nanos",
             |nanos: u64| {
                 let output: V<::core::time::Duration> = {
@@ -3949,6 +3864,23 @@ pub(crate) fn register_duration_functions(world: &mut World) {
                 output
             },
             " Creates a new `Duration` from the specified number of nanoseconds.\n Note: Using this on the return value of `as_nanos()` might cause unexpected behavior:\n `as_nanos()` returns a u128, and can return values that do not fit in u64, e.g. 585 years.\n Instead, consider using the pattern `Duration::new(d.as_secs(), d.subsec_nanos())`\n if you cannot copy/clone the Duration directly.\n # Examples\n ```\n use std::time::Duration;\n let duration = Duration::from_nanos(1_000_000_123);\n assert_eq!(1, duration.as_secs());\n assert_eq!(123, duration.subsec_nanos());\n ```",
+            &["nanos"],
+        )
+        .register_documented(
+            "from_nanos_u128",
+            |nanos: u128| {
+                let output: V<::core::time::Duration> = {
+                    {
+                        let output: V<::core::time::Duration> = ::core::time::Duration::from_nanos_u128(
+                                nanos,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new `Duration` from the specified number of nanoseconds.\n # Panics\n Panics if the given number of nanoseconds is greater than [`Duration::MAX`].\n # Examples\n ```\n use std::time::Duration;\n let nanos = 10_u128.pow(24) + 321;\n let duration = Duration::from_nanos_u128(nanos);\n assert_eq!(10_u64.pow(15), duration.as_secs());\n assert_eq!(321, duration.subsec_nanos());\n ```",
             &["nanos"],
         )
         .register_documented(
@@ -4435,23 +4367,6 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::IVec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::IVec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -5817,23 +5732,6 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::IVec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::IVec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::IVec3>, rhs: V<::glam::IVec3>| {
                 let output: u32 = {
@@ -7180,23 +7078,6 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::IVec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::IVec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::IVec4>, rhs: V<::glam::IVec4>| {
                 let output: u32 = {
@@ -8522,23 +8403,6 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I8Vec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I8Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -9904,23 +9768,6 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I8Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I8Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::I8Vec3>, rhs: V<::glam::I8Vec3>| {
                 let output: u8 = {
@@ -11267,23 +11114,6 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I8Vec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I8Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::I8Vec4>, rhs: V<::glam::I8Vec4>| {
                 let output: u8 = {
@@ -12609,23 +12439,6 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I16Vec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I16Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -14003,23 +13816,6 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I16Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I16Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::I16Vec3>, rhs: V<::glam::I16Vec3>| {
                 let output: u16 = {
@@ -15377,23 +15173,6 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I16Vec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I16Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::I16Vec4>, rhs: V<::glam::I16Vec4>| {
                 let output: u16 = {
@@ -16730,23 +16509,6 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I64Vec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I64Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -18124,23 +17886,6 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I64Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I64Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::I64Vec3>, rhs: V<::glam::I64Vec3>| {
                 let output: u64 = {
@@ -19498,23 +19243,6 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::I64Vec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::I64Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::I64Vec4>, rhs: V<::glam::I64Vec4>| {
                 let output: u64 = {
@@ -20837,23 +20565,6 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::UVec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::UVec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::UVec2>, rhs: V<::glam::UVec2>| {
                 let output: u32 = {
@@ -22002,23 +21713,6 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::UVec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::UVec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -23210,23 +22904,6 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::UVec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::UVec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::UVec4>, rhs: V<::glam::UVec4>| {
                 let output: u32 = {
@@ -24397,23 +24074,6 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U8Vec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U8Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::U8Vec2>, rhs: V<::glam::U8Vec2>| {
                 let output: u8 = {
@@ -25562,23 +25222,6 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U8Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U8Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -26770,23 +26413,6 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U8Vec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U8Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::U8Vec4>, rhs: V<::glam::U8Vec4>| {
                 let output: u8 = {
@@ -27957,23 +27583,6 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U16Vec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U16Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::U16Vec2>, rhs: V<::glam::U16Vec2>| {
                 let output: u16 = {
@@ -29134,23 +28743,6 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U16Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U16Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -30353,23 +29945,6 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U16Vec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U16Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::U16Vec4>, rhs: V<::glam::U16Vec4>| {
                 let output: u16 = {
@@ -31551,23 +31126,6 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U64Vec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U64Vec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "chebyshev_distance",
             |_self: V<::glam::U64Vec2>, rhs: V<::glam::U64Vec2>| {
                 let output: u64 = {
@@ -32728,23 +32286,6 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U64Vec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U64Vec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -33944,23 +33485,6 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
                 output
             },
             " Casts all elements of `self` to `f32`.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::U64Vec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::U64Vec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -40735,23 +40259,6 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::BVec2>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::BVec2 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "bitmask",
             |_self: V<::glam::BVec2>| {
                 let output: u32 = {
@@ -40911,23 +40418,6 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
                 output
             },
             " Returns true if any of the elements are true, false otherwise.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::BVec3>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::BVec3 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -41091,23 +40581,6 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
                 output
             },
             " Returns true if any of the elements are true, false otherwise.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::BVec4>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::BVec4 as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -57711,23 +57184,6 @@ pub(crate) fn register_euler_rot_functions(world: &mut World) {
         ::glam::EulerRot,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::glam::EulerRot>| {
-                let output: () = {
-                    {
-                        let output: () = <::glam::EulerRot as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::glam::EulerRot>| {
                 let output: V<::glam::EulerRot> = {
@@ -58245,23 +57701,6 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::uuid::Uuid>| {
-                let output: () = {
-                    {
-                        let output: () = <::uuid::Uuid as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::uuid::Uuid>| {
                 let output: V<::uuid::Uuid> = {
@@ -58562,23 +58001,6 @@ pub(crate) fn register_non_nil_uuid_functions(world: &mut World) {
         ::uuid::NonNilUuid,
     >::new(world)
         .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::uuid::NonNilUuid>| {
-                let output: () = {
-                    {
-                        let output: () = <::uuid::NonNilUuid as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
             "clone",
             |_self: R<::uuid::NonNilUuid>| {
                 let output: V<::uuid::NonNilUuid> = {
@@ -58673,23 +58095,6 @@ pub(crate) fn register_texture_format_functions(world: &mut World) {
                 output
             },
             " Adds an `Srgb` suffix to the given texture format, if the format supports it.",
-            &["_self"],
-        )
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::wgpu_types::TextureFormat>| {
-                let output: () = {
-                    {
-                        let output: () = <::wgpu_types::TextureFormat as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
             &["_self"],
         )
         .register_documented(
@@ -59061,23 +58466,6 @@ pub(crate) fn register_blend_state_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::wgpu_types::BlendState,
     >::new(world)
-        .register_documented(
-            "assert_fields_are_eq",
-            |_self: R<::wgpu_types::BlendState>| {
-                let output: () = {
-                    {
-                        let output: () = <::wgpu_types::BlendState as ::core::cmp::Eq>::assert_fields_are_eq(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
         .register_documented(
             "clone",
             |_self: R<::wgpu_types::BlendState>| {
