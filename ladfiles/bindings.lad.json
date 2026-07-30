@@ -1,5 +1,5 @@
 {
-  "version": "0.20.0",
+  "version": "0.21.0",
   "globals": {
     "ScalingMode": {
       "type_kind": {
@@ -2908,9 +2908,9 @@
       },
       "is_static": true
     },
-    "FunctionCallContext": {
+    "FunctionInfo": {
       "type_kind": {
-        "primitive": "functionCallContext"
+        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
       },
       "is_static": true
     },
@@ -2926,9 +2926,9 @@
       },
       "is_static": true
     },
-    "FunctionInfo": {
+    "FunctionCallContext": {
       "type_kind": {
-        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
+        "primitive": "functionCallContext"
       },
       "is_static": true
     },
@@ -4158,8 +4158,8 @@
       "path": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name"
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -4200,10 +4200,10 @@
       "path": "bevy_mod_scripting_bindings::query::ScriptQueryBuilder",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without"
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with"
       ],
       "layout": null,
       "generated": false,
@@ -4297,9 +4297,9 @@
       "associated_functions": [
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after"
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before"
       ],
       "layout": null,
       "generated": false,
@@ -4317,8 +4317,8 @@
       "path": "bevy_mod_scripting_script::ScriptAttachment",
       "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.",
       "associated_functions": [
-        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
-        "bevy_mod_scripting_script::ScriptAttachment::new_entity_script"
+        "bevy_mod_scripting_script::ScriptAttachment::new_entity_script",
+        "bevy_mod_scripting_script::ScriptAttachment::new_static_script"
       ],
       "layout": [
         {
@@ -4364,9 +4364,9 @@
       "path": "bevy_system_reflection::ReflectSchedule",
       "documentation": " A reflectable schedule.",
       "associated_functions": [
+        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
         "bevy_system_reflection::ReflectSchedule::render_dot",
-        "bevy_system_reflection::ReflectSchedule::systems",
-        "bevy_system_reflection::ReflectSchedule::get_system_by_name"
+        "bevy_system_reflection::ReflectSchedule::systems"
       ],
       "layout": {
         "kind": "Struct",
@@ -4401,8 +4401,8 @@
       "path": "bevy_system_reflection::ReflectSystem",
       "documentation": " A reflectable system.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystem::identifier",
-        "bevy_system_reflection::ReflectSystem::path"
+        "bevy_system_reflection::ReflectSystem::path",
+        "bevy_system_reflection::ReflectSystem::identifier"
       ],
       "layout": null,
       "generated": false,
@@ -4466,18 +4466,18 @@
       "path": "ReflectReference",
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
-        "ReflectReference::debug",
-        "ReflectReference::pop",
-        "ReflectReference::display",
         "ReflectReference::insert",
+        "ReflectReference::pop",
         "ReflectReference::len",
-        "ReflectReference::iter",
-        "ReflectReference::clear",
-        "ReflectReference::map_get",
+        "ReflectReference::debug",
+        "ReflectReference::push",
         "ReflectReference::remove",
+        "ReflectReference::iter",
         "ReflectReference::functions",
+        "ReflectReference::map_get",
+        "ReflectReference::display",
         "ReflectReference::variant_name",
-        "ReflectReference::push"
+        "ReflectReference::clear"
       ],
       "layout": null,
       "generated": false,
