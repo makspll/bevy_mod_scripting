@@ -18,6 +18,12 @@ fn on_test() {
         .before.call(system_after);
 
     let system_between = world.add_system.call(post_update_schedule, builder_between);
+
+    world._assert_system_runs_before.call(post_update_schedule, "custom_system_before", "on_test_post_update");
+    world._assert_system_runs_before.call(post_update_schedule, "on_test_post_update", "custom_system_between");
+    world._assert_system_runs_before.call(post_update_schedule, "custom_system_between", "custom_system_after");
+    // ordering is transitive
+    world._assert_system_runs_before.call(post_update_schedule, "custom_system_before", "custom_system_after");
 }
 
 fn custom_system_before() {
