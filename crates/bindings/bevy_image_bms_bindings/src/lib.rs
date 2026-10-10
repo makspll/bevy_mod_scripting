@@ -1,18 +1,16 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyImageScriptingPlugin;
 pub(crate) fn register_texture_atlas_functions(world: &mut World) {
@@ -199,174 +197,159 @@ pub(crate) fn register_texture_atlas_layout_functions(world: &mut World) {
         >();
 }
 pub(crate) fn register_image_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_image::Image,
-    >::new(world)
-        .register_documented(
-            "aspect_ratio",
-            |_self: R<::bevy_image::Image>| {
-                let output: V<::bevy_math::AspectRatio> = {
-                    {
-                        let output: V<::bevy_math::AspectRatio> = ::bevy_image::Image::aspect_ratio(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the aspect ratio (width / height) of a 2D image.",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_image::Image>| {
-                let output: V<::bevy_image::Image> = {
-                    {
-                        let output: V<::bevy_image::Image> = <::bevy_image::Image as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "default_uninit",
-            || {
-                let output: V<::bevy_image::Image> = {
-                    {
-                        let output: V<::bevy_image::Image> = ::bevy_image::Image::default_uninit()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Creates a new uninitialized 1x1x1 image",
-            &[],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_image::Image>, other: R<::bevy_image::Image>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_image::Image as ::std::cmp::PartialEq<
-                            ::bevy_image::Image,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "height",
-            |_self: R<::bevy_image::Image>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::bevy_image::Image::height(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the height of a 2D image.",
-            &["_self"],
-        )
-        .register_documented(
-            "is_compressed",
-            |_self: R<::bevy_image::Image>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_image::Image::is_compressed(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Whether the texture format is compressed or uncompressed",
-            &["_self"],
-        )
-        .register_documented(
-            "size",
-            |_self: R<::bevy_image::Image>| {
-                let output: V<::bevy_math::UVec2> = {
-                    {
-                        let output: V<::bevy_math::UVec2> = ::bevy_image::Image::size(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of a 2D image.",
-            &["_self"],
-        )
-        .register_documented(
-            "size_f32",
-            |_self: R<::bevy_image::Image>| {
-                let output: V<::bevy_math::Vec2> = {
-                    {
-                        let output: V<::bevy_math::Vec2> = ::bevy_image::Image::size_f32(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the size of a 2D image as f32.",
-            &["_self"],
-        )
-        .register_documented(
-            "transparent",
-            || {
-                let output: V<::bevy_image::Image> = {
-                    {
-                        let output: V<::bevy_image::Image> = ::bevy_image::Image::transparent()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " A transparent white 1x1x1 image.\n Contrast to [`Image::default`], which is opaque.",
-            &[],
-        )
-        .register_documented(
-            "width",
-            |_self: R<::bevy_image::Image>| {
-                let output: u32 = {
-                    {
-                        let output: u32 = ::bevy_image::Image::width(&_self).into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the width of a 2D image.",
-            &["_self"],
-        );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_image::Image>::new(
+        world,
+    )
+    .register_documented(
+        "aspect_ratio",
+        |_self: R<::bevy_image::Image>| {
+            let output: V<::bevy_math::AspectRatio> = {
+                {
+                    let output: V<::bevy_math::AspectRatio> =
+                        ::bevy_image::Image::aspect_ratio(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the aspect ratio (width / height) of a 2D image.",
+        &["_self"],
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_image::Image>| {
+            let output: V<::bevy_image::Image> = {
+                {
+                    let output: V<::bevy_image::Image> =
+                        <::bevy_image::Image as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "default_uninit",
+        || {
+            let output: V<::bevy_image::Image> = {
+                {
+                    let output: V<::bevy_image::Image> =
+                        ::bevy_image::Image::default_uninit().into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates a new uninitialized 1x1x1 image",
+        &[],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_image::Image>, other: R<::bevy_image::Image>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_image::Image as ::std::cmp::PartialEq<
+                        ::bevy_image::Image,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "height",
+        |_self: R<::bevy_image::Image>| {
+            let output: u32 = {
+                {
+                    let output: u32 = ::bevy_image::Image::height(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the height of a 2D image.",
+        &["_self"],
+    )
+    .register_documented(
+        "is_compressed",
+        |_self: R<::bevy_image::Image>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_image::Image::is_compressed(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Whether the texture format is compressed or uncompressed",
+        &["_self"],
+    )
+    .register_documented(
+        "size",
+        |_self: R<::bevy_image::Image>| {
+            let output: V<::bevy_math::UVec2> = {
+                {
+                    let output: V<::bevy_math::UVec2> = ::bevy_image::Image::size(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the size of a 2D image.",
+        &["_self"],
+    )
+    .register_documented(
+        "size_f32",
+        |_self: R<::bevy_image::Image>| {
+            let output: V<::bevy_math::Vec2> = {
+                {
+                    let output: V<::bevy_math::Vec2> = ::bevy_image::Image::size_f32(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the size of a 2D image as f32.",
+        &["_self"],
+    )
+    .register_documented(
+        "transparent",
+        || {
+            let output: V<::bevy_image::Image> = {
+                {
+                    let output: V<::bevy_image::Image> = ::bevy_image::Image::transparent().into();
+                    output
+                }
+            };
+            output
+        },
+        " A transparent white 1x1x1 image.\n Contrast to [`Image::default`], which is opaque.",
+        &[],
+    )
+    .register_documented(
+        "width",
+        |_self: R<::bevy_image::Image>| {
+            let output: u32 = {
+                {
+                    let output: u32 = ::bevy_image::Image::width(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the width of a 2D image.",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_image::Image,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_image::Image, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_image_sampler_descriptor_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -527,43 +510,39 @@ pub(crate) fn register_image_address_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_image::ImageAddressMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_image::ImageAddressMode>| {
-                let output: V<::bevy_image::ImageAddressMode> = {
-                    {
-                        let output: V<::bevy_image::ImageAddressMode> = <::bevy_image::ImageAddressMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_image::ImageAddressMode>| {
+            let output: V<::bevy_image::ImageAddressMode> = {
+                {
+                    let output: V<::bevy_image::ImageAddressMode> =
+                        <::bevy_image::ImageAddressMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_image::ImageAddressMode>,
-                other: R<::bevy_image::ImageAddressMode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_image::ImageAddressMode as ::std::cmp::PartialEq<
-                            ::bevy_image::ImageAddressMode,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_image::ImageAddressMode>, other: R<::bevy_image::ImageAddressMode>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_image::ImageAddressMode as ::std::cmp::PartialEq<
+                        ::bevy_image::ImageAddressMode,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -576,43 +555,39 @@ pub(crate) fn register_image_filter_mode_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_image::ImageFilterMode,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_image::ImageFilterMode>| {
-                let output: V<::bevy_image::ImageFilterMode> = {
-                    {
-                        let output: V<::bevy_image::ImageFilterMode> = <::bevy_image::ImageFilterMode as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_image::ImageFilterMode>| {
+            let output: V<::bevy_image::ImageFilterMode> = {
+                {
+                    let output: V<::bevy_image::ImageFilterMode> =
+                        <::bevy_image::ImageFilterMode as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_image::ImageFilterMode>,
-                other: R<::bevy_image::ImageFilterMode>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_image::ImageFilterMode as ::std::cmp::PartialEq<
-                            ::bevy_image::ImageFilterMode,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_image::ImageFilterMode>, other: R<::bevy_image::ImageFilterMode>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_image::ImageFilterMode as ::std::cmp::PartialEq<
+                        ::bevy_image::ImageFilterMode,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -625,43 +600,41 @@ pub(crate) fn register_image_compare_function_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_image::ImageCompareFunction,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_image::ImageCompareFunction>| {
-                let output: V<::bevy_image::ImageCompareFunction> = {
-                    {
-                        let output: V<::bevy_image::ImageCompareFunction> = <::bevy_image::ImageCompareFunction as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_image::ImageCompareFunction>| {
+            let output: V<::bevy_image::ImageCompareFunction> = {
+                {
+                    let output: V<::bevy_image::ImageCompareFunction> =
+                        <::bevy_image::ImageCompareFunction as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_image::ImageCompareFunction>,
-                other: R<::bevy_image::ImageCompareFunction>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_image::ImageCompareFunction as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_image::ImageCompareFunction>,
+         other: R<::bevy_image::ImageCompareFunction>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_image::ImageCompareFunction as ::std::cmp::PartialEq<
                             ::bevy_image::ImageCompareFunction,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -674,43 +647,43 @@ pub(crate) fn register_image_sampler_border_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_image::ImageSamplerBorderColor,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_image::ImageSamplerBorderColor>| {
-                let output: V<::bevy_image::ImageSamplerBorderColor> = {
-                    {
-                        let output: V<::bevy_image::ImageSamplerBorderColor> = <::bevy_image::ImageSamplerBorderColor as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_image::ImageSamplerBorderColor>,
-                other: R<::bevy_image::ImageSamplerBorderColor>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_image::ImageSamplerBorderColor as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_image::ImageSamplerBorderColor>| {
+            let output: V<::bevy_image::ImageSamplerBorderColor> = {
+                {
+                    let output: V<::bevy_image::ImageSamplerBorderColor> =
+                        <::bevy_image::ImageSamplerBorderColor as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_image::ImageSamplerBorderColor>,
+         other: R<::bevy_image::ImageSamplerBorderColor>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_image::ImageSamplerBorderColor as ::std::cmp::PartialEq<
                             ::bevy_image::ImageSamplerBorderColor,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

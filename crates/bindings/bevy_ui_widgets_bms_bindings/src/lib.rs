@@ -1,18 +1,16 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyUiWidgetsScriptingPlugin;
 pub(crate) fn register_activate_functions(world: &mut World) {
@@ -97,23 +95,22 @@ pub(crate) fn register_activate_on_press_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ActivateOnPress,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ActivateOnPress>| {
-                let output: V<::bevy_ui_widgets::ActivateOnPress> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ActivateOnPress> = <::bevy_ui_widgets::ActivateOnPress as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ActivateOnPress>| {
+            let output: V<::bevy_ui_widgets::ActivateOnPress> = {
+                {
+                    let output: V<::bevy_ui_widgets::ActivateOnPress> =
+                        <::bevy_ui_widgets::ActivateOnPress as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -179,23 +176,22 @@ pub(crate) fn register_modal_dialog_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ModalDialog,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ModalDialog>| {
-                let output: V<::bevy_ui_widgets::ModalDialog> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ModalDialog> = <::bevy_ui_widgets::ModalDialog as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ModalDialog>| {
+            let output: V<::bevy_ui_widgets::ModalDialog> = {
+                {
+                    let output: V<::bevy_ui_widgets::ModalDialog> =
+                        <::bevy_ui_widgets::ModalDialog as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -237,23 +233,22 @@ pub(crate) fn register_request_close_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::RequestClose,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::RequestClose>| {
-                let output: V<::bevy_ui_widgets::RequestClose> = {
-                    {
-                        let output: V<::bevy_ui_widgets::RequestClose> = <::bevy_ui_widgets::RequestClose as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::RequestClose>| {
+            let output: V<::bevy_ui_widgets::RequestClose> = {
+                {
+                    let output: V<::bevy_ui_widgets::RequestClose> =
+                        <::bevy_ui_widgets::RequestClose as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -266,23 +261,22 @@ pub(crate) fn register_dialog_drag_state_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::DialogDragState,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::DialogDragState>| {
-                let output: V<::bevy_ui_widgets::DialogDragState> = {
-                    {
-                        let output: V<::bevy_ui_widgets::DialogDragState> = <::bevy_ui_widgets::DialogDragState as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::DialogDragState>| {
+            let output: V<::bevy_ui_widgets::DialogDragState> = {
+                {
+                    let output: V<::bevy_ui_widgets::DialogDragState> =
+                        <::bevy_ui_widgets::DialogDragState as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -295,23 +289,22 @@ pub(crate) fn register_dialog_drag_handle_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::DialogDragHandle,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::DialogDragHandle>| {
-                let output: V<::bevy_ui_widgets::DialogDragHandle> = {
-                    {
-                        let output: V<::bevy_ui_widgets::DialogDragHandle> = <::bevy_ui_widgets::DialogDragHandle as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::DialogDragHandle>| {
+            let output: V<::bevy_ui_widgets::DialogDragHandle> = {
+                {
+                    let output: V<::bevy_ui_widgets::DialogDragHandle> =
+                        <::bevy_ui_widgets::DialogDragHandle as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -324,23 +317,22 @@ pub(crate) fn register_active_descendant_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ActiveDescendant,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ActiveDescendant>| {
-                let output: V<::bevy_ui_widgets::ActiveDescendant> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ActiveDescendant> = <::bevy_ui_widgets::ActiveDescendant as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ActiveDescendant>| {
+            let output: V<::bevy_ui_widgets::ActiveDescendant> = {
+                {
+                    let output: V<::bevy_ui_widgets::ActiveDescendant> =
+                        <::bevy_ui_widgets::ActiveDescendant as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -382,43 +374,41 @@ pub(crate) fn register_reselect_list_row_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ReselectListRow,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ReselectListRow>| {
-                let output: V<::bevy_ui_widgets::ReselectListRow> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ReselectListRow> = <::bevy_ui_widgets::ReselectListRow as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ReselectListRow>| {
+            let output: V<::bevy_ui_widgets::ReselectListRow> = {
+                {
+                    let output: V<::bevy_ui_widgets::ReselectListRow> =
+                        <::bevy_ui_widgets::ReselectListRow as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::ReselectListRow>,
-                other: R<::bevy_ui_widgets::ReselectListRow>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::ReselectListRow as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::ReselectListRow>,
+         other: R<::bevy_ui_widgets::ReselectListRow>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::ReselectListRow as ::std::cmp::PartialEq<
                             ::bevy_ui_widgets::ReselectListRow,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -443,23 +433,22 @@ pub(crate) fn register_menu_action_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::MenuAction,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::MenuAction>| {
-                let output: V<::bevy_ui_widgets::MenuAction> = {
-                    {
-                        let output: V<::bevy_ui_widgets::MenuAction> = <::bevy_ui_widgets::MenuAction as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::MenuAction>| {
+            let output: V<::bevy_ui_widgets::MenuAction> = {
+                {
+                    let output: V<::bevy_ui_widgets::MenuAction> =
+                        <::bevy_ui_widgets::MenuAction as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -472,23 +461,21 @@ pub(crate) fn register_menu_event_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::MenuEvent,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::MenuEvent>| {
-                let output: V<::bevy_ui_widgets::MenuEvent> = {
-                    {
-                        let output: V<::bevy_ui_widgets::MenuEvent> = <::bevy_ui_widgets::MenuEvent as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::MenuEvent>| {
+            let output: V<::bevy_ui_widgets::MenuEvent> = {
+                {
+                    let output: V<::bevy_ui_widgets::MenuEvent> =
+                        <::bevy_ui_widgets::MenuEvent as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -501,43 +488,39 @@ pub(crate) fn register_menu_layout_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::MenuLayout,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::MenuLayout>| {
-                let output: V<::bevy_ui_widgets::MenuLayout> = {
-                    {
-                        let output: V<::bevy_ui_widgets::MenuLayout> = <::bevy_ui_widgets::MenuLayout as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::MenuLayout>| {
+            let output: V<::bevy_ui_widgets::MenuLayout> = {
+                {
+                    let output: V<::bevy_ui_widgets::MenuLayout> =
+                        <::bevy_ui_widgets::MenuLayout as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::MenuLayout>,
-                other: R<::bevy_ui_widgets::MenuLayout>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::MenuLayout as ::std::cmp::PartialEq<
-                            ::bevy_ui_widgets::MenuLayout,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::MenuLayout>, other: R<::bevy_ui_widgets::MenuLayout>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui_widgets::MenuLayout as ::std::cmp::PartialEq<
+                        ::bevy_ui_widgets::MenuLayout,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -550,43 +533,41 @@ pub(crate) fn register_menu_focus_state_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::MenuFocusState,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::MenuFocusState>| {
-                let output: V<::bevy_ui_widgets::MenuFocusState> = {
-                    {
-                        let output: V<::bevy_ui_widgets::MenuFocusState> = <::bevy_ui_widgets::MenuFocusState as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::MenuFocusState>| {
+            let output: V<::bevy_ui_widgets::MenuFocusState> = {
+                {
+                    let output: V<::bevy_ui_widgets::MenuFocusState> =
+                        <::bevy_ui_widgets::MenuFocusState as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::MenuFocusState>,
-                other: R<::bevy_ui_widgets::MenuFocusState>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::MenuFocusState as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::MenuFocusState>,
+         other: R<::bevy_ui_widgets::MenuFocusState>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::MenuFocusState as ::std::cmp::PartialEq<
                             ::bevy_ui_widgets::MenuFocusState,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -599,23 +580,21 @@ pub(crate) fn register_menu_popup_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::MenuPopup,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::MenuPopup>| {
-                let output: V<::bevy_ui_widgets::MenuPopup> = {
-                    {
-                        let output: V<::bevy_ui_widgets::MenuPopup> = <::bevy_ui_widgets::MenuPopup as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::MenuPopup>| {
+            let output: V<::bevy_ui_widgets::MenuPopup> = {
+                {
+                    let output: V<::bevy_ui_widgets::MenuPopup> =
+                        <::bevy_ui_widgets::MenuPopup as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -657,23 +636,22 @@ pub(crate) fn register_menu_button_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::MenuButton,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::MenuButton>| {
-                let output: V<::bevy_ui_widgets::MenuButton> = {
-                    {
-                        let output: V<::bevy_ui_widgets::MenuButton> = <::bevy_ui_widgets::MenuButton as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::MenuButton>| {
+            let output: V<::bevy_ui_widgets::MenuButton> = {
+                {
+                    let output: V<::bevy_ui_widgets::MenuButton> =
+                        <::bevy_ui_widgets::MenuButton as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -686,23 +664,24 @@ pub(crate) fn register_modal_dialog_barrier_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ModalDialogBarrier,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ModalDialogBarrier>| {
-                let output: V<::bevy_ui_widgets::ModalDialogBarrier> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ModalDialogBarrier> = <::bevy_ui_widgets::ModalDialogBarrier as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ModalDialogBarrier>| {
+            let output: V<::bevy_ui_widgets::ModalDialogBarrier> = {
+                {
+                    let output: V<::bevy_ui_widgets::ModalDialogBarrier> =
+                        <::bevy_ui_widgets::ModalDialogBarrier as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -715,60 +694,58 @@ pub(crate) fn register_popover_side_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::popover::PopoverSide,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::popover::PopoverSide>| {
-                let output: V<::bevy_ui_widgets::popover::PopoverSide> = {
-                    {
-                        let output: V<::bevy_ui_widgets::popover::PopoverSide> = <::bevy_ui_widgets::popover::PopoverSide as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::popover::PopoverSide>,
-                other: R<::bevy_ui_widgets::popover::PopoverSide>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::popover::PopoverSide as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::popover::PopoverSide>| {
+            let output: V<::bevy_ui_widgets::popover::PopoverSide> = {
+                {
+                    let output: V<::bevy_ui_widgets::popover::PopoverSide> =
+                        <::bevy_ui_widgets::popover::PopoverSide as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::popover::PopoverSide>,
+         other: R<::bevy_ui_widgets::popover::PopoverSide>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::popover::PopoverSide as ::std::cmp::PartialEq<
                             ::bevy_ui_widgets::popover::PopoverSide,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "mirror",
-            |_self: R<::bevy_ui_widgets::popover::PopoverSide>| {
-                let output: V<::bevy_ui_widgets::popover::PopoverSide> = {
-                    {
-                        let output: V<::bevy_ui_widgets::popover::PopoverSide> = ::bevy_ui_widgets::popover::PopoverSide::mirror(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the side that is the mirror image of this side.",
-            &["_self"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "mirror",
+        |_self: R<::bevy_ui_widgets::popover::PopoverSide>| {
+            let output: V<::bevy_ui_widgets::popover::PopoverSide> = {
+                {
+                    let output: V<::bevy_ui_widgets::popover::PopoverSide> =
+                        ::bevy_ui_widgets::popover::PopoverSide::mirror(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the side that is the mirror image of this side.",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -781,43 +758,43 @@ pub(crate) fn register_popover_align_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::popover::PopoverAlign,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::popover::PopoverAlign>| {
-                let output: V<::bevy_ui_widgets::popover::PopoverAlign> = {
-                    {
-                        let output: V<::bevy_ui_widgets::popover::PopoverAlign> = <::bevy_ui_widgets::popover::PopoverAlign as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::popover::PopoverAlign>,
-                other: R<::bevy_ui_widgets::popover::PopoverAlign>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::popover::PopoverAlign as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::popover::PopoverAlign>| {
+            let output: V<::bevy_ui_widgets::popover::PopoverAlign> = {
+                {
+                    let output: V<::bevy_ui_widgets::popover::PopoverAlign> =
+                        <::bevy_ui_widgets::popover::PopoverAlign as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::popover::PopoverAlign>,
+         other: R<::bevy_ui_widgets::popover::PopoverAlign>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::popover::PopoverAlign as ::std::cmp::PartialEq<
                             ::bevy_ui_widgets::popover::PopoverAlign,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -879,43 +856,41 @@ pub(crate) fn register_popover_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::popover::Popover,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::popover::Popover>| {
-                let output: V<::bevy_ui_widgets::popover::Popover> = {
-                    {
-                        let output: V<::bevy_ui_widgets::popover::Popover> = <::bevy_ui_widgets::popover::Popover as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::popover::Popover>| {
+            let output: V<::bevy_ui_widgets::popover::Popover> = {
+                {
+                    let output: V<::bevy_ui_widgets::popover::Popover> =
+                        <::bevy_ui_widgets::popover::Popover as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::popover::Popover>,
-                other: R<::bevy_ui_widgets::popover::Popover>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::popover::Popover as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::popover::Popover>,
+         other: R<::bevy_ui_widgets::popover::Popover>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::popover::Popover as ::std::cmp::PartialEq<
                             ::bevy_ui_widgets::popover::Popover,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -928,23 +903,22 @@ pub(crate) fn register_radio_group_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::RadioGroup,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::RadioGroup>| {
-                let output: V<::bevy_ui_widgets::RadioGroup> = {
-                    {
-                        let output: V<::bevy_ui_widgets::RadioGroup> = <::bevy_ui_widgets::RadioGroup as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::RadioGroup>| {
+            let output: V<::bevy_ui_widgets::RadioGroup> = {
+                {
+                    let output: V<::bevy_ui_widgets::RadioGroup> =
+                        <::bevy_ui_widgets::RadioGroup as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -957,23 +931,22 @@ pub(crate) fn register_radio_button_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::RadioButton,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::RadioButton>| {
-                let output: V<::bevy_ui_widgets::RadioButton> = {
-                    {
-                        let output: V<::bevy_ui_widgets::RadioButton> = <::bevy_ui_widgets::RadioButton as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::RadioButton>| {
+            let output: V<::bevy_ui_widgets::RadioButton> = {
+                {
+                    let output: V<::bevy_ui_widgets::RadioButton> =
+                        <::bevy_ui_widgets::RadioButton as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -986,23 +959,22 @@ pub(crate) fn register_scroll_area_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ScrollArea,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ScrollArea>| {
-                let output: V<::bevy_ui_widgets::ScrollArea> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ScrollArea> = <::bevy_ui_widgets::ScrollArea as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ScrollArea>| {
+            let output: V<::bevy_ui_widgets::ScrollArea> = {
+                {
+                    let output: V<::bevy_ui_widgets::ScrollArea> =
+                        <::bevy_ui_widgets::ScrollArea as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1015,43 +987,43 @@ pub(crate) fn register_control_orientation_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ControlOrientation,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ControlOrientation>| {
-                let output: V<::bevy_ui_widgets::ControlOrientation> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ControlOrientation> = <::bevy_ui_widgets::ControlOrientation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::ControlOrientation>,
-                other: R<::bevy_ui_widgets::ControlOrientation>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::ControlOrientation as ::std::cmp::PartialEq<
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ControlOrientation>| {
+            let output: V<::bevy_ui_widgets::ControlOrientation> = {
+                {
+                    let output: V<::bevy_ui_widgets::ControlOrientation> =
+                        <::bevy_ui_widgets::ControlOrientation as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::ControlOrientation>,
+         other: R<::bevy_ui_widgets::ControlOrientation>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::ControlOrientation as ::std::cmp::PartialEq<
                             ::bevy_ui_widgets::ControlOrientation,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1148,23 +1120,22 @@ pub(crate) fn register_scrollbar_thumb_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ScrollbarThumb,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::ScrollbarThumb>| {
-                let output: V<::bevy_ui_widgets::ScrollbarThumb> = {
-                    {
-                        let output: V<::bevy_ui_widgets::ScrollbarThumb> = <::bevy_ui_widgets::ScrollbarThumb as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ScrollbarThumb>| {
+            let output: V<::bevy_ui_widgets::ScrollbarThumb> = {
+                {
+                    let output: V<::bevy_ui_widgets::ScrollbarThumb> =
+                        <::bevy_ui_widgets::ScrollbarThumb as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1247,43 +1218,39 @@ pub(crate) fn register_track_click_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::TrackClick,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::TrackClick>| {
-                let output: V<::bevy_ui_widgets::TrackClick> = {
-                    {
-                        let output: V<::bevy_ui_widgets::TrackClick> = <::bevy_ui_widgets::TrackClick as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::TrackClick>| {
+            let output: V<::bevy_ui_widgets::TrackClick> = {
+                {
+                    let output: V<::bevy_ui_widgets::TrackClick> =
+                        <::bevy_ui_widgets::TrackClick as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::TrackClick>,
-                other: R<::bevy_ui_widgets::TrackClick>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::TrackClick as ::std::cmp::PartialEq<
-                            ::bevy_ui_widgets::TrackClick,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::TrackClick>, other: R<::bevy_ui_widgets::TrackClick>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui_widgets::TrackClick as ::std::cmp::PartialEq<
+                        ::bevy_ui_widgets::TrackClick,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1337,43 +1304,39 @@ pub(crate) fn register_slider_value_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SliderValue,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::SliderValue>| {
-                let output: V<::bevy_ui_widgets::SliderValue> = {
-                    {
-                        let output: V<::bevy_ui_widgets::SliderValue> = <::bevy_ui_widgets::SliderValue as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::SliderValue>| {
+            let output: V<::bevy_ui_widgets::SliderValue> = {
+                {
+                    let output: V<::bevy_ui_widgets::SliderValue> =
+                        <::bevy_ui_widgets::SliderValue as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::SliderValue>,
-                other: R<::bevy_ui_widgets::SliderValue>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::SliderValue as ::std::cmp::PartialEq<
-                            ::bevy_ui_widgets::SliderValue,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::SliderValue>, other: R<::bevy_ui_widgets::SliderValue>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui_widgets::SliderValue as ::std::cmp::PartialEq<
+                        ::bevy_ui_widgets::SliderValue,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1585,43 +1548,39 @@ pub(crate) fn register_slider_step_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SliderStep,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::SliderStep>| {
-                let output: V<::bevy_ui_widgets::SliderStep> = {
-                    {
-                        let output: V<::bevy_ui_widgets::SliderStep> = <::bevy_ui_widgets::SliderStep as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::SliderStep>| {
+            let output: V<::bevy_ui_widgets::SliderStep> = {
+                {
+                    let output: V<::bevy_ui_widgets::SliderStep> =
+                        <::bevy_ui_widgets::SliderStep as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::SliderStep>,
-                other: R<::bevy_ui_widgets::SliderStep>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::SliderStep as ::std::cmp::PartialEq<
-                            ::bevy_ui_widgets::SliderStep,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::SliderStep>, other: R<::bevy_ui_widgets::SliderStep>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui_widgets::SliderStep as ::std::cmp::PartialEq<
+                        ::bevy_ui_widgets::SliderStep,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1634,23 +1593,22 @@ pub(crate) fn register_slider_thumb_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SliderThumb,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::SliderThumb>| {
-                let output: V<::bevy_ui_widgets::SliderThumb> = {
-                    {
-                        let output: V<::bevy_ui_widgets::SliderThumb> = <::bevy_ui_widgets::SliderThumb as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::SliderThumb>| {
+            let output: V<::bevy_ui_widgets::SliderThumb> = {
+                {
+                    let output: V<::bevy_ui_widgets::SliderThumb> =
+                        <::bevy_ui_widgets::SliderThumb as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1663,23 +1621,22 @@ pub(crate) fn register_slider_precision_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SliderPrecision,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::SliderPrecision>| {
-                let output: V<::bevy_ui_widgets::SliderPrecision> = {
-                    {
-                        let output: V<::bevy_ui_widgets::SliderPrecision> = <::bevy_ui_widgets::SliderPrecision as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::SliderPrecision>| {
+            let output: V<::bevy_ui_widgets::SliderPrecision> = {
+                {
+                    let output: V<::bevy_ui_widgets::SliderPrecision> =
+                        <::bevy_ui_widgets::SliderPrecision as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1692,23 +1649,22 @@ pub(crate) fn register_set_slider_value_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SetSliderValue,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::SetSliderValue>| {
-                let output: V<::bevy_ui_widgets::SetSliderValue> = {
-                    {
-                        let output: V<::bevy_ui_widgets::SetSliderValue> = <::bevy_ui_widgets::SetSliderValue as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::SetSliderValue>| {
+            let output: V<::bevy_ui_widgets::SetSliderValue> = {
+                {
+                    let output: V<::bevy_ui_widgets::SetSliderValue> =
+                        <::bevy_ui_widgets::SetSliderValue as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1721,23 +1677,24 @@ pub(crate) fn register_slider_value_change_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SliderValueChange,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::SliderValueChange>| {
-                let output: V<::bevy_ui_widgets::SliderValueChange> = {
-                    {
-                        let output: V<::bevy_ui_widgets::SliderValueChange> = <::bevy_ui_widgets::SliderValueChange as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::SliderValueChange>| {
+            let output: V<::bevy_ui_widgets::SliderValueChange> = {
+                {
+                    let output: V<::bevy_ui_widgets::SliderValueChange> =
+                        <::bevy_ui_widgets::SliderValueChange as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1750,43 +1707,40 @@ pub(crate) fn register_tab_activation_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::TabActivation,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::TabActivation>| {
-                let output: V<::bevy_ui_widgets::TabActivation> = {
-                    {
-                        let output: V<::bevy_ui_widgets::TabActivation> = <::bevy_ui_widgets::TabActivation as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::TabActivation>| {
+            let output: V<::bevy_ui_widgets::TabActivation> = {
+                {
+                    let output: V<::bevy_ui_widgets::TabActivation> =
+                        <::bevy_ui_widgets::TabActivation as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::TabActivation>,
-                other: R<::bevy_ui_widgets::TabActivation>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::TabActivation as ::std::cmp::PartialEq<
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::TabActivation>, other: R<::bevy_ui_widgets::TabActivation>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::TabActivation as ::std::cmp::PartialEq<
                             ::bevy_ui_widgets::TabActivation,
                         >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1845,26 +1799,23 @@ pub(crate) fn register_selected_tab_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SelectedTab,
     >::new(world)
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_ui_widgets::SelectedTab>,
-                other: R<::bevy_ui_widgets::SelectedTab>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui_widgets::SelectedTab as ::std::cmp::PartialEq<
-                            ::bevy_ui_widgets::SelectedTab,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::SelectedTab>, other: R<::bevy_ui_widgets::SelectedTab>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui_widgets::SelectedTab as ::std::cmp::PartialEq<
+                        ::bevy_ui_widgets::SelectedTab,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1897,32 +1848,28 @@ pub(crate) fn register_tab_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_ui_widgets::Tab,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_ui_widgets::Tab, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_text_input_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::TextInput,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::TextInput>| {
-                let output: V<::bevy_ui_widgets::TextInput> = {
-                    {
-                        let output: V<::bevy_ui_widgets::TextInput> = <::bevy_ui_widgets::TextInput as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::TextInput>| {
+            let output: V<::bevy_ui_widgets::TextInput> = {
+                {
+                    let output: V<::bevy_ui_widgets::TextInput> =
+                        <::bevy_ui_widgets::TextInput as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1935,23 +1882,22 @@ pub(crate) fn register_select_all_on_focus_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SelectAllOnFocus,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui_widgets::SelectAllOnFocus>| {
-                let output: V<::bevy_ui_widgets::SelectAllOnFocus> = {
-                    {
-                        let output: V<::bevy_ui_widgets::SelectAllOnFocus> = <::bevy_ui_widgets::SelectAllOnFocus as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::SelectAllOnFocus>| {
+            let output: V<::bevy_ui_widgets::SelectAllOnFocus> = {
+                {
+                    let output: V<::bevy_ui_widgets::SelectAllOnFocus> =
+                        <::bevy_ui_widgets::SelectAllOnFocus as ::std::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

@@ -1,18 +1,16 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyShapeScriptingPlugin;
 pub(crate) fn register_ray_2_d_functions(world: &mut World) {
@@ -115,10 +113,7 @@ pub(crate) fn register_ray_2_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Ray2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Ray2d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_ray_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -220,10 +215,7 @@ pub(crate) fn register_ray_3_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Ray3d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Ray3d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_circle_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -315,10 +307,7 @@ pub(crate) fn register_circle_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Circle,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Circle, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_arc_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -615,10 +604,7 @@ pub(crate) fn register_arc_2_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Arc2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Arc2d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_circular_sector_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1288,10 +1274,8 @@ pub(crate) fn register_ellipse_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Ellipse,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Ellipse, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_annulus_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1399,10 +1383,8 @@ pub(crate) fn register_annulus_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Annulus,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Annulus, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_rhombus_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1558,10 +1540,8 @@ pub(crate) fn register_rhombus_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Rhombus,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Rhombus, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_plane_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1621,10 +1601,8 @@ pub(crate) fn register_plane_2_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Plane2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Plane2d, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_line_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1667,10 +1645,7 @@ pub(crate) fn register_line_2_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Line2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Line2d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_segment_2_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2553,10 +2528,8 @@ pub(crate) fn register_polygon_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Polygon,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Polygon, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_convex_polygon_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2962,10 +2935,7 @@ pub(crate) fn register_sphere_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Sphere,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Sphere, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_plane_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3026,10 +2996,8 @@ pub(crate) fn register_plane_3_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Plane3d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Plane3d, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_infinite_plane_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3157,10 +3125,7 @@ pub(crate) fn register_line_3_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Line3d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Line3d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_segment_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3771,10 +3736,7 @@ pub(crate) fn register_cuboid_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Cuboid,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Cuboid, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_cylinder_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3882,10 +3844,8 @@ pub(crate) fn register_cylinder_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Cylinder,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Cylinder, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 pub(crate) fn register_capsule_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4088,10 +4048,7 @@ pub(crate) fn register_cone_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Cone,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Cone, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_conical_frustum_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4333,10 +4290,7 @@ pub(crate) fn register_torus_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Torus,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Torus, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_triangle_3_d_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4914,10 +4868,7 @@ pub(crate) fn register_aabb_2_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Aabb2d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Aabb2d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_bounding_circle_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -5094,84 +5045,74 @@ pub(crate) fn register_aabb_3_d_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_shape::Aabb3d,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_shape::Aabb3d, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_bounding_sphere_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_shape::BoundingSphere,
     >::new(world)
-        .register_documented(
-            "aabb_3d",
-            |_self: R<::bevy_shape::BoundingSphere>| {
-                let output: V<::bevy_shape::Aabb3d> = {
-                    {
-                        let output: V<::bevy_shape::Aabb3d> = ::bevy_shape::BoundingSphere::aabb_3d(
-                                &_self,
-                            )
+    .register_documented(
+        "aabb_3d",
+        |_self: R<::bevy_shape::BoundingSphere>| {
+            let output: V<::bevy_shape::Aabb3d> = {
+                {
+                    let output: V<::bevy_shape::Aabb3d> =
+                        ::bevy_shape::BoundingSphere::aabb_3d(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Computes the smallest [`Aabb3d`] containing this [`BoundingSphere`].",
+        &["_self"],
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_shape::BoundingSphere>| {
+            let output: V<::bevy_shape::BoundingSphere> = {
+                {
+                    let output: V<::bevy_shape::BoundingSphere> =
+                        <::bevy_shape::BoundingSphere as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Computes the smallest [`Aabb3d`] containing this [`BoundingSphere`].",
-            &["_self"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_shape::BoundingSphere>| {
-                let output: V<::bevy_shape::BoundingSphere> = {
-                    {
-                        let output: V<::bevy_shape::BoundingSphere> = <::bevy_shape::BoundingSphere as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_shape::BoundingSphere>,
-                other: R<::bevy_shape::BoundingSphere>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_shape::BoundingSphere as ::core::cmp::PartialEq<
-                            ::bevy_shape::BoundingSphere,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "radius",
-            |_self: R<::bevy_shape::BoundingSphere>| {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_shape::BoundingSphere::radius(&_self)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Get the radius of the bounding sphere",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_shape::BoundingSphere>, other: R<::bevy_shape::BoundingSphere>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_shape::BoundingSphere as ::core::cmp::PartialEq<
+                        ::bevy_shape::BoundingSphere,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "radius",
+        |_self: R<::bevy_shape::BoundingSphere>| {
+            let output: f32 = {
+                {
+                    let output: f32 = ::bevy_shape::BoundingSphere::radius(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Get the radius of the bounding sphere",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

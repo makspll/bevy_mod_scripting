@@ -1,18 +1,16 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{R, M, V},
+        from::{M, R, V},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyMathScriptingPlugin;
 pub(crate) fn register_aspect_ratio_functions(world: &mut World) {
@@ -1050,10 +1048,7 @@ pub(crate) fn register_rot_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Rot2,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Rot2, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_dir_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1322,10 +1317,7 @@ pub(crate) fn register_dir_2_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Dir2,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Dir2, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_dir_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1457,10 +1449,7 @@ pub(crate) fn register_dir_3_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Dir3,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Dir3, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_dir_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1592,10 +1581,7 @@ pub(crate) fn register_dir_3_a_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Dir3A,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Dir3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_i_rect_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1929,10 +1915,7 @@ pub(crate) fn register_i_rect_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::IRect,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::IRect, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_rect_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2334,10 +2317,7 @@ pub(crate) fn register_rect_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Rect,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Rect, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_u_rect_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2671,10 +2651,7 @@ pub(crate) fn register_u_rect_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::URect,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::URect, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_dir_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2788,10 +2765,7 @@ pub(crate) fn register_dir_4_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::Dir4,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::Dir4, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
 pub(crate) fn register_float_ord_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2902,10 +2876,8 @@ pub(crate) fn register_float_ord_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<
-            ::bevy_math::FloatOrd,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
+        .register_type_data::<::bevy_math::FloatOrd, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
 }
 impl Plugin for BevyMathScriptingPlugin {
     fn build(&self, app: &mut App) {
