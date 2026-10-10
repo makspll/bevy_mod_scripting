@@ -25,6 +25,10 @@ pub enum ReferencePart {
 }
 
 impl Clone for ReferencePart {
+    #[allow(
+        clippy::expect_used,
+        reason = "`Clone` is infallible, and map keys which can neither be cloned nor converted to a dynamic value cannot be used for access anyway"
+    )]
     fn clone(&self) -> Self {
         match self {
             Self::StringAccess(arg0) => Self::StringAccess(arg0.clone()),
