@@ -216,6 +216,8 @@ dot-writer = { version = "0.1.4", default-features = false }
 parking_lot = { version = "0.12.1", default-features = false }
 strum = { version = "0.26", default-features = false }
 rhai = { version = "=1.24.0", default-features = false }
+# rhai 1.24 accepts any rhai_codegen ^3.1, but 3.2+ generates code which does not compile against it
+rhai_codegen = { version = "=3.1.0", default-features = false }
 mlua = { version = "0.11", default-features = false }
 log = { version = "0.4.33", default-features = false }
 env_logger = { version = "0.11", default-features = false }
