@@ -1,4 +1,9 @@
 [workspace]
+# cargo-semver-checks builds the crate with all features enabled (release-plz cannot restrict them),
+# which fails since the lua backends (lua51, lua54, luajit, luau, ...) are mutually exclusive in mlua-sys.
+# release-plz < 0.3.163 silently ignored this failure, newer versions abort the release PR with it.
+# see https://github.com/release-plz/release-plz/issues/2291
+semver_check = false
 dependencies_update = false
 publish_timeout = "30m"
 git_release_enable = false
