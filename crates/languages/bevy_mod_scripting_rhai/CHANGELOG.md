@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.1](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.21.0...bevy_mod_scripting_rhai-v0.21.1) - 2026-10-10
+
+### Fixed
+
+- pin rhai dependency ([#553](https://github.com/makspll/bevy_mod_scripting/pull/553))
+
 ## [0.20.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.19.0...bevy_mod_scripting_rhai-v0.20.0) - 2026-06-24
 
 ### Added
