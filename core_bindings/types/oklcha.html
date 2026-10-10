@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ec2094fb.js";
+            window.path_to_searchindex_js = "../../searchindex-3fdfc2bc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-699b4393.js"></script>
+        <script src="../../toc-1db44e52.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -205,12 +205,12 @@
 </thead>
 <tbody>
 <tr><td><a href="./oklcha/sequential_dispersed.html">sequential_dispersed</a></td><td>Generate a deterministic but [quasi-randomly distributed](https://en.wikipedia.org/wiki/Low-discrepancy_sequence)  color from a provided `index`.  This can be helpful for generating debug colors.  # Examples  ```rust  # use bevy_color::Oklcha;  // Unique color for an entity  # let entity_index = 123;  // let entity_index = entity.index();  let color = Oklcha::sequential_dispersed(entity_index);  // Palette with 5 distinct hues  let palette = (0..5).map(Oklcha::sequential_dispersed).collect::&lt;Vec&lt;_&gt;&gt;();  ```</td></tr>
-<tr><td><a href="./oklcha/with_lightness.html">with_lightness</a></td><td>Return a copy of this color with the ‘lightness’ channel set to the given value.</td></tr>
 <tr><td><a href="./oklcha/new.html">new</a></td><td>Construct a new [`Oklcha`] color from components.</td></tr>
-<tr><td><a href="./oklcha/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./oklcha/lch.html">lch</a></td><td>Construct a new [`Oklcha`] color from (l, c, h) components, with the default alpha (1.0).</td></tr>
 <tr><td><a href="./oklcha/with_chroma.html">with_chroma</a></td><td>Return a copy of this color with the ‘chroma’ channel set to the given value.</td></tr>
 <tr><td><a href="./oklcha/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./oklcha/with_lightness.html">with_lightness</a></td><td>Return a copy of this color with the ‘lightness’ channel set to the given value.</td></tr>
+<tr><td><a href="./oklcha/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>

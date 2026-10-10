@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ec2094fb.js";
+            window.path_to_searchindex_js = "../../searchindex-3fdfc2bc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-699b4393.js"></script>
+        <script src="../../toc-1db44e52.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -189,11 +189,10 @@
 <p>Defines if and how the cursor is grabbed by a [<code>Window</code>].</p>
 <h2 id="platform-specific"><a class="header" href="#platform-specific">Platform-specific</a></h2>
 <ul>
-<li><strong><code>macOS</code></strong> doesn’t support [<code>CursorGrabMode::Confined</code>]</li>
-<li><strong><code>X11</code></strong> doesn’t support [<code>CursorGrabMode::Locked</code>]</li>
+<li><strong><code>macOS</code></strong> doesn’t support [<code>CursorGrabMode::Confined</code>] and falls back to [<code>CursorGrabMode::None</code>].</li>
+<li><strong><code>X11</code></strong> doesn’t support [<code>CursorGrabMode::Locked</code>] and falls back to [<code>CursorGrabMode::Confined</code>].</li>
 <li><strong><code>iOS/Android</code></strong> don’t have cursors.</li>
 </ul>
-<p>Since <code>macOS</code> and <code>X11</code> don’t have full [<code>CursorGrabMode</code>] support, we first try to set the grab mode that was asked for. If it doesn’t work then use the alternate grab mode.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

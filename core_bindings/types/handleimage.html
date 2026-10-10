@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ec2094fb.js";
+            window.path_to_searchindex_js = "../../searchindex-3fdfc2bc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-699b4393.js"></script>
+        <script src="../../toc-1db44e52.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -192,13 +192,13 @@
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>A handle to a specific [<code>Asset</code>] of type <code>A</code>. Handles act as abstract “references” to
-assets, whose data are stored in the <a href="crate::prelude::Assets"><code>Assets&lt;A&gt;</code></a> resource,
+assets, whose data are stored in the [<code>Assets&lt;A&gt;</code>] resource,
 avoiding the need to store multiple copies of the same data.</p>
 <p>If a [<code>Handle</code>] is [<code>Handle::Strong</code>], the [<code>Asset</code>] will be kept
 alive until the [<code>Handle</code>] is dropped. If a [<code>Handle</code>] is [<code>Handle::Uuid</code>], it does not necessarily reference a live [<code>Asset</code>],
 nor will it keep assets alive.</p>
 <p>Modifying a <em>handle</em> will change which existing asset is referenced, but modifying the <em>asset</em>
-(by mutating the <a href="crate::prelude::Assets"><code>Assets</code></a> resource) will change the asset for all handles referencing it.</p>
+(by mutating the [<code>Assets</code>] resource) will change the asset for all handles referencing it.</p>
 <p>[<code>Handle</code>] can be cloned. If a [<code>Handle::Strong</code>] is cloned, the referenced [<code>Asset</code>] will not be freed until <em>all</em> instances
 of the [<code>Handle</code>] are dropped.</p>
 <p>[<code>Handle::Strong</code>], via [<code>StrongHandle</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>

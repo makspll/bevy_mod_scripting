@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ec2094fb.js";
+            window.path_to_searchindex_js = "../../searchindex-3fdfc2bc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-699b4393.js"></script>
+        <script src="../../toc-1db44e52.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -208,10 +208,10 @@ W (West) ┼─────► E (East)
 </thead>
 <tbody>
 <tr><td><a href="./compassquadrant/is_in_direction.html">is_in_direction</a></td><td>Checks if a point is in the direction represented by this [`CompassQuadrant`] from an origin.  This uses a cone-based check: the vector from origin to the candidate point  must have a positive dot product with the direction vector.  Uses standard mathematical coordinates where Y increases upward.  `true` if the candidate is generally in the direction of this quadrant from the origin.  # Example  ```  use bevy_math::{CompassQuadrant, Vec2};  let origin = Vec2::new(0.0, 0.0);  let north_point = Vec2::new(0.0, 10.0);  // Above origin (Y+ = up)  let east_point = Vec2::new(10.0, 0.0);   // Right of origin  assert!(CompassQuadrant::North.is_in_direction(origin, north_point));  assert!(!CompassQuadrant::North.is_in_direction(origin, east_point));  ```</td></tr>
-<tr><td><a href="./compassquadrant/opposite.html">opposite</a></td><td>Returns the opposite [`CompassQuadrant`], located 180 degrees from `self`.  This can also be accessed via the `-` operator, using the [`Neg`]...</td></tr>
-<tr><td><a href="./compassquadrant/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./compassquadrant/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./compassquadrant/to_index.html">to_index</a></td><td>Converts a [`CompassQuadrant`] to a standard index.  Starts at 0 for [`CompassQuadrant::North`] and...</td></tr>
+<tr><td><a href="./compassquadrant/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./compassquadrant/opposite.html">opposite</a></td><td>Returns the opposite [`CompassQuadrant`], located 180 degrees from `self`.  This can also be accessed via the `-` operator, using the [`Neg`]...</td></tr>
 </tbody>
 </table>
 </div>
