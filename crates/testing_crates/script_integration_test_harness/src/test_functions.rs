@@ -6,7 +6,10 @@ use std::{
 use ::{
     bevy_app::App,
     bevy_asset::Assets,
-    bevy_ecs::{change_detection::Mut, component::ComponentId, entity::Entity, world::World},
+    bevy_ecs::{
+        change_detection::Mut, component::ComponentId, entity::Entity, schedule::Schedules,
+        world::World,
+    },
     bevy_reflect::{Reflect, TypeRegistration},
 };
 use bevy_mod_scripting_asset::Language;
@@ -15,10 +18,12 @@ use bevy_mod_scripting_bindings::{
     ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue, WorldExtensions,
     error::InteropError,
     function::{
+        from::R,
         namespace::{GlobalNamespace, NamespaceBuilder},
         script_function::{DynamicScriptFunctionMut, FunctionCallContext},
     },
 };
+use bevy_system_reflection::{ReflectSchedule, ReflectSystemGraph};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha12Rng;
 use test_utils::test_data::{EnumerateTestComponents, TestAsset};
@@ -83,6 +88,31 @@ pub fn register_test_functions(world: &mut App) {
                             &mut allocator,
                         )
                     })
+            },
+        )
+        .register(
+            "_assert_system_runs_before",
+            |s: FunctionCallContext,
+             schedule: R<ReflectSchedule>,
+             before: String,
+             after: String| {
+                assert_on_schedule_graph(
+                    &s,
+                    &schedule,
+                    format!("Expected `{before}` to run before `{after}`"),
+                    |graph| graph.system_runs_before(&before, &after),
+                )
+            },
+        )
+        .register(
+            "_assert_systems_run_in_parallel",
+            |s: FunctionCallContext, schedule: R<ReflectSchedule>, a: String, b: String| {
+                assert_on_schedule_graph(
+                    &s,
+                    &schedule,
+                    format!("Expected `{a}` and `{b}` to have no ordering between them"),
+                    |graph| graph.systems_run_in_parallel(&a, &b),
+                )
             },
         )
         .register(
@@ -188,4 +218,29 @@ pub fn register_test_functions(world: &mut App) {
                 Ok(ReflectReference::new_allocated(handle, &mut allocator))
             },
         );
+}
+
+/// Builds the system graph of the given schedule, and asserts the given check holds on it
+fn assert_on_schedule_graph(
+    ctx: &FunctionCallContext,
+    schedule: &ReflectSchedule,
+    failure_message: String,
+    check: impl FnOnce(&ReflectSystemGraph) -> Result<bool, String>,
+) -> Result<(), InteropError> {
+    let world = ctx.world()?;
+    let holds = world.with_resource(|schedules: &Schedules| {
+        let sched = schedules
+            .get(*schedule.label())
+            .ok_or_else(|| InteropError::missing_schedule(schedule.identifier()))?;
+        check(&bevy_system_reflection::schedule_to_reflect_graph(sched))
+            .map_err(InteropError::string)
+    })??;
+    if holds {
+        Ok(())
+    } else {
+        Err(InteropError::string(format!(
+            "{failure_message} in schedule `{}`",
+            schedule.identifier()
+        )))
+    }
 }

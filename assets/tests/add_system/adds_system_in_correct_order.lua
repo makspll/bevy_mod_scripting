@@ -28,6 +28,12 @@ function on_test()
         :after(test_system)
         :before(system_after)
     )
+
+    world._assert_system_runs_before(post_update_schedule, "custom_system_before", "on_test_post_update")
+    world._assert_system_runs_before(post_update_schedule, "on_test_post_update", "custom_system_between")
+    world._assert_system_runs_before(post_update_schedule, "custom_system_between", "custom_system_after")
+    -- ordering is transitive
+    world._assert_system_runs_before(post_update_schedule, "custom_system_before", "custom_system_after")
 end
 
 function custom_system_before()

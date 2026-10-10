@@ -344,6 +344,98 @@ impl ReflectSystemGraph {
         self.hierarchy.sort();
     }
 
+    /// Finds the node id of the single system with the given short identifier.
+    fn system_node_by_identifier(&self, identifier: &str) -> Result<NodeId, String> {
+        let mut found = self.nodes.iter().filter_map(|node| match node {
+            ReflectSystemGraphNode::System(system) if system.identifier() == identifier => {
+                Some(system.node_id())
+            }
+            _ => None,
+        });
+        match (found.next(), found.next()) {
+            (Some(id), None) => Ok(id),
+            (None, _) => Err(format!(
+                "no system with identifier `{identifier}` in schedule `{}`",
+                self.schedule.identifier()
+            )),
+            (Some(_), Some(_)) => Err(format!(
+                "multiple systems with identifier `{identifier}` in schedule `{}`",
+                self.schedule.identifier()
+            )),
+        }
+    }
+
+    /// All systems contained in the given node, i.e. the node itself if it is a system,
+    /// or all (transitive) members if it is a set.
+    ///
+    /// Note that, in the raw (non-absorbed) graph, hierarchy edges point from a set to its members.
+    fn member_systems(&self, node: &ReflectNodeId) -> Vec<ReflectNodeId> {
+        let mut systems = Vec::new();
+        let mut visited = HashSet::new();
+        let mut stack = vec![node.clone()];
+        while let Some(current) = stack.pop() {
+            if !visited.insert(current.0) {
+                continue;
+            }
+            match current.0 {
+                NodeId::System(_) => systems.push(current),
+                NodeId::Set(_) => stack.extend(
+                    self.hierarchy
+                        .iter()
+                        .filter(|edge| edge.from == current)
+                        .map(|edge| edge.to.clone()),
+                ),
+            }
+        }
+        systems
+    }
+
+    /// Checks whether the system with identifier `before` is guaranteed to run before the system with identifier `after`.
+    ///
+    /// Ordering constraints involving system sets apply to all of their member systems, and are followed transitively.
+    ///
+    /// Errors if either identifier does not match exactly one system in this graph.
+    pub fn system_runs_before(&self, before: &str, after: &str) -> Result<bool, String> {
+        let before = self.system_node_by_identifier(before)?;
+        let after = self.system_node_by_identifier(after)?;
+
+        // system level "runs before" relation, with sets expanded to their members
+        let mut successors: HashMap<NodeId, Vec<NodeId>> = HashMap::default();
+        for edge in &self.dependencies {
+            let to = self.member_systems(&edge.to);
+            for from in self.member_systems(&edge.from) {
+                successors
+                    .entry(from.0)
+                    .or_default()
+                    .extend(to.iter().map(|n| n.0));
+            }
+        }
+
+        let mut visited = HashSet::new();
+        let mut stack = vec![before];
+        while let Some(current) = stack.pop() {
+            if !visited.insert(current) {
+                continue;
+            }
+            for next in successors.get(&current).into_iter().flatten() {
+                if *next == after {
+                    return Ok(true);
+                }
+                stack.push(*next);
+            }
+        }
+        Ok(false)
+    }
+
+    /// Checks whether the two systems have no ordering constraint between them, in either direction,
+    /// i.e. neither is guaranteed to run before the other, so the scheduler is free to run them in parallel
+    /// (as far as ordering is concerned, conflicting data access can still serialise them).
+    ///
+    /// Errors if either identifier does not match exactly one system in this graph.
+    pub fn systems_run_in_parallel(&self, a: &str, b: &str) -> Result<bool, String> {
+        Ok(!self.system_runs_before(a, b)? && !self.system_runs_before(b, a)?)
+    }
+
     /// removes the set and bridges the edges connecting to it
     fn absorb_set(&mut self, node_id: NodeId) {
         // collect hierarchy parents and children in one pass
@@ -487,6 +579,54 @@ mod test {
     fn system_d() {}
 
     fn system_e() {}
+
+    #[test]
+    fn test_system_runs_before() {
+        #[derive(SystemSet, Hash, PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Copy)]
+        enum SystemSet {
+            SystemSetG,
+            SystemSetH,
+        }
+
+        let mut schedule = Schedule::new(Update);
+        // b -> a, b -> c -> H(e), H -> G(d)
+        schedule
+            .add_systems(system_a)
+            .add_systems(system_b.before(system_a))
+            .add_systems(system_c.after(system_b).before(SystemSet::SystemSetH))
+            .add_systems(system_d.in_set(SystemSet::SystemSetG))
+            .add_systems(system_e.in_set(SystemSet::SystemSetH))
+            .configure_sets(SystemSet::SystemSetG.after(SystemSet::SystemSetH));
+        let mut world = World::new();
+        schedule.initialize(&mut world).unwrap();
+        let graph = schedule_to_reflect_graph(&schedule);
+
+        // direct
+        assert_eq!(graph.system_runs_before("system_b", "system_a"), Ok(true));
+        assert_eq!(graph.system_runs_before("system_a", "system_b"), Ok(false));
+        // via sets, and transitively
+        assert_eq!(graph.system_runs_before("system_c", "system_e"), Ok(true));
+        assert_eq!(graph.system_runs_before("system_e", "system_d"), Ok(true));
+        assert_eq!(graph.system_runs_before("system_b", "system_d"), Ok(true));
+        assert_eq!(graph.system_runs_before("system_d", "system_b"), Ok(false));
+        // unordered
+        assert_eq!(graph.system_runs_before("system_a", "system_c"), Ok(false));
+        assert_eq!(graph.system_runs_before("system_c", "system_a"), Ok(false));
+        assert_eq!(
+            graph.systems_run_in_parallel("system_a", "system_c"),
+            Ok(true)
+        );
+        assert_eq!(
+            graph.systems_run_in_parallel("system_b", "system_a"),
+            Ok(false)
+        );
+        assert_eq!(
+            graph.systems_run_in_parallel("system_d", "system_b"),
+            Ok(false)
+        );
+        // unknown
+        assert!(graph.system_runs_before("system_z", "system_a").is_err());
+    }
 
     #[test]
     fn test_graph_is_as_expected() {

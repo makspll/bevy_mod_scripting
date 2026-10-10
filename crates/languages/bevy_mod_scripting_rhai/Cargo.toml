@@ -22,6 +22,8 @@ bevy_app = { workspace = true, default-features = false, features = [] }
 bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_platform = { workspace = true, default-features = false, features = [] }
 rhai = { workspace = true, features = ["std", "sync"] }
+# only here to pin the version rhai uses, see the workspace manifest
+rhai_codegen = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_display = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }

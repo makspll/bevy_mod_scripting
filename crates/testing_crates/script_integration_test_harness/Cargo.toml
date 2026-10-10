@@ -20,6 +20,7 @@ bevy_app = { workspace = true }
 test_utils = { workspace = true }
 bevy_reflect = { workspace = true }
 bevy_log = { workspace = true }
+bevy_system_reflection = { workspace = true }
 
 bevy_mod_scripting_functions = { workspace = true, features = [
     "core_functions",
