@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3fdfc2bc.js";
+            window.path_to_searchindex_js = "searchindex-a9a1b692.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1db44e52.js"></script>
+        <script src="toc-eb4faeef.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -4008,16 +4008,15 @@ If the type is neither returns a <code>ScriptTypeRegistration</code>.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#short_name">short_name</a></td><td>Retrieves the short name of the type. The short name is a more human-readable version of the type na...</td></tr>
 <tr><td><a href="#type_name">type_name</a></td><td>Retrieves the name of the type.</td></tr>
+<tr><td><a href="#short_name">short_name</a></td><td>Retrieves the short name of the type. The short name is a more human-readable version of the type na...</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="short_name"><a class="header" href="#short_name"><code>short_name</code></a></h1>
+<h1 id="type_name"><a class="header" href="#type_name"><code>type_name</code></a></h1>
 <blockquote>
-<p>Retrieves the short name of the type.
-The short name is a more human-readable version of the type name.</p>
+<p>Retrieves the name of the type.</p>
 </blockquote>
 <h4 id="arguments-35"><a class="header" href="#arguments-35">Arguments</a></h4>
 <div class="table-wrapper">
@@ -4037,14 +4036,15 @@ The short name is a more human-readable version of the type name.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>short_name</strong></td><td><a href="#str">Str</a></td><td>The short name of the</td></tr>
+<tr><td><strong>type_name</strong></td><td><a href="#str">Str</a></td><td>The name of the type.</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="type_name"><a class="header" href="#type_name"><code>type_name</code></a></h1>
+<h1 id="short_name"><a class="header" href="#short_name"><code>short_name</code></a></h1>
 <blockquote>
-<p>Retrieves the name of the type.</p>
+<p>Retrieves the short name of the type.
+The short name is a more human-readable version of the type name.</p>
 </blockquote>
 <h4 id="arguments-36"><a class="header" href="#arguments-36">Arguments</a></h4>
 <div class="table-wrapper">
@@ -4064,7 +4064,7 @@ The short name is a more human-readable version of the type name.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>type_name</strong></td><td><a href="#str">Str</a></td><td>The name of the type.</td></tr>
+<tr><td><strong>short_name</strong></td><td><a href="#str">Str</a></td><td>The short name of the</td></tr>
 </tbody>
 </table>
 </div>
@@ -4469,38 +4469,11 @@ The short name is a more human-readable version of the type name.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#exclusive">exclusive</a></td><td>Specifies the system is to run exclusively, meaning it can access anything, but will not run in para...</td></tr>
 <tr><td><a href="#resource">resource</a></td><td>Requests the system have access to the given resource. The resource will be added to the list of arg...</td></tr>
-<tr><td><a href="#query-1">query</a></td><td>Adds a query to the system builder.</td></tr>
-<tr><td><a href="#before">before</a></td><td>Specifies the system is to run *before* the given system.  Note: this is an experimental feature, an...</td></tr>
 <tr><td><a href="#after">after</a></td><td>Specifies the system is to run *after* the given system  Note: this is an experimental feature, and ...</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="exclusive"><a class="header" href="#exclusive"><code>exclusive</code></a></h1>
-<blockquote>
-<p>Specifies the system is to run exclusively, meaning it can access anything, but will not run in parallel with other systems.</p>
-</blockquote>
-<h4 id="arguments-47"><a class="header" href="#arguments-47">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to make exclusive.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-47"><a class="header" href="#returns-47">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder that is now exclusive.</td></tr>
+<tr><td><a href="#exclusive">exclusive</a></td><td>Specifies the system is to run exclusively, meaning it can access anything, but will not run in para...</td></tr>
+<tr><td><a href="#before">before</a></td><td>Specifies the system is to run *before* the given system.  Note: this is an experimental feature, an...</td></tr>
+<tr><td><a href="#query-1">query</a></td><td>Adds a query to the system builder.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4510,7 +4483,7 @@ The short name is a more human-readable version of the type name.</p>
 <p>Requests the system have access to the given resource. The resource will be added to the
 list of arguments of the callback in the order they’re provided.</p>
 </blockquote>
-<h4 id="arguments-48"><a class="header" href="#arguments-48">Arguments</a></h4>
+<h4 id="arguments-47"><a class="header" href="#arguments-47">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4522,7 +4495,7 @@ list of arguments of the callback in the order they’re provided.</p>
 </tbody>
 </table>
 </div>
-<h4 id="returns-48"><a class="header" href="#returns-48">Returns</a></h4>
+<h4 id="returns-47"><a class="header" href="#returns-47">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4534,9 +4507,38 @@ list of arguments of the callback in the order they’re provided.</p>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="query-1"><a class="header" href="#query-1"><code>query</code></a></h1>
+<h1 id="after"><a class="header" href="#after"><code>after</code></a></h1>
 <blockquote>
-<p>Adds a query to the system builder.</p>
+<p>Specifies the system is to run <em>after</em> the given system</p>
+<p>Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems</p>
+</blockquote>
+<h4 id="arguments-48"><a class="header" href="#arguments-48">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to add the dependency to.</td></tr>
+<tr><td><strong>system</strong></td><td><a href="#reflectsystem">ReflectSystem</a></td><td>The system to run after.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-48"><a class="header" href="#returns-48">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder with the dependency added.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="exclusive"><a class="header" href="#exclusive"><code>exclusive</code></a></h1>
+<blockquote>
+<p>Specifies the system is to run exclusively, meaning it can access anything, but will not run in parallel with other systems.</p>
 </blockquote>
 <h4 id="arguments-49"><a class="header" href="#arguments-49">Arguments</a></h4>
 <div class="table-wrapper">
@@ -4545,8 +4547,7 @@ list of arguments of the callback in the order they’re provided.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to add the query to.</td></tr>
-<tr><td><strong>query</strong></td><td><a href="#scriptquerybuilder">ScriptQueryBuilder</a></td><td>The query to add.</td></tr>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to make exclusive.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4557,7 +4558,7 @@ list of arguments of the callback in the order they’re provided.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder with the query added.</td></tr>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder that is now exclusive.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4591,10 +4592,9 @@ list of arguments of the callback in the order they’re provided.</p>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="after"><a class="header" href="#after"><code>after</code></a></h1>
+<h1 id="query-1"><a class="header" href="#query-1"><code>query</code></a></h1>
 <blockquote>
-<p>Specifies the system is to run <em>after</em> the given system</p>
-<p>Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems</p>
+<p>Adds a query to the system builder.</p>
 </blockquote>
 <h4 id="arguments-51"><a class="header" href="#arguments-51">Arguments</a></h4>
 <div class="table-wrapper">
@@ -4603,8 +4603,8 @@ list of arguments of the callback in the order they’re provided.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to add the dependency to.</td></tr>
-<tr><td><strong>system</strong></td><td><a href="#reflectsystem">ReflectSystem</a></td><td>The system to run after.</td></tr>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to add the query to.</td></tr>
+<tr><td><strong>query</strong></td><td><a href="#scriptquerybuilder">ScriptQueryBuilder</a></td><td>The query to add.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4615,7 +4615,7 @@ list of arguments of the callback in the order they’re provided.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder with the dependency added.</td></tr>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder with the query added.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4642,35 +4642,8 @@ list of arguments of the callback in the order they’re provided.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new_static_script">new_static_script</a></td><td>Creates a new script attachment descriptor from a script asset.</td></tr>
 <tr><td><a href="#new_entity_script">new_entity_script</a></td><td>Creates a new script attachment descriptor for an entity attached script.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="new_static_script"><a class="header" href="#new_static_script"><code>new_static_script</code></a></h1>
-<blockquote>
-<p>Creates a new script attachment descriptor from a script asset.</p>
-</blockquote>
-<h4 id="arguments-52"><a class="header" href="#arguments-52">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>script</strong></td><td>Handle&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</td><td>The script asset to create the attachment from.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-52"><a class="header" href="#returns-52">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>attachment</strong></td><td><a href="#scriptattachment-1">ScriptAttachment</a></td><td>The new script attachment.</td></tr>
+<tr><td><a href="#new_static_script">new_static_script</a></td><td>Creates a new script attachment descriptor from a script asset.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4679,7 +4652,7 @@ list of arguments of the callback in the order they’re provided.</p>
 <blockquote>
 <p>Creates a new script attachment descriptor for an entity attached script.</p>
 </blockquote>
-<h4 id="arguments-53"><a class="header" href="#arguments-53">Arguments</a></h4>
+<h4 id="arguments-52"><a class="header" href="#arguments-52">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4691,7 +4664,7 @@ list of arguments of the callback in the order they’re provided.</p>
 </tbody>
 </table>
 </div>
-<h4 id="returns-53"><a class="header" href="#returns-53">Returns</a></h4>
+<h4 id="returns-52"><a class="header" href="#returns-52">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4699,6 +4672,33 @@ list of arguments of the callback in the order they’re provided.</p>
 </thead>
 <tbody>
 <tr><td><strong>attachment</strong></td><td><a href="#scriptattachment-1">ScriptAttachment</a></td><td>The new script attachment for the entity.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="new_static_script"><a class="header" href="#new_static_script"><code>new_static_script</code></a></h1>
+<blockquote>
+<p>Creates a new script attachment descriptor from a script asset.</p>
+</blockquote>
+<h4 id="arguments-53"><a class="header" href="#arguments-53">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>script</strong></td><td>Handle&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</td><td>The script asset to create the attachment from.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-53"><a class="header" href="#returns-53">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>attachment</strong></td><td><a href="#scriptattachment-1">ScriptAttachment</a></td><td>The new script attachment.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4721,42 +4721,9 @@ list of arguments of the callback in the order they’re provided.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#get_system_by_name">get_system_by_name</a></td><td>Retrieves the system with the given name in the schedule</td></tr>
 <tr><td><a href="#systems">systems</a></td><td>Retrieves all the systems in the schedule.</td></tr>
 <tr><td><a href="#render_dot">render_dot</a></td><td>Renders the schedule as a dot graph string.  Useful for debugging scheduling.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="get_system_by_name"><a class="header" href="#get_system_by_name"><code>get_system_by_name</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Retrieves the system with the given name in the schedule</p>
-</blockquote>
-<h4 id="arguments-54"><a class="header" href="#arguments-54">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>schedule</strong></td><td><a href="#reflectschedule">ReflectSchedule</a></td><td>The schedule to retrieve the system from.</td></tr>
-<tr><td><strong>name</strong></td><td><a href="#string">String</a></td><td>The identifier or full path of the system to retrieve.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-54"><a class="header" href="#returns-54">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>system</strong></td><td>Optional&lt;<a href="#reflectsystem">ReflectSystem</a>&gt;</td><td>The system with the given name, if it exists.</td></tr>
+<tr><td><a href="#get_system_by_name">get_system_by_name</a></td><td>Retrieves the system with the given name in the schedule</td></tr>
 </tbody>
 </table>
 </div>
@@ -4770,7 +4737,7 @@ list of arguments of the callback in the order they’re provided.</p>
 <blockquote>
 <p>Retrieves all the systems in the schedule.</p>
 </blockquote>
-<h4 id="arguments-55"><a class="header" href="#arguments-55">Arguments</a></h4>
+<h4 id="arguments-54"><a class="header" href="#arguments-54">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4781,7 +4748,7 @@ list of arguments of the callback in the order they’re provided.</p>
 </tbody>
 </table>
 </div>
-<h4 id="returns-55"><a class="header" href="#returns-55">Returns</a></h4>
+<h4 id="returns-54"><a class="header" href="#returns-54">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4803,7 +4770,7 @@ list of arguments of the callback in the order they’re provided.</p>
 <p>Renders the schedule as a dot graph string.</p>
 <p>Useful for debugging scheduling.</p>
 </blockquote>
-<h4 id="arguments-56"><a class="header" href="#arguments-56">Arguments</a></h4>
+<h4 id="arguments-55"><a class="header" href="#arguments-55">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4814,7 +4781,7 @@ list of arguments of the callback in the order they’re provided.</p>
 </tbody>
 </table>
 </div>
-<h4 id="returns-56"><a class="header" href="#returns-56">Returns</a></h4>
+<h4 id="returns-55"><a class="header" href="#returns-55">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4822,6 +4789,39 @@ list of arguments of the callback in the order they’re provided.</p>
 </thead>
 <tbody>
 <tr><td><strong>dot</strong></td><td><a href="#string">String</a></td><td>The dot graph string.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="get_system_by_name"><a class="header" href="#get_system_by_name"><code>get_system_by_name</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Retrieves the system with the given name in the schedule</p>
+</blockquote>
+<h4 id="arguments-56"><a class="header" href="#arguments-56">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>schedule</strong></td><td><a href="#reflectschedule">ReflectSchedule</a></td><td>The schedule to retrieve the system from.</td></tr>
+<tr><td><strong>name</strong></td><td><a href="#string">String</a></td><td>The identifier or full path of the system to retrieve.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-56"><a class="header" href="#returns-56">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>system</strong></td><td>Optional&lt;<a href="#reflectsystem">ReflectSystem</a>&gt;</td><td>The system with the given name, if it exists.</td></tr>
 </tbody>
 </table>
 </div>
@@ -4983,313 +4983,18 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#remove">remove</a></td><td>Removes the value at the specified key from the reference, if the reference is an appropriate contai...</td></tr>
-<tr><td><a href="#insert">insert</a></td><td>Inserts the value into the reference at the specified index, if the reference is an appropriate cont...</td></tr>
-<tr><td><a href="#variant_name">variant_name</a></td><td>If this type is an enum, will return the name of the variant it represents on the type.</td></tr>
-<tr><td><a href="#display">display</a></td><td>Displays this reference and its contents if possible.  This is useful for debugging and logging.</td></tr>
-<tr><td><a href="#clear">clear</a></td><td>Clears the container, if the reference is an appropriate container type.</td></tr>
-<tr><td><a href="#iter">iter</a></td><td>Iterates over the reference, if the reference is an appropriate container type.  Returns an “next” i...</td></tr>
-<tr><td><a href="#functions-1">functions</a></td><td>Lists the functions available on the reference.</td></tr>
-<tr><td><a href="#map_get">map_get</a></td><td>Gets and clones the value under the specified key if the underlying type is a map type.</td></tr>
-<tr><td><a href="#len">len</a></td><td>Retrieves the length of the reference, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#push">push</a></td><td>Pushes the value into the reference, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#debug">debug</a></td><td>Displays a debug representation of this reference.  This is useful for debugging and logging.</td></tr>
+<tr><td><a href="#insert">insert</a></td><td>Inserts the value into the reference at the specified index, if the reference is an appropriate cont...</td></tr>
+<tr><td><a href="#map_get">map_get</a></td><td>Gets and clones the value under the specified key if the underlying type is a map type.</td></tr>
+<tr><td><a href="#display">display</a></td><td>Displays this reference and its contents if possible.  This is useful for debugging and logging.</td></tr>
+<tr><td><a href="#functions-1">functions</a></td><td>Lists the functions available on the reference.</td></tr>
+<tr><td><a href="#len">len</a></td><td>Retrieves the length of the reference, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#pop">pop</a></td><td>Pops the value from the reference, if the reference is an appropriate container type.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="remove"><a class="header" href="#remove"><code>remove</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Removes the value at the specified key from the reference, if the reference is an appropriate container type.</p>
-</blockquote>
-<h4 id="arguments-60"><a class="header" href="#arguments-60">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to remove the value from.</td></tr>
-<tr><td><strong>key</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The key to remove the value at.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-60"><a class="header" href="#returns-60">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>result</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The removed value if any</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="insert"><a class="header" href="#insert"><code>insert</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Inserts the value into the reference at the specified index, if the reference is an appropriate container type.</p>
-</blockquote>
-<h4 id="arguments-61"><a class="header" href="#arguments-61">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to insert the value into.</td></tr>
-<tr><td><strong>key</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The index to insert the value at.</td></tr>
-<tr><td><strong>value</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The value to insert.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-61"><a class="header" href="#returns-61">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the value was inserted successfully.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="variant_name"><a class="header" href="#variant_name"><code>variant_name</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>If this type is an enum, will return the name of the variant it represents on the type.</p>
-</blockquote>
-<h4 id="arguments-62"><a class="header" href="#arguments-62">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to get the variant name of.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-62"><a class="header" href="#returns-62">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>variant_name</strong></td><td>Optional&lt;<a href="#string">String</a>&gt;</td><td>The name of the variant, if the reference is an enum.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="display"><a class="header" href="#display"><code>display</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Displays this reference and its contents if possible.</p>
-<p>This is useful for debugging and logging.</p>
-</blockquote>
-<h4 id="arguments-63"><a class="header" href="#arguments-63">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to display.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-63"><a class="header" href="#returns-63">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>display</strong></td><td><a href="#string">String</a></td><td>The display string.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="clear"><a class="header" href="#clear"><code>clear</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Clears the container, if the reference is an appropriate container type.</p>
-</blockquote>
-<h4 id="arguments-64"><a class="header" href="#arguments-64">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to clear.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-64"><a class="header" href="#returns-64">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the reference was cleared</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="iter"><a class="header" href="#iter"><code>iter</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Iterates over the reference, if the reference is an appropriate container type.</p>
-<p>Returns an “next” iterator function.</p>
-<p>The iterator function should be called until it returns <code>nil</code> to signal the end of the iteration.</p>
-</blockquote>
-<h4 id="arguments-65"><a class="header" href="#arguments-65">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to iterate over.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-65"><a class="header" href="#returns-65">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>iter</strong></td><td><a href="#dynamicfunctionmut">DynamicFunctionMut</a></td><td>The iterator function.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="functions-1"><a class="header" href="#functions-1"><code>functions</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Lists the functions available on the reference.</p>
-</blockquote>
-<h4 id="arguments-66"><a class="header" href="#arguments-66">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to list the functions of.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-66"><a class="header" href="#returns-66">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>functions</strong></td><td>Vec&lt;<a href="#functioninfo">FunctionInfo</a>&gt;</td><td>The functions available on the reference.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="map_get"><a class="header" href="#map_get"><code>map_get</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Gets and clones the value under the specified key if the underlying type is a map type.</p>
-</blockquote>
-<h4 id="arguments-67"><a class="header" href="#arguments-67">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to index into.</td></tr>
-<tr><td><strong>key</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The key to index with.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-67"><a class="header" href="#returns-67">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>value</strong></td><td>Optional&lt;<a href="#scriptvalue">ScriptValue</a>&gt;</td><td>The value at the key, if the reference is a map.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="len"><a class="header" href="#len"><code>len</code></a></h1>
-<div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-
-<blockquote>
-<p>Retrieves the length of the reference, if the reference is an appropriate container type.</p>
-</blockquote>
-<h4 id="arguments-68"><a class="header" href="#arguments-68">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to get the length of.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-68"><a class="header" href="#returns-68">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>len</strong></td><td>Optional&lt;<a href="#usize">Usize</a>&gt;</td><td>The length of the reference, if the reference is a container.</td></tr>
+<tr><td><a href="#iter">iter</a></td><td>Iterates over the reference, if the reference is an appropriate container type.  Returns an “next” i...</td></tr>
+<tr><td><a href="#remove">remove</a></td><td>Removes the value at the specified key from the reference, if the reference is an appropriate contai...</td></tr>
+<tr><td><a href="#clear">clear</a></td><td>Clears the container, if the reference is an appropriate container type.</td></tr>
+<tr><td><a href="#variant_name">variant_name</a></td><td>If this type is an enum, will return the name of the variant it represents on the type.</td></tr>
 </tbody>
 </table>
 </div>
@@ -5303,7 +5008,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 <blockquote>
 <p>Pushes the value into the reference, if the reference is an appropriate container type.</p>
 </blockquote>
-<h4 id="arguments-69"><a class="header" href="#arguments-69">Arguments</a></h4>
+<h4 id="arguments-60"><a class="header" href="#arguments-60">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5315,7 +5020,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </tbody>
 </table>
 </div>
-<h4 id="returns-69"><a class="header" href="#returns-69">Returns</a></h4>
+<h4 id="returns-60"><a class="header" href="#returns-60">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5337,7 +5042,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 <p>Displays a debug representation of this reference.</p>
 <p>This is useful for debugging and logging.</p>
 </blockquote>
-<h4 id="arguments-70"><a class="header" href="#arguments-70">Arguments</a></h4>
+<h4 id="arguments-61"><a class="header" href="#arguments-61">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5348,7 +5053,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </tbody>
 </table>
 </div>
-<h4 id="returns-70"><a class="header" href="#returns-70">Returns</a></h4>
+<h4 id="returns-61"><a class="header" href="#returns-61">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5356,6 +5061,170 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </thead>
 <tbody>
 <tr><td><strong>display</strong></td><td><a href="#string">String</a></td><td>The display string.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="insert"><a class="header" href="#insert"><code>insert</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Inserts the value into the reference at the specified index, if the reference is an appropriate container type.</p>
+</blockquote>
+<h4 id="arguments-62"><a class="header" href="#arguments-62">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to insert the value into.</td></tr>
+<tr><td><strong>key</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The index to insert the value at.</td></tr>
+<tr><td><strong>value</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The value to insert.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-62"><a class="header" href="#returns-62">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the value was inserted successfully.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="map_get"><a class="header" href="#map_get"><code>map_get</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Gets and clones the value under the specified key if the underlying type is a map type.</p>
+</blockquote>
+<h4 id="arguments-63"><a class="header" href="#arguments-63">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to index into.</td></tr>
+<tr><td><strong>key</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The key to index with.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-63"><a class="header" href="#returns-63">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>value</strong></td><td>Optional&lt;<a href="#scriptvalue">ScriptValue</a>&gt;</td><td>The value at the key, if the reference is a map.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="display"><a class="header" href="#display"><code>display</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Displays this reference and its contents if possible.</p>
+<p>This is useful for debugging and logging.</p>
+</blockquote>
+<h4 id="arguments-64"><a class="header" href="#arguments-64">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to display.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-64"><a class="header" href="#returns-64">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>display</strong></td><td><a href="#string">String</a></td><td>The display string.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="functions-1"><a class="header" href="#functions-1"><code>functions</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Lists the functions available on the reference.</p>
+</blockquote>
+<h4 id="arguments-65"><a class="header" href="#arguments-65">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to list the functions of.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-65"><a class="header" href="#returns-65">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>functions</strong></td><td>Vec&lt;<a href="#functioninfo">FunctionInfo</a>&gt;</td><td>The functions available on the reference.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="len"><a class="header" href="#len"><code>len</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Retrieves the length of the reference, if the reference is an appropriate container type.</p>
+</blockquote>
+<h4 id="arguments-66"><a class="header" href="#arguments-66">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to get the length of.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-66"><a class="header" href="#returns-66">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>len</strong></td><td>Optional&lt;<a href="#usize">Usize</a>&gt;</td><td>The length of the reference, if the reference is a container.</td></tr>
 </tbody>
 </table>
 </div>
@@ -5369,7 +5238,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 <blockquote>
 <p>Pops the value from the reference, if the reference is an appropriate container type.</p>
 </blockquote>
-<h4 id="arguments-71"><a class="header" href="#arguments-71">Arguments</a></h4>
+<h4 id="arguments-67"><a class="header" href="#arguments-67">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5380,7 +5249,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </tbody>
 </table>
 </div>
-<h4 id="returns-71"><a class="header" href="#returns-71">Returns</a></h4>
+<h4 id="returns-67"><a class="header" href="#returns-67">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5388,6 +5257,137 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </thead>
 <tbody>
 <tr><td><strong>value</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The value that was popped, if the reference supports popping.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="iter"><a class="header" href="#iter"><code>iter</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Iterates over the reference, if the reference is an appropriate container type.</p>
+<p>Returns an “next” iterator function.</p>
+<p>The iterator function should be called until it returns <code>nil</code> to signal the end of the iteration.</p>
+</blockquote>
+<h4 id="arguments-68"><a class="header" href="#arguments-68">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to iterate over.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-68"><a class="header" href="#returns-68">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>iter</strong></td><td><a href="#dynamicfunctionmut">DynamicFunctionMut</a></td><td>The iterator function.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="remove"><a class="header" href="#remove"><code>remove</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Removes the value at the specified key from the reference, if the reference is an appropriate container type.</p>
+</blockquote>
+<h4 id="arguments-69"><a class="header" href="#arguments-69">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to remove the value from.</td></tr>
+<tr><td><strong>key</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The key to remove the value at.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-69"><a class="header" href="#returns-69">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>result</strong></td><td><a href="#scriptvalue">ScriptValue</a></td><td>The removed value if any</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="clear"><a class="header" href="#clear"><code>clear</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>Clears the container, if the reference is an appropriate container type.</p>
+</blockquote>
+<h4 id="arguments-70"><a class="header" href="#arguments-70">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to clear.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-70"><a class="header" href="#returns-70">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the reference was cleared</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="variant_name"><a class="header" href="#variant_name"><code>variant_name</code></a></h1>
+<div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+
+<blockquote>
+<p>If this type is an enum, will return the name of the variant it represents on the type.</p>
+</blockquote>
+<h4 id="arguments-71"><a class="header" href="#arguments-71">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>reference</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The reference to get the variant name of.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-71"><a class="header" href="#returns-71">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>variant_name</strong></td><td>Optional&lt;<a href="#string">String</a>&gt;</td><td>The name of the variant, if the reference is an enum.</td></tr>
 </tbody>
 </table>
 </div>

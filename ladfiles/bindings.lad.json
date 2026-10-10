@@ -1,5 +1,5 @@
 {
-  "version": "0.21.0",
+  "version": "0.21.1",
   "globals": {
     "ScalingMode": {
       "type_kind": {
@@ -4158,8 +4158,8 @@
       "path": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name"
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -4295,11 +4295,11 @@
       "path": "bevy_mod_scripting_core::script_system::ScriptSystemBuilder",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after"
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query"
       ],
       "layout": null,
       "generated": false,
@@ -4317,8 +4317,8 @@
       "path": "bevy_mod_scripting_script::ScriptAttachment",
       "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.",
       "associated_functions": [
-        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
-        "bevy_mod_scripting_script::ScriptAttachment::new_entity_script"
+        "bevy_mod_scripting_script::ScriptAttachment::new_entity_script",
+        "bevy_mod_scripting_script::ScriptAttachment::new_static_script"
       ],
       "layout": [
         {
@@ -4364,9 +4364,9 @@
       "path": "bevy_system_reflection::ReflectSchedule",
       "documentation": " A reflectable schedule.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
         "bevy_system_reflection::ReflectSchedule::systems",
-        "bevy_system_reflection::ReflectSchedule::render_dot"
+        "bevy_system_reflection::ReflectSchedule::render_dot",
+        "bevy_system_reflection::ReflectSchedule::get_system_by_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -4466,18 +4466,18 @@
       "path": "ReflectReference",
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
-        "ReflectReference::remove",
-        "ReflectReference::insert",
-        "ReflectReference::variant_name",
-        "ReflectReference::display",
-        "ReflectReference::clear",
-        "ReflectReference::iter",
-        "ReflectReference::functions",
-        "ReflectReference::map_get",
-        "ReflectReference::len",
         "ReflectReference::push",
         "ReflectReference::debug",
-        "ReflectReference::pop"
+        "ReflectReference::insert",
+        "ReflectReference::map_get",
+        "ReflectReference::display",
+        "ReflectReference::functions",
+        "ReflectReference::len",
+        "ReflectReference::pop",
+        "ReflectReference::iter",
+        "ReflectReference::remove",
+        "ReflectReference::clear",
+        "ReflectReference::variant_name"
       ],
       "layout": null,
       "generated": false,
