@@ -118,6 +118,30 @@ impl Feature {
         }
     }
 
+    /// Prefix of features which enable the features requested in a dependency declaration,
+    /// they start with `enable_default_for_` so they are always active and hidden from the output
+    pub const DECLARED_FEATURES_PREFIX: &'static str = "enable_default_for_declared_";
+
+    pub fn new_enabling_declared_features_for(
+        dependency: CrateName,
+        declared_features: &[String],
+    ) -> Self {
+        Self {
+            name: FeatureName(format!("{}{dependency}", Self::DECLARED_FEATURES_PREFIX).into()),
+            effects: declared_features
+                .iter()
+                .map(|f| {
+                    FeatureEffect::EnableFeatureInDependency(
+                        FeatureName(f.clone().into()),
+                        dependency.clone(),
+                        false,
+                    )
+                })
+                .collect(),
+            enabled_by_trail: VecDeque::new(),
+        }
+    }
+
     pub fn effects(&self) -> impl Iterator<Item = &FeatureEffect> {
         self.effects.iter()
     }
@@ -442,13 +466,15 @@ impl From<Package> for Crate {
                     f.optional,
                     f.uses_default_features,
                     f.req.clone(),
+                    // features of platform specific dependencies (i.e. `web`) must not leak into the native build
+                    if f.target.is_some() { Vec::new() } else { f.features.clone() },
                 )
             })
-            .partition_map(|(name, opt, enable_default, req)| {
+            .partition_map(|(name, opt, enable_default, req, features)| {
                 if opt {
-                    Either::Left((CrateName(name), enable_default, req))
+                    Either::Left((CrateName(name), enable_default, req, features))
                 } else {
-                    Either::Right((CrateName(name), enable_default, req))
+                    Either::Right((CrateName(name), enable_default, req, features))
                 }
             });
 
@@ -459,10 +485,19 @@ impl From<Package> for Crate {
             .collect::<Vec<_>>();
 
         // for each dependency that enables default features, we add a feature named after the dependency that enables the "default" feature
-        for (dep_name, enable_default, _) in dependencies.iter().chain(optional_dependencies.iter())
+        // features requested explicitly in the dependency declaration (i.e. `dep = { features = [..] }`)
+        // are enabled whenever the dependency is, so they are modelled the same way
+        for (dep_name, enable_default, _, dep_features) in
+            dependencies.iter().chain(optional_dependencies.iter())
         {
             if *enable_default {
                 features.push(Feature::new_enabling_default_for(dep_name.clone()));
+            }
+            if !dep_features.is_empty() {
+                features.push(Feature::new_enabling_declared_features_for(
+                    dep_name.clone(),
+                    dep_features,
+                ));
             }
         }
 
@@ -471,14 +506,14 @@ impl From<Package> for Crate {
             features,
             dependencies: dependencies
                 .into_iter()
-                .map(|(n, _, req)| CrateDependency {
+                .map(|(n, _, req, _)| CrateDependency {
                     name: n,
                     version: req,
                 })
                 .collect(),
             optional_dependencies: optional_dependencies
                 .into_iter()
-                .map(|(n, _, req)| CrateDependency {
+                .map(|(n, _, req, _)| CrateDependency {
                     name: n,
                     version: req,
                 })

@@ -1,16 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyInputFocusScriptingPlugin;
 pub(crate) fn register_input_focus_functions(world: &mut World) {
@@ -123,39 +125,43 @@ pub(crate) fn register_focus_cause_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::FocusCause,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_input_focus::FocusCause>| {
-            let output: V<::bevy_input_focus::FocusCause> = {
-                {
-                    let output: V<::bevy_input_focus::FocusCause> =
-                        <::bevy_input_focus::FocusCause as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_input_focus::FocusCause>| {
+                let output: V<::bevy_input_focus::FocusCause> = {
+                    {
+                        let output: V<::bevy_input_focus::FocusCause> = <::bevy_input_focus::FocusCause as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::bevy_input_focus::FocusCause>, other: R<::bevy_input_focus::FocusCause>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_input_focus::FocusCause as ::core::cmp::PartialEq<
-                        ::bevy_input_focus::FocusCause,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_input_focus::FocusCause>,
+                other: R<::bevy_input_focus::FocusCause>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_input_focus::FocusCause as ::core::cmp::PartialEq<
+                            ::bevy_input_focus::FocusCause,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -168,24 +174,23 @@ pub(crate) fn register_input_focus_visible_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::InputFocusVisible,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_input_focus::InputFocusVisible>| {
-            let output: V<::bevy_input_focus::InputFocusVisible> = {
-                {
-                    let output: V<::bevy_input_focus::InputFocusVisible> =
-                        <::bevy_input_focus::InputFocusVisible as ::core::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_input_focus::InputFocusVisible>| {
+                let output: V<::bevy_input_focus::InputFocusVisible> = {
+                    {
+                        let output: V<::bevy_input_focus::InputFocusVisible> = <::bevy_input_focus::InputFocusVisible as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -198,22 +203,23 @@ pub(crate) fn register_acquire_focus_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::AcquireFocus,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_input_focus::AcquireFocus>| {
-            let output: V<::bevy_input_focus::AcquireFocus> = {
-                {
-                    let output: V<::bevy_input_focus::AcquireFocus> =
-                        <::bevy_input_focus::AcquireFocus as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_input_focus::AcquireFocus>| {
+                let output: V<::bevy_input_focus::AcquireFocus> = {
+                    {
+                        let output: V<::bevy_input_focus::AcquireFocus> = <::bevy_input_focus::AcquireFocus as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -226,22 +232,23 @@ pub(crate) fn register_auto_focus_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::AutoFocus,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_input_focus::AutoFocus>| {
-            let output: V<::bevy_input_focus::AutoFocus> = {
-                {
-                    let output: V<::bevy_input_focus::AutoFocus> =
-                        <::bevy_input_focus::AutoFocus as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_input_focus::AutoFocus>| {
+                let output: V<::bevy_input_focus::AutoFocus> = {
+                    {
+                        let output: V<::bevy_input_focus::AutoFocus> = <::bevy_input_focus::AutoFocus as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -479,29 +486,6 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
             },
             " Removes an entity from the navigation map, including all connections to and from it.\n Note that this is an O(n) operation, where n is the number of entities in the map,\n as we must iterate over each entity to check for connections to the removed entity.\n If you are removing multiple entities, consider using [`remove_multiple`](Self::remove_multiple) instead.",
             &["_self", "entity"],
-        )
-        .register_documented(
-            "remove_multiple",
-            |
-                mut _self: M<
-                    ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
-                >,
-                entities: V<::bevy_ecs::entity::EntityHashSet>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_input_focus::directional_navigation::DirectionalNavigationMap::remove_multiple(
-                                &mut _self,
-                                entities.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Removes a collection of entities from the navigation map.\n While this is still an O(n) operation, where n is the number of entities in the map,\n it is more efficient than calling [`remove`](Self::remove) multiple times,\n as we can check for connections to all removed entities in a single pass.\n An [`EntityHashSet`] must be provided as it is noticeably faster than the standard hasher or a [`Vec`](`alloc::vec::Vec`).",
-            &["_self", "entities"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -955,22 +939,23 @@ pub(crate) fn register_focus_gained_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::FocusGained,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_input_focus::FocusGained>| {
-            let output: V<::bevy_input_focus::FocusGained> = {
-                {
-                    let output: V<::bevy_input_focus::FocusGained> =
-                        <::bevy_input_focus::FocusGained as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_input_focus::FocusGained>| {
+                let output: V<::bevy_input_focus::FocusGained> = {
+                    {
+                        let output: V<::bevy_input_focus::FocusGained> = <::bevy_input_focus::FocusGained as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -983,22 +968,23 @@ pub(crate) fn register_focus_lost_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_input_focus::FocusLost,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_input_focus::FocusLost>| {
-            let output: V<::bevy_input_focus::FocusLost> = {
-                {
-                    let output: V<::bevy_input_focus::FocusLost> =
-                        <::bevy_input_focus::FocusLost as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_input_focus::FocusLost>| {
+                let output: V<::bevy_input_focus::FocusLost> = {
+                    {
+                        let output: V<::bevy_input_focus::FocusLost> = <::bevy_input_focus::FocusLost as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry

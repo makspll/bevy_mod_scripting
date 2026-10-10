@@ -54,6 +54,7 @@ impl fmt::Display for ContextKey {
 
 impl ContextKey {
     /// Creates an invalid context key, which should never exist.
+    #[allow(deprecated)]
     pub const INVALID: Self = Self {
         entity: Some(Entity::PLACEHOLDER),
         script: Some(AssetId::invalid()),

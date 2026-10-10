@@ -1,137 +1,41 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyCorePipelineScriptingPlugin;
-pub(crate) fn register_deband_dither_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_core_pipeline::tonemapping::DebandDither,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_core_pipeline::tonemapping::DebandDither>| {
-                let output: V<::bevy_core_pipeline::tonemapping::DebandDither> = {
-                    {
-                        let output: V<::bevy_core_pipeline::tonemapping::DebandDither> = <::bevy_core_pipeline::tonemapping::DebandDither as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_core_pipeline::tonemapping::DebandDither>,
-                other: R<::bevy_core_pipeline::tonemapping::DebandDither>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_core_pipeline::tonemapping::DebandDither as ::std::cmp::PartialEq<
-                            ::bevy_core_pipeline::tonemapping::DebandDither,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_core_pipeline::tonemapping::DebandDither,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_tonemapping_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_core_pipeline::tonemapping::Tonemapping,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_core_pipeline::tonemapping::Tonemapping>| {
-                let output: V<::bevy_core_pipeline::tonemapping::Tonemapping> = {
-                    {
-                        let output: V<::bevy_core_pipeline::tonemapping::Tonemapping> = <::bevy_core_pipeline::tonemapping::Tonemapping as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |
-                _self: R<::bevy_core_pipeline::tonemapping::Tonemapping>,
-                other: R<::bevy_core_pipeline::tonemapping::Tonemapping>|
-            {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_core_pipeline::tonemapping::Tonemapping as ::std::cmp::PartialEq<
-                            ::bevy_core_pipeline::tonemapping::Tonemapping,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "is_enabled",
-            |_self: R<::bevy_core_pipeline::tonemapping::Tonemapping>| {
-                let output: bool = {
-                    {
-                        let output: bool = ::bevy_core_pipeline::tonemapping::Tonemapping::is_enabled(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_core_pipeline::tonemapping::Tonemapping,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_deferred_prepass_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::prepass::DeferredPrepass,
-    >::new(world);
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_core_pipeline::prepass::DeferredPrepass>| {
+                let output: V<::bevy_core_pipeline::prepass::DeferredPrepass> = {
+                    {
+                        let output: V<::bevy_core_pipeline::prepass::DeferredPrepass> = <::bevy_core_pipeline::prepass::DeferredPrepass as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -293,7 +197,9 @@ pub(crate) fn register_normal_prepass_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_order_independent_transparency_settings_functions(world: &mut World) {
+pub(crate) fn register_order_independent_transparency_settings_functions(
+    world: &mut World,
+) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings,
     >::new(world)
@@ -362,8 +268,6 @@ pub(crate) fn register_no_background_motion_vectors_functions(world: &mut World)
 impl Plugin for BevyCorePipelineScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
-        register_deband_dither_functions(&mut world);
-        register_tonemapping_functions(&mut world);
         register_deferred_prepass_functions(&mut world);
         register_deferred_prepass_double_buffer_functions(&mut world);
         register_depth_prepass_functions(&mut world);

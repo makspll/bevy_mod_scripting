@@ -1,16 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyReflectScriptingPlugin;
 pub(crate) fn register_range_full_functions(world: &mut World) {
@@ -54,49 +56,56 @@ pub(crate) fn register_range_full_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::ops::RangeFull, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::core::ops::RangeFull,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_type_id_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::core::any::TypeId>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::core::any::TypeId>| {
-            let output: V<::core::any::TypeId> = {
-                {
-                    let output: V<::core::any::TypeId> =
-                        <::core::any::TypeId as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::core::any::TypeId>, other: R<::core::any::TypeId>| {
-            let output: bool = {
-                {
-                    let output: bool = <::core::any::TypeId as ::core::cmp::PartialEq<
-                        ::core::any::TypeId,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::core::any::TypeId,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::core::any::TypeId>| {
+                let output: V<::core::any::TypeId> = {
+                    {
+                        let output: V<::core::any::TypeId> = <::core::any::TypeId as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::core::any::TypeId>, other: R<::core::any::TypeId>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::core::any::TypeId as ::core::cmp::PartialEq<
+                            ::core::any::TypeId,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::any::TypeId, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::core::any::TypeId,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_quat_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -170,7 +179,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the angle (in radians) for the minimal rotation\n for transforming this quaternion into another.\n Both quaternions must be normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
+            " Returns the angle (in radians) for the minimal rotation between two quaternions\n in the range `[0, +π]`.\n Both quaternions must be normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -541,7 +550,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Create a quaternion that rotates `v.length()` radians around `v.normalize()`.\n `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.",
+            " Create a quaternion that rotates `v.length()` radians around `v.normalize()`.\n `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.\n # Panics\n Will panic if `v` is not finite when `glam_assert` is enabled.",
             &["v"],
         )
         .register_documented(
@@ -637,7 +646,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            "",
+            " Returns `true` if `self` represents a rotation near the identity.",
             &["_self"],
         )
         .register_documented(
@@ -720,7 +729,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on\n the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s`\n is `1.0`, the result will be equal to `rhs`.\n # Panics\n Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.",
+            " Performs a linear interpolation between `self` and `rhs` based on\n the value `s`, using the form `self * (1.0 - s) + end * s` before normalizing.\n When `s` is `0.0`, the result will be equal to `self`.  When `s`\n is `1.0`, the result will be equal to `rhs`.\n This interpolates linearly between the two rotations and does not rotate at a constant\n angular velocity; see [`slerp`](Self::slerp) if that is required.\n # Panics\n Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.",
             &["_self", "end", "s"],
         )
         .register_documented(
@@ -739,7 +748,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a quaternion rotation from a camera position, a focal point, and an up\n direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -758,7 +767,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a quaternion rotation using a camera position, an up direction, and a focal\n point.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -776,7 +785,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a quaterion rotation from a facing direction and an up direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a quaterion rotation from a facing direction and an up direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -794,7 +803,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a quaterion rotation from facing direction and an up direction.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` and `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a quaterion rotation from facing direction and an up direction.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -862,7 +871,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly\n normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
+            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly\n normalized.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -897,7 +906,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
+            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly normalized.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -933,7 +942,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Multiplies a quaternion and a 3D vector, returning the rotated vector.",
+            " Multiplies a quaternion and a 3D vector, returning the rotated vector.\n # Panics\n Will panic if `self` is not normalized when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -967,7 +976,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must _not_ be of length zero.\n Panics\n Will panic if `self` is zero length when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must _not_ be of length zero.\n # Panics\n Will panic if `self` is zero length when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -1009,6 +1018,25 @@ pub(crate) fn register_quat_functions(world: &mut World) {
             &["_self", "end", "s"],
         )
         .register_documented(
+            "slerp_long",
+            |_self: V<::glam::Quat>, end: V<::glam::Quat>, s: f32| {
+                let output: V<::glam::Quat> = {
+                    {
+                        let output: V<::glam::Quat> = ::glam::Quat::slerp_long(
+                                _self.into_inner(),
+                                end.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a spherical linear interpolation between `self` and `end` based on the value `s`,\n preserving the rotation direction.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result will\n be equal to `end`.\n When the dot product of `self` and `end` is negative, the standard [`slerp`](Self::slerp)\n will flip the end quaternion to take the shortest path, while this method will take the\n longer arc. This is useful when the intended rotation direction must be preserved.\n # Panics\n Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.",
+            &["_self", "end", "s"],
+        )
+        .register_documented(
             "sub",
             |_self: V<::glam::Quat>, rhs: R<::glam::Quat>| {
                 let output: V<::glam::Quat> = {
@@ -1044,17 +1072,16 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         )
         .register_documented(
             "to_array",
-            |_self: V<::glam::Quat>| {
+            |_self: R<::glam::Quat>| {
                 let output: [f32; 4] = {
                     {
-                        let output: [f32; 4] = ::glam::Quat::to_array(_self.into_inner())
-                            .into();
+                        let output: [f32; 4] = ::glam::Quat::to_array(&_self).into();
                         output
                     }
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -1072,7 +1099,7 @@ pub(crate) fn register_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the rotation angles for the given euler rotation sequence.",
+            " Returns the rotation angles for the given euler rotation sequence.\n # Panics\n Will panic if `self` is not normalized when `glam_assert` is enabled.",
             &["_self", "order"],
         )
         .register_documented(
@@ -1111,7 +1138,11 @@ pub(crate) fn register_quat_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Quat, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Quat,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1219,8 +1250,27 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the angle (in radians) between two vectors in the range `[0, +π]`.\n The inputs do not need to be unit vectors however they must be non-zero.",
+            " Returns the angle (in radians) between two vectors in the range `[0, +π]`.\n For the full rotation between two vectors as a quaternion, see\n [`Quat::from_rotation_arc`].\n The inputs do not need to be unit vectors however they must be non-zero.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "angle_to",
+            |_self: V<::glam::Vec3>, rhs: V<::glam::Vec3>, axis: V<::glam::Vec3>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::glam::Vec3::angle_to(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                axis.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the signed angle (in radians) from `self` to `rhs` around `axis`\n in the range `[-π, +π]`.\n The `axis` must be a unit vector. The angle follows the right-hand rule\n around `axis` and can be used with [`Self::rotate_axis`], e.g.\n `self.rotate_axis(axis, self.angle_to(rhs, axis))` will be equal to `rhs`.\n For the unsigned angle without a reference axis, see [`Self::angle_between`].\n The inputs do not need to be unit vectors however they must be non-zero.\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
+            &["_self", "rhs", "axis"],
         )
         .register_documented(
             "any_orthogonal_vector",
@@ -2084,6 +2134,23 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::Vec3>| {
+                let output: V<::glam::BVec3> = {
+                    {
+                        let output: V<::glam::BVec3> = ::glam::Vec3::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
             "is_normalized",
             |_self: V<::glam::Vec3>| {
                 let output: bool = {
@@ -2163,7 +2230,26 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n form `self * (1.0 - s) + rhs * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n The result is guaranteed to be `self` at `s == 0.0` and `rhs` at `s == 1.0`, even when the\n values differ greatly in magnitude, but it is not monotonic in `s` for nearly equal inputs\n and may not preserve equal inputs exactly. Consider [`lerp_monotonic`](Self::lerp_monotonic)\n instead when interpolating between values that may be equal or nearly equal.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "lerp_monotonic",
+            |_self: V<::glam::Vec3>, rhs: V<::glam::Vec3>, s: f32| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Vec3::lerp_monotonic(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n monotonic form `self + (rhs - self) * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n Prefer this over [`lerp`](Self::lerp) when interpolating between values that may be equal or\n nearly equal: the result is monotonic in `s` and equal inputs are preserved exactly, avoiding\n the rounding jitter that [`lerp`](Self::lerp) can introduce. The tradeoff is that\n `rhs - self` is evaluated first, so this is less accurate than [`lerp`](Self::lerp) when\n `self` and `rhs` differ greatly in magnitude, and overflows to infinity when they have\n opposite signs and large magnitudes.\n On SIMD back-ends the multiply and add are fused when the target supports it, which has a\n single rounding step and can be more accurate than a separate multiply and add.",
             &["_self", "rhs", "s"],
         )
         .register_documented(
@@ -2738,7 +2824,7 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.\n # Panics\n Will panic if `self` or `rhs` are zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "max_angle"],
         )
         .register_documented(
@@ -2902,8 +2988,27 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "smoothstep",
+            |_self: V<::glam::Vec3>, edge0: V<::glam::Vec3>, edge1: V<::glam::Vec3>| {
+                let output: V<::glam::Vec3> = {
+                    {
+                        let output: V<::glam::Vec3> = ::glam::Vec3::smoothstep(
+                                _self.into_inner(),
+                                edge0.into_inner(),
+                                edge1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs Hermite interpolation between `0.0` and `1.0` using `x` normalized to `[edge0, edge1]`.\n This is equivalent to `t * t * (3.0 - 2.0 * t)`, where `t` is clamped to `[0.0, 1.0]`.\n Results are undefined if any element of `edge0` is greater than or equal to the corresponding\n element of `edge1`.\n # Panics\n Will panic if any element of `edge0` is greater than or equal to the corresponding element\n of `edge1`, when `glam_assert` is enabled.",
+            &["_self", "edge0", "edge1"],
         )
         .register_documented(
             "splat",
@@ -3143,45 +3248,53 @@ pub(crate) fn register_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_offset_access_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_reflect::OffsetAccess,
     >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_reflect::OffsetAccess>| {
-            let output: V<::bevy_reflect::OffsetAccess> = {
-                {
-                    let output: V<::bevy_reflect::OffsetAccess> =
-                        <::bevy_reflect::OffsetAccess as ::core::clone::Clone>::clone(&_self)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_reflect::OffsetAccess>| {
+                let output: V<::bevy_reflect::OffsetAccess> = {
+                    {
+                        let output: V<::bevy_reflect::OffsetAccess> = <::bevy_reflect::OffsetAccess as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
                             .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::bevy_reflect::OffsetAccess>, other: R<::bevy_reflect::OffsetAccess>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_reflect::OffsetAccess as ::core::cmp::PartialEq<
-                        ::bevy_reflect::OffsetAccess,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_reflect::OffsetAccess>,
+                other: R<::bevy_reflect::OffsetAccess>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_reflect::OffsetAccess as ::core::cmp::PartialEq<
+                            ::bevy_reflect::OffsetAccess,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -3212,6 +3325,21 @@ pub(crate) fn register_parsed_path_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "empty",
+            || {
+                let output: V<::bevy_reflect::ParsedPath> = {
+                    {
+                        let output: V<::bevy_reflect::ParsedPath> = ::bevy_reflect::ParsedPath::empty()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Create a new, empty [`ParsedPath`]. This path won't perform any accesses, returning a\n top-level value unchanged.\n # Example\n ```\n # use bevy_reflect::{ParsedPath, Reflect, ReflectPath};\n #[derive(Debug, PartialEq, Reflect)]\n struct Player(f64, u32);\n let player = Player(0.0, 1);\n let empty_path = ParsedPath::empty();\n assert_eq!(empty_path.element::<bool>(&true).unwrap(), &true);\n assert_eq!(empty_path.element::<Player>(&player).unwrap(), &player);\n ```",
+            &[],
+        )
+        .register_documented(
             "eq",
             |_self: R<::bevy_reflect::ParsedPath>, other: R<::bevy_reflect::ParsedPath>| {
                 let output: bool = {
@@ -3226,6 +3354,24 @@ pub(crate) fn register_parsed_path_functions(world: &mut World) {
                 output
             },
             "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "join",
+            |_self: R<::bevy_reflect::ParsedPath>, other: R<::bevy_reflect::ParsedPath>| {
+                let output: V<::bevy_reflect::ParsedPath> = {
+                    {
+                        let output: V<::bevy_reflect::ParsedPath> = ::bevy_reflect::ParsedPath::join(
+                                &_self,
+                                &other,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Join two paths, chaining their accesses. This will produce a new [`ParsedPath`] that\n performs the accesses of this path and then the other path in order.\n # Example\n ```\n # use bevy_reflect::{ParsedPath, Reflect, ReflectPath};\n #[derive(Reflect)]\n struct Player {\n   inventory: Inventory,\n }\n #[derive(Reflect)]\n struct Inventory {\n   item: Item,\n }\n #[derive(Clone, Debug, PartialEq, Reflect)]\n struct Item(f32, Vec<Option<u32>>);\n let item = Item(3.14, vec![None, None, Some(123)]);\n let player = Player {\n   inventory: Inventory {\n     item: item.clone(),\n   },\n };\n let first_path = ParsedPath::parse(\".inventory#0\").unwrap();\n let second_path = ParsedPath::parse(\".1[2].0\").unwrap();\n let joined_path = first_path.join(&second_path);\n assert_eq!(first_path.element::<Item>(&player).unwrap(), &item);\n assert_eq!(second_path.element::<u32>(&item).unwrap(), &123);\n assert_eq!(joined_path.element::<u32>(&player).unwrap(), &123);\n ```",
             &["_self", "other"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -3396,7 +3542,10 @@ pub(crate) fn register_instant_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::std::time::Instant, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::std::time::Instant,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_socket_addr_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4115,8 +4264,10 @@ pub(crate) fn register_duration_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::core::time::Duration, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
+        .register_type_data::<
+            ::core::time::Duration,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -4743,6 +4894,23 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::IVec2>| {
+                let output: V<::glam::BVec2> = {
+                    {
+                        let output: V<::glam::BVec2> = ::glam::IVec2::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -5457,7 +5625,11 @@ pub(crate) fn register_i_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::IVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::IVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -6119,6 +6291,23 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::IVec3>| {
+                let output: V<::glam::BVec3> = {
+                    {
+                        let output: V<::glam::BVec3> = ::glam::IVec3::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -6816,7 +7005,11 @@ pub(crate) fn register_i_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::IVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::IVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -7425,6 +7618,23 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::IVec4>| {
+                let output: V<::glam::BVec4> = {
+                    {
+                        let output: V<::glam::BVec4> = ::glam::IVec4::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -8140,7 +8350,11 @@ pub(crate) fn register_i_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::IVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::IVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -8767,6 +8981,23 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I8Vec2>| {
+                let output: V<::glam::BVec2> = {
+                    {
+                        let output: V<::glam::BVec2> = ::glam::I8Vec2::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -9481,7 +9712,11 @@ pub(crate) fn register_i_8_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I8Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I8Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -10143,6 +10378,23 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I8Vec3>| {
+                let output: V<::glam::BVec3> = {
+                    {
+                        let output: V<::glam::BVec3> = ::glam::I8Vec3::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -10840,7 +11092,11 @@ pub(crate) fn register_i_8_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I8Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I8Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -11449,6 +11705,23 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I8Vec4>| {
+                let output: V<::glam::BVec4> = {
+                    {
+                        let output: V<::glam::BVec4> = ::glam::I8Vec4::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -12164,7 +12437,11 @@ pub(crate) fn register_i_8_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I8Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I8Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -12797,6 +13074,23 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I16Vec2>| {
+                let output: V<::glam::BVec2> = {
+                    {
+                        let output: V<::glam::BVec2> = ::glam::I16Vec2::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -13517,7 +13811,11 @@ pub(crate) fn register_i_16_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I16Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I16Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -14185,6 +14483,23 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I16Vec3>| {
+                let output: V<::glam::BVec3> = {
+                    {
+                        let output: V<::glam::BVec3> = ::glam::I16Vec3::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -14887,7 +15202,11 @@ pub(crate) fn register_i_16_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I16Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I16Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -15502,6 +15821,23 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I16Vec4>| {
+                let output: V<::glam::BVec4> = {
+                    {
+                        let output: V<::glam::BVec4> = ::glam::I16Vec4::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -16222,7 +16558,11 @@ pub(crate) fn register_i_16_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I16Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I16Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -16855,6 +17195,23 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I64Vec2>| {
+                let output: V<::glam::BVec2> = {
+                    {
+                        let output: V<::glam::BVec2> = ::glam::I64Vec2::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -17575,7 +17932,11 @@ pub(crate) fn register_i_64_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I64Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I64Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -18243,6 +18604,23 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I64Vec3>| {
+                let output: V<::glam::BVec3> = {
+                    {
+                        let output: V<::glam::BVec3> = ::glam::I64Vec3::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -18945,7 +19323,11 @@ pub(crate) fn register_i_64_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I64Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I64Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -19560,6 +19942,23 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
                 output
             },
             " Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.\n A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes\n into the first lowest bit, element `y` into the second, etc.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::I64Vec4>| {
+                let output: V<::glam::BVec4> = {
+                    {
+                        let output: V<::glam::BVec4> = ::glam::I64Vec4::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
             &["_self"],
         )
         .register_documented(
@@ -20280,7 +20679,11 @@ pub(crate) fn register_i_64_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::I64Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::I64Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -21410,7 +21813,11 @@ pub(crate) fn register_u_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::UVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::UVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -22611,7 +23018,11 @@ pub(crate) fn register_u_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::UVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::UVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -23777,7 +24188,11 @@ pub(crate) fn register_u_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::UVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::UVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -24907,7 +25322,11 @@ pub(crate) fn register_u_8_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U8Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U8Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -26108,7 +26527,11 @@ pub(crate) fn register_u_8_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U8Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U8Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -27274,7 +27697,11 @@ pub(crate) fn register_u_8_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U8Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U8Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -28416,7 +28843,11 @@ pub(crate) fn register_u_16_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U16Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U16Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -29628,7 +30059,11 @@ pub(crate) fn register_u_16_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U16Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U16Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -30805,7 +31240,11 @@ pub(crate) fn register_u_16_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U16Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U16Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -31947,7 +32386,11 @@ pub(crate) fn register_u_64_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U64Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U64Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -33159,7 +33602,11 @@ pub(crate) fn register_u_64_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U64Vec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U64Vec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -34336,7 +34783,11 @@ pub(crate) fn register_u_64_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::U64Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::U64Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -34444,7 +34895,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the angle of rotation (in radians) from `self` to `rhs` in the range `[-π, +π]`.\n The inputs do not need to be unit vectors however they must be non-zero.",
+            " Returns the angle of rotation (in radians) from `self` to `rhs` in the range `[-π, +π]`.\n The inputs do not need to be unit vectors however they must be non-zero.\n The returned angle can be used with [`rotate_angle()`][Self::rotate_angle], e.g.\n `self.rotate_angle(self.angle_to(rhs))` will be equal to `rhs`.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -35255,6 +35706,23 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::Vec2>| {
+                let output: V<::glam::BVec2> = {
+                    {
+                        let output: V<::glam::BVec2> = ::glam::Vec2::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
             "is_normalized",
             |_self: V<::glam::Vec2>| {
                 let output: bool = {
@@ -35334,7 +35802,26 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n form `self * (1.0 - s) + rhs * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n The result is guaranteed to be `self` at `s == 0.0` and `rhs` at `s == 1.0`, even when the\n values differ greatly in magnitude, but it is not monotonic in `s` for nearly equal inputs\n and may not preserve equal inputs exactly. Consider [`lerp_monotonic`](Self::lerp_monotonic)\n instead when interpolating between values that may be equal or nearly equal.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "lerp_monotonic",
+            |_self: V<::glam::Vec2>, rhs: V<::glam::Vec2>, s: f32| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::lerp_monotonic(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n monotonic form `self + (rhs - self) * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n Prefer this over [`lerp`](Self::lerp) when interpolating between values that may be equal or\n nearly equal: the result is monotonic in `s` and equal inputs are preserved exactly, avoiding\n the rounding jitter that [`lerp`](Self::lerp) can introduce. The tradeoff is that\n `rhs - self` is evaluated first, so this is less accurate than [`lerp`](Self::lerp) when\n `self` and `rhs` differ greatly in magnitude, and overflows to infinity when they have\n opposite signs and large magnitudes.\n On SIMD back-ends the multiply and add are fused when the target supports it, which has a\n single rounding step and can be more accurate than a separate multiply and add.",
             &["_self", "rhs", "s"],
         )
         .register_documented(
@@ -35928,6 +36415,24 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "rotate_angle",
+            |_self: V<::glam::Vec2>, angle: f32| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::rotate_angle(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates `self` by `angle` (in radians), equivalent to\n `self.rotate(Vec2::from_angle(angle))`.",
+            &["_self", "angle"],
+        )
+        .register_documented(
             "rotate_towards",
             |_self: V<::glam::Vec2>, rhs: V<::glam::Vec2>, max_angle: f32| {
                 let output: V<::glam::Vec2> = {
@@ -35943,7 +36448,7 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.\n # Panics\n Will panic if `self` or `rhs` are zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "max_angle"],
         )
         .register_documented(
@@ -36036,6 +36541,25 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
             },
             " Returns a vector containing the sine for each element of `self`.",
             &["_self"],
+        )
+        .register_documented(
+            "smoothstep",
+            |_self: V<::glam::Vec2>, edge0: V<::glam::Vec2>, edge1: V<::glam::Vec2>| {
+                let output: V<::glam::Vec2> = {
+                    {
+                        let output: V<::glam::Vec2> = ::glam::Vec2::smoothstep(
+                                _self.into_inner(),
+                                edge0.into_inner(),
+                                edge1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs Hermite interpolation between `0.0` and `1.0` using `x` normalized to `[edge0, edge1]`.\n This is equivalent to `t * t * (3.0 - 2.0 * t)`, where `t` is clamped to `[0.0, 1.0]`.\n Results are undefined if any element of `edge0` is greater than or equal to the corresponding\n element of `edge1`.\n # Panics\n Will panic if any element of `edge0` is greater than or equal to the corresponding element\n of `edge1`, when `glam_assert` is enabled.",
+            &["_self", "edge0", "edge1"],
         )
         .register_documented(
             "splat",
@@ -36221,7 +36745,11 @@ pub(crate) fn register_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -36329,8 +36857,27 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the angle (in radians) between two vectors in the range `[0, +π]`.\n The inputs do not need to be unit vectors however they must be non-zero.",
+            " Returns the angle (in radians) between two vectors in the range `[0, +π]`.\n For the full rotation between two vectors as a quaternion, see\n [`Quat::from_rotation_arc`].\n The inputs do not need to be unit vectors however they must be non-zero.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "angle_to",
+            |_self: V<::glam::Vec3A>, rhs: V<::glam::Vec3A>, axis: V<::glam::Vec3A>| {
+                let output: f32 = {
+                    {
+                        let output: f32 = ::glam::Vec3A::angle_to(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                axis.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the signed angle (in radians) from `self` to `rhs` around `axis`\n in the range `[-π, +π]`.\n The `axis` must be a unit vector. The angle follows the right-hand rule\n around `axis` and can be used with [`Self::rotate_axis`], e.g.\n `self.rotate_axis(axis, self.angle_to(rhs, axis))` will be equal to `rhs`.\n For the unsigned angle without a reference axis, see [`Self::angle_between`].\n The inputs do not need to be unit vectors however they must be non-zero.\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
+            &["_self", "rhs", "axis"],
         )
         .register_documented(
             "any_orthogonal_vector",
@@ -37212,6 +37759,23 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::Vec3A>| {
+                let output: V<::glam::BVec3A> = {
+                    {
+                        let output: V<::glam::BVec3A> = ::glam::Vec3A::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
             "is_normalized",
             |_self: V<::glam::Vec3A>| {
                 let output: bool = {
@@ -37291,7 +37855,26 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n form `self * (1.0 - s) + rhs * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n The result is guaranteed to be `self` at `s == 0.0` and `rhs` at `s == 1.0`, even when the\n values differ greatly in magnitude, but it is not monotonic in `s` for nearly equal inputs\n and may not preserve equal inputs exactly. Consider [`lerp_monotonic`](Self::lerp_monotonic)\n instead when interpolating between values that may be equal or nearly equal.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "lerp_monotonic",
+            |_self: V<::glam::Vec3A>, rhs: V<::glam::Vec3A>, s: f32| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Vec3A::lerp_monotonic(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n monotonic form `self + (rhs - self) * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n Prefer this over [`lerp`](Self::lerp) when interpolating between values that may be equal or\n nearly equal: the result is monotonic in `s` and equal inputs are preserved exactly, avoiding\n the rounding jitter that [`lerp`](Self::lerp) can introduce. The tradeoff is that\n `rhs - self` is evaluated first, so this is less accurate than [`lerp`](Self::lerp) when\n `self` and `rhs` differ greatly in magnitude, and overflows to infinity when they have\n opposite signs and large magnitudes.\n On SIMD back-ends the multiply and add are fused when the target supports it, which has a\n single rounding step and can be more accurate than a separate multiply and add.",
             &["_self", "rhs", "s"],
         )
         .register_documented(
@@ -37867,7 +38450,7 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.\n # Panics\n Will panic if `self` or `rhs` are zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "max_angle"],
         )
         .register_documented(
@@ -38031,8 +38614,27 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "smoothstep",
+            |_self: V<::glam::Vec3A>, edge0: V<::glam::Vec3A>, edge1: V<::glam::Vec3A>| {
+                let output: V<::glam::Vec3A> = {
+                    {
+                        let output: V<::glam::Vec3A> = ::glam::Vec3A::smoothstep(
+                                _self.into_inner(),
+                                edge0.into_inner(),
+                                edge1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs Hermite interpolation between `0.0` and `1.0` using `x` normalized to `[edge0, edge1]`.\n This is equivalent to `t * t * (3.0 - 2.0 * t)`, where `t` is clamped to `[0.0, 1.0]`.\n Results are undefined if any element of `edge0` is greater than or equal to the corresponding\n element of `edge1`.\n # Panics\n Will panic if any element of `edge0` is greater than or equal to the corresponding element\n of `edge1`, when `glam_assert` is enabled.",
+            &["_self", "edge0", "edge1"],
         )
         .register_documented(
             "splat",
@@ -38272,7 +38874,11 @@ pub(crate) fn register_vec_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -39140,6 +39746,23 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::Vec4>| {
+                let output: V<::glam::BVec4A> = {
+                    {
+                        let output: V<::glam::BVec4A> = ::glam::Vec4::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
             "is_normalized",
             |_self: V<::glam::Vec4>| {
                 let output: bool = {
@@ -39219,7 +39842,26 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n form `self * (1.0 - s) + rhs * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n The result is guaranteed to be `self` at `s == 0.0` and `rhs` at `s == 1.0`, even when the\n values differ greatly in magnitude, but it is not monotonic in `s` for nearly equal inputs\n and may not preserve equal inputs exactly. Consider [`lerp_monotonic`](Self::lerp_monotonic)\n instead when interpolating between values that may be equal or nearly equal.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "lerp_monotonic",
+            |_self: V<::glam::Vec4>, rhs: V<::glam::Vec4>, s: f32| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Vec4::lerp_monotonic(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n monotonic form `self + (rhs - self) * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n Prefer this over [`lerp`](Self::lerp) when interpolating between values that may be equal or\n nearly equal: the result is monotonic in `s` and equal inputs are preserved exactly, avoiding\n the rounding jitter that [`lerp`](Self::lerp) can introduce. The tradeoff is that\n `rhs - self` is evaluated first, so this is less accurate than [`lerp`](Self::lerp) when\n `self` and `rhs` differ greatly in magnitude, and overflows to infinity when they have\n opposite signs and large magnitudes.\n On SIMD back-ends the multiply and add are fused when the target supports it, which has a\n single rounding step and can be more accurate than a separate multiply and add.",
             &["_self", "rhs", "s"],
         )
         .register_documented(
@@ -39869,6 +40511,25 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "smoothstep",
+            |_self: V<::glam::Vec4>, edge0: V<::glam::Vec4>, edge1: V<::glam::Vec4>| {
+                let output: V<::glam::Vec4> = {
+                    {
+                        let output: V<::glam::Vec4> = ::glam::Vec4::smoothstep(
+                                _self.into_inner(),
+                                edge0.into_inner(),
+                                edge1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs Hermite interpolation between `0.0` and `1.0` using `x` normalized to `[edge0, edge1]`.\n This is equivalent to `t * t * (3.0 - 2.0 * t)`, where `t` is clamped to `[0.0, 1.0]`.\n Results are undefined if any element of `edge0` is greater than or equal to the corresponding\n element of `edge1`.\n # Panics\n Will panic if any element of `edge0` is greater than or equal to the corresponding element\n of `edge1`, when `glam_assert` is enabled.",
+            &["_self", "edge0", "edge1"],
+        )
+        .register_documented(
             "splat",
             |v: f32| {
                 let output: V<::glam::Vec4> = {
@@ -40090,7 +40751,11 @@ pub(crate) fn register_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Vec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Vec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40248,7 +40913,11 @@ pub(crate) fn register_b_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40407,7 +41076,11 @@ pub(crate) fn register_b_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40566,7 +41239,11 @@ pub(crate) fn register_b_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -40674,7 +41351,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the angle of rotation (in radians) from `self` to `rhs` in the range `[-π, +π]`.\n The inputs do not need to be unit vectors however they must be non-zero.",
+            " Returns the angle of rotation (in radians) from `self` to `rhs` in the range `[-π, +π]`.\n The inputs do not need to be unit vectors however they must be non-zero.\n The returned angle can be used with [`rotate_angle()`][Self::rotate_angle], e.g.\n `self.rotate_angle(self.angle_to(rhs))` will be equal to `rhs`.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -41486,6 +42163,23 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::DVec2>| {
+                let output: V<::glam::BVec2> = {
+                    {
+                        let output: V<::glam::BVec2> = ::glam::DVec2::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
             "is_normalized",
             |_self: V<::glam::DVec2>| {
                 let output: bool = {
@@ -41565,7 +42259,26 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n form `self * (1.0 - s) + rhs * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n The result is guaranteed to be `self` at `s == 0.0` and `rhs` at `s == 1.0`, even when the\n values differ greatly in magnitude, but it is not monotonic in `s` for nearly equal inputs\n and may not preserve equal inputs exactly. Consider [`lerp_monotonic`](Self::lerp_monotonic)\n instead when interpolating between values that may be equal or nearly equal.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "lerp_monotonic",
+            |_self: V<::glam::DVec2>, rhs: V<::glam::DVec2>, s: f64| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::lerp_monotonic(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n monotonic form `self + (rhs - self) * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n Prefer this over [`lerp`](Self::lerp) when interpolating between values that may be equal or\n nearly equal: the result is monotonic in `s` and equal inputs are preserved exactly, avoiding\n the rounding jitter that [`lerp`](Self::lerp) can introduce. The tradeoff is that\n `rhs - self` is evaluated first, so this is less accurate than [`lerp`](Self::lerp) when\n `self` and `rhs` differ greatly in magnitude, and overflows to infinity when they have\n opposite signs and large magnitudes.\n On SIMD back-ends the multiply and add are fused when the target supports it, which has a\n single rounding step and can be more accurate than a separate multiply and add.",
             &["_self", "rhs", "s"],
         )
         .register_documented(
@@ -42159,6 +42872,24 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             &["_self", "rhs"],
         )
         .register_documented(
+            "rotate_angle",
+            |_self: V<::glam::DVec2>, angle: f64| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::rotate_angle(
+                                _self.into_inner(),
+                                angle,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Rotates `self` by `angle` (in radians), equivalent to\n `self.rotate(DVec2::from_angle(angle))`.",
+            &["_self", "angle"],
+        )
+        .register_documented(
             "rotate_towards",
             |_self: V<::glam::DVec2>, rhs: V<::glam::DVec2>, max_angle: f64| {
                 let output: V<::glam::DVec2> = {
@@ -42174,7 +42905,7 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.\n # Panics\n Will panic if `self` or `rhs` are zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "max_angle"],
         )
         .register_documented(
@@ -42267,6 +42998,25 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
             },
             " Returns a vector containing the sine for each element of `self`.",
             &["_self"],
+        )
+        .register_documented(
+            "smoothstep",
+            |_self: V<::glam::DVec2>, edge0: V<::glam::DVec2>, edge1: V<::glam::DVec2>| {
+                let output: V<::glam::DVec2> = {
+                    {
+                        let output: V<::glam::DVec2> = ::glam::DVec2::smoothstep(
+                                _self.into_inner(),
+                                edge0.into_inner(),
+                                edge1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs Hermite interpolation between `0.0` and `1.0` using `x` normalized to `[edge0, edge1]`.\n This is equivalent to `t * t * (3.0 - 2.0 * t)`, where `t` is clamped to `[0.0, 1.0]`.\n Results are undefined if any element of `edge0` is greater than or equal to the corresponding\n element of `edge1`.\n # Panics\n Will panic if any element of `edge0` is greater than or equal to the corresponding element\n of `edge1`, when `glam_assert` is enabled.",
+            &["_self", "edge0", "edge1"],
         )
         .register_documented(
             "splat",
@@ -42452,7 +43202,11 @@ pub(crate) fn register_d_vec_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DVec2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DVec2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -42560,8 +43314,27 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the angle (in radians) between two vectors in the range `[0, +π]`.\n The inputs do not need to be unit vectors however they must be non-zero.",
+            " Returns the angle (in radians) between two vectors in the range `[0, +π]`.\n For the full rotation between two vectors as a quaternion, see\n [`DQuat::from_rotation_arc`].\n The inputs do not need to be unit vectors however they must be non-zero.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs"],
+        )
+        .register_documented(
+            "angle_to",
+            |_self: V<::glam::DVec3>, rhs: V<::glam::DVec3>, axis: V<::glam::DVec3>| {
+                let output: f64 = {
+                    {
+                        let output: f64 = ::glam::DVec3::angle_to(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                axis.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the signed angle (in radians) from `self` to `rhs` around `axis`\n in the range `[-π, +π]`.\n The `axis` must be a unit vector. The angle follows the right-hand rule\n around `axis` and can be used with [`Self::rotate_axis`], e.g.\n `self.rotate_axis(axis, self.angle_to(rhs, axis))` will be equal to `rhs`.\n For the unsigned angle without a reference axis, see [`Self::angle_between`].\n The inputs do not need to be unit vectors however they must be non-zero.\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
+            &["_self", "rhs", "axis"],
         )
         .register_documented(
             "any_orthogonal_vector",
@@ -43443,6 +44216,23 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::DVec3>| {
+                let output: V<::glam::BVec3> = {
+                    {
+                        let output: V<::glam::BVec3> = ::glam::DVec3::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
             "is_normalized",
             |_self: V<::glam::DVec3>| {
                 let output: bool = {
@@ -43522,7 +44312,26 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n form `self * (1.0 - s) + rhs * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n The result is guaranteed to be `self` at `s == 0.0` and `rhs` at `s == 1.0`, even when the\n values differ greatly in magnitude, but it is not monotonic in `s` for nearly equal inputs\n and may not preserve equal inputs exactly. Consider [`lerp_monotonic`](Self::lerp_monotonic)\n instead when interpolating between values that may be equal or nearly equal.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "lerp_monotonic",
+            |_self: V<::glam::DVec3>, rhs: V<::glam::DVec3>, s: f64| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DVec3::lerp_monotonic(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n monotonic form `self + (rhs - self) * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n Prefer this over [`lerp`](Self::lerp) when interpolating between values that may be equal or\n nearly equal: the result is monotonic in `s` and equal inputs are preserved exactly, avoiding\n the rounding jitter that [`lerp`](Self::lerp) can introduce. The tradeoff is that\n `rhs - self` is evaluated first, so this is less accurate than [`lerp`](Self::lerp) when\n `self` and `rhs` differ greatly in magnitude, and overflows to infinity when they have\n opposite signs and large magnitudes.\n On SIMD back-ends the multiply and add are fused when the target supports it, which has a\n single rounding step and can be more accurate than a separate multiply and add.",
             &["_self", "rhs", "s"],
         )
         .register_documented(
@@ -44098,7 +44907,7 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.",
+            " Rotates towards `rhs` up to `max_angle` (in radians).\n When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to\n `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,\n rotates towards the exact opposite of `rhs`. Will not go past the target.\n # Panics\n Will panic if `self` or `rhs` are zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "max_angle"],
         )
         .register_documented(
@@ -44262,8 +45071,27 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a spherical linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.\n # Panics\n Will panic if `self` or `rhs` has zero length when `glam_assert` is enabled.",
             &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "smoothstep",
+            |_self: V<::glam::DVec3>, edge0: V<::glam::DVec3>, edge1: V<::glam::DVec3>| {
+                let output: V<::glam::DVec3> = {
+                    {
+                        let output: V<::glam::DVec3> = ::glam::DVec3::smoothstep(
+                                _self.into_inner(),
+                                edge0.into_inner(),
+                                edge1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs Hermite interpolation between `0.0` and `1.0` using `x` normalized to `[edge0, edge1]`.\n This is equivalent to `t * t * (3.0 - 2.0 * t)`, where `t` is clamped to `[0.0, 1.0]`.\n Results are undefined if any element of `edge0` is greater than or equal to the corresponding\n element of `edge1`.\n # Panics\n Will panic if any element of `edge0` is greater than or equal to the corresponding element\n of `edge1`, when `glam_assert` is enabled.",
+            &["_self", "edge0", "edge1"],
         )
         .register_documented(
             "splat",
@@ -44486,7 +45314,11 @@ pub(crate) fn register_d_vec_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DVec3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DVec3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_vec_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -45355,6 +46187,23 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "is_negative_mask",
+            |_self: V<::glam::DVec4>| {
+                let output: V<::glam::BVec4> = {
+                    {
+                        let output: V<::glam::BVec4> = ::glam::DVec4::is_negative_mask(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a mask indicating which components are negative.\n An element is negative if it has a negative sign, including -0.0, NaNs with negative sign\n bit and negative infinity.",
+            &["_self"],
+        )
+        .register_documented(
             "is_normalized",
             |_self: V<::glam::DVec4>| {
                 let output: bool = {
@@ -45434,7 +46283,26 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result\n will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly\n extrapolated.",
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n form `self * (1.0 - s) + rhs * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n The result is guaranteed to be `self` at `s == 0.0` and `rhs` at `s == 1.0`, even when the\n values differ greatly in magnitude, but it is not monotonic in `s` for nearly equal inputs\n and may not preserve equal inputs exactly. Consider [`lerp_monotonic`](Self::lerp_monotonic)\n instead when interpolating between values that may be equal or nearly equal.",
+            &["_self", "rhs", "s"],
+        )
+        .register_documented(
+            "lerp_monotonic",
+            |_self: V<::glam::DVec4>, rhs: V<::glam::DVec4>, s: f64| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DVec4::lerp_monotonic(
+                                _self.into_inner(),
+                                rhs.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a linear interpolation between `self` and `rhs` based on the value `s`, using the\n monotonic form `self + (rhs - self) * s`.\n When `s` is `0.0`, the result will be equal to `self`. When `s` is `1.0`, the result will\n be equal to `rhs`. When `s` is outside of the range `[0, 1]`, the result is linearly\n extrapolated.\n Prefer this over [`lerp`](Self::lerp) when interpolating between values that may be equal or\n nearly equal: the result is monotonic in `s` and equal inputs are preserved exactly, avoiding\n the rounding jitter that [`lerp`](Self::lerp) can introduce. The tradeoff is that\n `rhs - self` is evaluated first, so this is less accurate than [`lerp`](Self::lerp) when\n `self` and `rhs` differ greatly in magnitude, and overflows to infinity when they have\n opposite signs and large magnitudes.\n On SIMD back-ends the multiply and add are fused when the target supports it, which has a\n single rounding step and can be more accurate than a separate multiply and add.",
             &["_self", "rhs", "s"],
         )
         .register_documented(
@@ -46084,6 +46952,25 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "smoothstep",
+            |_self: V<::glam::DVec4>, edge0: V<::glam::DVec4>, edge1: V<::glam::DVec4>| {
+                let output: V<::glam::DVec4> = {
+                    {
+                        let output: V<::glam::DVec4> = ::glam::DVec4::smoothstep(
+                                _self.into_inner(),
+                                edge0.into_inner(),
+                                edge1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs Hermite interpolation between `0.0` and `1.0` using `x` normalized to `[edge0, edge1]`.\n This is equivalent to `t * t * (3.0 - 2.0 * t)`, where `t` is clamped to `[0.0, 1.0]`.\n Results are undefined if any element of `edge0` is greater than or equal to the corresponding\n element of `edge1`.\n # Panics\n Will panic if any element of `edge0` is greater than or equal to the corresponding element\n of `edge1`, when `glam_assert` is enabled.",
+            &["_self", "edge0", "edge1"],
+        )
+        .register_documented(
             "splat",
             |v: f64| {
                 let output: V<::glam::DVec4> = {
@@ -46305,7 +47192,11 @@ pub(crate) fn register_d_vec_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DVec4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DVec4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -46554,7 +47445,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 2x2 matrix from two column vectors.",
+            " Creates a 2x2 matrix from two column vectors.\n See also [`Self::from_rows`] when the data is in row major order.",
             &["x_axis", "y_axis"],
         )
         .register_documented(
@@ -46647,6 +47538,24 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
             &["m", "i", "j"],
         )
         .register_documented(
+            "from_rows",
+            |row0: V<::glam::Vec2>, row1: V<::glam::Vec2>| {
+                let output: V<::glam::Mat2> = {
+                    {
+                        let output: V<::glam::Mat2> = ::glam::Mat2::from_rows(
+                                row0.into_inner(),
+                                row1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a 2x2 matrix from two row vectors.\n Matrices are stored in column major order, so the given rows are permuted into\n the matrix layout. Use [`Self::from_cols`] instead when the data is already in\n column major order.",
+            &["row0", "row1"],
+        )
+        .register_documented(
             "from_scale_angle",
             |scale: V<::glam::Vec2>, angle: f32| {
                 let output: V<::glam::Mat2> = {
@@ -46676,7 +47585,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid.\n # Panics\n Will panic if the determinant of `self` is zero when `glam_assert` is enabled.",
+            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid. The\n returned matrix will also be invalid if the inverse is not finite, which can\n happen when `self` contains very large or very small values. Use\n [`Self::try_inverse`] or [`Self::inverse_or_zero`] to detect these cases.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert`\n is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -46693,7 +47602,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self` or `Mat2::ZERO` if the matrix is not invertible.",
+            " Returns the inverse of `self` or `Mat2::ZERO` if the matrix is not\n invertible, or if the inverse is not finite.",
             &["_self"],
         )
         .register_documented(
@@ -46908,8 +47817,27 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the matrix row for the given `index`.\n # Panics\n Panics if `index` is greater than 1.",
+            " Returns the matrix row for the given `index`.\n See also [`Self::set_row`] when you need to change the row.\n # Panics\n Panics if `index` is greater than 1.",
             &["_self", "index"],
+        )
+        .register_documented(
+            "set_row",
+            |mut _self: M<::glam::Mat2>, index: usize, row: V<::glam::Vec2>| {
+                let output: () = {
+                    {
+                        let output: () = ::glam::Mat2::set_row(
+                                &mut _self,
+                                index,
+                                row.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the matrix row for the given `index`.\n Matrices are stored in column major order, so the row is spread across all\n 2 columns and writing it touches every column. Use [`Self::col_mut`]\n instead when you can work with columns. See also [`Self::row`].\n # Panics\n Panics if `index` is greater than 1.",
+            &["_self", "index", "row"],
         )
         .register_documented(
             "sub",
@@ -46975,7 +47903,7 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[f32; 4]` array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[f32; 4]` array storing data in column major order.\n If you require the data in row major order use [`Self::to_rows_array`] instead.",
             &["_self"],
         )
         .register_documented(
@@ -46992,7 +47920,22 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[[f32; 2]; 2]` 2D array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[[f32; 2]; 2]` 2D array storing data in column major order.\n If you require row major order `transpose` the matrix first.",
+            &["_self"],
+        )
+        .register_documented(
+            "to_rows_array",
+            |_self: R<::glam::Mat2>| {
+                let output: [f32; 4] = {
+                    {
+                        let output: [f32; 4] = ::glam::Mat2::to_rows_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f32; 4]` array storing data in row major order.\n Matrices are stored in column major order, so the array is permuted out of the\n column major storage. Use [`Self::to_cols_array`] instead when you want data in\n column major order.",
             &["_self"],
         )
         .register_documented(
@@ -47012,7 +47955,11 @@ pub(crate) fn register_mat_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -47280,7 +48227,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 3x3 matrix from three column vectors.",
+            " Creates a 3x3 matrix from three column vectors.\n See also [`Self::from_rows`] when the data is in row major order.",
             &["x_axis", "y_axis", "z_axis"],
         )
         .register_documented(
@@ -47442,6 +48389,25 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             &["angle"],
         )
         .register_documented(
+            "from_rows",
+            |row0: V<::glam::Vec3>, row1: V<::glam::Vec3>, row2: V<::glam::Vec3>| {
+                let output: V<::glam::Mat3> = {
+                    {
+                        let output: V<::glam::Mat3> = ::glam::Mat3::from_rows(
+                                row0.into_inner(),
+                                row1.into_inner(),
+                                row2.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a 3x3 matrix from three row vectors.\n Matrices are stored in column major order, so the given rows are permuted into\n the matrix layout. Use [`Self::from_cols`] instead when the data is already in\n column major order.",
+            &["row0", "row1", "row2"],
+        )
+        .register_documented(
             "from_scale",
             |scale: V<::glam::Vec2>| {
                 let output: V<::glam::Mat3> = {
@@ -47506,7 +48472,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid.\n # Panics\n Will panic if the determinant of `self` is zero when `glam_assert` is enabled.",
+            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid. The\n returned matrix will also be invalid if the inverse is not finite, which can\n happen when `self` contains very large or very small values. Use\n [`Self::try_inverse`] or [`Self::inverse_or_zero`] to detect these cases.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert`\n is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -47523,7 +48489,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self` or `Mat3::ZERO` if the matrix is not invertible.",
+            " Returns the inverse of `self` or `Mat3::ZERO` if the matrix is not\n invertible, or if the inverse is not finite.",
             &["_self"],
         )
         .register_documented(
@@ -47570,7 +48536,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -47589,7 +48555,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -47607,7 +48573,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -47625,7 +48591,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -47898,8 +48864,27 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the matrix row for the given `index`.\n # Panics\n Panics if `index` is greater than 2.",
+            " Returns the matrix row for the given `index`.\n See also [`Self::set_row`] when you need to change the row.\n # Panics\n Panics if `index` is greater than 2.",
             &["_self", "index"],
+        )
+        .register_documented(
+            "set_row",
+            |mut _self: M<::glam::Mat3>, index: usize, row: V<::glam::Vec3>| {
+                let output: () = {
+                    {
+                        let output: () = ::glam::Mat3::set_row(
+                                &mut _self,
+                                index,
+                                row.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the matrix row for the given `index`.\n Matrices are stored in column major order, so the row is spread across all\n 3 columns and writing it touches every column. Use [`Self::col_mut`]\n instead when you can work with columns. See also [`Self::row`].\n # Panics\n Panics if `index` is greater than 2.",
+            &["_self", "index", "row"],
         )
         .register_documented(
             "sub",
@@ -47965,7 +48950,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[f32; 9]` array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[f32; 9]` array storing data in column major order.\n If you require the data in row major order use [`Self::to_rows_array`] instead.",
             &["_self"],
         )
         .register_documented(
@@ -47982,7 +48967,7 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.\n If you require row major order `transpose` the matrix first.",
             &["_self"],
         )
         .register_documented(
@@ -48002,6 +48987,21 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
             },
             " Extract Euler angles with the given Euler rotation order.\n Note if the input matrix contains scales, shears, or other non-rotation transformations then\n the resulting Euler angles will be ill-defined.\n # Panics\n Will panic if any input matrix column is not normalized when `glam_assert` is enabled.",
             &["_self", "order"],
+        )
+        .register_documented(
+            "to_rows_array",
+            |_self: R<::glam::Mat3>| {
+                let output: [f32; 9] = {
+                    {
+                        let output: [f32; 9] = ::glam::Mat3::to_rows_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f32; 9]` array storing data in row major order.\n Matrices are stored in column major order, so the array is permuted out of the\n column major storage. Use [`Self::to_cols_array`] instead when you want data in\n column major order.",
+            &["_self"],
         )
         .register_documented(
             "transform_point2",
@@ -48056,7 +49056,11 @@ pub(crate) fn register_mat_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -48328,7 +49332,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 3x3 matrix from three column vectors.",
+            " Creates a 3x3 matrix from three column vectors.\n See also [`Self::from_rows`] when the data is in row major order.",
             &["x_axis", "y_axis", "z_axis"],
         )
         .register_documented(
@@ -48490,6 +49494,25 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             &["angle"],
         )
         .register_documented(
+            "from_rows",
+            |row0: V<::glam::Vec3A>, row1: V<::glam::Vec3A>, row2: V<::glam::Vec3A>| {
+                let output: V<::glam::Mat3A> = {
+                    {
+                        let output: V<::glam::Mat3A> = ::glam::Mat3A::from_rows(
+                                row0.into_inner(),
+                                row1.into_inner(),
+                                row2.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a 3x3 matrix from three row vectors.\n Matrices are stored in column major order, so the given rows are permuted into\n the matrix layout. Use [`Self::from_cols`] instead when the data is already in\n column major order.",
+            &["row0", "row1", "row2"],
+        )
+        .register_documented(
             "from_scale",
             |scale: V<::glam::Vec2>| {
                 let output: V<::glam::Mat3A> = {
@@ -48554,7 +49577,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid.\n # Panics\n Will panic if the determinant of `self` is zero when `glam_assert` is enabled.",
+            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid. The\n returned matrix will also be invalid if the inverse is not finite, which can\n happen when `self` contains very large or very small values. Use\n [`Self::try_inverse`] or [`Self::inverse_or_zero`] to detect these cases.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert`\n is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -48571,7 +49594,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self` or `Mat3A::ZERO` if the matrix is not invertible.",
+            " Returns the inverse of `self` or `Mat3A::ZERO` if the matrix is not\n invertible, or if the inverse is not finite.",
             &["_self"],
         )
         .register_documented(
@@ -48618,7 +49641,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -48637,7 +49660,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -48655,7 +49678,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -48673,7 +49696,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -48965,8 +49988,27 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the matrix row for the given `index`.\n # Panics\n Panics if `index` is greater than 2.",
+            " Returns the matrix row for the given `index`.\n See also [`Self::set_row`] when you need to change the row.\n # Panics\n Panics if `index` is greater than 2.",
             &["_self", "index"],
+        )
+        .register_documented(
+            "set_row",
+            |mut _self: M<::glam::Mat3A>, index: usize, row: V<::glam::Vec3A>| {
+                let output: () = {
+                    {
+                        let output: () = ::glam::Mat3A::set_row(
+                                &mut _self,
+                                index,
+                                row.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the matrix row for the given `index`.\n Matrices are stored in column major order, so the row is spread across all\n 3 columns and writing it touches every column. Use [`Self::col_mut`]\n instead when you can work with columns. See also [`Self::row`].\n # Panics\n Panics if `index` is greater than 2.",
+            &["_self", "index", "row"],
         )
         .register_documented(
             "sub",
@@ -49032,7 +50074,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[f32; 9]` array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[f32; 9]` array storing data in column major order.\n If you require the data in row major order use [`Self::to_rows_array`] instead.",
             &["_self"],
         )
         .register_documented(
@@ -49049,7 +50091,7 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.\n If you require row major order `transpose` the matrix first.",
             &["_self"],
         )
         .register_documented(
@@ -49069,6 +50111,21 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
             },
             " Extract Euler angles with the given Euler rotation order.\n Note if the input matrix contains scales, shears, or other non-rotation transformations then\n the resulting Euler angles will be ill-defined.\n # Panics\n Will panic if any input matrix column is not normalized when `glam_assert` is enabled.",
             &["_self", "order"],
+        )
+        .register_documented(
+            "to_rows_array",
+            |_self: R<::glam::Mat3A>| {
+                let output: [f32; 9] = {
+                    {
+                        let output: [f32; 9] = ::glam::Mat3A::to_rows_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f32; 9]` array storing data in row major order.\n Matrices are stored in column major order, so the array is permuted out of the\n column major storage. Use [`Self::to_cols_array`] instead when you want data in\n column major order.",
+            &["_self"],
         )
         .register_documented(
             "transform_point2",
@@ -49123,7 +50180,11 @@ pub(crate) fn register_mat_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_mat_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -49382,7 +50443,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 4x4 matrix from four column vectors.",
+            " Creates a 4x4 matrix from four column vectors.\n See also [`Self::from_rows`] when the data is in row major order.",
             &["x_axis", "y_axis", "z_axis", "w_axis"],
         )
         .register_documented(
@@ -49561,6 +50622,31 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             &["angle"],
         )
         .register_documented(
+            "from_rows",
+            |
+                row0: V<::glam::Vec4>,
+                row1: V<::glam::Vec4>,
+                row2: V<::glam::Vec4>,
+                row3: V<::glam::Vec4>|
+            {
+                let output: V<::glam::Mat4> = {
+                    {
+                        let output: V<::glam::Mat4> = ::glam::Mat4::from_rows(
+                                row0.into_inner(),
+                                row1.into_inner(),
+                                row2.into_inner(),
+                                row3.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a 4x4 matrix from four row vectors.\n Matrices are stored in column major order, so the given rows are permuted into\n the matrix layout. Use [`Self::from_cols`] instead when the data is already in\n column major order.",
+            &["row0", "row1", "row2", "row3"],
+        )
+        .register_documented(
             "from_scale",
             |scale: V<::glam::Vec3>| {
                 let output: V<::glam::Mat4> = {
@@ -49636,7 +50722,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `left` equals `right`, `bottom` equals `top`, `z_near` equals `z_far`,\n or `z_near` or `z_far` are not positive when `glam_assert` is enabled.",
             &["left", "right", "bottom", "top", "z_near", "z_far"],
         )
         .register_documented(
@@ -49658,7 +50744,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `left` equals `right`, `bottom` equals `top`, `z_near` equals `z_far`,\n or `z_near` or `z_far` are not positive when `glam_assert` is enabled.",
             &["left", "right", "bottom", "top", "z_near", "z_far"],
         )
         .register_documented(
@@ -49695,7 +50781,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid.\n # Panics\n Will panic if the determinant of `self` is zero when `glam_assert` is enabled.",
+            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid. The\n returned matrix will also be invalid if the inverse is not finite, which can\n happen when `self` contains very large or very small values. Use\n [`Self::try_inverse`] or [`Self::inverse_or_zero`] to detect these cases.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert`\n is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -49712,7 +50798,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self` or `Mat4::ZERO` if the matrix is not invertible.",
+            " Returns the inverse of `self` or `Mat4::ZERO` if the matrix is not\n invertible, or if the inverse is not finite.",
             &["_self"],
         )
         .register_documented(
@@ -49759,7 +50845,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a focal points and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a focal points and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -49778,7 +50864,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -49797,7 +50883,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a facing direction and an up\n direction\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a facing direction and an up\n direction\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -49816,7 +50902,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, a facing direction, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a facing direction, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -50127,7 +51213,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_lh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_lh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -50146,7 +51232,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite reverse left-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_lh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
+            " Creates an infinite reverse left-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_lh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -50165,7 +51251,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite reverse right-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_rh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
+            " Creates an infinite reverse right-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_rh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -50184,7 +51270,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite right-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_rh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates an infinite right-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_rh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -50204,7 +51290,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard left-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard left-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` or `z_far` are less than or equal to zero, or if `z_near` is\n equal to `z_far`, when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near", "z_far"],
         )
         .register_documented(
@@ -50224,7 +51310,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard right-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard right-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` or `z_far` are less than or equal to zero, or if `z_near` is\n equal to `z_far`, when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near", "z_far"],
         )
         .register_documented(
@@ -50309,8 +51395,27 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the matrix row for the given `index`.\n # Panics\n Panics if `index` is greater than 3.",
+            " Returns the matrix row for the given `index`.\n See also [`Self::set_row`] when you need to change the row.\n # Panics\n Panics if `index` is greater than 3.",
             &["_self", "index"],
+        )
+        .register_documented(
+            "set_row",
+            |mut _self: M<::glam::Mat4>, index: usize, row: V<::glam::Vec4>| {
+                let output: () = {
+                    {
+                        let output: () = ::glam::Mat4::set_row(
+                                &mut _self,
+                                index,
+                                row.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the matrix row for the given `index`.\n Matrices are stored in column major order, so the row is spread across all\n 4 columns and writing it touches every column. Use [`Self::col_mut`]\n instead when you can work with columns. See also [`Self::row`].\n # Panics\n Panics if `index` is greater than 3.",
+            &["_self", "index", "row"],
         )
         .register_documented(
             "sub",
@@ -50376,7 +51481,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[f32; 16]` array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[f32; 16]` array storing data in column major order.\n If you require the data in row major order use [`Self::to_rows_array`] instead.",
             &["_self"],
         )
         .register_documented(
@@ -50393,7 +51498,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[[f32; 4]; 4]` 4D array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[[f32; 4]; 4]` 4D array storing data in column major order.\n If you require row major order `transpose` the matrix first.",
             &["_self"],
         )
         .register_documented(
@@ -50413,6 +51518,21 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
             },
             " Extract Euler angles with the given Euler rotation order.\n Note if the upper 3x3 matrix contain scales, shears, or other non-rotation transformations\n then the resulting Euler angles will be ill-defined.\n # Panics\n Will panic if any column of the upper 3x3 rotation matrix is not normalized when\n `glam_assert` is enabled.",
             &["_self", "order"],
+        )
+        .register_documented(
+            "to_rows_array",
+            |_self: R<::glam::Mat4>| {
+                let output: [f32; 16] = {
+                    {
+                        let output: [f32; 16] = ::glam::Mat4::to_rows_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f32; 16]` array storing data in row major order.\n Matrices are stored in column major order, so the array is permuted out of the\n column major storage. Use [`Self::to_cols_array`] instead when you want data in\n column major order.",
+            &["_self"],
         )
         .register_documented(
             "transform_point3",
@@ -50447,7 +51567,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Transforms the given [`Vec3A`] as 3D point.\n This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `1.0`.",
+            " Transforms the given [`Vec3A`] as 3D point.\n This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `1.0`.\n This method assumes that `self` contains a valid affine transform. If `self` contains a\n perspective transform, or if you are unsure, the [`Self::project_point3a()`] method should\n be used instead.\n # Panics\n Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -50465,7 +51585,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Transforms the give 3D vector as a direction.\n This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is\n `0.0`.\n This method assumes that `self` contains a valid affine transform.\n # Panics\n Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.",
+            " Transforms the given 3D vector as a direction.\n This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is\n `0.0`.\n This method assumes that `self` contains a valid affine transform.\n # Panics\n Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -50483,7 +51603,7 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Transforms the give [`Vec3A`] as 3D vector.\n This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `0.0`.",
+            " Transforms the given [`Vec3A`] as 3D vector.\n This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `0.0`.\n This method assumes that `self` contains a valid affine transform.\n # Panics\n Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -50503,7 +51623,11 @@ pub(crate) fn register_mat_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Mat4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Mat4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -50752,7 +51876,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 2x2 matrix from two column vectors.",
+            " Creates a 2x2 matrix from two column vectors.\n See also [`Self::from_rows`] when the data is in row major order.",
             &["x_axis", "y_axis"],
         )
         .register_documented(
@@ -50809,6 +51933,24 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
             &["m", "i", "j"],
         )
         .register_documented(
+            "from_rows",
+            |row0: V<::glam::DVec2>, row1: V<::glam::DVec2>| {
+                let output: V<::glam::DMat2> = {
+                    {
+                        let output: V<::glam::DMat2> = ::glam::DMat2::from_rows(
+                                row0.into_inner(),
+                                row1.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a 2x2 matrix from two row vectors.\n Matrices are stored in column major order, so the given rows are permuted into\n the matrix layout. Use [`Self::from_cols`] instead when the data is already in\n column major order.",
+            &["row0", "row1"],
+        )
+        .register_documented(
             "from_scale_angle",
             |scale: V<::glam::DVec2>, angle: f64| {
                 let output: V<::glam::DMat2> = {
@@ -50838,7 +51980,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid.\n # Panics\n Will panic if the determinant of `self` is zero when `glam_assert` is enabled.",
+            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid. The\n returned matrix will also be invalid if the inverse is not finite, which can\n happen when `self` contains very large or very small values. Use\n [`Self::try_inverse`] or [`Self::inverse_or_zero`] to detect these cases.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert`\n is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -50855,7 +51997,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self` or `DMat2::ZERO` if the matrix is not invertible.",
+            " Returns the inverse of `self` or `DMat2::ZERO` if the matrix is not\n invertible, or if the inverse is not finite.",
             &["_self"],
         )
         .register_documented(
@@ -51071,8 +52213,27 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the matrix row for the given `index`.\n # Panics\n Panics if `index` is greater than 1.",
+            " Returns the matrix row for the given `index`.\n See also [`Self::set_row`] when you need to change the row.\n # Panics\n Panics if `index` is greater than 1.",
             &["_self", "index"],
+        )
+        .register_documented(
+            "set_row",
+            |mut _self: M<::glam::DMat2>, index: usize, row: V<::glam::DVec2>| {
+                let output: () = {
+                    {
+                        let output: () = ::glam::DMat2::set_row(
+                                &mut _self,
+                                index,
+                                row.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the matrix row for the given `index`.\n Matrices are stored in column major order, so the row is spread across all\n 2 columns and writing it touches every column. Use [`Self::col_mut`]\n instead when you can work with columns. See also [`Self::row`].\n # Panics\n Panics if `index` is greater than 1.",
+            &["_self", "index", "row"],
         )
         .register_documented(
             "sub",
@@ -51138,7 +52299,7 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[f64; 4]` array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[f64; 4]` array storing data in column major order.\n If you require the data in row major order use [`Self::to_rows_array`] instead.",
             &["_self"],
         )
         .register_documented(
@@ -51155,7 +52316,22 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[[f64; 2]; 2]` 2D array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[[f64; 2]; 2]` 2D array storing data in column major order.\n If you require row major order `transpose` the matrix first.",
+            &["_self"],
+        )
+        .register_documented(
+            "to_rows_array",
+            |_self: R<::glam::DMat2>| {
+                let output: [f64; 4] = {
+                    {
+                        let output: [f64; 4] = ::glam::DMat2::to_rows_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f64; 4]` array storing data in row major order.\n Matrices are stored in column major order, so the array is permuted out of the\n column major storage. Use [`Self::to_cols_array`] instead when you want data in\n column major order.",
             &["_self"],
         )
         .register_documented(
@@ -51175,7 +52351,11 @@ pub(crate) fn register_d_mat_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DMat2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DMat2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -51447,7 +52627,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 3x3 matrix from three column vectors.",
+            " Creates a 3x3 matrix from three column vectors.\n See also [`Self::from_rows`] when the data is in row major order.",
             &["x_axis", "y_axis", "z_axis"],
         )
         .register_documented(
@@ -51609,6 +52789,25 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             &["angle"],
         )
         .register_documented(
+            "from_rows",
+            |row0: V<::glam::DVec3>, row1: V<::glam::DVec3>, row2: V<::glam::DVec3>| {
+                let output: V<::glam::DMat3> = {
+                    {
+                        let output: V<::glam::DMat3> = ::glam::DMat3::from_rows(
+                                row0.into_inner(),
+                                row1.into_inner(),
+                                row2.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a 3x3 matrix from three row vectors.\n Matrices are stored in column major order, so the given rows are permuted into\n the matrix layout. Use [`Self::from_cols`] instead when the data is already in\n column major order.",
+            &["row0", "row1", "row2"],
+        )
+        .register_documented(
             "from_scale",
             |scale: V<::glam::DVec2>| {
                 let output: V<::glam::DMat3> = {
@@ -51673,7 +52872,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid.\n # Panics\n Will panic if the determinant of `self` is zero when `glam_assert` is enabled.",
+            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid. The\n returned matrix will also be invalid if the inverse is not finite, which can\n happen when `self` contains very large or very small values. Use\n [`Self::try_inverse`] or [`Self::inverse_or_zero`] to detect these cases.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert`\n is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -51690,7 +52889,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self` or `DMat3::ZERO` if the matrix is not invertible.",
+            " Returns the inverse of `self` or `DMat3::ZERO` if the matrix is not\n invertible, or if the inverse is not finite.",
             &["_self"],
         )
         .register_documented(
@@ -51737,7 +52936,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -51756,7 +52955,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a focal point and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -51774,7 +52973,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -51792,7 +52991,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a facing direction and an up direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -52014,8 +53213,27 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the matrix row for the given `index`.\n # Panics\n Panics if `index` is greater than 2.",
+            " Returns the matrix row for the given `index`.\n See also [`Self::set_row`] when you need to change the row.\n # Panics\n Panics if `index` is greater than 2.",
             &["_self", "index"],
+        )
+        .register_documented(
+            "set_row",
+            |mut _self: M<::glam::DMat3>, index: usize, row: V<::glam::DVec3>| {
+                let output: () = {
+                    {
+                        let output: () = ::glam::DMat3::set_row(
+                                &mut _self,
+                                index,
+                                row.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the matrix row for the given `index`.\n Matrices are stored in column major order, so the row is spread across all\n 3 columns and writing it touches every column. Use [`Self::col_mut`]\n instead when you can work with columns. See also [`Self::row`].\n # Panics\n Panics if `index` is greater than 2.",
+            &["_self", "index", "row"],
         )
         .register_documented(
             "sub",
@@ -52081,7 +53299,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[f64; 9]` array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[f64; 9]` array storing data in column major order.\n If you require the data in row major order use [`Self::to_rows_array`] instead.",
             &["_self"],
         )
         .register_documented(
@@ -52098,7 +53316,7 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[[f64; 3]; 3]` 3D array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[[f64; 3]; 3]` 3D array storing data in column major order.\n If you require row major order `transpose` the matrix first.",
             &["_self"],
         )
         .register_documented(
@@ -52118,6 +53336,21 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
             },
             " Extract Euler angles with the given Euler rotation order.\n Note if the input matrix contains scales, shears, or other non-rotation transformations then\n the resulting Euler angles will be ill-defined.\n # Panics\n Will panic if any input matrix column is not normalized when `glam_assert` is enabled.",
             &["_self", "order"],
+        )
+        .register_documented(
+            "to_rows_array",
+            |_self: R<::glam::DMat3>| {
+                let output: [f64; 9] = {
+                    {
+                        let output: [f64; 9] = ::glam::DMat3::to_rows_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f64; 9]` array storing data in row major order.\n Matrices are stored in column major order, so the array is permuted out of the\n column major storage. Use [`Self::to_cols_array`] instead when you want data in\n column major order.",
+            &["_self"],
         )
         .register_documented(
             "transform_point2",
@@ -52172,7 +53405,11 @@ pub(crate) fn register_d_mat_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DMat3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DMat3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_mat_4_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -52431,7 +53668,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a 4x4 matrix from four column vectors.",
+            " Creates a 4x4 matrix from four column vectors.\n See also [`Self::from_rows`] when the data is in row major order.",
             &["x_axis", "y_axis", "z_axis", "w_axis"],
         )
         .register_documented(
@@ -52593,6 +53830,31 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             &["angle"],
         )
         .register_documented(
+            "from_rows",
+            |
+                row0: V<::glam::DVec4>,
+                row1: V<::glam::DVec4>,
+                row2: V<::glam::DVec4>,
+                row3: V<::glam::DVec4>|
+            {
+                let output: V<::glam::DMat4> = {
+                    {
+                        let output: V<::glam::DMat4> = ::glam::DMat4::from_rows(
+                                row0.into_inner(),
+                                row1.into_inner(),
+                                row2.into_inner(),
+                                row3.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a 4x4 matrix from four row vectors.\n Matrices are stored in column major order, so the given rows are permuted into\n the matrix layout. Use [`Self::from_cols`] instead when the data is already in\n column major order.",
+            &["row0", "row1", "row2", "row3"],
+        )
+        .register_documented(
             "from_scale",
             |scale: V<::glam::DVec3>| {
                 let output: V<::glam::DMat4> = {
@@ -52668,7 +53930,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `left` equals `right`, `bottom` equals `top`, `z_near` equals `z_far`,\n or `z_near` or `z_far` are not positive when `glam_assert` is enabled.",
             &["left", "right", "bottom", "top", "z_near", "z_far"],
         )
         .register_documented(
@@ -52690,7 +53952,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n # Panics\n Will panic if `left` equals `right`, `bottom` equals `top`, `z_near` equals `z_far`,\n or `z_near` or `z_far` are not positive when `glam_assert` is enabled.",
             &["left", "right", "bottom", "top", "z_near", "z_far"],
         )
         .register_documented(
@@ -52727,7 +53989,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid.\n # Panics\n Will panic if the determinant of `self` is zero when `glam_assert` is enabled.",
+            " Returns the inverse of `self`.\n If the matrix is not invertible the returned matrix will be invalid. The\n returned matrix will also be invalid if the inverse is not finite, which can\n happen when `self` contains very large or very small values. Use\n [`Self::try_inverse`] or [`Self::inverse_or_zero`] to detect these cases.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert`\n is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -52744,7 +54006,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the inverse of `self` or `DMat4::ZERO` if the matrix is not invertible.",
+            " Returns the inverse of `self` or `DMat4::ZERO` if the matrix is not\n invertible, or if the inverse is not finite.",
             &["_self"],
         )
         .register_documented(
@@ -52791,7 +54053,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a focal points and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a focal points and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -52810,7 +54072,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -52829,7 +54091,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a facing direction and an up\n direction\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view matrix using a camera position, a facing direction and an up\n direction\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -52848,7 +54110,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, a facing direction, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view matrix using a camera position, a facing direction, and an up\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -53125,7 +54387,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_lh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_lh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -53144,7 +54406,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite reverse left-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_lh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
+            " Creates an infinite reverse left-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_lh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -53163,7 +54425,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite reverse right-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_rh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
+            " Creates an infinite reverse right-handed perspective projection matrix with `[0,1]` depth range.\n Similar to `perspective_infinite_rh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -53182,7 +54444,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an infinite right-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_rh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates an infinite right-handed perspective projection matrix with `[0,1]` depth range.\n Like `perspective_rh`, but with an infinite value for `z_far`.\n The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` is less than or equal to zero when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near"],
         )
         .register_documented(
@@ -53202,7 +54464,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard left-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a left-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard left-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` or `z_far` are less than or equal to zero, or if `z_near` is\n equal to `z_far`, when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near", "z_far"],
         )
         .register_documented(
@@ -53222,7 +54484,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard right-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is\n enabled.",
+            " Creates a right-handed perspective projection matrix with `[0,1]` depth range.\n Useful to map the standard right-handed coordinate system into what WebGPU/Metal/Direct3D expect.\n # Panics\n Will panic if `fov_y_radians` is not in the range `(0, π)`, if `aspect_ratio` is\n zero, or if `z_near` or `z_far` are less than or equal to zero, or if `z_near` is\n equal to `z_far`, when `glam_assert` is enabled.",
             &["fov_y_radians", "aspect_ratio", "z_near", "z_far"],
         )
         .register_documented(
@@ -53290,8 +54552,27 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the matrix row for the given `index`.\n # Panics\n Panics if `index` is greater than 3.",
+            " Returns the matrix row for the given `index`.\n See also [`Self::set_row`] when you need to change the row.\n # Panics\n Panics if `index` is greater than 3.",
             &["_self", "index"],
+        )
+        .register_documented(
+            "set_row",
+            |mut _self: M<::glam::DMat4>, index: usize, row: V<::glam::DVec4>| {
+                let output: () = {
+                    {
+                        let output: () = ::glam::DMat4::set_row(
+                                &mut _self,
+                                index,
+                                row.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets the matrix row for the given `index`.\n Matrices are stored in column major order, so the row is spread across all\n 4 columns and writing it touches every column. Use [`Self::col_mut`]\n instead when you can work with columns. See also [`Self::row`].\n # Panics\n Panics if `index` is greater than 3.",
+            &["_self", "index", "row"],
         )
         .register_documented(
             "sub",
@@ -53357,7 +54638,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[f64; 16]` array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[f64; 16]` array storing data in column major order.\n If you require the data in row major order use [`Self::to_rows_array`] instead.",
             &["_self"],
         )
         .register_documented(
@@ -53374,7 +54655,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a `[[f64; 4]; 4]` 4D array storing data in column major order.\n If you require data in row major order `transpose` the matrix first.",
+            " Creates a `[[f64; 4]; 4]` 4D array storing data in column major order.\n If you require row major order `transpose` the matrix first.",
             &["_self"],
         )
         .register_documented(
@@ -53394,6 +54675,21 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
             },
             " Extract Euler angles with the given Euler rotation order.\n Note if the upper 3x3 matrix contain scales, shears, or other non-rotation transformations\n then the resulting Euler angles will be ill-defined.\n # Panics\n Will panic if any column of the upper 3x3 rotation matrix is not normalized when\n `glam_assert` is enabled.",
             &["_self", "order"],
+        )
+        .register_documented(
+            "to_rows_array",
+            |_self: R<::glam::DMat4>| {
+                let output: [f64; 16] = {
+                    {
+                        let output: [f64; 16] = ::glam::DMat4::to_rows_array(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a `[f64; 16]` array storing data in row major order.\n Matrices are stored in column major order, so the array is permuted out of the\n column major storage. Use [`Self::to_cols_array`] instead when you want data in\n column major order.",
+            &["_self"],
         )
         .register_documented(
             "transform_point3",
@@ -53428,7 +54724,7 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
                 };
                 output
             },
-            " Transforms the give 3D vector as a direction.\n This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is\n `0.0`.\n This method assumes that `self` contains a valid affine transform.\n # Panics\n Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.",
+            " Transforms the given 3D vector as a direction.\n This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is\n `0.0`.\n This method assumes that `self` contains a valid affine transform.\n # Panics\n Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -53448,7 +54744,11 @@ pub(crate) fn register_d_mat_4_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DMat4, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DMat4,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -53712,7 +55012,7 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.",
+            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -53881,7 +55181,11 @@ pub(crate) fn register_affine_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Affine2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Affine2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -53972,7 +55276,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform containing a 3D rotation around a normalized\n rotation `axis` of `angle` (in radians).",
+            " Creates an affine transform containing a 3D rotation around a normalized\n rotation `axis` of `angle` (in radians).\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.",
             &["axis", "angle"],
         )
         .register_documented(
@@ -54066,7 +55370,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given `rotation` quaternion.",
+            " Creates an affine transform from the given `rotation` quaternion.\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["rotation"],
         )
         .register_documented(
@@ -54084,7 +55388,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given 3D `rotation` and `translation`.\n Equivalent to `Affine3::from_translation(translation) * Affine3::from_quat(rotation)`",
+            " Creates an affine transform from the given 3D `rotation` and `translation`.\n Equivalent to `Affine3::from_translation(translation) * Affine3::from_quat(rotation)`\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["rotation", "translation"],
         )
         .register_documented(
@@ -54175,7 +55479,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given 3D `scale`, `rotation` and\n `translation`.\n Equivalent to `Affine3::from_translation(translation) *\n Affine3::from_quat(rotation) * Affine3::from_scale(scale)`",
+            " Creates an affine transform from the given 3D `scale`, `rotation` and\n `translation`.\n Equivalent to `Affine3::from_translation(translation) *\n Affine3::from_quat(rotation) * Affine3::from_scale(scale)`\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["scale", "rotation", "translation"],
         )
         .register_documented(
@@ -54207,7 +55511,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.",
+            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -54254,7 +55558,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -54273,7 +55577,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -54292,7 +55596,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.",
+            " Creates a left-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` is zero length or not finite, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -54311,7 +55615,7 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.",
+            " Creates a right-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` is zero length or not finite, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -54435,7 +55739,11 @@ pub(crate) fn register_affine_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Affine3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Affine3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_affine_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -54526,7 +55834,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform containing a 3D rotation around a normalized\n rotation `axis` of `angle` (in radians).",
+            " Creates an affine transform containing a 3D rotation around a normalized\n rotation `axis` of `angle` (in radians).\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.",
             &["axis", "angle"],
         )
         .register_documented(
@@ -54620,7 +55928,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given `rotation` quaternion.",
+            " Creates an affine transform from the given `rotation` quaternion.\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["rotation"],
         )
         .register_documented(
@@ -54638,7 +55946,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given 3D `rotation` and `translation`.\n Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_quat(rotation)`",
+            " Creates an affine transform from the given 3D `rotation` and `translation`.\n Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_quat(rotation)`\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["rotation", "translation"],
         )
         .register_documented(
@@ -54729,7 +56037,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given 3D `scale`, `rotation` and\n `translation`.\n Equivalent to `Affine3A::from_translation(translation) *\n Affine3A::from_quat(rotation) * Affine3A::from_scale(scale)`",
+            " Creates an affine transform from the given 3D `scale`, `rotation` and\n `translation`.\n Equivalent to `Affine3A::from_translation(translation) *\n Affine3A::from_quat(rotation) * Affine3A::from_scale(scale)`\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["scale", "rotation", "translation"],
         )
         .register_documented(
@@ -54763,7 +56071,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.",
+            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -54810,7 +56118,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -54829,7 +56137,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -54848,7 +56156,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.",
+            " Creates a left-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` is zero length or not finite, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -54867,7 +56175,7 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.",
+            " Creates a right-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` is zero length or not finite, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -55027,7 +56335,11 @@ pub(crate) fn register_affine_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::Affine3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::Affine3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_affine_2_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -55280,7 +56592,7 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
                 };
                 output
             },
-            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.",
+            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -55432,7 +56744,11 @@ pub(crate) fn register_d_affine_2_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DAffine2, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DAffine2,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_affine_3_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -55540,7 +56856,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform containing a 3D rotation around a normalized\n rotation `axis` of `angle` (in radians).",
+            " Creates an affine transform containing a 3D rotation around a normalized\n rotation `axis` of `angle` (in radians).\n # Panics\n Will panic if `axis` is not normalized when `glam_assert` is enabled.",
             &["axis", "angle"],
         )
         .register_documented(
@@ -55634,7 +56950,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given `rotation` quaternion.",
+            " Creates an affine transform from the given `rotation` quaternion.\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["rotation"],
         )
         .register_documented(
@@ -55652,7 +56968,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given 3D `rotation` and `translation`.\n Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_quat(rotation)`",
+            " Creates an affine transform from the given 3D `rotation` and `translation`.\n Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_quat(rotation)`\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["rotation", "translation"],
         )
         .register_documented(
@@ -55743,7 +57059,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates an affine transform from the given 3D `scale`, `rotation` and\n `translation`.\n Equivalent to `DAffine3::from_translation(translation) *\n DAffine3::from_quat(rotation) * DAffine3::from_scale(scale)`",
+            " Creates an affine transform from the given 3D `scale`, `rotation` and\n `translation`.\n Equivalent to `DAffine3::from_translation(translation) *\n DAffine3::from_quat(rotation) * DAffine3::from_scale(scale)`\n # Panics\n Will panic if `rotation` is not normalized when `glam_assert` is enabled.",
             &["scale", "rotation", "translation"],
         )
         .register_documented(
@@ -55777,7 +57093,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.",
+            " Return the inverse of this transform.\n Note that if the transform is not invertible the result will be invalid.\n # Panics\n Will panic if the resulting inverted matrix is not finite when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -55824,7 +57140,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a left-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -55843,7 +57159,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a right-handed view transform using a camera position, an up direction, and a focal\n point.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -55862,7 +57178,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.",
+            " Creates a left-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` is zero length or not finite, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -55881,7 +57197,7 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.",
+            " Creates a right-handed view transform using a camera position, an up direction, and a facing\n direction.\n For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` is zero length or not finite, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["eye", "dir", "up"],
         )
         .register_documented(
@@ -56005,7 +57321,11 @@ pub(crate) fn register_d_affine_3_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DAffine3, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DAffine3,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_d_quat_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -56079,7 +57399,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the angle (in radians) for the minimal rotation\n for transforming this quaternion into another.\n Both quaternions must be normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
+            " Returns the angle (in radians) for the minimal rotation between two quaternions\n in the range `[0, +π]`.\n Both quaternions must be normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -56425,7 +57745,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Create a quaternion that rotates `v.length()` radians around `v.normalize()`.\n `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.",
+            " Create a quaternion that rotates `v.length()` radians around `v.normalize()`.\n `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.\n # Panics\n Will panic if `v` is not finite when `glam_assert` is enabled.",
             &["v"],
         )
         .register_documented(
@@ -56526,7 +57846,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            "",
+            " Returns `true` if `self` represents a rotation near the identity.",
             &["_self"],
         )
         .register_documented(
@@ -56609,7 +57929,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Performs a linear interpolation between `self` and `rhs` based on\n the value `s`.\n When `s` is `0.0`, the result will be equal to `self`.  When `s`\n is `1.0`, the result will be equal to `rhs`.\n # Panics\n Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.",
+            " Performs a linear interpolation between `self` and `rhs` based on\n the value `s`, using the form `self * (1.0 - s) + end * s` before normalizing.\n When `s` is `0.0`, the result will be equal to `self`.  When `s`\n is `1.0`, the result will be equal to `rhs`.\n This interpolates linearly between the two rotations and does not rotate at a constant\n angular velocity; see [`slerp`](Self::slerp) if that is required.\n # Panics\n Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.",
             &["_self", "end", "s"],
         )
         .register_documented(
@@ -56628,7 +57948,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a left-handed view matrix using a camera position, a focal point, and an up\n direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a quaternion rotation from a camera position, a focal point, and an up\n direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -56647,7 +57967,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a right-handed view matrix using a camera position, an up direction, and a focal\n point.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a quaternion rotation using a camera position, an up direction, and a focal\n point.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `up` is not normalized, if `center` is equal to `eye`, or if the view\n direction is parallel to `up`, when `glam_assert` is enabled.",
             &["eye", "center", "up"],
         )
         .register_documented(
@@ -56665,7 +57985,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a quaterion rotation from a facing direction and an up direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `up` is not normalized when `glam_assert` is enabled.",
+            " Creates a quaterion rotation from a facing direction and an up direction.\n For a left-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -56683,7 +58003,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Creates a quaterion rotation from facing direction and an up direction.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` and `up` are not normalized when `glam_assert` is enabled.",
+            " Creates a quaterion rotation from facing direction and an up direction.\n For a right-handed view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.\n # Panics\n Will panic if `dir` or `up` are not normalized, or if `dir` and `up` are parallel,\n when `glam_assert` is enabled.",
             &["dir", "up"],
         )
         .register_documented(
@@ -56734,7 +58054,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly\n normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
+            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly\n normalized.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -56769,7 +58089,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly normalized.\n # Panics\n Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.",
+            " Multiplies two quaternions. If they each represent a rotation, the result will\n represent the combined rotation.\n Note that due to floating point rounding the result may not be perfectly normalized.",
             &["_self", "rhs"],
         )
         .register_documented(
@@ -56821,7 +58141,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns `self` normalized to length 1.0.\n For valid results, `self` must _not_ be of length zero.\n Panics\n Will panic if `self` is zero length when `glam_assert` is enabled.",
+            " Returns `self` normalized to length 1.0.\n For valid results, `self` must _not_ be of length zero.\n # Panics\n Will panic if `self` is zero length when `glam_assert` is enabled.",
             &["_self"],
         )
         .register_documented(
@@ -56863,6 +58183,25 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
             &["_self", "end", "s"],
         )
         .register_documented(
+            "slerp_long",
+            |_self: V<::glam::DQuat>, end: V<::glam::DQuat>, s: f64| {
+                let output: V<::glam::DQuat> = {
+                    {
+                        let output: V<::glam::DQuat> = ::glam::DQuat::slerp_long(
+                                _self.into_inner(),
+                                end.into_inner(),
+                                s,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Performs a spherical linear interpolation between `self` and `end` based on the value `s`,\n preserving the rotation direction.\n When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result will\n be equal to `end`.\n When the dot product of `self` and `end` is negative, the standard [`slerp`](Self::slerp)\n will flip the end quaternion to take the shortest path, while this method will take the\n longer arc. This is useful when the intended rotation direction must be preserved.\n # Panics\n Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.",
+            &["_self", "end", "s"],
+        )
+        .register_documented(
             "sub",
             |_self: V<::glam::DQuat>, rhs: R<::glam::DQuat>| {
                 let output: V<::glam::DQuat> = {
@@ -56898,19 +58237,16 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         )
         .register_documented(
             "to_array",
-            |_self: V<::glam::DQuat>| {
+            |_self: R<::glam::DQuat>| {
                 let output: [f64; 4] = {
                     {
-                        let output: [f64; 4] = ::glam::DQuat::to_array(
-                                _self.into_inner(),
-                            )
-                            .into();
+                        let output: [f64; 4] = ::glam::DQuat::to_array(&_self).into();
                         output
                     }
                 };
                 output
             },
-            " `[x, y, z, w]`",
+            " Converts `self` to `[x, y, z, w]`",
             &["_self"],
         )
         .register_documented(
@@ -56928,7 +58264,7 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the rotation angles for the given euler rotation sequence.",
+            " Returns the rotation angles for the given euler rotation sequence.\n # Panics\n Will panic if `self` is not normalized when `glam_assert` is enabled.",
             &["_self", "order"],
         )
         .register_documented(
@@ -56967,47 +58303,57 @@ pub(crate) fn register_d_quat_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::DQuat, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::DQuat,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_euler_rot_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::glam::EulerRot>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::glam::EulerRot>| {
-            let output: V<::glam::EulerRot> = {
-                {
-                    let output: V<::glam::EulerRot> =
-                        <::glam::EulerRot as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::glam::EulerRot>, other: R<::glam::EulerRot>| {
-            let output: bool = {
-                {
-                    let output: bool = <::glam::EulerRot as ::core::cmp::PartialEq<
-                        ::glam::EulerRot,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::glam::EulerRot,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::glam::EulerRot>| {
+                let output: V<::glam::EulerRot> = {
+                    {
+                        let output: V<::glam::EulerRot> = <::glam::EulerRot as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::glam::EulerRot>, other: R<::glam::EulerRot>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::glam::EulerRot as ::core::cmp::PartialEq<
+                            ::glam::EulerRot,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::EulerRot, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::EulerRot,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -57171,7 +58517,11 @@ pub(crate) fn register_b_vec_3_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec3A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec3A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -57335,105 +58685,117 @@ pub(crate) fn register_b_vec_4_a_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::glam::BVec4A, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::glam::BVec4A,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_smol_str_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::smol_str::SmolStr>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: V<::smol_str::SmolStr> = {
-                {
-                    let output: V<::smol_str::SmolStr> =
-                        <::smol_str::SmolStr as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::smol_str::SmolStr>, other: R<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = <::smol_str::SmolStr as ::core::cmp::PartialEq<
-                        ::smol_str::SmolStr,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "is_empty",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "is_heap_allocated",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: bool = {
-                {
-                    let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "len",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: usize = {
-                {
-                    let output: usize = ::smol_str::SmolStr::len(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "to_string",
-        |_self: R<::smol_str::SmolStr>| {
-            let output: ::std::string::String = {
-                {
-                    let output: ::std::string::String =
-                        ::smol_str::SmolStr::to_string(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::smol_str::SmolStr,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: V<::smol_str::SmolStr> = {
+                    {
+                        let output: V<::smol_str::SmolStr> = <::smol_str::SmolStr as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::smol_str::SmolStr>, other: R<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::smol_str::SmolStr as ::core::cmp::PartialEq<
+                            ::smol_str::SmolStr,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "is_empty",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "is_heap_allocated",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "len",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: usize = {
+                    {
+                        let output: usize = ::smol_str::SmolStr::len(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "to_string",
+            |_self: R<::smol_str::SmolStr>| {
+                let output: ::std::string::String = {
+                    {
+                        let output: ::std::string::String = ::smol_str::SmolStr::to_string(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::smol_str::SmolStr, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::smol_str::SmolStr,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_uuid_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -57758,80 +59120,91 @@ pub(crate) fn register_uuid_functions(world: &mut World) {
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
-    registry.register_type_data::<::uuid::Uuid, bevy_mod_scripting_bindings::MarkAsGenerated>();
+    registry
+        .register_type_data::<
+            ::uuid::Uuid,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_non_nil_uuid_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::uuid::NonNilUuid>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::uuid::NonNilUuid>| {
-            let output: V<::uuid::NonNilUuid> = {
-                {
-                    let output: V<::uuid::NonNilUuid> =
-                        <::uuid::NonNilUuid as ::core::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::uuid::NonNilUuid>, other: R<::uuid::NonNilUuid>| {
-            let output: bool = {
-                {
-                    let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
-                        ::uuid::NonNilUuid,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::uuid::NonNilUuid>, other: R<::uuid::Uuid>| {
-            let output: bool = {
-                {
-                    let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
-                        ::uuid::Uuid,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "get",
-        |_self: V<::uuid::NonNilUuid>| {
-            let output: V<::uuid::Uuid> = {
-                {
-                    let output: V<::uuid::Uuid> =
-                        ::uuid::NonNilUuid::get(_self.into_inner()).into();
-                    output
-                }
-            };
-            output
-        },
-        " Get the underlying [`Uuid`] value.",
-        &["_self"],
-    );
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::uuid::NonNilUuid,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::uuid::NonNilUuid>| {
+                let output: V<::uuid::NonNilUuid> = {
+                    {
+                        let output: V<::uuid::NonNilUuid> = <::uuid::NonNilUuid as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::uuid::NonNilUuid>, other: R<::uuid::NonNilUuid>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
+                            ::uuid::NonNilUuid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::uuid::NonNilUuid>, other: R<::uuid::Uuid>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::uuid::NonNilUuid as ::core::cmp::PartialEq<
+                            ::uuid::Uuid,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "get",
+            |_self: V<::uuid::NonNilUuid>| {
+                let output: V<::uuid::Uuid> = {
+                    {
+                        let output: V<::uuid::Uuid> = ::uuid::NonNilUuid::get(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the underlying [`Uuid`] value.",
+            &["_self"],
+        );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::uuid::NonNilUuid, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::uuid::NonNilUuid,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_texture_format_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<

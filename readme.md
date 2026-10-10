@@ -59,6 +59,8 @@ BMS generates code based on each bevy release, which is why we pin the patch ver
 
 | bevy_mod_scripting  | bevy   |
 |---------------------|--------|
+| 0.22.0+             | 0.20.0 |
+| 0.21.0+             | 0.19.0 |
 | 0.19.0+             | 0.18.0 |
 | 0.18.0+             | 0.17.0 |
 | 0.14.0+             | 0.16.0 |

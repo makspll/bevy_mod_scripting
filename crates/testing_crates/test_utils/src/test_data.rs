@@ -389,6 +389,7 @@ fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init:
                 Layout::new::<usize>(),
                 None,
                 true,
+                false,
                 ComponentCloneBehavior::Default,
                 None,
             ))

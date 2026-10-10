@@ -666,7 +666,7 @@ mod test {
     fn test_try_insert_dynamic_map_into_map_of_maps() {
         let mut map = HashMap::<i32, HashMap<i32, i32>>::default();
         let value = DynamicMap::from_iter(vec![(1, 2), (2, 3), (3, 4)]);
-        let value_ref: Box<dyn PartialReflect> = Box::new(value.to_dynamic_map());
+        let value_ref: Box<dyn PartialReflect> = Box::new(value.to_dynamic_map().unwrap());
         map.insert(1, HashMap::<i32, i32>::default());
         map.insert(2, HashMap::<i32, i32>::default());
         map.insert(3, HashMap::<i32, i32>::default());

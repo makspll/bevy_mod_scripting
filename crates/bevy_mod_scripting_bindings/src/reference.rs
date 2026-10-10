@@ -531,7 +531,7 @@ impl ReflectReference {
             "Safety invariant violated"
         );
 
-        let base = unsafe { from_ptr_data.as_reflect(ptr) };
+        let base = unsafe { from_ptr_data.ptr_as_reflect(ptr) };
         self.walk_path(base.as_partial_reflect(), &type_registry)
     }
 
@@ -608,7 +608,7 @@ impl ReflectReference {
             "Invariant violated"
         );
 
-        let base = unsafe { from_ptr_data.as_reflect_mut(ptr.into_inner()) };
+        let base = unsafe { from_ptr_data.ptr_as_reflect_mut(ptr.into_inner()) };
         self.walk_path_mut(base.as_partial_reflect_mut(), &type_registry)
     }
 

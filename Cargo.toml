@@ -42,6 +42,8 @@ default = [
     "bevy_transform_bindings",
     "bevy_color_bindings",
     "bevy_core_pipeline_bindings",
+    "bevy_curve_bindings",
+    "bevy_shape_bindings",
 ]
 
 
@@ -71,6 +73,7 @@ bevy_color_bindings = ["bevy_mod_scripting_functions/bevy_color"]
 bevy_core_pipeline_bindings = [
     "bevy_mod_scripting_functions/bevy_core_pipeline",
 ]
+bevy_curve_bindings = ["bevy_mod_scripting_functions/bevy_curve"]
 bevy_ecs_bindings = ["bevy_mod_scripting_functions/bevy_ecs"]
 bevy_gizmos_bindings = ["bevy_mod_scripting_functions/bevy_gizmos"]
 bevy_gltf_bindings = ["bevy_mod_scripting_functions/bevy_gltf"]
@@ -86,6 +89,7 @@ bevy_post_process_bindings = ["bevy_mod_scripting_functions/bevy_post_process"]
 bevy_reflect_bindings = ["bevy_mod_scripting_functions/bevy_reflect"]
 bevy_render_bindings = ["bevy_mod_scripting_functions/bevy_render"]
 bevy_scene_bindings = ["bevy_mod_scripting_functions/bevy_scene"]
+bevy_shape_bindings = ["bevy_mod_scripting_functions/bevy_shape"]
 bevy_sprite_bindings = ["bevy_mod_scripting_functions/bevy_sprite"]
 bevy_sprite_render_bindings = [
     "bevy_mod_scripting_functions/bevy_sprite_render",
@@ -152,51 +156,51 @@ bevy_mod_scripting_world = { path = "crates/bevy_mod_scripting_world", version =
 # bevy
 
 
-bevy = { version = "0.19", default-features = false }
-bevy_math = { version = "0.19", default-features = false, features = ["std"] }
-bevy_transform = { version = "0.19", default-features = false }
-bevy_reflect = { version = "0.19", default-features = false }
-bevy_ecs = { version = "0.19", default-features = false }
-bevy_asset = { version = "0.19", default-features = false }
-bevy_app = { version = "0.19", default-features = false }
-bevy_log = { version = "0.19", default-features = false }
-bevy_internal = { version = "0.19", default-features = false }
-bevy_diagnostic = { version = "0.19", default-features = false }
-bevy_platform = { version = "0.19", default-features = false }
-bevy_time = { version = "0.19", default-features = false }
-bevy_input = { version = "0.19", default-features = false }
-bevy_a11y = { version = "0.19", default-features = false, features = [
+bevy = { version = "0.20", default-features = false }
+bevy_math = { version = "0.20", default-features = false, features = ["std"] }
+bevy_transform = { version = "0.20", default-features = false }
+bevy_reflect = { version = "0.20", default-features = false }
+bevy_ecs = { version = "0.20", default-features = false }
+bevy_asset = { version = "0.20", default-features = false }
+bevy_app = { version = "0.20", default-features = false }
+bevy_log = { version = "0.20", default-features = false }
+bevy_internal = { version = "0.20", default-features = false }
+bevy_diagnostic = { version = "0.20", default-features = false }
+bevy_platform = { version = "0.20", default-features = false }
+bevy_time = { version = "0.20", default-features = false }
+bevy_input = { version = "0.20", default-features = false }
+bevy_a11y = { version = "0.20", default-features = false, features = [
     "std",
     "bevy_reflect",
 ] }
-bevy_animation = { version = "0.19", default-features = false }
-bevy_color = { version = "0.19", default-features = false, features = [
+bevy_animation = { version = "0.20", default-features = false }
+bevy_color = { version = "0.20", default-features = false, features = [
     "std",
     "bevy_reflect",
 ] }
-bevy_core_pipeline = { version = "0.19", default-features = false }
-bevy_gizmos = { version = "0.19", default-features = false }
-bevy_gltf = { version = "0.19", default-features = false }
-bevy_image = { version = "0.19", default-features = false, features = [
+bevy_core_pipeline = { version = "0.20", default-features = false }
+bevy_gizmos = { version = "0.20", default-features = false }
+bevy_gltf = { version = "0.20", default-features = false }
+bevy_image = { version = "0.20", default-features = false, features = [
     "bevy_reflect",
 ] }
-bevy_input_focus = { version = "0.19", default-features = false, features = [
+bevy_input_focus = { version = "0.20", default-features = false, features = [
     "std",
     "bevy_reflect",
 ] }
-bevy_mesh = { version = "0.19", default-features = false }
-bevy_pbr = { version = "0.19", default-features = false }
-bevy_picking = { version = "0.19", default-features = false }
-bevy_render = { version = "0.19", default-features = false }
-bevy_scene = { version = "0.19", default-features = false }
-bevy_sprite = { version = "0.19", default-features = false }
-bevy_text = { version = "0.19", default-features = false }
-bevy_window = { version = "0.19", default-features = false, features = [
+bevy_mesh = { version = "0.20", default-features = false }
+bevy_pbr = { version = "0.20", default-features = false }
+bevy_picking = { version = "0.20", default-features = false }
+bevy_render = { version = "0.20", default-features = false }
+bevy_scene = { version = "0.20", default-features = false }
+bevy_sprite = { version = "0.20", default-features = false }
+bevy_text = { version = "0.20", default-features = false }
+bevy_window = { version = "0.20", default-features = false, features = [
     "bevy_reflect",
     "std",
 ] }
-bevy_winit = { version = "0.19", default-features = false }
-bevy_utils = { version = "0.19", default-features = false, features = ["std"] }
+bevy_winit = { version = "0.20", default-features = false }
+bevy_utils = { version = "0.20", default-features = false, features = ["std"] }
 
 glam = { version = "0.30.10", default-features = false }
 uuid = { version = "1.13", default-features = false }

@@ -31,7 +31,7 @@ impl Clone for ReferencePart {
             Self::IntegerAccess(arg0, arg1) => Self::IntegerAccess(*arg0, *arg1),
             Self::MapAccess(arg0) => Self::MapAccess(match arg0.reflect_clone() {
                 Ok(c) => c,
-                Err(_) => arg0.to_dynamic(), // this is okay, because we need to call FromReflect on the map side anyway
+                Err(_) => arg0.to_dynamic().expect("map key must be cloneable"), // this is okay, because we need to call FromReflect on the map side anyway
             }),
         }
     }

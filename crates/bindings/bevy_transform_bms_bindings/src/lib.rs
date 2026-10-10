@@ -1,16 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyTransformScriptingPlugin;
 pub(crate) fn register_static_transform_optimizations_functions(world: &mut World) {
@@ -458,8 +460,29 @@ pub(crate) fn register_global_transform_functions(world: &mut World) {
                 };
                 output
             },
-            " Transforms the given point from local space to global space, applying shear, scale, rotation and translation.\n It can be used like this:\n ```\n # use bevy_transform::prelude::{GlobalTransform};\n # use bevy_math::prelude::Vec3;\n let global_transform = GlobalTransform::from_xyz(1., 2., 3.);\n let local_point = Vec3::new(1., 2., 3.);\n let global_point = global_transform.transform_point(local_point);\n assert_eq!(global_point, Vec3::new(2., 4., 6.));\n ```\n ```\n # use bevy_transform::prelude::{GlobalTransform};\n # use bevy_math::Vec3;\n let global_point = Vec3::new(2., 4., 6.);\n let global_transform = GlobalTransform::from_xyz(1., 2., 3.);\n let local_point = global_transform.affine().inverse().transform_point3(global_point);\n assert_eq!(local_point, Vec3::new(1., 2., 3.))\n ```\n To apply shear, scale, and rotation *without* applying translation, different functions are available:\n ```\n # use bevy_transform::prelude::{GlobalTransform};\n # use bevy_math::prelude::Vec3;\n let global_transform = GlobalTransform::from_xyz(1., 2., 3.);\n let local_direction = Vec3::new(1., 2., 3.);\n let global_direction = global_transform.affine().transform_vector3(local_direction);\n assert_eq!(global_direction, Vec3::new(1., 2., 3.));\n let roundtripped_local_direction = global_transform.affine().inverse().transform_vector3(global_direction);\n assert_eq!(roundtripped_local_direction, local_direction);\n ```",
+            " Transforms the given point from local space to global space, applying shear, scale, rotation and translation.\n It can be used like this:\n ```\n # use bevy_transform::prelude::{GlobalTransform};\n # use bevy_math::prelude::Vec3;\n let global_transform = GlobalTransform::from_xyz(1., 2., 3.);\n let local_point = Vec3::new(1., 2., 3.);\n let global_point = global_transform.transform_point(local_point);\n assert_eq!(global_point, Vec3::new(2., 4., 6.));\n ```\n ```\n # use bevy_transform::prelude::{GlobalTransform};\n # use bevy_math::Vec3;\n let global_point = Vec3::new(2., 4., 6.);\n let global_transform = GlobalTransform::from_xyz(1., 2., 3.);\n let local_point = global_transform.affine().inverse().transform_point3(global_point);\n assert_eq!(local_point, Vec3::new(1., 2., 3.))\n ```\n To apply shear, scale, and rotation *without* applying translation, different functions are available:\n ```\n # use bevy_transform::prelude::{GlobalTransform};\n # use bevy_math::prelude::Vec3;\n let global_transform = GlobalTransform::from_xyz(1., 2., 3.);\n let local_direction = Vec3::new(1., 2., 3.);\n let global_direction = global_transform.transform_vector(local_direction);\n assert_eq!(global_direction, Vec3::new(1., 2., 3.));\n let roundtripped_local_direction = global_transform.affine().inverse().transform_vector3(global_direction);\n assert_eq!(roundtripped_local_direction, local_direction);\n ```",
             &["_self", "point"],
+        )
+        .register_documented(
+            "transform_vector",
+            |
+                _self: R<::bevy_transform::components::GlobalTransform>,
+                vector: V<::bevy_math::Vec3>|
+            {
+                let output: V<::bevy_math::Vec3> = {
+                    {
+                        let output: V<::bevy_math::Vec3> = ::bevy_transform::components::GlobalTransform::transform_vector(
+                                &_self,
+                                vector.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms the given vector from local space to global space, applying\n shear, scale, rotation but not translation.\n It can be used like this:\n ```\n # use bevy_transform::prelude::{GlobalTransform};\n # use bevy_math::prelude::Vec3;\n let global_transform = GlobalTransform::from_xyz(1., 2., 3.);\n let local_vector = Vec3::new(1., 2., 3.);\n let global_vector = global_transform.transform_vector(local_vector);\n assert_eq!(global_vector, Vec3::new(1., 2., 3.));\n ```",
+            &["_self", "vector"],
         )
         .register_documented(
             "translation",
@@ -1129,6 +1152,27 @@ pub(crate) fn register_transform_functions(world: &mut World) {
             },
             " Transforms the given `point`, applying scale, rotation and translation.\n If this [`Transform`] has an ancestor entity with a [`Transform`] component,\n [`Transform::transform_point`] will transform a point in local space into its\n parent transform's space.\n If this [`Transform`] does not have a parent, [`Transform::transform_point`] will\n transform a point in local space into worldspace coordinates.\n If you always want to transform a point in local space to worldspace, or if you need\n the inverse transformations, see [`GlobalTransform::transform_point()`].",
             &["_self", "point"],
+        )
+        .register_documented(
+            "transform_vector",
+            |
+                _self: R<::bevy_transform::components::Transform>,
+                vector: V<::bevy_math::Vec3>|
+            {
+                let output: V<::bevy_math::Vec3> = {
+                    {
+                        let output: V<::bevy_math::Vec3> = ::bevy_transform::components::Transform::transform_vector(
+                                &_self,
+                                vector.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Transforms the given `vector`, applying scale and rotation only, not translation.\n If this [`Transform`] has an ancestor entity with a [`Transform`] component,\n [`Transform::transform_vector`] will transform a vector in local space into its\n parent transform's space.\n If this [`Transform`] does not have a parent, [`Transform::transform_vector`] will\n transform a vector in local space into worldspace coordinates.\n If you always want to transform a vector in local space to worldspace,\n see [`GlobalTransform::transform_vector()`].\n # Examples\n ```\n # use bevy_transform::prelude::Transform;\n # use bevy_math::prelude::{Vec3, Quat};\n # use std::f64::consts::PI;\n let transform = Transform::from_xyz(1., 2., 3.)\n    .with_scale(Vec3::splat(2.))\n    .with_rotation(Quat::from_axis_angle(Vec3::Y, PI as f32));\n let local_vector = Vec3::new(1., 2., 3.);\n let global_vector = transform.transform_vector(local_vector);\n assert!(global_vector.abs_diff_eq(Vec3::new(-2., 4., -6.), 1e-5));\n ```",
+            &["_self", "vector"],
         )
         .register_documented(
             "translate_around",

@@ -1,16 +1,18 @@
+
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 extern crate std;
 
-use bevy_app::{App, Plugin};
-use bevy_ecs::prelude::*;
+
 use bevy_mod_scripting_bindings::{
     ReflectReference,
     function::{
-        from::{M, R, V},
+        from::{R, M, V},
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
+use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyColorScriptingPlugin;
 pub(crate) fn register_color_functions(world: &mut World) {
@@ -284,6 +286,123 @@ pub(crate) fn register_color_functions(world: &mut World) {
             },
             " Creates a new [`Color`] object storing a [`LinearRgba`] color.\n # Arguments\n * `red` - Red channel. [0.0, 1.0]\n * `green` - Green channel. [0.0, 1.0]\n * `blue` - Blue channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
             &["red", "green", "blue", "alpha"],
+        )
+        .register_documented(
+            "okhsl",
+            |hue: f32, saturation: f32, lightness: f32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::okhsl(
+                                hue,
+                                saturation,
+                                lightness,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Okhsla`] color with an alpha of 1.0.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `lightness` - Lightness channel. [0.0, 1.0]",
+            &["hue", "saturation", "lightness"],
+        )
+        .register_documented(
+            "okhsla",
+            |hue: f32, saturation: f32, lightness: f32, alpha: f32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::okhsla(
+                                hue,
+                                saturation,
+                                lightness,
+                                alpha,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Okhsla`] color.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `lightness` - Lightness channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            &["hue", "saturation", "lightness", "alpha"],
+        )
+        .register_documented(
+            "okhsv",
+            |hue: f32, saturation: f32, value: f32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::okhsv(
+                                hue,
+                                saturation,
+                                value,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Okhsva`] color with an alpha of 1.0.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `value` - Value channel. [0.0, 1.0]",
+            &["hue", "saturation", "value"],
+        )
+        .register_documented(
+            "okhsva",
+            |hue: f32, saturation: f32, value: f32, alpha: f32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::okhsva(
+                                hue,
+                                saturation,
+                                value,
+                                alpha,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Okhsva`] color.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `value` - Value channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            &["hue", "saturation", "value", "alpha"],
+        )
+        .register_documented(
+            "okhwb",
+            |hue: f32, whiteness: f32, blackness: f32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::okhwb(
+                                hue,
+                                whiteness,
+                                blackness,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Okhwba`] color with an alpha of 1.0.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `whiteness` - Whiteness channel. [0.0, 1.0]\n * `blackness` - Blackness channel. [0.0, 1.0]",
+            &["hue", "whiteness", "blackness"],
+        )
+        .register_documented(
+            "okhwba",
+            |hue: f32, whiteness: f32, blackness: f32, alpha: f32| {
+                let output: V<::bevy_color::Color> = {
+                    {
+                        let output: V<::bevy_color::Color> = ::bevy_color::Color::okhwba(
+                                hue,
+                                whiteness,
+                                blackness,
+                                alpha,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`Color`] object storing a [`Okhwba`] color.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `whiteness` - Whiteness channel. [0.0, 1.0]\n * `blackness` - Blackness channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            &["hue", "whiteness", "blackness", "alpha"],
         )
         .register_documented(
             "oklab",
@@ -568,7 +687,10 @@ pub(crate) fn register_color_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Color, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Color,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_srgba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -792,7 +914,10 @@ pub(crate) fn register_srgba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Srgba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Srgba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_linear_rgba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -810,7 +935,7 @@ pub(crate) fn register_linear_rgba_functions(world: &mut World) {
                 };
                 output
             },
-            " Converts this color to a u32.\n Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).\n `A` will be the most significant byte and `R` the least significant.",
+            " Converts this color to a `u32`.\n Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).\n `A` will be the most significant byte and `R` the least significant.",
             &["_self"],
         )
         .register_documented(
@@ -1081,7 +1206,10 @@ pub(crate) fn register_hsla_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Hsla, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Hsla,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_hsva_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1199,7 +1327,10 @@ pub(crate) fn register_hsva_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Hsva, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Hsva,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_hwba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1317,7 +1448,10 @@ pub(crate) fn register_hwba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Hwba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Hwba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_laba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1417,7 +1551,10 @@ pub(crate) fn register_laba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Laba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Laba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_lcha_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1473,7 +1610,7 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
                 };
                 output
             },
-            " Construct a new [`Lcha`] color from (h, s, l) components, with the default alpha (1.0).\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.5]\n * `chroma` - Chroma channel. [0.0, 1.5]\n * `hue` - Hue channel. [0.0, 360.0]",
+            " Construct a new [`Lcha`] color from (h, s, l) components, with the default alpha (1.0).\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.5]\n * `chroma` - Chroma channel. Typically [0.0, 1.5]\n * `hue` - Hue channel. [0.0, 360.0]",
             &["lightness", "chroma", "hue"],
         )
         .register_documented(
@@ -1493,7 +1630,7 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
                 };
                 output
             },
-            " Construct a new [`Lcha`] color from components.\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.5]\n * `chroma` - Chroma channel. [0.0, 1.5]\n * `hue` - Hue channel. [0.0, 360.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            " Construct a new [`Lcha`] color from components.\n # Arguments\n * `lightness` - Lightness channel. [0.0, 1.5]\n * `chroma` - Chroma channel. Typically [0.0, 1.5]\n * `hue` - Hue channel. [0.0, 360.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
             &["lightness", "chroma", "hue", "alpha"],
         )
         .register_documented(
@@ -1552,7 +1689,10 @@ pub(crate) fn register_lcha_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Lcha, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Lcha,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_oklaba_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1688,7 +1828,10 @@ pub(crate) fn register_oklaba_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Oklaba, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Oklaba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_oklcha_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1823,7 +1966,10 @@ pub(crate) fn register_oklcha_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Oklcha, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Oklcha,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_xyza_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -1959,7 +2105,536 @@ pub(crate) fn register_xyza_functions(world: &mut World) {
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
-        .register_type_data::<::bevy_color::Xyza, bevy_mod_scripting_bindings::MarkAsGenerated>();
+        .register_type_data::<
+            ::bevy_color::Xyza,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_okhsla_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_color::Okhsla,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_color::Okhsla>| {
+                let output: V<::bevy_color::Okhsla> = {
+                    {
+                        let output: V<::bevy_color::Okhsla> = <::bevy_color::Okhsla as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_color::Okhsla>, other: R<::bevy_color::Okhsla>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_color::Okhsla as ::core::cmp::PartialEq<
+                            ::bevy_color::Okhsla,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "hsl",
+            |hue: f32, saturation: f32, lightness: f32| {
+                let output: V<::bevy_color::Okhsla> = {
+                    {
+                        let output: V<::bevy_color::Okhsla> = ::bevy_color::Okhsla::hsl(
+                                hue,
+                                saturation,
+                                lightness,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a new [`Okhsla`] color from (h, s, l) components, with the default alpha (1.0).\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `lightness` - Lightness channel. [0.0, 1.0]",
+            &["hue", "saturation", "lightness"],
+        )
+        .register_documented(
+            "new",
+            |hue: f32, saturation: f32, lightness: f32, alpha: f32| {
+                let output: V<::bevy_color::Okhsla> = {
+                    {
+                        let output: V<::bevy_color::Okhsla> = ::bevy_color::Okhsla::new(
+                                hue,
+                                saturation,
+                                lightness,
+                                alpha,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a new [`Okhsla`] color from components.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `lightness` - Lightness channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            &["hue", "saturation", "lightness", "alpha"],
+        )
+        .register_documented(
+            "sequential_dispersed",
+            |index: u32| {
+                let output: V<::bevy_color::Okhsla> = {
+                    {
+                        let output: V<::bevy_color::Okhsla> = ::bevy_color::Okhsla::sequential_dispersed(
+                                index,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Generate a deterministic but [quasi-randomly distributed](https://en.wikipedia.org/wiki/Low-discrepancy_sequence)\n color from a provided `index`.\n This can be helpful for generating debug colors.\n # Examples\n ```rust\n # use bevy_color::Okhsla;\n // Unique color for an entity\n # let entity_index = 123;\n // let entity_index = entity.index();\n let color = Okhsla::sequential_dispersed(entity_index);\n // Palette with 5 distinct hues\n let palette = (0..5).map(Okhsla::sequential_dispersed).collect::<Vec<_>>();\n ```",
+            &["index"],
+        )
+        .register_documented(
+            "with_lightness",
+            |_self: V<::bevy_color::Okhsla>, lightness: f32| {
+                let output: V<::bevy_color::Okhsla> = {
+                    {
+                        let output: V<::bevy_color::Okhsla> = ::bevy_color::Okhsla::with_lightness(
+                                _self.into_inner(),
+                                lightness,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return a copy of this color with the lightness channel set to the given value.",
+            &["_self", "lightness"],
+        )
+        .register_documented(
+            "with_saturation",
+            |_self: V<::bevy_color::Okhsla>, saturation: f32| {
+                let output: V<::bevy_color::Okhsla> = {
+                    {
+                        let output: V<::bevy_color::Okhsla> = ::bevy_color::Okhsla::with_saturation(
+                                _self.into_inner(),
+                                saturation,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return a copy of this color with the saturation channel set to the given value.",
+            &["_self", "saturation"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_color::Okhsla,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_okhsva_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_color::Okhsva,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_color::Okhsva>| {
+                let output: V<::bevy_color::Okhsva> = {
+                    {
+                        let output: V<::bevy_color::Okhsva> = <::bevy_color::Okhsva as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_color::Okhsva>, other: R<::bevy_color::Okhsva>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_color::Okhsva as ::core::cmp::PartialEq<
+                            ::bevy_color::Okhsva,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "hsv",
+            |hue: f32, saturation: f32, value: f32| {
+                let output: V<::bevy_color::Okhsva> = {
+                    {
+                        let output: V<::bevy_color::Okhsva> = ::bevy_color::Okhsva::hsv(
+                                hue,
+                                saturation,
+                                value,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a new [`Okhsva`] color from (h, s, v) components, with the default alpha (1.0).\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `value` - Value channel. [0.0, 1.0]",
+            &["hue", "saturation", "value"],
+        )
+        .register_documented(
+            "new",
+            |hue: f32, saturation: f32, value: f32, alpha: f32| {
+                let output: V<::bevy_color::Okhsva> = {
+                    {
+                        let output: V<::bevy_color::Okhsva> = ::bevy_color::Okhsva::new(
+                                hue,
+                                saturation,
+                                value,
+                                alpha,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a new [`Okhsva`] color from components.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `saturation` - Saturation channel. [0.0, 1.0]\n * `value` - Value channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            &["hue", "saturation", "value", "alpha"],
+        )
+        .register_documented(
+            "with_saturation",
+            |_self: V<::bevy_color::Okhsva>, saturation: f32| {
+                let output: V<::bevy_color::Okhsva> = {
+                    {
+                        let output: V<::bevy_color::Okhsva> = ::bevy_color::Okhsva::with_saturation(
+                                _self.into_inner(),
+                                saturation,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return a copy of this color with the saturation channel set to the given value.",
+            &["_self", "saturation"],
+        )
+        .register_documented(
+            "with_value",
+            |_self: V<::bevy_color::Okhsva>, value: f32| {
+                let output: V<::bevy_color::Okhsva> = {
+                    {
+                        let output: V<::bevy_color::Okhsva> = ::bevy_color::Okhsva::with_value(
+                                _self.into_inner(),
+                                value,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return a copy of this color with the value channel set to the given value.",
+            &["_self", "value"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_color::Okhsva,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_okhwba_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_color::Okhwba,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_color::Okhwba>| {
+                let output: V<::bevy_color::Okhwba> = {
+                    {
+                        let output: V<::bevy_color::Okhwba> = <::bevy_color::Okhwba as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_color::Okhwba>, other: R<::bevy_color::Okhwba>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_color::Okhwba as ::core::cmp::PartialEq<
+                            ::bevy_color::Okhwba,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "hwb",
+            |hue: f32, whiteness: f32, blackness: f32| {
+                let output: V<::bevy_color::Okhwba> = {
+                    {
+                        let output: V<::bevy_color::Okhwba> = ::bevy_color::Okhwba::hwb(
+                                hue,
+                                whiteness,
+                                blackness,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a new [`Okhwba`] color from (h, w, b) components, with the default alpha (1.0).\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `whiteness` - Whiteness channel. [0.0, 1.0]\n * `blackness` - Blackness channel. [0.0, 1.0]",
+            &["hue", "whiteness", "blackness"],
+        )
+        .register_documented(
+            "new",
+            |hue: f32, whiteness: f32, blackness: f32, alpha: f32| {
+                let output: V<::bevy_color::Okhwba> = {
+                    {
+                        let output: V<::bevy_color::Okhwba> = ::bevy_color::Okhwba::new(
+                                hue,
+                                whiteness,
+                                blackness,
+                                alpha,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a new [`Okhwba`] color from components.\n # Arguments\n * `hue` - Hue channel. [0.0, 360.0]\n * `whiteness` - Whiteness channel. [0.0, 1.0]\n * `blackness` - Blackness channel. [0.0, 1.0]\n * `alpha` - Alpha channel. [0.0, 1.0]",
+            &["hue", "whiteness", "blackness", "alpha"],
+        )
+        .register_documented(
+            "with_blackness",
+            |_self: V<::bevy_color::Okhwba>, blackness: f32| {
+                let output: V<::bevy_color::Okhwba> = {
+                    {
+                        let output: V<::bevy_color::Okhwba> = ::bevy_color::Okhwba::with_blackness(
+                                _self.into_inner(),
+                                blackness,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return a copy of this color with the blackness channel set to the given value.",
+            &["_self", "blackness"],
+        )
+        .register_documented(
+            "with_whiteness",
+            |_self: V<::bevy_color::Okhwba>, whiteness: f32| {
+                let output: V<::bevy_color::Okhwba> = {
+                    {
+                        let output: V<::bevy_color::Okhwba> = ::bevy_color::Okhwba::with_whiteness(
+                                _self.into_inner(),
+                                whiteness,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Return a copy of this color with the whiteness channel set to the given value.",
+            &["_self", "whiteness"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_color::Okhwba,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_chromaticity_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_color::Chromaticity,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_color::Chromaticity>| {
+                let output: V<::bevy_color::Chromaticity> = {
+                    {
+                        let output: V<::bevy_color::Chromaticity> = <::bevy_color::Chromaticity as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_color::Chromaticity>, other: R<::bevy_color::Chromaticity>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_color::Chromaticity as ::core::cmp::PartialEq<
+                            ::bevy_color::Chromaticity,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "new",
+            |x: f32, y: f32| {
+                let output: V<::bevy_color::Chromaticity> = {
+                    {
+                        let output: V<::bevy_color::Chromaticity> = ::bevy_color::Chromaticity::new(
+                                x,
+                                y,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Construct a new [`Chromaticity`] from CIE 1931 xy coordinates.",
+            &["x", "y"],
+        )
+        .register_documented(
+            "to_xyza",
+            |_self: V<::bevy_color::Chromaticity>, luminance: f32| {
+                let output: V<::bevy_color::Xyza> = {
+                    {
+                        let output: V<::bevy_color::Xyza> = ::bevy_color::Chromaticity::to_xyza(
+                                _self.into_inner(),
+                                luminance,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Convert this chromaticity and a luminance to a CIE 1931 color space.\n A luminance of `1.0` is the reference white. Alpha is set to `1.0`.",
+            &["_self", "luminance"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_color::Chromaticity,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_rgb_primaries_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_color::RgbPrimaries,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_color::RgbPrimaries>| {
+                let output: V<::bevy_color::RgbPrimaries> = {
+                    {
+                        let output: V<::bevy_color::RgbPrimaries> = <::bevy_color::RgbPrimaries as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_color::RgbPrimaries>, other: R<::bevy_color::RgbPrimaries>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_color::RgbPrimaries as ::core::cmp::PartialEq<
+                            ::bevy_color::RgbPrimaries,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "matrix_to",
+            |_self: V<::bevy_color::RgbPrimaries>, dst: V<::bevy_color::RgbPrimaries>| {
+                let output: V<::bevy_math::Mat3> = {
+                    {
+                        let output: V<::bevy_math::Mat3> = ::bevy_color::RgbPrimaries::matrix_to(
+                                _self.into_inner(),
+                                dst.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns a matrix that converts linear RGB colors from these primaries to `dst`\n primaries.\n White points are not adapted. Converting between sets with different whites, such as\n [`RgbPrimaries::ACES_CG`] and a D65 set, leaves a small shift in white.\n The matrix is computed in `f64` and rounded to `f32`.",
+            &["_self", "dst"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_color::RgbPrimaries,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 impl Plugin for BevyColorScriptingPlugin {
     fn build(&self, app: &mut App) {
@@ -1975,5 +2650,10 @@ impl Plugin for BevyColorScriptingPlugin {
         register_oklaba_functions(&mut world);
         register_oklcha_functions(&mut world);
         register_xyza_functions(&mut world);
+        register_okhsla_functions(&mut world);
+        register_okhsva_functions(&mut world);
+        register_okhwba_functions(&mut world);
+        register_chromaticity_functions(&mut world);
+        register_rgb_primaries_functions(&mut world);
     }
 }
