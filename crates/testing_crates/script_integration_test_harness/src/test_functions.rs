@@ -18,8 +18,8 @@ use bevy_mod_scripting_bindings::{
     ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue, WorldExtensions,
     error::InteropError,
     function::{
-        namespace::{GlobalNamespace, NamespaceBuilder},
         from::R,
+        namespace::{GlobalNamespace, NamespaceBuilder},
         script_function::{DynamicScriptFunctionMut, FunctionCallContext},
     },
 };
@@ -92,7 +92,10 @@ pub fn register_test_functions(world: &mut App) {
         )
         .register(
             "_assert_system_runs_before",
-            |s: FunctionCallContext, schedule: R<ReflectSchedule>, before: String, after: String| {
+            |s: FunctionCallContext,
+             schedule: R<ReflectSchedule>,
+             before: String,
+             after: String| {
                 assert_on_schedule_graph(
                     &s,
                     &schedule,

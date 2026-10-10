@@ -612,9 +612,18 @@ mod test {
         // unordered
         assert_eq!(graph.system_runs_before("system_a", "system_c"), Ok(false));
         assert_eq!(graph.system_runs_before("system_c", "system_a"), Ok(false));
-        assert_eq!(graph.systems_run_in_parallel("system_a", "system_c"), Ok(true));
-        assert_eq!(graph.systems_run_in_parallel("system_b", "system_a"), Ok(false));
-        assert_eq!(graph.systems_run_in_parallel("system_d", "system_b"), Ok(false));
+        assert_eq!(
+            graph.systems_run_in_parallel("system_a", "system_c"),
+            Ok(true)
+        );
+        assert_eq!(
+            graph.systems_run_in_parallel("system_b", "system_a"),
+            Ok(false)
+        );
+        assert_eq!(
+            graph.systems_run_in_parallel("system_d", "system_b"),
+            Ok(false)
+        );
         // unknown
         assert!(graph.system_runs_before("system_z", "system_a").is_err());
     }
