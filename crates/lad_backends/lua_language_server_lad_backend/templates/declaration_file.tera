@@ -62,12 +62,6 @@ function {% if module.class -%}{{module.class.name}}.{%- endif -%} {{ function.n
 {# newline #}
 {# newline #}
 {%- endfor -%}
-{%- for alias in module.aliases -%}
-{{ self::multiline_description(description=alias.description) -}}
----@alias {{ alias.name }} {{ self::lua_type(ty=alias.definition) }}
-{# newline #}
-{# newline #}
-{%- endfor -%}
 
 {%- endfor -%} {# modules #}
 

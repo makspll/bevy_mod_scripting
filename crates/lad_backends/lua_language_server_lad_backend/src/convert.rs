@@ -9,7 +9,7 @@ use crate::{
     keywords::ForbiddenKeywords,
     lua_declaration_file::{
         ClassField, FunctionParam, FunctionSignature, LuaClass, LuaDefinitionFile, LuaModule,
-        LuaOperator, LuaOperatorKind, LuaPrimitiveType, LuaType, TypeInstance,
+        LuaOperator, LuaOperatorKind, LuaPrimitiveType, LuaType,
     },
 };
 
@@ -54,7 +54,7 @@ pub fn convert_ladfile_to_lua_declaration_file(
     for function in ladfile.functions.values() {
         fields_references.visit_function(function);
     }
-    let mut fields_references = fields_references.0;
+    let fields_references = fields_references.0;
 
     for (type_id, lad_type) in ladfile.types.iter() {
         let (lua_class, functions) = match lua_classes.get(type_id) {
@@ -75,25 +75,26 @@ pub fn convert_ladfile_to_lua_declaration_file(
             .extend(enum_variant_modules(ladfile, type_id, lad_type));
     }
 
-    // the fields of an enum extend the fields of each of its variants
-    for (type_id, variant) in fields_references.clone() {
-        if let (None, Some(ladfile::LadTypeLayout::Enum(variants))) =
-            (&variant, ladfile.types.get(&type_id).map(|t| &t.layout))
-        {
-            for v in variants.iter().filter(|v| lad_variant_has_fields(v)) {
-                fields_references.insert((type_id.clone(), Some(lad_variant_name(v).to_string())));
-            }
-        }
-    }
-
+    let mut no_fields = false;
     for (type_id, variant) in fields_references {
-        if !has_fields_class(ladfile, &type_id) {
+        let variant = variant.as_deref();
+        if is_enum_payload(ladfile, &type_id, variant) {
             continue;
         }
-        match fields_modules(ladfile, &type_id, variant.as_deref()) {
-            Ok(modules) => definition_file.modules.extend(modules),
-            Err(e) => log::warn!("Error generating the fields of {type_id}: {e}. Ignoring."),
+        match lad_fields(ladfile, &type_id, variant) {
+            Some(lad_variant) if lad_variant_has_fields(lad_variant) => {
+                match fields_module(ladfile, &type_id, variant, lad_variant) {
+                    Ok(module) => definition_file.modules.push(module),
+                    Err(e) => {
+                        log::warn!("Error generating the fields of {type_id}: {e}. Ignoring.")
+                    }
+                }
+            }
+            _ => no_fields = true,
         }
+    }
+    if no_fields {
+        definition_file.modules.push(no_fields_module());
     }
 
     let mut globals_module = LuaModule {
@@ -552,11 +553,14 @@ pub fn lad_instance_to_lua_type(
         }
         ladfile::LadFieldOrVariableKind::Unknown(_) => LuaType::Any,
         ladfile::LadFieldOrVariableKind::Fields { type_id, variant } => {
-            if has_fields_class(ladfile, type_id) {
-                LuaType::Alias(fields_class_name(ladfile, type_id, variant.as_deref())?)
-            } else {
-                // opaque types can only be built from their default, i.e. `{}`
+            let variant = variant.as_deref();
+            if is_enum_payload(ladfile, type_id, variant) {
                 LuaType::Primitive(LuaPrimitiveType::Table)
+            } else if lad_fields(ladfile, type_id, variant).is_some_and(lad_variant_has_fields) {
+                LuaType::Alias(fields_class_name(ladfile, type_id, variant)?)
+            } else {
+                // i.e. unit structs and variants, or opaque types which can only be built from their default
+                LuaType::Alias(NO_FIELDS_CLASS.to_string())
             }
         }
     })
@@ -584,14 +588,6 @@ fn lad_variant_has_fields(variant: &ladfile::LadVariant) -> bool {
 /// The class of a variant of an enum, i.e. `MyEnum.Variant`, which is what `MyEnum.Variant` is in scripts.
 fn variant_class_name(enum_name: &str, variant: &str) -> String {
     format!("{enum_name}.{variant}")
-}
-
-/// Whether the type has fields to describe, opaque types do not.
-fn has_fields_class(ladfile: &LadFile, type_id: &LadTypeId) -> bool {
-    ladfile
-        .types
-        .get(type_id)
-        .is_some_and(|t| !matches!(t.layout, ladfile::LadTypeLayout::Opaque))
 }
 
 /// The class describing the fields of a type, or of a variant of an enum, i.e. `MyType.Fields` or `MyEnum.Variant.Fields`.
@@ -731,18 +727,16 @@ fn unknown_fields_catch_all() -> ClassField {
     }
 }
 
-/// The classes describing the fields of a type or variant, as accepted by constructors.
+/// The class describing the fields of a type or variant, as accepted by constructors.
 ///
 /// Fields are optional exactly when a constructor can fill them in from a default, see [`ladfile::LadTypeDefinition::field_has_default`].
 /// Undeclared fields are rejected, see [`unknown_fields_catch_all`].
-///
-/// The fields of an enum, i.e. of `MyEnum.new{ variant = "Variant", ... }`, are a union of one class per variant,
-/// each with its `variant` and extending that variant's fields.
-fn fields_modules(
+fn fields_module(
     ladfile: &LadFile,
     type_id: &LadTypeId,
     variant: Option<&str>,
-) -> Result<Vec<LuaModule>, anyhow::Error> {
+    lad_variant: &ladfile::LadVariant,
+) -> Result<LuaModule, anyhow::Error> {
     let class_name = fields_class_name(ladfile, type_id, variant)?;
     let lad_type = ladfile
         .types
@@ -750,113 +744,34 @@ fn fields_modules(
         .ok_or_else(|| anyhow::anyhow!("Type not found: {type_id}"))?;
     let type_name = ladfile.get_type_identifier(type_id, None);
 
-    let class_module = |name: String, parents, fields, documentation: String| LuaModule {
-        name: name.clone(),
-        class: Some(LuaClass {
-            name,
-            parents,
-            fields,
-            generics: vec![],
-            documentation: Some(documentation),
-            exact: true,
-            operators: vec![],
+    let field = |name: String, ty: &LadFieldOrVariableKind, has_default: bool| ClassField {
+        name,
+        ty: lad_instance_to_lua_type(ladfile, ty).unwrap_or_else(|e| {
+            log::warn!("error converting field of {class_name}: {e}");
+            LuaType::Any
         }),
-        type_only: true,
-        ..Default::default()
+        scope: crate::lua_declaration_file::FieldScope::Public,
+        optional: lad_type.field_has_default(variant, has_default),
+        description: None,
     };
-
-    if let (None, ladfile::LadTypeLayout::Enum(variants)) = (variant, &lad_type.layout) {
-        let mut modules = vec![];
-        let mut shapes = vec![];
-        for lad_variant in variants {
-            let variant_name = lad_variant_name(lad_variant);
-            let shape_name = format!("{class_name}.{variant_name}");
-            let mut fields = vec![ClassField {
-                name: "variant".to_string(),
-                ty: LuaType::Literal(format!("\"{variant_name}\"")),
-                scope: crate::lua_declaration_file::FieldScope::Public,
-                optional: false,
-                description: None,
-            }];
-            // the variant's own fields, which already reject unknown fields
-            let parents = if lad_variant_has_fields(lad_variant) {
-                vec![fields_class_name(ladfile, type_id, Some(variant_name))?]
-            } else {
-                fields.push(unknown_fields_catch_all());
-                vec![]
-            };
-            modules.push(class_module(
-                shape_name.clone(),
-                parents,
-                fields,
-                format!(
-                    "The fields of `{type_name}` when constructing the `{variant_name}` variant."
-                ),
-            ));
-            shapes.push(LuaType::Alias(shape_name));
-        }
-        modules.push(LuaModule {
-            name: class_name.clone(),
-            aliases: vec![TypeInstance {
-                name: class_name,
-                definition: LuaType::Union(shapes),
-                description: Some(format!(
-                    "The fields of `{type_name}`, keyed by name, along with the variant to construct. Optional fields are filled in from defaults."
-                )),
-            }],
-            type_only: true,
-            ..Default::default()
-        });
-        return Ok(modules);
-    }
-
-    let field = |name: String, ty: &LadFieldOrVariableKind, optional: bool| -> ClassField {
-        ClassField {
-            name,
-            ty: lad_instance_to_lua_type(ladfile, ty).unwrap_or_else(|e| {
-                log::warn!("error converting field of {class_name}: {e}");
-                LuaType::Any
-            }),
-            scope: crate::lua_declaration_file::FieldScope::Public,
-            optional,
-            description: None,
-        }
-    };
-
-    let lad_variant = match (&lad_type.layout, variant) {
-        (ladfile::LadTypeLayout::MonoVariant(v), None) => Some(v),
-        (ladfile::LadTypeLayout::Enum(variants), Some(variant)) => {
-            variants.iter().find(|v| lad_variant_name(v) == variant)
-        }
-        _ => None,
-    };
-    let optional = |field_has_default: bool| lad_type.field_has_default(variant, field_has_default);
 
     let (mut fields, documentation): (Vec<_>, _) = match lad_variant {
-        Some(ladfile::LadVariant::Struct { fields, .. }) => (
+        ladfile::LadVariant::Struct { fields, .. } => (
             fields
                 .iter()
-                .map(|f| field(f.name.clone(), &f.type_, optional(f.has_default)))
+                .map(|f| field(f.name.clone(), &f.type_, f.has_default))
                 .collect(),
             "keyed by name",
         ),
-        Some(ladfile::LadVariant::TupleStruct { fields, .. }) => (
+        ladfile::LadVariant::TupleStruct { fields, .. } => (
             fields
                 .iter()
                 .enumerate()
-                .map(|(idx, f)| field(format!("[{}]", idx + 1), &f.type_, optional(f.has_default)))
-                // the fields can also be keyed by their index as a string, i.e. `{ ["1"] = a }`.
-                // These are only alternatives, so they are optional, and required fields are checked under their integer key
-                .chain(
-                    fields
-                        .iter()
-                        .enumerate()
-                        .map(|(idx, f)| field(format!("[\"{}\"]", idx + 1), &f.type_, true)),
-                )
+                .map(|(idx, f)| field(format!("[{}]", idx + 1), &f.type_, f.has_default))
                 .collect(),
             "in order, i.e. `{ a, b }`",
         ),
-        _ => (vec![], "of which there are none"),
+        ladfile::LadVariant::Unit { .. } => (vec![], "of which there are none"),
     };
     fields.push(unknown_fields_catch_all());
 
@@ -864,14 +779,73 @@ fn fields_modules(
         Some(variant) => format!("the `{variant}` variant of `{type_name}`"),
         None => format!("`{type_name}`"),
     };
-    Ok(vec![class_module(
-        class_name.clone(),
-        vec![],
-        fields,
-        format!(
-            "The fields of {subject}, {documentation}. Optional fields are filled in from defaults."
-        ),
-    )])
+    Ok(LuaModule {
+        name: class_name.clone(),
+        class: Some(LuaClass {
+            name: class_name,
+            parents: vec![],
+            fields,
+            generics: vec![],
+            documentation: Some(format!(
+                "The fields of {subject}, {documentation}. Optional fields are filled in from defaults."
+            )),
+            exact: true,
+            operators: vec![],
+        }),
+        type_only: true,
+        ..Default::default()
+    })
+}
+
+/// The class of the fields of every type and variant without fields, i.e. `{}`, shared as they are all the same.
+const NO_FIELDS_CLASS: &str = "NoFields";
+
+fn no_fields_module() -> LuaModule {
+    LuaModule {
+        name: NO_FIELDS_CLASS.to_string(),
+        class: Some(LuaClass {
+            name: NO_FIELDS_CLASS.to_string(),
+            parents: vec![],
+            fields: vec![unknown_fields_catch_all()],
+            generics: vec![],
+            documentation: Some(
+                "The fields of a type or enum variant without fields, i.e. `{}`.".to_string(),
+            ),
+            exact: true,
+            operators: vec![],
+        }),
+        type_only: true,
+        ..Default::default()
+    }
+}
+
+/// The fields a constructor of the type takes, or of the variant for enums.
+///
+/// `None` if the fields cannot be described, i.e. for opaque types, or enums without a variant given.
+fn lad_fields<'a>(
+    ladfile: &'a LadFile,
+    type_id: &LadTypeId,
+    variant: Option<&str>,
+) -> Option<&'a ladfile::LadVariant> {
+    match (&ladfile.types.get(type_id)?.layout, variant) {
+        (ladfile::LadTypeLayout::MonoVariant(v), None) => Some(v),
+        (ladfile::LadTypeLayout::Enum(variants), Some(variant)) => {
+            variants.iter().find(|v| lad_variant_name(v) == variant)
+        }
+        _ => None,
+    }
+}
+
+/// Whether the payload of an enum's own constructor, i.e. `MyEnum.new{ variant = "Variant", ... }`, is meant.
+///
+/// The language server cannot narrow its fields by the `variant` given, so it is left as a table.
+/// `MyEnum.Variant:new{...}` describes the fields of each variant.
+fn is_enum_payload(ladfile: &LadFile, type_id: &LadTypeId, variant: Option<&str>) -> bool {
+    variant.is_none()
+        && ladfile
+            .types
+            .get(type_id)
+            .is_some_and(|t| matches!(t.layout, ladfile::LadTypeLayout::Enum(_)))
 }
 
 pub fn lad_primitive_to_lua_type(lad_primitive: &ReflectionPrimitiveKind) -> LuaType {
@@ -1148,20 +1122,15 @@ mod test {
             rendered.contains("---@class EnumType.Unit : EnumVariantRef"),
             "{rendered}"
         );
+        // and share one class for their fields, of which there are none
         let unit = block(&rendered, "---@param variant EnumType.Unit");
-        assert!(
-            unit.contains("---@param payload EnumType.Unit.Fields"),
-            "{unit}"
-        );
+        assert!(unit.contains("---@param payload NoFields"), "{unit}");
         assert!(unit.contains("---@return EnumType"), "{unit}");
-        let unit_fields = block(&rendered, "---@class (exact) EnumType.Unit.Fields");
+        assert!(!rendered.contains("EnumType.Unit.Fields"), "{rendered}");
+        let no_fields = block(&rendered, "---@class (exact) NoFields");
         assert!(
-            unit_fields.contains("of which there are none"),
-            "{unit_fields}"
-        );
-        assert!(
-            unit_fields.contains("---@field  [any] 'never'"),
-            "{unit_fields}"
+            no_fields.contains("---@field  [any] 'never'"),
+            "{no_fields}"
         );
 
         let new = block(&rendered, "---@param variant EnumType.Struct");
@@ -1189,11 +1158,6 @@ mod test {
             tuple_fields.contains("---@field  [2] string"),
             "{tuple_fields}"
         );
-        // string keys are accepted too, as optional alternatives
-        assert!(
-            tuple_fields.contains("---@field  [\"2\"]? string"),
-            "{tuple_fields}"
-        );
 
         // unbound, the constructor is as generic as at runtime
         let generic = block(&rendered, "---@param variant EnumVariantRef");
@@ -1205,30 +1169,12 @@ mod test {
     }
 
     #[test]
-    fn enum_constructors_take_a_union_of_variants() {
+    fn enum_constructors_take_a_table() {
         let rendered = render(&file_with_constructors());
 
-        let new = block(&rendered, "---@param payload EnumType.Fields");
+        // the language server cannot narrow the fields by the `variant` given, so they are not described
+        let new = block(&rendered, "---@param payload table");
         assert!(new.contains("---@return EnumType"), "{new}");
-        assert!(
-            rendered.contains(
-                "---@alias EnumType.Fields EnumType.Fields.Unit | EnumType.Fields.Struct | EnumType.Fields.TupleStruct"
-            ),
-            "{rendered}"
-        );
-
-        // variants with fields extend them, so they are emitted too
-        let shape = block(
-            &rendered,
-            "---@class (exact) EnumType.Fields.Struct : EnumType.Struct.Fields",
-        );
-        assert!(shape.contains("---@field  variant \"Struct\""), "{shape}");
-        let fields = block(&rendered, "---@class (exact) EnumType.Struct.Fields");
-        assert!(fields.contains("---@field  [any] 'never'"), "{fields}");
-
-        // unit variants have no fields to extend, so reject unknown ones themselves
-        let unit = block(&rendered, "---@class (exact) EnumType.Fields.Unit");
-        assert!(unit.contains("---@field  variant \"Unit\""), "{unit}");
-        assert!(unit.contains("---@field  [any] 'never'"), "{unit}");
+        assert!(!rendered.contains("EnumType.Fields"), "{rendered}");
     }
 }

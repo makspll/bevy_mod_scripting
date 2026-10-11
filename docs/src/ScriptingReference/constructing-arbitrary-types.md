@@ -175,13 +175,12 @@ function MyStruct.new(payload) end
 The language server then warns about missing required fields, fields of the wrong type, and unknown fields, i.e. a misspelled `my_feild`.
 The last line rejects unknown fields: until the language server checks exact classes against tables passed to functions ([LuaLS/lua-language-server#1990](https://github.com/LuaLS/lua-language-server/issues/1990)), any undeclared field has to be of a type no value has, so the warning reads "Cannot assign `string` to `'never'`".
 
-Tuple fields are declared under their integer keys, i.e. `[1]`, which a list such as `{ "hello" }` fills in, and also under their string keys, i.e. `["1"]`.
-Both are type checked, but required fields are only recognised under their integer keys, so prefer lists or integer keys for tuple structs.
+Tuple fields are declared under their integer keys, i.e. `[1]`, which a list such as `{ "hello" }` fills in, so prefer lists for tuple structs.
+Types and variants without fields all take `NoFields`, i.e. `{}`.
 
 Each enum variant has a class of its own, i.e. `MyEnum.VariantA`, so `MyEnum.VariantA:new{` completes the fields of `VariantA` and returns a `MyEnum`.
 
-The table of `MyEnum.new{ variant = "VariantA", ... }` is one of the variants' tables, each with its `variant`.
-The language server checks the variant name and rejects fields no variant has, but it does not narrow the table down by the `variant` given,
-so a field of another variant, or a missing required field, is not reported. Prefer `MyEnum.VariantA:new{...}` for the full checks.
+The table of `MyEnum.new{ variant = "VariantA", ... }` is not described, as the language server cannot narrow its fields down by the `variant` given.
+Prefer `MyEnum.VariantA:new{...}`, which is checked.
 
 Since the type of `construct`'s first argument is only known when the script runs, its table is not described.

@@ -8,7 +8,7 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry, EnumVariantRef, IntoNamespace, StaticTypeRef,
+    DummyScriptFunctionRegistry, EnumVariantRef, FunctionInfo, IntoNamespace, StaticTypeRef,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
     into_through_type_info,
@@ -194,8 +194,14 @@ pub fn generate_lad_file(
                 if !function.info.has_placeholders() {
                     continue;
                 }
+                // the documentation is the same for every variant, and stays on the function on `EnumVariantRef`.
+                // Copying it would multiply it by the number of variants of all enums, a large part of the file
+                let undocumented = FunctionInfo {
+                    docs: None,
+                    ..(*function.info).clone()
+                };
                 for variant in enum_info.iter() {
-                    let bound = (*function.info)
+                    let bound = undocumented
                         .clone()
                         .bind_placeholders(type_info, Some(variant.name()));
                     builder.add_variant_function_info(&bound, type_info.type_id(), variant.name());

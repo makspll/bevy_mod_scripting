@@ -40,7 +40,7 @@ use bevy_ecs::{
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard};
-use bevy_reflect::GetTypeRegistration;
+use bevy_reflect::{GetTypeRegistration, TypeInfo};
 use bevy_system_reflection::ReflectSchedule;
 use std::{
     alloc::Layout,
@@ -953,15 +953,18 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         type_id: TypeId,
         name: impl Into<Cow<'static, str>>,
     ) -> Result<ScriptValue, Cow<'static, str>> {
-        let name = match self.lookup_type_function(type_id, name) {
+        let name = match self.lookup_function([type_id], name) {
             Ok(func) => return Ok(ScriptValue::Function(func)),
             Err(name) => name,
         };
-
-        let variant = registered_type_info(self, type_id)
-            .ok()
-            .and_then(|type_info| EnumVariantRef::from_name(type_info, &name));
-        match variant {
+        let Ok(type_info) = registered_type_info(self, type_id) else {
+            return Err(name);
+        };
+        let name = match lookup_bound_type_function(self, type_info, name) {
+            Ok(func) => return Ok(ScriptValue::Function(func)),
+            Err(name) => name,
+        };
+        match EnumVariantRef::from_name(type_info, &name) {
             Some(variant) => V(variant).into_script(self.clone()).map_err(|_| name),
             None => Err(name),
         }
@@ -976,18 +979,10 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Ok(func) => return Ok(func),
             Err(name) => name,
         };
-
-        // the type level functions of `StaticTypeRef` are already addressed at that type directly
-        if type_id == TypeId::of::<StaticTypeRef>() {
-            return Err(name);
+        match registered_type_info(self, type_id) {
+            Ok(type_info) => lookup_bound_type_function(self, type_info, name),
+            Err(_) => Err(name),
         }
-
-        let Ok(type_info) = registered_type_info(self, type_id) else {
-            return Err(name);
-        };
-        let registry = self.script_function_registry();
-        let registry = registry.read();
-        registry.get_bound_to_type(type_info, name)
     }
 
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
@@ -1231,6 +1226,21 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     // }
 }
 
+/// A type level function registered on [`StaticTypeRef`], bound to the given type.
+fn lookup_bound_type_function(
+    guard: &WorldAccessGuard,
+    type_info: &'static TypeInfo,
+    name: Cow<'static, str>,
+) -> Result<DynamicScriptFunction, Cow<'static, str>> {
+    // the type level functions of `StaticTypeRef` are already addressed at that type directly
+    if type_info.type_id() == TypeId::of::<StaticTypeRef>() {
+        return Err(name);
+    }
+    let registry = guard.script_function_registry();
+    let registry = registry.read();
+    registry.get_bound_to_type(type_info, name)
+}
+
 impl CachedRegistry for AppReflectAllocator {
     const SLOT: usize = 0;
 }
@@ -1254,9 +1264,7 @@ impl CachedRegistry for CurrentScriptAttachment {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{construct::construct, function::bound::BoundFields};
-    use bevy_platform::collections::HashMap;
-    use bevy_reflect::{GetTypeRegistration, Reflect, ReflectFromReflect};
+    use bevy_reflect::Reflect;
     use std::sync::Arc;
     use test_utils::test_data::{
         CompWithDefaultAndComponentData, GetTestEntityId, SimpleEnum, SimpleStruct,
@@ -1333,199 +1341,6 @@ mod test {
                 .is_err()
         );
     }
-    #[test]
-    fn test_construct_struct() {
-        let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
-
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry.get(TypeId::of::<SimpleStruct>()).unwrap().clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        let payload = HashMap::from_iter(vec![("foo".to_owned(), ScriptValue::Integer(1))]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            false,
-        );
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleStruct { foo: 1 }) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
-    #[test]
-    fn test_construct_tuple_struct() {
-        let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
-
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry
-            .get(TypeId::of::<SimpleTupleStruct>())
-            .unwrap()
-            .clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        // zero indexed
-        let payload = HashMap::from_iter(vec![("0".to_owned(), ScriptValue::Integer(1))]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            false,
-        );
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleTupleStruct(1)) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-
-        // one indexed
-        let payload = HashMap::from_iter(vec![("1".to_owned(), ScriptValue::Integer(1))]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            true,
-        );
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleTupleStruct(1)) as Box<dyn PartialReflect>);
-
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
-    #[test]
-    fn test_construct_tuple() {
-        let mut world = setup_world(|_, registry| {
-            registry.register::<(usize, usize)>();
-            // TODO: does this ever get registered on normal types? I don't think so: https://github.com/bevyengine/bevy/issues/17981
-            registry.register_type_data::<(usize, usize), ReflectFromReflect>();
-        });
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-
-        <usize as GetTypeRegistration>::get_type_registration();
-        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
-
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry
-            .get(TypeId::of::<(usize, usize)>())
-            .unwrap()
-            .clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        // zero indexed
-        let payload = HashMap::from_iter(vec![
-            ("0".to_owned(), ScriptValue::Integer(1)),
-            ("1".to_owned(), ScriptValue::Integer(2)),
-        ]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            false,
-        );
-        let expected = Ok::<_, InteropError>(Box::new((1, 2)) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-
-        // one indexed
-        let payload = HashMap::from_iter(vec![
-            ("1".to_owned(), ScriptValue::Integer(1)),
-            ("2".to_owned(), ScriptValue::Integer(2)),
-        ]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            true,
-        );
-        let expected = Ok::<_, InteropError>(Box::new((1, 2)) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
-    #[test]
-    fn test_construct_enum() {
-        let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
-
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry.get(TypeId::of::<SimpleEnum>()).unwrap().clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        // struct version
-        let payload = HashMap::from_iter(vec![
-            ("foo".to_owned(), ScriptValue::Integer(1)),
-            ("variant".to_owned(), ScriptValue::String("Struct".into())),
-        ]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            false,
-        );
-        let expected = Ok::<_, InteropError>(
-            Box::new(SimpleEnum::Struct { foo: 1 }) as Box<dyn PartialReflect>
-        );
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-
-        // tuple struct version
-        let payload = HashMap::from_iter(vec![
-            ("0".to_owned(), ScriptValue::Integer(1)),
-            (
-                "variant".to_owned(),
-                ScriptValue::String("TupleStruct".into()),
-            ),
-        ]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            false,
-        );
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleEnum::TupleStruct(1)) as Box<dyn PartialReflect>);
-
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-
-        // unit version
-        let payload = HashMap::from_iter(vec![(
-            "variant".to_owned(),
-            ScriptValue::String("Unit".into()),
-        )]);
-
-        let result = construct(
-            &world,
-            type_registration.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            false,
-        );
-        let expected = Ok::<_, InteropError>(Box::new(SimpleEnum::Unit) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
     fn make_guard(world: &mut World) -> WorldAccessGuard<'_> {
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
         WorldAccessGuard::new_exclusive(world, cache)
@@ -1922,60 +1737,6 @@ mod test {
         assert_eq!(
             results[0].entity,
             CompWithDefaultAndComponentData::test_entity_id()
-        );
-    }
-
-    // ── construct error paths ─────────────────────────────────────────────────
-
-    #[test]
-    fn construct_enum_missing_variant_errors() {
-        let mut world = setup_world(|_, _| {});
-        let guard = make_guard(&mut world);
-        let reg = ScriptTypeRegistration::new(Arc::new(
-            guard
-                .type_registry()
-                .read()
-                .get(TypeId::of::<SimpleEnum>())
-                .unwrap()
-                .clone(),
-        ));
-        assert!(
-            construct(
-                &guard,
-                reg.registration.type_info(),
-                None,
-                BoundFields::Keyed(HashMap::new()),
-                false
-            )
-            .is_err()
-        );
-    }
-
-    #[test]
-    fn construct_enum_invalid_variant_errors() {
-        let mut world = setup_world(|_, _| {});
-        let guard = make_guard(&mut world);
-        let reg = ScriptTypeRegistration::new(Arc::new(
-            guard
-                .type_registry()
-                .read()
-                .get(TypeId::of::<SimpleEnum>())
-                .unwrap()
-                .clone(),
-        ));
-        let payload = HashMap::from_iter(vec![(
-            "variant".to_owned(),
-            ScriptValue::String("Nonexistent".into()),
-        )]);
-        assert!(
-            construct(
-                &guard,
-                reg.registration.type_info(),
-                None,
-                BoundFields::Keyed(payload),
-                false
-            )
-            .is_err()
         );
     }
 

@@ -22,7 +22,7 @@ use bevy_reflect::{
     tuple::DynamicTuple,
     tuple_struct::DynamicTupleStruct,
 };
-use std::any::TypeId;
+use std::{any::TypeId, cell::OnceCell};
 
 #[derive(Clone, Copy)]
 enum FieldKey {
@@ -35,12 +35,31 @@ enum FieldKey {
 struct FieldSources<'a, 'w> {
     guard: &'a WorldGuard<'w>,
     payload: HashMap<String, ScriptValue>,
-    base: Option<&'a dyn PartialReflect>,
     /// Whether tuple-like fields are keyed from `1` instead of `0` in the payload.
     one_indexed: bool,
+    /// The type being constructed, whose default is used for missing fields.
+    type_id: TypeId,
+    /// For enums, the variant being constructed. The type's default is only used if it is this variant.
+    variant: Option<String>,
+    /// The type's default, only created once a field is missing.
+    base: OnceCell<Option<Box<dyn PartialReflect>>>,
 }
 
 impl FieldSources<'_, '_> {
+    /// The type's default, if it has one and, for enums, it is the variant being constructed.
+    fn base(&self) -> Option<&dyn PartialReflect> {
+        self.base
+            .get_or_init(|| {
+                default_value(self.guard, self.type_id).filter(|base| {
+                    match (base.reflect_ref(), &self.variant) {
+                        (ReflectRef::Enum(e), Some(variant)) => e.variant_name() == variant,
+                        (_, variant) => variant.is_none(),
+                    }
+                })
+            })
+            .as_deref()
+    }
+
     fn resolve(
         &mut self,
         key: FieldKey,
@@ -54,14 +73,16 @@ impl FieldSources<'_, '_> {
             return <Box<dyn PartialReflect>>::from_script_ref(type_id, value, self.guard.clone());
         }
 
-        let base_field = self.base.and_then(|base| match (base.reflect_ref(), key) {
-            (ReflectRef::Struct(s), FieldKey::Name(name)) => s.field(name),
-            (ReflectRef::TupleStruct(t), FieldKey::Index(idx)) => t.field(idx),
-            (ReflectRef::Tuple(t), FieldKey::Index(idx)) => t.field(idx),
-            (ReflectRef::Enum(e), FieldKey::Name(name)) => e.field(name),
-            (ReflectRef::Enum(e), FieldKey::Index(idx)) => e.field_at(idx),
-            _ => None,
-        });
+        let base_field = self
+            .base()
+            .and_then(|base| match (base.reflect_ref(), key) {
+                (ReflectRef::Struct(s), FieldKey::Name(name)) => s.field(name),
+                (ReflectRef::TupleStruct(t), FieldKey::Index(idx)) => t.field(idx),
+                (ReflectRef::Tuple(t), FieldKey::Index(idx)) => t.field(idx),
+                (ReflectRef::Enum(e), FieldKey::Name(name)) => e.field(name),
+                (ReflectRef::Enum(e), FieldKey::Index(idx)) => e.field_at(idx),
+                _ => None,
+            });
         if let Some(field) = base_field {
             return <dyn PartialReflect>::from_reflect_or_clone(field, self.guard.clone());
         }
@@ -150,12 +171,13 @@ pub fn construct(
         )));
     }
 
-    let base = default_value(guard, type_info.type_id());
     let mut sources = FieldSources {
         guard,
         payload: fields.into_map(one_indexed),
-        base: base.as_deref(),
         one_indexed,
+        type_id: type_info.type_id(),
+        variant: None,
+        base: OnceCell::new(),
     };
 
     let dynamic: Box<dyn PartialReflect> = match type_info {
@@ -192,12 +214,7 @@ pub fn construct(
                     enum_info.type_path()
                 ))
             })?;
-
-            // the type default is only a useful base if it is the variant we are building
-            sources.base = sources.base.filter(|base| match base.reflect_ref() {
-                ReflectRef::Enum(e) => e.variant_name() == variant_name,
-                _ => false,
-            });
+            sources.variant = Some(variant_name.clone());
 
             let dynamic_variant = match variant_info {
                 VariantInfo::Struct(info) => DynamicVariant::Struct(sources.named(info.iter())?),
@@ -210,15 +227,14 @@ pub fn construct(
             Box::new(dynamic)
         }
         _ => {
-            let payload = std::mem::take(&mut sources.payload);
-            let Some(default) = base else {
+            let Some(default) = default_value(guard, type_info.type_id()) else {
                 return Err(InteropError::unsupported_operation(
                     Some(type_info.type_id()),
-                    Some(Box::new(payload)),
+                    Some(Box::new(sources.payload)),
                     "Type constructor not supported",
                 ));
             };
-            ensure_no_unknown_fields(type_info, &payload)?;
+            ensure_no_unknown_fields(type_info, &sources.payload)?;
             return Ok(default);
         }
     };
@@ -257,7 +273,7 @@ mod test {
     use bevy_mod_scripting_world::WorldAccessGuard;
     use bevy_reflect::Reflect;
     use std::fmt::Debug;
-    use test_utils::test_data::setup_world;
+    use test_utils::test_data::{SimpleEnum, SimpleStruct, setup_world};
 
     #[derive(Reflect, Debug, PartialEq)]
     #[reflect(Default)]
@@ -299,13 +315,17 @@ mod test {
     #[derive(Reflect, Debug, PartialEq)]
     struct Pair(usize, usize);
 
-    fn run<T: Reflect + bevy_reflect::Typed + bevy_reflect::GetTypeRegistration>(
+    fn run<
+        T: bevy_reflect::FromReflect + bevy_reflect::Typed + bevy_reflect::GetTypeRegistration,
+    >(
         variant: Option<&str>,
         fields: BoundFields,
         one_indexed: bool,
     ) -> Result<Box<dyn PartialReflect>, InteropError> {
         let mut world = setup_world(|_, registry| {
             registry.register::<T>();
+            // not registered automatically for all types, i.e. tuples, see https://github.com/bevyengine/bevy/issues/17981
+            registry.register_type_data::<T, bevy_reflect::ReflectFromReflect>();
             registry.register::<usize>();
         });
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
@@ -400,5 +420,43 @@ mod test {
             run::<Pair>(None, keyed(vec![("1", 1), ("2", 2)]), true),
             Pair(1, 2),
         );
+    }
+
+    #[test]
+    fn constructs_structs_and_tuples() {
+        assert_is(
+            run::<SimpleStruct>(None, keyed(vec![("foo", 1)]), false),
+            SimpleStruct { foo: 1 },
+        );
+        assert_is(
+            run::<(usize, usize)>(None, keyed(vec![("1", 1), ("2", 2)]), true),
+            (1usize, 2usize),
+        );
+    }
+
+    #[test]
+    fn enums_take_the_variant_from_the_payload() {
+        let with_variant = |variant: &str, fields: Vec<(&str, i64)>| {
+            let BoundFields::Keyed(mut map) = keyed(fields) else {
+                unreachable!()
+            };
+            map.insert(
+                "variant".into(),
+                ScriptValue::String(variant.to_owned().into()),
+            );
+            run::<SimpleEnum>(None, BoundFields::Keyed(map), false)
+        };
+        assert_is(
+            with_variant("Struct", vec![("foo", 1)]),
+            SimpleEnum::Struct { foo: 1 },
+        );
+        assert_is(
+            with_variant("TupleStruct", vec![("0", 1)]),
+            SimpleEnum::TupleStruct(1),
+        );
+        assert_is(with_variant("Unit", vec![]), SimpleEnum::Unit);
+        assert!(with_variant("Nonexistent", vec![]).is_err());
+        // the variant is required
+        assert!(run::<SimpleEnum>(None, keyed(vec![]), false).is_err());
     }
 }
