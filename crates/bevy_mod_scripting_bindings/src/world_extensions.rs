@@ -23,7 +23,7 @@ use ::{
     bevy_ecs::{
         component::ComponentId,
         entity::Entity,
-        reflect::{ReflectFromWorld, ReflectResource},
+        reflect::{ReflectEvent, ReflectFromWorld, ReflectMessage, ReflectResource},
         world::World,
     },
     bevy_reflect::{
@@ -167,6 +167,23 @@ pub trait WorldExtensions {
         &self,
         f: F,
     ) -> Result<O, InteropError>;
+
+    /// Triggers a reflected [`bevy_ecs::event::Event`] (observer style) on the world, using the type's [`ReflectEvent`] type data.
+    ///
+    /// The value is cloned out of the reference first, so no access to the reference is held while observers run.
+    /// Observers run synchronously with exclusive world access, this fails if any other access is currently held.
+    fn trigger_event(
+        &self,
+        registration: ScriptTypeRegistration,
+        event: &ReflectReference,
+    ) -> Result<(), InteropError>;
+
+    /// Writes a reflected [`bevy_ecs::message::Message`] (buffered) to the world, using the type's [`ReflectMessage`] type data.
+    fn write_message(
+        &self,
+        registration: ScriptTypeRegistration,
+        message: &ReflectReference,
+    ) -> Result<(), InteropError>;
 
     /// Executes a closure with immutable access to the world.
     fn with_world<O, F: FnOnce(&World) -> O>(&self, f: F) -> Result<O, InteropError>;
@@ -664,6 +681,46 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 cell.get_resource_mut::<R>()
                     .ok_or_else(|| InteropError::missing_resource(type_id))?
             }))
+        })
+    }
+
+    fn trigger_event(
+        &self,
+        registration: ScriptTypeRegistration,
+        event: &ReflectReference,
+    ) -> Result<(), InteropError> {
+        let reflect_event = registration
+            .type_registration()
+            .data::<ReflectEvent>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(registration.type_id(), "ReflectEvent".to_owned())
+            })?
+            .clone();
+        let value = event.to_owned_value_of_type(self.clone(), registration.type_id())?;
+        let registry = self.type_registry().clone();
+        self.with_world_mut(|world| {
+            let registry = registry.read();
+            reflect_event.trigger(world, value.as_ref(), &registry);
+        })
+    }
+
+    fn write_message(
+        &self,
+        registration: ScriptTypeRegistration,
+        message: &ReflectReference,
+    ) -> Result<(), InteropError> {
+        let reflect_message = registration
+            .type_registration()
+            .data::<ReflectMessage>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(registration.type_id(), "ReflectMessage".to_owned())
+            })?
+            .clone();
+        let value = message.to_owned_value_of_type(self.clone(), registration.type_id())?;
+        let registry = self.type_registry().clone();
+        self.with_world_mut(|world| {
+            let registry = registry.read();
+            reflect_message.write_message(world, value.as_ref(), &registry);
         })
     }
 
@@ -2008,5 +2065,185 @@ mod test {
         );
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         assert!(guard.spawn().is_ok());
+    }
+
+    mod reflected_dispatch {
+        use super::*;
+        use bevy_ecs::{
+            event::Event,
+            message::{Message, MessageCursor, Messages},
+            observer::On,
+            reflect::{ReflectEvent, ReflectMessage},
+            system::ResMut,
+        };
+
+        #[derive(Event, Reflect, Clone)]
+        #[reflect(Event)]
+        struct TestEvent {
+            value: usize,
+        }
+
+        #[derive(Message, Reflect, Clone)]
+        #[reflect(Message)]
+        struct TestMessage {
+            value: usize,
+        }
+
+        /// A reflected type with neither `ReflectEvent` nor `ReflectMessage` data
+        #[derive(Reflect)]
+        struct Plain {
+            value: usize,
+        }
+
+        #[derive(bevy_ecs::resource::Resource, Default)]
+        struct Seen(Vec<usize>);
+
+        fn setup() -> World {
+            let mut world = setup_world(|_, registry| {
+                registry.register::<TestEvent>();
+                registry.register::<TestMessage>();
+                registry.register::<Plain>();
+            });
+            world.init_resource::<Seen>();
+            world.init_resource::<Messages<TestMessage>>();
+            world.add_observer(|e: On<TestEvent>, mut seen: ResMut<Seen>| {
+                seen.0.push(e.value);
+            });
+            world
+        }
+
+        fn registration<T: 'static>(guard: &WorldGuard) -> ScriptTypeRegistration {
+            let registry = guard.type_registry();
+            let registry = registry.read();
+            ScriptTypeRegistration::new(Arc::new(registry.get(TypeId::of::<T>()).unwrap().clone()))
+        }
+
+        fn allocate<T: Reflect>(guard: &WorldGuard, value: T) -> ReflectReference {
+            let allocator = guard.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated(value, &mut allocator)
+        }
+
+        #[test]
+        fn trigger_event_runs_observers_before_returning() {
+            let mut world = setup();
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            {
+                let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+                let reference = allocate(&guard, TestEvent { value: 7 });
+                guard
+                    .trigger_event(registration::<TestEvent>(&guard), &reference)
+                    .unwrap();
+                // the script's value is untouched, it can be triggered again
+                guard
+                    .trigger_event(registration::<TestEvent>(&guard), &reference)
+                    .unwrap();
+            }
+            assert_eq!(world.resource::<Seen>().0, vec![7, 7]);
+        }
+
+        #[test]
+        fn write_message_is_readable_by_message_readers() {
+            let mut world = setup();
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            {
+                let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+                let reference = allocate(&guard, TestMessage { value: 3 });
+                guard
+                    .write_message(registration::<TestMessage>(&guard), &reference)
+                    .unwrap();
+            }
+            let messages = world.resource::<Messages<TestMessage>>();
+            let mut cursor = MessageCursor::<TestMessage>::default();
+            let read: Vec<_> = cursor.read(messages).map(|m| m.value).collect();
+            assert_eq!(read, vec![3]);
+        }
+
+        #[test]
+        fn missing_type_data_is_an_error() {
+            let mut world = setup();
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+            let reference = allocate(&guard, Plain { value: 1 });
+            let registration = registration::<Plain>(&guard);
+
+            assert!(matches!(
+                guard.trigger_event(registration.clone(), &reference),
+                Err(InteropError::MissingTypeData { .. })
+            ));
+            assert!(matches!(
+                guard.write_message(registration, &reference),
+                Err(InteropError::MissingTypeData { .. })
+            ));
+        }
+
+        #[test]
+        fn value_of_wrong_type_is_rejected() {
+            let mut world = setup();
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+            let reference = allocate(&guard, TestMessage { value: 1 });
+
+            assert!(matches!(
+                guard.trigger_event(registration::<TestEvent>(&guard), &reference),
+                Err(InteropError::TypeMismatch { .. })
+            ));
+        }
+
+        #[test]
+        fn cannot_trigger_while_other_access_is_held() {
+            let mut world = setup();
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+            let reference = allocate(&guard, TestEvent { value: 1 });
+            let registration = registration::<TestEvent>(&guard);
+
+            let nested = guard
+                .with_read_access(bevy_mod_scripting_world::WorldAccessRange::Global, || {
+                    guard.trigger_event(registration.clone(), &reference)
+                });
+            assert!(matches!(nested, Ok(Err(_))));
+            // the failed attempt must not leak any claim
+            assert!(guard.trigger_event(registration, &reference).is_ok());
+        }
+
+        #[test]
+        fn commands_queued_by_observers_are_deferred_until_the_world_flushes() {
+            let mut world = setup();
+            world.add_observer(
+                |e: On<TestEvent>, mut commands: bevy_ecs::system::Commands| {
+                    let value = e.value;
+                    commands.queue(move |world: &mut World| {
+                        world.resource_mut::<Seen>().0.push(value + 100);
+                    });
+                },
+            );
+            // deferred work from observers (such as BMS's lifecycle hooks queueing script callbacks)
+            // must not run inside the script call that triggered them
+            {
+                let cache =
+                    WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+                let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+                let reference = allocate(&guard, TestEvent { value: 1 });
+                guard
+                    .trigger_event(registration::<TestEvent>(&guard), &reference)
+                    .unwrap();
+            }
+            assert_eq!(world.resource::<Seen>().0, vec![1]);
+            world.flush();
+            assert_eq!(world.resource::<Seen>().0, vec![1, 101]);
+        }
+
+        #[test]
+        fn custom_type_data_is_exposed() {
+            // sanity check the bevy side of the contract these bindings rely on
+            let world = setup();
+            let registry = world
+                .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+                .read();
+            let reg = registry.get(TypeId::of::<TestEvent>()).unwrap();
+            assert!(reg.data::<ReflectEvent>().is_some());
+            assert!(reg.data::<ReflectMessage>().is_none());
+        }
     }
 }

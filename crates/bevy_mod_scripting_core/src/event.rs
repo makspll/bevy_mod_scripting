@@ -2,7 +2,7 @@
 
 use ::{bevy_ecs::entity::Entity, bevy_reflect::Reflect};
 use bevy_asset::{AssetId, Handle};
-use bevy_ecs::message::Message;
+use bevy_ecs::{message::Message, reflect::ReflectMessage};
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -28,15 +28,18 @@ impl ScriptErrorEvent {
 }
 
 /// Emitted when a script is attached.
-#[derive(Message, Clone, Debug)]
+#[derive(Message, Clone, Debug, Reflect)]
+#[reflect(Message)]
 pub struct ScriptAttachedEvent(pub ScriptAttachment);
 
 /// Emitted when a script is detached.
-#[derive(Message, Clone, Debug)]
+#[derive(Message, Clone, Debug, Reflect)]
+#[reflect(Message)]
 pub struct ScriptDetachedEvent(pub ScriptAttachment);
 
 /// Emitted when a script asset is modified and all its attachments require re-loading
-#[derive(Message, Clone, Debug)]
+#[derive(Message, Clone, Debug, Reflect)]
+#[reflect(Message)]
 pub struct ScriptAssetModifiedEvent(pub AssetId<ScriptAsset>);
 
 /// A string which disallows common invalid characters in callback labels,
@@ -149,7 +152,7 @@ impl std::fmt::Display for CallbackLabel {
 }
 
 /// Describes the designated recipients of a script event
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Reflect)]
 pub enum Recipients {
     /// The event needs to be handled by all scripts, if multiple scripts share a context, the event will be sent once per script in the context.
     /// Scripts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
@@ -196,7 +199,8 @@ impl Recipients {
 }
 
 /// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
-#[derive(Clone, Message, Debug)]
+#[derive(Clone, Message, Debug, Reflect)]
+#[reflect(Message)]
 #[non_exhaustive]
 pub struct ScriptCallbackEvent {
     /// The label of the callback

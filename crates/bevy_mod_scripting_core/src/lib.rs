@@ -380,6 +380,16 @@ fn register_types(app: &mut App) {
     app.register_type::<ScriptTypeRegistration>();
     app.register_type::<ReflectReference>();
     app.register_type::<ScriptComponent>();
+    app.register_type::<Language>();
+    // lets scripts omit the optional `language` of callback events when constructing them
+    app.register_type::<Option<Language>>();
+    app.register_type_data::<Option<Language>, bevy_reflect::std_traits::ReflectDefault>();
+    app.register_type::<event::CallbackLabel>();
+    app.register_type::<event::Recipients>();
+    app.register_type::<event::ScriptCallbackEvent>();
+    app.register_type::<event::ScriptAttachedEvent>();
+    app.register_type::<event::ScriptDetachedEvent>();
+    app.register_type::<event::ScriptAssetModifiedEvent>();
 }
 
 #[cfg(test)]
@@ -407,5 +417,54 @@ mod test {
         BMSScriptingInfrastructurePlugin::default().finish(&mut app);
 
         assert!(app.world_mut().component_id::<Comp>().is_some());
+    }
+
+    #[test]
+    fn test_own_messages_can_be_written_via_reflection() {
+        use crate::event::{
+            ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptCallbackEvent, ScriptDetachedEvent,
+        };
+        use bevy_ecs::{
+            message::{MessageCursor, Messages},
+            reflect::ReflectMessage,
+        };
+
+        let mut app = App::new();
+        app.add_plugins(AssetPlugin::default());
+        app.add_message::<ScriptCallbackEvent>();
+        register_types(&mut app);
+        app.register_type::<event::CallbackLabel>();
+
+        let registry = app.world().resource::<AppTypeRegistry>().clone();
+        let registry = registry.read();
+
+        for id in [
+            std::any::TypeId::of::<ScriptCallbackEvent>(),
+            std::any::TypeId::of::<ScriptAttachedEvent>(),
+            std::any::TypeId::of::<ScriptDetachedEvent>(),
+            std::any::TypeId::of::<ScriptAssetModifiedEvent>(),
+        ] {
+            assert!(
+                registry.get_type_data::<ReflectMessage>(id).is_some(),
+                "missing ReflectMessage for {id:?}"
+            );
+        }
+
+        let event = ScriptCallbackEvent::new_for_all_scripts(
+            "on_reflected",
+            vec![bevy_mod_scripting_bindings::ScriptValue::Integer(1)],
+        );
+        let reflect_message = registry
+            .get_type_data::<ReflectMessage>(std::any::TypeId::of::<ScriptCallbackEvent>())
+            .unwrap()
+            .clone();
+        reflect_message.write_message(app.world_mut(), &event, &registry);
+
+        let messages = app.world().resource::<Messages<ScriptCallbackEvent>>();
+        let mut cursor = MessageCursor::<ScriptCallbackEvent>::default();
+        let read: Vec<_> = cursor.read(messages).collect();
+        assert_eq!(read.len(), 1);
+        assert_eq!(read[0].label.as_ref(), "on_reflected");
+        assert_eq!(read[0].args.len(), 1);
     }
 }

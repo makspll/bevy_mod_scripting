@@ -384,6 +384,19 @@ impl ReflectReference {
         })?
     }
 
+    /// Same as [`Self::to_owned_value`], but first checks the reference points to a value of the given type.
+    pub fn to_owned_value_of_type(
+        &self,
+        world: WorldGuard,
+        expected: TypeId,
+    ) -> Result<Box<dyn PartialReflect>, InteropError> {
+        let actual = self.tail_type_id(world.clone())?;
+        if actual != Some(expected) {
+            return Err(InteropError::type_mismatch(expected, actual));
+        }
+        self.to_owned_value(world)
+    }
+
     /// The way to access the value of the reference, that is the pointed-to value.
     /// This method is safe to use as it ensures no-one else has aliasing access to the value at the same time.
     #[track_caller]
