@@ -484,6 +484,40 @@ impl<'t> LadFileBuilder<'t> {
     ///
     /// And then removes them from the original block, instead putting it in each argument / return docstring
     pub fn add_function_info(&mut self, function_info: &FunctionInfo) -> &mut Self {
+        let function_id = self.lad_function_id_from_info(function_info);
+        let namespace = match function_info.namespace {
+            Namespace::Global => LadFunctionNamespace::Global,
+            Namespace::OnType(type_id) => {
+                LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
+            }
+        };
+        self.insert_function(function_id, namespace, function_info)
+    }
+
+    /// Adds a function on a variant of an enum, i.e. a function on `EnumVariantRef` whose placeholders
+    /// were bound to the variant with [`FunctionInfo::bind_placeholders`].
+    pub fn add_variant_function_info(
+        &mut self,
+        function_info: &FunctionInfo,
+        enum_type: TypeId,
+        variant: &str,
+    ) -> &mut Self {
+        let type_id = self.lad_id_from_type_id(enum_type);
+        let function_id =
+            LadFunctionId::new_string_id(format!("{type_id}::{variant}::{}", function_info.name));
+        let namespace = LadFunctionNamespace::Variant {
+            type_id,
+            variant: variant.to_owned().into(),
+        };
+        self.insert_function(function_id, namespace, function_info)
+    }
+
+    fn insert_function(
+        &mut self,
+        function_id: LadFunctionId,
+        namespace: LadFunctionNamespace,
+        function_info: &FunctionInfo,
+    ) -> &mut Self {
         let default_docstring = Cow::Owned("".into());
         let (main_docstring, arg_docstrings, return_docstring) =
             Self::split_docstring(function_info.docs.as_ref().unwrap_or(&default_docstring));
@@ -500,7 +534,6 @@ impl<'t> LadFileBuilder<'t> {
             }
         }
 
-        let function_id = self.lad_function_id_from_info(function_info);
         let lad_function = LadFunction {
             identifier: identifier.to_owned().into(),
             overload_index,
@@ -540,12 +573,7 @@ impl<'t> LadFileBuilder<'t> {
                     }),
             },
             documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
-            namespace: match function_info.namespace {
-                Namespace::Global => LadFunctionNamespace::Global,
-                Namespace::OnType(type_id) => {
-                    LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
-                }
-            },
+            namespace,
             metadata: LadFunctionMetadata {
                 is_operator: ScriptOperatorNames::parse(identifier).is_some(),
                 misc: Default::default(),
@@ -623,7 +651,8 @@ impl<'t> LadFileBuilder<'t> {
                         );
                     }
                 }
-                LadFunctionNamespace::Global => {}
+                // variants are not types, backends find their functions by namespace
+                LadFunctionNamespace::Global | LadFunctionNamespace::Variant { .. } => {}
             }
         }
 
@@ -1017,12 +1046,14 @@ impl<'t> LadFileBuilder<'t> {
                 type_id: self.lad_id_from_type_id(type_info.type_id()),
                 variant: variant.map(Cow::Borrowed),
             },
-            ThroughTypeInfo::Bound(placeholder) => {
-                LadFieldOrVariableKind::Bound(match placeholder {
-                    BoundPlaceholder::Value => LadBoundPlaceholder::Value,
-                    BoundPlaceholder::Fields => LadBoundPlaceholder::Fields,
-                })
+            // functions are bound before they are added, any placeholders left are documented as what they are at runtime
+            ThroughTypeInfo::Bound(BoundPlaceholder::Value) => {
+                self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
             }
+            ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => self
+                .lad_type_kind_from_through_type(
+                    &HashMap::<String, ScriptValue>::through_type_info(),
+                ),
         }
     }
 }

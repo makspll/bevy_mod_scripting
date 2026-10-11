@@ -165,13 +165,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
         self.buffer.text(">");
     }
-
-    fn visit_bound(&mut self, placeholder: ladfile::LadBoundPlaceholder) {
-        self.buffer.text(match placeholder {
-            ladfile::LadBoundPlaceholder::Value => "Self",
-            ladfile::LadBoundPlaceholder::Fields => "Fields<Self>",
-        });
-    }
 }
 
 #[cfg(test)]

@@ -8,11 +8,12 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry, IntoNamespace, StaticTypeRef,
+    DummyScriptFunctionRegistry, EnumVariantRef, IntoNamespace, StaticTypeRef,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
     into_through_type_info,
 };
+use bevy_reflect::TypeInfo;
 use ladfile::{LadFieldOrVariableKind, LadFilePlugin, default_importance};
 
 use crate::LadFileBuilder;
@@ -184,6 +185,23 @@ pub fn generate_lad_file(
                 builder.add_function_info(&function.info.bind_to_type(type_info));
             }
         }
+
+        // functions on enum variants whose signatures depend on the variant, i.e. its constructor, are bound to each variant
+        if let TypeInfo::Enum(enum_info) = type_info {
+            for (_, function) in
+                function_registry.iter_namespace(Namespace::OnType(TypeId::of::<EnumVariantRef>()))
+            {
+                if !function.info.has_placeholders() {
+                    continue;
+                }
+                for variant in enum_info.iter() {
+                    let bound = (*function.info)
+                        .clone()
+                        .bind_placeholders(type_info, Some(variant.name()));
+                    builder.add_variant_function_info(&bound, type_info.type_id(), variant.name());
+                }
+            }
+        }
     }
 
     // find functions on the global namespace
@@ -283,7 +301,7 @@ mod test {
         },
     };
     use bevy_reflect::{Reflect, std_traits::ReflectDefault};
-    use ladfile::{LadBoundPlaceholder, LadFile};
+    use ladfile::{LadFile, LadFunctionNamespace, ReflectionPrimitiveKind};
     use std::{error::Error, path::Path, sync::Mutex};
 
     #[derive(Reflect)]
@@ -416,22 +434,67 @@ mod test {
             assert_eq!(new.return_type.kind, LadFieldOrVariableKind::Val(type_id));
         }
 
-        // the original keeps its receiver and placeholders
+        // the original keeps its receiver, and is documented as it is at runtime
+        let generic_fields = LadFieldOrVariableKind::HashMap(
+            Box::new(LadFieldOrVariableKind::Primitive(
+                ReflectionPrimitiveKind::String,
+            )),
+            Box::new(LadFieldOrVariableKind::Primitive(
+                ReflectionPrimitiveKind::ScriptValue,
+            )),
+        );
+        let generic_value =
+            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::ReflectReference);
         let new = function(&file, "StaticTypeRef", "new").expect("`new` missing on StaticTypeRef");
         assert_eq!(new.arguments[0].name.as_deref(), Some("type"));
-        assert_eq!(
-            new.arguments[1].kind,
-            LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Fields)
-        );
-
-        // variants are left for backends to bind, since they are not types in the file
+        assert_eq!(new.arguments[1].kind, generic_fields);
         let new =
             function(&file, "EnumVariantRef", "new").expect("`new` missing on EnumVariantRef");
         assert_eq!(new.arguments[0].name.as_deref(), Some("variant"));
-        assert_eq!(
-            new.return_type.kind,
-            LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Value)
-        );
+        assert_eq!(new.return_type.kind, generic_value);
+    }
+
+    #[test]
+    fn variant_functions_are_bound_to_every_variant() {
+        let file = generate("new");
+        let enum_id = type_id(&file, "DefaultEnum");
+
+        for variant in ["A", "B"] {
+            let new = file
+                .functions
+                .values()
+                .find(|f| {
+                    f.identifier == "new"
+                        && f.namespace
+                            == LadFunctionNamespace::Variant {
+                                type_id: enum_id.clone(),
+                                variant: variant.into(),
+                            }
+                })
+                .unwrap_or_else(|| panic!("`new` missing on variant {variant}"));
+
+            // the receiver is the variant, which is not bound
+            assert_eq!(new.arguments[0].name.as_deref(), Some("variant"));
+            assert_eq!(
+                new.arguments[1].kind,
+                LadFieldOrVariableKind::Fields {
+                    type_id: enum_id.clone(),
+                    variant: Some(variant.into())
+                }
+            );
+            assert_eq!(
+                new.return_type.kind,
+                LadFieldOrVariableKind::Val(enum_id.clone())
+            );
+        }
+
+        // variants are not types, so their functions are not associated with the enum
+        assert!(file.types[&enum_id].associated_functions.iter().all(|id| {
+            !matches!(
+                file.functions[id].namespace,
+                LadFunctionNamespace::Variant { .. }
+            )
+        }));
     }
 
     #[test]

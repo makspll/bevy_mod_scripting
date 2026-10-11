@@ -13,7 +13,7 @@ use bevy_mod_scripting_bindings::{
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, ReflectReference,
     ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
     ScriptTypeRegistration, VariadicTuple, WorldExtensions,
-    construct::{ConstructOptions, allocate_constructed, construct as construct_value},
+    construct::construct_reference,
     function::{
         bound::BoundFields,
         from::{FromScript, R, V},
@@ -1520,21 +1520,13 @@ impl GlobalNamespace {
         payload: BoundFields,
     ) -> Result<ReflectReference, InteropError> {
         let registration = registration.into_type_registration();
-        let world = ctxt.world()?;
-        let opts = ConstructOptions {
-            one_indexed: ctxt.convert_to_0_indexed(),
-            use_type_default: true,
-            use_field_default: true,
-        };
-        let type_info = registration.type_registration().type_info();
-        let value = construct_value(
-            &world,
-            type_info,
+        construct_reference(
+            &ctxt.world()?,
+            registration.type_registration().type_info(),
             None,
-            payload.into_map(opts.one_indexed),
-            opts,
-        )?;
-        allocate_constructed(&world, type_info.type_id(), value)
+            payload,
+            ctxt.convert_to_0_indexed(),
+        )
     }
 
     /// Creates a new script system builder, which can be used to add new systems to the world.

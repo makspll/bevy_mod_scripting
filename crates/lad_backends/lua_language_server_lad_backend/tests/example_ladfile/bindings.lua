@@ -165,10 +165,16 @@ Usize = {}
 
 
 ---@class EnumType : ReflectReference
----@field  Unit EnumType.UnitVariant
+---@field  Unit EnumType.Unit
 ---@field  Struct EnumType.Struct
 ---@field  TupleStruct EnumType.TupleStruct
 EnumType = {}
+
+
+
+---@class EnumType.Unit : EnumVariantRef
+--- The `Unit` variant of `EnumType`.
+EnumType.Unit = {}
 
 
 
@@ -181,12 +187,6 @@ EnumType.Struct = {}
 ---@class EnumType.TupleStruct : EnumVariantRef
 --- The `TupleStruct` variant of `EnumType`.
 EnumType.TupleStruct = {}
-
-
-
----@class EnumType.UnitVariant : EnumVariantRef
---- A variant of `EnumType` without fields, one of: `Unit`.
-
 
 
 

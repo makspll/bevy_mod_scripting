@@ -121,6 +121,15 @@ impl FunctionInfo {
         self
     }
 
+    /// Whether the signature contains [`ThroughTypeInfo::Bound`] placeholders, i.e. depends on the type it is bound to.
+    pub fn has_placeholders(&self) -> bool {
+        self.arg_info
+            .iter()
+            .map(|arg| &arg.type_info)
+            .chain(std::iter::once(&self.return_info.type_info))
+            .any(|t| t.as_ref().is_some_and(ThroughTypeInfo::has_placeholders))
+    }
+
     /// The signature of a function shared between all types, as seen on the given type.
     ///
     /// The first argument passed by scripts is the type itself, which is bound automatically and so removed,

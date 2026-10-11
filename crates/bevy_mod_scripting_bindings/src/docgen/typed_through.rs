@@ -103,6 +103,26 @@ impl ThroughTypeInfo {
             other => other.clone(),
         }
     }
+
+    /// Whether this contains any [`ThroughTypeInfo::Bound`] placeholders.
+    pub fn has_placeholders(&self) -> bool {
+        match self {
+            ThroughTypeInfo::Bound(_) => true,
+            ThroughTypeInfo::TypedWrapper(kind) => match kind {
+                TypedWrapperKind::Union(inner) | TypedWrapperKind::Tuple(inner) => {
+                    inner.iter().any(Self::has_placeholders)
+                }
+                TypedWrapperKind::Vec(inner)
+                | TypedWrapperKind::HashSet(inner)
+                | TypedWrapperKind::Array(inner, _)
+                | TypedWrapperKind::Option(inner)
+                | TypedWrapperKind::InteropResult(inner) => inner.has_placeholders(),
+                TypedWrapperKind::HashMap(k, v) => k.has_placeholders() || v.has_placeholders(),
+                TypedWrapperKind::UntypedTuple => false,
+            },
+            _ => false,
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, DebugWithTypeInfo)]

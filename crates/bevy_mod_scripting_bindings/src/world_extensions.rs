@@ -16,7 +16,7 @@ use super::{
 use crate::{
     DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
-    function::{from::V, from_ref::FromScriptRef, into::IntoScript},
+    function::{bound::BoundFields, from::V, from_ref::FromScriptRef, into::IntoScript},
 };
 use ::{
     bevy_asset::{AssetServer, Handle, LoadState},
@@ -875,13 +875,8 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             self,
             type_.registration.type_info(),
             None,
-            payload,
-            crate::construct::ConstructOptions {
-                one_indexed,
-                // preserve the behaviour of `construct`, which never used the type's default
-                use_type_default: false,
-                use_field_default: true,
-            },
+            BoundFields::Keyed(payload),
+            one_indexed,
         )
     }
 

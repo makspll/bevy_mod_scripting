@@ -177,8 +177,7 @@ The last line rejects unknown fields: until the language server checks exact cla
 Tuple fields are declared under their integer keys, i.e. `[1]`, which a list such as `{ "hello" }` fills in, and also under their string keys, i.e. `["1"]`.
 Both are type checked, but required fields are only recognised under their integer keys, so prefer lists or integer keys for tuple structs.
 
-Each enum variant with fields has a class of its own, i.e. `MyEnum.VariantA`, so `MyEnum.VariantA:new{` completes the fields of `VariantA` and returns a `MyEnum`.
-Variants without fields share one class per enum, `MyEnum.UnitVariant`, whose `:new{}` also returns a `MyEnum`.
+Each enum variant has a class of its own, i.e. `MyEnum.VariantA`, so `MyEnum.VariantA:new{` completes the fields of `VariantA` and returns a `MyEnum`.
 
 The table of `MyEnum.new{ variant = "VariantA", ... }` is one of the variants' tables, each with its `variant`.
 The language server checks the variant name and rejects fields no variant has, but it does not narrow the table down by the `variant` given,

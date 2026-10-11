@@ -1,16 +1,12 @@
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use indexmap::{IndexMap, IndexSet};
-use ladfile::{
-    LadBoundPlaceholder, LadFieldOrVariableKind, LadFile, LadFunction, LadTypeId,
-    ReflectionPrimitiveKind,
-};
+use ladfile::{LadFieldOrVariableKind, LadFile, LadFunction, LadTypeId, ReflectionPrimitiveKind};
 
 use crate::{
     keywords::ForbiddenKeywords,
     lua_declaration_file::{
-        ClassField, FunctionParam, FunctionSignature, FunctionSignatureShort, LuaClass,
-        LuaDefinitionFile, LuaModule, LuaOperator, LuaOperatorKind, LuaPrimitiveType, LuaType,
-        TypeInstance,
+        ClassField, FunctionParam, FunctionSignature, LuaClass, LuaDefinitionFile, LuaModule,
+        LuaOperator, LuaOperatorKind, LuaPrimitiveType, LuaType, TypeInstance,
     },
 };
 
@@ -55,7 +51,6 @@ pub fn convert_ladfile_to_lua_declaration_file(
     for function in ladfile.functions.values() {
         collect_function_fields_references(function, &mut fields_references);
     }
-    let variant_functions = variant_functions(ladfile);
 
     for (type_id, lad_type) in ladfile.types.iter() {
         let (lua_class, functions) = match lua_classes.get(type_id) {
@@ -71,13 +66,9 @@ pub fn convert_ladfile_to_lua_declaration_file(
             functions,
             ..Default::default()
         });
-        definition_file.modules.extend(enum_variant_modules(
-            ladfile,
-            type_id,
-            lad_type,
-            &variant_functions,
-            &mut fields_references,
-        ));
+        definition_file
+            .modules
+            .extend(enum_variant_modules(ladfile, type_id, lad_type));
     }
 
     // the fields of an enum extend the fields of each of its variants
@@ -287,22 +278,16 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
             }
 
             // the variants of an enum are accessible as `Enum.Variant`, unless a function with the same name takes priority.
-            // Variants with fields get a class of their own, see `enum_variant_modules`
+            // Each variant has a class of its own, see `enum_variant_modules`
             if let ladfile::LadTypeLayout::Enum(variants) = &lad_type.layout {
                 for variant in variants {
                     let variant_name = lad_variant_name(variant);
                     if lua_functions.iter().any(|f| f.name == variant_name) {
                         continue;
                     }
-                    let ty = if lad_variant_has_fields(variant) {
-                        variant_class_name(&name, variant_name)
-                    } else {
-                        unit_variant_class_name(&name, variants)
-                            .unwrap_or_else(|| ENUM_VARIANT_CLASS.to_string())
-                    };
                     lua_fields.push(ClassField {
                         name: variant_name.to_string(),
-                        ty: LuaType::Alias(ty),
+                        ty: LuaType::Alias(variant_class_name(&name, variant_name)),
                         scope: crate::lua_declaration_file::FieldScope::Public,
                         optional: false,
                         description: None,
@@ -468,18 +453,18 @@ pub fn lad_function_to_lua_function(
         })
         .collect::<Result<Vec<_>, anyhow::Error>>()?;
 
-    let self_type = match &function.namespace {
-        ladfile::LadFunctionNamespace::Type(lad_type_id) => function
-            .arguments
-            .first()
-            .is_some_and(|a| match &a.kind {
+    let has_self = match &function.namespace {
+        ladfile::LadFunctionNamespace::Type(lad_type_id) => {
+            function.arguments.first().is_some_and(|a| match &a.kind {
                 LadFieldOrVariableKind::Ref(i)
                 | LadFieldOrVariableKind::Mut(i)
                 | LadFieldOrVariableKind::Val(i) => lad_type_id == i,
                 _ => false,
             })
-            .then_some(lad_type_id),
-        ladfile::LadFunctionNamespace::Global => None,
+        }
+        // functions on variants are called on the variant, i.e. `MyEnum.Variant:new{}`
+        ladfile::LadFunctionNamespace::Variant { .. } => !function.arguments.is_empty(),
+        ladfile::LadFunctionNamespace::Global => false,
     };
 
     let returns = lad_instance_to_lua_type(ladfile, &function.return_type.kind)?;
@@ -495,7 +480,7 @@ pub fn lad_function_to_lua_function(
         overloads: vec![],
         generics: vec![],
         documentation: function.documentation.as_ref().map(|d| d.to_string()),
-        has_self: self_type.is_some(),
+        has_self,
     })
 }
 
@@ -570,20 +555,10 @@ pub fn lad_instance_to_lua_type(
                 LuaType::Primitive(LuaPrimitiveType::Table)
             }
         }
-        // placeholders which are never bound fall back to what they are at runtime
-        ladfile::LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Value) => {
-            LuaType::Alias("ReflectReference".to_string())
-        }
-        ladfile::LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Fields) => {
-            LuaType::Dictionary {
-                key: Box::new(LuaType::Primitive(LuaPrimitiveType::String)),
-                value: Box::new(LuaType::Any),
-            }
-        }
     })
 }
 
-/// The class scripts see for enum variants without fields, and which variant classes extend.
+/// The class scripts see for enum variants, which variant classes extend.
 const ENUM_VARIANT_CLASS: &str = "EnumVariantRef";
 
 fn lad_variant_name(variant: &ladfile::LadVariant) -> &str {
@@ -670,40 +645,13 @@ fn collect_function_fields_references(
     collect_fields_references(&function.return_type.kind, out);
 }
 
-/// The functions on enum variants which depend on the variant, i.e. its constructor.
-fn variant_functions(ladfile: &LadFile) -> Vec<&LadFunction> {
-    ladfile
-        .types
-        .values()
-        .filter(|t| t.identifier == ENUM_VARIANT_CLASS)
-        .flat_map(|t| t.associated_functions.iter())
-        .filter_map(|id| ladfile.functions.get(id))
-        .filter(|f| {
-            f.arguments.iter().any(|a| a.kind.has_placeholders())
-                || f.return_type.kind.has_placeholders()
-        })
-        .collect()
-}
-
-/// The variants of an enum without fields share one class, i.e. `MyEnum.UnitVariant`, as they all construct the same way.
-const UNIT_VARIANT: &str = "UnitVariant";
-
-/// The class shared by the variants of an enum without fields, unless a variant is named like it.
-fn unit_variant_class_name(enum_name: &str, variants: &[ladfile::LadVariant]) -> Option<String> {
-    (!variants.iter().any(|v| lad_variant_name(v) == UNIT_VARIANT))
-        .then(|| variant_class_name(enum_name, UNIT_VARIANT))
-}
-
-/// A class per variant with fields, i.e. `MyEnum.Variant`, carrying the variant functions bound to that variant,
-/// and one class shared by the variants without fields, i.e. `MyEnum.UnitVariant`.
+/// A class per variant, i.e. `MyEnum.Variant`, carrying the functions the ladfile builder bound to that variant.
 ///
 /// This is what lets `MyEnum.Variant:new{ ... }` know the fields of the variant, and that it returns a `MyEnum`.
 fn enum_variant_modules(
     ladfile: &LadFile,
     type_id: &LadTypeId,
     lad_type: &ladfile::LadTypeDefinition,
-    variant_functions: &[&LadFunction],
-    fields_references: &mut IndexSet<(LadTypeId, Option<String>)>,
 ) -> Vec<LuaModule> {
     let ladfile::LadTypeLayout::Enum(variants) = &lad_type.layout else {
         return vec![];
@@ -717,119 +665,65 @@ fn enum_variant_modules(
             .filter_map(|id| ladfile.functions.get(id))
             .any(|f| f.identifier == name)
     };
-    let visible = variants
-        .iter()
-        .filter(|v| !shadowed(lad_variant_name(v)))
-        .collect::<Vec<_>>();
-
-    // (class, the variant to bind functions to, documentation)
-    let mut classes = visible
-        .iter()
-        .filter(|v| lad_variant_has_fields(v))
-        .map(|v| {
-            let variant_name = lad_variant_name(v);
-            (
-                variant_class_name(&enum_name, variant_name),
-                variant_name.to_string(),
-                format!("The `{variant_name}` variant of `{enum_name}`."),
-            )
+    let variant_functions = ladfile
+        .functions
+        .values()
+        .filter_map(|f| match &f.namespace {
+            ladfile::LadFunctionNamespace::Variant {
+                type_id: enum_id,
+                variant,
+            } if enum_id == type_id => Some((variant.as_ref(), f)),
+            _ => None,
         })
         .collect::<Vec<_>>();
-    let unit_variants = visible
+
+    variants
         .iter()
-        .filter(|v| !lad_variant_has_fields(v))
-        .map(|v| format!("`{}`", lad_variant_name(v)))
-        .collect::<Vec<_>>();
-    if let Some(class_name) = unit_variant_class_name(&enum_name, variants)
-        && !unit_variants.is_empty()
-    {
-        // binding to a variant which does not exist gives the fields of a variant without fields, i.e. none
-        classes.push((
-            class_name,
-            UNIT_VARIANT.to_string(),
-            format!(
-                "A variant of `{enum_name}` without fields, one of: {}.",
-                unit_variants.join(", ")
-            ),
-        ));
-    }
-
-    let mut modules = vec![];
-    for (class_name, bind_variant, documentation) in classes {
-        let mut functions = vec![];
-        for function in variant_functions {
-            let mut bound = (*function).clone();
-            for arg in &mut bound.arguments {
-                arg.kind = arg.kind.bind_placeholders(type_id, Some(&bind_variant));
-            }
-            bound.return_type.kind = bound
-                .return_type
-                .kind
-                .bind_placeholders(type_id, Some(&bind_variant));
-            collect_function_fields_references(&bound, fields_references);
-
-            match lad_function_to_lua_function(ladfile, &bound) {
-                Ok(mut lua_function) => {
-                    // the receiver is the variant itself
-                    if let Some(receiver) = lua_function.params.first_mut() {
-                        receiver.ty = LuaType::Alias(class_name.clone());
+        .map(lad_variant_name)
+        .filter(|variant_name| !shadowed(variant_name))
+        .map(|variant_name| {
+            let class_name = variant_class_name(&enum_name, variant_name);
+            let functions = variant_functions
+                .iter()
+                .filter(|(variant, _)| *variant == variant_name)
+                .filter_map(|(_, function)| {
+                    match lad_function_to_lua_function(ladfile, function) {
+                        Ok(mut lua_function) => {
+                            // the receiver is the variant itself
+                            if let Some(receiver) = lua_function.params.first_mut() {
+                                receiver.ty = LuaType::Alias(class_name.clone());
+                            }
+                            Some(lua_function)
+                        }
+                        Err(err) => {
+                            log::warn!(
+                                "Error converting function {} for variant {class_name}: {err}. Ignoring function.",
+                                function.identifier
+                            );
+                            None
+                        }
                     }
-                    functions.push(lua_function);
-                }
-                Err(err) => log::warn!(
-                    "Error converting function {} for variant {class_name}: {err}. Ignoring function.",
-                    function.identifier
-                ),
-            }
-        }
-
-        // the shared class is not a variant, so it must not appear as a table on the enum,
-        // which `function MyEnum.UnitVariant.new` would declare. Its functions are typed fields instead
-        let type_only = bind_variant == UNIT_VARIANT;
-        let (fields, functions) = if type_only {
-            let fields = functions
-                .into_iter()
-                .map(|f| ClassField {
-                    name: f.name,
-                    ty: LuaType::Function(FunctionSignatureShort {
-                        // named `self` so the language server accepts `MyEnum.Variant:new{}`
-                        parameters: f
-                            .params
-                            .into_iter()
-                            .enumerate()
-                            .map(|(idx, p)| {
-                                (if idx == 0 { "self".to_string() } else { p.name }, p.ty)
-                            })
-                            .collect(),
-                        return_type: Box::new(f.returns.into_iter().next().unwrap_or(LuaType::Any)),
-                    }),
-                    scope: crate::lua_declaration_file::FieldScope::Public,
-                    optional: false,
-                    description: f.documentation,
                 })
                 .collect();
-            (fields, vec![])
-        } else {
-            (vec![], functions)
-        };
 
-        modules.push(LuaModule {
-            name: class_name.clone(),
-            class: Some(LuaClass {
-                name: class_name,
-                parents: vec![ENUM_VARIANT_CLASS.to_string()],
-                fields,
-                generics: vec![],
-                documentation: Some(documentation),
-                exact: false,
-                operators: vec![],
-            }),
-            functions,
-            type_only,
-            ..Default::default()
-        });
-    }
-    modules
+            LuaModule {
+                name: class_name.clone(),
+                class: Some(LuaClass {
+                    name: class_name,
+                    parents: vec![ENUM_VARIANT_CLASS.to_string()],
+                    fields: vec![],
+                    generics: vec![],
+                    documentation: Some(format!(
+                        "The `{variant_name}` variant of `{enum_name}`."
+                    )),
+                    exact: false,
+                    operators: vec![],
+                }),
+                functions,
+                ..Default::default()
+            }
+        })
+        .collect()
 }
 
 /// Rejects fields which are not declared on a payload class.
@@ -977,7 +871,6 @@ fn fields_modules(
     fields.push(unknown_fields_catch_all());
 
     let subject = match variant {
-        Some(_) if lad_variant.is_none() => format!("the variants of `{type_name}` without fields"),
         Some(variant) => format!("the `{variant}` variant of `{type_name}`"),
         None => format!("`{type_name}`"),
     };
@@ -1042,15 +935,22 @@ mod test {
 
     fn add_function(
         file: &mut LadFile,
-        type_id: &LadTypeId,
+        namespace: LadFunctionNamespace,
         arguments: Vec<LadArgument>,
         return_kind: LadFieldOrVariableKind,
     ) {
-        let id = LadFunctionId::new_string_id(format!("{type_id}::new"));
+        let id = LadFunctionId::new_string_id(format!("{namespace:?}::new"));
+        if let LadFunctionNamespace::Type(type_id) = &namespace {
+            file.types
+                .get_mut(type_id)
+                .unwrap()
+                .associated_functions
+                .push(id.clone());
+        }
         file.functions.insert(
-            id.clone(),
+            id,
             LadFunction {
-                namespace: LadFunctionNamespace::Type(type_id.clone()),
+                namespace,
                 identifier: "new".into(),
                 overload_index: None,
                 arguments,
@@ -1059,18 +959,13 @@ mod test {
                     documentation: None,
                     name: None,
                 },
-                documentation: None,
+                documentation: Some("Constructs a value.".into()),
                 metadata: LadFunctionMetadata {
                     is_operator: false,
                     misc: Default::default(),
                 },
             },
         );
-        file.types
-            .get_mut(type_id)
-            .unwrap()
-            .associated_functions
-            .push(id);
     }
 
     fn type_id(file: &LadFile, identifier: &str) -> LadTypeId {
@@ -1089,7 +984,7 @@ mod test {
         let plain = type_id(&file, "PlainStructType");
         add_function(
             &mut file,
-            &plain.clone(),
+            LadFunctionNamespace::Type(plain.clone()),
             vec![arg(
                 "payload",
                 LadFieldOrVariableKind::Fields {
@@ -1104,7 +999,7 @@ mod test {
         let enum_type = type_id(&file, "EnumType");
         add_function(
             &mut file,
-            &enum_type.clone(),
+            LadFunctionNamespace::Type(enum_type.clone()),
             vec![arg(
                 "payload",
                 LadFieldOrVariableKind::Fields {
@@ -1112,10 +1007,10 @@ mod test {
                     variant: None,
                 },
             )],
-            LadFieldOrVariableKind::Val(enum_type),
+            LadFieldOrVariableKind::Val(enum_type.clone()),
         );
 
-        // the variant constructor, left for backends to bind
+        // the generic variant constructor, documented as it is at runtime
         let variant_ref = LadTypeId::new_string_id("EnumVariantRef".into());
         let mut definition = file.types[&type_id(&file, "UnitType")].clone();
         definition.identifier = "EnumVariantRef".into();
@@ -1125,22 +1020,45 @@ mod test {
         file.types.insert(variant_ref.clone(), definition);
         add_function(
             &mut file,
-            &variant_ref.clone(),
+            LadFunctionNamespace::Type(variant_ref.clone()),
             vec![
-                arg("variant", LadFieldOrVariableKind::Val(variant_ref)),
+                arg("variant", LadFieldOrVariableKind::Val(variant_ref.clone())),
                 arg(
                     "payload",
-                    LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Fields),
+                    LadFieldOrVariableKind::HashMap(
+                        Box::new(LadFieldOrVariableKind::Primitive(
+                            ReflectionPrimitiveKind::String,
+                        )),
+                        Box::new(LadFieldOrVariableKind::Primitive(
+                            ReflectionPrimitiveKind::ScriptValue,
+                        )),
+                    ),
                 ),
             ],
-            LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Value),
+            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::ReflectReference),
         );
-        // documented, as the real constructor is
-        file.functions
-            .values_mut()
-            .find(|f| matches!(&f.namespace, LadFunctionNamespace::Type(id) if id.to_string() == "EnumVariantRef"))
-            .unwrap()
-            .documentation = Some("Constructs a value of this variant.".into());
+
+        // and bound to each variant by the builder
+        for variant in ["Unit", "Struct", "TupleStruct"] {
+            add_function(
+                &mut file,
+                LadFunctionNamespace::Variant {
+                    type_id: enum_type.clone(),
+                    variant: variant.into(),
+                },
+                vec![
+                    arg("variant", LadFieldOrVariableKind::Val(variant_ref.clone())),
+                    arg(
+                        "payload",
+                        LadFieldOrVariableKind::Fields {
+                            type_id: enum_type.clone(),
+                            variant: Some(variant.into()),
+                        },
+                    ),
+                ],
+                LadFieldOrVariableKind::Val(enum_type.clone()),
+            );
+        }
         file
     }
 
@@ -1227,7 +1145,7 @@ mod test {
 
         let enum_class = block(&rendered, "---@class EnumType ");
         assert!(
-            enum_class.contains("---@field  Unit EnumType.UnitVariant"),
+            enum_class.contains("---@field  Unit EnumType.Unit"),
             "{enum_class}"
         );
         assert!(
@@ -1235,24 +1153,22 @@ mod test {
             "{enum_class}"
         );
 
-        // variants without fields share a class, which still constructs the enum
-        let unit = block(&rendered, "---@class EnumType.UnitVariant : EnumVariantRef");
-        // the documentation goes above the field, the type must end the line
+        // variants without fields get a class like any other, taking no fields
         assert!(
-            unit.contains(
-                "--- Constructs a value of this variant.\n---@field  new fun(self: EnumType.UnitVariant, payload: EnumType.UnitVariant.Fields): EnumType\n"
-            ) || unit.ends_with(
-                "--- Constructs a value of this variant.\n---@field  new fun(self: EnumType.UnitVariant, payload: EnumType.UnitVariant.Fields): EnumType"
-            ),
-            "{unit}"
-        );
-        // the shared class is not a variant, so there is no such table on the enum
-        assert!(
-            !rendered.contains("EnumType.UnitVariant = {}"),
+            rendered.contains("---@class EnumType.Unit : EnumVariantRef"),
             "{rendered}"
         );
-        let unit_fields = block(&rendered, "---@class (exact) EnumType.UnitVariant.Fields");
-        assert!(unit_fields.contains("without fields"), "{unit_fields}");
+        let unit = block(&rendered, "---@param variant EnumType.Unit");
+        assert!(
+            unit.contains("---@param payload EnumType.Unit.Fields"),
+            "{unit}"
+        );
+        assert!(unit.contains("---@return EnumType"), "{unit}");
+        let unit_fields = block(&rendered, "---@class (exact) EnumType.Unit.Fields");
+        assert!(
+            unit_fields.contains("of which there are none"),
+            "{unit_fields}"
+        );
         assert!(
             unit_fields.contains("---@field  [any] 'never'"),
             "{unit_fields}"

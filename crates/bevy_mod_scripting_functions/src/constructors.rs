@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use bevy_app::{App, Plugin};
 use bevy_mod_scripting_bindings::{
     EnumVariantRef, InteropError, StaticTypeRef,
-    construct::{ConstructOptions, allocate_constructed, construct},
+    construct::construct_reference,
     function::{
         bound::{BoundFields, BoundValue},
         from::V,
@@ -13,17 +13,6 @@ use bevy_mod_scripting_bindings::{
         script_function::FunctionCallContext,
     },
 };
-
-/// Constructors always fill in missing fields from defaults, first the type's then the fields'.
-///
-/// The generated documentation relies on this, marking exactly the fields a default can provide as optional.
-fn options(ctxt: &FunctionCallContext) -> ConstructOptions {
-    ConstructOptions {
-        one_indexed: ctxt.convert_to_0_indexed(),
-        use_type_default: true,
-        use_field_default: true,
-    }
-}
 
 /// The type level constructor, registered once on [`StaticTypeRef`] and bound to the type
 /// when accessed through a static type reference, i.e. `Type.new{...}`.
@@ -34,10 +23,14 @@ fn construct_type(
 ) -> Result<BoundValue, InteropError> {
     let world = ctxt.world()?;
     let type_info = type_ref.type_info(&world)?;
-    let opts = options(&ctxt);
-    let payload = payload.into_map(opts.one_indexed);
-    let value = construct(&world, type_info, None, payload, opts)?;
-    allocate_constructed(&world, type_info.type_id(), value).map(BoundValue)
+    construct_reference(
+        &world,
+        type_info,
+        None,
+        payload,
+        ctxt.convert_to_0_indexed(),
+    )
+    .map(BoundValue)
 }
 
 /// The constructor of a variant, i.e. `MyEnum.Variant:new{...}`.
@@ -47,17 +40,14 @@ fn construct_variant(
     payload: BoundFields,
 ) -> Result<BoundValue, InteropError> {
     let world = ctxt.world()?;
-    let type_info = variant.type_info(&world)?;
-    let opts = options(&ctxt);
-    let payload = payload.into_map(opts.one_indexed);
-    let value = construct(
+    construct_reference(
         &world,
-        type_info,
+        variant.type_info(&world)?,
         Some(variant.variant_name(&world)?),
         payload,
-        opts,
-    )?;
-    allocate_constructed(&world, type_info.type_id(), value).map(BoundValue)
+        ctxt.convert_to_0_indexed(),
+    )
+    .map(BoundValue)
 }
 
 /// Adds a type level constructor to scripts, i.e. `MyType.new{ field = value }`, and to enum variants, i.e. `MyEnum.Variant:new{ field = value }`.

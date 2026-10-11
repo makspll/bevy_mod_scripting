@@ -240,6 +240,16 @@ pub enum LadFunctionNamespace {
     Type(LadTypeId),
     /// A global function
     Global,
+    /// A function on a variant of an enum, i.e. `MyEnum.Variant:new{...}`.
+    ///
+    /// These are the functions on `EnumVariantRef` whose signatures depend on the variant, bound to it.
+    Variant {
+        /// The enum
+        #[serde(rename = "type")]
+        type_id: LadTypeId,
+        /// The name of the variant
+        variant: Cow<'static, str>,
+    },
 }
 
 impl LadFunctionNamespace {
@@ -317,78 +327,6 @@ pub enum LadFieldOrVariableKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
-    /// Stands in for the type a function shared between many types is bound to.
-    ///
-    /// Functions on the static type reference are bound to each type when the file is built,
-    /// others, such as those on enum variants, are left for backends to bind using [`LadFieldOrVariableKind::bind_placeholders`].
-    Bound(LadBoundPlaceholder),
-}
-
-/// The parts of a shared function's signature which depend on the type it is bound to.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum LadBoundPlaceholder {
-    /// A value of the bound type
-    Value,
-    /// A table of the fields of the bound type, see [`LadFieldOrVariableKind::Fields`]
-    Fields,
-}
-
-impl LadFieldOrVariableKind {
-    /// Replaces any [`LadFieldOrVariableKind::Bound`] placeholders with the given type, and for fields, the variant.
-    pub fn bind_placeholders(&self, type_id: &LadTypeId, variant: Option<&str>) -> Self {
-        let bind =
-            |inner: &LadFieldOrVariableKind| Box::new(inner.bind_placeholders(type_id, variant));
-        let bind_all = |inner: &[LadFieldOrVariableKind]| {
-            inner
-                .iter()
-                .map(|i| i.bind_placeholders(type_id, variant))
-                .collect()
-        };
-        match self {
-            LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Value) => {
-                LadFieldOrVariableKind::Val(type_id.clone())
-            }
-            LadFieldOrVariableKind::Bound(LadBoundPlaceholder::Fields) => {
-                LadFieldOrVariableKind::Fields {
-                    type_id: type_id.clone(),
-                    variant: variant.map(|v| Cow::Owned(v.to_owned())),
-                }
-            }
-            LadFieldOrVariableKind::Option(inner) => LadFieldOrVariableKind::Option(bind(inner)),
-            LadFieldOrVariableKind::Vec(inner) => LadFieldOrVariableKind::Vec(bind(inner)),
-            LadFieldOrVariableKind::HashMap(k, v) => {
-                LadFieldOrVariableKind::HashMap(bind(k), bind(v))
-            }
-            LadFieldOrVariableKind::HashSet(inner) => LadFieldOrVariableKind::HashSet(bind(inner)),
-            LadFieldOrVariableKind::InteropResult(inner) => {
-                LadFieldOrVariableKind::InteropResult(bind(inner))
-            }
-            LadFieldOrVariableKind::Tuple(inner) => LadFieldOrVariableKind::Tuple(bind_all(inner)),
-            LadFieldOrVariableKind::Array(inner, len) => {
-                LadFieldOrVariableKind::Array(bind(inner), *len)
-            }
-            LadFieldOrVariableKind::Union(inner) => LadFieldOrVariableKind::Union(bind_all(inner)),
-            other => other.clone(),
-        }
-    }
-
-    /// Whether this contains any [`LadFieldOrVariableKind::Bound`] placeholders.
-    pub fn has_placeholders(&self) -> bool {
-        match self {
-            LadFieldOrVariableKind::Bound(_) => true,
-            LadFieldOrVariableKind::Option(inner)
-            | LadFieldOrVariableKind::Vec(inner)
-            | LadFieldOrVariableKind::HashSet(inner)
-            | LadFieldOrVariableKind::InteropResult(inner)
-            | LadFieldOrVariableKind::Array(inner, _) => inner.has_placeholders(),
-            LadFieldOrVariableKind::HashMap(k, v) => k.has_placeholders() || v.has_placeholders(),
-            LadFieldOrVariableKind::Tuple(inner) | LadFieldOrVariableKind::Union(inner) => {
-                inner.iter().any(Self::has_placeholders)
-            }
-            _ => false,
-        }
-    }
 }
 
 /// Utility for dispatching visitors on dyn traits
@@ -509,9 +447,6 @@ pub trait ArgumentVisitor {
         self.visit_lad_type_id(type_id);
     }
 
-    /// Visits a placeholder for the type a shared function is bound to, by default noop
-    fn visit_bound(&mut self, placeholder: LadBoundPlaceholder) {}
-
     /// Visit an argument kind, by default calls the appropriate walk method on each enum variant.
     ///
     /// Each walk variant will walk over nested kinds, and visit the leaf types.
@@ -538,7 +473,6 @@ pub trait ArgumentVisitor {
             LadFieldOrVariableKind::Fields { type_id, variant } => {
                 self.walk_fields(type_id, variant.as_deref())
             }
-            LadFieldOrVariableKind::Bound(placeholder) => self.visit_bound(*placeholder),
         }
     }
 }
