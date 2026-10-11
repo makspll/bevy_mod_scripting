@@ -262,6 +262,43 @@ impl World {
         world.remove_resource(registration.into_inner())
     }
 
+    /// Triggers an observer-style event. The event type must be registered and have `#[reflect(Event)]`.
+    ///
+    /// Observers run immediately, before this function returns.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The type of the event.
+    /// * `event`: The event value, e.g. built with `construct`.
+    /// Returns:
+    /// * `result`: Nothing if the event was triggered successfully.
+    fn trigger_event(
+        ctxt: FunctionCallContext,
+        registration: V<ScriptTypeRegistration>,
+        event: ReflectReference,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("trigger_event");
+        let world = ctxt.world()?;
+        world.trigger_event(registration.into_inner(), &event)
+    }
+
+    /// Writes a buffered message. The message type must be registered and have `#[reflect(Message)]`.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The type of the message.
+    /// * `message`: The message value, e.g. built with `construct`.
+    /// Returns:
+    /// * `result`: Nothing if the message was written successfully.
+    fn write_message(
+        ctxt: FunctionCallContext,
+        registration: V<ScriptTypeRegistration>,
+        message: ReflectReference,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("write_message");
+        let world = ctxt.world()?;
+        world.write_message(registration.into_inner(), &message)
+    }
+
     /// Adds the given resource to the world.
     /// Arguments:
     /// * `ctxt`: The function call context.
