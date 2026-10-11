@@ -209,9 +209,8 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                     }
                     ladfile::LadVariant::Unit { .. } => {}
                 },
-                ladfile::LadTypeLayout::Enum(_) => {
-                    // TODO: enums
-                }
+                // variants are added as fields below, once the functions which take priority are known
+                ladfile::LadTypeLayout::Enum(_) => {}
             }
 
             for function in &lad_type.associated_functions {
@@ -245,6 +244,27 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                         };
                     }
                     lua_functions.push(lua_function);
+                }
+            }
+
+            // the variants of an enum are accessible as `Enum.Variant`, unless a function with the same name takes priority
+            if let ladfile::LadTypeLayout::Enum(variants) = &lad_type.layout {
+                for variant in variants {
+                    let variant_name = match variant {
+                        ladfile::LadVariant::TupleStruct { name, .. }
+                        | ladfile::LadVariant::Struct { name, .. }
+                        | ladfile::LadVariant::Unit { name, .. } => name.to_string(),
+                    };
+                    if lua_functions.iter().any(|f| f.name == variant_name) {
+                        continue;
+                    }
+                    lua_fields.push(ClassField {
+                        name: variant_name.clone(),
+                        ty: LuaType::Alias("EnumVariantRef".to_string()),
+                        scope: crate::lua_declaration_file::FieldScope::Public,
+                        optional: false,
+                        description: None,
+                    });
                 }
             }
 

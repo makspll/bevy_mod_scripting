@@ -165,6 +165,9 @@ Usize = {}
 
 
 ---@class EnumType : ReflectReference
+---@field  Unit  EnumVariantRef
+---@field  Struct  EnumVariantRef
+---@field  TupleStruct  EnumVariantRef
 EnumType = {}
 
 

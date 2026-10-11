@@ -1,6 +1,6 @@
 //! Plugins for bevy which allow generating ladfiles at startup
 
-use std::{ops::Deref, path::PathBuf, sync::Arc};
+use std::{any::TypeId, ops::Deref, path::PathBuf, sync::Arc};
 
 use ::{
     bevy_app::{App, Plugin, Startup},
@@ -8,7 +8,7 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry, IntoNamespace,
+    DummyScriptFunctionRegistry, IntoNamespace, StaticTypeRef,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
     into_through_type_info,
@@ -169,6 +169,26 @@ pub fn generate_lad_file(
         {
             builder.add_function_info(&function.info);
         }
+
+        // functions on the static type reference are available on every type's own static reference,
+        // with the type bound, unless the type has a function of its own with the same name
+        if type_info.type_id() != TypeId::of::<StaticTypeRef>() {
+            let namespace = Namespace::OnType(type_info.type_id());
+            for (key, function) in
+                function_registry.iter_namespace(Namespace::OnType(TypeId::of::<StaticTypeRef>()))
+            {
+                if function_registry.contains(namespace, key.name.clone()) {
+                    continue;
+                }
+                let mut info = (*function.info).clone();
+                info.namespace = namespace;
+                // the type is bound automatically
+                if !info.arg_info.is_empty() {
+                    info.arg_info.remove(0);
+                }
+                builder.add_function_info(&info);
+            }
+        }
     }
 
     // find functions on the global namespace
@@ -252,5 +272,116 @@ impl Plugin for ScriptingFilesGenerationPlugin {
             app.insert_resource(self.0.clone());
             app.add_systems(Startup, generate_lad_file_system);
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use bevy_app::App;
+    use bevy_mod_scripting_bindings::ConstructorsPlugin;
+    use bevy_reflect::Reflect;
+    use ladfile::LadFile;
+    use std::{error::Error, path::Path, sync::Mutex};
+
+    #[derive(Reflect)]
+    enum TestEnum {
+        A,
+    }
+
+    #[derive(Reflect)]
+    struct TestStruct;
+
+    struct Capture(Arc<Mutex<Option<LadFile>>>);
+
+    impl LadFilePlugin for Capture {
+        fn name(&self) -> &'static str {
+            "capture"
+        }
+
+        fn run(&self, ladfile: &LadFile, _: &Path) -> Result<(), Box<dyn Error>> {
+            *self.0.lock().unwrap() = Some(ladfile.clone());
+            Ok(())
+        }
+    }
+
+    fn generate(constructor_name: &'static str) -> LadFile {
+        let mut app = App::new();
+        app.add_plugins(ConstructorsPlugin {
+            constructor_name: constructor_name.into(),
+        });
+        app.register_type::<TestEnum>()
+            .register_type::<TestStruct>();
+
+        let captured = Arc::new(Mutex::new(None));
+        let settings = LadFileSettings {
+            processors: vec![Box::new(Capture(captured.clone()))],
+            ..Default::default()
+        };
+        let world = app.world_mut();
+        generate_lad_file(
+            &world.get_resource_or_init::<AppTypeRegistry>().clone(),
+            &world
+                .get_resource_or_init::<AppScriptFunctionRegistry>()
+                .clone(),
+            &world
+                .get_resource_or_init::<DummyScriptFunctionRegistry>()
+                .clone(),
+            &world
+                .get_resource_or_init::<AppScriptGlobalsRegistry>()
+                .clone(),
+            &settings,
+        );
+        captured
+            .lock()
+            .unwrap()
+            .take()
+            .expect("no ladfile generated")
+    }
+
+    /// The argument names of the function with the given name on the given type
+    fn arguments(file: &LadFile, type_name: &str, function: &str) -> Option<Vec<Option<String>>> {
+        let (type_id, _) = file.types.iter().find(|(_, t)| t.identifier == type_name)?;
+        let function = file.functions.values().find(|f| {
+            f.identifier == function
+                && matches!(&f.namespace, ladfile::LadFunctionNamespace::Type(id) if id == type_id)
+        })?;
+        Some(
+            function
+                .arguments
+                .iter()
+                .map(|a| a.name.as_ref().map(|n| n.to_string()))
+                .collect(),
+        )
+    }
+
+    #[test]
+    fn static_type_functions_are_inherited_by_every_type() {
+        let file = generate("new");
+
+        // the type is bound, so it is not an argument of the inherited function
+        for type_name in ["TestEnum", "TestStruct"] {
+            let args = arguments(&file, type_name, "new")
+                .unwrap_or_else(|| panic!("`new` missing on {type_name}"));
+            assert_eq!(args.first(), Some(&Some("payload".to_owned())), "{args:?}");
+        }
+
+        // the original is documented on the static type reference, with the type as its first argument
+        let args =
+            arguments(&file, "StaticTypeRef", "new").expect("`new` missing on StaticTypeRef");
+        assert_eq!(args.first(), Some(&Some("type".to_owned())), "{args:?}");
+
+        // variants keep their receiver, since they are called with `:`
+        let args =
+            arguments(&file, "EnumVariantRef", "new").expect("`new` missing on EnumVariantRef");
+        assert_eq!(args.first(), Some(&Some("variant".to_owned())), "{args:?}");
+    }
+
+    #[test]
+    fn constructor_name_is_configurable() {
+        let file = generate("create");
+        assert!(arguments(&file, "TestStruct", "create").is_some());
+        assert!(arguments(&file, "TestStruct", "new").is_none());
+        assert!(arguments(&file, "EnumVariantRef", "create").is_some());
     }
 }

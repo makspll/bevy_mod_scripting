@@ -39,7 +39,7 @@ pub mod ladfile {
 }
 
 use bevy_app::plugin_group;
-use bevy_mod_scripting_bindings::CoreScriptGlobalsPlugin;
+use bevy_mod_scripting_bindings::{ConstructorsPlugin, CoreScriptGlobalsPlugin};
 use bevy_mod_scripting_core::BMSScriptingInfrastructurePlugin;
 pub use bevy_mod_scripting_derive::*;
 pub use bevy_mod_scripting_functions::*;
@@ -48,6 +48,7 @@ plugin_group! {
     pub struct BMSPlugin {
         :ScriptFunctionsPlugin,
         :CoreScriptGlobalsPlugin,
+        :ConstructorsPlugin,
         :BMSScriptingInfrastructurePlugin,
         #[custom(cfg(feature = "lua"))]
         bevy_mod_scripting_lua:::LuaScriptingPlugin,

@@ -18,7 +18,7 @@ use ::{
 };
 use bevy_asset::Assets;
 use bevy_mod_scripting_asset::ScriptAsset;
-use bevy_mod_scripting_bindings::{CoreScriptGlobalsPlugin, WorldExtensions};
+use bevy_mod_scripting_bindings::{ConstructorsPlugin, CoreScriptGlobalsPlugin, WorldExtensions};
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
     commands::AttachScript,
@@ -46,6 +46,7 @@ pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
     app.add_plugins((
         ScriptFunctionsPlugin,
         CoreScriptGlobalsPlugin::default(),
+        ConstructorsPlugin::default(),
         BMSScriptingInfrastructurePlugin::default(),
     ));
     if include_test_functions {

@@ -10,17 +10,18 @@ use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_bindings::{
-    DynamicScriptFunction, DynamicScriptFunctionMut, FunctionInfo, GlobalNamespace, InteropError,
-    PartialReflectExt, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple,
-    WorldExtensions,
+    DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef, FunctionInfo, GlobalNamespace,
+    InteropError, PartialReflectExt, ReflectReference, ScriptComponentRegistration,
+    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration,
+    Union, VariadicTuple, WorldExtensions,
     function::{
-        from::{R, V},
+        from::{FromScript, R, V},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
     script_value::ScriptValue,
+    static_type::get_registration,
 };
 use bevy_mod_scripting_core::script_system::{ManageScriptSystems, ScriptSystemBuilder};
 use bevy_mod_scripting_derive::script_bindings;
@@ -126,6 +127,36 @@ impl World {
         world
             .get_type_registration_by_name(type_name)
             .map(|v| v.map(|v| v.map_both(V::from, |u| u.map_both(V::from, V::from))))
+    }
+
+    /// Retrieves the variant of an enum by name.
+    ///
+    /// This is the same as accessing `MyEnum.Variant`, but works for variants which share a name with a function.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The enum type.
+    /// * `variant_name`: The name of the variant.
+    /// Returns:
+    /// * `variant`: The variant, if the type is an enum with such a variant.
+    fn get_enum_variant(
+        ctxt: FunctionCallContext,
+        registration: Union<
+            V<ScriptTypeRegistration>,
+            Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
+        >,
+        variant_name: String,
+    ) -> Result<Option<V<EnumVariantRef>>, InteropError> {
+        profiling::function_scope!("get_enum_variant");
+        let _ = ctxt;
+        let registration = match registration.into_left() {
+            Ok(l) => l.into_inner(),
+            Err(r) => match r.into_left() {
+                Ok(l) => (l.into_inner()).into_type_registration(),
+                Err(r) => (r.into_inner()).into_type_registration(),
+            },
+        };
+        Ok(EnumVariantRef::from_name(registration, &variant_name).map(V))
     }
 
     /// Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
@@ -605,6 +636,32 @@ impl World {
     core
 )]
 impl ReflectReference {
+    /// If this is an enum, returns a reference to the variant it is currently in.
+    ///
+    /// This can be compared to `MyEnum.Variant` to check which variant a value is in.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to get the variant of.
+    /// Returns:
+    /// * `variant`: The variant, if the reference is an enum.
+    fn variant(
+        ctxt: FunctionCallContext,
+        reference: ReflectReference,
+    ) -> Result<Option<V<EnumVariantRef>>, InteropError> {
+        profiling::function_scope!("variant");
+        let world = ctxt.world()?;
+        let Some(type_id) = reference.tail_type_id(world.clone())? else {
+            return Ok(None);
+        };
+        let registration = get_registration(&world, type_id)?;
+        reference
+            .with_reflect(world, |value| {
+                EnumVariantRef::from_value(registration, value)
+            })
+            .map(|variant| variant.map(V))
+    }
+
     /// If this type is an enum, will return the name of the variant it represents on the type.
     ///
     /// Arguments:
@@ -920,6 +977,44 @@ impl ReflectReference {
             .collect::<Vec<_>>();
         // convert to info
         Ok(functions)
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "enum_variant_ref_functions",
+    core
+)]
+impl EnumVariantRef {
+    /// Retrieves the name of the variant.
+    ///
+    /// Arguments:
+    /// * `variant`: The variant.
+    /// Returns:
+    /// * `variant_name`: The name of the variant.
+    fn variant_name(variant: V<EnumVariantRef>) -> Result<String, InteropError> {
+        profiling::function_scope!("variant_name");
+        variant.variant_name().map(str::to_owned)
+    }
+
+    /// Checks whether two variants are the same variant of the same enum.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `variant`: The variant.
+    /// * `other`: The value to compare with.
+    /// Returns:
+    /// * `equal`: Whether the other value is the same variant.
+    fn eq(
+        ctxt: FunctionCallContext,
+        variant: V<EnumVariantRef>,
+        other: ScriptValue,
+    ) -> Result<bool, InteropError> {
+        profiling::function_scope!("eq");
+        let world = ctxt.world()?;
+        Ok(V::<EnumVariantRef>::from_script(other, world)
+            .is_ok_and(|other| other.into_inner() == variant.into_inner()))
     }
 }
 
@@ -1546,6 +1641,7 @@ pub fn register_core_functions(app: &mut App) {
         register_reflect_reference_functions(world);
 
         register_script_type_registration_functions(world);
+        register_enum_variant_ref_functions(world);
         register_script_component_registration_functions(world);
         register_script_resource_registration_functions(world);
 

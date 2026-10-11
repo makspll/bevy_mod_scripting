@@ -231,6 +231,33 @@ impl DynamicScriptFunction {
         &self.info.name
     }
 
+    /// Returns a function which calls this one with an extra first argument, created from the call context on each call.
+    ///
+    /// The extra argument is removed from the function's argument info.
+    pub fn with_first_arg(
+        &self,
+        make_arg: impl Fn(&FunctionCallContext) -> Result<ScriptValue, InteropError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> Self {
+        let inner = self.func.clone();
+        let mut info = (*self.info).clone();
+        if !info.arg_info.is_empty() {
+            info.arg_info.remove(0);
+        }
+        DynamicScriptFunction {
+            info: Arc::new(info),
+            func: Arc::new(move |context, mut args| match make_arg(&context) {
+                Ok(arg) => {
+                    args.push_front(arg);
+                    inner(context, args)
+                }
+                Err(e) => ScriptValue::Error(e),
+            }),
+        }
+    }
+
     /// Set the meta information about the function
     pub fn with_info(mut self, info: FunctionInfo) -> Self {
         self.info = Arc::new(info);
