@@ -124,33 +124,41 @@ impl FromLua for LuaScriptValue {
                 .into(),
             ),
             Value::Table(table) => {
-                // check the key types, if strings then it's a map
-                let mut iter = table.pairs::<Value, LuaScriptValue>();
+                // NOTE: lua tables keep integer keys in either an array part (iterated by `pairs` in
+                // key order) or a hash part (iterated in arbitrary order), and `t[i]`/`#t` can't tell
+                // which. Never infer list order from `pairs`, place each value by its key instead.
+                let len = table.raw_len();
+                let entries = table
+                    .pairs::<Value, LuaScriptValue>()
+                    .collect::<Result<Vec<_>, _>>()?;
 
-                match iter.next() {
-                    Some(v) => {
-                        let (k, v) = v?;
-                        // if the key is a string, then it's a map
-                        if k.is_string() {
-                            let mut map = HashMap::new();
-                            map.insert(k.to_string()?, v.into());
-                            for pair in iter {
-                                let (k, v) = pair?;
-                                let str_: String = String::from_lua(k, lua)?;
-                                map.insert(str_, v.into());
-                            }
-                            return Ok(LuaScriptValue::from(ScriptValue::Map(map)));
-                        } else {
-                            // if the key is an integer, then it's a list
-                            let mut vec = VecDeque::with_capacity(table.len()? as usize);
-                            vec.push_back(v.into());
-                            for pair in iter {
-                                vec.push_back(pair?.1.into());
-                            }
-                            return Ok(LuaScriptValue::from(ScriptValue::List(vec)));
+                if entries.is_empty() {
+                    return Ok(LuaScriptValue::from(ScriptValue::List(Default::default())));
+                }
+
+                // a proper sequence has exactly the keys 1..=len
+                let is_sequence = entries.len() == len
+                    && entries.iter().all(
+                        |(k, _)| matches!(k, Value::Integer(i) if (1..=len as i64).contains(i)),
+                    );
+
+                if is_sequence {
+                    let mut slots: Vec<Option<ScriptValue>> = vec![None; len];
+                    for (k, v) in entries {
+                        if let Value::Integer(i) = k {
+                            slots[i as usize - 1] = Some(v.into());
                         }
                     }
-                    None => return Ok(LuaScriptValue::from(ScriptValue::List(Default::default()))),
+                    let vec = slots.into_iter().flatten().collect::<VecDeque<_>>();
+                    return Ok(LuaScriptValue::from(ScriptValue::List(vec)));
+                } else {
+                    // anything else (string keys, holes, mixed) is treated as a map
+                    let mut map = HashMap::new();
+                    for (k, v) in entries {
+                        let str_: String = String::from_lua(k, lua)?;
+                        map.insert(str_, v.into());
+                    }
+                    return Ok(LuaScriptValue::from(ScriptValue::Map(map)));
                 }
             }
             // Value::Thread(thread) => todo!(),
@@ -235,11 +243,10 @@ impl IntoLua for LuaScriptValue {
                 .into_lua(lua)?,
             // when we encounter a tuple here, we can't convert to many args, so just return a table
             ScriptValue::List(vec) | ScriptValue::Tuple(VariadicTuple(vec)) => {
-                let table = lua.create_table_from(
-                    vec.into_iter()
-                        .enumerate()
-                        .map(|(k, v)| (k + 1, LuaScriptValue::from(v))),
-                )?;
+                // NOTE: `create_table_from` with integer keys puts them in the table's hash part, where
+                // `pairs` yields them in arbitrary order. `create_sequence_from` fills the array part,
+                // so the list keeps its order when it is later iterated or converted back.
+                let table = lua.create_sequence_from(vec.into_iter().map(LuaScriptValue::from))?;
                 Value::Table(table)
             }
             ScriptValue::Map(map) => {

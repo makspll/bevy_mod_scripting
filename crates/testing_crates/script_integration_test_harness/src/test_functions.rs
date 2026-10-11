@@ -18,7 +18,7 @@ use bevy_mod_scripting_bindings::{
     ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue, WorldExtensions,
     error::InteropError,
     function::{
-        from::R,
+        from::{R, V},
         namespace::{GlobalNamespace, NamespaceBuilder},
         script_function::{DynamicScriptFunctionMut, FunctionCallContext},
     },
@@ -188,6 +188,10 @@ pub fn register_test_functions(world: &mut App) {
             *rng = ChaCha12Rng::from_seed(seed);
         })
         .register("make_hashmap", |map: HashMap<String, usize>| map)
+        // identity functions over lists, used to check list order survives the script -> rust -> script round trip
+        .register("make_vec_i64", |vec: Vec<i64>| vec)
+        .register("make_vec_string", |vec: Vec<String>| vec)
+        .register("make_vec_entity", |vec: Vec<V<Entity>>| vec)
         .register("noop", || {})
         .register(
             "noop_4_args",
