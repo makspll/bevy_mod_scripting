@@ -259,15 +259,7 @@ impl IntoIterator for RhaiReflectReference {
         let result = (|| {
             let world = ThreadWorldContainer.try_get_context()?.world;
 
-            let iter_func = world
-                .lookup_function([TypeId::of::<ReflectReference>()], "iter")
-                .map_err(|f| {
-                    InteropError::missing_function(
-                        f,
-                        TypeId::of::<ReflectReference>().into(),
-                        Some(RHAI_CALLER_CONTEXT),
-                    )
-                })?;
+            let iter_func = world.lookup_reserved_function("iter", RHAI_CALLER_CONTEXT)?;
 
             iter_func.call(
                 vec![ScriptValue::Reference(self.0.clone())],
@@ -311,17 +303,13 @@ impl CustomType for RhaiReflectReference {
 
                 let key: ScriptValue = ScriptValue::from_dynamic(index)?;
                 let key = match key.as_string() {
-                    Ok(string) => {
-                        match world
-                            .lookup_function([type_id, TypeId::of::<ReflectReference>()], string)
-                        {
-                            Ok(func) => {
-                                return FunctionWithReceiver::curry(func, self_.clone().into())
-                                    .into_dynamic();
-                            }
-                            Err(string) => ScriptValue::String(string),
+                    Ok(string) => match world.lookup_instance_function(type_id, string) {
+                        Ok(func) => {
+                            return FunctionWithReceiver::curry(func, self_.clone().into())
+                                .into_dynamic();
                         }
-                    }
+                        Err(string) => ScriptValue::String(string),
+                    },
                     Err(key) => key,
                 };
 
@@ -561,15 +549,7 @@ impl CustomType for RhaiReflectReference {
                     let world = ThreadWorldContainer.try_get_context()?.world;
                     let reflect_reference = self_.0.clone();
 
-                    let func = world
-                        .lookup_function([TypeId::of::<ReflectReference>()], "debug")
-                        .map_err(|f| {
-                            InteropError::missing_function(
-                                f,
-                                TypeId::of::<ReflectReference>().into(),
-                                Some(RHAI_CALLER_CONTEXT),
-                            )
-                        })?;
+                    let func = world.lookup_reserved_function("debug", RHAI_CALLER_CONTEXT)?;
 
                     let out = func.call(
                         vec![ScriptValue::Reference(reflect_reference)],
@@ -592,15 +572,7 @@ impl CustomType for RhaiReflectReference {
                     let world = ThreadWorldContainer.try_get_context()?.world;
                     let reflect_reference = self_.0.clone();
 
-                    let func = world
-                        .lookup_function([TypeId::of::<ReflectReference>()], "display")
-                        .map_err(|f| {
-                            InteropError::missing_function(
-                                f,
-                                TypeId::of::<ReflectReference>().into(),
-                                Some(RHAI_CALLER_CONTEXT),
-                            )
-                        })?;
+                    let func = world.lookup_reserved_function("display", RHAI_CALLER_CONTEXT)?;
 
                     let out = func.call(
                         vec![ScriptValue::Reference(reflect_reference)],

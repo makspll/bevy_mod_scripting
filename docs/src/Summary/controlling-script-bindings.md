@@ -185,6 +185,20 @@ In this context `overridable` indicates whether language implementations will lo
 
 Note the `ReflectReference` namespace is special, in that functions defined on it, act like a fallback and hence apply to ALL references.
 
+### Where functions can live
+
+The type in the `impl` block you apply `script_bindings` to (or the one passed to `NamespaceBuilder`) decides where the functions are available:
+
+| `impl` target | Available on | Receives |
+|---------------|--------------|----------|
+| `MyType` | `MyType` values and the `MyType` static reference | whatever you declare |
+| `ReflectReference` | every value, after `MyType`'s own functions | the value |
+| `StaticTypeRef` | every type's static reference, after `MyType`'s own functions | the type, filled in automatically |
+| `GlobalNamespace` | the global scope, i.e. no prefix | whatever you declare |
+
+When the same name exists in more than one place, the most specific one wins.
+For `ReflectReference` and `StaticTypeRef` in a `script_bindings` block outside of the crate defining them, use the `remote` attribute.
+
 ### Functions available on every type
 
 The `StaticTypeRef` namespace is the equivalent for static references, i.e. `Vec3` in `Vec3.new(..)`.

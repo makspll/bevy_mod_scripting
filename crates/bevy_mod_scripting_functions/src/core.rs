@@ -10,10 +10,10 @@ use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_bindings::{
-    DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef, FunctionInfo, GlobalNamespace,
-    InteropError, PartialReflectExt, ReflectReference, ScriptComponentRegistration,
-    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration,
-    Union, VariadicTuple, WorldExtensions,
+    AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
+    FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, ReflectReference,
+    ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
+    ScriptTypeRegistration, VariadicTuple, WorldExtensions,
     function::{
         from::{FromScript, R, V},
         from_ref::FromScriptRef,
@@ -113,20 +113,12 @@ impl World {
     fn get_type_by_name(
         ctxt: FunctionCallContext,
         type_name: String,
-    ) -> Result<
-        Option<
-            Union<
-                V<ScriptTypeRegistration>,
-                Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
-            >,
-        >,
-        InteropError,
-    > {
+    ) -> Result<Option<AnyTypeRegistrationV>, InteropError> {
         profiling::function_scope!("get_type_by_name");
         let world = ctxt.world()?;
         world
             .get_type_registration_by_name(type_name)
-            .map(|v| v.map(|v| v.map_both(V::from, |u| u.map_both(V::from, V::from))))
+            .map(|v| v.map(|v| v.into_script()))
     }
 
     /// Retrieves the variant of an enum by name.
@@ -141,21 +133,12 @@ impl World {
     /// * `variant`: The variant, if the type is an enum with such a variant.
     fn get_enum_variant(
         ctxt: FunctionCallContext,
-        registration: Union<
-            V<ScriptTypeRegistration>,
-            Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
-        >,
+        registration: AnyTypeRegistrationV,
         variant_name: String,
     ) -> Result<Option<V<EnumVariantRef>>, InteropError> {
         profiling::function_scope!("get_enum_variant");
         let _ = ctxt;
-        let registration = match registration.into_left() {
-            Ok(l) => l.into_inner(),
-            Err(r) => match r.into_left() {
-                Ok(l) => (l.into_inner()).into_type_registration(),
-                Err(r) => (r.into_inner()).into_type_registration(),
-            },
-        };
+        let registration = registration.into_type_registration();
         Ok(EnumVariantRef::from_name(registration, &variant_name).map(V))
     }
 
@@ -1529,19 +1512,10 @@ impl GlobalNamespace {
     /// * `reference`: The constructed type.
     fn construct(
         ctxt: FunctionCallContext,
-        registration: Union<
-            V<ScriptTypeRegistration>,
-            Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
-        >,
+        registration: AnyTypeRegistrationV,
         payload: HashMap<String, ScriptValue>,
     ) -> Result<ReflectReference, InteropError> {
-        let registration = match registration.into_left() {
-            Ok(l) => l.into_inner(),
-            Err(r) => match r.into_left() {
-                Ok(l) => (l.into_inner()).into_type_registration(),
-                Err(r) => (r.into_inner()).into_type_registration(),
-            },
-        };
+        let registration = registration.into_type_registration();
 
         let world = ctxt.world()?;
         let one_indexed = ctxt.convert_to_0_indexed();

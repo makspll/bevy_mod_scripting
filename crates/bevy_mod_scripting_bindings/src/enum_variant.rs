@@ -55,7 +55,9 @@ impl EnumVariantRef {
             TypeInfo::Enum(info) => info.variant_at(self.variant_index),
             _ => None,
         }
-        .ok_or_else(|| InteropError::invariant("enum variant reference points to a missing variant"))
+        .ok_or_else(|| {
+            InteropError::invariant("enum variant reference points to a missing variant")
+        })
     }
 
     /// The name of the variant
@@ -63,4 +65,3 @@ impl EnumVariantRef {
         self.info().map(|info| info.name())
     }
 }
-

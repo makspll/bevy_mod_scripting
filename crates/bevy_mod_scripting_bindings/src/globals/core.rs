@@ -14,11 +14,7 @@ use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use std::{cell::RefCell, sync::Arc};
 
-use crate::{
-    ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
-    WorldExtensions,
-    function::from::{Union, V},
-};
+use crate::{AnyTypeRegistrationV, ScriptTypeRegistration, WorldExtensions, function::from::V};
 use crate::{docgen::into_through_type_info, error::InteropError};
 
 use super::AppScriptGlobalsRegistry;
@@ -130,18 +126,7 @@ impl CoreGlobals {
     /// You can use this to avoid having to store type references.
     ///
     /// Note that this cache will NOT contain types manually registered by scripts via `register_new_component`.
-    fn types(
-        guard: WorldGuard,
-    ) -> Result<
-        HashMap<
-            String,
-            Union<
-                V<ScriptTypeRegistration>,
-                Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
-            >,
-        >,
-        InteropError,
-    > {
+    fn types(guard: WorldGuard) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
         // profiling::function_scope!("registering core globals");
         let type_registry = guard.type_registry();
         let type_registry = type_registry.read();
@@ -151,7 +136,7 @@ impl CoreGlobals {
             let type_path = registration.type_info().type_path_table().short_path();
             let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
             let registration = guard.clone().get_type_registration(registration)?;
-            let registration = registration.map_both(V::from, |u| u.map_both(V::from, V::from));
+            let registration = registration.into_script();
             if type_cache
                 .insert(type_path.to_owned(), registration)
                 .is_some()
