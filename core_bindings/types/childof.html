@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -227,18 +227,18 @@ assert!(world.get_entity(grandchild).is_err());
 <p>However if you are spawning many children, you might want to use the [<code>EntityWorldMut::with_children</code>] helper instead:</p>
 <pre><code># use bevy_ecs::prelude::*;
 # let mut world = World::new();
-let mut child1 = Entity::PLACEHOLDER;
-let mut child2 = Entity::PLACEHOLDER;
-let mut grandchild = Entity::PLACEHOLDER;
+let mut child1 = None;
+let mut child2 = None;
+let mut grandchild = None;
 let root = world.spawn_empty().with_children(|p| {
-    child1 = p.spawn_empty().with_children(|p| {
-        grandchild = p.spawn_empty().id();
-    }).id();
-    child2 = p.spawn_empty().id();
+    child1 = Some(p.spawn_empty().with_children(|p| {
+        grandchild = Some(p.spawn_empty().id());
+    }).id());
+    child2 = Some(p.spawn_empty().id());
 }).id();
 
-assert_eq!(&amp;**world.entity(root).get::&lt;Children&gt;().unwrap(), &amp;[child1, child2]);
-assert_eq!(&amp;**world.entity(child1).get::&lt;Children&gt;().unwrap(), &amp;[grandchild]);
+assert_eq!(&amp;**world.entity(root).get::&lt;Children&gt;().unwrap(), &amp;[child1.unwrap(), child2.unwrap()]);
+assert_eq!(&amp;**world.entity(child1.unwrap()).get::&lt;Children&gt;().unwrap(), &amp;[grandchild.unwrap()]);
 </code></pre>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
@@ -249,9 +249,9 @@ assert_eq!(&amp;**world.entity(child1).get::&lt;Children&gt;().unwrap(), &amp;[g
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
+<tr><td><a href="./childof/parent.html">parent</a></td><td>The parent entity of this child entity.</td></tr>
 <tr><td><a href="./childof/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./childof/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./childof/parent.html">parent</a></td><td>The parent entity of this child entity.</td></tr>
 </tbody>
 </table>
 </div>
@@ -264,7 +264,7 @@ assert_eq!(&amp;**world.entity(child1).get::&lt;Children&gt;().unwrap(), &amp;[g
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/childof/clone.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/childof/parent.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -278,7 +278,7 @@ assert_eq!(&amp;**world.entity(child1).get::&lt;Children&gt;().unwrap(), &amp;[g
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/childof/clone.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/childof/parent.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -191,7 +191,7 @@
 <blockquote>
 <p>The [<code>Outline</code>] component adds an outline outside the edge of a UI node.
 Outlines do not take up space in the layout.</p>
-<p>To add an [<code>Outline</code>] to a ui node you can spawn a <code>(Node, Outline)</code> tuple bundle:</p>
+<p>To add an [<code>Outline</code>] to a UI node you can spawn a <code>(Node, Outline)</code> tuple bundle:</p>
 <pre><code># use bevy_ecs::prelude::*;
 # use bevy_ui::prelude::*;
 # use bevy_color::palettes::basic::{RED, BLUE};
@@ -210,14 +210,15 @@ fn setup_ui(mut commands: Commands) {
 <p>[<code>Outline</code>] components can also be added later to existing UI nodes:</p>
 <pre><code># use bevy_ecs::prelude::*;
 # use bevy_ui::prelude::*;
+# use bevy_picking::hover::Hovered;
 # use bevy_color::Color;
 fn outline_hovered_button_system(
     mut commands: Commands,
-    mut node_query: Query&lt;(Entity, &amp;Interaction, Option&lt;&amp;mut Outline&gt;), Changed&lt;Interaction&gt;&gt;,
+    mut node_query: Query&lt;(Entity, &amp;Hovered, Option&lt;&amp;mut Outline&gt;), Changed&lt;Hovered&gt;&gt;,
 ) {
-    for (entity, interaction, mut maybe_outline) in node_query.iter_mut() {
+    for (entity, hovered, mut maybe_outline) in node_query.iter_mut() {
         let outline_color =
-            if matches!(*interaction, Interaction::Hovered) {
+            if hovered.get() {
                 Color::WHITE
             } else {
                 Color::NONE

@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -191,6 +191,12 @@ the widget from being updated or rendered, or from acquiring keyboard focus.</p>
 the <code>InteractionDisabled</code> component should be added to the root entity of the widget - the
 same entity that contains the <code>AccessibilityNode</code> component. This will ensure that
 the a11y tree is updated correctly.</p>
+<p>For developers familiar with the web and HTML, the word “disabled” as used here should be
+interpreted as working more like the <code>aria-disabled</code> (which doesn’t prevent input focus)
+than the <code>disabled</code> attribute (which does). However, unlike <code>aria-disabled</code>, which is purely
+advisory, this does make the widget non-operable.</p>
+<p>In particular, this marker currently has no effect on the “click-to-focus” observer which
+lives in [<code>bevy_input_focus</code>], as that is a lower-level crate that this one depends on.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

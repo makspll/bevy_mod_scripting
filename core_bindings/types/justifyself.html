@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,8 +183,11 @@
                         <h1 id="justifyself"><a class="header" href="#justifyself"><code>JustifySelf</code></a></h1>
 <h3 id="auto"><a class="header" href="#auto">Auto</a></h3>
 <h3 id="start"><a class="header" href="#start">Start</a></h3>
+<h3 id="startsafe"><a class="header" href="#startsafe">StartSafe</a></h3>
 <h3 id="end"><a class="header" href="#end">End</a></h3>
+<h3 id="endsafe"><a class="header" href="#endsafe">EndSafe</a></h3>
 <h3 id="center"><a class="header" href="#center">Center</a></h3>
+<h3 id="centersafe"><a class="header" href="#centersafe">CenterSafe</a></h3>
 <h3 id="baseline"><a class="header" href="#baseline">Baseline</a></h3>
 <h3 id="stretch"><a class="header" href="#stretch">Stretch</a></h3>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
@@ -194,6 +197,9 @@
 <li>For children of flex nodes, this property has no effect. See <code>justify_content</code> for main axis alignment of flex items.</li>
 <li>For CSS Grid items, controls inline (horizontal) axis alignment of a grid item within its grid area.</li>
 </ul>
+<h1 id="safe-alignments"><a class="header" href="#safe-alignments">Safe alignments</a></h1>
+<p>Safe alignments will fall back to [<code>Self::Start</code>] if aligning the items would overflow the container, so
+the start of the content stays visible.</p>
 <p><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/justify-self">https://developer.mozilla.org/en-US/docs/Web/CSS/justify-self</a></p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>

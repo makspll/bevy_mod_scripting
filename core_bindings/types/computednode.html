@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -194,14 +194,20 @@
 <li><strong>border_radius</strong>:<a href="./resolvedborderradius.html">ResolvedBorderRadius</a></li>
 <li><strong>padding</strong>:<a href="./borderrect.html">BorderRect</a></li>
 <li><strong>inverse_scale_factor</strong>:<a href="./f32.html">F32</a></li>
+<li><strong>em_size</strong>:<a href="./emsize.html">EmSize</a></li>
+<li><strong>rem_size</strong>:<a href="./remsize.html">RemSize</a></li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>Provides the computed size and layout properties of the node.</p>
-<p>Fields in this struct are public but should not be modified under most circumstances.
+<p>Provides the computed size and layout properties of a UI [<code>Node</code>].</p>
+<p>All of the fields are automatically calculated by <a href="`super::layout::ui_layout_system`"><code>ui_layout_system</code></a>
+during <code>PostUpdate</code> in the <a href="super::UiSystems"><code>UiSystems::Layout</code></a> set.</p>
+<p>The fields are measured in physical pixels.
+You can multiply by the <code>inverse_scale_factor</code> field to convert back to logical pixels.</p>
+<p>Fields in this struct are public but should only rarely be directly modified.
 For example, in a scrollbar you may want to derive the handle’s size from the proportion of
 scrollable content in-view. You can directly modify <code>ComputedNode</code> after layout to set the
-handle size without any delays.</p>
+handle size without a frame delay.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -210,7 +216,7 @@ handle size without any delays.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/calculatedclip.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/calculatedcliprect.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -224,7 +230,7 @@ handle size without any delays.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/calculatedclip.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/calculatedcliprect.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 

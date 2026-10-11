@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,12 +182,30 @@
                     <main>
                         <h1 id="meshtag"><a class="header" href="#meshtag"><code>MeshTag</code></a></h1>
 <h3 id="meshtag-1"><a class="header" href="#meshtag-1">MeshTag</a></h3>
-<ol>
-<li><a href="./u32.html">U32</a></li>
-</ol>
+<ul>
+<li><strong>value</strong>:<a href="./u32.html">U32</a></li>
+<li><strong>type_id</strong>:Optional&lt;<a href="./typeid.html">TypeId</a>&gt;</li>
+</ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>A component that stores an arbitrary index used to identify the mesh instance when rendering.</p>
+<p>A component that stores an arbitrary index used to identify the mesh
+instance when rendering.</p>
+<p>You can fetch the value of the tag in the shader using the <code>tag</code> field on
+<code>bevy_pbr::mesh_bindings::mesh</code>.</p>
+<p>When using a <code>GpuComponentArrayBuffer</code>, the tag represents the index of the
+mesh instance data in the buffer. In this case, Bevy automatically manages
+the tag, keeping it up to date as component data are extracted to and
+removed from the buffer. If you aren’t using a <code>GpuComponentArrayBuffer</code>,
+the tag is free for you to use for whatever purpose you wish.</p>
+<p>You may optionally supply a [<code>TypeId</code>] to accompany the mesh tag. Bevy
+ignores this type and treats it only as an opaque marker. It’s not stored
+except in debug mode. Its only purpose is to provide diagnostics so that
+<code>GpuComponentArrayBuffer</code> can emit warnings if it overwrites a mesh tag.
+Examples of misuse that <code>GpuComponentArrayBuffer</code> can detect are cases in
+which you were using a [<code>MeshTag</code>] for application-specific purposes in
+addition to storing a component backed by a <code>GpuComponentArrayBuffer</code> on
+your mesh and cases in which you attempted to store multiple components
+backed by <code>GpuComponentArrayBuffer</code>s on the same mesh.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

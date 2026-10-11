@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -189,9 +189,17 @@
 <blockquote>
 <p><code>GlobalZIndex</code> allows a [<code>Node</code>] entity anywhere in the UI hierarchy to escape the implicit draw ordering of the UI’s layout tree and
 be rendered above or below other UI nodes.
+Root UI nodes without a <code>GlobalZIndex</code> component receive an implicit global z-index of <code>0</code>.
 Nodes with a <code>GlobalZIndex</code> of greater than 0 will be drawn on top of nodes without a <code>GlobalZIndex</code> or nodes with a lower <code>GlobalZIndex</code>.
-Nodes with a <code>GlobalZIndex</code> of less than 0 will be drawn below nodes without a <code>GlobalZIndex</code> or nodes with a greater <code>GlobalZIndex</code>.</p>
-<p>If two Nodes have the same <code>GlobalZIndex</code>, the node with the greater [<code>ZIndex</code>] will be drawn on top.</p>
+Nodes with a <code>GlobalZIndex</code> of less than 0 will be drawn below nodes without a <code>GlobalZIndex</code> or nodes with a greater <code>GlobalZIndex</code>.
+The order of nodes with the same <code>GlobalZIndex</code> is stable between frames.</p>
+<p>If two Nodes have the same <code>GlobalZIndex</code>, ties are decided in order by:</p>
+<ul>
+<li>The node with the higher <code>ZIndex</code>.</li>
+<li>The node that was newly added this frame.</li>
+<li>The node with a changed <code>GlobalZIndex</code> or <code>ZIndex</code>.</li>
+</ul>
+<p>Otherwise the order is preserved from the previous frame.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a9a1b692.js";
+            window.path_to_searchindex_js = "../../searchindex-98b4d120.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-eb4faeef.js"></script>
+        <script src="../../toc-523fca2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -189,24 +189,24 @@
 <ol>
 <li><a href="./smolstr.html">SmolStr</a></li>
 </ol>
-<h3 id="serif"><a class="header" href="#serif">Serif</a></h3>
-<h3 id="sansserif"><a class="header" href="#sansserif">SansSerif</a></h3>
-<h3 id="cursive"><a class="header" href="#cursive">Cursive</a></h3>
-<h3 id="fantasy"><a class="header" href="#fantasy">Fantasy</a></h3>
-<h3 id="monospace"><a class="header" href="#monospace">Monospace</a></h3>
-<h3 id="systemui"><a class="header" href="#systemui">SystemUi</a></h3>
-<h3 id="uiserif"><a class="header" href="#uiserif">UiSerif</a></h3>
-<h3 id="uisansserif"><a class="header" href="#uisansserif">UiSansSerif</a></h3>
-<h3 id="uimonospace"><a class="header" href="#uimonospace">UiMonospace</a></h3>
-<h3 id="uirounded"><a class="header" href="#uirounded">UiRounded</a></h3>
-<h3 id="emoji"><a class="header" href="#emoji">Emoji</a></h3>
-<h3 id="math"><a class="header" href="#math">Math</a></h3>
-<h3 id="fangsong"><a class="header" href="#fangsong">FangSong</a></h3>
+<h3 id="families"><a class="header" href="#families">Families</a></h3>
+<ol>
+<li><a href="./smolstr.html">SmolStr</a></li>
+</ol>
+<h3 id="list"><a class="header" href="#list">List</a></h3>
+<ol>
+<li>Vec&lt;<a href="./fontsource.html">FontSource</a>&gt;</li>
+</ol>
+<h3 id="generic"><a class="header" href="#generic">Generic</a></h3>
+<ol>
+<li><a href="./genericfontfamily.html">GenericFontFamily</a></li>
+</ol>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>Determines how the font face for a text sections is selected.</p>
 <p>A [<code>FontSource</code>] can be a handle to a font asset, a font family name,
-or a generic font category that is resolved using Parley’s font database.</p>
+a CSS font-family list, an ordered family list, or a generic font category
+that is resolved using Parley’s font database.</p>
 <p>Font family fallback (selection of a font when the requested font is not found)
 is automatically handled by [<code>parley::fontique</code>].
 Be sure to enable the <code>parley/system</code> feature for automatic discovery of system fonts.</p>
