@@ -3,3 +3,7 @@ assert(constructed.foo == 123, "expected foo to be 123 but got " + constructed.f
 
 let defaulted = SimpleStruct.new_.call(#{});
 assert(defaulted.foo == 0, "expected foo to be 0 but got " + defaulted.foo);
+
+// a list is taken as the fields in order
+let positional = SimpleTupleStruct.new_.call([9]);
+assert(positional[0] == 9, "expected first field to be 9 but got " + positional[0]);

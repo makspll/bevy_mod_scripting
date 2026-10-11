@@ -27,7 +27,7 @@ pub use function::*;
 pub use globals::*;
 // pub use pretty_print::*;
 pub use bevy_mod_scripting_world::*;
-pub use construct::{ConstructOptions, ConstructorsPlugin};
+pub use construct::ConstructOptions;
 pub use conversions::*;
 pub use path::*;
 pub use query::*;

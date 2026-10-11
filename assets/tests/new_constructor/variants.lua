@@ -24,3 +24,7 @@ assert(world.get_enum_variant(type, "Missing") == nil, "expected no such variant
 
 -- non enums have no variant
 assert(SimpleStruct.new({}):variant() == nil, "expected structs to have no variant")
+
+-- variants take positional fields too
+local positional_tuple = SimpleEnum.TupleStruct:new({ 8 })
+assert(positional_tuple[1] == 8, "expected first field to be 8 but got " .. tostring(positional_tuple[1]))

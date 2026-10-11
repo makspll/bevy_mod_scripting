@@ -1,8 +1,8 @@
 function on_test()
-    local label = construct(types.CallbackLabel, { ["1"] = "callback_a" })
-    local recipients = construct(types.Recipients, { variant = "AllScripts" })
+    local label = CallbackLabel.new({ "callback_a" })
+    local recipients = Recipients.AllScripts:new({})
     local event_type = types.ScriptCallbackEvent
-    local event = construct(event_type, {
+    local event = ScriptCallbackEvent.new({
         label = label,
         recipients = recipients,
         args = {},

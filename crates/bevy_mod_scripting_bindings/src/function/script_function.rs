@@ -1,18 +1,22 @@
 //! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
 
 use super::MagicFunctions;
-use super::{from::FromScript, into::IntoScript, namespace::Namespace};
-use crate::VariadicTuple;
+use super::{
+    from::{FromScript, V},
+    into::IntoScript,
+    namespace::Namespace,
+};
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
 use crate::{ScriptValue, error::InteropError};
+use crate::{StaticTypeRef, VariadicTuple};
 use bevy_ecs::prelude::Resource;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::DisplayWithTypeInfo;
 use bevy_mod_scripting_world::{ThreadWorldContainer, WorldGuard};
 use bevy_platform::collections::HashMap;
-use bevy_reflect::Reflect;
+use bevy_reflect::{Reflect, TypeInfo};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::borrow::Cow;
 use std::collections::VecDeque;
@@ -231,29 +235,26 @@ impl DynamicScriptFunction {
         &self.info.name
     }
 
-    /// Returns a function which calls this one with an extra first argument, created from the call context on each call.
+    /// Binds a function shared between all types, i.e. one registered on [`StaticTypeRef`], to the given type.
     ///
-    /// The extra argument is removed from the function's argument info.
-    pub fn with_first_arg(
-        &self,
-        make_arg: impl Fn(&FunctionCallContext) -> Result<ScriptValue, InteropError>
-        + Send
-        + Sync
-        + 'static,
-    ) -> Self {
+    /// The returned function is called without the type argument, which is filled in on each call.
+    /// Its signature is that of [`FunctionInfo::bind_to_type`].
+    pub fn bind_to_type(&self, type_info: &'static TypeInfo) -> Self {
         let inner = self.func.clone();
-        let mut info = (*self.info).clone();
-        if !info.arg_info.is_empty() {
-            info.arg_info.remove(0);
-        }
+        let type_id = type_info.type_id();
         DynamicScriptFunction {
-            info: Arc::new(info),
-            func: Arc::new(move |context, mut args| match make_arg(&context) {
-                Ok(arg) => {
-                    args.push_front(arg);
-                    inner(context, args)
+            info: Arc::new(self.info.bind_to_type(type_info)),
+            func: Arc::new(move |context, mut args| {
+                let type_ref = context
+                    .world()
+                    .and_then(|world| V(StaticTypeRef::new(type_id)).into_script(world));
+                match type_ref {
+                    Ok(type_ref) => {
+                        args.push_front(type_ref);
+                        inner(context, args)
+                    }
+                    Err(e) => ScriptValue::Error(e),
                 }
-                Err(e) => ScriptValue::Error(e),
             }),
         }
     }

@@ -5,5 +5,6 @@
     ],
     "runtime.version": "Lua 5.4",
     "hint.enable": false,
-    "diagnostics.workspaceDelay": 30000
+    "diagnostics.workspaceDelay": 30000,
+    "workspace.preloadFileSize": 10000
 }

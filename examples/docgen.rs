@@ -8,6 +8,7 @@ use bevy_mod_scripting_bindings::{
 use ladfile_builder::plugin::{
     LadFileSettingsArc, ScriptingFilesGenerationPlugin, generate_lad_file,
 };
+use script_integration_test_harness::test_functions::register_test_functions;
 use std::path::PathBuf;
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
@@ -26,6 +27,12 @@ fn main() -> std::io::Result<()> {
             true,
         ),
     ));
+
+    // `cargo run --example docgen --features lua_language_server_files -- testlib`
+    // also includes the functions available to the script integration tests, i.e. to get completions while writing tests
+    if std::env::args().skip(1).any(|arg| arg == "testlib") {
+        register_test_functions(&mut app);
+    }
 
     // there are two ways to generate the ladfile
 

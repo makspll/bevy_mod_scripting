@@ -53,7 +53,8 @@
             "name": "int_field",
             "type": {
               "primitive": "usize"
-            }
+            },
+            "has_default": true
           }
         ]
       },
@@ -88,13 +89,15 @@
             "name": "field",
             "type": {
               "primitive": "usize"
-            }
+            },
+            "has_default": true
           },
           {
             "name": "field2",
             "type": {
               "primitive": "usize"
-            }
+            },
+            "has_default": true
           }
         ]
       },
@@ -474,7 +477,8 @@
               "name": "field",
               "type": {
                 "primitive": "usize"
-              }
+              },
+              "has_default": true
             }
           ]
         },
@@ -485,12 +489,14 @@
             {
               "type": {
                 "primitive": "usize"
-              }
+              },
+              "has_default": true
             },
             {
               "type": {
                 "primitive": "string"
-              }
+              },
+              "has_default": true
             }
           ]
         }
@@ -516,12 +522,14 @@
           {
             "type": {
               "primitive": "usize"
-            }
+            },
+            "has_default": true
           },
           {
             "type": {
               "primitive": "string"
-            }
+            },
+            "has_default": true
           }
         ]
       },

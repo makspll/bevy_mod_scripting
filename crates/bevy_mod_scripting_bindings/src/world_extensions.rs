@@ -11,7 +11,7 @@ use super::{
     },
     schedule::AppScheduleRegistry,
     script_value::ScriptValue,
-    static_type::get_registration,
+    static_type::registered_type_info,
 };
 use crate::{
     DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder, ScriptQueryResult,
@@ -873,7 +873,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     ) -> Result<Box<dyn PartialReflect>, InteropError> {
         crate::construct::construct(
             self,
-            &type_,
+            type_.registration.type_info(),
             None,
             payload,
             crate::construct::ConstructOptions {
@@ -987,9 +987,9 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Err(name) => name,
         };
 
-        let variant = get_registration(self, type_id)
+        let variant = registered_type_info(self, type_id)
             .ok()
-            .and_then(|registration| EnumVariantRef::from_name(registration, &name));
+            .and_then(|type_info| EnumVariantRef::from_name(type_info, &name));
         match variant {
             Some(variant) => V(variant).into_script(self.clone()).map_err(|_| name),
             None => Err(name),
@@ -1011,14 +1011,11 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             return Err(name);
         }
 
-        match self.lookup_function([TypeId::of::<StaticTypeRef>()], name) {
-            Ok(func) => Ok(func.with_first_arg(move |context| {
-                let world = context.world()?;
-                let registration = get_registration(&world, type_id)?;
-                V(StaticTypeRef::new(registration)).into_script(world)
-            })),
-            Err(name) => Err(name),
-        }
+        let Ok(type_info) = registered_type_info(self, type_id) else {
+            return Err(name);
+        };
+        self.lookup_function([TypeId::of::<StaticTypeRef>()], name)
+            .map(|func| func.bind_to_type(type_info))
     }
 
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
@@ -1310,6 +1307,10 @@ mod test {
             .lookup_type_function(TypeId::of::<SimpleTupleStruct>(), "describe")
             .unwrap();
         assert!(shared.info.arg_info.is_empty());
+        assert_eq!(
+            shared.info.namespace,
+            Namespace::OnType(TypeId::of::<SimpleTupleStruct>())
+        );
 
         // functions on the type itself take priority
         let own = world

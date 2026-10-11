@@ -3,7 +3,6 @@
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use bevy_platform::collections::HashMap;
 use std::{collections::VecDeque, ops::Deref};
 
 use bevy_app::App;
@@ -14,14 +13,15 @@ use bevy_mod_scripting_bindings::{
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, ReflectReference,
     ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
     ScriptTypeRegistration, VariadicTuple, WorldExtensions,
+    construct::{ConstructOptions, allocate_constructed, construct as construct_value},
     function::{
+        bound::BoundFields,
         from::{FromScript, R, V},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
     script_value::ScriptValue,
-    static_type::get_registration,
 };
 use bevy_mod_scripting_core::script_system::{ManageScriptSystems, ScriptSystemBuilder};
 use bevy_mod_scripting_derive::script_bindings;
@@ -126,20 +126,20 @@ impl World {
     /// This is the same as accessing `MyEnum.Variant`, but works for variants which share a name with a function.
     ///
     /// Arguments:
-    /// * `ctxt`: The function call context.
     /// * `registration`: The enum type.
     /// * `variant_name`: The name of the variant.
     /// Returns:
     /// * `variant`: The variant, if the type is an enum with such a variant.
     fn get_enum_variant(
-        ctxt: FunctionCallContext,
         registration: AnyTypeRegistrationV,
         variant_name: String,
     ) -> Result<Option<V<EnumVariantRef>>, InteropError> {
         profiling::function_scope!("get_enum_variant");
-        let _ = ctxt;
-        let registration = registration.into_type_registration();
-        Ok(EnumVariantRef::from_name(registration, &variant_name).map(V))
+        let type_info = registration
+            .into_type_registration()
+            .type_registration()
+            .type_info();
+        Ok(EnumVariantRef::from_name(type_info, &variant_name).map(V))
     }
 
     /// Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
@@ -637,11 +637,8 @@ impl ReflectReference {
         let Some(type_id) = reference.tail_type_id(world.clone())? else {
             return Ok(None);
         };
-        let registration = get_registration(&world, type_id)?;
         reference
-            .with_reflect(world, |value| {
-                EnumVariantRef::from_value(registration, value)
-            })
+            .with_reflect(world, |value| EnumVariantRef::from_value(type_id, value))
             .map(|variant| variant.map(V))
     }
 
@@ -973,12 +970,16 @@ impl EnumVariantRef {
     /// Retrieves the name of the variant.
     ///
     /// Arguments:
+    /// * `ctxt`: The function call context.
     /// * `variant`: The variant.
     /// Returns:
     /// * `variant_name`: The name of the variant.
-    fn variant_name(variant: V<EnumVariantRef>) -> Result<String, InteropError> {
+    fn variant_name(
+        ctxt: FunctionCallContext,
+        variant: V<EnumVariantRef>,
+    ) -> Result<String, InteropError> {
         profiling::function_scope!("variant_name");
-        variant.variant_name().map(str::to_owned)
+        variant.variant_name(&ctxt.world()?).map(str::to_owned)
     }
 
     /// Checks whether two variants are the same variant of the same enum.
@@ -1505,35 +1506,35 @@ impl GlobalNamespace {
 impl GlobalNamespace {
     /// Attempts to construct the given type, given an arbitrary map of values.
     ///
+    /// Unlike `Type.new`, this works for every type, including ones with a `new` function of their own.
+    /// Missing fields are filled in from the type's default, then from the defaults of the fields' types, as for `Type.new`.
+    ///
     /// Arguments:
     /// * `registration`: The type to construct.
-    /// * `payload`: The values to use to construct the type.
+    /// * `payload`: The values to use to construct the type, keyed by field name or index, or a list of the fields in order.
     /// Returns:
     /// * `reference`: The constructed type.
     fn construct(
         ctxt: FunctionCallContext,
         registration: AnyTypeRegistrationV,
-        payload: HashMap<String, ScriptValue>,
+        payload: BoundFields,
     ) -> Result<ReflectReference, InteropError> {
         let registration = registration.into_type_registration();
-
         let world = ctxt.world()?;
-        let one_indexed = ctxt.convert_to_0_indexed();
-
-        let val = world.construct(registration.clone(), payload, one_indexed)?;
-        let allocator = world.allocator();
-        let mut allocator = allocator.write();
-        let reflect_val = val.try_into_reflect().map_err(|_| {
-            InteropError::failed_from_reflect(
-                Some(registration.type_id()),
-                "Could not construct the type",
-            )
-        })?;
-
-        Ok(ReflectReference::new_allocated_boxed(
-            reflect_val,
-            &mut allocator,
-        ))
+        let opts = ConstructOptions {
+            one_indexed: ctxt.convert_to_0_indexed(),
+            use_type_default: true,
+            use_field_default: true,
+        };
+        let type_info = registration.type_registration().type_info();
+        let value = construct_value(
+            &world,
+            type_info,
+            None,
+            payload.into_map(opts.one_indexed),
+            opts,
+        )?;
+        allocate_constructed(&world, type_info.type_id(), value)
     }
 
     /// Creates a new script system builder, which can be used to add new systems to the world.

@@ -42,6 +42,67 @@ pub enum ThroughTypeInfo {
     TypeInfo(&'static TypeInfo),
     /// A primitive type, which mostly speaks for itself
     Primitive(ReflectionPrimitiveKind),
+    /// A table of the fields of a type, i.e. the payload of a constructor.
+    Fields {
+        /// The type the fields belong to
+        type_info: &'static TypeInfo,
+        /// For enums, the variant the fields belong to
+        variant: Option<&'static str>,
+    },
+    /// Stands in for the type a shared function is bound to, until it is bound.
+    ///
+    /// See [`ThroughTypeInfo::bind_placeholders`].
+    Bound(BoundPlaceholder),
+}
+
+/// The parts of a shared function's signature which depend on the type it is bound to.
+#[derive(Clone, Copy, PartialEq, Eq, DebugWithTypeInfo)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+pub enum BoundPlaceholder {
+    /// A value of the bound type
+    Value,
+    /// A table of the fields of the bound type, see [`ThroughTypeInfo::Fields`]
+    Fields,
+}
+
+impl ThroughTypeInfo {
+    /// Replaces any [`ThroughTypeInfo::Bound`] placeholders with the given type, and for fields, the variant.
+    pub fn bind_placeholders(
+        &self,
+        type_info: &'static TypeInfo,
+        variant: Option<&'static str>,
+    ) -> ThroughTypeInfo {
+        let bind = |inner: &ThroughTypeInfo| Box::new(inner.bind_placeholders(type_info, variant));
+        let bind_all = |inner: &[ThroughTypeInfo]| {
+            inner
+                .iter()
+                .map(|i| i.bind_placeholders(type_info, variant))
+                .collect()
+        };
+        match self {
+            ThroughTypeInfo::Bound(BoundPlaceholder::Value) => ThroughTypeInfo::UntypedWrapper {
+                through_type: type_info,
+                wrapper_kind: UntypedWrapperKind::Val,
+            },
+            ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => {
+                ThroughTypeInfo::Fields { type_info, variant }
+            }
+            ThroughTypeInfo::TypedWrapper(kind) => ThroughTypeInfo::TypedWrapper(match kind {
+                TypedWrapperKind::Union(inner) => TypedWrapperKind::Union(bind_all(inner)),
+                TypedWrapperKind::Vec(inner) => TypedWrapperKind::Vec(bind(inner)),
+                TypedWrapperKind::HashMap(k, v) => TypedWrapperKind::HashMap(bind(k), bind(v)),
+                TypedWrapperKind::HashSet(inner) => TypedWrapperKind::HashSet(bind(inner)),
+                TypedWrapperKind::Array(inner, len) => TypedWrapperKind::Array(bind(inner), *len),
+                TypedWrapperKind::Option(inner) => TypedWrapperKind::Option(bind(inner)),
+                TypedWrapperKind::InteropResult(inner) => {
+                    TypedWrapperKind::InteropResult(bind(inner))
+                }
+                TypedWrapperKind::Tuple(inner) => TypedWrapperKind::Tuple(bind_all(inner)),
+                TypedWrapperKind::UntypedTuple => TypedWrapperKind::UntypedTuple,
+            }),
+            other => other.clone(),
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, DebugWithTypeInfo)]

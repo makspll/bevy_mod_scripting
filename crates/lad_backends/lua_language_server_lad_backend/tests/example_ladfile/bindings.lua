@@ -4,11 +4,11 @@
 
 ---@class PlainStructType : ReflectReference
 ---  I am a simple plain struct type
----@field  int_field ? integer
+---@field  int_field? integer
 PlainStructType = {}
 
----@param p1 PlainStructType 
----@param p2 integer 
+---@param p1 PlainStructType
+---@param p2 integer
 ---@return any
 function PlainStructType.plain_struct_function(p1,p2) end
 
@@ -165,17 +165,35 @@ Usize = {}
 
 
 ---@class EnumType : ReflectReference
----@field  Unit  EnumVariantRef
----@field  Struct  EnumVariantRef
----@field  TupleStruct  EnumVariantRef
+---@field  Unit EnumType.UnitVariant
+---@field  Struct EnumType.Struct
+---@field  TupleStruct EnumType.TupleStruct
 EnumType = {}
+
+
+
+---@class EnumType.Struct : EnumVariantRef
+--- The `Struct` variant of `EnumType`.
+EnumType.Struct = {}
+
+
+
+---@class EnumType.TupleStruct : EnumVariantRef
+--- The `TupleStruct` variant of `EnumType`.
+EnumType.TupleStruct = {}
+
+
+
+---@class EnumType.UnitVariant : EnumVariantRef
+--- A variant of `EnumType` without fields, one of: `Unit`.
+
 
 
 
 ---@class TupleStructType : ReflectReference
 ---  I am a tuple test type
----@field  [1]  integer
----@field  [2]  string
+---@field  [1] integer
+---@field  [2] string
 TupleStructType = {}
 
 
@@ -187,7 +205,7 @@ UnitType = {}
 
 
 
----@param arg1 integer 
+---@param arg1 integer
 ---@return integer
 function hello_world(arg1) end
 

@@ -1,5 +1,4 @@
 local Resource = world.get_type_by_name("TestResourceWithVariousFields")
-local SimpleType = types.SimpleType
 local resource = world.get_resource(Resource)
 
 resource.string = "Hello, World!"
@@ -19,7 +18,7 @@ assert(resource.string_map:len() == 2, "Expected 2, got " .. resource.string_map
 assert(resource.string_map["foo"] == "hello", "Expected 'hello', got " .. resource.string_map["foo"])
 assert(resource.string_map["zoo"] == "world", "Expected 'world', got " .. resource.string_map["zoo"])
 assert(resource.string_set["foo"] ~= nil, "Expected something, got " .. resource.string_set["foo"])
-local key_simple_type = construct(SimpleType, {
+local key_simple_type = SimpleType.new({
     inner = "foo"
 })
 assert(resource.simple_type_map[key_simple_type],

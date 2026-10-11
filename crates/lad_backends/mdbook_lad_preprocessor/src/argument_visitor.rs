@@ -154,6 +154,24 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(size.to_string());
         self.buffer.text("]");
     }
+
+    fn walk_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
+        // Write Fields<Type> or Fields<Type::Variant>
+        self.buffer.text("Fields<");
+        self.visit_lad_type_id(type_id);
+        if let Some(variant) = variant {
+            self.buffer.text("::");
+            self.buffer.text(variant);
+        }
+        self.buffer.text(">");
+    }
+
+    fn visit_bound(&mut self, placeholder: ladfile::LadBoundPlaceholder) {
+        self.buffer.text(match placeholder {
+            ladfile::LadBoundPlaceholder::Value => "Self",
+            ladfile::LadBoundPlaceholder::Fields => "Fields<Self>",
+        });
+    }
 }
 
 #[cfg(test)]

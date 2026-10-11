@@ -3,18 +3,12 @@
 //! This is the language-agnostic core behind `construct` and the type level `new` constructors.
 
 use crate::{
-    EnumVariantRef, ReflectReference, ScriptTypeRegistration, StaticTypeRef, WorldExtensions,
+    ReflectReference, WorldExtensions,
     error::InteropError,
-    function::{
-        from::{FromScript, V},
-        from_ref::FromScriptRef,
-        namespace::{Namespace, NamespaceBuilder},
-        script_function::FunctionCallContext,
-    },
+    function::{from::FromScript, from_ref::FromScriptRef, namespace::Namespace},
     reflection_extensions::PartialReflectExt,
     script_value::ScriptValue,
 };
-use bevy_app::{App, Plugin};
 use bevy_ecs::world::World;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
@@ -26,7 +20,7 @@ use bevy_reflect::{
     tuple::DynamicTuple,
     tuple_struct::DynamicTupleStruct,
 };
-use std::{any::TypeId, borrow::Cow};
+use std::any::TypeId;
 
 /// Options controlling how values are constructed from a payload.
 #[derive(Clone, Copy, Debug)]
@@ -167,12 +161,11 @@ fn missing_info() -> InteropError {
 /// For enums the variant is taken from `variant` if provided, otherwise from the `"variant"` entry of the payload.
 pub fn construct(
     guard: &WorldGuard,
-    type_: &ScriptTypeRegistration,
+    type_info: &'static TypeInfo,
     variant: Option<&str>,
     mut payload: HashMap<String, ScriptValue>,
     opts: ConstructOptions,
 ) -> Result<Box<dyn PartialReflect>, InteropError> {
-    let type_info = type_.registration.type_info();
     let base = if opts.use_type_default {
         default_value(guard, type_info.type_id())
     } else {
@@ -309,122 +302,12 @@ pub fn allocate_constructed(
     Ok(ReflectReference::new_allocated_boxed(value, &mut allocator))
 }
 
-/// The type level constructor, registered once on [`StaticTypeRef`] and bound to the type
-/// when accessed through a static type reference, i.e. `Type.new{...}`.
-fn construct_type(
-    ctxt: FunctionCallContext,
-    type_ref: V<StaticTypeRef>,
-    payload: HashMap<String, ScriptValue>,
-    use_type_default: Option<bool>,
-    use_field_default: Option<bool>,
-) -> Result<ReflectReference, InteropError> {
-    let guard = ctxt.world()?;
-    let registration = type_ref.into_inner().registration;
-    let opts = ConstructOptions {
-        one_indexed: ctxt.convert_to_0_indexed(),
-        use_type_default: use_type_default.unwrap_or(true),
-        use_field_default: use_field_default.unwrap_or(true),
-    };
-    let value = construct(&guard, &registration, None, payload, opts)?;
-    allocate_constructed(&guard, registration.type_id(), value)
-}
-
-/// The constructor of a variant, i.e. `MyEnum.Variant:new{...}`, shares its options with [`construct_type`].
-fn construct_variant(
-    ctxt: FunctionCallContext,
-    variant: V<EnumVariantRef>,
-    payload: HashMap<String, ScriptValue>,
-    use_type_default: Option<bool>,
-    use_field_default: Option<bool>,
-) -> Result<ReflectReference, InteropError> {
-    let guard = ctxt.world()?;
-    let variant = variant.into_inner();
-    let opts = ConstructOptions {
-        one_indexed: ctxt.convert_to_0_indexed(),
-        use_type_default: use_type_default.unwrap_or(true),
-        use_field_default: use_field_default.unwrap_or(true),
-    };
-    let value = construct(
-        &guard,
-        &variant.registration,
-        Some(variant.variant_name()?),
-        payload,
-        opts,
-    )?;
-    allocate_constructed(&guard, variant.registration.type_id(), value)
-}
-
-/// Adds a type level constructor to scripts, i.e. `MyType.new{ field = value }`.
-///
-/// The constructor is a single function registered on [`StaticTypeRef`], and is made available on
-/// every type's static reference. Functions registered on the type itself with the same name take priority.
-///
-/// The constructor takes a table of fields, and optionally:
-/// - `use_type_default` (default `true`): use the type's `Default` as the base, only overwriting the given fields
-/// - `use_field_default` (default `true`): use the `Default` of a field's type for fields which are still missing
-pub struct ConstructorsPlugin {
-    /// The name the constructor is available under in scripts.
-    pub constructor_name: Cow<'static, str>,
-}
-
-impl Default for ConstructorsPlugin {
-    fn default() -> Self {
-        Self {
-            constructor_name: Cow::Borrowed("new"),
-        }
-    }
-}
-
-impl Plugin for ConstructorsPlugin {
-    fn build(&self, app: &mut App) {
-        NamespaceBuilder::<EnumVariantRef>::new(app.world_mut()).register_documented(
-            self.constructor_name.clone(),
-            construct_variant,
-            "Constructs a value of this enum variant from a table of its fields.\n\n\
-             Arguments:\n\
-             * `variant`: The variant to construct.\n\
-             * `payload`: The values to use to construct the variant.\n\
-             * `use_type_default`: Whether to use the enum's default as the base if it is this variant, true by default.\n\
-             * `use_field_default`: Whether to default missing fields from their types' defaults, true by default.\n\
-             Returns:\n\
-             * `reference`: The constructed value.",
-            &[
-                "variant",
-                "payload",
-                "use_type_default",
-                "use_field_default",
-            ],
-        );
-        NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
-            .register_documented(
-                self.constructor_name.clone(),
-                construct_type,
-                "Constructs a new instance of the type from a table of its fields.\n\
-                 For enums use the `variant` key, or construct from a variant directly.\n\n\
-                 Arguments:\n\
-                 * `type`: The type to construct.\n\
-                 * `payload`: The values to use to construct the type.\n\
-                 * `use_type_default`: Whether to use the type's default as the base, true by default.\n\
-                 * `use_field_default`: Whether to default missing fields from their types' defaults, true by default.\n\
-                 Returns:\n\
-                 * `reference`: The constructed value.",
-                &[
-                    "type",
-                    "payload",
-                    "use_type_default",
-                    "use_field_default",
-                ],
-            );
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::CurrentScriptAttachment;
     use bevy_mod_scripting_world::WorldAccessGuard;
     use bevy_reflect::Reflect;
-    use std::sync::Arc;
     use test_utils::test_data::setup_world;
 
     #[derive(Reflect, Debug, PartialEq)]
@@ -453,7 +336,7 @@ mod test {
         }
     }
 
-    fn run<T: Reflect + bevy_reflect::GetTypeRegistration>(
+    fn run<T: Reflect + bevy_reflect::Typed + bevy_reflect::GetTypeRegistration>(
         variant: Option<&str>,
         payload: Vec<(&str, i64)>,
         opts: ConstructOptions,
@@ -464,23 +347,11 @@ mod test {
         });
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
-        let registration = guard
-            .type_registry()
-            .read()
-            .get(TypeId::of::<T>())
-            .unwrap()
-            .clone();
         let payload = payload
             .into_iter()
             .map(|(k, v)| (k.to_owned(), ScriptValue::Integer(v)))
             .collect();
-        construct(
-            &guard,
-            &ScriptTypeRegistration::new(Arc::new(registration)),
-            variant,
-            payload,
-            opts,
-        )
+        construct(&guard, T::type_info(), variant, payload, opts)
     }
 
     fn opts(use_type_default: bool, use_field_default: bool) -> ConstructOptions {
@@ -541,25 +412,35 @@ mod test {
         assert!(run::<WithDefault>(Some("X"), vec![], opts(true, true)).is_err());
     }
 
-    #[test]
-    fn constructor_name_is_configurable() {
-        use crate::function::script_function::AppScriptFunctionRegistry;
+    #[derive(Reflect, Debug, PartialEq)]
+    struct Pair(usize, usize);
 
-        let mut app = App::new();
-        app.add_plugins(ConstructorsPlugin {
-            constructor_name: "create".into(),
-        });
-        let registry = app
-            .world()
-            .get_resource::<AppScriptFunctionRegistry>()
-            .unwrap()
-            .read();
-        for type_id in [
-            TypeId::of::<StaticTypeRef>(),
-            TypeId::of::<EnumVariantRef>(),
-        ] {
-            assert!(registry.contains(Namespace::OnType(type_id), "create"));
-            assert!(!registry.contains(Namespace::OnType(type_id), "new"));
+    #[test]
+    fn positional_fields_build_tuple_structs() {
+        use crate::function::bound::BoundFields;
+
+        for one_indexed in [false, true] {
+            let fields =
+                BoundFields::Positional([ScriptValue::Integer(1), ScriptValue::Integer(2)].into())
+                    .into_map(one_indexed);
+            let mut keys = fields.keys().cloned().collect::<Vec<_>>();
+            keys.sort();
+            let expected = if one_indexed { ["1", "2"] } else { ["0", "1"] };
+            assert_eq!(keys, expected);
+
+            let payload = fields
+                .into_iter()
+                .map(|(k, v)| match v {
+                    ScriptValue::Integer(i) => (k, i),
+                    _ => unreachable!(),
+                })
+                .collect::<Vec<_>>();
+            let payload = payload.iter().map(|(k, v)| (k.as_str(), *v)).collect();
+            let opts = ConstructOptions {
+                one_indexed,
+                ..opts(false, false)
+            };
+            assert_is(run::<Pair>(None, payload, opts), Pair(1, 2));
         }
     }
 }

@@ -5,7 +5,7 @@ let componentC = world.get_type_by_name.call("TestComponent");
 
 world.add_default_component.call(entity_a, componentA);
 world.add_default_component.call(entity_a, componentB);
-world.insert_component.call(entity_a, componentC, construct.call(componentC, #{
+world.insert_component.call(entity_a, componentC, TestComponent.new_.call(#{
     strings: ["asd"]
 }));
 

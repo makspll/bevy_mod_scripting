@@ -18,7 +18,7 @@ use ::{
 };
 use bevy_asset::Assets;
 use bevy_mod_scripting_asset::ScriptAsset;
-use bevy_mod_scripting_bindings::{ConstructorsPlugin, CoreScriptGlobalsPlugin, WorldExtensions};
+use bevy_mod_scripting_bindings::{CoreScriptGlobalsPlugin, WorldExtensions};
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
     commands::AttachScript,
@@ -27,7 +27,7 @@ use bevy_mod_scripting_core::{
     script::{ScriptComponent, ScriptContexts},
 };
 use bevy_mod_scripting_display::DisplayProxy;
-use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
+use bevy_mod_scripting_functions::{ConstructorsPlugin, ScriptFunctionsPlugin};
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 use criterion::{BatchSize, measurement::Measurement};

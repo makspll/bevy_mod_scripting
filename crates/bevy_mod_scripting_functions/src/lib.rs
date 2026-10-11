@@ -1,6 +1,8 @@
 #![allow(missing_docs)]
 
+pub mod constructors;
 pub mod core;
+pub use constructors::ConstructorsPlugin;
 pub use core::*;
 
 use bevy_app::{App, Plugin};

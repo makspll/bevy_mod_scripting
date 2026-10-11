@@ -11,7 +11,7 @@ use bevy_mod_scripting_bindings::{
     docgen::{
         TypedThrough,
         info::FunctionInfo,
-        typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+        typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
     },
     function::{
         namespace::Namespace,
@@ -21,7 +21,10 @@ use bevy_mod_scripting_bindings::{
 };
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
 use bevy_platform::collections::{HashMap, HashSet};
-use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo};
+use bevy_reflect::{
+    NamedField, ReflectRef, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo,
+    std_traits::ReflectDefault,
+};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -218,6 +221,7 @@ impl<'t> LadFileBuilder<'t> {
                     is_resource: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: Some(primitive),
+                    default: None,
                     misc: Default::default(),
                 },
             },
@@ -334,6 +338,7 @@ impl<'t> LadFileBuilder<'t> {
                     is_resource: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: primitive_from_type_id(std::any::TypeId::of::<T>()),
+                    default: None,
                     misc: Default::default(),
                 },
             },
@@ -407,6 +412,7 @@ impl<'t> LadFileBuilder<'t> {
                 is_resource,
                 is_reflect,
                 mapped_to_primitive_kind: primitive_from_type_id(type_info.type_id()),
+                default: self.lad_default(type_info.type_id()),
                 misc: Default::default(),
             },
         };
@@ -452,10 +458,10 @@ impl<'t> LadFileBuilder<'t> {
                 }
                 TypedWrapperKind::UntypedTuple => {}
             },
-            ThroughTypeInfo::TypeInfo(type_info) => {
+            ThroughTypeInfo::TypeInfo(type_info) | ThroughTypeInfo::Fields { type_info, .. } => {
                 self.add_type_info(type_info);
             }
-            ThroughTypeInfo::Primitive(_) => {}
+            ThroughTypeInfo::Primitive(_) | ThroughTypeInfo::Bound(_) => {}
         }
 
         self
@@ -794,6 +800,7 @@ impl<'t> LadFileBuilder<'t> {
                 .map(|field| LadNamedField {
                     name: field.name().to_string(),
                     type_: self.lad_type_kind_from_type_id(field.type_id()),
+                    has_default: self.has_default(field.type_id()),
                 })
                 .collect(),
         }
@@ -809,9 +816,29 @@ impl<'t> LadFileBuilder<'t> {
             fields: fields
                 .map(|field| LadField {
                     type_: self.lad_type_kind_from_type_id(field.type_id()),
+                    has_default: self.has_default(field.type_id()),
                 })
                 .collect(),
         }
+    }
+
+    /// Whether the type has a registered `Default`, which is what constructors use to fill in missing fields
+    fn has_default(&self, type_id: TypeId) -> bool {
+        self.type_registry
+            .get_type_data::<ReflectDefault>(type_id)
+            .is_some()
+    }
+
+    fn lad_default(&self, type_id: TypeId) -> Option<LadDefault> {
+        let default = self
+            .type_registry
+            .get_type_data::<ReflectDefault>(type_id)?
+            .default();
+        let variant = match default.reflect_ref() {
+            ReflectRef::Enum(value) => Some(Cow::Owned(value.variant_name().to_owned())),
+            _ => None,
+        };
+        Some(LadDefault { variant })
     }
 
     fn lad_layout_from_type_info(&mut self, type_info: &TypeInfo) -> LadTypeLayout {
@@ -985,6 +1012,16 @@ impl<'t> LadFileBuilder<'t> {
             }
             ThroughTypeInfo::Primitive(reflection_primitive_kind) => {
                 LadFieldOrVariableKind::Primitive(reflection_primitive_kind.clone())
+            }
+            ThroughTypeInfo::Fields { type_info, variant } => LadFieldOrVariableKind::Fields {
+                type_id: self.lad_id_from_type_id(type_info.type_id()),
+                variant: variant.map(Cow::Borrowed),
+            },
+            ThroughTypeInfo::Bound(placeholder) => {
+                LadFieldOrVariableKind::Bound(match placeholder {
+                    BoundPlaceholder::Value => LadBoundPlaceholder::Value,
+                    BoundPlaceholder::Fields => LadBoundPlaceholder::Fields,
+                })
             }
         }
     }

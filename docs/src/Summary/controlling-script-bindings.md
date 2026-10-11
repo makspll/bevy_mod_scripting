@@ -205,9 +205,12 @@ The `StaticTypeRef` namespace is the equivalent for static references, i.e. `Vec
 Functions registered on it are available on every type's static reference, and receive the type as their first argument, which is filled in automatically:
 
 ```rust,ignore
-NamespaceBuilder::<StaticTypeRef>::new(app.world_mut()).register("describe", |type_ref: V<StaticTypeRef>| {
-    type_ref.into_inner().registration.type_name().to_string()
-});
+NamespaceBuilder::<StaticTypeRef>::new(app.world_mut()).register(
+    "describe",
+    |ctxt: FunctionCallContext, type_ref: V<StaticTypeRef>| -> Result<String, InteropError> {
+        Ok(type_ref.type_info(&ctxt.world()?)?.type_path().to_string())
+    },
+);
 ```
 
 ```lua
@@ -216,6 +219,12 @@ print(Vec3.describe()) -- "glam::Vec3"
 
 A function registered on the type itself always takes priority over one on `StaticTypeRef`.
 The `new` constructor is implemented this way, see [Constructing Arbitrary Types](../ScriptingReference/constructing-arbitrary-types.md).
+
+#### Signatures which depend on the type
+
+A shared function's signature can refer to the type it is bound to, using the placeholder types `BoundValue` (a value of the type) and `BoundFields` (a table of the type's fields).
+Wherever the function is bound to a type, these are replaced with the type, so the documentation and the Lua language server files show, for example, `MyStruct.new(payload: MyStruct.Fields): MyStruct` rather than a generic table and reference.
+The same placeholders work for functions on `EnumVariantRef`, which are bound to each variant in the generated files.
 
 The enum variants of a type are also available on its static reference, i.e. `MyEnum.Variant`, after the functions.
 
