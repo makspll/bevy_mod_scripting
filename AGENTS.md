@@ -24,3 +24,6 @@ Multi-language scripting for Bevy (Lua, Rhai, Rune). Scripts are Bevy assets; th
 ## Working here
 * Builds are heavy; scope cargo to one crate (`-p`) and use `xtask` for anything broader.
 * Lints are strict (see `clippy.toml`); `unwrap`/`expect` need justified `allow`s.
+
+## Keeping notes in sync
+* Crate-level `AGENTS.md` files (e.g. `crates/bevy_mod_scripting_core`, the test harness) hold area-specific patterns. If you make a major change to an area (architecture, conventions, how tests run), update its `AGENTS.md` and this file in the same change. Keep them short and high level.
