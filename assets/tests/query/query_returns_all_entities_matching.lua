@@ -20,9 +20,9 @@ end
 assert(#found_entities == 3, "Expected 3 entities, got " .. #found_entities)
 
 expected_entities = {
-    entity_c,
     entity_d,
     entity_a,
+    entity_c,
 }
 
 for i, entity in ipairs(found_entities) do
