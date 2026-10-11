@@ -132,9 +132,9 @@ fn update_loading_ui(
     mut percent_query: Query<&mut Text, (With<PercentageText>, Without<ScriptNameText>)>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    // this is the progress of the currently loading batch of scripts
+    // this is the progress (0.0 to 1.0) of the currently loading scripts
     // if some scripts are reloading these will be included in the count
-    let (progress, loaded, total) = pipeline_state.progress();
+    let (progress, loaded, total) = pipeline_state.progress_fraction();
 
     let current_script = pipeline_state
         .currently_loading_script()
@@ -144,7 +144,7 @@ fn update_loading_ui(
 
     // Update bar fill width
     if let Ok(mut node) = fill_query.single_mut() {
-        node.width = Val::Percent(progress);
+        node.width = Val::Percent(progress * 100.0);
     }
 
     // Update script name
@@ -154,10 +154,10 @@ fn update_loading_ui(
 
     // Update percentage text
     if let Ok(mut text) = percent_query.single_mut() {
-        *text = Text::new(format!("{progress:.0}% ({loaded}/{total})"));
+        *text = Text::new(format!("{:.0}% ({loaded}/{total})", progress * 100.0));
     }
 
-    if pipeline_state.processing_batch_completed() && loaded > 0 {
+    if pipeline_state.is_processing_completed() && loaded > 0 {
         next_state.set(GameState::Running)
     }
 }
