@@ -1,6 +1,6 @@
 //! Contains various `Reflect` type data we use in BMS.
 
-use bevy_reflect::FromType;
+use bevy_reflect::CreateTypeData;
 
 /// A marker type to indicate that a type is generated.
 ///
@@ -11,8 +11,8 @@ use bevy_reflect::FromType;
 #[derive(Clone, Copy)]
 pub struct MarkAsGenerated;
 
-impl<T> FromType<T> for MarkAsGenerated {
-    fn from_type() -> Self {
+impl<T> CreateTypeData<T> for MarkAsGenerated {
+    fn create_type_data(_input: ()) -> Self {
         Self
     }
 }
@@ -23,8 +23,8 @@ impl<T> FromType<T> for MarkAsGenerated {
 #[derive(Clone, Copy)]
 pub struct MarkAsSignificant;
 
-impl<T> FromType<T> for MarkAsSignificant {
-    fn from_type() -> Self {
+impl<T> CreateTypeData<T> for MarkAsSignificant {
+    fn create_type_data(_input: ()) -> Self {
         Self
     }
 }
@@ -35,8 +35,8 @@ impl<T> FromType<T> for MarkAsSignificant {
 #[derive(Clone, Copy)]
 pub struct MarkAsCore;
 
-impl<T> FromType<T> for MarkAsCore {
-    fn from_type() -> Self {
+impl<T> CreateTypeData<T> for MarkAsCore {
+    fn create_type_data(_input: ()) -> Self {
         Self
     }
 }

@@ -709,6 +709,59 @@ pub(crate) fn register_mesh_tag_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "new",
+            |value: u32| {
+                let output: V<::bevy_mesh::MeshTag> = {
+                    {
+                        let output: V<::bevy_mesh::MeshTag> = ::bevy_mesh::MeshTag::new(
+                                value,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`MeshTag`] with the given value.\n No type ID is specified.",
+            &["value"],
+        )
+        .register_documented(
+            "type_id_is",
+            |_self: R<::bevy_mesh::MeshTag>, type_id: V<::std::any::TypeId>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_mesh::MeshTag::type_id_is(
+                                &_self,
+                                type_id.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the type ID is present and equal to the given type ID.\n This is the equivalent of [`Self::type_is`], except that the type ID can\n be supplied dynamically.\n In debug mode, this always returns true.",
+            &["_self", "type_id"],
+        )
+        .register_documented(
+            "with_type_id",
+            |value: u32, _type_id: V<::std::any::TypeId>| {
+                let output: V<::bevy_mesh::MeshTag> = {
+                    {
+                        let output: V<::bevy_mesh::MeshTag> = ::bevy_mesh::MeshTag::with_type_id(
+                                value,
+                                _type_id.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a new [`MeshTag`] with the given value and type ID.\n This is the equivalent of [`Self::with_type`], except that the type ID\n can be supplied dynamically.\n In debug mode, the type ID is stored on the [`MeshTag`] component and\n used for detecting accidental tag overwriting.",
+            &["value", "_type_id"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -919,6 +972,419 @@ pub(crate) fn register_morph_attributes_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_mesh_attribute_compression_flags_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_mesh::MeshAttributeCompressionFlags,
+    >::new(world)
+        .register_documented(
+            "all",
+            || {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::all()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get a flags value with all known bits set.",
+            &[],
+        )
+        .register_documented(
+            "bits",
+            |_self: R<::bevy_mesh::MeshAttributeCompressionFlags>| {
+                let output: u8 = {
+                    {
+                        let output: u8 = ::bevy_mesh::MeshAttributeCompressionFlags::bits(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get the underlying bits value.\n The returned value is exactly the bits set in this flags value.",
+            &["_self"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_mesh::MeshAttributeCompressionFlags>| {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = <::bevy_mesh::MeshAttributeCompressionFlags as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "complement",
+            |_self: V<::bevy_mesh::MeshAttributeCompressionFlags>| {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::complement(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The bitwise negation (`!`) of the bits in `self`, truncating the result.",
+            &["_self"],
+        )
+        .register_documented(
+            "contains",
+            |
+                _self: R<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_mesh::MeshAttributeCompressionFlags::contains(
+                                &_self,
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Whether all set bits in `other` are also set in `self`.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "difference",
+            |
+                _self: V<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::difference(
+                                _self.into_inner(),
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "empty",
+            || {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::empty()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Get a flags value with all bits unset.",
+            &[],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: R<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_mesh::MeshAttributeCompressionFlags as ::std::cmp::PartialEq<
+                            ::bevy_mesh::MeshAttributeCompressionFlags,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "from_bits_retain",
+            |bits: u8| {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::from_bits_retain(
+                                bits,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Convert from a bits value exactly.",
+            &["bits"],
+        )
+        .register_documented(
+            "from_bits_truncate",
+            |bits: u8| {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::from_bits_truncate(
+                                bits,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Convert from a bits value, unsetting any unknown bits.",
+            &["bits"],
+        )
+        .register_documented(
+            "insert",
+            |
+                mut _self: M<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::MeshAttributeCompressionFlags::insert(
+                                &mut _self,
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The bitwise or (`|`) of the bits in `self` and `other`.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "intersection",
+            |
+                _self: V<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::intersection(
+                                _self.into_inner(),
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The bitwise and (`&`) of the bits in `self` and `other`.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "intersects",
+            |
+                _self: R<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_mesh::MeshAttributeCompressionFlags::intersects(
+                                &_self,
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Whether any set bits in `other` are also set in `self`.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "is_all",
+            |_self: R<::bevy_mesh::MeshAttributeCompressionFlags>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_mesh::MeshAttributeCompressionFlags::is_all(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Whether all known bits in this flags value are set.",
+            &["_self"],
+        )
+        .register_documented(
+            "is_empty",
+            |_self: R<::bevy_mesh::MeshAttributeCompressionFlags>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_mesh::MeshAttributeCompressionFlags::is_empty(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Whether all bits in `self` are unset.",
+            &["_self"],
+        )
+        .register_documented(
+            "remove",
+            |
+                mut _self: M<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::MeshAttributeCompressionFlags::remove(
+                                &mut _self,
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `remove` won't truncate `other`, but the `!` operator will.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "set",
+            |
+                mut _self: M<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>,
+                value: bool|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::MeshAttributeCompressionFlags::set(
+                                &mut _self,
+                                other.into_inner(),
+                                value,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Call `insert` when `value` is `true` or `remove` when `value` is `false`.",
+            &["_self", "other", "value"],
+        )
+        .register_documented(
+            "sub",
+            |
+                _self: V<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = <::bevy_mesh::MeshAttributeCompressionFlags as ::std::ops::Sub<
+                            ::bevy_mesh::MeshAttributeCompressionFlags,
+                        >>::sub(_self.into_inner(), other.into_inner())
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The intersection of `self` with the complement of `other` (`&!`).\n This method is not equivalent to `self & !other` when `other` has unknown bits set.\n `difference` won't truncate `other`, but the `!` operator will.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "symmetric_difference",
+            |
+                _self: V<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::symmetric_difference(
+                                _self.into_inner(),
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The bitwise exclusive-or (`^`) of the bits in `self` and `other`.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "toggle",
+            |
+                mut _self: M<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_mesh::MeshAttributeCompressionFlags::toggle(
+                                &mut _self,
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The bitwise exclusive-or (`^`) of the bits in `self` and `other`.",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "union",
+            |
+                _self: V<::bevy_mesh::MeshAttributeCompressionFlags>,
+                other: V<::bevy_mesh::MeshAttributeCompressionFlags>|
+            {
+                let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = {
+                    {
+                        let output: V<::bevy_mesh::MeshAttributeCompressionFlags> = ::bevy_mesh::MeshAttributeCompressionFlags::union(
+                                _self.into_inner(),
+                                other.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The bitwise or (`|`) of the bits in `self` and `other`.",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_mesh::MeshAttributeCompressionFlags,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_uv_channel_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_mesh::UvChannel,
@@ -1121,7 +1587,7 @@ pub(crate) fn register_circular_sector_mesh_builder_functions(world: &mut World)
     )
     .register_documented(
         "new",
-        |sector: V<::bevy_math::primitives::CircularSector>| {
+        |sector: V<::bevy_shape::CircularSector>| {
             let output: V<::bevy_mesh::CircularSectorMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSectorMeshBuilder> =
@@ -1205,7 +1671,7 @@ pub(crate) fn register_circular_segment_mesh_builder_functions(world: &mut World
     )
     .register_documented(
         "new",
-        |segment: V<::bevy_math::primitives::CircularSegment>| {
+        |segment: V<::bevy_shape::CircularSegment>| {
             let output: V<::bevy_mesh::CircularSegmentMeshBuilder> = {
                 {
                     let output: V<::bevy_mesh::CircularSegmentMeshBuilder> =
@@ -2795,6 +3261,7 @@ impl Plugin for BevyMeshScriptingPlugin {
         register_indices_functions(&mut world);
         register_skinned_mesh_bounds_functions(&mut world);
         register_morph_attributes_functions(&mut world);
+        register_mesh_attribute_compression_flags_functions(&mut world);
         register_uv_channel_functions(&mut world);
         register_mesh_morph_weights_functions(&mut world);
         register_circle_mesh_builder_functions(&mut world);

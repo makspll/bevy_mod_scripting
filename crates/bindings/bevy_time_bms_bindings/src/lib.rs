@@ -77,7 +77,7 @@ pub(crate) fn register_timer_functions(world: &mut World) {
                 };
                 output
             },
-            " Almost finishes the timer leaving 1 ns of remaining time.\n This can be useful when needing an immediate action without having\n to wait for the set duration of the timer in the first tick.\n # Examples\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer = Timer::from_seconds(1.5, TimerMode::Once);\n timer.almost_finish();\n assert!(!timer.is_finished());\n assert_eq!(timer.remaining(), Duration::from_nanos(1));\n ```",
+            " Almost finishes the timer leaving 1 ns of remaining time.\n This can be useful when needing an immediate action without having\n to wait for the set duration of the timer in the first tick.\n If the timer is already finished, this does nothing.\n # Examples\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut timer = Timer::from_seconds(1.5, TimerMode::Once);\n timer.almost_finish();\n assert!(!timer.is_finished());\n assert_eq!(timer.remaining(), Duration::from_nanos(1));\n ```",
             &["_self"],
         )
         .register_documented(
@@ -617,7 +617,7 @@ pub(crate) fn register_stopwatch_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the elapsed time since the last [`reset`](Stopwatch::reset)\n of the stopwatch, in seconds, as f64.\n # See Also\n [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.\n [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.",
+            " Returns the elapsed time since the last [`reset`](Stopwatch::reset)\n of the stopwatch, in seconds, as `f64`.\n # See Also\n [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.\n [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.",
             &["_self"],
         )
         .register_documented(

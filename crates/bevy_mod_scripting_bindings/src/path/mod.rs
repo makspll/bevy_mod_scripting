@@ -25,13 +25,17 @@ pub enum ReferencePart {
 }
 
 impl Clone for ReferencePart {
+    #[allow(
+        clippy::expect_used,
+        reason = "`Clone` is infallible, and map keys which can neither be cloned nor converted to a dynamic value cannot be used for access anyway"
+    )]
     fn clone(&self) -> Self {
         match self {
             Self::StringAccess(arg0) => Self::StringAccess(arg0.clone()),
             Self::IntegerAccess(arg0, arg1) => Self::IntegerAccess(*arg0, *arg1),
             Self::MapAccess(arg0) => Self::MapAccess(match arg0.reflect_clone() {
                 Ok(c) => c,
-                Err(_) => arg0.to_dynamic(), // this is okay, because we need to call FromReflect on the map side anyway
+                Err(_) => arg0.to_dynamic().expect("map key must be cloneable"), // this is okay, because we need to call FromReflect on the map side anyway
             }),
         }
     }

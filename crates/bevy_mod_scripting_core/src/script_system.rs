@@ -20,7 +20,7 @@ use ::{
 use bevy_ecs::{
     change_detection::{CheckChangeTicks, Tick},
     schedule::{InternedSystemSet, IntoScheduleConfigs, Schedule, Schedules},
-    system::{RunSystemError, SystemIn, SystemStateFlags},
+    system::{RunSystemError, SystemAccess, SystemIn, SystemStateFlags},
     world::DeferredWorld,
 };
 use bevy_log::{debug, error, warn_once};
@@ -258,7 +258,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
     fn flags(&self) -> SystemStateFlags {
         if self.exclusive {
-            SystemStateFlags::NON_SEND | SystemStateFlags::EXCLUSIVE
+            SystemStateFlags::NON_SEND
         } else {
             SystemStateFlags::empty()
         }
@@ -386,7 +386,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         Ok(())
     }
 
-    fn initialize(&mut self, world: &mut World) -> FilteredAccessSet {
+    fn initialize(&mut self, world: &mut World) -> SystemAccess {
         // we need to register all the:
         // - resources, simple just need the component ID's
         // - queries, more difficult the queries need to be built, and archetype access registered on top of component access
@@ -481,7 +481,11 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             initialization_errors,
         });
 
-        component_access_set
+        if self.exclusive {
+            SystemAccess::Exclusive
+        } else {
+            SystemAccess::Shared(component_access_set)
+        }
     }
 
     fn check_change_tick(&mut self, change_tick: CheckChangeTicks) {
@@ -504,7 +508,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         vec![ScriptSystemSet::new(self.name.clone()).intern()]
     }
 
-    fn type_id(&self) -> TypeId {
+    fn system_type(&self) -> TypeId {
         TypeId::of::<Self>()
     }
 }

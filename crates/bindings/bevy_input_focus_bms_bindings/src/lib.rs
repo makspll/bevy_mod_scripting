@@ -479,29 +479,6 @@ pub(crate) fn register_directional_navigation_map_functions(world: &mut World) {
             },
             " Removes an entity from the navigation map, including all connections to and from it.\n Note that this is an O(n) operation, where n is the number of entities in the map,\n as we must iterate over each entity to check for connections to the removed entity.\n If you are removing multiple entities, consider using [`remove_multiple`](Self::remove_multiple) instead.",
             &["_self", "entity"],
-        )
-        .register_documented(
-            "remove_multiple",
-            |
-                mut _self: M<
-                    ::bevy_input_focus::directional_navigation::DirectionalNavigationMap,
-                >,
-                entities: V<::bevy_ecs::entity::EntityHashSet>|
-            {
-                let output: () = {
-                    {
-                        let output: () = ::bevy_input_focus::directional_navigation::DirectionalNavigationMap::remove_multiple(
-                                &mut _self,
-                                entities.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Removes a collection of entities from the navigation map.\n While this is still an O(n) operation, where n is the number of entities in the map,\n it is more efficient than calling [`remove`](Self::remove) multiple times,\n as we can check for connections to all removed entities in a single pass.\n An [`EntityHashSet`] must be provided as it is noticeably faster than the standard hasher or a [`Vec`](`alloc::vec::Vec`).",
-            &["_self", "entities"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();

@@ -130,6 +130,23 @@ pub(crate) fn register_sprite_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "eq",
+            |_self: R<::bevy_sprite::Sprite>, other: R<::bevy_sprite::Sprite>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_sprite::Sprite as ::std::cmp::PartialEq<
+                            ::bevy_sprite::Sprite,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
             "sized",
             |custom_size: V<::bevy_math::Vec2>| {
                 let output: V<::bevy_sprite::Sprite> = {
@@ -194,6 +211,24 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
             &["_self", "other"],
         )
         .register_documented(
+            "slice_border_out_of_bounds",
+            |_self: R<::bevy_sprite::SpriteImageMode>, image_size: V<::bevy_math::Vec2>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_sprite::SpriteImageMode::slice_border_out_of_bounds(
+                                &_self,
+                                image_size.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if this mode is [`SpriteImageMode::Sliced`] and the slicer's borders\n don't fit within an image of the given size, in which case no slicing can be applied.",
+            &["_self", "image_size"],
+        )
+        .register_documented(
             "uses_slices",
             |_self: R<::bevy_sprite::SpriteImageMode>| {
                 let output: bool = {
@@ -215,69 +250,6 @@ pub(crate) fn register_sprite_image_mode_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_sprite::SpriteImageMode,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_sprite_mesh_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite::SpriteMesh,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_sprite::SpriteMesh>| {
-                let output: V<::bevy_sprite::SpriteMesh> = {
-                    {
-                        let output: V<::bevy_sprite::SpriteMesh> = <::bevy_sprite::SpriteMesh as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_sprite::SpriteMesh>, other: R<::bevy_sprite::SpriteMesh>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_sprite::SpriteMesh as ::std::cmp::PartialEq<
-                            ::bevy_sprite::SpriteMesh,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "sized",
-            |custom_size: V<::bevy_math::Vec2>| {
-                let output: V<::bevy_sprite::SpriteMesh> = {
-                    {
-                        let output: V<::bevy_sprite::SpriteMesh> = ::bevy_sprite::SpriteMesh::sized(
-                                custom_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Create a Sprite with a custom size",
-            &["custom_size"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_sprite::SpriteMesh,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -515,7 +487,7 @@ pub(crate) fn register_anchor_functions(world: &mut World) {
                 };
                 output
             },
-            "",
+            " Returns the Anchor's offset as a [`Vec2`].",
             &["_self"],
         )
         .register_documented(
@@ -661,7 +633,6 @@ impl Plugin for BevySpriteScriptingPlugin {
         register_text_2_d_functions(&mut world);
         register_sprite_functions(&mut world);
         register_sprite_image_mode_functions(&mut world);
-        register_sprite_mesh_functions(&mut world);
         register_border_rect_functions(&mut world);
         register_slice_scale_mode_functions(&mut world);
         register_texture_slicer_functions(&mut world);

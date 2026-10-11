@@ -194,51 +194,6 @@ pub(crate) fn register_visibility_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
-            "default_hidden",
-            || {
-                let output: V<::bevy_camera::visibility::Visibility> = {
-                    {
-                        let output: V<::bevy_camera::visibility::Visibility> = ::bevy_camera::visibility::Visibility::default_hidden()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &[],
-        )
-        .register_documented(
-            "default_inherited",
-            || {
-                let output: V<::bevy_camera::visibility::Visibility> = {
-                    {
-                        let output: V<::bevy_camera::visibility::Visibility> = ::bevy_camera::visibility::Visibility::default_inherited()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &[],
-        )
-        .register_documented(
-            "default_visible",
-            || {
-                let output: V<::bevy_camera::visibility::Visibility> = {
-                    {
-                        let output: V<::bevy_camera::visibility::Visibility> = ::bevy_camera::visibility::Visibility::default_visible()
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &[],
-        )
-        .register_documented(
             "eq",
             |
                 _self: R<::bevy_camera::visibility::Visibility>,
@@ -536,6 +491,21 @@ pub(crate) fn register_compositing_space_functions(world: &mut World) {
         },
         "",
         &["_self", "other"],
+    )
+    .register_documented(
+        "is_linear",
+        |_self: V<::bevy_camera::CompositingSpace>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        ::bevy_camera::CompositingSpace::is_linear(_self.into_inner()).into();
+                    output
+                }
+            };
+            output
+        },
+        " Whether this is the linear space, which needs no encode step.",
+        &["_self"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -1613,7 +1583,7 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
             "is_in_half_space",
             |
                 _self: R<::bevy_camera::primitives::Aabb>,
-                half_space: R<::bevy_math::primitives::HalfSpace>,
+                half_space: R<::bevy_shape::HalfSpace>,
                 world_from_local: R<::bevy_math::Affine3A>|
             {
                 let output: bool = {
@@ -1636,7 +1606,7 @@ pub(crate) fn register_aabb_functions(world: &mut World) {
             "is_in_half_space_identity",
             |
                 _self: R<::bevy_camera::primitives::Aabb>,
-                half_space: R<::bevy_math::primitives::HalfSpace>|
+                half_space: R<::bevy_shape::HalfSpace>|
             {
                 let output: bool = {
                     {

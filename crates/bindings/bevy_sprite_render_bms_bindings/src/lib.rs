@@ -41,17 +41,17 @@ pub(crate) fn register_color_material_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_sprite_material_functions(world: &mut World) {
+pub(crate) fn register_sprite_mesh_material_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_sprite_render::SpriteMaterial,
+        ::bevy_sprite_render::SpriteMeshMaterial,
     >::new(world)
     .register_documented(
         "clone",
-        |_self: R<::bevy_sprite_render::SpriteMaterial>| {
-            let output: V<::bevy_sprite_render::SpriteMaterial> = {
+        |_self: R<::bevy_sprite_render::SpriteMeshMaterial>| {
+            let output: V<::bevy_sprite_render::SpriteMeshMaterial> = {
                 {
-                    let output: V<::bevy_sprite_render::SpriteMaterial> =
-                        <::bevy_sprite_render::SpriteMaterial as ::std::clone::Clone>::clone(
+                    let output: V<::bevy_sprite_render::SpriteMeshMaterial> =
+                        <::bevy_sprite_render::SpriteMeshMaterial as ::std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -65,13 +65,13 @@ pub(crate) fn register_sprite_material_functions(world: &mut World) {
     )
     .register_documented(
         "eq",
-        |_self: R<::bevy_sprite_render::SpriteMaterial>,
-         other: R<::bevy_sprite_render::SpriteMaterial>| {
+        |_self: R<::bevy_sprite_render::SpriteMeshMaterial>,
+         other: R<::bevy_sprite_render::SpriteMeshMaterial>| {
             let output: bool = {
                 {
                     let output: bool =
-                        <::bevy_sprite_render::SpriteMaterial as ::std::cmp::PartialEq<
-                            ::bevy_sprite_render::SpriteMaterial,
+                        <::bevy_sprite_render::SpriteMeshMaterial as ::std::cmp::PartialEq<
+                            ::bevy_sprite_render::SpriteMeshMaterial,
                         >>::eq(&_self, &other)
                         .into();
                     output
@@ -83,26 +83,26 @@ pub(crate) fn register_sprite_material_functions(world: &mut World) {
         &["_self", "other"],
     )
     .register_documented(
-        "from_sprite_mesh",
-        |sprite: V<::bevy_sprite::SpriteMesh>| {
-            let output: V<::bevy_sprite_render::SpriteMaterial> = {
+        "from_sprite",
+        |sprite: V<::bevy_sprite::Sprite>| {
+            let output: V<::bevy_sprite_render::SpriteMeshMaterial> = {
                 {
-                    let output: V<::bevy_sprite_render::SpriteMaterial> =
-                        ::bevy_sprite_render::SpriteMaterial::from_sprite_mesh(sprite.into_inner())
+                    let output: V<::bevy_sprite_render::SpriteMeshMaterial> =
+                        ::bevy_sprite_render::SpriteMeshMaterial::from_sprite(sprite.into_inner())
                             .into();
                     output
                 }
             };
             output
         },
-        " Use the [`SpriteMesh`] to build a new material.",
+        " Use the [`Sprite`] to build a new material.",
         &["sprite"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
-            ::bevy_sprite_render::SpriteMaterial,
+            ::bevy_sprite_render::SpriteMeshMaterial,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -700,7 +700,7 @@ impl Plugin for BevySpriteRenderScriptingPlugin {
     fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_color_material_functions(&mut world);
-        register_sprite_material_functions(&mut world);
+        register_sprite_mesh_material_functions(&mut world);
         register_alpha_mode_2_d_functions(&mut world);
         register_wireframe_2_d_material_functions(&mut world);
         register_wireframe_2_d_config_functions(&mut world);

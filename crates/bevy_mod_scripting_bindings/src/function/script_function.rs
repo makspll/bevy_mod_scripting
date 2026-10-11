@@ -551,10 +551,9 @@ impl ScriptFunctionRegistry {
         name: impl Into<Cow<'static, str>>,
     ) -> Result<impl Iterator<Item = &DynamicScriptFunction>, Cow<'static, str>> {
         let name: Cow<'static, str> = name.into();
-        let seed = match self.get_function(namespace, name.clone()) {
-            Ok(func) => std::iter::once(func),
-            Err(name) => return Err(name),
-        };
+        let seed = self
+            .get_function(namespace, name.clone())
+            .map(std::iter::once)?;
 
         let overloads = (1..)
             .map(move |i| {

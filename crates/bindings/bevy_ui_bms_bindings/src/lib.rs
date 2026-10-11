@@ -345,52 +345,6 @@ pub(crate) fn register_text_shadow_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
-pub(crate) fn register_button_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::widget::Button,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::widget::Button>| {
-                let output: V<::bevy_ui::widget::Button> = {
-                    {
-                        let output: V<::bevy_ui::widget::Button> = <::bevy_ui::widget::Button as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::widget::Button>, other: R<::bevy_ui::widget::Button>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::widget::Button as ::std::cmp::PartialEq<
-                            ::bevy_ui::widget::Button,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::widget::Button,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_image_node_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::widget::ImageNode,
@@ -517,14 +471,99 @@ pub(crate) fn register_image_node_functions(world: &mut World) {
                 };
                 output
             },
-            "",
+            " Crops an `ImageNode` to the portion described by\n the provided `Rect`, measured from the top-left corner. This can be applied to `ImageNode`s created from\n texture atlases.\n The following example setup function demonstrates this use.\n # Example\n ```\n use bevy_asset::{Assets,AssetServer};\n use bevy_ecs::prelude::{Commands,Res,ResMut};\n use bevy_image::{TextureAtlas,TextureAtlasLayout};\n use bevy_math::{UVec2,Rect};\n use bevy_ui::Node;\n use bevy_ui::prelude::{Display,ImageNode};\n use std::default::Default;\n fn setup(\n   mut commands: Commands,\n   asset_server: Res<AssetServer>,\n   mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,\n ) {\n   let texture = asset_server.load(\"textures/array_texture.png\");\n   let layout = TextureAtlasLayout::from_grid(UVec2::splat(250), 1, 3, None, None);\n   let texture_atlas_layout = texture_atlas_layouts.add(layout);\n   commands.spawn(Node {\n     display: Display::Flex,\n     ..Default::default()\n   })\n   .with_children(|parent| {\n // this example node shows a texture constrained by a rect\n     parent.spawn(\n       ImageNode::new(texture.clone())\n         .with_rect(\n           Rect::new(0., 200., 250., 450.)\n         ));\n // this example node displays an index within a texture atlas\n // constrained by a rect\n     parent.spawn(ImageNode::from_atlas_image(\n       texture.clone(),\n       TextureAtlas {\n         layout: texture_atlas_layout.clone(),\n         index: 1,\n       },\n     ).with_rect(\n        Rect::new(0., 0., 150., 150.)\n      ));\n   });\n }\n````",
             &["_self", "rect"],
+        )
+        .register_documented(
+            "with_visual_box",
+            |
+                _self: V<::bevy_ui::widget::ImageNode>,
+                visual_box: V<::bevy_ui::VisualBox>|
+            {
+                let output: V<::bevy_ui::widget::ImageNode> = {
+                    {
+                        let output: V<::bevy_ui::widget::ImageNode> = ::bevy_ui::widget::ImageNode::with_visual_box(
+                                _self.into_inner(),
+                                visual_box.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Set the region within the UI node where the image should be drawn.",
+            &["_self", "visual_box"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_ui::widget::ImageNode,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_inline_image_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::widget::InlineImage,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::widget::InlineImage>| {
+            let output: V<::bevy_ui::widget::InlineImage> = {
+                {
+                    let output: V<::bevy_ui::widget::InlineImage> =
+                        <::bevy_ui::widget::InlineImage as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::widget::InlineImage>, other: R<::bevy_ui::widget::InlineImage>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::widget::InlineImage as ::std::cmp::PartialEq<
+                        ::bevy_ui::widget::InlineImage,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "resolve_inline_box_size",
+        |_self: R<::bevy_ui::widget::InlineImage>, image_size: V<::bevy_math::Vec2>| {
+            let output: V<::bevy_math::Vec2> = {
+                {
+                    let output: V<::bevy_math::Vec2> =
+                        ::bevy_ui::widget::InlineImage::resolve_inline_box_size(
+                            &_self,
+                            image_size.into_inner(),
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Resolve the inline box size. Preserves the image's aspect ratio if dimensions unset.",
+        &["_self", "image_size"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::widget::InlineImage,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -665,50 +704,6 @@ pub(crate) fn register_viewport_node_functions(world: &mut World) {
             ::bevy_ui::widget::ViewportNode,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
-}
-pub(crate) fn register_interaction_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::Interaction,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::Interaction>| {
-                let output: V<::bevy_ui::Interaction> = {
-                    {
-                        let output: V<::bevy_ui::Interaction> = <::bevy_ui::Interaction as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::Interaction>, other: R<::bevy_ui::Interaction>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::Interaction as ::std::cmp::PartialEq<
-                            ::bevy_ui::Interaction,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<::bevy_ui::Interaction, bevy_mod_scripting_bindings::MarkAsGenerated>(
-        );
 }
 pub(crate) fn register_ui_scale_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::UiScale>::new(
@@ -1154,7 +1149,7 @@ pub(crate) fn register_computed_node_functions(world: &mut World) {
                 };
                 output
             },
-            " Returns the thickness of the UI node's outline in physical pixels.\n If this value is negative or `0.` then no outline will be rendered.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
+            " Returns the thickness of the UI node's outline in physical pixels.\n If this value is negative or zero then no outline will be rendered.\n Automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`).",
             &["_self"],
         )
         .register_documented(
@@ -1515,104 +1510,6 @@ pub(crate) fn register_content_size_functions(world: &mut World) {
         .register_type_data::<::bevy_ui::ContentSize, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
 }
-pub(crate) fn register_calculated_clip_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::CalculatedClip,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::CalculatedClip>| {
-                let output: V<::bevy_ui::CalculatedClip> = {
-                    {
-                        let output: V<::bevy_ui::CalculatedClip> = <::bevy_ui::CalculatedClip as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::CalculatedClip,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_node_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Node>::new(
-        world,
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_ui::Node>| {
-            let output: V<::bevy_ui::Node> = {
-                {
-                    let output: V<::bevy_ui::Node> =
-                        <::bevy_ui::Node as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::bevy_ui::Node>, other: R<::bevy_ui::Node>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_ui::Node as ::std::cmp::PartialEq<
-                        ::bevy_ui::Node,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry.register_type_data::<::bevy_ui::Node, bevy_mod_scripting_bindings::MarkAsGenerated>();
-}
-pub(crate) fn register_override_clip_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::OverrideClip,
-    >::new(world)
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::OverrideClip>| {
-                let output: V<::bevy_ui::OverrideClip> = {
-                    {
-                        let output: V<::bevy_ui::OverrideClip> = <::bevy_ui::OverrideClip as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::OverrideClip,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::UiTargetCamera,
@@ -1676,15 +1573,447 @@ pub(crate) fn register_ui_target_camera_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_calculated_clip_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::CalculatedClip,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui::CalculatedClip>| {
+                let output: V<::bevy_ui::CalculatedClip> = {
+                    {
+                        let output: V<::bevy_ui::CalculatedClip> = <::bevy_ui::CalculatedClip as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "contains_point",
+            |_self: R<::bevy_ui::CalculatedClip>, point: V<::bevy_math::Vec2>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::CalculatedClip::contains_point(
+                                &_self,
+                                point.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the point is contained by all inherited clipping rects.",
+            &["_self", "point"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_ui::CalculatedClip>, other: R<::bevy_ui::CalculatedClip>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui::CalculatedClip as ::std::cmp::PartialEq<
+                            ::bevy_ui::CalculatedClip,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "is_fully_clipped",
+            |_self: R<::bevy_ui::CalculatedClip>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::CalculatedClip::is_fully_clipped(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the node and descendants are fully clipped.",
+            &["_self"],
+        )
+        .register_documented(
+            "push_rect",
+            |
+                mut _self: M<::bevy_ui::CalculatedClip>,
+                rect: V<::bevy_math::Rect>,
+                world_to_clip_local: V<::bevy_math::Affine2>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_ui::CalculatedClip::push_rect(
+                                &mut _self,
+                                rect.into_inner(),
+                                world_to_clip_local.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Adds a clipping rect if this node is not fully clipped.",
+            &["_self", "rect", "world_to_clip_local"],
+        )
+        .register_documented(
+            "with_rect",
+            |
+                _self: R<::bevy_ui::CalculatedClip>,
+                rect: V<::bevy_math::Rect>,
+                transform: R<::bevy_ui::UiGlobalTransform>|
+            {
+                let output: V<::bevy_ui::CalculatedClip> = {
+                    {
+                        let output: V<::bevy_ui::CalculatedClip> = ::bevy_ui::CalculatedClip::with_rect(
+                                &_self,
+                                rect.into_inner(),
+                                &transform,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "rect", "transform"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::CalculatedClip,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_fixed_node_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::FixedNode,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui::FixedNode>| {
+                let output: V<::bevy_ui::FixedNode> = {
+                    {
+                        let output: V<::bevy_ui::FixedNode> = <::bevy_ui::FixedNode as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_ui::FixedNode, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
 pub(crate) fn register_is_default_ui_camera_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::IsDefaultUiCamera,
-    >::new(world);
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::IsDefaultUiCamera>| {
+            let output: V<::bevy_ui::IsDefaultUiCamera> = {
+                {
+                    let output: V<::bevy_ui::IsDefaultUiCamera> =
+                        <::bevy_ui::IsDefaultUiCamera as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_ui::IsDefaultUiCamera,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_node_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Node>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::Node>| {
+            let output: V<::bevy_ui::Node> = {
+                {
+                    let output: V<::bevy_ui::Node> =
+                        <::bevy_ui::Node as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::Node>, other: R<::bevy_ui::Node>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::Node as ::std::cmp::PartialEq<
+                        ::bevy_ui::Node,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry.register_type_data::<::bevy_ui::Node, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
+pub(crate) fn register_overflow_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Overflow>::new(
+        world,
+    )
+    .register_documented(
+        "clip",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip().into();
+                    output
+                }
+            };
+            output
+        },
+        " Clip overflowing items on both axes",
+        &[],
+    )
+    .register_documented(
+        "clip_x",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_x().into();
+                    output
+                }
+            };
+            output
+        },
+        " Clip overflowing items on the x axis",
+        &[],
+    )
+    .register_documented(
+        "clip_y",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_y().into();
+                    output
+                }
+            };
+            output
+        },
+        " Clip overflowing items on the y axis",
+        &[],
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::Overflow>| {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> =
+                        <::bevy_ui::Overflow as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::Overflow>, other: R<::bevy_ui::Overflow>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::Overflow as ::std::cmp::PartialEq<
+                        ::bevy_ui::Overflow,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "hidden",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden().into();
+                    output
+                }
+            };
+            output
+        },
+        " Hide overflowing items on both axes by influencing layout and then clipping",
+        &[],
+    )
+    .register_documented(
+        "hidden_x",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_x().into();
+                    output
+                }
+            };
+            output
+        },
+        " Hide overflowing items on the x axis by influencing layout and then clipping",
+        &[],
+    )
+    .register_documented(
+        "hidden_y",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_y().into();
+                    output
+                }
+            };
+            output
+        },
+        " Hide overflowing items on the y axis by influencing layout and then clipping",
+        &[],
+    )
+    .register_documented(
+        "is_visible",
+        |_self: R<::bevy_ui::Overflow>| {
+            let output: bool = {
+                {
+                    let output: bool = ::bevy_ui::Overflow::is_visible(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Overflow is visible on both axes",
+        &["_self"],
+    )
+    .register_documented(
+        "scroll",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll().into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &[],
+    )
+    .register_documented(
+        "scroll_x",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_x().into();
+                    output
+                }
+            };
+            output
+        },
+        " Scroll overflowing items on the x axis",
+        &[],
+    )
+    .register_documented(
+        "scroll_y",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_y().into();
+                    output
+                }
+            };
+            output
+        },
+        " Scroll overflowing items on the y axis",
+        &[],
+    )
+    .register_documented(
+        "visible",
+        || {
+            let output: V<::bevy_ui::Overflow> = {
+                {
+                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::visible().into();
+                    output
+                }
+            };
+            output
+        },
+        " Show overflowing items on both axes",
+        &[],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_ui::Overflow, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
+pub(crate) fn register_override_clip_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::OverrideClip,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui::OverrideClip>| {
+                let output: V<::bevy_ui::OverrideClip> = {
+                    {
+                        let output: V<::bevy_ui::OverrideClip> = <::bevy_ui::OverrideClip as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::OverrideClip,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -1860,51 +2189,6 @@ pub(crate) fn register_box_sizing_functions(world: &mut World) {
     let mut registry = registry.write();
     registry
         .register_type_data::<::bevy_ui::BoxSizing, bevy_mod_scripting_bindings::MarkAsGenerated>();
-}
-pub(crate) fn register_text_scroll_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::widget::TextScroll,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_ui::widget::TextScroll>| {
-            let output: V<::bevy_ui::widget::TextScroll> = {
-                {
-                    let output: V<::bevy_ui::widget::TextScroll> =
-                        <::bevy_ui::widget::TextScroll as ::std::clone::Clone>::clone(&_self)
-                            .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::bevy_ui::widget::TextScroll>, other: R<::bevy_ui::widget::TextScroll>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_ui::widget::TextScroll as ::std::cmp::PartialEq<
-                        ::bevy_ui::widget::TextScroll,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::widget::TextScroll,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
 }
 pub(crate) fn register_ui_position_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -2173,7 +2457,9 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
                 _self: V<::bevy_ui::UiPosition>,
                 scale_factor: f32,
                 physical_size: V<::bevy_math::Vec2>,
-                physical_target_size: V<::bevy_math::Vec2>|
+                physical_target_size: V<::bevy_math::Vec2>,
+                em_size: V<::bevy_ui::prelude::EmSize>,
+                rem_size: V<::bevy_ui::prelude::RemSize>|
             {
                 let output: V<::bevy_math::Vec2> = {
                     {
@@ -2182,6 +2468,8 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
                                 scale_factor,
                                 physical_size.into_inner(),
                                 physical_target_size.into_inner(),
+                                em_size.into_inner(),
+                                rem_size.into_inner(),
                             )
                             .into();
                         output
@@ -2190,7 +2478,14 @@ pub(crate) fn register_ui_position_functions(world: &mut World) {
                 output
             },
             " Resolves the `Position` into physical coordinates.",
-            &["_self", "scale_factor", "physical_size", "physical_target_size"],
+            &[
+                "_self",
+                "scale_factor",
+                "physical_size",
+                "physical_target_size",
+                "em_size",
+                "rem_size",
+            ],
         )
         .register_documented(
             "right",
@@ -2801,7 +3096,9 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
          position: V<::bevy_math::Vec2>,
          scale_factor: f32,
          physical_size: V<::bevy_math::Vec2>,
-         physical_target_size: V<::bevy_math::Vec2>| {
+         physical_target_size: V<::bevy_math::Vec2>,
+         em_size: V<::bevy_ui::prelude::EmSize>,
+         rem_size: V<::bevy_ui::prelude::RemSize>| {
             let output: V<::bevy_math::Vec2> = {
                 {
                     let output: V<::bevy_math::Vec2> = ::bevy_ui::RadialGradientShape::resolve(
@@ -2810,6 +3107,8 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
                         scale_factor,
                         physical_size.into_inner(),
                         physical_target_size.into_inner(),
+                        em_size.into_inner(),
+                        rem_size.into_inner(),
                     )
                     .into();
                     output
@@ -2824,6 +3123,8 @@ pub(crate) fn register_radial_gradient_shape_functions(world: &mut World) {
             "scale_factor",
             "physical_size",
             "physical_target_size",
+            "em_size",
+            "rem_size",
         ],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
@@ -2972,6 +3273,21 @@ pub(crate) fn register_gradient_functions(world: &mut World) {
         },
         "",
         &["_self", "other"],
+    )
+    .register_documented(
+        "get_color_space",
+        |_self: R<::bevy_ui::Gradient>| {
+            let output: V<::bevy_ui::InterpolationColorSpace> = {
+                {
+                    let output: V<::bevy_ui::InterpolationColorSpace> =
+                        ::bevy_ui::Gradient::get_color_space(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        " Returns the color space that the gradient interpolates in.",
+        &["_self"],
     )
     .register_documented(
         "is_empty",
@@ -3162,7 +3478,9 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
                 _self: R<::bevy_ui::Val2>,
                 scale_factor: f32,
                 base_size: V<::bevy_math::Vec2>,
-                viewport_size: V<::bevy_math::Vec2>|
+                viewport_size: V<::bevy_math::Vec2>,
+                em_size: V<::bevy_ui::prelude::EmSize>,
+                rem_size: V<::bevy_ui::prelude::RemSize>|
             {
                 let output: V<::bevy_math::Vec2> = {
                     {
@@ -3171,6 +3489,8 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
                                 scale_factor,
                                 base_size.into_inner(),
                                 viewport_size.into_inner(),
+                                em_size.into_inner(),
+                                rem_size.into_inner(),
                             )
                             .into();
                         output
@@ -3179,7 +3499,14 @@ pub(crate) fn register_val_2_functions(world: &mut World) {
                 output
             },
             " Resolves this [`Val2`] from the given `scale_factor`, `parent_size`,\n and `viewport_size`.\n Component values of [`Val::Auto`] are resolved to 0.",
-            &["_self", "scale_factor", "base_size", "viewport_size"],
+            &[
+                "_self",
+                "scale_factor",
+                "base_size",
+                "viewport_size",
+                "em_size",
+                "rem_size",
+            ],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -3212,7 +3539,9 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
                 _self: R<::bevy_ui::UiTransform>,
                 scale_factor: f32,
                 base_size: V<::bevy_math::Vec2>,
-                target_size: V<::bevy_math::Vec2>|
+                target_size: V<::bevy_math::Vec2>,
+                em_size: V<::bevy_ui::prelude::EmSize>,
+                rem_size: V<::bevy_ui::prelude::RemSize>|
             {
                 let output: V<::bevy_math::Affine2> = {
                     {
@@ -3221,6 +3550,8 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
                                 scale_factor,
                                 base_size.into_inner(),
                                 target_size.into_inner(),
+                                em_size.into_inner(),
+                                rem_size.into_inner(),
                             )
                             .into();
                         output
@@ -3229,7 +3560,7 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
                 output
             },
             " Resolves the translation from the given `scale_factor`, `base_value`, and `target_size`\n and returns a 2d affine transform from the resolved translation, and the `UiTransform`'s rotation, and scale.",
-            &["_self", "scale_factor", "base_size", "target_size"],
+            &["_self", "scale_factor", "base_size", "target_size", "em_size", "rem_size"],
         )
         .register_documented(
             "eq",
@@ -3322,6 +3653,52 @@ pub(crate) fn register_ui_transform_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_ui::UiTransform, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
+}
+pub(crate) fn register_deprecated_interaction_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::DeprecatedInteraction,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::DeprecatedInteraction>| {
+            let output: V<::bevy_ui::DeprecatedInteraction> = {
+                {
+                    let output: V<::bevy_ui::DeprecatedInteraction> =
+                        <::bevy_ui::DeprecatedInteraction as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::DeprecatedInteraction>, other: R<::bevy_ui::DeprecatedInteraction>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui::DeprecatedInteraction as ::std::cmp::PartialEq<
+                            ::bevy_ui::DeprecatedInteraction,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::DeprecatedInteraction,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_relative_cursor_position_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -3702,6 +4079,133 @@ pub(crate) fn register_ui_rect_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_ui::UiRect, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
+pub(crate) fn register_corner_radius_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::CornerRadius,
+    >::new(world)
+        .register_documented(
+            "all",
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::CornerRadius> = {
+                    {
+                        let output: V<::bevy_ui::CornerRadius> = ::bevy_ui::CornerRadius::all(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a corner radius with the same `radius` on both axes.\n Note that since each axis is resolved independently, the resolved radii may not be equal (see example below).\n # Example\n ```\n # use bevy_math::Vec2;\n # use bevy_ui::{CornerRadius, Val};\n # use bevy_text::{EmSize, RemSize};\n let radius = Val::Px(30.0);\n let size = Vec2::new(100.0, 50.0);\n let viewport_size = Vec2::new(1920.0, 1080.0);\n let em_size = EmSize(20.0);\n let rem_size = RemSize(20.0);\n let c1 = CornerRadius::all(radius);\n let c2 = CornerRadius {\n     x: radius,\n     y: radius,\n };\n let r = c1.resolve(1.0, size, viewport_size, em_size, rem_size);\n assert_eq!(\n     r,\n     c2.resolve(1.0, size, viewport_size, em_size, rem_size),\n );\n assert_eq!(\n     r,\n     Vec2::new(30., 25.)\n );\n ```",
+            &["radius"],
+        )
+        .register_documented(
+            "circular",
+            |radius: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::CornerRadius> = {
+                    {
+                        let output: V<::bevy_ui::CornerRadius> = ::bevy_ui::CornerRadius::circular(
+                                radius.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a circular corner radius, with `radius` resolved relative to the node's shortest side and clamped to half its length.\n # Example\n ```\n # use bevy_math::Vec2;\n # use bevy_ui::{CornerRadius, Val};\n # use bevy_text::{EmSize, RemSize};\n let radius = Val::Px(30.0);\n let size = Vec2::new(100.0, 50.0);\n let viewport_size = Vec2::new(1920.0, 1080.0);\n let em_size = EmSize(20.0);\n let rem_size = RemSize(20.0);\n let c1 = CornerRadius::circular(radius);\n let c2 = CornerRadius {\n     x: Val::Auto,\n     y: radius,\n };\n let r = c1.resolve(1.0, size, viewport_size, em_size, rem_size);\n assert_eq!(\n     r,\n     c2.resolve(1.0, size, viewport_size, em_size, rem_size),\n );\n assert_eq!(\n     r,\n     Vec2::splat(25.0)\n );\n ```",
+            &["radius"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui::CornerRadius>| {
+                let output: V<::bevy_ui::CornerRadius> = {
+                    {
+                        let output: V<::bevy_ui::CornerRadius> = <::bevy_ui::CornerRadius as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_ui::CornerRadius>, other: R<::bevy_ui::CornerRadius>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui::CornerRadius as ::std::cmp::PartialEq<
+                            ::bevy_ui::CornerRadius,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "new",
+            |x: V<::bevy_ui::Val>, y: V<::bevy_ui::Val>| {
+                let output: V<::bevy_ui::CornerRadius> = {
+                    {
+                        let output: V<::bevy_ui::CornerRadius> = ::bevy_ui::CornerRadius::new(
+                                x.into_inner(),
+                                y.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Creates a corner radius with the given horizontal (`x`) and vertical (`y`) radii.",
+            &["x", "y"],
+        )
+        .register_documented(
+            "resolve",
+            |
+                _self: V<::bevy_ui::CornerRadius>,
+                scale_factor: f32,
+                size: V<::bevy_math::Vec2>,
+                viewport_size: V<::bevy_math::Vec2>,
+                em_size: V<::bevy_ui::prelude::EmSize>,
+                rem_size: V<::bevy_ui::prelude::RemSize>|
+            {
+                let output: V<::bevy_math::Vec2> = {
+                    {
+                        let output: V<::bevy_math::Vec2> = ::bevy_ui::CornerRadius::resolve(
+                                _self.into_inner(),
+                                scale_factor,
+                                size.into_inner(),
+                                viewport_size.into_inner(),
+                                em_size.into_inner(),
+                                rem_size.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Resolves this corner radius into horizontal and vertical radii in physical pixels.",
+            &["_self", "scale_factor", "size", "viewport_size", "em_size", "rem_size"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::CornerRadius,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_ignore_scroll_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::IgnoreScroll,
@@ -4010,6 +4514,37 @@ pub(crate) fn register_align_self_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_safe",
+            |_self: R<::bevy_ui::AlignSelf>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::AlignSelf::is_safe(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` is this alignment is considered [`safe`](Self#safe-alignments).",
+            &["_self"],
+        )
+        .register_documented(
+            "to_safe",
+            |_self: V<::bevy_ui::AlignSelf>| {
+                let output: V<::bevy_ui::AlignSelf> = {
+                    {
+                        let output: V<::bevy_ui::AlignSelf> = ::bevy_ui::AlignSelf::to_safe(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts `self` to a [`safe`](Self#safe-alignments) alignment if possible.\n Returns `self` if there isn't a `safe` variant.",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -4097,12 +4632,211 @@ pub(crate) fn register_align_content_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_safe",
+            |_self: R<::bevy_ui::AlignContent>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::AlignContent::is_safe(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` is this alignment is considered [`safe`](Self#safe-alignments).",
+            &["_self"],
+        )
+        .register_documented(
+            "to_safe",
+            |_self: V<::bevy_ui::AlignContent>| {
+                let output: V<::bevy_ui::AlignContent> = {
+                    {
+                        let output: V<::bevy_ui::AlignContent> = ::bevy_ui::AlignContent::to_safe(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts `self` to a [`safe`](Self#safe-alignments) alignment if possible.\n Returns `self` if there isn't a `safe` variant.",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
         .register_type_data::<
             ::bevy_ui::AlignContent,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_resolved_border_radius_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::ResolvedBorderRadius,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::ResolvedBorderRadius>| {
+            let output: V<::bevy_ui::ResolvedBorderRadius> = {
+                {
+                    let output: V<::bevy_ui::ResolvedBorderRadius> =
+                        <::bevy_ui::ResolvedBorderRadius as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::ResolvedBorderRadius>, other: R<::bevy_ui::ResolvedBorderRadius>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::ResolvedBorderRadius as ::std::cmp::PartialEq<
+                        ::bevy_ui::ResolvedBorderRadius,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::ResolvedBorderRadius,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_border_radius_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::BorderRadius,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui::BorderRadius>| {
+                let output: V<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: V<::bevy_ui::BorderRadius> = <::bevy_ui::BorderRadius as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_ui::BorderRadius>, other: R<::bevy_ui::BorderRadius>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui::BorderRadius as ::std::cmp::PartialEq<
+                            ::bevy_ui::BorderRadius,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "percent",
+            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
+                let output: V<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::percent(
+                                top_left,
+                                top_right,
+                                bottom_right,
+                                bottom_left,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets each corners to a circular radius in percentage values.",
+            &["top_left", "top_right", "bottom_right", "bottom_left"],
+        )
+        .register_documented(
+            "px",
+            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
+                let output: V<::bevy_ui::BorderRadius> = {
+                    {
+                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::px(
+                                top_left,
+                                top_right,
+                                bottom_right,
+                                bottom_left,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Sets each corner to a circular radius in logical pixels.",
+            &["top_left", "top_right", "bottom_right", "bottom_left"],
+        )
+        .register_documented(
+            "resolve",
+            |
+                _self: R<::bevy_ui::BorderRadius>,
+                scale_factor: f32,
+                node_size: V<::bevy_math::Vec2>,
+                viewport_size: V<::bevy_math::Vec2>,
+                em_size: V<::bevy_ui::prelude::EmSize>,
+                rem_size: V<::bevy_ui::prelude::RemSize>|
+            {
+                let output: V<::bevy_ui::ResolvedBorderRadius> = {
+                    {
+                        let output: V<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::BorderRadius::resolve(
+                                &_self,
+                                scale_factor,
+                                node_size.into_inner(),
+                                viewport_size.into_inner(),
+                                em_size.into_inner(),
+                                rem_size.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Resolve the border radii for the corners from the given context values.\n Returns the radii of the each corner in physical pixels.",
+            &[
+                "_self",
+                "scale_factor",
+                "node_size",
+                "viewport_size",
+                "em_size",
+                "rem_size",
+            ],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::BorderRadius,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -4143,6 +4877,37 @@ pub(crate) fn register_align_items_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_safe",
+            |_self: R<::bevy_ui::AlignItems>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::AlignItems::is_safe(&_self).into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` is this alignment is considered [`safe`](Self#safe-alignments).",
+            &["_self"],
+        )
+        .register_documented(
+            "to_safe",
+            |_self: V<::bevy_ui::AlignItems>| {
+                let output: V<::bevy_ui::AlignItems> = {
+                    {
+                        let output: V<::bevy_ui::AlignItems> = ::bevy_ui::AlignItems::to_safe(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts `self` to a [`safe`](Self#safe-alignments) alignment if possible.\n Returns `self` if there isn't a `safe` variant.",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -4725,6 +5490,38 @@ pub(crate) fn register_justify_content_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_safe",
+            |_self: R<::bevy_ui::JustifyContent>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::JustifyContent::is_safe(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` is this alignment is considered [`safe`](Self#safe-alignments).",
+            &["_self"],
+        )
+        .register_documented(
+            "to_safe",
+            |_self: V<::bevy_ui::JustifyContent>| {
+                let output: V<::bevy_ui::JustifyContent> = {
+                    {
+                        let output: V<::bevy_ui::JustifyContent> = ::bevy_ui::JustifyContent::to_safe(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts `self` to a [`safe`](Self#safe-alignments) alignment if possible.\n Returns `self` if there isn't a `safe` variant.",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -4771,6 +5568,38 @@ pub(crate) fn register_justify_items_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_safe",
+            |_self: R<::bevy_ui::JustifyItems>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::JustifyItems::is_safe(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` is this alignment is considered [`safe`](Self#safe-alignments).",
+            &["_self"],
+        )
+        .register_documented(
+            "to_safe",
+            |_self: V<::bevy_ui::JustifyItems>| {
+                let output: V<::bevy_ui::JustifyItems> = {
+                    {
+                        let output: V<::bevy_ui::JustifyItems> = ::bevy_ui::JustifyItems::to_safe(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts `self` to a [`safe`](Self#safe-alignments) alignment if possible.\n Returns `self` if there isn't a `safe` variant.",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -4817,6 +5646,38 @@ pub(crate) fn register_justify_self_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_safe",
+            |_self: R<::bevy_ui::JustifySelf>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_ui::JustifySelf::is_safe(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns `true` is this alignment is considered [`safe`](Self#safe-alignments).",
+            &["_self"],
+        )
+        .register_documented(
+            "to_safe",
+            |_self: V<::bevy_ui::JustifySelf>| {
+                let output: V<::bevy_ui::JustifySelf> = {
+                    {
+                        let output: V<::bevy_ui::JustifySelf> = ::bevy_ui::JustifySelf::to_safe(
+                                _self.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts `self` to a [`safe`](Self#safe-alignments) alignment if possible.\n Returns `self` if there isn't a `safe` variant.",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -4915,659 +5776,6 @@ pub(crate) fn register_min_track_sizing_function_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ui::MinTrackSizingFunction,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
-pub(crate) fn register_overflow_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_ui::Overflow>::new(
-        world,
-    )
-    .register_documented(
-        "clip",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip().into();
-                    output
-                }
-            };
-            output
-        },
-        " Clip overflowing items on both axes",
-        &[],
-    )
-    .register_documented(
-        "clip_x",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_x().into();
-                    output
-                }
-            };
-            output
-        },
-        " Clip overflowing items on the x axis",
-        &[],
-    )
-    .register_documented(
-        "clip_y",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::clip_y().into();
-                    output
-                }
-            };
-            output
-        },
-        " Clip overflowing items on the y axis",
-        &[],
-    )
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_ui::Overflow>| {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> =
-                        <::bevy_ui::Overflow as ::std::clone::Clone>::clone(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::bevy_ui::Overflow>, other: R<::bevy_ui::Overflow>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_ui::Overflow as ::std::cmp::PartialEq<
-                        ::bevy_ui::Overflow,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    )
-    .register_documented(
-        "hidden",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden().into();
-                    output
-                }
-            };
-            output
-        },
-        " Hide overflowing items on both axes by influencing layout and then clipping",
-        &[],
-    )
-    .register_documented(
-        "hidden_x",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_x().into();
-                    output
-                }
-            };
-            output
-        },
-        " Hide overflowing items on the x axis by influencing layout and then clipping",
-        &[],
-    )
-    .register_documented(
-        "hidden_y",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::hidden_y().into();
-                    output
-                }
-            };
-            output
-        },
-        " Hide overflowing items on the y axis by influencing layout and then clipping",
-        &[],
-    )
-    .register_documented(
-        "is_visible",
-        |_self: R<::bevy_ui::Overflow>| {
-            let output: bool = {
-                {
-                    let output: bool = ::bevy_ui::Overflow::is_visible(&_self).into();
-                    output
-                }
-            };
-            output
-        },
-        " Overflow is visible on both axes",
-        &["_self"],
-    )
-    .register_documented(
-        "scroll",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll().into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &[],
-    )
-    .register_documented(
-        "scroll_x",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_x().into();
-                    output
-                }
-            };
-            output
-        },
-        " Scroll overflowing items on the x axis",
-        &[],
-    )
-    .register_documented(
-        "scroll_y",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::scroll_y().into();
-                    output
-                }
-            };
-            output
-        },
-        " Scroll overflowing items on the y axis",
-        &[],
-    )
-    .register_documented(
-        "visible",
-        || {
-            let output: V<::bevy_ui::Overflow> = {
-                {
-                    let output: V<::bevy_ui::Overflow> = ::bevy_ui::Overflow::visible().into();
-                    output
-                }
-            };
-            output
-        },
-        " Show overflowing items on both axes",
-        &[],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<::bevy_ui::Overflow, bevy_mod_scripting_bindings::MarkAsGenerated>();
-}
-pub(crate) fn register_border_radius_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::BorderRadius,
-    >::new(world)
-        .register_documented(
-            "all",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::all(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Set all four corners to the same curvature.",
-            &["radius"],
-        )
-        .register_documented(
-            "bottom",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the bottom left and bottom right corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "bottom_left",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_left(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the bottom left corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "bottom_right",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::bottom_right(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the bottom right corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "clone",
-            |_self: R<::bevy_ui::BorderRadius>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = <::bevy_ui::BorderRadius as ::std::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: R<::bevy_ui::BorderRadius>, other: R<::bevy_ui::BorderRadius>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ui::BorderRadius as ::std::cmp::PartialEq<
-                            ::bevy_ui::BorderRadius,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        )
-        .register_documented(
-            "left",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::left(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the top left and bottom left corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "new",
-            |
-                top_left: V<::bevy_ui::Val>,
-                top_right: V<::bevy_ui::Val>,
-                bottom_right: V<::bevy_ui::Val>,
-                bottom_left: V<::bevy_ui::Val>|
-            {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::new(
-                                top_left.into_inner(),
-                                top_right.into_inner(),
-                                bottom_right.into_inner(),
-                                bottom_left.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["top_left", "top_right", "bottom_right", "bottom_left"],
-        )
-        .register_documented(
-            "percent",
-            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::percent(
-                                top_left,
-                                top_right,
-                                bottom_right,
-                                bottom_left,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii to percentage values.",
-            &["top_left", "top_right", "bottom_right", "bottom_left"],
-        )
-        .register_documented(
-            "px",
-            |top_left: f32, top_right: f32, bottom_right: f32, bottom_left: f32| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::px(
-                                top_left,
-                                top_right,
-                                bottom_right,
-                                bottom_left,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii to logical pixel values.",
-            &["top_left", "top_right", "bottom_right", "bottom_left"],
-        )
-        .register_documented(
-            "resolve",
-            |
-                _self: R<::bevy_ui::BorderRadius>,
-                scale_factor: f32,
-                node_size: V<::bevy_math::Vec2>,
-                viewport_size: V<::bevy_math::Vec2>|
-            {
-                let output: V<::bevy_ui::ResolvedBorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::ResolvedBorderRadius> = ::bevy_ui::BorderRadius::resolve(
-                                &_self,
-                                scale_factor,
-                                node_size.into_inner(),
-                                viewport_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the border radii for the corners from the given context values.\n Returns the radii of the each corner in physical pixels.",
-            &["_self", "scale_factor", "node_size", "viewport_size"],
-        )
-        .register_documented(
-            "resolve_single_corner",
-            |
-                radius: V<::bevy_ui::Val>,
-                scale_factor: f32,
-                min_length: f32,
-                viewport_size: V<::bevy_math::Vec2>|
-            {
-                let output: f32 = {
-                    {
-                        let output: f32 = ::bevy_ui::BorderRadius::resolve_single_corner(
-                                radius.into_inner(),
-                                scale_factor,
-                                min_length,
-                                viewport_size.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Resolve the border radius for a single corner from the given context values.\n Returns the radius of the corner in physical pixels.",
-            &["radius", "scale_factor", "min_length", "viewport_size"],
-        )
-        .register_documented(
-            "right",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::right(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the top right and bottom right corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "top",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radii for the top left and top right corners.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "top_left",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_left(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the top left corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "top_right",
-            |radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::top_right(
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Sets the radius for the top right corner.\n Remaining corners will be right-angled.",
-            &["radius"],
-        )
-        .register_documented(
-            "with_bottom",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `bottom_left` and `bottom_right` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_bottom_left",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_left(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `bottom_left` field set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_bottom_right",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_bottom_right(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `bottom_right` field set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_left",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_left(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_left` and `bottom_left` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_right",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_right(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_right` and `bottom_right` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_top",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_left` and `top_right` fields set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_top_left",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_left(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_left` field set to the given value.",
-            &["_self", "radius"],
-        )
-        .register_documented(
-            "with_top_right",
-            |_self: V<::bevy_ui::BorderRadius>, radius: V<::bevy_ui::Val>| {
-                let output: V<::bevy_ui::BorderRadius> = {
-                    {
-                        let output: V<::bevy_ui::BorderRadius> = ::bevy_ui::BorderRadius::with_top_right(
-                                _self.into_inner(),
-                                radius.into_inner(),
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            " Returns the [`BorderRadius`] with its `top_right` field set to the given value.",
-            &["_self", "radius"],
-        );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::BorderRadius,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -5770,51 +5978,6 @@ pub(crate) fn register_z_index_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_ui::ZIndex, bevy_mod_scripting_bindings::MarkAsGenerated>();
 }
-pub(crate) fn register_resolved_border_radius_functions(world: &mut World) {
-    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
-        ::bevy_ui::ResolvedBorderRadius,
-    >::new(world)
-    .register_documented(
-        "clone",
-        |_self: R<::bevy_ui::ResolvedBorderRadius>| {
-            let output: V<::bevy_ui::ResolvedBorderRadius> = {
-                {
-                    let output: V<::bevy_ui::ResolvedBorderRadius> =
-                        <::bevy_ui::ResolvedBorderRadius as ::std::clone::Clone>::clone(&_self)
-                            .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self"],
-    )
-    .register_documented(
-        "eq",
-        |_self: R<::bevy_ui::ResolvedBorderRadius>, other: R<::bevy_ui::ResolvedBorderRadius>| {
-            let output: bool = {
-                {
-                    let output: bool = <::bevy_ui::ResolvedBorderRadius as ::std::cmp::PartialEq<
-                        ::bevy_ui::ResolvedBorderRadius,
-                    >>::eq(&_self, &other)
-                    .into();
-                    output
-                }
-            };
-            output
-        },
-        "",
-        &["_self", "other"],
-    );
-    let registry = world.get_resource_or_init::<AppTypeRegistry>();
-    let mut registry = registry.write();
-    registry
-        .register_type_data::<
-            ::bevy_ui::ResolvedBorderRadius,
-            bevy_mod_scripting_bindings::MarkAsGenerated,
-        >();
-}
 pub(crate) fn register_background_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui::BackgroundColor,
@@ -5921,6 +6084,51 @@ pub(crate) fn register_border_color_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_ui::BorderColor, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
+}
+pub(crate) fn register_calculated_clip_rect_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui::CalculatedClipRect,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui::CalculatedClipRect>| {
+            let output: V<::bevy_ui::CalculatedClipRect> = {
+                {
+                    let output: V<::bevy_ui::CalculatedClipRect> =
+                        <::bevy_ui::CalculatedClipRect as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui::CalculatedClipRect>, other: R<::bevy_ui::CalculatedClipRect>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui::CalculatedClipRect as ::std::cmp::PartialEq<
+                        ::bevy_ui::CalculatedClipRect,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui::CalculatedClipRect,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_outer_color_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -6094,12 +6302,11 @@ impl Plugin for BevyUiScriptingPlugin {
         register_ui_picking_settings_functions(&mut world);
         register_text_functions(&mut world);
         register_text_shadow_functions(&mut world);
-        register_button_functions(&mut world);
         register_image_node_functions(&mut world);
+        register_inline_image_functions(&mut world);
         register_label_functions(&mut world);
         register_node_image_mode_functions(&mut world);
         register_viewport_node_functions(&mut world);
-        register_interaction_functions(&mut world);
         register_ui_scale_functions(&mut world);
         register_computed_stack_index_functions(&mut world);
         register_ui_stack_functions(&mut world);
@@ -6109,16 +6316,17 @@ impl Plugin for BevyUiScriptingPlugin {
         register_ui_global_transform_functions(&mut world);
         register_auto_directional_navigation_functions(&mut world);
         register_content_size_functions(&mut world);
-        register_calculated_clip_functions(&mut world);
-        register_node_functions(&mut world);
-        register_override_clip_functions(&mut world);
         register_ui_target_camera_functions(&mut world);
+        register_calculated_clip_functions(&mut world);
+        register_fixed_node_functions(&mut world);
         register_is_default_ui_camera_functions(&mut world);
+        register_node_functions(&mut world);
+        register_overflow_functions(&mut world);
+        register_override_clip_functions(&mut world);
         register_focus_policy_functions(&mut world);
         register_visual_box_functions(&mut world);
         register_image_node_size_functions(&mut world);
         register_box_sizing_functions(&mut world);
-        register_text_scroll_functions(&mut world);
         register_ui_position_functions(&mut world);
         register_val_functions(&mut world);
         register_color_stop_functions(&mut world);
@@ -6133,8 +6341,10 @@ impl Plugin for BevyUiScriptingPlugin {
         register_border_gradient_functions(&mut world);
         register_val_2_functions(&mut world);
         register_ui_transform_functions(&mut world);
+        register_deprecated_interaction_functions(&mut world);
         register_relative_cursor_position_functions(&mut world);
         register_ui_rect_functions(&mut world);
+        register_corner_radius_functions(&mut world);
         register_ignore_scroll_functions(&mut world);
         register_layout_config_functions(&mut world);
         register_outline_functions(&mut world);
@@ -6144,6 +6354,8 @@ impl Plugin for BevyUiScriptingPlugin {
         register_align_self_functions(&mut world);
         register_repeated_grid_track_functions(&mut world);
         register_align_content_functions(&mut world);
+        register_resolved_border_radius_functions(&mut world);
+        register_border_radius_functions(&mut world);
         register_align_items_functions(&mut world);
         register_flex_direction_functions(&mut world);
         register_flex_wrap_functions(&mut world);
@@ -6157,14 +6369,12 @@ impl Plugin for BevyUiScriptingPlugin {
         register_justify_self_functions(&mut world);
         register_max_track_sizing_function_functions(&mut world);
         register_min_track_sizing_function_functions(&mut world);
-        register_overflow_functions(&mut world);
-        register_border_radius_functions(&mut world);
         register_overflow_clip_margin_functions(&mut world);
         register_global_z_index_functions(&mut world);
         register_z_index_functions(&mut world);
-        register_resolved_border_radius_functions(&mut world);
         register_background_color_functions(&mut world);
         register_border_color_functions(&mut world);
+        register_calculated_clip_rect_functions(&mut world);
         register_outer_color_functions(&mut world);
         register_box_shadow_functions(&mut world);
         register_shadow_style_functions(&mut world);

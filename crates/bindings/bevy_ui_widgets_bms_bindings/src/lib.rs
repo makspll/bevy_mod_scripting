@@ -172,6 +172,147 @@ pub(crate) fn register_toggle_checked_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_modal_dialog_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::ModalDialog,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ModalDialog>| {
+            let output: V<::bevy_ui_widgets::ModalDialog> = {
+                {
+                    let output: V<::bevy_ui_widgets::ModalDialog> =
+                        <::bevy_ui_widgets::ModalDialog as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::ModalDialog,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_dialog_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::Dialog,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui_widgets::Dialog>| {
+                let output: V<::bevy_ui_widgets::Dialog> = {
+                    {
+                        let output: V<::bevy_ui_widgets::Dialog> = <::bevy_ui_widgets::Dialog as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::Dialog,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_request_close_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::RequestClose,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::RequestClose>| {
+            let output: V<::bevy_ui_widgets::RequestClose> = {
+                {
+                    let output: V<::bevy_ui_widgets::RequestClose> =
+                        <::bevy_ui_widgets::RequestClose as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::RequestClose,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_dialog_drag_state_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::DialogDragState,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::DialogDragState>| {
+            let output: V<::bevy_ui_widgets::DialogDragState> = {
+                {
+                    let output: V<::bevy_ui_widgets::DialogDragState> =
+                        <::bevy_ui_widgets::DialogDragState as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::DialogDragState,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_dialog_drag_handle_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::DialogDragHandle,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::DialogDragHandle>| {
+            let output: V<::bevy_ui_widgets::DialogDragHandle> = {
+                {
+                    let output: V<::bevy_ui_widgets::DialogDragHandle> =
+                        <::bevy_ui_widgets::DialogDragHandle as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::DialogDragHandle,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_active_descendant_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::ActiveDescendant,
@@ -226,6 +367,65 @@ pub(crate) fn register_list_item_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ui_widgets::ListItem,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_reselect_list_row_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::ReselectListRow,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ReselectListRow>| {
+            let output: V<::bevy_ui_widgets::ReselectListRow> = {
+                {
+                    let output: V<::bevy_ui_widgets::ReselectListRow> =
+                        <::bevy_ui_widgets::ReselectListRow as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::ReselectListRow>,
+         other: R<::bevy_ui_widgets::ReselectListRow>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::ReselectListRow as ::std::cmp::PartialEq<
+                            ::bevy_ui_widgets::ReselectListRow,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::ReselectListRow,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_set_selected_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::SetSelected,
+    >::new(world);
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::SetSelected,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -457,6 +657,36 @@ pub(crate) fn register_menu_button_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_ui_widgets::MenuButton,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_modal_dialog_barrier_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::ModalDialogBarrier,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::ModalDialogBarrier>| {
+            let output: V<::bevy_ui_widgets::ModalDialogBarrier> = {
+                {
+                    let output: V<::bevy_ui_widgets::ModalDialogBarrier> =
+                        <::bevy_ui_widgets::ModalDialogBarrier as ::std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::ModalDialogBarrier,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -1473,6 +1703,181 @@ pub(crate) fn register_slider_value_change_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_tab_activation_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::TabActivation,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::TabActivation>| {
+            let output: V<::bevy_ui_widgets::TabActivation> = {
+                {
+                    let output: V<::bevy_ui_widgets::TabActivation> =
+                        <::bevy_ui_widgets::TabActivation as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::TabActivation>, other: R<::bevy_ui_widgets::TabActivation>| {
+            let output: bool = {
+                {
+                    let output: bool =
+                        <::bevy_ui_widgets::TabActivation as ::std::cmp::PartialEq<
+                            ::bevy_ui_widgets::TabActivation,
+                        >>::eq(&_self, &other)
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::TabActivation,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_tab_list_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::TabList,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui_widgets::TabList>| {
+                let output: V<::bevy_ui_widgets::TabList> = {
+                    {
+                        let output: V<::bevy_ui_widgets::TabList> = <::bevy_ui_widgets::TabList as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_ui_widgets::TabList>, other: R<::bevy_ui_widgets::TabList>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_ui_widgets::TabList as ::std::cmp::PartialEq<
+                            ::bevy_ui_widgets::TabList,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::TabList,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_selected_tab_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::SelectedTab,
+    >::new(world)
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_ui_widgets::SelectedTab>, other: R<::bevy_ui_widgets::SelectedTab>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ui_widgets::SelectedTab as ::std::cmp::PartialEq<
+                        ::bevy_ui_widgets::SelectedTab,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::SelectedTab,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_tab_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::Tab,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_ui_widgets::Tab>| {
+                let output: V<::bevy_ui_widgets::Tab> = {
+                    {
+                        let output: V<::bevy_ui_widgets::Tab> = <::bevy_ui_widgets::Tab as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_ui_widgets::Tab, bevy_mod_scripting_bindings::MarkAsGenerated>(
+        );
+}
+pub(crate) fn register_text_input_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_ui_widgets::TextInput,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_ui_widgets::TextInput>| {
+            let output: V<::bevy_ui_widgets::TextInput> = {
+                {
+                    let output: V<::bevy_ui_widgets::TextInput> =
+                        <::bevy_ui_widgets::TextInput as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_ui_widgets::TextInput,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_select_all_on_focus_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ui_widgets::SelectAllOnFocus,
@@ -1510,8 +1915,15 @@ impl Plugin for BevyUiWidgetsScriptingPlugin {
         register_checkbox_functions(&mut world);
         register_set_checked_functions(&mut world);
         register_toggle_checked_functions(&mut world);
+        register_modal_dialog_functions(&mut world);
+        register_dialog_functions(&mut world);
+        register_request_close_functions(&mut world);
+        register_dialog_drag_state_functions(&mut world);
+        register_dialog_drag_handle_functions(&mut world);
         register_active_descendant_functions(&mut world);
         register_list_item_functions(&mut world);
+        register_reselect_list_row_functions(&mut world);
+        register_set_selected_functions(&mut world);
         register_menu_action_functions(&mut world);
         register_menu_event_functions(&mut world);
         register_menu_layout_functions(&mut world);
@@ -1519,6 +1931,7 @@ impl Plugin for BevyUiWidgetsScriptingPlugin {
         register_menu_popup_functions(&mut world);
         register_menu_item_functions(&mut world);
         register_menu_button_functions(&mut world);
+        register_modal_dialog_barrier_functions(&mut world);
         register_popover_side_functions(&mut world);
         register_popover_align_functions(&mut world);
         register_popover_placement_functions(&mut world);
@@ -1541,6 +1954,11 @@ impl Plugin for BevyUiWidgetsScriptingPlugin {
         register_slider_precision_functions(&mut world);
         register_set_slider_value_functions(&mut world);
         register_slider_value_change_functions(&mut world);
+        register_tab_activation_functions(&mut world);
+        register_tab_list_functions(&mut world);
+        register_selected_tab_functions(&mut world);
+        register_tab_functions(&mut world);
+        register_text_input_functions(&mut world);
         register_select_all_on_focus_functions(&mut world);
     }
 }

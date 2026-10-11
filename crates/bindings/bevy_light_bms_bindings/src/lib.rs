@@ -116,6 +116,25 @@ pub(crate) fn register_environment_map_light_functions(world: &mut World) {
         },
         "",
         &["_self"],
+    )
+    .register_documented(
+        "with_intensity",
+        |_self: V<::bevy_light::EnvironmentMapLight>, intensity: f32| {
+            let output: V<::bevy_light::EnvironmentMapLight> = {
+                {
+                    let output: V<::bevy_light::EnvironmentMapLight> =
+                        ::bevy_light::EnvironmentMapLight::with_intensity(
+                            _self.into_inner(),
+                            intensity,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        " Sets the intensity of this environment map and returns it.",
+        &["_self", "intensity"],
     );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();

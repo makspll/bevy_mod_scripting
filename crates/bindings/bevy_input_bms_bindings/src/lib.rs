@@ -673,6 +673,48 @@ pub(crate) fn register_accumulated_mouse_scroll_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "to_lines",
+            |
+                _self: R<::bevy_input::mouse::AccumulatedMouseScroll>,
+                conversion_ratio: R<::bevy_input::mouse::MouseScrollPixelsPerLine>|
+            {
+                let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = {
+                    {
+                        let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = ::bevy_input::mouse::AccumulatedMouseScroll::to_lines(
+                                &_self,
+                                &conversion_ratio,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts the units to [`MouseScrollUnit::Line`]",
+            &["_self", "conversion_ratio"],
+        )
+        .register_documented(
+            "to_pixels",
+            |
+                _self: R<::bevy_input::mouse::AccumulatedMouseScroll>,
+                conversion_ratio: R<::bevy_input::mouse::MouseScrollPixelsPerLine>|
+            {
+                let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = {
+                    {
+                        let output: V<::bevy_input::mouse::AccumulatedMouseScroll> = ::bevy_input::mouse::AccumulatedMouseScroll::to_pixels(
+                                &_self,
+                                &conversion_ratio,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Converts the units to [`MouseScrollUnit::Pixel`]",
+            &["_self", "conversion_ratio"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -774,6 +816,55 @@ pub(crate) fn register_mouse_motion_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_input::mouse::MouseMotion,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_mouse_scroll_pixels_per_line_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_input::mouse::MouseScrollPixelsPerLine,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_input::mouse::MouseScrollPixelsPerLine>| {
+                let output: V<::bevy_input::mouse::MouseScrollPixelsPerLine> = {
+                    {
+                        let output: V<::bevy_input::mouse::MouseScrollPixelsPerLine> = <::bevy_input::mouse::MouseScrollPixelsPerLine as ::core::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |
+                _self: R<::bevy_input::mouse::MouseScrollPixelsPerLine>,
+                other: R<::bevy_input::mouse::MouseScrollPixelsPerLine>|
+            {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_input::mouse::MouseScrollPixelsPerLine as ::core::cmp::PartialEq<
+                            ::bevy_input::mouse::MouseScrollPixelsPerLine,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_input::mouse::MouseScrollPixelsPerLine,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -2566,6 +2657,7 @@ impl Plugin for BevyInputScriptingPlugin {
         register_accumulated_mouse_scroll_functions(&mut world);
         register_mouse_button_input_functions(&mut world);
         register_mouse_motion_functions(&mut world);
+        register_mouse_scroll_pixels_per_line_functions(&mut world);
         register_mouse_wheel_functions(&mut world);
         register_gamepad_axis_changed_event_functions(&mut world);
         register_gamepad_button_changed_event_functions(&mut world);

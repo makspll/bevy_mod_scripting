@@ -746,6 +746,18 @@ pub(crate) fn register_threaded_animation_graph_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_threaded_animation_subgraph_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_animation::graph::ThreadedAnimationSubgraph,
+    >::new(world);
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_animation::graph::ThreadedAnimationSubgraph,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_weights_curve_sample_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_animation::animation_curves::WeightsCurveSample,
@@ -874,6 +886,7 @@ impl Plugin for BevyAnimationScriptingPlugin {
         register_cubic_rotation_curve_functions(&mut world);
         register_animation_graph_node_functions(&mut world);
         register_threaded_animation_graph_functions(&mut world);
+        register_threaded_animation_subgraph_functions(&mut world);
         register_weights_curve_sample_functions(&mut world);
         register_animation_transitions_functions(&mut world);
         register_animation_transition_functions(&mut world);

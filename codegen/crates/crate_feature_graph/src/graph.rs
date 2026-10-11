@@ -503,7 +503,7 @@ impl WorkspaceGraph {
                                 let active_features = dependent.features.iter().filter(|f| active_features.contains(&f.name));
 
                                 Some(active_features
-                                    .filter_map(|f| f.effects().find_map(|e| e.enables_feature_in_crate(&krate).cloned())))
+                                    .flat_map(|f| f.effects().filter_map(|e| e.enables_feature_in_crate(&krate).cloned()).collect::<Vec<_>>()))
                             })
                             .flatten()
                             .collect::<IndexSet<_>>();
@@ -587,6 +587,15 @@ impl WorkspaceGraph {
                             continue;
                         }
                     };
+                    // features requested in dependency declarations only matter to the dependency itself,
+                    // they don't make the dependency show up in the dependent's active dependency features
+                    if feature
+                        .name
+                        .feature_name()
+                        .starts_with(Feature::DECLARED_FEATURES_PREFIX)
+                    {
+                        continue;
+                    }
                     for effect in feature.effects() {
                         if let Some(feature) = effect.enables_feature_in_crate(&dependency.name) {
                             active_dependency_features

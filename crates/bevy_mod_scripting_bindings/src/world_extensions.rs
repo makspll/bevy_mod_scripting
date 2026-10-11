@@ -1164,6 +1164,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                     Layout::new::<DynamicComponent>(),
                     needs_drop::<DynamicComponent>().then_some(|x| x.drop_as::<DynamicComponent>()),
                     true,
+                    false,
                     ComponentCloneBehavior::Default,
                     None,
                 )

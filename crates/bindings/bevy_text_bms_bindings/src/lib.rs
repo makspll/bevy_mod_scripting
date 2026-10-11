@@ -119,14 +119,14 @@ pub(crate) fn register_font_size_functions(world: &mut World) {
             |
                 _self: V<::bevy_text::FontSize>,
                 logical_viewport_size: V<::bevy_math::Vec2>,
-                rem_size: f32|
+                rem_size: V<::bevy_text::RemSize>|
             {
                 let output: f32 = {
                     {
                         let output: f32 = ::bevy_text::FontSize::eval(
                                 _self.into_inner(),
                                 logical_viewport_size.into_inner(),
-                                rem_size,
+                                rem_size.into_inner(),
                             )
                             .into();
                         output
@@ -211,6 +211,36 @@ pub(crate) fn register_font_source_functions(world: &mut World) {
             &["_self"],
         )
         .register_documented(
+            "cursive",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::cursive()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Fonts that use a cursive or handwritten style.\n Glyphs often resemble connected or flowing pen or brush strokes rather\n than printed letterforms.",
+            &[],
+        )
+        .register_documented(
+            "emoji",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::emoji()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Fonts that are specifically designed to render emoji.",
+            &[],
+        )
+        .register_documented(
             "eq",
             |_self: R<::bevy_text::FontSource>, other: R<::bevy_text::FontSource>| {
                 let output: bool = {
@@ -226,6 +256,201 @@ pub(crate) fn register_font_source_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "fang_song",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::fang_song()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " A particular style of Chinese characters that are between serif-style\n Song and cursive-style Kai forms. This style is often used for\n government documents.",
+            &[],
+        )
+        .register_documented(
+            "fantasy",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::fantasy()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Decorative or expressive fonts.\n Fantasy fonts are primarily intended for display purposes and may\n prioritize visual style over readability.",
+            &[],
+        )
+        .register_documented(
+            "is_list_like",
+            |_self: R<::bevy_text::FontSource>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_text::FontSource::is_list_like(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if the `FontSource` is a list-like source (either the `Families` or `List` variant).",
+            &["_self"],
+        )
+        .register_documented(
+            "is_recursive",
+            |_self: R<::bevy_text::FontSource>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_text::FontSource::is_recursive(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns true if this `FontSource` is a `List` that contains at least one list-like source.",
+            &["_self"],
+        )
+        .register_documented(
+            "math",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::math()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " This is for the particular stylistic concerns of representing\n mathematics: superscript and subscript, brackets that cross several\n lines, nesting expressions, and double struck glyphs with distinct\n meanings.",
+            &[],
+        )
+        .register_documented(
+            "monospace",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::monospace()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Fonts in which all glyphs have the same fixed advance width.\n Monospace fonts are commonly used for code, tabular data, and text\n where vertical alignment is important.",
+            &[],
+        )
+        .register_documented(
+            "sans_serif",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::sans_serif()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Fonts without serifs.\n Sans-serif fonts generally have low stroke contrast and plain stroke\n endings, making them common for UI text and on-screen reading.",
+            &[],
+        )
+        .register_documented(
+            "serif",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::serif()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Fonts with serifs — small decorative strokes at the ends of letterforms.\n Serif fonts are typically used for long passages of text and represent\n a more traditional or formal typographic style.",
+            &[],
+        )
+        .register_documented(
+            "system_ui",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::system_ui()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " The default user interface system font.",
+            &[],
+        )
+        .register_documented(
+            "ui_monospace",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::ui_monospace()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Alternative monospace font for user interfaces.",
+            &[],
+        )
+        .register_documented(
+            "ui_rounded",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::ui_rounded()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Fonts that have rounded features.",
+            &[],
+        )
+        .register_documented(
+            "ui_sans_serif",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::ui_sans_serif()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Alternative sans-serif font for user interfaces.",
+            &[],
+        )
+        .register_documented(
+            "ui_serif",
+            || {
+                let output: V<::bevy_text::FontSource> = {
+                    {
+                        let output: V<::bevy_text::FontSource> = ::bevy_text::FontSource::ui_serif()
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Alternative serif font for user interfaces.",
+            &[],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -385,6 +610,51 @@ pub(crate) fn register_font_width_functions(world: &mut World) {
     registry
         .register_type_data::<::bevy_text::FontWidth, bevy_mod_scripting_bindings::MarkAsGenerated>(
         );
+}
+pub(crate) fn register_generic_font_family_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::GenericFontFamily,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_text::GenericFontFamily>| {
+            let output: V<::bevy_text::GenericFontFamily> = {
+                {
+                    let output: V<::bevy_text::GenericFontFamily> =
+                        <::bevy_text::GenericFontFamily as ::std::clone::Clone>::clone(&_self)
+                            .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_text::GenericFontFamily>, other: R<::bevy_text::GenericFontFamily>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_text::GenericFontFamily as ::std::cmp::PartialEq<
+                        ::bevy_text::GenericFontFamily,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::GenericFontFamily,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
 }
 pub(crate) fn register_justify_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
@@ -908,6 +1178,49 @@ pub(crate) fn register_underline_color_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_rem_size_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::RemSize,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_text::RemSize>| {
+                let output: V<::bevy_text::RemSize> = {
+                    {
+                        let output: V<::bevy_text::RemSize> = <::bevy_text::RemSize as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_text::RemSize>, other: R<::bevy_text::RemSize>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_text::RemSize as ::std::cmp::PartialEq<
+                            ::bevy_text::RemSize,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_text::RemSize, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
 pub(crate) fn register_text_bounds_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::TextBounds,
@@ -989,6 +1302,133 @@ pub(crate) fn register_text_bounds_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_text_viewport_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::TextViewport,
+    >::new(world)
+        .register_documented(
+            "clamp_inside",
+            |mut _self: M<::bevy_text::TextViewport>, max: V<::bevy_math::Vec2>| {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_text::TextViewport::clamp_inside(
+                                &mut _self,
+                                max.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Clamp the scroll offset to fit inside `max`.",
+            &["_self", "max"],
+        )
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_text::TextViewport>| {
+                let output: V<::bevy_text::TextViewport> = {
+                    {
+                        let output: V<::bevy_text::TextViewport> = <::bevy_text::TextViewport as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_text::TextViewport>, other: R<::bevy_text::TextViewport>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_text::TextViewport as ::std::cmp::PartialEq<
+                            ::bevy_text::TextViewport,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        )
+        .register_documented(
+            "rect",
+            |_self: R<::bevy_text::TextViewport>| {
+                let output: V<::bevy_math::Rect> = {
+                    {
+                        let output: V<::bevy_math::Rect> = ::bevy_text::TextViewport::rect(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns the viewport as a `Rect`.",
+            &["_self"],
+        )
+        .register_documented(
+            "scroll_by",
+            |
+                mut _self: M<::bevy_text::TextViewport>,
+                displacement: V<::bevy_math::Vec2>,
+                max: V<::bevy_math::Vec2>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_text::TextViewport::scroll_by(
+                                &mut _self,
+                                displacement.into_inner(),
+                                max.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Scroll by a displacement",
+            &["_self", "displacement", "max"],
+        )
+        .register_documented(
+            "scroll_to",
+            |
+                mut _self: M<::bevy_text::TextViewport>,
+                point: V<::bevy_math::Vec2>,
+                max: V<::bevy_math::Vec2>|
+            {
+                let output: () = {
+                    {
+                        let output: () = ::bevy_text::TextViewport::scroll_to(
+                                &mut _self,
+                                point.into_inner(),
+                                max.into_inner(),
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Scroll to a position",
+            &["_self", "point", "max"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::TextViewport,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
 pub(crate) fn register_text_edit_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::TextEdit,
@@ -1041,6 +1481,21 @@ pub(crate) fn register_text_edit_functions(world: &mut World) {
             },
             "",
             &["_self", "other"],
+        )
+        .register_documented(
+            "is_destructive",
+            |_self: R<::bevy_text::TextEdit>| {
+                let output: bool = {
+                    {
+                        let output: bool = ::bevy_text::TextEdit::is_destructive(&_self)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            " Returns whether this actually affects the text, or is just cursor movement",
+            &["_self"],
         );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
@@ -1175,6 +1630,52 @@ pub(crate) fn register_positioned_glyph_functions(world: &mut World) {
     registry
         .register_type_data::<
             ::bevy_text::PositionedGlyph,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_inline_box_kind_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::InlineBoxKind,
+    >::new(world)
+        .register_documented(
+            "clone",
+            |_self: R<::bevy_text::InlineBoxKind>| {
+                let output: V<::bevy_text::InlineBoxKind> = {
+                    {
+                        let output: V<::bevy_text::InlineBoxKind> = <::bevy_text::InlineBoxKind as ::std::clone::Clone>::clone(
+                                &_self,
+                            )
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self"],
+        )
+        .register_documented(
+            "eq",
+            |_self: R<::bevy_text::InlineBoxKind>, other: R<::bevy_text::InlineBoxKind>| {
+                let output: bool = {
+                    {
+                        let output: bool = <::bevy_text::InlineBoxKind as ::std::cmp::PartialEq<
+                            ::bevy_text::InlineBoxKind,
+                        >>::eq(&_self, &other)
+                            .into();
+                        output
+                    }
+                };
+                output
+            },
+            "",
+            &["_self", "other"],
+        );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::InlineBoxKind,
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
@@ -1541,6 +2042,127 @@ pub(crate) fn register_run_geometry_functions(world: &mut World) {
             bevy_mod_scripting_bindings::MarkAsGenerated,
         >();
 }
+pub(crate) fn register_text_line_y_bounds_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
+        ::bevy_text::TextLineYBounds,
+    >::new(world)
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_text::TextLineYBounds>| {
+            let output: V<::bevy_text::TextLineYBounds> = {
+                {
+                    let output: V<::bevy_text::TextLineYBounds> =
+                        <::bevy_text::TextLineYBounds as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_text::TextLineYBounds>, other: R<::bevy_text::TextLineYBounds>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_text::TextLineYBounds as ::std::cmp::PartialEq<
+                        ::bevy_text::TextLineYBounds,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "new",
+        |min: f32, max: f32| {
+            let output: V<::bevy_text::TextLineYBounds> = {
+                {
+                    let output: V<::bevy_text::TextLineYBounds> =
+                        ::bevy_text::TextLineYBounds::new(min, max).into();
+                    output
+                }
+            };
+            output
+        },
+        " Creates line bounds from a top and bottom edge.",
+        &["min", "max"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<
+            ::bevy_text::TextLineYBounds,
+            bevy_mod_scripting_bindings::MarkAsGenerated,
+        >();
+}
+pub(crate) fn register_em_size_functions(world: &mut World) {
+    bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<::bevy_text::EmSize>::new(
+        world,
+    )
+    .register_documented(
+        "clone",
+        |_self: R<::bevy_text::EmSize>| {
+            let output: V<::bevy_text::EmSize> = {
+                {
+                    let output: V<::bevy_text::EmSize> =
+                        <::bevy_text::EmSize as ::std::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: R<::bevy_text::EmSize>, other: R<::bevy_text::EmSize>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_text::EmSize as ::std::cmp::PartialEq<
+                        ::bevy_text::EmSize,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    )
+    .register_documented(
+        "from_font_size",
+        |font_size: V<::bevy_text::FontSize>,
+         logical_viewport_size: V<::bevy_math::Vec2>,
+         rem_size: V<::bevy_text::RemSize>| {
+            let output: V<::bevy_text::EmSize> = {
+                {
+                    let output: V<::bevy_text::EmSize> = ::bevy_text::EmSize::from_font_size(
+                        font_size.into_inner(),
+                        logical_viewport_size.into_inner(),
+                        rem_size.into_inner(),
+                    )
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        " Resolves a [`FontSize`] to a concrete [`EmSize`] in logical pixels.",
+        &["font_size", "logical_viewport_size", "rem_size"],
+    );
+    let registry = world.get_resource_or_init::<AppTypeRegistry>();
+    let mut registry = registry.write();
+    registry
+        .register_type_data::<::bevy_text::EmSize, bevy_mod_scripting_bindings::MarkAsGenerated>();
+}
 pub(crate) fn register_font_feature_tag_functions(world: &mut World) {
     bevy_mod_scripting_bindings::function::namespace::NamespaceBuilder::<
         ::bevy_text::FontFeatureTag,
@@ -1737,6 +2359,7 @@ impl Plugin for BevyTextScriptingPlugin {
         register_font_style_functions(&mut world);
         register_font_weight_functions(&mut world);
         register_font_width_functions(&mut world);
+        register_generic_font_family_functions(&mut world);
         register_justify_functions(&mut world);
         register_line_break_functions(&mut world);
         register_strikethrough_functions(&mut world);
@@ -1747,12 +2370,15 @@ impl Plugin for BevyTextScriptingPlugin {
         register_text_span_functions(&mut world);
         register_underline_functions(&mut world);
         register_underline_color_functions(&mut world);
+        register_rem_size_functions(&mut world);
         register_text_bounds_functions(&mut world);
+        register_text_viewport_functions(&mut world);
         register_text_edit_functions(&mut world);
         register_line_height_functions(&mut world);
         register_glyph_atlas_info_functions(&mut world);
         register_glyph_atlas_location_functions(&mut world);
         register_positioned_glyph_functions(&mut world);
+        register_inline_box_kind_functions(&mut world);
         register_computed_text_block_functions(&mut world);
         register_letter_spacing_functions(&mut world);
         register_text_entity_functions(&mut world);
@@ -1760,6 +2386,8 @@ impl Plugin for BevyTextScriptingPlugin {
         register_font_variations_functions(&mut world);
         register_text_layout_info_functions(&mut world);
         register_run_geometry_functions(&mut world);
+        register_text_line_y_bounds_functions(&mut world);
+        register_em_size_functions(&mut world);
         register_font_feature_tag_functions(&mut world);
         register_font_variation_tag_functions(&mut world);
         register_text_background_color_functions(&mut world);
