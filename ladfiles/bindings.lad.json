@@ -1,5 +1,5 @@
 {
-  "version": "0.21.1",
+  "version": "0.22.0",
   "globals": {
     "Anchor": {
       "type_kind": {
@@ -712,15 +712,15 @@
       },
       "is_static": true
     },
-    "ColorGradingGlobal": {
+    "Edge": {
       "type_kind": {
-        "val": "bevy_render::view::ColorGradingGlobal"
+        "val": "bevy_system_reflection::Edge"
       },
       "is_static": true
     },
-    "UVec2": {
+    "ColorGradingGlobal": {
       "type_kind": {
-        "val": "glam::UVec2"
+        "val": "bevy_render::view::ColorGradingGlobal"
       },
       "is_static": true
     },
@@ -736,15 +736,15 @@
       },
       "is_static": true
     },
-    "ShadowLodOrigin": {
+    "UVec2": {
       "type_kind": {
-        "val": "bevy_camera::camera::ShadowLodOrigin"
+        "val": "glam::UVec2"
       },
       "is_static": true
     },
-    "Edge": {
+    "ShadowLodOrigin": {
       "type_kind": {
-        "val": "bevy_system_reflection::Edge"
+        "val": "bevy_camera::camera::ShadowLodOrigin"
       },
       "is_static": true
     },
@@ -1546,9 +1546,9 @@
       },
       "is_static": true
     },
-    "DirectlyHovered": {
+    "ContextKey": {
       "type_kind": {
-        "val": "bevy_picking::hover::DirectlyHovered"
+        "val": "bevy_mod_scripting_core::script::context_key::ContextKey"
       },
       "is_static": true
     },
@@ -1558,9 +1558,9 @@
       },
       "is_static": true
     },
-    "ContextKey": {
+    "DirectlyHovered": {
       "type_kind": {
-        "val": "bevy_mod_scripting_core::script::context_key::ContextKey"
+        "val": "bevy_picking::hover::DirectlyHovered"
       },
       "is_static": true
     },
@@ -1624,12 +1624,6 @@
       },
       "is_static": true
     },
-    "ScriptComponentRegistration": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
-      },
-      "is_static": true
-    },
     "RayCast3d": {
       "type_kind": {
         "val": "bevy_shape::bounding::raycast3d::RayCast3d"
@@ -1639,6 +1633,12 @@
     "WindowLevel": {
       "type_kind": {
         "val": "bevy_window::window::WindowLevel"
+      },
+      "is_static": true
+    },
+    "ScriptComponentRegistration": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
       },
       "is_static": true
     },
@@ -1690,15 +1690,15 @@
       },
       "is_static": true
     },
-    "PointerButtonState": {
-      "type_kind": {
-        "val": "bevy_picking::events::PointerButtonState"
-      },
-      "is_static": true
-    },
     "ReflectSystemGraphNode": {
       "type_kind": {
         "val": "bevy_system_reflection::ReflectSystemGraphNode"
+      },
+      "is_static": true
+    },
+    "PointerButtonState": {
+      "type_kind": {
+        "val": "bevy_picking::events::PointerButtonState"
       },
       "is_static": true
     },
@@ -2554,21 +2554,27 @@
       },
       "is_static": true
     },
+    "ScriptError": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::error::ScriptError"
+      },
+      "is_static": true
+    },
     "Aabb": {
       "type_kind": {
         "val": "bevy_camera::primitives::Aabb"
       },
       "is_static": true
     },
-    "VolumetricFog": {
-      "type_kind": {
-        "val": "bevy_light::volumetric::VolumetricFog"
-      },
-      "is_static": true
-    },
     "UVec4": {
       "type_kind": {
         "val": "glam::UVec4"
+      },
+      "is_static": true
+    },
+    "DynamicScriptFunction": {
+      "type_kind": {
+        "primitive": "dynamicFunction"
       },
       "is_static": true
     },
@@ -2584,15 +2590,9 @@
       },
       "is_static": true
     },
-    "DynamicScriptFunction": {
+    "VolumetricFog": {
       "type_kind": {
-        "primitive": "dynamicFunction"
-      },
-      "is_static": true
-    },
-    "ScriptError": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::error::ScriptError"
+        "val": "bevy_light::volumetric::VolumetricFog"
       },
       "is_static": true
     },
@@ -2686,15 +2686,15 @@
       },
       "is_static": true
     },
-    "SpotLight": {
-      "type_kind": {
-        "val": "bevy_light::spot_light::SpotLight"
-      },
-      "is_static": true
-    },
     "VariadicTuple": {
       "type_kind": {
         "val": "bevy_mod_scripting_bindings::script_value::VariadicTuple"
+      },
+      "is_static": true
+    },
+    "SpotLight": {
+      "type_kind": {
+        "val": "bevy_light::spot_light::SpotLight"
       },
       "is_static": true
     },
@@ -2806,12 +2806,6 @@
       },
       "is_static": true
     },
-    "ReflectSystemSet": {
-      "type_kind": {
-        "val": "bevy_system_reflection::ReflectSystemSet"
-      },
-      "is_static": true
-    },
     "ClusterFarZMode": {
       "type_kind": {
         "val": "bevy_light::cluster::ClusterFarZMode"
@@ -2821,6 +2815,12 @@
     "MouseScrollPixelsPerLine": {
       "type_kind": {
         "val": "bevy_input::mouse::MouseScrollPixelsPerLine"
+      },
+      "is_static": true
+    },
+    "InlineDirection": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::InlineDirection"
       },
       "is_static": true
     },
@@ -2848,9 +2848,9 @@
       },
       "is_static": true
     },
-    "InlineDirection": {
+    "ReflectSystemSet": {
       "type_kind": {
-        "val": "bevy_ui::ui_node::InlineDirection"
+        "val": "bevy_system_reflection::ReflectSystemSet"
       },
       "is_static": true
     },
@@ -2986,9 +2986,9 @@
       },
       "is_static": true
     },
-    "DynamicComponent": {
+    "FlexDirection": {
       "type_kind": {
-        "val": "bevy_mod_scripting_bindings::script_component::DynamicComponent"
+        "val": "bevy_ui::ui_node::FlexDirection"
       },
       "is_static": true
     },
@@ -3010,9 +3010,9 @@
       },
       "is_static": true
     },
-    "FlexDirection": {
+    "AlignContent": {
       "type_kind": {
-        "val": "bevy_ui::ui_node::FlexDirection"
+        "val": "bevy_ui::ui_node::AlignContent"
       },
       "is_static": true
     },
@@ -3040,9 +3040,9 @@
       },
       "is_static": true
     },
-    "AlignContent": {
+    "OrthographicProjection": {
       "type_kind": {
-        "val": "bevy_ui::ui_node::AlignContent"
+        "val": "bevy_camera::projection::OrthographicProjection"
       },
       "is_static": true
     },
@@ -3070,9 +3070,9 @@
       },
       "is_static": true
     },
-    "OrthographicProjection": {
+    "DynamicComponent": {
       "type_kind": {
-        "val": "bevy_camera::projection::OrthographicProjection"
+        "val": "bevy_mod_scripting_bindings::script_component::DynamicComponent"
       },
       "is_static": true
     },
@@ -3100,9 +3100,9 @@
       },
       "is_static": true
     },
-    "FunctionCallContext": {
+    "CompassQuadrant": {
       "type_kind": {
-        "primitive": "functionCallContext"
+        "val": "bevy_math::compass::CompassQuadrant"
       },
       "is_static": true
     },
@@ -3118,21 +3118,9 @@
       },
       "is_static": true
     },
-    "ReflectSystemGraph": {
-      "type_kind": {
-        "val": "bevy_system_reflection::ReflectSystemGraph"
-      },
-      "is_static": true
-    },
     "FunctionInfo": {
       "type_kind": {
         "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
-      },
-      "is_static": true
-    },
-    "VisualBox": {
-      "type_kind": {
-        "val": "bevy_ui::ui_node::VisualBox"
       },
       "is_static": true
     },
@@ -3142,15 +3130,27 @@
       },
       "is_static": true
     },
-    "CompassQuadrant": {
+    "VisualBox": {
       "type_kind": {
-        "val": "bevy_math::compass::CompassQuadrant"
+        "val": "bevy_ui::ui_node::VisualBox"
       },
       "is_static": true
     },
     "TextBounds": {
       "type_kind": {
         "val": "bevy_text::bounds::TextBounds"
+      },
+      "is_static": true
+    },
+    "FunctionCallContext": {
+      "type_kind": {
+        "primitive": "functionCallContext"
+      },
+      "is_static": true
+    },
+    "PreviousHoverMap": {
+      "type_kind": {
+        "val": "bevy_picking::hover::PreviousHoverMap"
       },
       "is_static": true
     },
@@ -3166,9 +3166,9 @@
       },
       "is_static": true
     },
-    "PreviousHoverMap": {
+    "ReflectSystemGraph": {
       "type_kind": {
-        "val": "bevy_picking::hover::PreviousHoverMap"
+        "val": "bevy_system_reflection::ReflectSystemGraph"
       },
       "is_static": true
     },
@@ -3706,6 +3706,12 @@
       },
       "is_static": true
     },
+    "CornerRadius": {
+      "type_kind": {
+        "val": "bevy_ui::geometry::CornerRadius"
+      },
+      "is_static": true
+    },
     "IVec2": {
       "type_kind": {
         "val": "glam::IVec2"
@@ -3721,12 +3727,6 @@
     "Isometry3d": {
       "type_kind": {
         "val": "bevy_math::isometry::Isometry3d"
-      },
-      "is_static": true
-    },
-    "CornerRadius": {
-      "type_kind": {
-        "val": "bevy_ui::geometry::CornerRadius"
       },
       "is_static": true
     },
@@ -4512,8 +4512,8 @@
       "path": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name"
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -4554,10 +4554,10 @@
       "path": "bevy_mod_scripting_bindings::query::ScriptQueryBuilder",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without"
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with"
       ],
       "layout": null,
       "generated": false,
@@ -4594,8 +4594,8 @@
       "path": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
       "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name"
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -4649,11 +4649,11 @@
       "path": "bevy_mod_scripting_core::script_system::ScriptSystemBuilder",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after"
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive"
       ],
       "layout": null,
       "generated": false,
@@ -4718,9 +4718,9 @@
       "path": "bevy_system_reflection::ReflectSchedule",
       "documentation": " A reflectable schedule.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
         "bevy_system_reflection::ReflectSchedule::systems",
-        "bevy_system_reflection::ReflectSchedule::render_dot"
+        "bevy_system_reflection::ReflectSchedule::render_dot",
+        "bevy_system_reflection::ReflectSchedule::get_system_by_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -4755,8 +4755,8 @@
       "path": "bevy_system_reflection::ReflectSystem",
       "documentation": " A reflectable system.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystem::path",
-        "bevy_system_reflection::ReflectSystem::identifier"
+        "bevy_system_reflection::ReflectSystem::identifier",
+        "bevy_system_reflection::ReflectSystem::path"
       ],
       "layout": null,
       "generated": false,
@@ -4821,17 +4821,17 @@
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
         "ReflectReference::push",
-        "ReflectReference::debug",
-        "ReflectReference::clear",
-        "ReflectReference::len",
-        "ReflectReference::functions",
         "ReflectReference::insert",
+        "ReflectReference::functions",
+        "ReflectReference::remove",
+        "ReflectReference::map_get",
+        "ReflectReference::len",
+        "ReflectReference::debug",
+        "ReflectReference::variant_name",
         "ReflectReference::iter",
         "ReflectReference::display",
-        "ReflectReference::map_get",
-        "ReflectReference::remove",
-        "ReflectReference::variant_name",
-        "ReflectReference::pop"
+        "ReflectReference::pop",
+        "ReflectReference::clear"
       ],
       "layout": null,
       "generated": false,
