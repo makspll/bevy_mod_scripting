@@ -1,5 +1,5 @@
 //! Core functionality for the bevy_mod_scripting framework.
-//!
+//! 
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
 use crate::{
