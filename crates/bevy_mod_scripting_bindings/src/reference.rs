@@ -435,7 +435,6 @@ impl ReflectReference {
         })
     }
 
-
     /// Retrieves the type id of the value the reference points to.
     pub fn tail_type_id(&self, world: WorldGuard) -> Result<Option<TypeId>, InteropError> {
         if self.reflect_path.is_empty() {

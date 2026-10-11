@@ -381,6 +381,9 @@ fn register_types(app: &mut App) {
     app.register_type::<ReflectReference>();
     app.register_type::<ScriptComponent>();
     app.register_type::<Language>();
+    // lets scripts omit the optional `language` of callback events when constructing them
+    app.register_type::<Option<Language>>();
+    app.register_type_data::<Option<Language>, bevy_reflect::std_traits::ReflectDefault>();
     app.register_type::<event::CallbackLabel>();
     app.register_type::<event::Recipients>();
     app.register_type::<event::ScriptCallbackEvent>();

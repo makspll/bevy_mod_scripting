@@ -8,10 +8,10 @@ Scripts can send Bevy [events](https://docs.rs/bevy/latest/bevy/ecs/event/trait.
 | `world.write_message(type, value)` | `ReflectMessage` | Writes the message to its `Messages<T>` buffer, readers see it later in the frame. |
 
 ```lua
-local MyEvent = world.get_type_by_name("MyEvent")
+local MyEvent = types.MyEvent
 world.trigger_event(MyEvent, construct(MyEvent, { amount = 3 }))
 
-local MyMessage = world.get_type_by_name("MyMessage")
+local MyMessage = types.MyMessage
 world.write_message(MyMessage, construct(MyMessage, { amount = 3 }))
 ```
 
@@ -36,7 +36,7 @@ app.register_type::<MyEvent>()
    .add_message::<MyMessage>();
 ```
 
-* The type must be registered with `register_type`, otherwise `get_type_by_name` cannot find it.
+* The type must be registered with `register_type`, otherwise it will not appear in the `types` table.
 * `#[reflect(Event)]` is only generated for events using the default (global) trigger. Events with custom triggers, such as entity events, need a hand-written `ReflectEvent`.
 * Types which do not implement `FromReflect` (all fields must be reflectable) cannot be sent.
 * Bevy's own events and messages are not usable unless they have the reflect attributes.

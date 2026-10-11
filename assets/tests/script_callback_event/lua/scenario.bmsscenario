@@ -1,0 +1,17 @@
+// #main_script script_callback_event.lua
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin nanoseconds_budget=999999999
+SetupHandler OnTest=null, Update=null
+SetupHandler CallbackA=null, PostUpdate=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptAssetLoaded name="@this_script"
+AttachStaticScript script="@this_script"
+RunUpdateOnce
+
+// on_test writes a ScriptCallbackEvent message for callback_a, which is handled later in the same frame
+EmitScriptCallbackEvent emit_response=true, label="OnTest", language=null, recipients="StaticScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", script="@this_script", expect_string_value="sent"
+AssertCallbackSuccess attachment="StaticScript", label="CallbackA", script="@this_script", expect_string_value="callback_a was triggered from a script"
