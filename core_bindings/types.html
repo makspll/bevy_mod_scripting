@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-efad1fd9.js";
+            window.path_to_searchindex_js = "../searchindex-86387311.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0adb9894.js"></script>
+        <script src="../toc-f41caeaf.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -597,6 +597,7 @@
 <tr><td><a href="././types/jointindex.html"><code>JointIndex</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/skinnedmesh.html"><code>SkinnedMesh</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/skinnedmeshbounds.html"><code>SkinnedMeshBounds</code></a></td><td>Data that can be used to calculate the AABB of a skinned mesh.</td></tr>
+<tr><td><a href="././types/language.html"><code>Language</code></a></td><td>Represents a scripting language. Languages which compile into another language should use the targe...</td></tr>
 <tr><td><a href="././types/scriptasset.html"><code>ScriptAsset</code></a></td><td>Represents a script loaded into memory as an asset</td></tr>
 <tr><td><a href="././types/functionarginfo.html"><code>FunctionArgInfo</code></a></td><td>Information about a function argument.</td></tr>
 <tr><td><a href="././types/functioninfo.html"><code>FunctionInfo</code></a></td><td>Information about a function.</td></tr>
@@ -608,6 +609,11 @@
 <tr><td><a href="././types/variadictuple.html"><code>VariadicTuple</code></a></td><td>A tuple variant of script value</td></tr>
 <tr><td><a href="././types/scripterror.html"><code>ScriptError</code></a></td><td>An error with an optional script Context</td></tr>
 <tr><td><a href="././types/callbacklabel.html"><code>CallbackLabel</code></a></td><td>A string which disallows common invalid characters in callback labels,  particularly at the start o...</td></tr>
+<tr><td><a href="././types/recipients.html"><code>Recipients</code></a></td><td>Describes the designated recipients of a script event</td></tr>
+<tr><td><a href="././types/scriptassetmodifiedevent.html"><code>ScriptAssetModifiedEvent</code></a></td><td>Emitted when a script asset is modified and all its attachments require re-loading</td></tr>
+<tr><td><a href="././types/scriptattachedevent.html"><code>ScriptAttachedEvent</code></a></td><td>Emitted when a script is attached.</td></tr>
+<tr><td><a href="././types/scriptcallbackevent.html"><code>ScriptCallbackEvent</code></a></td><td>A callback event meant to trigger a callback in a subset/set of scripts in the world with the given...</td></tr>
+<tr><td><a href="././types/scriptdetachedevent.html"><code>ScriptDetachedEvent</code></a></td><td>Emitted when a script is detached.</td></tr>
 <tr><td><a href="././types/scriptcomponent.html"><code>ScriptComponent</code></a></td><td>A component which identifies the scripts existing on an entity.   Event handlers search for compone...</td></tr>
 <tr><td><a href="././types/contextkey.html"><code>ContextKey</code></a></td><td>The key for a context. The context key is used for:  - Identifying the script itself, uniquely.  - ...</td></tr>
 <tr><td><a href="././types/pickable.html"><code>Pickable</code></a></td><td>An optional component that marks an entity as usable by a backend, and overrides default  picking b...</td></tr>
@@ -971,7 +977,7 @@
 <tr><td><a href="././types/axisgamepadinput.html"><code>Axis&lt;GamepadInput&gt;</code></a></td><td>Stores the position data of the input devices of type `T`.   The values are stored as `f32`s, using...</td></tr>
 <tr><td><a href="././types/buttoninputgamepadbutton.html"><code>ButtonInput&lt;GamepadButton&gt;</code></a></td><td>A “press-able” input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
 <tr><td><a href="././types/meshextractabledataindices.html"><code>MeshExtractableData&lt;Indices&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/arctypeid(0xfa1833ea3e964de72ffd5657545969c7).html"><code>Arc&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/arctypeid(0xe539b055417449435d499465d09bc544).html"><code>Arc&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/arctypeid(0x5f719f77dcea205e9d9831b6323d6f20).html"><code>Arc&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/meshmaterial2dcolormaterial.html"><code>MeshMaterial2d&lt;ColorMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_shape::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
 <tr><td><a href="././types/meshmaterial2dspritemeshmaterial.html"><code>MeshMaterial2d&lt;SpriteMeshMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_shape::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
@@ -994,7 +1000,7 @@
 <tr><td><a href="././types/entityequivalenthashmapentity,_alloc::vec::vecbevy_camera::primitives::frustum.html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_alloc::vec::vecbevy_light::cascade::cascade.html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_entityequivalenthashsetentity.html"><code>EntityEquivalentHashMap&lt;Entity, EntityEquivalentHashSet&lt;Entity&gt;&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
-<tr><td><a href="././types/hashedcow,_typeid(0xa48b134ca08f6aad806aa1f41f1acfc3).html"><code>Hashed&lt;Cow, Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/hashedcow,_typeid(0xfc6d9babd135406dc4829318437fc8bf).html"><code>Hashed&lt;Cow, Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_(bevy_picking::pointer::location,_bevy_platform::time::instant,_bevy_picking::backend::hitdata).html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 </tbody>
 </table>
