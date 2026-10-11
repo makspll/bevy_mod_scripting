@@ -112,12 +112,30 @@ fn default_value(guard: &WorldGuard, type_id: TypeId) -> Option<Box<dyn PartialR
         .map(|data| data.default().into_partial_reflect())
 }
 
+/// Errors if the payload has entries left which are not fields of the type, i.e. a misspelled field name.
+fn ensure_no_unknown_fields(
+    type_info: &TypeInfo,
+    payload: &HashMap<String, ScriptValue>,
+) -> Result<(), InteropError> {
+    if payload.is_empty() {
+        return Ok(());
+    }
+    let mut keys = payload.keys().map(String::as_str).collect::<Vec<_>>();
+    keys.sort_unstable();
+    Err(construct_error(format!(
+        "unknown fields for '{}': {}",
+        type_info.type_path(),
+        keys.join(", ")
+    )))
+}
+
 /// Constructs a value of the given type from a script payload.
 ///
 /// Fields missing from the payload are filled in from the type's `Default` (for enums, only if it is the variant being constructed),
 /// then from the `Default` of the field's type. Types without fields, such as opaque types, can only be built from their default.
 ///
 /// For enums the variant is taken from `variant` if provided, otherwise from the `"variant"` entry of the payload.
+/// Entries of the payload which are not fields of the type are an error.
 pub fn construct(
     guard: &WorldGuard,
     type_info: &'static TypeInfo,
@@ -192,16 +210,19 @@ pub fn construct(
             Box::new(dynamic)
         }
         _ => {
-            let payload = sources.payload;
-            return base.ok_or_else(|| {
-                InteropError::unsupported_operation(
+            let payload = std::mem::take(&mut sources.payload);
+            let Some(default) = base else {
+                return Err(InteropError::unsupported_operation(
                     Some(type_info.type_id()),
                     Some(Box::new(payload)),
                     "Type constructor not supported",
-                )
-            });
+                ));
+            };
+            ensure_no_unknown_fields(type_info, &payload)?;
+            return Ok(default);
         }
     };
+    ensure_no_unknown_fields(type_info, &sources.payload)?;
 
     // TODO: it would be nice to have a <dyn PartialReflect>::from_reflect_with_fallback equivalent, that does exactly that
     // only using this as it's already there and convenient, the clone variant hitting will be confusing to end users
@@ -342,6 +363,17 @@ mod test {
             run::<EnumWithDefault>(Some("Y"), keyed(vec![]), false),
             EnumWithDefault::Y(0),
         );
+    }
+
+    #[test]
+    fn unknown_fields_error() {
+        // a misspelled field must not silently fall back to the default
+        let result = run::<WithDefault>(None, keyed(vec![("a", 1), ("bb", 2)]), false);
+        assert!(format!("{result:?}").contains("bb"), "{result:?}");
+        // positional fields beyond the last field too
+        let fields =
+            BoundFields::Positional([1, 2, 3].map(ScriptValue::Integer).into_iter().collect());
+        assert!(run::<Pair>(None, fields, false).is_err());
     }
 
     #[test]

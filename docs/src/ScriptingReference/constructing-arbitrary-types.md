@@ -51,6 +51,7 @@ Fields which are not provided are filled in, in the following order of priority:
 2. the `Default` of the field's type, if it has one
 
 If neither is available the construction fails, and the error names the missing field.
+Entries which are not fields of the type, i.e. a misspelled field name, are an error too, rather than being ignored in favour of a default.
 The generated Lua language server files mark exactly these fields as optional, see [Editor support](#editor-support).
 
 ### Naming and priority

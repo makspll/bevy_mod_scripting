@@ -108,18 +108,9 @@ impl ThroughTypeInfo {
     pub fn has_placeholders(&self) -> bool {
         match self {
             ThroughTypeInfo::Bound(_) => true,
-            ThroughTypeInfo::TypedWrapper(kind) => match kind {
-                TypedWrapperKind::Union(inner) | TypedWrapperKind::Tuple(inner) => {
-                    inner.iter().any(Self::has_placeholders)
-                }
-                TypedWrapperKind::Vec(inner)
-                | TypedWrapperKind::HashSet(inner)
-                | TypedWrapperKind::Array(inner, _)
-                | TypedWrapperKind::Option(inner)
-                | TypedWrapperKind::InteropResult(inner) => inner.has_placeholders(),
-                TypedWrapperKind::HashMap(k, v) => k.has_placeholders() || v.has_placeholders(),
-                TypedWrapperKind::UntypedTuple => false,
-            },
+            ThroughTypeInfo::TypedWrapper(kind) => {
+                kind.inner().into_iter().any(Self::has_placeholders)
+            }
             _ => false,
         }
     }
@@ -159,6 +150,24 @@ pub enum TypedWrapperKind {
     Tuple(Vec<ThroughTypeInfo>),
     /// Wraps a tuple of script values
     UntypedTuple,
+}
+
+impl TypedWrapperKind {
+    /// The types this wraps, i.e. `T` in `Vec<T>`.
+    pub fn inner(&self) -> Vec<&ThroughTypeInfo> {
+        match self {
+            TypedWrapperKind::Union(inner) | TypedWrapperKind::Tuple(inner) => {
+                inner.iter().collect()
+            }
+            TypedWrapperKind::Vec(inner)
+            | TypedWrapperKind::HashSet(inner)
+            | TypedWrapperKind::Array(inner, _)
+            | TypedWrapperKind::Option(inner)
+            | TypedWrapperKind::InteropResult(inner) => vec![&**inner],
+            TypedWrapperKind::HashMap(key, value) => vec![&**key, &**value],
+            TypedWrapperKind::UntypedTuple => vec![],
+        }
+    }
 }
 
 /// A dynamic version of [`TypedThrough`], which can be used to convert a [`TypeInfo`] into a [`ThroughTypeInfo`].

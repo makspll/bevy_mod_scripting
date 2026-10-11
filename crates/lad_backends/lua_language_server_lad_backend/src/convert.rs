@@ -1,6 +1,9 @@
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use indexmap::{IndexMap, IndexSet};
-use ladfile::{LadFieldOrVariableKind, LadFile, LadFunction, LadTypeId, ReflectionPrimitiveKind};
+use ladfile::{
+    ArgumentVisitor, LadFieldOrVariableKind, LadFile, LadFunction, LadTypeId,
+    ReflectionPrimitiveKind,
+};
 
 use crate::{
     keywords::ForbiddenKeywords,
@@ -47,10 +50,11 @@ pub fn convert_ladfile_to_lua_declaration_file(
     }
 
     // the tables of fields constructors take, which get a class each
-    let mut fields_references = IndexSet::new();
+    let mut fields_references = FieldsReferences::default();
     for function in ladfile.functions.values() {
-        collect_function_fields_references(function, &mut fields_references);
+        fields_references.visit_function(function);
     }
+    let mut fields_references = fields_references.0;
 
     for (type_id, lad_type) in ladfile.types.iter() {
         let (lua_class, functions) = match lua_classes.get(type_id) {
@@ -608,41 +612,27 @@ fn fields_class_name(
     })
 }
 
-/// Collects the types, and variants, whose fields are referenced by the given kind.
-fn collect_fields_references(
-    kind: &LadFieldOrVariableKind,
-    out: &mut IndexSet<(LadTypeId, Option<String>)>,
-) {
-    match kind {
-        LadFieldOrVariableKind::Fields { type_id, variant } => {
-            out.insert((type_id.clone(), variant.as_ref().map(|v| v.to_string())));
-        }
-        LadFieldOrVariableKind::Option(inner)
-        | LadFieldOrVariableKind::Vec(inner)
-        | LadFieldOrVariableKind::HashSet(inner)
-        | LadFieldOrVariableKind::InteropResult(inner)
-        | LadFieldOrVariableKind::Array(inner, _) => collect_fields_references(inner, out),
-        LadFieldOrVariableKind::HashMap(key, value) => {
-            collect_fields_references(key, out);
-            collect_fields_references(value, out);
-        }
-        LadFieldOrVariableKind::Tuple(inner) | LadFieldOrVariableKind::Union(inner) => {
-            for kind in inner {
-                collect_fields_references(kind, out);
-            }
-        }
-        _ => {}
+/// Collects the types, and variants, whose fields are referenced in function signatures.
+#[derive(Default)]
+struct FieldsReferences(IndexSet<(LadTypeId, Option<String>)>);
+
+impl ArgumentVisitor for FieldsReferences {
+    fn visit_lad_type_id(&mut self, _: &LadTypeId) {}
+
+    fn visit_lad_bms_primitive_kind(&mut self, _: &ReflectionPrimitiveKind) {}
+
+    fn walk_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
+        self.0.insert((type_id.clone(), variant.map(str::to_owned)));
     }
 }
 
-fn collect_function_fields_references(
-    function: &LadFunction,
-    out: &mut IndexSet<(LadTypeId, Option<String>)>,
-) {
-    for arg in &function.arguments {
-        collect_fields_references(&arg.kind, out);
+impl FieldsReferences {
+    fn visit_function(&mut self, function: &LadFunction) {
+        for arg in &function.arguments {
+            self.visit(&arg.kind);
+        }
+        self.visit(&function.return_type.kind);
     }
-    collect_fields_references(&function.return_type.kind, out);
 }
 
 /// A class per variant, i.e. `MyEnum.Variant`, carrying the functions the ladfile builder bound to that variant.

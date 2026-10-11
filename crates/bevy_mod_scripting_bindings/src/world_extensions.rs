@@ -16,7 +16,7 @@ use super::{
 use crate::{
     DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
-    function::{bound::BoundFields, from::V, from_ref::FromScriptRef, into::IntoScript},
+    function::{from::V, from_ref::FromScriptRef, into::IntoScript},
 };
 use ::{
     bevy_asset::{AssetServer, Handle, LoadState},
@@ -40,7 +40,6 @@ use bevy_ecs::{
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard};
-use bevy_platform::collections::HashMap;
 use bevy_reflect::GetTypeRegistration;
 use bevy_system_reflection::ReflectSchedule;
 use std::{
@@ -229,14 +228,6 @@ pub trait WorldExtensions {
         &self,
         script: Handle<ScriptAsset>,
     ) -> Result<LoadState, InteropError>;
-
-    /// Constructs a reflected value from a type and field payload.
-    fn construct(
-        &self,
-        type_: ScriptTypeRegistration,
-        payload: HashMap<String, ScriptValue>,
-        one_indexed: bool,
-    ) -> Result<Box<dyn PartialReflect>, InteropError>;
 
     /// Attempts to call a function overload matching the provided arguments.
     fn try_call_overloads(
@@ -865,21 +856,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.with_resource(|r: &AssetServer| r.load_state(script.id()))
     }
 
-    fn construct(
-        &self,
-        type_: ScriptTypeRegistration,
-        payload: HashMap<String, ScriptValue>,
-        one_indexed: bool,
-    ) -> Result<Box<dyn PartialReflect>, InteropError> {
-        crate::construct::construct(
-            self,
-            type_.registration.type_info(),
-            None,
-            BoundFields::Keyed(payload),
-            one_indexed,
-        )
-    }
-
     fn try_call_overloads(
         &self,
         type_id: TypeId,
@@ -1009,8 +985,9 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let Ok(type_info) = registered_type_info(self, type_id) else {
             return Err(name);
         };
-        self.lookup_function([TypeId::of::<StaticTypeRef>()], name)
-            .map(|func| func.bind_to_type(type_info))
+        let registry = self.script_function_registry();
+        let registry = registry.read();
+        registry.get_bound_to_type(type_info, name)
     }
 
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
@@ -1277,6 +1254,8 @@ impl CachedRegistry for CurrentScriptAttachment {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::{construct::construct, function::bound::BoundFields};
+    use bevy_platform::collections::HashMap;
     use bevy_reflect::{GetTypeRegistration, Reflect, ReflectFromReflect};
     use std::sync::Arc;
     use test_utils::test_data::{
@@ -1368,7 +1347,13 @@ mod test {
 
         let payload = HashMap::from_iter(vec![("foo".to_owned(), ScriptValue::Integer(1))]);
 
-        let result = world.construct(type_registration, payload, false);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            false,
+        );
         let expected =
             Ok::<_, InteropError>(Box::new(SimpleStruct { foo: 1 }) as Box<dyn PartialReflect>);
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
@@ -1392,7 +1377,13 @@ mod test {
         // zero indexed
         let payload = HashMap::from_iter(vec![("0".to_owned(), ScriptValue::Integer(1))]);
 
-        let result = world.construct(type_registration.clone(), payload, false);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            false,
+        );
         let expected =
             Ok::<_, InteropError>(Box::new(SimpleTupleStruct(1)) as Box<dyn PartialReflect>);
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
@@ -1400,7 +1391,13 @@ mod test {
         // one indexed
         let payload = HashMap::from_iter(vec![("1".to_owned(), ScriptValue::Integer(1))]);
 
-        let result = world.construct(type_registration, payload, true);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            true,
+        );
         let expected =
             Ok::<_, InteropError>(Box::new(SimpleTupleStruct(1)) as Box<dyn PartialReflect>);
 
@@ -1434,7 +1431,13 @@ mod test {
             ("1".to_owned(), ScriptValue::Integer(2)),
         ]);
 
-        let result = world.construct(type_registration.clone(), payload, false);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            false,
+        );
         let expected = Ok::<_, InteropError>(Box::new((1, 2)) as Box<dyn PartialReflect>);
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
 
@@ -1444,7 +1447,13 @@ mod test {
             ("2".to_owned(), ScriptValue::Integer(2)),
         ]);
 
-        let result = world.construct(type_registration.clone(), payload, true);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            true,
+        );
         let expected = Ok::<_, InteropError>(Box::new((1, 2)) as Box<dyn PartialReflect>);
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
     }
@@ -1467,7 +1476,13 @@ mod test {
             ("variant".to_owned(), ScriptValue::String("Struct".into())),
         ]);
 
-        let result = world.construct(type_registration.clone(), payload, false);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            false,
+        );
         let expected = Ok::<_, InteropError>(
             Box::new(SimpleEnum::Struct { foo: 1 }) as Box<dyn PartialReflect>
         );
@@ -1482,7 +1497,13 @@ mod test {
             ),
         ]);
 
-        let result = world.construct(type_registration.clone(), payload, false);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            false,
+        );
         let expected =
             Ok::<_, InteropError>(Box::new(SimpleEnum::TupleStruct(1)) as Box<dyn PartialReflect>);
 
@@ -1494,7 +1515,13 @@ mod test {
             ScriptValue::String("Unit".into()),
         )]);
 
-        let result = world.construct(type_registration, payload, false);
+        let result = construct(
+            &world,
+            type_registration.registration.type_info(),
+            None,
+            BoundFields::Keyed(payload),
+            false,
+        );
         let expected = Ok::<_, InteropError>(Box::new(SimpleEnum::Unit) as Box<dyn PartialReflect>);
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
     }
@@ -1912,7 +1939,16 @@ mod test {
                 .unwrap()
                 .clone(),
         ));
-        assert!(guard.construct(reg, HashMap::new(), false).is_err());
+        assert!(
+            construct(
+                &guard,
+                reg.registration.type_info(),
+                None,
+                BoundFields::Keyed(HashMap::new()),
+                false
+            )
+            .is_err()
+        );
     }
 
     #[test]
@@ -1931,7 +1967,16 @@ mod test {
             "variant".to_owned(),
             ScriptValue::String("Nonexistent".into()),
         )]);
-        assert!(guard.construct(reg, payload, false).is_err());
+        assert!(
+            construct(
+                &guard,
+                reg.registration.type_info(),
+                None,
+                BoundFields::Keyed(payload),
+                false
+            )
+            .is_err()
+        );
     }
 
     // ── setup_cache_raw ───────────────────────────────────────────────────────

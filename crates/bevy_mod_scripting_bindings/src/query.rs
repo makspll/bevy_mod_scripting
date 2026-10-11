@@ -69,17 +69,6 @@ pub type AnyTypeRegistrationV = Union<
 >;
 
 impl AnyTypeRegistration {
-    /// Convert to a generic [`ScriptTypeRegistration`] ditching any component or resource information.
-    pub fn into_type_registration(self) -> ScriptTypeRegistration {
-        match self.into_left() {
-            Ok(registration) => registration,
-            Err(other) => match other.into_left() {
-                Ok(component) => component.into_type_registration(),
-                Err(resource) => resource.into_type_registration(),
-            },
-        }
-    }
-
     /// Convert to the form used in script function signatures.
     pub fn into_script(self) -> AnyTypeRegistrationV {
         self.map_both(V, |other| other.map_both(V, V))
