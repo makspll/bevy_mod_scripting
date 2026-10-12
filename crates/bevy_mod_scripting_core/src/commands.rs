@@ -198,10 +198,8 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     fn run(mut self, world: &mut World) -> Result<ScriptValue, ScriptError> {
         let script_contexts = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let cache = WorldAccessGuard::setup_cache(
-            world,
-            CurrentScriptAttachment(Some(self.attachment.clone())),
-        );
+        // `P::handle` marks the script as current for the duration of the callback
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         let guard = WorldGuard::new_exclusive(world, cache);
 
         let res = if let Some(context_override) = &self.context_override {

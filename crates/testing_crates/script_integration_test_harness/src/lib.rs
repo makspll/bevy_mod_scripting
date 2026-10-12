@@ -549,7 +549,10 @@ pub fn perform_benchmark_with_generator<
     let f3 = world.register_component::<Fake3>();
     let f4 = world.register_component::<Fake4>();
     let f5 = world.register_component::<Fake5>();
-    let cache = WorldAccessGuard::setup_cache(&world, Default::default());
+    let cache = WorldAccessGuard::setup_cache(
+        &world,
+        bevy_mod_scripting_bindings::CurrentScriptAttachment::empty(),
+    );
     let world_guard = WorldAccessGuard::new_exclusive(&mut world, cache);
     let mut rng_guard = RNG.lock().unwrap();
     *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);

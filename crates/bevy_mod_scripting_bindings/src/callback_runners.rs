@@ -88,7 +88,7 @@ mod test {
 
     fn run(runners: &AppScriptCallbackRunners) -> Vec<i64> {
         let mut world = World::new();
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         runners
             .run(guard, &Recipients::AllScripts, "ping", vec![])

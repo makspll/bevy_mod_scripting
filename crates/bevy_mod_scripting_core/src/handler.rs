@@ -258,7 +258,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
         let script_context = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
         let event_cursor = state.get_mut(world)?;
-        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         let guard = WorldAccessGuard::new_exclusive(world, cache);
         event_handler_inner::<P>(
             L::into_callback_label(),
@@ -419,7 +419,7 @@ pub fn script_error_logger(
     world: &mut World,
     mut errors_cursor: Local<MessageCursor<ScriptErrorEvent>>,
 ) {
-    let cache = WorldGuard::setup_cache(world, CurrentScriptAttachment::default());
+    let cache = WorldGuard::setup_cache(world, CurrentScriptAttachment::empty());
     let guard = WorldGuard::new_exclusive(world, cache);
     let errors = guard.with_resource(|events: &Messages<ScriptErrorEvent>| {
         errors_cursor
@@ -493,7 +493,7 @@ mod test {
     /// Runs `f` with an exclusive world guard, like the handler systems have
     fn with_guard<O>(f: impl FnOnce(WorldGuard) -> O) -> O {
         let mut world = World::new();
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         f(WorldAccessGuard::new_exclusive(&mut world, cache))
     }
 
@@ -778,7 +778,7 @@ mod test {
             || Ok(ScriptValue::Integer(1)),
         );
 
-        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         let guard = WorldAccessGuard::new_exclusive(world, cache);
         let runners = guard.script_callback_runners().clone();
         let results = runners

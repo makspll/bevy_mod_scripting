@@ -328,7 +328,7 @@ mod test {
             registry.register_type_data::<T, bevy_reflect::ReflectFromReflect>();
             registry.register::<usize>();
         });
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         construct(&guard, T::type_info(), variant, fields, one_indexed)
     }

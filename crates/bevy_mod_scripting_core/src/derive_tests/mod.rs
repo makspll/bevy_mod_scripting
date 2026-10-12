@@ -56,7 +56,10 @@ mod tests {
 
         world.init_resource::<AppScriptFunctionRegistry>();
 
-        let cache = WorldAccessGuard::setup_cache(&world, Default::default());
+        let cache = WorldAccessGuard::setup_cache(
+            &world,
+            bevy_mod_scripting_bindings::CurrentScriptAttachment::empty(),
+        );
         WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
             let world = &world;
             world
