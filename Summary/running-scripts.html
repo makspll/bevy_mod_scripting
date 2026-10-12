@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-8a91dade.js";
+            window.path_to_searchindex_js = "../searchindex-99153879.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-ffb4cee2.js"></script>
+        <script src="../toc-32f44bfd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -219,12 +219,12 @@ pub struct MyReflectType;
 callback_labels!(OnEvent =&gt; "on_event");
 
 // trigger the event
-fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;, mut allocator: ResMut&lt;AppReflectAllocator&gt;) {
+fn send_event(mut writer: EventWriter&lt;ScriptCallbackMessage&gt;, mut allocator: ResMut&lt;AppReflectAllocator&gt;) {
 
     let allocator = allocator.write();
     let my_reflect_payload = ReflectReference::new_allocated(MyReflectType, &amp;mut allocator);
 
-    writer.send(ScriptCallbackEvent::new_for_all_scripts(
+    writer.send(ScriptCallbackMessage::new_for_all_scripts(
         OnEvent,
         vec![my_reflect_payload.into()],
     ));

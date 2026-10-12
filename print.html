@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8a91dade.js";
+            window.path_to_searchindex_js = "searchindex-99153879.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-ffb4cee2.js"></script>
+        <script src="toc-32f44bfd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -241,7 +241,7 @@
 <li>to an entity via <code>ScriptComponent</code>’s (i.e. <code>ScriptAttachment::EntityScript</code>)</li>
 <li>or by being statically activated against their script assset (i.e. <code>ScriptAttachment::StaticScript</code>)</li>
 </ul>
-<p>When you insert/remove <code>ScriptComponent</code>’s, <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code>’s are sent and processed by the <a href="#script-pipeline">script pipeline</a>.</p>
+<p>When you insert/remove <code>ScriptComponent</code>’s, <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code>’s are sent and processed by the <a href="#script-pipeline">script pipeline</a>.</p>
 <p>Other attachments, like static scripts have to be manually triggered via <code>AttachScript</code> and <code>DetachScript</code> commands.</p>
 <h2 id="loading"><a class="header" href="#loading">Loading</a></h2>
 <p>Scripts can be loaded into memory via the <code>AssetServer</code>.</p>
@@ -292,7 +292,7 @@ fn add_script(mut script_assets: ResMut&lt;Assets&lt;ScriptAsset&gt;&gt;, mut co
 </div>
 
 <h2 id="static-scripts"><a class="header" href="#static-scripts">Static Scripts</a></h2>
-<p>You can use attach and detach commands, which will run the <a href="#script-pipeline">script pipeline</a>, repeatedly until the requested script attachments are processed. If you don’t want to incur big frametime slowdowns, you can instead send <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code> manually, and let the pipeline pick these up as normal.</p>
+<p>You can use attach and detach commands, which will run the <a href="#script-pipeline">script pipeline</a>, repeatedly until the requested script attachments are processed. If you don’t want to incur big frametime slowdowns, you can instead send <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code> manually, and let the pipeline pick these up as normal.</p>
 <h3 id="attach-a-static-script"><a class="header" href="#attach-a-static-script">Attach a static script</a></h3>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -375,12 +375,12 @@ pub struct MyReflectType;
 callback_labels!(OnEvent =&gt; "on_event");
 
 // trigger the event
-fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;, mut allocator: ResMut&lt;AppReflectAllocator&gt;) {
+fn send_event(mut writer: EventWriter&lt;ScriptCallbackMessage&gt;, mut allocator: ResMut&lt;AppReflectAllocator&gt;) {
 
     let allocator = allocator.write();
     let my_reflect_payload = ReflectReference::new_allocated(MyReflectType, &amp;mut allocator);
 
-    writer.send(ScriptCallbackEvent::new_for_all_scripts(
+    writer.send(ScriptCallbackMessage::new_for_all_scripts(
         OnEvent,
         vec![my_reflect_payload.into()],
     ));
@@ -715,7 +715,7 @@ assert_eq!(policy_a, policy_b);</code></pre>
     print("doing things")
 end
 </code></pre>
-<p>this callback is refered to by “name”, and on the rust side can be invoked either via <code>RunScriptCallback</code> command, or by setting up an event handler system which passes on <code>ScriptCallbackEvent</code>’s to scripts.</p>
+<p>this callback is refered to by “name”, and on the rust side can be invoked either via <code>RunScriptCallback</code> command, or by setting up an event handler system which passes on <code>ScriptCallbackMessage</code>’s to scripts.</p>
 <p>The key thing to note about this type of callback, is that if the script is ever reloaded, and the contents of this callback change, the logic inside it will also be hot-reloaded.</p>
 <h2 id="registerd-callbacks"><a class="header" href="#registerd-callbacks">Registerd Callbacks</a></h2>
 <p>You can also register a callback like so:</p>
@@ -852,7 +852,7 @@ If completions for BMS types are missing, i.e. <code>Vec3.</code> suggests nothi
 </ul>
 <p>The new pipeline works like this:</p>
 <ul>
-<li>A set of systems in <code>PreUpdate</code> “filter” incoming <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code>’s as well as <code>ScriptAssetModifiedEvent</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
+<li>A set of systems in <code>PreUpdate</code> “filter” incoming <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code>’s as well as <code>ScriptAssetModifiedMessage</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
 <li>A set of other systems then converts those into active <code>ScriptMachine</code>’s</li>
 <li>Then inside the <code>ScriptProcessingSchedule&lt;P&gt;</code>, which is only run in <code>PreUpdate</code> if there are active machines, we tick each machine until it either errors or reaches its final state.</li>
 </ul>
@@ -1503,8 +1503,8 @@ app.register_type::&lt;MyEvent&gt;()
 <h2 id="built-in-messages"><a class="header" href="#built-in-messages">Built-in messages</a></h2>
 <p>The following BMS messages are reflected and can be written from scripts:</p>
 <ul>
-<li><code>ScriptCallbackEvent</code>: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer <code>queue_script_callback</code> to run callbacks from scripts.</li>
-<li><code>ScriptAttachedEvent</code>, <code>ScriptDetachedEvent</code>, <code>ScriptAssetModifiedEvent</code>: drive the script loading pipeline</li>
+<li><code>ScriptCallbackMessage</code>: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer <code>queue_script_callback</code> to run callbacks from scripts.</li>
+<li><code>ScriptAttachedMessage</code>, <code>ScriptDetachedMessage</code>, <code>ScriptAssetModifiedMessage</code>: drive the script loading pipeline</li>
 </ul>
 <p>The internal loading pipeline state events (<code>LoadingCompleted</code>, <code>ContextAssigned</code>, …) are intentionally not reflected.</p>
 <div style="break-before: page; page-break-before: always;"></div>
@@ -1654,19 +1654,20 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>SmolStr</code></td><td><a href="#smolstr">SmolStr</a></td></tr>
 <tr><td><code>InfinitePlane3d</code></td><td><a href="#infiniteplane3d">InfinitePlane3d</a></td></tr>
 <tr><td><code>CompWithFromWorld</code></td><td><a href="#compwithfromworld">CompWithFromWorld</a></td></tr>
-<tr><td><code>PointerEnter</code></td><td><a href="#pointerenter">PointerEnter</a></td></tr>
+<tr><td><code>ScriptAssetModifiedMessage</code></td><td><a href="#scriptassetmodifiedmessage">ScriptAssetModifiedMessage</a></td></tr>
 <tr><td><code>RegularPolygon</code></td><td><a href="#regularpolygon">RegularPolygon</a></td></tr>
 <tr><td><code>GamepadConnection</code></td><td><a href="#gamepadconnection">GamepadConnection</a></td></tr>
 <tr><td><code>OcclusionCulling</code></td><td><a href="#occlusionculling">OcclusionCulling</a></td></tr>
 <tr><td><code>Rect</code></td><td><a href="#rect">Rect</a></td></tr>
-<tr><td><code>Screenshot</code></td><td><a href="#screenshot">Screenshot</a></td></tr>
+<tr><td><code>PointerEnter</code></td><td><a href="#pointerenter">PointerEnter</a></td></tr>
 <tr><td><code>ViewportNode</code></td><td><a href="#viewportnode">ViewportNode</a></td></tr>
-<tr><td><code>RenderShadowMapVisibleEntities</code></td><td><a href="#rendershadowmapvisibleentities">RenderShadowMapVisibleEntities</a></td></tr>
+<tr><td><code>Screenshot</code></td><td><a href="#screenshot">Screenshot</a></td></tr>
 <tr><td><code>GlyphAtlasLocation</code></td><td><a href="#glyphatlaslocation">GlyphAtlasLocation</a></td></tr>
 <tr><td><code>MorphWeights</code></td><td><a href="#morphweights">MorphWeights</a></td></tr>
-<tr><td><code>SphereMeshBuilder</code></td><td><a href="#spheremeshbuilder">SphereMeshBuilder</a></td></tr>
+<tr><td><code>RenderShadowMapVisibleEntities</code></td><td><a href="#rendershadowmapvisibleentities">RenderShadowMapVisibleEntities</a></td></tr>
 <tr><td><code>MaterialBindingId</code></td><td><a href="#materialbindingid">MaterialBindingId</a></td></tr>
 <tr><td><code>GlyphAtlasInfo</code></td><td><a href="#glyphatlasinfo">GlyphAtlasInfo</a></td></tr>
+<tr><td><code>SphereMeshBuilder</code></td><td><a href="#spheremeshbuilder">SphereMeshBuilder</a></td></tr>
 <tr><td><code>Oklcha</code></td><td><a href="#oklcha-2">Oklcha</a></td></tr>
 <tr><td><code>MotionVectorPrepass</code></td><td><a href="#motionvectorprepass">MotionVectorPrepass</a></td></tr>
 <tr><td><code>AlignSelf</code></td><td><a href="#alignself">AlignSelf</a></td></tr>
@@ -1725,6 +1726,7 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>Underline</code></td><td><a href="#underline">Underline</a></td></tr>
 <tr><td><code>Quat</code></td><td><a href="#quat">Quat</a></td></tr>
 <tr><td><code>Vec4</code></td><td><a href="#vec4">Vec4</a></td></tr>
+<tr><td><code>ScriptDetachedMessage</code></td><td><a href="#scriptdetachedmessage">ScriptDetachedMessage</a></td></tr>
 <tr><td><code>ViewFrustum</code></td><td><a href="#viewfrustum">ViewFrustum</a></td></tr>
 <tr><td><code>NonZeroU32</code></td><td><a href="#nonzerou32">NonZeroU32</a></td></tr>
 <tr><td><code>TransformGizmoSpace</code></td><td><a href="#transformgizmospace">TransformGizmoSpace</a></td></tr>
@@ -2041,12 +2043,13 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>I64Vec4</code></td><td><a href="#i64vec4">I64Vec4</a></td></tr>
 <tr><td><code>EntityGeneration</code></td><td><a href="#entitygeneration">EntityGeneration</a></td></tr>
 <tr><td><code>ButtonState</code></td><td><a href="#buttonstate">ButtonState</a></td></tr>
-<tr><td><code>CompositeAlphaMode</code></td><td><a href="#compositealphamode">CompositeAlphaMode</a></td></tr>
+<tr><td><code>ScriptAttachedMessage</code></td><td><a href="#scriptattachedmessage">ScriptAttachedMessage</a></td></tr>
 <tr><td><code>ComputedStackIndex</code></td><td><a href="#computedstackindex">ComputedStackIndex</a></td></tr>
-<tr><td><code>DirectionalNavigationMap</code></td><td><a href="#directionalnavigationmap">DirectionalNavigationMap</a></td></tr>
+<tr><td><code>CompositeAlphaMode</code></td><td><a href="#compositealphamode">CompositeAlphaMode</a></td></tr>
 <tr><td><code>DMat2</code></td><td><a href="#dmat2">DMat2</a></td></tr>
-<tr><td><code>Triangle2d</code></td><td><a href="#triangle2d">Triangle2d</a></td></tr>
+<tr><td><code>DirectionalNavigationMap</code></td><td><a href="#directionalnavigationmap">DirectionalNavigationMap</a></td></tr>
 <tr><td><code>HoverMap</code></td><td><a href="#hovermap">HoverMap</a></td></tr>
+<tr><td><code>Triangle2d</code></td><td><a href="#triangle2d">Triangle2d</a></td></tr>
 <tr><td><code>CubemapVisibleEntities</code></td><td><a href="#cubemapvisibleentities">CubemapVisibleEntities</a></td></tr>
 <tr><td><code>BackgroundColor</code></td><td><a href="#backgroundcolor">BackgroundColor</a></td></tr>
 <tr><td><code>Node</code></td><td><a href="#node">Node</a></td></tr>
@@ -2165,7 +2168,6 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>DeferredPrepassDoubleBuffer</code></td><td><a href="#deferredprepassdoublebuffer">DeferredPrepassDoubleBuffer</a></td></tr>
 <tr><td><code>AlphaMode</code></td><td><a href="#alphamode">AlphaMode</a></td></tr>
 <tr><td><code>TextLineYBounds</code></td><td><a href="#textlineybounds">TextLineYBounds</a></td></tr>
-<tr><td><code>ScriptCallbackEvent</code></td><td><a href="#scriptcallbackevent">ScriptCallbackEvent</a></td></tr>
 <tr><td><code>AssetIndex</code></td><td><a href="#assetindex">AssetIndex</a></td></tr>
 <tr><td><code>FunctionCallContext</code></td><td><a href="#functioncallcontext">FunctionCallContext</a></td></tr>
 <tr><td><code>OuterColor</code></td><td><a href="#outercolor">OuterColor</a></td></tr>
@@ -2175,10 +2177,10 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>CompassQuadrant</code></td><td><a href="#compassquadrant">CompassQuadrant</a></td></tr>
 <tr><td><code>TextBounds</code></td><td><a href="#textbounds">TextBounds</a></td></tr>
 <tr><td><code>RotationGesture</code></td><td><a href="#rotationgesture">RotationGesture</a></td></tr>
-<tr><td><code>ScriptAssetModifiedEvent</code></td><td><a href="#scriptassetmodifiedevent">ScriptAssetModifiedEvent</a></td></tr>
+<tr><td><code>FunctionInfo</code></td><td><a href="#functioninfo">FunctionInfo</a></td></tr>
 <tr><td><code>Monitor</code></td><td><a href="#monitor">Monitor</a></td></tr>
 <tr><td><code>ImageSamplerDescriptor</code></td><td><a href="#imagesamplerdescriptor">ImageSamplerDescriptor</a></td></tr>
-<tr><td><code>FunctionInfo</code></td><td><a href="#functioninfo">FunctionInfo</a></td></tr>
+<tr><td><code>VisualBox</code></td><td><a href="#visualbox">VisualBox</a></td></tr>
 <tr><td><code>Chromaticity</code></td><td><a href="#chromaticity">Chromaticity</a></td></tr>
 <tr><td><code>Outline</code></td><td><a href="#outline">Outline</a></td></tr>
 <tr><td><code>Pointer</code></td><td><a href="#pointer">Pointer</a></td></tr>
@@ -2190,7 +2192,6 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>Capsule3d</code></td><td><a href="#capsule3d">Capsule3d</a></td></tr>
 <tr><td><code>Gamepad</code></td><td><a href="#gamepad">Gamepad</a></td></tr>
 <tr><td><code>PointLightTexture</code></td><td><a href="#pointlighttexture">PointLightTexture</a></td></tr>
-<tr><td><code>VisualBox</code></td><td><a href="#visualbox">VisualBox</a></td></tr>
 <tr><td><code>Okhsla</code></td><td><a href="#okhsla-2">Okhsla</a></td></tr>
 <tr><td><code>ReflectSchedule</code></td><td><a href="#reflectschedule">ReflectSchedule</a></td></tr>
 <tr><td><code>Uuid</code></td><td><a href="#uuid-3">Uuid</a></td></tr>
@@ -2222,12 +2223,11 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>BoundingSphere</code></td><td><a href="#boundingsphere">BoundingSphere</a></td></tr>
 <tr><td><code>TestResourceWithVariousFields</code></td><td><a href="#testresourcewithvariousfields">TestResourceWithVariousFields</a></td></tr>
 <tr><td><code>TransformGizmoMode</code></td><td><a href="#transformgizmomode">TransformGizmoMode</a></td></tr>
-<tr><td><code>ScriptDetachedEvent</code></td><td><a href="#scriptdetachedevent">ScriptDetachedEvent</a></td></tr>
 <tr><td><code>Mesh</code></td><td><a href="#mesh">Mesh</a></td></tr>
 <tr><td><code>UiScale</code></td><td><a href="#uiscale">UiScale</a></td></tr>
+<tr><td><code>NativeKey</code></td><td><a href="#nativekey">NativeKey</a></td></tr>
 <tr><td><code>Virtual</code></td><td><a href="#virtual">Virtual</a></td></tr>
 <tr><td><code>TextEntity</code></td><td><a href="#textentity">TextEntity</a></td></tr>
-<tr><td><code>NativeKey</code></td><td><a href="#nativekey">NativeKey</a></td></tr>
 <tr><td><code>OverflowAxis</code></td><td><a href="#overflowaxis">OverflowAxis</a></td></tr>
 <tr><td><code>ColorGradingSection</code></td><td><a href="#colorgradingsection">ColorGradingSection</a></td></tr>
 <tr><td><code>AabbCast2d</code></td><td><a href="#aabbcast2d">AabbCast2d</a></td></tr>
@@ -2270,6 +2270,7 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>ClusteredDecal</code></td><td><a href="#clustereddecal">ClusteredDecal</a></td></tr>
 <tr><td><code>CameraOutputMode</code></td><td><a href="#cameraoutputmode">CameraOutputMode</a></td></tr>
 <tr><td><code>RemSize</code></td><td><a href="#remsize">RemSize</a></td></tr>
+<tr><td><code>ScriptCallbackMessage</code></td><td><a href="#scriptcallbackmessage">ScriptCallbackMessage</a></td></tr>
 <tr><td><code>PointerLeave</code></td><td><a href="#pointerleave">PointerLeave</a></td></tr>
 <tr><td><code>TextureFormat</code></td><td><a href="#textureformat">TextureFormat</a></td></tr>
 <tr><td><code>NoBackgroundMotionVectors</code></td><td><a href="#nobackgroundmotionvectors">NoBackgroundMotionVectors</a></td></tr>
@@ -2348,7 +2349,6 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><td><code>PointerInteraction</code></td><td><a href="#pointerinteraction">PointerInteraction</a></td></tr>
 <tr><td><code>Plane2d</code></td><td><a href="#plane2d">Plane2d</a></td></tr>
 <tr><td><code>RenderAssetUsages</code></td><td><a href="#renderassetusages">RenderAssetUsages</a></td></tr>
-<tr><td><code>ScriptAttachedEvent</code></td><td><a href="#scriptattachedevent">ScriptAttachedEvent</a></td></tr>
 <tr><td><code>NotShadowCaster</code></td><td><a href="#notshadowcaster">NotShadowCaster</a></td></tr>
 <tr><td><code>GlobalAmbientLight</code></td><td><a href="#globalambientlight">GlobalAmbientLight</a></td></tr>
 <tr><td><code>Msaa</code></td><td><a href="#msaa">Msaa</a></td></tr>
@@ -59605,10 +59605,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#statictyperef"><code>StaticTypeRef</code></a></td><td>A static reference to a type, what scripts see as the type’s global.   Functions registered on this...</td></tr>
 <tr><td><a href="#scripterror"><code>ScriptError</code></a></td><td>An error with an optional script Context</td></tr>
 <tr><td><a href="#callbacklabel"><code>CallbackLabel</code></a></td><td>A string which disallows common invalid characters in callback labels,  particularly at the start o...</td></tr>
-<tr><td><a href="#scriptassetmodifiedevent"><code>ScriptAssetModifiedEvent</code></a></td><td>Emitted when a script asset is modified and all its attachments require re-loading</td></tr>
-<tr><td><a href="#scriptattachedevent"><code>ScriptAttachedEvent</code></a></td><td>Emitted when a script is attached.</td></tr>
-<tr><td><a href="#scriptcallbackevent"><code>ScriptCallbackEvent</code></a></td><td>A callback event meant to trigger a callback in a subset/set of scripts in the world with the given...</td></tr>
-<tr><td><a href="#scriptdetachedevent"><code>ScriptDetachedEvent</code></a></td><td>Emitted when a script is detached.</td></tr>
+<tr><td><a href="#scriptassetmodifiedmessage"><code>ScriptAssetModifiedMessage</code></a></td><td>Emitted when a script asset is modified and all its attachments require re-loading</td></tr>
+<tr><td><a href="#scriptattachedmessage"><code>ScriptAttachedMessage</code></a></td><td>Emitted when a script is attached.</td></tr>
+<tr><td><a href="#scriptcallbackmessage"><code>ScriptCallbackMessage</code></a></td><td>A callback message meant to trigger a callback in a subset/set of scripts in the world with the giv...</td></tr>
+<tr><td><a href="#scriptdetachedmessage"><code>ScriptDetachedMessage</code></a></td><td>Emitted when a script is detached.</td></tr>
 <tr><td><a href="#scriptcomponent"><code>ScriptComponent</code></a></td><td>A component which identifies the scripts existing on an entity.   Event handlers search for compone...</td></tr>
 <tr><td><a href="#contextkey"><code>ContextKey</code></a></td><td>The key for a context. The context key is used for:  - Identifying the script itself, uniquely.  - ...</td></tr>
 <tr><td><a href="#pickable"><code>Pickable</code></a></td><td>An optional component that marks an entity as usable by a backend, and overrides default  picking b...</td></tr>
@@ -96848,8 +96848,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="scriptassetmodifiedevent"><a class="header" href="#scriptassetmodifiedevent"><code>ScriptAssetModifiedEvent</code></a></h1>
-<h3 id="scriptassetmodifiedevent-1"><a class="header" href="#scriptassetmodifiedevent-1">ScriptAssetModifiedEvent</a></h3>
+<h1 id="scriptassetmodifiedmessage"><a class="header" href="#scriptassetmodifiedmessage"><code>ScriptAssetModifiedMessage</code></a></h1>
+<h3 id="scriptassetmodifiedmessage-1"><a class="header" href="#scriptassetmodifiedmessage-1">ScriptAssetModifiedMessage</a></h3>
 <ol>
 <li>AssetId&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</li>
 </ol>
@@ -96888,7 +96888,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptassetmodifiedevent">ScriptAssetModifiedEvent</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
+<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptassetmodifiedmessage">ScriptAssetModifiedMessage</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
 </tbody>
 </table>
 </div>
@@ -96899,13 +96899,13 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>reference</strong></td><td><a href="#scriptassetmodifiedevent">ScriptAssetModifiedEvent</a></td><td>The constructed value.</td></tr>
+<tr><td><strong>reference</strong></td><td><a href="#scriptassetmodifiedmessage">ScriptAssetModifiedMessage</a></td><td>The constructed value.</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="scriptattachedevent"><a class="header" href="#scriptattachedevent"><code>ScriptAttachedEvent</code></a></h1>
-<h3 id="scriptattachedevent-1"><a class="header" href="#scriptattachedevent-1">ScriptAttachedEvent</a></h3>
+<h1 id="scriptattachedmessage"><a class="header" href="#scriptattachedmessage"><code>ScriptAttachedMessage</code></a></h1>
+<h3 id="scriptattachedmessage-1"><a class="header" href="#scriptattachedmessage-1">ScriptAttachedMessage</a></h3>
 <ol>
 <li><a href="#scriptattachment-1">ScriptAttachment</a></li>
 </ol>
@@ -96944,7 +96944,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptattachedevent">ScriptAttachedEvent</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
+<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptattachedmessage">ScriptAttachedMessage</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
 </tbody>
 </table>
 </div>
@@ -96955,13 +96955,13 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>reference</strong></td><td><a href="#scriptattachedevent">ScriptAttachedEvent</a></td><td>The constructed value.</td></tr>
+<tr><td><strong>reference</strong></td><td><a href="#scriptattachedmessage">ScriptAttachedMessage</a></td><td>The constructed value.</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="scriptcallbackevent"><a class="header" href="#scriptcallbackevent"><code>ScriptCallbackEvent</code></a></h1>
-<h3 id="scriptcallbackevent-1"><a class="header" href="#scriptcallbackevent-1">ScriptCallbackEvent</a></h3>
+<h1 id="scriptcallbackmessage"><a class="header" href="#scriptcallbackmessage"><code>ScriptCallbackMessage</code></a></h1>
+<h3 id="scriptcallbackmessage-1"><a class="header" href="#scriptcallbackmessage-1">ScriptCallbackMessage</a></h3>
 <ul>
 <li><strong>label</strong>:<a href="#callbacklabel">CallbackLabel</a></li>
 <li><strong>recipients</strong>:<a href="#recipients">Recipients</a></li>
@@ -96972,7 +96972,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </ul>
 <h2 id="description-335"><a class="header" href="#description-335">Description</a></h2>
 <blockquote>
-<p>A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments</p>
+<p>A callback message meant to trigger a callback in a subset/set of scripts in the world with the given arguments</p>
 </blockquote>
 <h2 id="associated-functions-335"><a class="header" href="#associated-functions-335">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -97005,7 +97005,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptcallbackevent">ScriptCallbackEvent</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
+<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptcallbackmessage">ScriptCallbackMessage</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
 </tbody>
 </table>
 </div>
@@ -97016,13 +97016,13 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>reference</strong></td><td><a href="#scriptcallbackevent">ScriptCallbackEvent</a></td><td>The constructed value.</td></tr>
+<tr><td><strong>reference</strong></td><td><a href="#scriptcallbackmessage">ScriptCallbackMessage</a></td><td>The constructed value.</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="scriptdetachedevent"><a class="header" href="#scriptdetachedevent"><code>ScriptDetachedEvent</code></a></h1>
-<h3 id="scriptdetachedevent-1"><a class="header" href="#scriptdetachedevent-1">ScriptDetachedEvent</a></h3>
+<h1 id="scriptdetachedmessage"><a class="header" href="#scriptdetachedmessage"><code>ScriptDetachedMessage</code></a></h1>
+<h3 id="scriptdetachedmessage-1"><a class="header" href="#scriptdetachedmessage-1">ScriptDetachedMessage</a></h3>
 <ol>
 <li><a href="#scriptattachment-1">ScriptAttachment</a></li>
 </ol>
@@ -97061,7 +97061,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptdetachedevent">ScriptDetachedEvent</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
+<tr><td><strong>payload</strong></td><td>Fields&lt;<a href="#scriptdetachedmessage">ScriptDetachedMessage</a>&gt;</td><td>The fields of the type, keyed by name or index, or a list of the fields in order.</td></tr>
 </tbody>
 </table>
 </div>
@@ -97072,7 +97072,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>reference</strong></td><td><a href="#scriptdetachedevent">ScriptDetachedEvent</a></td><td>The constructed value.</td></tr>
+<tr><td><strong>reference</strong></td><td><a href="#scriptdetachedmessage">ScriptDetachedMessage</a></td><td>The constructed value.</td></tr>
 </tbody>
 </table>
 </div>

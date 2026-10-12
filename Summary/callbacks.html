@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-8a91dade.js";
+            window.path_to_searchindex_js = "../searchindex-99153879.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-ffb4cee2.js"></script>
+        <script src="../toc-32f44bfd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -193,7 +193,7 @@
     print("doing things")
 end
 </code></pre>
-<p>this callback is refered to by “name”, and on the rust side can be invoked either via <code>RunScriptCallback</code> command, or by setting up an event handler system which passes on <code>ScriptCallbackEvent</code>’s to scripts.</p>
+<p>this callback is refered to by “name”, and on the rust side can be invoked either via <code>RunScriptCallback</code> command, or by setting up an event handler system which passes on <code>ScriptCallbackMessage</code>’s to scripts.</p>
 <p>The key thing to note about this type of callback, is that if the script is ever reloaded, and the contents of this callback change, the logic inside it will also be hot-reloaded.</p>
 <h2 id="registerd-callbacks"><a class="header" href="#registerd-callbacks">Registerd Callbacks</a></h2>
 <p>You can also register a callback like so:</p>

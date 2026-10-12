@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-8a91dade.js";
+            window.path_to_searchindex_js = "../searchindex-99153879.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-ffb4cee2.js"></script>
+        <script src="../toc-32f44bfd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -190,7 +190,7 @@
 </ul>
 <p>The new pipeline works like this:</p>
 <ul>
-<li>A set of systems in <code>PreUpdate</code> “filter” incoming <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code>’s as well as <code>ScriptAssetModifiedEvent</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
+<li>A set of systems in <code>PreUpdate</code> “filter” incoming <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code>’s as well as <code>ScriptAssetModifiedMessage</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
 <li>A set of other systems then converts those into active <code>ScriptMachine</code>’s</li>
 <li>Then inside the <code>ScriptProcessingSchedule&lt;P&gt;</code>, which is only run in <code>PreUpdate</code> if there are active machines, we tick each machine until it either errors or reaches its final state.</li>
 </ul>

@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-8a91dade.js";
+            window.path_to_searchindex_js = "../searchindex-99153879.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-ffb4cee2.js"></script>
+        <script src="../toc-32f44bfd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -194,7 +194,7 @@
 <li>to an entity via <code>ScriptComponent</code>’s (i.e. <code>ScriptAttachment::EntityScript</code>)</li>
 <li>or by being statically activated against their script assset (i.e. <code>ScriptAttachment::StaticScript</code>)</li>
 </ul>
-<p>When you insert/remove <code>ScriptComponent</code>’s, <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code>’s are sent and processed by the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>.</p>
+<p>When you insert/remove <code>ScriptComponent</code>’s, <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code>’s are sent and processed by the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>.</p>
 <p>Other attachments, like static scripts have to be manually triggered via <code>AttachScript</code> and <code>DetachScript</code> commands.</p>
 <h2 id="loading"><a class="header" href="#loading">Loading</a></h2>
 <p>Scripts can be loaded into memory via the <code>AssetServer</code>.</p>
@@ -245,7 +245,7 @@ fn add_script(mut script_assets: ResMut&lt;Assets&lt;ScriptAsset&gt;&gt;, mut co
 </div>
 
 <h2 id="static-scripts"><a class="header" href="#static-scripts">Static Scripts</a></h2>
-<p>You can use attach and detach commands, which will run the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>, repeatedly until the requested script attachments are processed. If you don’t want to incur big frametime slowdowns, you can instead send <code>ScriptAttachedEvent</code> and <code>ScriptDetachedEvent</code> manually, and let the pipeline pick these up as normal.</p>
+<p>You can use attach and detach commands, which will run the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>, repeatedly until the requested script attachments are processed. If you don’t want to incur big frametime slowdowns, you can instead send <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code> manually, and let the pipeline pick these up as normal.</p>
 <h3 id="attach-a-static-script"><a class="header" href="#attach-a-static-script">Attach a static script</a></h3>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {

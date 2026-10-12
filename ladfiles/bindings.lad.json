@@ -127,9 +127,9 @@
       },
       "is_static": true
     },
-    "PointerEnter": {
+    "ScriptAssetModifiedMessage": {
       "type_kind": {
-        "val": "bevy_picking::events::PointerEnter"
+        "val": "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage"
       },
       "is_static": true
     },
@@ -157,9 +157,9 @@
       },
       "is_static": true
     },
-    "Screenshot": {
+    "PointerEnter": {
       "type_kind": {
-        "val": "bevy_render::view::window::screenshot::Screenshot"
+        "val": "bevy_picking::events::PointerEnter"
       },
       "is_static": true
     },
@@ -169,9 +169,9 @@
       },
       "is_static": true
     },
-    "RenderShadowMapVisibleEntities": {
+    "Screenshot": {
       "type_kind": {
-        "val": "bevy_render::view::visibility::RenderShadowMapVisibleEntities"
+        "val": "bevy_render::view::window::screenshot::Screenshot"
       },
       "is_static": true
     },
@@ -187,9 +187,9 @@
       },
       "is_static": true
     },
-    "SphereMeshBuilder": {
+    "RenderShadowMapVisibleEntities": {
       "type_kind": {
-        "val": "bevy_mesh::primitives::dim3::sphere::SphereMeshBuilder"
+        "val": "bevy_render::view::visibility::RenderShadowMapVisibleEntities"
       },
       "is_static": true
     },
@@ -202,6 +202,24 @@
     "GlyphAtlasInfo": {
       "type_kind": {
         "val": "bevy_text::glyph::GlyphAtlasInfo"
+      },
+      "is_static": true
+    },
+    "SphereMeshBuilder": {
+      "type_kind": {
+        "val": "bevy_mesh::primitives::dim3::sphere::SphereMeshBuilder"
+      },
+      "is_static": true
+    },
+    "Oklcha": {
+      "type_kind": {
+        "val": "bevy_color::oklcha::Oklcha"
+      },
+      "is_static": true
+    },
+    "MotionVectorPrepass": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::prepass::MotionVectorPrepass"
       },
       "is_static": true
     },
@@ -231,18 +249,6 @@
         ]
       },
       "is_static": false
-    },
-    "Oklcha": {
-      "type_kind": {
-        "val": "bevy_color::oklcha::Oklcha"
-      },
-      "is_static": true
-    },
-    "MotionVectorPrepass": {
-      "type_kind": {
-        "val": "bevy_core_pipeline::prepass::MotionVectorPrepass"
-      },
-      "is_static": true
     },
     "AlignSelf": {
       "type_kind": {
@@ -577,6 +583,12 @@
     "Vec4": {
       "type_kind": {
         "val": "glam::Vec4"
+      },
+      "is_static": true
+    },
+    "ScriptDetachedMessage": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::event::ScriptDetachedMessage"
       },
       "is_static": true
     },
@@ -2476,9 +2488,9 @@
       },
       "is_static": true
     },
-    "CompositeAlphaMode": {
+    "ScriptAttachedMessage": {
       "type_kind": {
-        "val": "bevy_window::window::CompositeAlphaMode"
+        "val": "bevy_mod_scripting_core::event::ScriptAttachedMessage"
       },
       "is_static": true
     },
@@ -2488,9 +2500,9 @@
       },
       "is_static": true
     },
-    "DirectionalNavigationMap": {
+    "CompositeAlphaMode": {
       "type_kind": {
-        "val": "bevy_input_focus::directional_navigation::DirectionalNavigationMap"
+        "val": "bevy_window::window::CompositeAlphaMode"
       },
       "is_static": true
     },
@@ -2500,15 +2512,21 @@
       },
       "is_static": true
     },
-    "Triangle2d": {
+    "DirectionalNavigationMap": {
       "type_kind": {
-        "val": "bevy_shape::dim2::Triangle2d"
+        "val": "bevy_input_focus::directional_navigation::DirectionalNavigationMap"
       },
       "is_static": true
     },
     "HoverMap": {
       "type_kind": {
         "val": "bevy_picking::hover::HoverMap"
+      },
+      "is_static": true
+    },
+    "Triangle2d": {
+      "type_kind": {
+        "val": "bevy_shape::dim2::Triangle2d"
       },
       "is_static": true
     },
@@ -3220,12 +3238,6 @@
       },
       "is_static": true
     },
-    "ScriptCallbackEvent": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::event::ScriptCallbackEvent"
-      },
-      "is_static": true
-    },
     "AssetIndex": {
       "type_kind": {
         "val": "bevy_asset::assets::AssetIndex"
@@ -3280,9 +3292,9 @@
       },
       "is_static": true
     },
-    "ScriptAssetModifiedEvent": {
+    "FunctionInfo": {
       "type_kind": {
-        "val": "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent"
+        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
       },
       "is_static": true
     },
@@ -3298,9 +3310,9 @@
       },
       "is_static": true
     },
-    "FunctionInfo": {
+    "VisualBox": {
       "type_kind": {
-        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
+        "val": "bevy_ui::ui_node::VisualBox"
       },
       "is_static": true
     },
@@ -3367,12 +3379,6 @@
     "PointLightTexture": {
       "type_kind": {
         "val": "bevy_light::point_light::PointLightTexture"
-      },
-      "is_static": true
-    },
-    "VisualBox": {
-      "type_kind": {
-        "val": "bevy_ui::ui_node::VisualBox"
       },
       "is_static": true
     },
@@ -3562,12 +3568,6 @@
       },
       "is_static": true
     },
-    "ScriptDetachedEvent": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::event::ScriptDetachedEvent"
-      },
-      "is_static": true
-    },
     "Mesh": {
       "type_kind": {
         "val": "bevy_mesh::mesh::Mesh"
@@ -3580,6 +3580,12 @@
       },
       "is_static": true
     },
+    "NativeKey": {
+      "type_kind": {
+        "val": "bevy_input::keyboard::NativeKey"
+      },
+      "is_static": true
+    },
     "Virtual": {
       "type_kind": {
         "val": "bevy_time::virt::Virtual"
@@ -3589,12 +3595,6 @@
     "TextEntity": {
       "type_kind": {
         "val": "bevy_text::text::TextEntity"
-      },
-      "is_static": true
-    },
-    "NativeKey": {
-      "type_kind": {
-        "val": "bevy_input::keyboard::NativeKey"
       },
       "is_static": true
     },
@@ -3847,6 +3847,12 @@
     "RemSize": {
       "type_kind": {
         "val": "bevy_text::text::RemSize"
+      },
+      "is_static": true
+    },
+    "ScriptCallbackMessage": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::event::ScriptCallbackMessage"
       },
       "is_static": true
     },
@@ -4315,12 +4321,6 @@
     "RenderAssetUsages": {
       "type_kind": {
         "val": "bevy_asset::render_asset::RenderAssetUsages"
-      },
-      "is_static": true
-    },
-    "ScriptAttachedEvent": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::event::ScriptAttachedEvent"
       },
       "is_static": true
     },
@@ -19951,17 +19951,17 @@
         "mapped_to_primitive_kind": null
       }
     },
-    "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent": {
-      "identifier": "ScriptAssetModifiedEvent",
+    "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage": {
+      "identifier": "ScriptAssetModifiedMessage",
       "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent",
+      "path": "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage",
       "documentation": " Emitted when a script asset is modified and all its attachments require re-loading",
       "associated_functions": [
-        "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent::new"
+        "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage::new"
       ],
       "layout": {
         "kind": "TupleStruct",
-        "name": "ScriptAssetModifiedEvent",
+        "name": "ScriptAssetModifiedMessage",
         "fields": [
           {
             "type": {
@@ -19980,17 +19980,17 @@
         "mapped_to_primitive_kind": null
       }
     },
-    "bevy_mod_scripting_core::event::ScriptAttachedEvent": {
-      "identifier": "ScriptAttachedEvent",
+    "bevy_mod_scripting_core::event::ScriptAttachedMessage": {
+      "identifier": "ScriptAttachedMessage",
       "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::event::ScriptAttachedEvent",
+      "path": "bevy_mod_scripting_core::event::ScriptAttachedMessage",
       "documentation": " Emitted when a script is attached.",
       "associated_functions": [
-        "bevy_mod_scripting_core::event::ScriptAttachedEvent::new"
+        "bevy_mod_scripting_core::event::ScriptAttachedMessage::new"
       ],
       "layout": {
         "kind": "TupleStruct",
-        "name": "ScriptAttachedEvent",
+        "name": "ScriptAttachedMessage",
         "fields": [
           {
             "type": {
@@ -20008,17 +20008,17 @@
         "mapped_to_primitive_kind": null
       }
     },
-    "bevy_mod_scripting_core::event::ScriptCallbackEvent": {
-      "identifier": "ScriptCallbackEvent",
+    "bevy_mod_scripting_core::event::ScriptCallbackMessage": {
+      "identifier": "ScriptCallbackMessage",
       "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::event::ScriptCallbackEvent",
-      "documentation": " A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments",
+      "path": "bevy_mod_scripting_core::event::ScriptCallbackMessage",
+      "documentation": " A callback message meant to trigger a callback in a subset/set of scripts in the world with the given arguments",
       "associated_functions": [
-        "bevy_mod_scripting_core::event::ScriptCallbackEvent::new"
+        "bevy_mod_scripting_core::event::ScriptCallbackMessage::new"
       ],
       "layout": {
         "kind": "Struct",
-        "name": "ScriptCallbackEvent",
+        "name": "ScriptCallbackMessage",
         "fields": [
           {
             "name": "label",
@@ -20074,17 +20074,17 @@
         "mapped_to_primitive_kind": null
       }
     },
-    "bevy_mod_scripting_core::event::ScriptDetachedEvent": {
-      "identifier": "ScriptDetachedEvent",
+    "bevy_mod_scripting_core::event::ScriptDetachedMessage": {
+      "identifier": "ScriptDetachedMessage",
       "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::event::ScriptDetachedEvent",
+      "path": "bevy_mod_scripting_core::event::ScriptDetachedMessage",
       "documentation": " Emitted when a script is detached.",
       "associated_functions": [
-        "bevy_mod_scripting_core::event::ScriptDetachedEvent::new"
+        "bevy_mod_scripting_core::event::ScriptDetachedMessage::new"
       ],
       "layout": {
         "kind": "TupleStruct",
-        "name": "ScriptDetachedEvent",
+        "name": "ScriptDetachedMessage",
         "fields": [
           {
             "type": {
@@ -107379,8 +107379,8 @@
         "is_operator": false
       }
     },
-    "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent::new": {
-      "namespace": "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent",
+    "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage::new": {
+      "namespace": "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage",
       "identifier": "new",
       "overload_index": null,
       "arguments": [
@@ -107393,7 +107393,7 @@
         {
           "kind": {
             "fields": {
-              "type": "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent"
+              "type": "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage"
             }
           },
           "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
@@ -107403,7 +107403,7 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "val": "bevy_mod_scripting_core::event::ScriptAssetModifiedEvent"
+            "val": "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage"
           }
         },
         "documentation": "The constructed value.",
@@ -107414,8 +107414,8 @@
         "is_operator": false
       }
     },
-    "bevy_mod_scripting_core::event::ScriptAttachedEvent::new": {
-      "namespace": "bevy_mod_scripting_core::event::ScriptAttachedEvent",
+    "bevy_mod_scripting_core::event::ScriptAttachedMessage::new": {
+      "namespace": "bevy_mod_scripting_core::event::ScriptAttachedMessage",
       "identifier": "new",
       "overload_index": null,
       "arguments": [
@@ -107428,7 +107428,7 @@
         {
           "kind": {
             "fields": {
-              "type": "bevy_mod_scripting_core::event::ScriptAttachedEvent"
+              "type": "bevy_mod_scripting_core::event::ScriptAttachedMessage"
             }
           },
           "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
@@ -107438,7 +107438,7 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "val": "bevy_mod_scripting_core::event::ScriptAttachedEvent"
+            "val": "bevy_mod_scripting_core::event::ScriptAttachedMessage"
           }
         },
         "documentation": "The constructed value.",
@@ -107449,8 +107449,8 @@
         "is_operator": false
       }
     },
-    "bevy_mod_scripting_core::event::ScriptCallbackEvent::new": {
-      "namespace": "bevy_mod_scripting_core::event::ScriptCallbackEvent",
+    "bevy_mod_scripting_core::event::ScriptCallbackMessage::new": {
+      "namespace": "bevy_mod_scripting_core::event::ScriptCallbackMessage",
       "identifier": "new",
       "overload_index": null,
       "arguments": [
@@ -107463,7 +107463,7 @@
         {
           "kind": {
             "fields": {
-              "type": "bevy_mod_scripting_core::event::ScriptCallbackEvent"
+              "type": "bevy_mod_scripting_core::event::ScriptCallbackMessage"
             }
           },
           "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
@@ -107473,7 +107473,7 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "val": "bevy_mod_scripting_core::event::ScriptCallbackEvent"
+            "val": "bevy_mod_scripting_core::event::ScriptCallbackMessage"
           }
         },
         "documentation": "The constructed value.",
@@ -107484,8 +107484,8 @@
         "is_operator": false
       }
     },
-    "bevy_mod_scripting_core::event::ScriptDetachedEvent::new": {
-      "namespace": "bevy_mod_scripting_core::event::ScriptDetachedEvent",
+    "bevy_mod_scripting_core::event::ScriptDetachedMessage::new": {
+      "namespace": "bevy_mod_scripting_core::event::ScriptDetachedMessage",
       "identifier": "new",
       "overload_index": null,
       "arguments": [
@@ -107498,7 +107498,7 @@
         {
           "kind": {
             "fields": {
-              "type": "bevy_mod_scripting_core::event::ScriptDetachedEvent"
+              "type": "bevy_mod_scripting_core::event::ScriptDetachedMessage"
             }
           },
           "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
@@ -107508,7 +107508,7 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "val": "bevy_mod_scripting_core::event::ScriptDetachedEvent"
+            "val": "bevy_mod_scripting_core::event::ScriptDetachedMessage"
           }
         },
         "documentation": "The constructed value.",
