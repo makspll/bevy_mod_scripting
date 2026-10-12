@@ -802,7 +802,7 @@ mod test {
 
     fn with_local_world<F: Fn()>(f: F) {
         let mut world = World::default();
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldGuard::with_static_guard(&mut world, cache, |world| {
             ThreadWorldContainer.set_context(ThreadScriptContext { world });
             f()
