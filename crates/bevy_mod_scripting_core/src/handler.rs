@@ -1,12 +1,16 @@
 //! Contains the logic for handling script callback events
-use std::{cell::RefCell, sync::Arc};
+use std::{
+    cell::{Cell, RefCell},
+    sync::Arc,
+};
 
 use bevy_ecs::{
     message::{MessageCursor, Messages},
     world::WorldId,
 };
 use bevy_mod_scripting_bindings::{
-    CurrentScriptAttachment, InteropError, ScriptCallbackResults, ScriptValue, WorldExtensions,
+    AppScriptCallbackRunners, CurrentScriptAttachment, InteropError, ScriptCallbackResults,
+    ScriptValue, WorldExtensions,
 };
 use bevy_mod_scripting_display::{DisplayProxy, WithTypeInfo};
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -51,6 +55,8 @@ pub trait ScriptingHandler<P: IntoScriptPluginParams> {
     /// running a callback on this thread would deadlock, so this returns an error instead.
     /// It also errors if callbacks are nested more than [`MAX_NESTED_CALLBACK_DEPTH`] levels deep.
     /// Contexts locked by other threads are waited on as usual.
+    ///
+    /// Once the outermost callback on this thread finishes, the callbacks queued in the meantime are run, see [`run_queued_callbacks`].
     fn handle(
         args: Vec<ScriptValue>,
         context_key: &ScriptAttachment,
@@ -71,33 +77,41 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
         script_callbacks: ScriptCallbacks<P>,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError> {
-        let _executing = ExecutingContext::enter(script_ctxt).map_err(|reason| {
-            // the guard still carries the attachment of the callback which is running right now
-            let caller = world.current_attachment().0;
-            reason.into_error(caller.as_ref(), attachment, callback)
-        })?;
-        let mut script_ctxt = script_ctxt.lock();
-        let script_ctxt = &mut *script_ctxt;
+        let result = {
+            let _executing = ExecutingContext::enter(script_ctxt).map_err(|reason| {
+                // the guard still carries the attachment of the callback which is running right now
+                let caller = world.current_attachment().0;
+                reason.into_error(caller.as_ref(), attachment, callback)
+            })?;
+            let mut script_ctxt = script_ctxt.lock();
+            let script_ctxt = &mut *script_ctxt;
+            WorldGuard::with_existing_static_guard(world.clone(), |world| {
+                // restored afterwards, so that a callback running inside another one leaves the outer callback's attachment intact
+                let previous_attachment = world
+                    .replace_cached_registry(CurrentScriptAttachment(Some(attachment.clone())));
+                let world_id = world.id();
+                let callbacks = script_callbacks.callbacks.read();
+                let result = if let Some(callback) = callbacks
+                    .get(&(attachment.clone(), callback.to_string()))
+                    .cloned()
+                {
+                    drop(callbacks);
+                    callback(args, script_ctxt, world_id)
+                } else {
+                    drop(callbacks);
+                    Self::handler()(args, attachment, callback, script_ctxt, world_id)
+                };
+                world.replace_cached_registry(previous_attachment);
+                result
+            })
+        };
 
-        WorldGuard::with_existing_static_guard(world.clone(), |world| {
-            // restored afterwards, so that a callback running inside another one leaves the outer callback's attachment intact
-            let previous_attachment =
-                world.replace_cached_registry(CurrentScriptAttachment(Some(attachment.clone())));
-            let world_id = world.id();
-            let callbacks = script_callbacks.callbacks.read();
-            let result = if let Some(callback) = callbacks
-                .get(&(attachment.clone(), callback.to_string()))
-                .cloned()
-            {
-                drop(callbacks);
-                callback(args, script_ctxt, world_id)
-            } else {
-                drop(callbacks);
-                Self::handler()(args, attachment, callback, script_ctxt, world_id)
-            };
-            world.replace_cached_registry(previous_attachment);
-            result
-        })
+        // the context is unlocked again, so once the outermost callback is done
+        // the callbacks it queued can run, including ones for its own script
+        if ExecutingContext::none_running() {
+            run_queued_callbacks(world);
+        }
+        result
     }
 }
 
@@ -142,6 +156,102 @@ pub fn run_callback_on_recipients<P: IntoScriptPluginParams>(
             Some((attachment, result))
         })
         .collect())
+}
+
+/// The maximum number of queued callbacks [`run_queued_callbacks`] runs in one go.
+///
+/// Queued callbacks can queue more callbacks, this stops them from queueing each other endlessly.
+pub const MAX_QUEUED_CALLBACKS_PER_RUN: usize = 1024;
+
+thread_local! {
+    /// Whether this thread is currently running queued callbacks.
+    static RUNNING_QUEUED_CALLBACKS: Cell<bool> = const { Cell::new(false) };
+}
+
+/// Runs the callbacks queued via [`AppScriptCallbackRunners::queue`] in the order they were queued,
+/// including the ones they queue in turn. Errors of the callbacks are sent as [`ScriptErrorEvent`]s.
+///
+/// Does nothing:
+/// - if the guard does not have exclusive access to the world, as the callbacks may need any part of it,
+///   e.g. inside non-exclusive script systems. [`run_queued_callbacks_system`] runs those later.
+/// - if this thread is already running queued callbacks, the outer run picks up newly queued ones.
+///
+/// Stops after [`MAX_QUEUED_CALLBACKS_PER_RUN`] callbacks with an error, leaving the rest for the next run.
+pub fn run_queued_callbacks(world: WorldGuard) {
+    let runners = {
+        let runners = world.script_callback_runners();
+        if !runners.has_queued() {
+            return;
+        }
+        runners.clone()
+    };
+    if !world.is_exclusive() || RUNNING_QUEUED_CALLBACKS.get() {
+        return;
+    }
+
+    let mut errors = Vec::new();
+    let running = RunningQueuedCallbacks::start();
+    for _ in 0..MAX_QUEUED_CALLBACKS_PER_RUN {
+        let Some(queued) = runners.pop_queued() else {
+            break;
+        };
+        match runners.run(
+            world.clone(),
+            &queued.recipients,
+            &queued.label,
+            queued.args,
+        ) {
+            Ok(results) => errors.extend(results.into_iter().filter_map(|(attachment, result)| {
+                result.err().map(|err| {
+                    ScriptError::from(err)
+                        .with_script(attachment.script().display())
+                        .with_context(format!("in queued callback: {}", queued.label))
+                })
+            })),
+            Err(err) => errors.push(
+                ScriptError::from(err)
+                    .with_context(format!("in queued callback: {}", queued.label)),
+            ),
+        }
+    }
+    drop(running);
+
+    if runners.has_queued() {
+        errors.push(ScriptError::from(InteropError::string(format!(
+            "Stopped running queued callbacks after {MAX_QUEUED_CALLBACKS_PER_RUN}, the rest will run later. \
+            Callbacks may be queueing each other endlessly."
+        ))));
+    }
+    send_script_errors(world, errors.iter());
+}
+
+/// Marks this thread as running queued callbacks until dropped.
+struct RunningQueuedCallbacks;
+
+impl RunningQueuedCallbacks {
+    fn start() -> Self {
+        RUNNING_QUEUED_CALLBACKS.set(true);
+        Self
+    }
+}
+
+impl Drop for RunningQueuedCallbacks {
+    fn drop(&mut self) {
+        RUNNING_QUEUED_CALLBACKS.set(false);
+    }
+}
+
+/// Runs callbacks which are still queued, e.g. ones queued from script systems without exclusive world access,
+/// or ones left over after [`MAX_QUEUED_CALLBACKS_PER_RUN`] was reached.
+pub fn run_queued_callbacks_system(world: &mut World) {
+    if !world
+        .get_resource::<AppScriptCallbackRunners>()
+        .is_some_and(AppScriptCallbackRunners::has_queued)
+    {
+        return;
+    }
+    let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
+    run_queued_callbacks(WorldAccessGuard::new_exclusive(world, cache));
 }
 
 /// The maximum number of callbacks which can run nested inside each other on one thread,
@@ -236,6 +346,13 @@ impl CannotEnter {
             ),
         };
         InteropError::string(message)
+    }
+}
+
+impl ExecutingContext {
+    /// Whether no callback is running on this thread.
+    fn none_running() -> bool {
+        EXECUTING_CONTEXTS.with_borrow(|executing| executing.is_empty())
     }
 }
 
@@ -455,6 +572,10 @@ mod test {
     use uuid::Uuid;
 
     use super::*;
+    use bevy_ecs::reflect::AppTypeRegistry;
+    use bevy_mod_scripting_bindings::QueuedScriptCallback;
+    use bevy_mod_scripting_world::AccessByteSet;
+
     use crate::{
         config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
         script::{Context, ContextPolicy},
@@ -791,5 +912,200 @@ mod test {
             .unwrap();
         assert_eq!(results.len(), 1);
         assert!(matches!(results[0].1, Ok(ScriptValue::Integer(1))));
+    }
+
+    /// An app with the test plugin and loaded static scripts `1..=count`, each in its own context
+    fn make_app(count: u128) -> App {
+        let mut app = App::default();
+        app.add_plugins((bevy_asset::AssetPlugin::default(), TestPlugin::default()));
+        app.add_message::<ScriptErrorEvent>();
+        app.finish();
+        let contexts = app.world().resource::<ScriptContexts<TestPlugin>>().clone();
+        let mut contexts = contexts.write();
+        for n in 1..=count {
+            contexts.insert(script(n), new_context().into()).unwrap();
+        }
+        drop(contexts);
+        app
+    }
+
+    fn app_callbacks(app: &App) -> ScriptCallbacks<TestPlugin> {
+        app.world()
+            .resource::<ScriptCallbacks<TestPlugin>>()
+            .clone()
+    }
+
+    /// The context of script `n` and the callbacks, to run callbacks with [`ScriptingHandler::handle`]
+    fn loaded_context(
+        world: &World,
+        n: u128,
+    ) -> (Arc<Mutex<TestContext>>, ScriptCallbacks<TestPlugin>) {
+        let context = world
+            .resource::<ScriptContexts<TestPlugin>>()
+            .read()
+            .get_context(&script(n))
+            .and_then(|c| c.as_loaded().cloned())
+            .expect("script is loaded");
+        let callbacks = world.resource::<ScriptCallbacks<TestPlugin>>().clone();
+        (context, callbacks)
+    }
+
+    /// Runs the callback on script `n` with an exclusive guard, as the handler systems do
+    fn run_in_app_exclusive(
+        app: &mut App,
+        n: u128,
+        label: &str,
+    ) -> Result<ScriptValue, InteropError> {
+        let world = app.world_mut();
+        let (context, callbacks) = loaded_context(world, n);
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
+        let guard = WorldAccessGuard::new_exclusive(world, cache);
+        TestPlugin::handle(
+            vec![],
+            &script(n),
+            &label.into(),
+            &context,
+            callbacks,
+            guard,
+        )
+    }
+
+    /// Queues `label` on script `n`, from inside a running callback
+    fn queue(n: u128, label: &str) {
+        thread_world()
+            .script_callback_runners()
+            .queue(QueuedScriptCallback {
+                recipients: Recipients::StaticScript(script(n).script()),
+                label: label.to_owned(),
+                args: vec![],
+            });
+    }
+
+    fn script_errors(app: &App) -> Vec<String> {
+        app.world()
+            .resource::<Messages<ScriptErrorEvent>>()
+            .iter_current_update_messages()
+            .map(|e| e.error.to_string())
+            .collect()
+    }
+
+    type Log = Arc<Mutex<Vec<&'static str>>>;
+
+    fn log_entry(log: &Log, entry: &'static str) {
+        log.lock().push(entry);
+    }
+
+    #[test]
+    fn queued_callbacks_run_after_the_outermost_callback_finishes() {
+        let mut app = make_app(2);
+        let callbacks = app_callbacks(&app);
+        let log = Log::default();
+
+        let l = log.clone();
+        register(&callbacks, &script(1), "outer", move || {
+            log_entry(&l, "outer start");
+            queue(2, "queued");
+            log_entry(&l, "outer end");
+            Ok(ScriptValue::Unit)
+        });
+        let l = log.clone();
+        register(&callbacks, &script(2), "queued", move || {
+            log_entry(&l, "queued");
+            // back into the script which queued us, which is fine once it finished
+            queue(1, "own");
+            Ok(ScriptValue::Unit)
+        });
+        let l = log.clone();
+        register(&callbacks, &script(1), "own", move || {
+            log_entry(&l, "own");
+            Ok(ScriptValue::Unit)
+        });
+
+        run_in_app_exclusive(&mut app, 1, "outer").unwrap();
+        assert_eq!(
+            *log.lock(),
+            vec!["outer start", "outer end", "queued", "own"]
+        );
+        assert_eq!(script_errors(&app), Vec::<String>::new());
+        assert!(
+            !app.world()
+                .resource::<AppScriptCallbackRunners>()
+                .has_queued()
+        );
+    }
+
+    #[test]
+    fn endlessly_queued_callbacks_stop_at_the_limit() {
+        let mut app = make_app(1);
+        let callbacks = app_callbacks(&app);
+        let count = Arc::new(Mutex::new(0usize));
+
+        let c = count.clone();
+        register(&callbacks, &script(1), "ping", move || {
+            *c.lock() += 1;
+            queue(1, "ping");
+            Ok(ScriptValue::Unit)
+        });
+
+        run_in_app_exclusive(&mut app, 1, "ping").unwrap();
+        // the first call plus the limit of queued ones
+        assert_eq!(*count.lock(), 1 + MAX_QUEUED_CALLBACKS_PER_RUN);
+        assert!(
+            app.world()
+                .resource::<AppScriptCallbackRunners>()
+                .has_queued()
+        );
+        let errors = script_errors(&app);
+        assert_eq!(errors.len(), 1, "{errors:?}");
+        assert!(
+            errors[0].contains("Stopped running queued callbacks"),
+            "{errors:?}"
+        );
+    }
+
+    #[test]
+    fn non_exclusive_guards_leave_queued_callbacks_for_the_system() {
+        let mut app = make_app(2);
+        let callbacks = app_callbacks(&app);
+        let log = Log::default();
+
+        let l = log.clone();
+        register(&callbacks, &script(1), "outer", move || {
+            log_entry(&l, "outer");
+            queue(2, "queued");
+            Ok(ScriptValue::Unit)
+        });
+        let l = log.clone();
+        register(&callbacks, &script(2), "queued", move || {
+            log_entry(&l, "queued");
+            Ok(ScriptValue::Unit)
+        });
+
+        let world = app.world_mut();
+        let (context, callbacks) = loaded_context(world, 1);
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
+        let type_registry = world.resource::<AppTypeRegistry>().0.clone();
+        // safety: the guard gives out no access at all
+        let guard = unsafe {
+            WorldAccessGuard::new_non_exclusive(
+                world.as_unsafe_world_cell(),
+                AccessByteSet::from_allowed_list(&[]),
+                type_registry,
+                cache,
+            )
+        };
+        TestPlugin::handle(
+            vec![],
+            &script(1),
+            &"outer".into(),
+            &context,
+            callbacks,
+            guard,
+        )
+        .unwrap();
+        assert_eq!(*log.lock(), vec!["outer"]);
+
+        run_queued_callbacks_system(world);
+        assert_eq!(*log.lock(), vec!["outer", "queued"]);
     }
 }

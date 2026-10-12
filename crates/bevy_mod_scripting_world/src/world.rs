@@ -400,6 +400,13 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    /// Whether this guard was created from exclusive access to the world, i.e. nothing else can be running in parallel with it.
+    ///
+    /// Guards for systems running in parallel with others, such as non-exclusive script systems, only give access to a subset of the world.
+    pub fn is_exclusive(&self) -> bool {
+        self.inner.accesses.is_exclusive()
+    }
+
     /// Queues a command to the world, which will be executed later.
     ///
     /// Requires exclusive world access.

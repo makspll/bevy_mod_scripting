@@ -9,11 +9,11 @@ use crate::{
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
-    handler::{run_callback_on_recipients, script_error_logger},
+    handler::{run_callback_on_recipients, run_queued_callbacks_system, script_error_logger},
     pipeline::ScriptLoadingPipeline,
     script::{ScriptComponentsChangeCache, script_component_changed_handler},
 };
-use bevy_app::{App, Plugin, PostUpdate, PreUpdate};
+use bevy_app::{App, Last, Plugin, PostUpdate, PreUpdate};
 use bevy_asset::{AssetApp, Handle};
 use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_ecs::{
@@ -57,6 +57,10 @@ pub enum ScriptingSystemSet {
 
     /// Systems in [`PreUpdate`] dispatching pipeline events whenever handles are added or removed from [`ScriptComponent`]'s
     SyncScriptingComponents,
+
+    /// Systems in [`Last`] running script callbacks which were queued but could not run as soon as the callback queueing them finished,
+    /// see [`handler::run_queued_callbacks_system`]
+    RunQueuedCallbacks,
 }
 
 /// Types which act like scripting plugins, by selecting a context and runtime
@@ -367,6 +371,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .init_resource::<AppReflectAllocator>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
+            .init_resource::<AppScriptCallbackRunners>()
             .init_resource::<DummyScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
 
@@ -383,6 +388,11 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         app.add_systems(
             PreUpdate,
             script_component_changed_handler.in_set(ScriptingSystemSet::SyncScriptingComponents),
+        );
+
+        app.add_systems(
+            Last,
+            run_queued_callbacks_system.in_set(ScriptingSystemSet::RunQueuedCallbacks),
         );
 
         if !self.dont_log_script_event_errors {
