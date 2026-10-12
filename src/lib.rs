@@ -48,6 +48,7 @@ plugin_group! {
     pub struct BMSPlugin {
         :ScriptFunctionsPlugin,
         :CoreScriptGlobalsPlugin,
+        :ConstructorsPlugin,
         :BMSScriptingInfrastructurePlugin,
         #[custom(cfg(feature = "lua"))]
         bevy_mod_scripting_lua:::LuaScriptingPlugin,

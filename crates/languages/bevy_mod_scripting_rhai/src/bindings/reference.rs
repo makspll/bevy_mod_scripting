@@ -610,8 +610,8 @@ impl CustomType for RhaiStaticReflectReference {
                 let key: ScriptValue = ScriptValue::from_dynamic(index)?;
 
                 let key = match key.as_string() {
-                    Ok(name) => match world.lookup_function([type_id], name) {
-                        Ok(func) => return ScriptValue::Function(func).into_dynamic(),
+                    Ok(name) => match world.lookup_static_member(type_id, name) {
+                        Ok(value) => return value.into_dynamic(),
                         Err(key) => ScriptValue::String(key),
                     },
                     Err(key) => key,

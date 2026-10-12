@@ -185,6 +185,49 @@ In this context `overridable` indicates whether language implementations will lo
 
 Note the `ReflectReference` namespace is special, in that functions defined on it, act like a fallback and hence apply to ALL references.
 
+### Where functions can live
+
+The type in the `impl` block you apply `script_bindings` to (or the one passed to `NamespaceBuilder`) decides where the functions are available:
+
+| `impl` target | Available on | Receives |
+|---------------|--------------|----------|
+| `MyType` | `MyType` values and the `MyType` static reference | whatever you declare |
+| `ReflectReference` | every value, after `MyType`'s own functions | the value |
+| `StaticTypeRef` | every type's static reference, after `MyType`'s own functions | the type, filled in automatically |
+| `GlobalNamespace` | the global scope, i.e. no prefix | whatever you declare |
+
+When the same name exists in more than one place, the most specific one wins.
+For `ReflectReference` and `StaticTypeRef` in a `script_bindings` block outside of the crate defining them, use the `remote` attribute.
+
+### Functions available on every type
+
+The `StaticTypeRef` namespace is the equivalent for static references, i.e. `Vec3` in `Vec3.new(..)`.
+Functions registered on it are available on every type's static reference, and receive the type as their first argument, which is filled in automatically:
+
+```rust,ignore
+NamespaceBuilder::<StaticTypeRef>::new(app.world_mut()).register(
+    "describe",
+    |ctxt: FunctionCallContext, type_ref: V<StaticTypeRef>| -> Result<String, InteropError> {
+        Ok(type_ref.type_info(&ctxt.world()?)?.type_path().to_string())
+    },
+);
+```
+
+```lua
+print(Vec3.describe()) -- "glam::Vec3"
+```
+
+A function registered on the type itself always takes priority over one on `StaticTypeRef`.
+The `new` constructor is implemented this way, see [Constructing Arbitrary Types](../ScriptingReference/constructing-arbitrary-types.md).
+
+#### Signatures which depend on the type
+
+A shared function's signature can refer to the type it is bound to, using the placeholder types `BoundValue` (a value of the type) and `BoundFields` (a table of the type's fields).
+At runtime these are a `ReflectReference` and a table of fields, which is also how they are documented.
+The same placeholders work for functions on `EnumVariantRef`, i.e. a variant's constructor.
+
+The enum variants of a type are also available on its static reference, i.e. `MyEnum.Variant`, after the functions.
+
 
 ## Globals
 

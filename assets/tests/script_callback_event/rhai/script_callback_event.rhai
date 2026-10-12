@@ -1,8 +1,8 @@
 fn on_test() {
-    let label = construct.call(types.CallbackLabel, #{ "0": "callback_a" });
-    let recipients = construct.call(types.Recipients, #{ variant: "AllScripts" });
+    let label = CallbackLabel.new_.call(["callback_a"]);
+    let recipients = Recipients.AllScripts.new_.call(#{});
     let event_type = types.ScriptCallbackEvent;
-    let event = construct.call(event_type, #{
+    let event = ScriptCallbackEvent.new_.call(#{
         label: label,
         recipients: recipients,
         args: [],

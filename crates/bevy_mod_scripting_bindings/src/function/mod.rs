@@ -1,6 +1,7 @@
 //! Abstractions to do with dynamic script functions
 
 pub mod arg_meta;
+pub mod bound;
 pub mod from;
 pub mod from_ref;
 pub mod into;
@@ -11,6 +12,7 @@ pub mod script_function;
 pub mod type_dependencies;
 
 pub use arg_meta::*;
+pub use bound::*;
 pub use from::*;
 pub use from_ref::*;
 pub use into::*;

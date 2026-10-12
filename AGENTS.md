@@ -19,6 +19,7 @@ Multi-language scripting for Bevy (Lua, Rhai, Rune). Scripts are Bevy assets; th
 * World access is arbitrary at runtime, so `bevy_mod_scripting_world` enforces borrow safety dynamically via an access map + `WorldGuard`, rather than Bevy's static system params.
 * Script lifecycle (load / attach / reload / unload) is a staged pipeline with per-language context management, in `core/src/pipeline`.
 * Functions exposed to scripts are registered in a type-erased registry (`bindings/src/function`), not per-language; languages adapt to it. Operators/primitives live in `bindings_domain`.
+* Functions available on every type's static reference (e.g. the shared `new` constructor) live on the `StaticTypeRef` namespace and are bound to the type at lookup (`lookup_type_function`), so languages only call `lookup_static_member`. Enum variants (`EnumVariantRef`) are resolved the same way, lazily.
 * Feature flags select language and which Bevy crate bindings are compiled in; exactly one Lua variant must be chosen.
 
 ## Working here

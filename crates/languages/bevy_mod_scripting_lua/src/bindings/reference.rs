@@ -426,8 +426,8 @@ impl UserData for LuaStaticReflectReference {
                 let key: ScriptValue = key.into();
 
                 let key = match key.as_string() {
-                    Ok(name) => match world.lookup_function([type_id], name) {
-                        Ok(func) => return Ok(LuaScriptValue(ScriptValue::Function(func))),
+                    Ok(name) => match world.lookup_static_member(type_id, name) {
+                        Ok(value) => return Ok(LuaScriptValue(value)),
                         Err(key) => ScriptValue::String(key),
                     },
                     Err(key) => key,

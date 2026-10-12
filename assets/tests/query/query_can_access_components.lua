@@ -6,8 +6,8 @@ local componentC = world.get_type_by_name("TestComponent")
 
 world.add_default_component(entity_a, componentA)
 world.add_default_component(entity_a, componentB)
-world.insert_component(entity_a, componentC, construct(componentC, {
-    strings = { [1] = "asd" }
+world.insert_component(entity_a, componentC, TestComponent.new({
+    strings = { "asd" }
 }))
 
 local query_result = world.query():component(componentA):component(componentA):component(componentC):build()
