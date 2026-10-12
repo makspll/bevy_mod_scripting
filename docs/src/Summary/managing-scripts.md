@@ -14,7 +14,7 @@ Scripts can be attached either:
 - to an entity via `ScriptComponent`'s (i.e. `ScriptAttachment::EntityScript`)
 - or by being statically activated against their script assset (i.e. `ScriptAttachment::StaticScript`)
 
-When you insert/remove `ScriptComponent`'s, `ScriptAttachedEvent` and `ScriptDetachedEvent`'s are sent and processed by the [script pipeline](../ScriptPipeline/pipeline.md).
+When you insert/remove `ScriptComponent`'s, `ScriptAttachedMessage` and `ScriptDetachedMessage`'s are sent and processed by the [script pipeline](../ScriptPipeline/pipeline.md).
 
 Other attachments, like static scripts have to be manually triggered via `AttachScript` and `DetachScript` commands.
 
@@ -78,7 +78,7 @@ Scripts added directly through assets, or via asset server without an asset path
 </div>
 
 ## Static Scripts
-You can use attach and detach commands, which will run the [script pipeline](../ScriptPipeline/pipeline.md), repeatedly until the requested script attachments are processed. If you don't want to incur big frametime slowdowns, you can instead send `ScriptAttachedEvent` and `ScriptDetachedEvent` manually, and let the pipeline pick these up as normal.
+You can use attach and detach commands, which will run the [script pipeline](../ScriptPipeline/pipeline.md), repeatedly until the requested script attachments are processed. If you don't want to incur big frametime slowdowns, you can instead send `ScriptAttachedMessage` and `ScriptDetachedMessage` manually, and let the pipeline pick these up as normal.
 
 ### Attach a static script
 ```rust

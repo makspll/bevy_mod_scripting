@@ -15,12 +15,12 @@ use crate::{
 
 /// An error coming from a script
 #[derive(Debug, Message)]
-pub struct ScriptErrorEvent {
+pub struct ScriptErrorMessage {
     /// The script that caused the error
     pub error: ScriptError,
 }
 
-impl ScriptErrorEvent {
+impl ScriptErrorMessage {
     /// Creates a new script error event from a script error
     pub fn new(error: ScriptError) -> Self {
         Self { error }
@@ -30,17 +30,17 @@ impl ScriptErrorEvent {
 /// Emitted when a script is attached.
 #[derive(Message, Clone, Debug, Reflect)]
 #[reflect(Message)]
-pub struct ScriptAttachedEvent(pub ScriptAttachment);
+pub struct ScriptAttachedMessage(pub ScriptAttachment);
 
 /// Emitted when a script is detached.
 #[derive(Message, Clone, Debug, Reflect)]
 #[reflect(Message)]
-pub struct ScriptDetachedEvent(pub ScriptAttachment);
+pub struct ScriptDetachedMessage(pub ScriptAttachment);
 
 /// Emitted when a script asset is modified and all its attachments require re-loading
 #[derive(Message, Clone, Debug, Reflect)]
 #[reflect(Message)]
-pub struct ScriptAssetModifiedEvent(pub AssetId<ScriptAsset>);
+pub struct ScriptAssetModifiedMessage(pub AssetId<ScriptAsset>);
 
 /// A string which disallows common invalid characters in callback labels,
 /// particularly at the start of the string
@@ -278,7 +278,7 @@ impl ScriptCallbackMessage {
 /// Event published when a script completes a callback and a response is requested.
 #[derive(Clone, Message, Debug)]
 #[non_exhaustive]
-pub struct ScriptCallbackResponseEvent {
+pub struct ScriptCallbackResponseMessage {
     /// the label of the callback
     pub label: CallbackLabel,
     /// the language of the callback that replied
@@ -289,7 +289,7 @@ pub struct ScriptCallbackResponseEvent {
     pub response: Result<ScriptValue, ScriptError>,
 }
 
-impl ScriptCallbackResponseEvent {
+impl ScriptCallbackResponseMessage {
     /// Creates a new callback response event with the given label, script, and response.
     pub fn new<L: Into<CallbackLabel>>(
         label: L,

@@ -28,7 +28,7 @@ use bevy_mod_scripting_core::{
     commands::{AttachScript, RunScriptCallback},
     error::ScriptError,
     event::{
-        IntoCallbackLabel, ScriptCallbackMessage, ScriptCallbackResponseEvent, ScriptErrorEvent,
+        IntoCallbackLabel, ScriptCallbackMessage, ScriptCallbackResponseMessage, ScriptErrorMessage,
     },
     handler::event_handler,
     pipeline::PipelineRun,
@@ -451,7 +451,7 @@ pub fn run_plugin_callback_event_benchmark<
         .run_system(handler)
         .expect("handler system failed")
         .expect("handler system errored");
-    let responses = world.resource::<Messages<ScriptCallbackResponseEvent>>();
+    let responses = world.resource::<Messages<ScriptCallbackResponseMessage>>();
     let ok_responses = responses
         .iter_current_update_messages()
         .filter(|r| r.response.is_ok())
@@ -465,7 +465,7 @@ pub fn run_plugin_callback_event_benchmark<
             .read()
             .all_residents_len(),
         world
-            .resource::<Messages<ScriptErrorEvent>>()
+            .resource::<Messages<ScriptErrorMessage>>()
             .iter_current_update_messages()
             .collect::<Vec<_>>()
     );

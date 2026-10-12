@@ -144,7 +144,7 @@ impl Default for RuneScriptingPlugin {
 
 //         error!("{}", error);
 
-//         error_wrt.send(ScriptErrorEvent { error });
+//         error_wrt.send(ScriptErrorMessage { error });
 //         world.insert_resource(state);
 //     }
 // }

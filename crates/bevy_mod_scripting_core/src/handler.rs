@@ -22,7 +22,7 @@ use crate::{
     error::ScriptError,
     event::{
         CallbackLabel, GetRecipients, IntoCallbackLabel, Recipients, ScriptCallbackMessage,
-        ScriptCallbackResponseEvent, ScriptErrorEvent,
+        ScriptCallbackResponseMessage, ScriptErrorMessage,
     },
     script::ScriptContexts,
 };
@@ -169,7 +169,7 @@ thread_local! {
 }
 
 /// Runs the callbacks queued via [`AppScriptCallbackRunners::queue`] in the order they were queued,
-/// including the ones they queue in turn. Errors of the callbacks are sent as [`ScriptErrorEvent`]s.
+/// including the ones they queue in turn. Errors of the callbacks are sent as [`ScriptErrorMessage`]s.
 ///
 /// Does nothing:
 /// - if the guard does not have exclusive access to the world, as the callbacks may need any part of it,
@@ -465,7 +465,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             if event.trigger_response {
                 send_callback_response(
                     guard.clone(),
-                    ScriptCallbackResponseEvent::new(
+                    ScriptCallbackResponseMessage::new(
                         callback_label.clone(),
                         attachment,
                         call_result.clone(),
@@ -496,10 +496,11 @@ fn collect_errors(call_result: Result<ScriptValue, ScriptError>, errors: &mut Ve
 }
 
 /// Sends a callback response event to the world
-pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackResponseEvent) {
-    let err = world.with_resource_mut(|mut events: Mut<Messages<ScriptCallbackResponseEvent>>| {
-        events.write(response);
-    });
+pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackResponseMessage) {
+    let err =
+        world.with_resource_mut(|mut events: Mut<Messages<ScriptCallbackResponseMessage>>| {
+            events.write(response);
+        });
 
     if let Err(err) = err {
         error!(
@@ -515,9 +516,9 @@ pub fn send_script_errors<'e>(
     errors: impl IntoIterator<Item = &'e ScriptError>,
 ) {
     let iter = errors.into_iter();
-    let err = world.with_resource_mut(|mut error_events: Mut<Messages<ScriptErrorEvent>>| {
+    let err = world.with_resource_mut(|mut error_events: Mut<Messages<ScriptErrorMessage>>| {
         for error in iter {
-            error_events.write(ScriptErrorEvent {
+            error_events.write(ScriptErrorMessage {
                 error: error.clone(),
             });
         }
@@ -534,11 +535,11 @@ pub fn send_script_errors<'e>(
 /// A system which receives all script errors and logs them to console
 pub fn script_error_logger(
     world: &mut World,
-    mut errors_cursor: Local<MessageCursor<ScriptErrorEvent>>,
+    mut errors_cursor: Local<MessageCursor<ScriptErrorMessage>>,
 ) {
     let cache = WorldGuard::setup_cache(world, CurrentScriptAttachment::empty());
     let guard = WorldGuard::new_exclusive(world, cache);
-    let errors = guard.with_resource(|events: &Messages<ScriptErrorEvent>| {
+    let errors = guard.with_resource(|events: &Messages<ScriptErrorMessage>| {
         errors_cursor
             .read(events)
             .map(|e| e.error.clone())
@@ -918,7 +919,7 @@ mod test {
     fn make_app(count: u128) -> App {
         let mut app = App::default();
         app.add_plugins((bevy_asset::AssetPlugin::default(), TestPlugin::default()));
-        app.add_message::<ScriptErrorEvent>();
+        app.add_message::<ScriptErrorMessage>();
         app.finish();
         let contexts = app.world().resource::<ScriptContexts<TestPlugin>>().clone();
         let mut contexts = contexts.write();
@@ -983,7 +984,7 @@ mod test {
 
     fn script_errors(app: &App) -> Vec<String> {
         app.world()
-            .resource::<Messages<ScriptErrorEvent>>()
+            .resource::<Messages<ScriptErrorMessage>>()
             .iter_current_update_messages()
             .map(|e| e.error.to_string())
             .collect()

@@ -82,7 +82,7 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
                     }
                     Some(Err(err)) => {
                         _ = world
-                            .write_message(ScriptErrorEvent::new(err.with_language(P::LANGUAGE)));
+                            .write_message(ScriptErrorMessage::new(err.with_language(P::LANGUAGE)));
 
                         if let Some(active_machine) = self.active_machine.as_mut() {
                             let failed_state =
@@ -272,8 +272,8 @@ pub trait MachineState<P: IntoScriptPluginParams>: Send + Sync + 'static + Any {
         &self,
         attachment: &ScriptAttachment,
         base_error: ScriptError,
-    ) -> ScriptErrorEvent {
-        ScriptErrorEvent::new(
+    ) -> ScriptErrorMessage {
+        ScriptErrorMessage::new(
             base_error
                 .with_context(attachment.to_string())
                 .with_context(self.state_name())
@@ -517,7 +517,7 @@ impl<P: IntoScriptPluginParams> MachineState<P> for ContextAssigned<P> {
             Ok(_) => {}
             Err(_) => {
                 drop(contexts_guard);
-                _ = world.write_message(ScriptErrorEvent::new(
+                _ = world.write_message(ScriptErrorMessage::new(
                     ScriptError::from(InteropError::str("no context policy matched"))
                         .with_language(P::LANGUAGE),
                 ))

@@ -8,7 +8,7 @@ use crate::{
     callbacks::{ScriptCallbacks, ScriptCallbacksPlugin},
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
-    event::ScriptErrorEvent,
+    event::ScriptErrorMessage,
     handler::{run_callback_on_recipients, run_queued_callbacks_system, script_error_logger},
     pipeline::ScriptLoadingPipeline,
     script::{ScriptComponentsChangeCache, script_component_changed_handler},
@@ -29,7 +29,7 @@ use bevy_mod_scripting_bindings::{
     ScriptTypeRegistration, ScriptValue, garbage_collector,
 };
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
-use event::{ScriptCallbackMessage, ScriptCallbackResponseEvent};
+use event::{ScriptCallbackMessage, ScriptCallbackResponseMessage};
 use handler::HandlerFn;
 use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContexts};
@@ -355,7 +355,7 @@ fn pre_register_components(app: &mut App) {
 /// It is necessary to register this plugin for any of them to work
 #[derive(Default)]
 pub struct BMSScriptingInfrastructurePlugin {
-    /// If set to true will not log all ScriptErrorEvents using bevy_log::error.
+    /// If set to true will not log all ScriptErrorMessages using bevy_log::error.
     ///
     /// you can opt out of this behavior if you want to log the errors in a different way.
     ///
@@ -365,9 +365,9 @@ pub struct BMSScriptingInfrastructurePlugin {
 
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<ScriptErrorEvent>()
+        app.add_message::<ScriptErrorMessage>()
             .add_message::<ScriptCallbackMessage>()
-            .add_message::<ScriptCallbackResponseEvent>()
+            .add_message::<ScriptCallbackResponseMessage>()
             .init_resource::<AppReflectAllocator>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
@@ -422,9 +422,9 @@ fn register_types(app: &mut App) {
     app.register_type::<event::CallbackLabel>();
     app.register_type::<event::Recipients>();
     app.register_type::<event::ScriptCallbackMessage>();
-    app.register_type::<event::ScriptAttachedEvent>();
-    app.register_type::<event::ScriptDetachedEvent>();
-    app.register_type::<event::ScriptAssetModifiedEvent>();
+    app.register_type::<event::ScriptAttachedMessage>();
+    app.register_type::<event::ScriptDetachedMessage>();
+    app.register_type::<event::ScriptAssetModifiedMessage>();
 }
 
 #[cfg(test)]
@@ -457,8 +457,8 @@ mod test {
     #[test]
     fn test_own_messages_can_be_written_via_reflection() {
         use crate::event::{
-            ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptCallbackMessage,
-            ScriptDetachedEvent,
+            ScriptAssetModifiedMessage, ScriptAttachedMessage, ScriptCallbackMessage,
+            ScriptDetachedMessage,
         };
         use bevy_ecs::{
             message::{MessageCursor, Messages},
@@ -476,9 +476,9 @@ mod test {
 
         for id in [
             std::any::TypeId::of::<ScriptCallbackMessage>(),
-            std::any::TypeId::of::<ScriptAttachedEvent>(),
-            std::any::TypeId::of::<ScriptDetachedEvent>(),
-            std::any::TypeId::of::<ScriptAssetModifiedEvent>(),
+            std::any::TypeId::of::<ScriptAttachedMessage>(),
+            std::any::TypeId::of::<ScriptDetachedMessage>(),
+            std::any::TypeId::of::<ScriptAssetModifiedMessage>(),
         ] {
             assert!(
                 registry.get_type_data::<ReflectMessage>(id).is_some(),

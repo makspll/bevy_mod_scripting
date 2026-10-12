@@ -22,8 +22,8 @@ use crate::{
     context::ScriptingLoader,
     error::ScriptError,
     event::{
-        GetRecipients, Recipients, ScriptAssetModifiedEvent, ScriptAttachedEvent,
-        ScriptDetachedEvent, ScriptErrorEvent,
+        GetRecipients, Recipients, ScriptAssetModifiedMessage, ScriptAttachedMessage,
+        ScriptDetachedMessage, ScriptErrorMessage,
     },
     pipeline::hooks::{
         clear_machine_data, on_script_unloaded_for_reload_pipeline_handler,
@@ -197,9 +197,9 @@ impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
     fn build(&self, app: &mut App) {
-        app.add_message::<ScriptAttachedEvent>()
-            .add_message::<ScriptDetachedEvent>()
-            .add_message::<ScriptAssetModifiedEvent>();
+        app.add_message::<ScriptAttachedMessage>()
+            .add_message::<ScriptDetachedMessage>()
+            .add_message::<ScriptAssetModifiedMessage>();
 
         app.init_resource::<ActiveMachinesData>();
 
@@ -426,14 +426,14 @@ mod test {
     #[test]
     fn test_system_params() {
         let mut app = App::default();
-        app.add_message::<ScriptAttachedEvent>();
+        app.add_message::<ScriptAttachedMessage>();
         app.add_plugins(AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
         app.finish();
 
         let world = app.world_mut();
         let mut system_state =
-            SystemState::<LoadedWithHandles<ScriptAttachedEvent>>::from_world(world);
+            SystemState::<LoadedWithHandles<ScriptAttachedMessage>>::from_world(world);
         // start empty
         {
             let mut state = system_state.get_mut(world).unwrap();
@@ -450,8 +450,10 @@ mod test {
         };
         let handle = asset_server.add(asset);
         let handle_invalid = Handle::default();
-        world.write_message(ScriptAttachedEvent(ScriptAttachment::StaticScript(handle)));
-        world.write_message(ScriptAttachedEvent(ScriptAttachment::StaticScript(
+        world.write_message(ScriptAttachedMessage(ScriptAttachment::StaticScript(
+            handle,
+        )));
+        world.write_message(ScriptAttachedMessage(ScriptAttachment::StaticScript(
             handle_invalid,
         )));
 
@@ -476,7 +478,7 @@ mod test {
     #[test]
     fn test_run_override_is_undid() {
         let mut app = App::default();
-        app.add_message::<ScriptAttachedEvent>();
+        app.add_message::<ScriptAttachedMessage>();
 
         app.add_plugins((AssetPlugin::default(), TestPlugin::default()));
         app.init_asset::<ScriptAsset>();
