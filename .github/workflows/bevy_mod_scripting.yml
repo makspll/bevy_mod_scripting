@@ -107,17 +107,6 @@ jobs:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
-      - name: Free Disk Space (Ubuntu)
-        if: runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
       - name: Checkout
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: actions/checkout@v4
@@ -145,7 +134,7 @@ jobs:
       - name: Setup
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         run: |
-          cargo xtask init
+          cargo xtask init ${{ matrix.run_args.init_args }}
 
       - name: Setup GPU Drivers
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.requires_gpu }}
