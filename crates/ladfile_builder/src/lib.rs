@@ -21,7 +21,10 @@ use bevy_mod_scripting_bindings::{
 };
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
 use bevy_platform::collections::{HashMap, HashSet};
-use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo};
+use bevy_reflect::{
+    NamedField, ReflectRef, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo,
+    std_traits::ReflectDefault,
+};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -218,6 +221,7 @@ impl<'t> LadFileBuilder<'t> {
                     is_resource: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: Some(primitive),
+                    default: None,
                     misc: Default::default(),
                 },
             },
@@ -334,6 +338,7 @@ impl<'t> LadFileBuilder<'t> {
                     is_resource: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: primitive_from_type_id(std::any::TypeId::of::<T>()),
+                    default: None,
                     misc: Default::default(),
                 },
             },
@@ -407,6 +412,7 @@ impl<'t> LadFileBuilder<'t> {
                 is_resource,
                 is_reflect,
                 mapped_to_primitive_kind: primitive_from_type_id(type_info.type_id()),
+                default: self.lad_default(type_info.type_id()),
                 misc: Default::default(),
             },
         };
@@ -452,12 +458,10 @@ impl<'t> LadFileBuilder<'t> {
                 }
                 TypedWrapperKind::UntypedTuple => {}
             },
-            ThroughTypeInfo::TypeInfo(type_info) => {
+            ThroughTypeInfo::TypeInfo(type_info) | ThroughTypeInfo::Fields { type_info, .. } => {
                 self.add_type_info(type_info);
             }
-            ThroughTypeInfo::Primitive(_)
-            | ThroughTypeInfo::Fields { .. }
-            | ThroughTypeInfo::Bound(_) => {}
+            ThroughTypeInfo::Primitive(_) | ThroughTypeInfo::Bound(_) => {}
         }
 
         self
@@ -480,6 +484,40 @@ impl<'t> LadFileBuilder<'t> {
     ///
     /// And then removes them from the original block, instead putting it in each argument / return docstring
     pub fn add_function_info(&mut self, function_info: &FunctionInfo) -> &mut Self {
+        let function_id = self.lad_function_id_from_info(function_info);
+        let namespace = match function_info.namespace {
+            Namespace::Global => LadFunctionNamespace::Global,
+            Namespace::OnType(type_id) => {
+                LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
+            }
+        };
+        self.insert_function(function_id, namespace, function_info)
+    }
+
+    /// Adds a function on a variant of an enum, i.e. a function on `EnumVariantRef` whose placeholders
+    /// were bound to the variant with [`FunctionInfo::bind_placeholders`].
+    pub fn add_variant_function_info(
+        &mut self,
+        function_info: &FunctionInfo,
+        enum_type: TypeId,
+        variant: &str,
+    ) -> &mut Self {
+        let type_id = self.lad_id_from_type_id(enum_type);
+        let function_id =
+            LadFunctionId::new_string_id(format!("{type_id}::{variant}::{}", function_info.name));
+        let namespace = LadFunctionNamespace::Variant {
+            type_id,
+            variant: variant.to_owned().into(),
+        };
+        self.insert_function(function_id, namespace, function_info)
+    }
+
+    fn insert_function(
+        &mut self,
+        function_id: LadFunctionId,
+        namespace: LadFunctionNamespace,
+        function_info: &FunctionInfo,
+    ) -> &mut Self {
         let default_docstring = Cow::Owned("".into());
         let (main_docstring, arg_docstrings, return_docstring) =
             Self::split_docstring(function_info.docs.as_ref().unwrap_or(&default_docstring));
@@ -496,7 +534,6 @@ impl<'t> LadFileBuilder<'t> {
             }
         }
 
-        let function_id = self.lad_function_id_from_info(function_info);
         let lad_function = LadFunction {
             identifier: identifier.to_owned().into(),
             overload_index,
@@ -536,12 +573,7 @@ impl<'t> LadFileBuilder<'t> {
                     }),
             },
             documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
-            namespace: match function_info.namespace {
-                Namespace::Global => LadFunctionNamespace::Global,
-                Namespace::OnType(type_id) => {
-                    LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
-                }
-            },
+            namespace,
             metadata: LadFunctionMetadata {
                 is_operator: ScriptOperatorNames::parse(identifier).is_some(),
                 misc: Default::default(),
@@ -619,7 +651,8 @@ impl<'t> LadFileBuilder<'t> {
                         );
                     }
                 }
-                LadFunctionNamespace::Global => {}
+                // variants are not types, backends find their functions by namespace
+                LadFunctionNamespace::Global | LadFunctionNamespace::Variant { .. } => {}
             }
         }
 
@@ -796,6 +829,7 @@ impl<'t> LadFileBuilder<'t> {
                 .map(|field| LadNamedField {
                     name: field.name().to_string(),
                     type_: self.lad_type_kind_from_type_id(field.type_id()),
+                    has_default: self.has_default(field.type_id()),
                 })
                 .collect(),
         }
@@ -811,9 +845,29 @@ impl<'t> LadFileBuilder<'t> {
             fields: fields
                 .map(|field| LadField {
                     type_: self.lad_type_kind_from_type_id(field.type_id()),
+                    has_default: self.has_default(field.type_id()),
                 })
                 .collect(),
         }
+    }
+
+    /// Whether the type has a registered `Default`, which is what constructors use to fill in missing fields
+    fn has_default(&self, type_id: TypeId) -> bool {
+        self.type_registry
+            .get_type_data::<ReflectDefault>(type_id)
+            .is_some()
+    }
+
+    fn lad_default(&self, type_id: TypeId) -> Option<LadDefault> {
+        let default = self
+            .type_registry
+            .get_type_data::<ReflectDefault>(type_id)?
+            .default();
+        let variant = match default.reflect_ref() {
+            ReflectRef::Enum(value) => Some(Cow::Owned(value.variant_name().to_owned())),
+            _ => None,
+        };
+        Some(LadDefault { variant })
     }
 
     fn lad_layout_from_type_info(&mut self, type_info: &TypeInfo) -> LadTypeLayout {
@@ -988,15 +1042,18 @@ impl<'t> LadFileBuilder<'t> {
             ThroughTypeInfo::Primitive(reflection_primitive_kind) => {
                 LadFieldOrVariableKind::Primitive(reflection_primitive_kind.clone())
             }
-            // documented as what they are at runtime: a reference, and a table of fields
+            ThroughTypeInfo::Fields { type_info, variant } => LadFieldOrVariableKind::Fields {
+                type_id: self.lad_id_from_type_id(type_info.type_id()),
+                variant: variant.map(Cow::Borrowed),
+            },
+            // functions are bound before they are added, any placeholders left are documented as what they are at runtime
             ThroughTypeInfo::Bound(BoundPlaceholder::Value) => {
                 self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
             }
-            ThroughTypeInfo::Bound(BoundPlaceholder::Fields) | ThroughTypeInfo::Fields { .. } => {
-                self.lad_type_kind_from_through_type(
+            ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => self
+                .lad_type_kind_from_through_type(
                     &HashMap::<String, ScriptValue>::through_type_info(),
-                )
-            }
+                ),
         }
     }
 }

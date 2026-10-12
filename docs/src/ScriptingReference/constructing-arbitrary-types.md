@@ -52,6 +52,7 @@ Fields which are not provided are filled in, in the following order of priority:
 
 If neither is available the construction fails, and the error names the missing field.
 Entries which are not fields of the type, i.e. a misspelled field name, are an error too, rather than being ignored in favour of a default.
+The generated Lua language server files mark exactly these fields as optional, see [Editor support](#editor-support).
 
 ### Naming and priority
 
@@ -146,3 +147,40 @@ local vec = construct(types.Vec3, { x = 1, y = 2, z = 3 })
 ```
 
 Missing fields are filled in from defaults in the same way as for `new`.
+
+## Editor support
+
+The Lua language server files describe the table each constructor takes, so editors can complete and check the fields.
+A field is optional exactly when a default can fill it in, as described in [Defaults](#defaults):
+
+```rust,ignore
+#[derive(Reflect)]
+pub struct MyStruct {
+    pub my_field: String,
+    pub handle: MyHandle, // no `Default`
+}
+```
+
+```lua
+---@class (exact) MyStruct.Fields
+---@field my_field? string
+---@field handle MyHandle
+---@field [any] 'never'
+
+---@param payload MyStruct.Fields
+---@return MyStruct
+function MyStruct.new(payload) end
+```
+
+The language server then warns about missing required fields, fields of the wrong type, and unknown fields, i.e. a misspelled `my_feild`.
+The last line rejects unknown fields: until the language server checks exact classes against tables passed to functions ([LuaLS/lua-language-server#1990](https://github.com/LuaLS/lua-language-server/issues/1990)), any undeclared field has to be of a type no value has, so the warning reads "Cannot assign `string` to `'never'`".
+
+Tuple fields are declared under their integer keys, i.e. `[1]`, which a list such as `{ "hello" }` fills in, so prefer lists for tuple structs.
+Types and variants without fields all take `NoFields`, i.e. `{}`.
+
+Each enum variant has a class of its own, i.e. `MyEnum.VariantA`, so `MyEnum.VariantA:new{` completes the fields of `VariantA` and returns a `MyEnum`.
+
+The table of `MyEnum.new{ variant = "VariantA", ... }` is not described, as the language server cannot narrow its fields down by the `variant` given.
+Prefer `MyEnum.VariantA:new{...}`, which is checked.
+
+Since the type of `construct`'s first argument is only known when the script runs, its table is not described.
