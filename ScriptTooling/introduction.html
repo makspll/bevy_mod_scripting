@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-80a14201.js";
+            window.path_to_searchindex_js = "../searchindex-5b064c54.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-d81fe5b8.js"></script>
+        <script src="../toc-91241b30.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -214,8 +214,11 @@ available types and globals as well as functions.</p>
     ],
     "runtime.version": "Lua 5.4",
     "hint.enable": false,
+    "workspace.preloadFileSize": 10000
 }
 </code></pre>
+<p>The generated definitions file is large (over a megabyte with the default bindings), and the language server skips Lua files bigger than <code>workspace.preloadFileSize</code> (in KB, 500 by default).
+If completions for BMS types are missing, i.e. <code>Vec3.</code> suggests nothing, raise this limit above the size of the generated file and restart the language server.</p>
 
                     </main>
 

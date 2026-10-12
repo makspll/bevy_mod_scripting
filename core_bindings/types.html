@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-80a14201.js";
+            window.path_to_searchindex_js = "../searchindex-5b064c54.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-d81fe5b8.js"></script>
+        <script src="../toc-91241b30.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -190,6 +190,7 @@
 </thead>
 <tbody>
 <tr><td><a href="././types/world.html"><code>World</code></a></td><td>The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bev...</td></tr>
+<tr><td><a href="././types/enumvariantref.html"><code>EnumVariantRef</code></a></td><td>A reference to a variant of an enum, independent of any value of that enum.   This is what scripts ...</td></tr>
 <tr><td><a href="././types/scriptcomponentregistration.html"><code>ScriptComponentRegistration</code></a></td><td>A reference to a component type’s reflection registration.   In general think of this as a handle t...</td></tr>
 <tr><td><a href="././types/scriptquerybuilder.html"><code>ScriptQueryBuilder</code></a></td><td>The query builder is used to build ECS queries which retrieve spefific components filtered by speci...</td></tr>
 <tr><td><a href="././types/scriptqueryresult.html"><code>ScriptQueryResult</code></a></td><td>A result from a query.</td></tr>
@@ -200,193 +201,6 @@
 <tr><td><a href="././types/reflectschedule.html"><code>ReflectSchedule</code></a></td><td>A reflectable schedule.</td></tr>
 <tr><td><a href="././types/reflectsystem.html"><code>ReflectSystem</code></a></td><td>A reflectable system.</td></tr>
 <tr><td><a href="././types/handlescriptasset.html"><code>Handle&lt;ScriptAsset&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract “references” to  assets, whose data are stored in the [`Assets<a>`]...</a></td></tr>
-<tr><td><a href="././types/reflectreference.html"><code>ReflectReference</code></a></td><td>A reference to a reflectable type</td></tr>
-<tr><td><a href="././types/color.html"><code>Color</code></a></td><td>An enumerated type that can represent any of the color types in this crate.   This is useful when y...</td></tr>
-<tr><td><a href="././types/hsla.html"><code>Hsla</code></a></td><td>Color in Hue-Saturation-Lightness (HSL) color space with alpha.  Further information on this color ...</td></tr>
-<tr><td><a href="././types/hsva.html"><code>Hsva</code></a></td><td>Color in Hue-Saturation-Value (HSV) color space with alpha.  Further information on this color mode...</td></tr>
-<tr><td><a href="././types/hwba.html"><code>Hwba</code></a></td><td>Color in Hue-Whiteness-Blackness (HWB) color space with alpha.  Further information on this color m...</td></tr>
-<tr><td><a href="././types/laba.html"><code>Laba</code></a></td><td>Color in LAB color space, with alpha  
-<div>  </div>
-</td></tr>
-<tr><td><a href="././types/lcha.html"><code>Lcha</code></a></td><td>Color in LCH color space, with alpha  
-<div>  </div>
-</td></tr>
-<tr><td><a href="././types/linearrgba.html"><code>LinearRgba</code></a></td><td>Linear RGB color with alpha.   SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.  
-<div>  </div>
-</td></tr>
-<tr><td><a href="././types/okhsla.html"><code>Okhsla</code></a></td><td>Color in Okhsl color space with alpha.  Further information on this color model can be found on &lt;ht...</td></tr>
-<tr><td><a href="././types/okhsva.html"><code>Okhsva</code></a></td><td>Color in Okhsv color space with alpha.  Further information on this color model can be found on &lt;ht...</td></tr>
-<tr><td><a href="././types/okhwba.html"><code>Okhwba</code></a></td><td>Color in Okhwb color space with alpha.  Further information on this color model can be found on &lt;ht...</td></tr>
-<tr><td><a href="././types/oklaba.html"><code>Oklaba</code></a></td><td>Color in Oklab color space, with alpha  
-<div>  </div>
-</td></tr>
-<tr><td><a href="././types/oklcha.html"><code>Oklcha</code></a></td><td>Color in Oklch color space, with alpha  
-<div>  </div>
-</td></tr>
-<tr><td><a href="././types/chromaticity.html"><code>Chromaticity</code></a></td><td>A position in the [CIE 1931 xy chromaticity diagram](https://en.wikipedia.org/wiki/CIE_1931_color_space),  describing a color’s hue and saturation independently of its luminance.</td></tr>
-<tr><td><a href="././types/rgbprimaries.html"><code>RgbPrimaries</code></a></td><td>A set of RGB primaries and a white point, given as [`Chromaticity`] coordinates.   Together they define what a linear RGB color looks like, aside from overall brightness.</td></tr>
-<tr><td><a href="././types/srgba.html"><code>Srgba</code></a></td><td>Non-linear standard RGB with alpha.   SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.  
-<div>  </div>
-</td></tr>
-<tr><td><a href="././types/xyza.html"><code>Xyza</code></a></td><td>[CIE 1931](https://en.wikipedia.org/wiki/CIE_1931_color_space) color space, also known as XYZ, with an alpha channel.   The SDR channel bounds below are the D65 white point, `(0.9505, 1.0, 1.0889)`.  
-<div>  </div>
-</td></tr>
-<tr><td><a href="././types/orderindependenttransparencysettings.html"><code>OrderIndependentTransparencySettings</code></a></td><td>Used to identify which camera will use OIT to render transparent meshes  and to configure OIT.  See...</td></tr>
-<tr><td><a href="././types/deferredprepass.html"><code>DeferredPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then deferred materials will be rendered to the deferred gbuffer texture and will be available to subsequent passes.  Note the default deferred lighting plugin also requires `DepthPrepass` to work correctly.</td></tr>
-<tr><td><a href="././types/deferredprepassdoublebuffer.html"><code>DeferredPrepassDoubleBuffer</code></a></td><td>Allows querying the previous frame’s [`DeferredPrepass`].</td></tr>
-<tr><td><a href="././types/depthprepass.html"><code>DepthPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then depth values will be copied to a separate texture available to the main pass.</td></tr>
-<tr><td><a href="././types/depthprepassdoublebuffer.html"><code>DepthPrepassDoubleBuffer</code></a></td><td>Allows querying the previous frame’s [`DepthPrepass`].</td></tr>
-<tr><td><a href="././types/motionvectorprepass.html"><code>MotionVectorPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then screen space motion vectors will be copied to a separate texture available to the main pass.   Motion vectors are stored in the range -1,1, with +x right and +y down.  A value of (1.0,1.0) indicates a pixel moved from the top left corner to the bottom right corner of the screen.</td></tr>
-<tr><td><a href="././types/normalprepass.html"><code>NormalPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then vertex world normals will be copied to a separate texture available to the main pass.  Normals will have normal map textures already applied.</td></tr>
-<tr><td><a href="././types/nobackgroundmotionvectors.html"><code>NoBackgroundMotionVectors</code></a></td><td>When added to a camera with [`MotionVectorPrepass`], disables the automatic background motion  vector prepass.   By default, any camera with [`MotionVectorPrepass`]...</td></tr>
-<tr><td><a href="././types/componentticks.html"><code>ComponentTicks</code></a></td><td>Records when a component or resource was added and when it was last mutably dereferenced (or added)...</td></tr>
-<tr><td><a href="././types/tick.html"><code>Tick</code></a></td><td>A value that tracks when a system ran relative to other systems.  This is used to power change dete...</td></tr>
-<tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`](crate::resource::Reso...</td></tr>
-<tr><td><a href="././types/entity.html"><code>Entity</code></a></td><td>Unique identifier for an entity in a [`World`].  Note that this is just an id, not the entity itself.  Further, the entity this id refers to may no longer exist in the [`World`]...</td></tr>
-<tr><td><a href="././types/entitygeneration.html"><code>EntityGeneration</code></a></td><td>This tracks different versions or generations of an [`EntityIndex`].  Importantly, this can wrap, meaning each generation is not necessarily unique per [`EntityIndex`]...</td></tr>
-<tr><td><a href="././types/entityindex.html"><code>EntityIndex</code></a></td><td>This represents the index of an [`Entity`] within the [`Entities`] array.  This is a lighter weight...</td></tr>
-<tr><td><a href="././types/entityhash.html"><code>EntityHash</code></a></td><td>A [`BuildHasher`] that results in a [`EntityHasher`].</td></tr>
-<tr><td><a href="././types/defaultqueryfilters.html"><code>DefaultQueryFilters</code></a></td><td>Default query filters work by excluding entities with certain components from most queries.   If a ...</td></tr>
-<tr><td><a href="././types/disabled.html"><code>Disabled</code></a></td><td>A marker component for disabled entities.   Semantically, this component is used to mark entities t...</td></tr>
-<tr><td><a href="././types/childof.html"><code>ChildOf</code></a></td><td>Stores the parent entity of this child entity with this component.   This is a [`Relationship`] component, and creates the canonical  “parent / child” hierarchy. This is the “source of truth” component, and it pairs with  the [`Children`]...</td></tr>
-<tr><td><a href="././types/children.html"><code>Children</code></a></td><td>Tracks which entities are children of this parent entity.   A [`RelationshipTarget`] collection component that is populated  with entities that “target” this entity with the [`ChildOf`]...</td></tr>
-<tr><td><a href="././types/addevent.html"><code>AddEvent</code></a></td><td>Trigger emitted when a component is inserted onto an entity that does not already have that  compon...</td></tr>
-<tr><td><a href="././types/despawnevent.html"><code>DespawnEvent</code></a></td><td>[`EntityEvent`] emitted for each component on an entity when it is despawned.  See [`ComponentHooks::on_despawn`](`crate::lifecycle::ComponentHooks::on_...</td></tr>
-<tr><td><a href="././types/discardevent.html"><code>DiscardEvent</code></a></td><td>Trigger emitted when a component is removed from an entity, regardless  of whether or not it is lat...</td></tr>
-<tr><td><a href="././types/insertevent.html"><code>InsertEvent</code></a></td><td>Trigger emitted when a component is inserted, regardless of whether or not the entity already  had ...</td></tr>
-<tr><td><a href="././types/removeevent.html"><code>RemoveEvent</code></a></td><td>Trigger emitted when a component is removed from an entity, and runs before the component is  remov...</td></tr>
-<tr><td><a href="././types/removedcomponententity.html"><code>RemovedComponentEntity</code></a></td><td>Wrapper around [`Entity`] for [`RemovedComponents`].  Internally, `RemovedComponents` uses these as...</td></tr>
-<tr><td><a href="././types/hashedstr.html"><code>HashedStr</code></a></td><td>A wrapper over Hashed. This exists to make Name(“value”.into()) possible, which plays nicely with c...</td></tr>
-<tr><td><a href="././types/name.html"><code>Name</code></a></td><td>Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r...</td></tr>
-<tr><td><a href="././types/isresource.html"><code>IsResource</code></a></td><td>A marker component for entities that have a Resource component.</td></tr>
-<tr><td><a href="././types/buttonstate.html"><code>ButtonState</code></a></td><td>The current “press” state of an element</td></tr>
-<tr><td><a href="././types/axissettings.html"><code>AxisSettings</code></a></td><td>Settings for a [`GamepadAxis`].   It is used inside the [`GamepadSettings`] to define the sensitivi...</td></tr>
-<tr><td><a href="././types/buttonaxissettings.html"><code>ButtonAxisSettings</code></a></td><td>Settings for a [`GamepadButton`].   It is used inside the [`GamepadSettings`] to define the sensiti...</td></tr>
-<tr><td><a href="././types/buttonsettings.html"><code>ButtonSettings</code></a></td><td>Manages settings for gamepad buttons.   It is used inside [`GamepadSettings`] to define the threshold for a [`GamepadButton`]...</td></tr>
-<tr><td><a href="././types/gamepad.html"><code>Gamepad</code></a></td><td>Stores a connected gamepad’s metadata such as the name and its [`GamepadButton`] and [`GamepadAxis`...</td></tr>
-<tr><td><a href="././types/gamepadaxis.html"><code>GamepadAxis</code></a></td><td>Represents gamepad input types that are mapped in the range [-1.0, 1.0].   ## Usage   This is used to determine which axis has changed its value when receiving a  gamepad axis event. It is also used in the [`Gamepad`]...</td></tr>
-<tr><td><a href="././types/gamepadaxischangedevent.html"><code>GamepadAxisChangedEvent</code></a></td><td>[`GamepadAxis`] event triggered by an analog state change.</td></tr>
-<tr><td><a href="././types/gamepadbutton.html"><code>GamepadButton</code></a></td><td>Represents gamepad input types that are mapped in the range [0.0, 1.0].   ## Usage   This is used to determine which button has changed its value when receiving gamepad button events.  It is also used in the [`Gamepad`]...</td></tr>
-<tr><td><a href="././types/gamepadbuttonchangedevent.html"><code>GamepadButtonChangedEvent</code></a></td><td>[`GamepadButton`] event triggered by an analog state change.</td></tr>
-<tr><td><a href="././types/gamepadbuttonstatechangedevent.html"><code>GamepadButtonStateChangedEvent</code></a></td><td>[`GamepadButton`] event triggered by a digital state change.</td></tr>
-<tr><td><a href="././types/gamepadconnection.html"><code>GamepadConnection</code></a></td><td>The connection status of a gamepad.</td></tr>
-<tr><td><a href="././types/gamepadconnectionevent.html"><code>GamepadConnectionEvent</code></a></td><td>A [`Gamepad`] connection event. Created when a connection to a gamepad  is established and when a gamepad is disconnected.</td></tr>
-<tr><td><a href="././types/gamepadevent.html"><code>GamepadEvent</code></a></td><td>A gamepad event.   This event type is used over the [`GamepadConnectionEvent`],  [`GamepadButtonChangedEvent`...</td></tr>
-<tr><td><a href="././types/gamepadinput.html"><code>GamepadInput</code></a></td><td>Encapsulation over [`GamepadAxis`] and [`GamepadButton`].</td></tr>
-<tr><td><a href="././types/gamepadrumbleintensity.html"><code>GamepadRumbleIntensity</code></a></td><td>The intensity at which a gamepad’s force-feedback motors may rumble.</td></tr>
-<tr><td><a href="././types/gamepadrumblerequest.html"><code>GamepadRumbleRequest</code></a></td><td>An event that controls force-feedback rumbling of a [`Gamepad`] [`entity`](Entity).   # Notes   Doe...</td></tr>
-<tr><td><a href="././types/gamepadsettings.html"><code>GamepadSettings</code></a></td><td>Gamepad settings component.   ## Usage   It is used to create a `bevy` component that stores the se...</td></tr>
-<tr><td><a href="././types/rawgamepadaxischangedevent.html"><code>RawGamepadAxisChangedEvent</code></a></td><td>[`GamepadAxis`] changed event unfiltered by [`GamepadSettings`].</td></tr>
-<tr><td><a href="././types/rawgamepadbuttonchangedevent.html"><code>RawGamepadButtonChangedEvent</code></a></td><td>[`GamepadButton`] changed event unfiltered by [`GamepadSettings`].</td></tr>
-<tr><td><a href="././types/rawgamepadevent.html"><code>RawGamepadEvent</code></a></td><td>A raw gamepad event.   This event type is used over the [`GamepadConnectionEvent`],  [`RawGamepadButtonChangedEvent`...</td></tr>
-<tr><td><a href="././types/doubletapgesture.html"><code>DoubleTapGesture</code></a></td><td>Double tap gesture.   ## Platform-specific   - Only available on **`macOS`** and **`iOS`**.  - On *...</td></tr>
-<tr><td><a href="././types/pangesture.html"><code>PanGesture</code></a></td><td>Pan gesture.   ## Platform-specific   - On **`iOS`**, must be enabled first</td></tr>
-<tr><td><a href="././types/pinchgesture.html"><code>PinchGesture</code></a></td><td>Two-finger pinch gesture, often used for magnifications.   Positive delta values indicate magnifica...</td></tr>
-<tr><td><a href="././types/rotationgesture.html"><code>RotationGesture</code></a></td><td>Two-finger rotation gesture.   Positive delta values indicate rotation counterclockwise and  negati...</td></tr>
-<tr><td><a href="././types/key.html"><code>Key</code></a></td><td>The logical key code of a [`KeyboardInput`].   This contains the actual value that is produced by pressing the key. This is  useful when you need the actual letters, and for symbols like `+` and `-`  when implementing zoom, as they can be in different locations depending on  the keyboard layout.   In many cases you want the key location instead, for example when  implementing WASD controls so the keys are located the same place on QWERTY  and other layouts. In that case use [`KeyCode`]...</td></tr>
-<tr><td><a href="././types/keycode.html"><code>KeyCode</code></a></td><td>The key code of a [`KeyboardInput`].   ## Usage   It is used as the generic `T` value of an [`ButtonInput`...</td></tr>
-<tr><td><a href="././types/keyboardfocuslost.html"><code>KeyboardFocusLost</code></a></td><td>Gets generated from `bevy_winit::winit_runner`   Used for clearing all cached states to avoid havin...</td></tr>
-<tr><td><a href="././types/keyboardinput.html"><code>KeyboardInput</code></a></td><td>A keyboard input event.   This event is the translated version of the `WindowEvent::KeyboardInput` ...</td></tr>
-<tr><td><a href="././types/nativekey.html"><code>NativeKey</code></a></td><td>Contains the platform-native logical key identifier, known as keysym.   Exactly what that means dif...</td></tr>
-<tr><td><a href="././types/nativekeycode.html"><code>NativeKeyCode</code></a></td><td>Contains the platform-native physical key identifier   The exact values vary from platform to platf...</td></tr>
-<tr><td><a href="././types/accumulatedmousemotion.html"><code>AccumulatedMouseMotion</code></a></td><td>Tracks how much the mouse has moved every frame.   This resource is reset to zero every frame.   Th...</td></tr>
-<tr><td><a href="././types/accumulatedmousescroll.html"><code>AccumulatedMouseScroll</code></a></td><td>Tracks how much the mouse has scrolled every frame.   This resource is reset to zero every frame.  ...</td></tr>
-<tr><td><a href="././types/mousebutton.html"><code>MouseButton</code></a></td><td>A button on a mouse device.   ## Usage   It is used as the generic `T` value of an [`ButtonInput`] to create a `bevy`  resource.   ## Updating   The resource is updated inside of the [`mouse_button_input_system`]...</td></tr>
-<tr><td><a href="././types/mousebuttoninput.html"><code>MouseButtonInput</code></a></td><td>A mouse button input event.   This event is the translated version of the `WindowEvent::MouseInput`...</td></tr>
-<tr><td><a href="././types/mousemotion.html"><code>MouseMotion</code></a></td><td>An event reporting the change in physical position of a pointing device.   This represents raw, unf...</td></tr>
-<tr><td><a href="././types/mousescrollpixelsperline.html"><code>MouseScrollPixelsPerLine</code></a></td><td>Describes the quantity of [`MouseScrollUnit::Pixel`]s per [`MouseScrollUnit::Line`]   Different pla...</td></tr>
-<tr><td><a href="././types/mousescrollunit.html"><code>MouseScrollUnit</code></a></td><td>The scroll unit.   Describes how a value of a [`MouseWheel`] event has to be interpreted.   The value of the event can either be interpreted as the amount of lines or the amount of pixels  to scroll.   To convert this value to the other unit use the [`Resource`]...</td></tr>
-<tr><td><a href="././types/mousewheel.html"><code>MouseWheel</code></a></td><td>A mouse wheel event.   This event is the translated version of the `WindowEvent::MouseWheel` from t...</td></tr>
-<tr><td><a href="././types/forcetouch.html"><code>ForceTouch</code></a></td><td>A force description of a [`Touch`] input.</td></tr>
-<tr><td><a href="././types/touchinput.html"><code>TouchInput</code></a></td><td>A touch input event.   ## Logic   Every time the user touches the screen, a new [`TouchPhase::Started`]...</td></tr>
-<tr><td><a href="././types/touchphase.html"><code>TouchPhase</code></a></td><td>A phase of a [`TouchInput`].   ## Usage   It is used to describe the phase of the touch input that is currently active.  This includes a phase that indicates that a touch input has started or ended,  or that a finger has moved. There is also a canceled phase that indicates that  the system canceled the tracking of the finger.</td></tr>
-<tr><td><a href="././types/aspectratio.html"><code>AspectRatio</code></a></td><td>An `AspectRatio` is the ratio of width to height.</td></tr>
-<tr><td><a href="././types/compassoctant.html"><code>CompassOctant</code></a></td><td>A compass enum with 8 directions.  ```text           N (North)           ▲      NW   │   NE         ╲ │ ╱  W (West) ┼─────► E (East)         ╱ │ ╲      SW   │   SE           ▼           S (South)  `...</td></tr>
-<tr><td><a href="././types/compassquadrant.html"><code>CompassQuadrant</code></a></td><td>A compass enum with 4 directions.  ```text           N (North)           ▲           │           │  W (West) ┼─────► E (East)           │           │           ▼           S (South)  `...</td></tr>
-<tr><td><a href="././types/dir2.html"><code>Dir2</code></a></td><td>A normalized vector pointing in a direction in 2D space</td></tr>
-<tr><td><a href="././types/dir3.html"><code>Dir3</code></a></td><td>A normalized vector pointing in a direction in 3D space</td></tr>
-<tr><td><a href="././types/dir3a.html"><code>Dir3A</code></a></td><td>A normalized SIMD vector pointing in a direction in 3D space.   This type stores a 16 byte aligned [`Vec3A`]...</td></tr>
-<tr><td><a href="././types/dir4.html"><code>Dir4</code></a></td><td>A normalized vector pointing in a direction in 4D space</td></tr>
-<tr><td><a href="././types/floatord.html"><code>FloatOrd</code></a></td><td>A wrapper for floats that implements [`Ord`], [`Eq`], and [`Hash`] traits.   Particularly useful if you want to sort floats or use them as part of map keys.   Floats in Rust follow the IEEE 754-2008 standard, the comparison operators  of which are not defined when at least one of the operands are [`NaN`](f32::NAN)...</td></tr>
-<tr><td><a href="././types/isometry2d.html"><code>Isometry2d</code></a></td><td>An isometry in two dimensions, representing a rotation followed by a translation.  This can often b...</td></tr>
-<tr><td><a href="././types/isometry3d.html"><code>Isometry3d</code></a></td><td>An isometry in three dimensions, representing a rotation followed by a translation.  This can often...</td></tr>
-<tr><td><a href="././types/irect.html"><code>IRect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
-<tr><td><a href="././types/rect.html"><code>Rect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
-<tr><td><a href="././types/urect.html"><code>URect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
-<tr><td><a href="././types/rot2.html"><code>Rot2</code></a></td><td>A 2D rotation.   # Example   ```  # use approx::assert_relative_eq;  # use bevy_math::{Rot2, Vec2};  use std::f32::consts::PI;   // Create rotations from counterclockwise angles in radians or degrees  let rotation1 = Rot2::radians(PI / 2.0);  let rotation2 = Rot2::degrees(45.0);   // Get the angle back as radians or degrees  assert_eq!(rotation1.as_degrees(), 90.0);  assert_eq!(rotation2.as_radians(), PI / 4.0);   // “Add” rotations together using `*`  #[cfg(feature = “approx”)]  assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));   // Rotate vectors  #[cfg(feature = “approx”)]  assert_...</td></tr>
-<tr><td><a href="././types/instant.html"><code>Instant</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/offsetaccess.html"><code>OffsetAccess</code></a></td><td>An [`Access`] combined with an `offset` for more helpful error reporting.</td></tr>
-<tr><td><a href="././types/parsedpath.html"><code>ParsedPath</code></a></td><td>A pre-parsed path to an element within a type.   This struct can be constructed manually from its [`Access`]...</td></tr>
-<tr><td><a href="././types/fixed.html"><code>Fixed</code></a></td><td>The fixed timestep game clock following virtual time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<fixed>#impl-Time<fixed>`]...</fixed></fixed></td></tr>
-<tr><td><a href="././types/real.html"><code>Real</code></a></td><td>Real time clock representing elapsed wall clock time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<real>#impl-Time<real>`]...</real></real></td></tr>
-<tr><td><a href="././types/stopwatch.html"><code>Stopwatch</code></a></td><td>A Stopwatch is a struct that tracks elapsed time when started.   Note that in order to advance the ...</td></tr>
-<tr><td><a href="././types/timer.html"><code>Timer</code></a></td><td>Tracks elapsed time. Enters the finished state once `duration` is reached.   Note that in order to ...</td></tr>
-<tr><td><a href="././types/timermode.html"><code>TimerMode</code></a></td><td>Specifies [`Timer`] behavior.</td></tr>
-<tr><td><a href="././types/virtual.html"><code>Virtual</code></a></td><td>The virtual game clock representing game time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<virtual>#impl-Time<virtual>`].**...</virtual></virtual></td></tr>
-<tr><td><a href="././types/globaltransform.html"><code>GlobalTransform</code></a></td><td>[`GlobalTransform`] is an affine transformation from entity-local coordinates to worldspace coordinates.   You cannot directly mutate [`GlobalTransform`]...</td></tr>
-<tr><td><a href="././types/transform.html"><code>Transform</code></a></td><td>Describe the position of an entity. If the entity has a parent, the position is relative  to its pa...</td></tr>
-<tr><td><a href="././types/transformtreechanged.html"><code>TransformTreeChanged</code></a></td><td>An optimization for transform propagation. This ZST marker component uses change detection to  mark...</td></tr>
-<tr><td><a href="././types/statictransformoptimizations.html"><code>StaticTransformOptimizations</code></a></td><td>Configure the behavior of static scene optimizations for [`Transform`] propagation.   For scenes with many static entities, it is much faster to track trees of unchanged  [`Transform`]...</td></tr>
-<tr><td><a href="././types/typeid.html"><code>TypeId</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/socketaddr.html"><code>SocketAddr</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/rangefull.html"><code>RangeFull</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/duration.html"><code>Duration</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/affine2.html"><code>Affine2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/affine3.html"><code>Affine3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/affine3a.html"><code>Affine3A</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/bvec2.html"><code>BVec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/bvec3.html"><code>BVec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/bvec3a.html"><code>BVec3A</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/bvec4.html"><code>BVec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/bvec4a.html"><code>BVec4A</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/daffine2.html"><code>DAffine2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/daffine3.html"><code>DAffine3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/dmat2.html"><code>DMat2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/dmat3.html"><code>DMat3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/dmat4.html"><code>DMat4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/dquat.html"><code>DQuat</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/dvec2.html"><code>DVec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/dvec3.html"><code>DVec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/dvec4.html"><code>DVec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/eulerrot.html"><code>EulerRot</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i16vec2.html"><code>I16Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i16vec3.html"><code>I16Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i16vec4.html"><code>I16Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i64vec2.html"><code>I64Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i64vec3.html"><code>I64Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i64vec4.html"><code>I64Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i8vec2.html"><code>I8Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i8vec3.html"><code>I8Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/i8vec4.html"><code>I8Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/ivec2.html"><code>IVec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/ivec3.html"><code>IVec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/ivec4.html"><code>IVec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/mat2.html"><code>Mat2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/mat3.html"><code>Mat3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/mat3a.html"><code>Mat3A</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/mat4.html"><code>Mat4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/quat.html"><code>Quat</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u16vec2.html"><code>U16Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u16vec3.html"><code>U16Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u16vec4.html"><code>U16Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u64vec2.html"><code>U64Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u64vec3.html"><code>U64Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u64vec4.html"><code>U64Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u8vec2.html"><code>U8Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u8vec3.html"><code>U8Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/u8vec4.html"><code>U8Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/uvec2.html"><code>UVec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/uvec3.html"><code>UVec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/uvec4.html"><code>UVec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/vec2.html"><code>Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/vec3.html"><code>Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/vec3a.html"><code>Vec3A</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/vec4.html"><code>Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/smolstr.html"><code>SmolStr</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/nonniluuid.html"><code>NonNilUuid</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/uuid.html"><code>Uuid</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/blendstate.html"><code>BlendState</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/textureformat.html"><code>TextureFormat</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/bool.html"><code>Bool</code></a></td><td>A boolean value</td></tr>
 <tr><td><a href="././types/char.html"><code>Char</code></a></td><td>An 8-bit character</td></tr>
 <tr><td><a href="././types/dynamicfunction.html"><code>DynamicFunction</code></a></td><td>A callable dynamic function</td></tr>
@@ -402,8 +216,8 @@
 <tr><td><a href="././types/isize.html"><code>Isize</code></a></td><td>A signed pointer-sized integer</td></tr>
 <tr><td><a href="././types/osstring.html"><code>OsString</code></a></td><td>A heap allocated OS string</td></tr>
 <tr><td><a href="././types/pathbuf.html"><code>PathBuf</code></a></td><td>A heap allocated file path</td></tr>
+<tr><td><a href="././types/reflectreference.html"><code>ReflectReference</code></a></td><td>A reference to a reflectable type</td></tr>
 <tr><td><a href="././types/scriptvalue.html"><code>ScriptValue</code></a></td><td>An abstraction of values that can be passed to and from scripts.  This allows us to re-use logic be...</td></tr>
-<tr><td><a href="././types/str.html"><code>Str</code></a></td><td>A string slice</td></tr>
 <tr><td><a href="././types/string.html"><code>String</code></a></td><td>A heap allocated string</td></tr>
 <tr><td><a href="././types/u128.html"><code>U128</code></a></td><td>An unsigned 128-bit integer</td></tr>
 <tr><td><a href="././types/u16.html"><code>U16</code></a></td><td>An unsigned 16-bit integer</td></tr>
@@ -469,11 +283,69 @@
 <tr><td><a href="././types/visiblemeshentities.html"><code>VisibleMeshEntities</code></a></td><td>Collection of mesh entities visible for 3D lighting.   This component contains all mesh entities vi...</td></tr>
 <tr><td><a href="././types/visibilityrange.html"><code>VisibilityRange</code></a></td><td>Specifies the range of distances that this entity must be from the camera in  order to be rendered....</td></tr>
 <tr><td><a href="././types/renderlayers.html"><code>RenderLayers</code></a></td><td>Defines which rendering layers an entity belongs to.   A camera renders an entity only when their r...</td></tr>
+<tr><td><a href="././types/color.html"><code>Color</code></a></td><td>An enumerated type that can represent any of the color types in this crate.   This is useful when y...</td></tr>
+<tr><td><a href="././types/hsla.html"><code>Hsla</code></a></td><td>Color in Hue-Saturation-Lightness (HSL) color space with alpha.  Further information on this color ...</td></tr>
+<tr><td><a href="././types/hsva.html"><code>Hsva</code></a></td><td>Color in Hue-Saturation-Value (HSV) color space with alpha.  Further information on this color mode...</td></tr>
+<tr><td><a href="././types/hwba.html"><code>Hwba</code></a></td><td>Color in Hue-Whiteness-Blackness (HWB) color space with alpha.  Further information on this color m...</td></tr>
+<tr><td><a href="././types/laba.html"><code>Laba</code></a></td><td>Color in LAB color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/lcha.html"><code>Lcha</code></a></td><td>Color in LCH color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/linearrgba.html"><code>LinearRgba</code></a></td><td>Linear RGB color with alpha.   SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/okhsla.html"><code>Okhsla</code></a></td><td>Color in Okhsl color space with alpha.  Further information on this color model can be found on &lt;ht...</td></tr>
+<tr><td><a href="././types/okhsva.html"><code>Okhsva</code></a></td><td>Color in Okhsv color space with alpha.  Further information on this color model can be found on &lt;ht...</td></tr>
+<tr><td><a href="././types/okhwba.html"><code>Okhwba</code></a></td><td>Color in Okhwb color space with alpha.  Further information on this color model can be found on &lt;ht...</td></tr>
+<tr><td><a href="././types/oklaba.html"><code>Oklaba</code></a></td><td>Color in Oklab color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/oklcha.html"><code>Oklcha</code></a></td><td>Color in Oklch color space, with alpha  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/chromaticity.html"><code>Chromaticity</code></a></td><td>A position in the [CIE 1931 xy chromaticity diagram](https://en.wikipedia.org/wiki/CIE_1931_color_space),  describing a color’s hue and saturation independently of its luminance.</td></tr>
+<tr><td><a href="././types/rgbprimaries.html"><code>RgbPrimaries</code></a></td><td>A set of RGB primaries and a white point, given as [`Chromaticity`] coordinates.   Together they define what a linear RGB color looks like, aside from overall brightness.</td></tr>
+<tr><td><a href="././types/srgba.html"><code>Srgba</code></a></td><td>Non-linear standard RGB with alpha.   SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/xyza.html"><code>Xyza</code></a></td><td>[CIE 1931](https://en.wikipedia.org/wiki/CIE_1931_color_space) color space, also known as XYZ, with an alpha channel.   The SDR channel bounds below are the D65 white point, `(0.9505, 1.0, 1.0889)`.  
+<div>  </div>
+</td></tr>
+<tr><td><a href="././types/orderindependenttransparencysettings.html"><code>OrderIndependentTransparencySettings</code></a></td><td>Used to identify which camera will use OIT to render transparent meshes  and to configure OIT.  See...</td></tr>
+<tr><td><a href="././types/deferredprepass.html"><code>DeferredPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then deferred materials will be rendered to the deferred gbuffer texture and will be available to subsequent passes.  Note the default deferred lighting plugin also requires `DepthPrepass` to work correctly.</td></tr>
+<tr><td><a href="././types/deferredprepassdoublebuffer.html"><code>DeferredPrepassDoubleBuffer</code></a></td><td>Allows querying the previous frame’s [`DeferredPrepass`].</td></tr>
+<tr><td><a href="././types/depthprepass.html"><code>DepthPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then depth values will be copied to a separate texture available to the main pass.</td></tr>
+<tr><td><a href="././types/depthprepassdoublebuffer.html"><code>DepthPrepassDoubleBuffer</code></a></td><td>Allows querying the previous frame’s [`DepthPrepass`].</td></tr>
+<tr><td><a href="././types/motionvectorprepass.html"><code>MotionVectorPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then screen space motion vectors will be copied to a separate texture available to the main pass.   Motion vectors are stored in the range -1,1, with +x right and +y down.  A value of (1.0,1.0) indicates a pixel moved from the top left corner to the bottom right corner of the screen.</td></tr>
+<tr><td><a href="././types/normalprepass.html"><code>NormalPrepass</code></a></td><td>If added to a [`bevy_camera::Camera3d`] then vertex world normals will be copied to a separate texture available to the main pass.  Normals will have normal map textures already applied.</td></tr>
+<tr><td><a href="././types/nobackgroundmotionvectors.html"><code>NoBackgroundMotionVectors</code></a></td><td>When added to a camera with [`MotionVectorPrepass`], disables the automatic background motion  vector prepass.   By default, any camera with [`MotionVectorPrepass`]...</td></tr>
 <tr><td><a href="././types/rootnoncameraview.html"><code>RootNonCameraView</code></a></td><td>A render-world marker component for a view that corresponds to neither a  camera nor a camera-assoc...</td></tr>
 <tr><td><a href="././types/easefunction.html"><code>EaseFunction</code></a></td><td>Curve functions over the [unit interval], commonly used for easing transitions.   `EaseFunction` can be used on its own to interpolate between `0.0` and `1.0`.  It can also be combined with [`EasingCurve`]...</td></tr>
 <tr><td><a href="././types/jumpat.html"><code>JumpAt</code></a></td><td>Configuration options for the [`EaseFunction::Steps`] curves. This closely replicates the  [CSS ste...</td></tr>
 <tr><td><a href="././types/interval.html"><code>Interval</code></a></td><td>A nonempty closed interval, possibly unbounded in either direction.   In other words, the interval ...</td></tr>
+<tr><td><a href="././types/componentticks.html"><code>ComponentTicks</code></a></td><td>Records when a component or resource was added and when it was last mutably dereferenced (or added)...</td></tr>
+<tr><td><a href="././types/tick.html"><code>Tick</code></a></td><td>A value that tracks when a system ran relative to other systems.  This is used to power change dete...</td></tr>
+<tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`](crate::resource::Reso...</td></tr>
+<tr><td><a href="././types/entity.html"><code>Entity</code></a></td><td>Unique identifier for an entity in a [`World`].  Note that this is just an id, not the entity itself.  Further, the entity this id refers to may no longer exist in the [`World`]...</td></tr>
+<tr><td><a href="././types/entitygeneration.html"><code>EntityGeneration</code></a></td><td>This tracks different versions or generations of an [`EntityIndex`].  Importantly, this can wrap, meaning each generation is not necessarily unique per [`EntityIndex`]...</td></tr>
+<tr><td><a href="././types/entityindex.html"><code>EntityIndex</code></a></td><td>This represents the index of an [`Entity`] within the [`Entities`] array.  This is a lighter weight...</td></tr>
+<tr><td><a href="././types/entityhash.html"><code>EntityHash</code></a></td><td>A [`BuildHasher`] that results in a [`EntityHasher`].</td></tr>
+<tr><td><a href="././types/defaultqueryfilters.html"><code>DefaultQueryFilters</code></a></td><td>Default query filters work by excluding entities with certain components from most queries.   If a ...</td></tr>
+<tr><td><a href="././types/disabled.html"><code>Disabled</code></a></td><td>A marker component for disabled entities.   Semantically, this component is used to mark entities t...</td></tr>
+<tr><td><a href="././types/childof.html"><code>ChildOf</code></a></td><td>Stores the parent entity of this child entity with this component.   This is a [`Relationship`] component, and creates the canonical  “parent / child” hierarchy. This is the “source of truth” component, and it pairs with  the [`Children`]...</td></tr>
+<tr><td><a href="././types/children.html"><code>Children</code></a></td><td>Tracks which entities are children of this parent entity.   A [`RelationshipTarget`] collection component that is populated  with entities that “target” this entity with the [`ChildOf`]...</td></tr>
+<tr><td><a href="././types/addevent.html"><code>AddEvent</code></a></td><td>Trigger emitted when a component is inserted onto an entity that does not already have that  compon...</td></tr>
+<tr><td><a href="././types/despawnevent.html"><code>DespawnEvent</code></a></td><td>[`EntityEvent`] emitted for each component on an entity when it is despawned.  See [`ComponentHooks::on_despawn`](`crate::lifecycle::ComponentHooks::on_...</td></tr>
+<tr><td><a href="././types/discardevent.html"><code>DiscardEvent</code></a></td><td>Trigger emitted when a component is removed from an entity, regardless  of whether or not it is lat...</td></tr>
+<tr><td><a href="././types/insertevent.html"><code>InsertEvent</code></a></td><td>Trigger emitted when a component is inserted, regardless of whether or not the entity already  had ...</td></tr>
+<tr><td><a href="././types/removeevent.html"><code>RemoveEvent</code></a></td><td>Trigger emitted when a component is removed from an entity, and runs before the component is  remov...</td></tr>
+<tr><td><a href="././types/removedcomponententity.html"><code>RemovedComponentEntity</code></a></td><td>Wrapper around [`Entity`] for [`RemovedComponents`].  Internally, `RemovedComponents` uses these as...</td></tr>
+<tr><td><a href="././types/hashedstr.html"><code>HashedStr</code></a></td><td>A wrapper over Hashed. This exists to make Name(“value”.into()) possible, which plays nicely with c...</td></tr>
+<tr><td><a href="././types/name.html"><code>Name</code></a></td><td>Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r...</td></tr>
 <tr><td><a href="././types/observedby.html"><code>ObservedBy</code></a></td><td>Tracks a list of entity observers for the [`Entity`] [`ObservedBy`] is added to.</td></tr>
+<tr><td><a href="././types/isresource.html"><code>IsResource</code></a></td><td>A marker component for entities that have a Resource component.</td></tr>
 <tr><td><a href="././types/mainentity.html"><code>MainEntity</code></a></td><td>Component added on the sub world entities to keep track of the corresponding main world entity.   C...</td></tr>
 <tr><td><a href="././types/aabbgizmoconfiggroup.html"><code>AabbGizmoConfigGroup</code></a></td><td>The [`GizmoConfigGroup`] used for debug visualizations of [`Aabb`] components on entities</td></tr>
 <tr><td><a href="././types/showaabbgizmo.html"><code>ShowAabbGizmo</code></a></td><td>Add this [`Component`] to an entity to draw its [`Aabb`] component.</td></tr>
@@ -503,6 +375,47 @@
 <tr><td><a href="././types/imagesamplerdescriptor.html"><code>ImageSamplerDescriptor</code></a></td><td>Indicates to an `ImageLoader` how an [`Image`] should be sampled.   As this type is part of the `ImageLoaderSettings`,  it will be serialized to an image asset `.meta` file which might require a migration in case of  a breaking change.   This types mirrors [`SamplerDescriptor`]...</td></tr>
 <tr><td><a href="././types/textureatlas.html"><code>TextureAtlas</code></a></td><td>An index into a [`TextureAtlasLayout`], which corresponds to a specific section of a texture.   It stores a handle to [`TextureAtlasLayout`]...</td></tr>
 <tr><td><a href="././types/textureatlaslayout.html"><code>TextureAtlasLayout</code></a></td><td>Stores a map used to lookup the position of a texture in a [`TextureAtlas`].  This can be used to either use and look up a specific section of a texture, or animate frame-by-frame as a sprite sheet.   Optionally it can store a mapping from sub texture handles to the related area index (see  [`TextureAtlasBuilder`]...</td></tr>
+<tr><td><a href="././types/buttonstate.html"><code>ButtonState</code></a></td><td>The current “press” state of an element</td></tr>
+<tr><td><a href="././types/axissettings.html"><code>AxisSettings</code></a></td><td>Settings for a [`GamepadAxis`].   It is used inside the [`GamepadSettings`] to define the sensitivi...</td></tr>
+<tr><td><a href="././types/buttonaxissettings.html"><code>ButtonAxisSettings</code></a></td><td>Settings for a [`GamepadButton`].   It is used inside the [`GamepadSettings`] to define the sensiti...</td></tr>
+<tr><td><a href="././types/buttonsettings.html"><code>ButtonSettings</code></a></td><td>Manages settings for gamepad buttons.   It is used inside [`GamepadSettings`] to define the threshold for a [`GamepadButton`]...</td></tr>
+<tr><td><a href="././types/gamepad.html"><code>Gamepad</code></a></td><td>Stores a connected gamepad’s metadata such as the name and its [`GamepadButton`] and [`GamepadAxis`...</td></tr>
+<tr><td><a href="././types/gamepadaxis.html"><code>GamepadAxis</code></a></td><td>Represents gamepad input types that are mapped in the range [-1.0, 1.0].   ## Usage   This is used to determine which axis has changed its value when receiving a  gamepad axis event. It is also used in the [`Gamepad`]...</td></tr>
+<tr><td><a href="././types/gamepadaxischangedevent.html"><code>GamepadAxisChangedEvent</code></a></td><td>[`GamepadAxis`] event triggered by an analog state change.</td></tr>
+<tr><td><a href="././types/gamepadbutton.html"><code>GamepadButton</code></a></td><td>Represents gamepad input types that are mapped in the range [0.0, 1.0].   ## Usage   This is used to determine which button has changed its value when receiving gamepad button events.  It is also used in the [`Gamepad`]...</td></tr>
+<tr><td><a href="././types/gamepadbuttonchangedevent.html"><code>GamepadButtonChangedEvent</code></a></td><td>[`GamepadButton`] event triggered by an analog state change.</td></tr>
+<tr><td><a href="././types/gamepadbuttonstatechangedevent.html"><code>GamepadButtonStateChangedEvent</code></a></td><td>[`GamepadButton`] event triggered by a digital state change.</td></tr>
+<tr><td><a href="././types/gamepadconnection.html"><code>GamepadConnection</code></a></td><td>The connection status of a gamepad.</td></tr>
+<tr><td><a href="././types/gamepadconnectionevent.html"><code>GamepadConnectionEvent</code></a></td><td>A [`Gamepad`] connection event. Created when a connection to a gamepad  is established and when a gamepad is disconnected.</td></tr>
+<tr><td><a href="././types/gamepadevent.html"><code>GamepadEvent</code></a></td><td>A gamepad event.   This event type is used over the [`GamepadConnectionEvent`],  [`GamepadButtonChangedEvent`...</td></tr>
+<tr><td><a href="././types/gamepadinput.html"><code>GamepadInput</code></a></td><td>Encapsulation over [`GamepadAxis`] and [`GamepadButton`].</td></tr>
+<tr><td><a href="././types/gamepadrumbleintensity.html"><code>GamepadRumbleIntensity</code></a></td><td>The intensity at which a gamepad’s force-feedback motors may rumble.</td></tr>
+<tr><td><a href="././types/gamepadrumblerequest.html"><code>GamepadRumbleRequest</code></a></td><td>An event that controls force-feedback rumbling of a [`Gamepad`] [`entity`](Entity).   # Notes   Doe...</td></tr>
+<tr><td><a href="././types/gamepadsettings.html"><code>GamepadSettings</code></a></td><td>Gamepad settings component.   ## Usage   It is used to create a `bevy` component that stores the se...</td></tr>
+<tr><td><a href="././types/rawgamepadaxischangedevent.html"><code>RawGamepadAxisChangedEvent</code></a></td><td>[`GamepadAxis`] changed event unfiltered by [`GamepadSettings`].</td></tr>
+<tr><td><a href="././types/rawgamepadbuttonchangedevent.html"><code>RawGamepadButtonChangedEvent</code></a></td><td>[`GamepadButton`] changed event unfiltered by [`GamepadSettings`].</td></tr>
+<tr><td><a href="././types/rawgamepadevent.html"><code>RawGamepadEvent</code></a></td><td>A raw gamepad event.   This event type is used over the [`GamepadConnectionEvent`],  [`RawGamepadButtonChangedEvent`...</td></tr>
+<tr><td><a href="././types/doubletapgesture.html"><code>DoubleTapGesture</code></a></td><td>Double tap gesture.   ## Platform-specific   - Only available on **`macOS`** and **`iOS`**.  - On *...</td></tr>
+<tr><td><a href="././types/pangesture.html"><code>PanGesture</code></a></td><td>Pan gesture.   ## Platform-specific   - On **`iOS`**, must be enabled first</td></tr>
+<tr><td><a href="././types/pinchgesture.html"><code>PinchGesture</code></a></td><td>Two-finger pinch gesture, often used for magnifications.   Positive delta values indicate magnifica...</td></tr>
+<tr><td><a href="././types/rotationgesture.html"><code>RotationGesture</code></a></td><td>Two-finger rotation gesture.   Positive delta values indicate rotation counterclockwise and  negati...</td></tr>
+<tr><td><a href="././types/key.html"><code>Key</code></a></td><td>The logical key code of a [`KeyboardInput`].   This contains the actual value that is produced by pressing the key. This is  useful when you need the actual letters, and for symbols like `+` and `-`  when implementing zoom, as they can be in different locations depending on  the keyboard layout.   In many cases you want the key location instead, for example when  implementing WASD controls so the keys are located the same place on QWERTY  and other layouts. In that case use [`KeyCode`]...</td></tr>
+<tr><td><a href="././types/keycode.html"><code>KeyCode</code></a></td><td>The key code of a [`KeyboardInput`].   ## Usage   It is used as the generic `T` value of an [`ButtonInput`...</td></tr>
+<tr><td><a href="././types/keyboardfocuslost.html"><code>KeyboardFocusLost</code></a></td><td>Gets generated from `bevy_winit::winit_runner`   Used for clearing all cached states to avoid havin...</td></tr>
+<tr><td><a href="././types/keyboardinput.html"><code>KeyboardInput</code></a></td><td>A keyboard input event.   This event is the translated version of the `WindowEvent::KeyboardInput` ...</td></tr>
+<tr><td><a href="././types/nativekey.html"><code>NativeKey</code></a></td><td>Contains the platform-native logical key identifier, known as keysym.   Exactly what that means dif...</td></tr>
+<tr><td><a href="././types/nativekeycode.html"><code>NativeKeyCode</code></a></td><td>Contains the platform-native physical key identifier   The exact values vary from platform to platf...</td></tr>
+<tr><td><a href="././types/accumulatedmousemotion.html"><code>AccumulatedMouseMotion</code></a></td><td>Tracks how much the mouse has moved every frame.   This resource is reset to zero every frame.   Th...</td></tr>
+<tr><td><a href="././types/accumulatedmousescroll.html"><code>AccumulatedMouseScroll</code></a></td><td>Tracks how much the mouse has scrolled every frame.   This resource is reset to zero every frame.  ...</td></tr>
+<tr><td><a href="././types/mousebutton.html"><code>MouseButton</code></a></td><td>A button on a mouse device.   ## Usage   It is used as the generic `T` value of an [`ButtonInput`] to create a `bevy`  resource.   ## Updating   The resource is updated inside of the [`mouse_button_input_system`]...</td></tr>
+<tr><td><a href="././types/mousebuttoninput.html"><code>MouseButtonInput</code></a></td><td>A mouse button input event.   This event is the translated version of the `WindowEvent::MouseInput`...</td></tr>
+<tr><td><a href="././types/mousemotion.html"><code>MouseMotion</code></a></td><td>An event reporting the change in physical position of a pointing device.   This represents raw, unf...</td></tr>
+<tr><td><a href="././types/mousescrollpixelsperline.html"><code>MouseScrollPixelsPerLine</code></a></td><td>Describes the quantity of [`MouseScrollUnit::Pixel`]s per [`MouseScrollUnit::Line`]   Different pla...</td></tr>
+<tr><td><a href="././types/mousescrollunit.html"><code>MouseScrollUnit</code></a></td><td>The scroll unit.   Describes how a value of a [`MouseWheel`] event has to be interpreted.   The value of the event can either be interpreted as the amount of lines or the amount of pixels  to scroll.   To convert this value to the other unit use the [`Resource`]...</td></tr>
+<tr><td><a href="././types/mousewheel.html"><code>MouseWheel</code></a></td><td>A mouse wheel event.   This event is the translated version of the `WindowEvent::MouseWheel` from t...</td></tr>
+<tr><td><a href="././types/forcetouch.html"><code>ForceTouch</code></a></td><td>A force description of a [`Touch`] input.</td></tr>
+<tr><td><a href="././types/touchinput.html"><code>TouchInput</code></a></td><td>A touch input event.   ## Logic   Every time the user touches the screen, a new [`TouchPhase::Started`]...</td></tr>
+<tr><td><a href="././types/touchphase.html"><code>TouchPhase</code></a></td><td>A phase of a [`TouchInput`].   ## Usage   It is used to describe the phase of the touch input that is currently active.  This includes a phase that indicates that a touch input has started or ended,  or that a finger has moved. There is also a canceled phase that indicates that  the system canceled the tracking of the finger.</td></tr>
 <tr><td><a href="././types/acquirefocus.html"><code>AcquireFocus</code></a></td><td>An event which is used to set input focus. Trigger this on an entity, and it will bubble  until it ...</td></tr>
 <tr><td><a href="././types/inputfocus.html"><code>InputFocus</code></a></td><td>Resource representing which entity has input focus, if any. Input events (other than pointer-like i...</td></tr>
 <tr><td><a href="././types/inputfocusvisible.html"><code>InputFocusVisible</code></a></td><td>Resource representing whether the input focus indicator should be visible on UI elements.   Note th...</td></tr>
@@ -554,6 +467,20 @@
 <tr><td><a href="././types/volumetriclight.html"><code>VolumetricLight</code></a></td><td>Add this component to a [`DirectionalLight`](crate::DirectionalLight) with a shadow map  (`shadow_maps_enabled: true`) to make volumetric fog interact with it.   This allows the light to generate light shafts/god rays.</td></tr>
 <tr><td><a href="././types/alphamode.html"><code>AlphaMode</code></a></td><td>Sets how a material’s base color alpha channel is used for transparency.</td></tr>
 <tr><td><a href="././types/opaquerenderermethod.html"><code>OpaqueRendererMethod</code></a></td><td>Render method used for opaque materials.   The forward rendering main pass draws each mesh entity a...</td></tr>
+<tr><td><a href="././types/aspectratio.html"><code>AspectRatio</code></a></td><td>An `AspectRatio` is the ratio of width to height.</td></tr>
+<tr><td><a href="././types/compassoctant.html"><code>CompassOctant</code></a></td><td>A compass enum with 8 directions.  ```text           N (North)           ▲      NW   │   NE         ╲ │ ╱  W (West) ┼─────► E (East)         ╱ │ ╲      SW   │   SE           ▼           S (South)  `...</td></tr>
+<tr><td><a href="././types/compassquadrant.html"><code>CompassQuadrant</code></a></td><td>A compass enum with 4 directions.  ```text           N (North)           ▲           │           │  W (West) ┼─────► E (East)           │           │           ▼           S (South)  `...</td></tr>
+<tr><td><a href="././types/dir2.html"><code>Dir2</code></a></td><td>A normalized vector pointing in a direction in 2D space</td></tr>
+<tr><td><a href="././types/dir3.html"><code>Dir3</code></a></td><td>A normalized vector pointing in a direction in 3D space</td></tr>
+<tr><td><a href="././types/dir3a.html"><code>Dir3A</code></a></td><td>A normalized SIMD vector pointing in a direction in 3D space.   This type stores a 16 byte aligned [`Vec3A`]...</td></tr>
+<tr><td><a href="././types/dir4.html"><code>Dir4</code></a></td><td>A normalized vector pointing in a direction in 4D space</td></tr>
+<tr><td><a href="././types/floatord.html"><code>FloatOrd</code></a></td><td>A wrapper for floats that implements [`Ord`], [`Eq`], and [`Hash`] traits.   Particularly useful if you want to sort floats or use them as part of map keys.   Floats in Rust follow the IEEE 754-2008 standard, the comparison operators  of which are not defined when at least one of the operands are [`NaN`](f32::NAN)...</td></tr>
+<tr><td><a href="././types/isometry2d.html"><code>Isometry2d</code></a></td><td>An isometry in two dimensions, representing a rotation followed by a translation.  This can often b...</td></tr>
+<tr><td><a href="././types/isometry3d.html"><code>Isometry3d</code></a></td><td>An isometry in three dimensions, representing a rotation followed by a translation.  This can often...</td></tr>
+<tr><td><a href="././types/irect.html"><code>IRect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
+<tr><td><a href="././types/rect.html"><code>Rect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
+<tr><td><a href="././types/urect.html"><code>URect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
+<tr><td><a href="././types/rot2.html"><code>Rot2</code></a></td><td>A 2D rotation.   # Example   ```  # use approx::assert_relative_eq;  # use bevy_math::{Rot2, Vec2};  use std::f32::consts::PI;   // Create rotations from counterclockwise angles in radians or degrees  let rotation1 = Rot2::radians(PI / 2.0);  let rotation2 = Rot2::degrees(45.0);   // Get the angle back as radians or degrees  assert_eq!(rotation1.as_degrees(), 90.0);  assert_eq!(rotation2.as_radians(), PI / 4.0);   // “Add” rotations together using `*`  #[cfg(feature = “approx”)]  assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));   // Rotate vectors  #[cfg(feature = “approx”)]  assert_...</td></tr>
 <tr><td><a href="././types/mesh2d.html"><code>Mesh2d</code></a></td><td>A component for 2D meshes. Requires a [`MeshMaterial2d`] to be rendered, commonly using a [`ColorMaterial`...</td></tr>
 <tr><td><a href="././types/mesh3d.html"><code>Mesh3d</code></a></td><td>A component for 3D meshes. Requires a [`MeshMaterial3d`] to be rendered, commonly using a [`StandardMaterial`...</td></tr>
 <tr><td><a href="././types/meshtag.html"><code>MeshTag</code></a></td><td>A component that stores an arbitrary index used to identify the mesh  instance when rendering.   Yo...</td></tr>
@@ -607,6 +534,7 @@
 <tr><td><a href="././types/locationcontext.html"><code>LocationContext</code></a></td><td>Describes a location within a script</td></tr>
 <tr><td><a href="././types/dynamiccomponent.html"><code>DynamicComponent</code></a></td><td>A dynamic script component</td></tr>
 <tr><td><a href="././types/variadictuple.html"><code>VariadicTuple</code></a></td><td>A tuple variant of script value</td></tr>
+<tr><td><a href="././types/statictyperef.html"><code>StaticTypeRef</code></a></td><td>A static reference to a type, what scripts see as the type’s global.   Functions registered on this...</td></tr>
 <tr><td><a href="././types/scripterror.html"><code>ScriptError</code></a></td><td>An error with an optional script Context</td></tr>
 <tr><td><a href="././types/callbacklabel.html"><code>CallbackLabel</code></a></td><td>A string which disallows common invalid characters in callback labels,  particularly at the start o...</td></tr>
 <tr><td><a href="././types/recipients.html"><code>Recipients</code></a></td><td>Describes the designated recipients of a script event</td></tr>
@@ -663,6 +591,9 @@
 <tr><td><a href="././types/pointermap.html"><code>PointerMap</code></a></td><td>A resource that maps each [`PointerId`] to their [`Entity`] for easy lookups.</td></tr>
 <tr><td><a href="././types/pointerpressstate.html"><code>PointerPressState</code></a></td><td>Tracks the state of the pointer’s buttons in response to [`PointerInput`] events.</td></tr>
 <tr><td><a href="././types/pressdirection.html"><code>PressDirection</code></a></td><td>The stage of the pointer button press event</td></tr>
+<tr><td><a href="././types/instant.html"><code>Instant</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/offsetaccess.html"><code>OffsetAccess</code></a></td><td>An [`Access`] combined with an `offset` for more helpful error reporting.</td></tr>
+<tr><td><a href="././types/parsedpath.html"><code>ParsedPath</code></a></td><td>A pre-parsed path to an element within a type.   This struct can be constructed manually from its [`Access`]...</td></tr>
 <tr><td><a href="././types/access.html"><code>Access</code></a></td><td>A singular element access within a path.  Multiple accesses can be combined into a [`ParsedPath`](super::ParsedPath).   Can be applied to a [`dyn Reflect`](crate::Reflect)...</td></tr>
 <tr><td><a href="././types/camerarendergraph.html"><code>CameraRenderGraph</code></a></td><td>Configures the render schedule to be run for a given [`Camera`] entity.</td></tr>
 <tr><td><a href="././types/mipbias.html"><code>MipBias</code></a></td><td>Camera component specifying a mip bias to apply when sampling from material textures.   Often used ...</td></tr>
@@ -802,6 +733,16 @@
 <tr><td><a href="././types/preeditcursor.html"><code>PreeditCursor</code></a></td><td>A selection within IME preedit text, expressed as byte offsets from the start of the preedit.   The...</td></tr>
 <tr><td><a href="././types/textedit.html"><code>TextEdit</code></a></td><td>Deferred text input edit and navigation actions applied by the `apply_text_edits` system.</td></tr>
 <tr><td><a href="././types/delayedcommandqueue.html"><code>DelayedCommandQueue</code></a></td><td>A component with a [`CommandQueue`] to be submitted later.   Queues in these components are checked automatically by the  [`check_delayed_command_queues`]...</td></tr>
+<tr><td><a href="././types/fixed.html"><code>Fixed</code></a></td><td>The fixed timestep game clock following virtual time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<fixed>#impl-Time<fixed>`]...</fixed></fixed></td></tr>
+<tr><td><a href="././types/real.html"><code>Real</code></a></td><td>Real time clock representing elapsed wall clock time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<real>#impl-Time<real>`]...</real></real></td></tr>
+<tr><td><a href="././types/stopwatch.html"><code>Stopwatch</code></a></td><td>A Stopwatch is a struct that tracks elapsed time when started.   Note that in order to advance the ...</td></tr>
+<tr><td><a href="././types/timer.html"><code>Timer</code></a></td><td>Tracks elapsed time. Enters the finished state once `duration` is reached.   Note that in order to ...</td></tr>
+<tr><td><a href="././types/timermode.html"><code>TimerMode</code></a></td><td>Specifies [`Timer`] behavior.</td></tr>
+<tr><td><a href="././types/virtual.html"><code>Virtual</code></a></td><td>The virtual game clock representing game time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<virtual>#impl-Time<virtual>`].**...</virtual></virtual></td></tr>
+<tr><td><a href="././types/globaltransform.html"><code>GlobalTransform</code></a></td><td>[`GlobalTransform`] is an affine transformation from entity-local coordinates to worldspace coordinates.   You cannot directly mutate [`GlobalTransform`]...</td></tr>
+<tr><td><a href="././types/transform.html"><code>Transform</code></a></td><td>Describe the position of an entity. If the entity has a parent, the position is relative  to its pa...</td></tr>
+<tr><td><a href="././types/transformtreechanged.html"><code>TransformTreeChanged</code></a></td><td>An optimization for transform propagation. This ZST marker component uses change detection to  mark...</td></tr>
+<tr><td><a href="././types/statictransformoptimizations.html"><code>StaticTransformOptimizations</code></a></td><td>Configure the behavior of static scene optimizations for [`Transform`] propagation.   For scenes with many static entities, it is much faster to track trees of unchanged  [`Transform`]...</td></tr>
 <tr><td><a href="././types/uiscale.html"><code>UiScale</code></a></td><td>The current scale of the UI.   A multiplier to fixed-sized UI values.  **Note:** This will only aff...</td></tr>
 <tr><td><a href="././types/accessiblelabel.html"><code>AccessibleLabel</code></a></td><td>A component which permits the a11y label to be specified independently from other a11y  attributes....</td></tr>
 <tr><td><a href="././types/autodirectionalnavigation.html"><code>AutoDirectionalNavigation</code></a></td><td>Marker component to enable automatic directional navigation to and from the entity.   Simply add th...</td></tr>
@@ -937,6 +878,8 @@
 <tr><td><a href="././types/windowresolution.html"><code>WindowResolution</code></a></td><td>Controls the size of a [`Window`]   ## Physical, logical and requested sizes   There are three sizes associated with a window:  - the physical size,    which represents the actual height and width in physical pixels    the window occupies on the monitor,  - the logical size,    which represents the size that should be used to scale elements    inside the window, measured in logical pixels,  - the requested size,    measured in logical pixels, which is the value submitted    to the API when creating the window, or requesting that it be resized.   ## Scale factor   The reason logical size and physical size are separated and can be different  is to account for the cases where:  - several monitors have different pixel densities,  - the user has set up a pixel density preference in its operating system,  - the Bevy `App` has specified a specific scale factor between both.   The factor between physical size and logical size can be retrieved with  [`WindowResolution::scale_factor`]...</td></tr>
 <tr><td><a href="././types/windowtheme.html"><code>WindowTheme</code></a></td><td>The [`Window`] theme variant to use.</td></tr>
 <tr><td><a href="././types/winituserevent.html"><code>WinitUserEvent</code></a></td><td>Events that can be sent to perform actions inside the winit event loop.   Sent via the [`EventLoopProxyWrapper`]...</td></tr>
+<tr><td><a href="././types/typeid.html"><code>TypeId</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/socketaddr.html"><code>SocketAddr</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzeroi128.html"><code>NonZeroI128</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzeroi16.html"><code>NonZeroI16</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzeroi32.html"><code>NonZeroI32</code></a></td><td>No Documentation 🚧</td></tr>
@@ -949,7 +892,85 @@
 <tr><td><a href="././types/nonzerou64.html"><code>NonZeroU64</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzerou8.html"><code>NonZeroU8</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nonzerousize.html"><code>NonZeroUsize</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/rangefull.html"><code>RangeFull</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/duration.html"><code>Duration</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/affine2.html"><code>Affine2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/affine3.html"><code>Affine3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/affine3a.html"><code>Affine3A</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/bvec2.html"><code>BVec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/bvec3.html"><code>BVec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/bvec3a.html"><code>BVec3A</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/bvec4.html"><code>BVec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/bvec4a.html"><code>BVec4A</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/daffine2.html"><code>DAffine2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/daffine3.html"><code>DAffine3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dmat2.html"><code>DMat2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dmat3.html"><code>DMat3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dmat4.html"><code>DMat4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dquat.html"><code>DQuat</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dvec2.html"><code>DVec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dvec3.html"><code>DVec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dvec4.html"><code>DVec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/eulerrot.html"><code>EulerRot</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i16vec2.html"><code>I16Vec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i16vec3.html"><code>I16Vec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i16vec4.html"><code>I16Vec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i64vec2.html"><code>I64Vec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i64vec3.html"><code>I64Vec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i64vec4.html"><code>I64Vec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i8vec2.html"><code>I8Vec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i8vec3.html"><code>I8Vec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/i8vec4.html"><code>I8Vec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/ivec2.html"><code>IVec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/ivec3.html"><code>IVec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/ivec4.html"><code>IVec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/mat2.html"><code>Mat2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/mat3.html"><code>Mat3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/mat3a.html"><code>Mat3A</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/mat4.html"><code>Mat4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/quat.html"><code>Quat</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u16vec2.html"><code>U16Vec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u16vec3.html"><code>U16Vec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u16vec4.html"><code>U16Vec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u64vec2.html"><code>U64Vec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u64vec3.html"><code>U64Vec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u64vec4.html"><code>U64Vec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u8vec2.html"><code>U8Vec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u8vec3.html"><code>U8Vec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/u8vec4.html"><code>U8Vec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/uvec2.html"><code>UVec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/uvec3.html"><code>UVec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/uvec4.html"><code>UVec4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/vec2.html"><code>Vec2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/vec3.html"><code>Vec3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/vec3a.html"><code>Vec3A</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/vec4.html"><code>Vec4</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/nodeindex.html"><code>NodeIndex</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/fake1.html"><code>Fake1</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/fake2.html"><code>Fake2</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/fake3.html"><code>Fake3</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/fake4.html"><code>Fake4</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/fake5.html"><code>Fake5</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/dummy.html"><code>Dummy</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/smolstr.html"><code>SmolStr</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/compwithdefault.html"><code>CompWithDefault</code></a></td><td>Component with Reflect and ReflectDefault but no ReflectComponent</td></tr>
+<tr><td><a href="././types/compwithdefaultandcomponentdata.html"><code>CompWithDefaultAndComponentData</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/compwithfromworld.html"><code>CompWithFromWorld</code></a></td><td>Component with Reflect and ReflectFromWorld registered but no ReflectComponent</td></tr>
+<tr><td><a href="././types/compwithfromworldandcomponentdata.html"><code>CompWithFromWorldAndComponentData</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/resourcewithdefault.html"><code>ResourceWithDefault</code></a></td><td>Resource with Reflect and ReflectDefault registered but no ReflectResource</td></tr>
+<tr><td><a href="././types/simpleenum.html"><code>SimpleEnum</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/simplestruct.html"><code>SimpleStruct</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/simpletuplestruct.html"><code>SimpleTupleStruct</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/simpletype.html"><code>SimpleType</code></a></td><td>Test component with Reflect and ReflectComponent registered</td></tr>
+<tr><td><a href="././types/testasset.html"><code>TestAsset</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/testcomponent.html"><code>TestComponent</code></a></td><td>Test component with Reflect and ReflectComponent registered</td></tr>
+<tr><td><a href="././types/testresource.html"><code>TestResource</code></a></td><td>Test Resource with Reflect and ReflectResource registered</td></tr>
+<tr><td><a href="././types/testresourcewithvariousfields.html"><code>TestResourceWithVariousFields</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/unitstruct.html"><code>UnitStruct</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/nonniluuid.html"><code>NonNilUuid</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/uuid.html"><code>Uuid</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/blendstate.html"><code>BlendState</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/textureformat.html"><code>TextureFormat</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/cow.html"><code>Cow</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/arcmutexvalueimage.html"><code>ArcMutexValue&lt;Image&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
 <tr><td><a href="././types/arcmutexvaluetextureatlaslayout.html"><code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
@@ -996,12 +1017,14 @@
 <tr><td><a href="././types/meshextractabledataalloc::vec::vecbevy_mesh::morph::morphattributes.html"><code>MeshExtractableData&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetentity.html"><code>HashSet&lt;Entity&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashsetgamepadbutton.html"><code>HashSet&lt;GamepadButton&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/hashsetstring.html"><code>HashSet&lt;String&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_(bevy_platform::time::instant,_u8).html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_alloc::vec::vecbevy_camera::primitives::frustum.html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_alloc::vec::vecbevy_light::cascade::cascade.html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_entityequivalenthashsetentity.html"><code>EntityEquivalentHashMap&lt;Entity, EntityEquivalentHashSet&lt;Entity&gt;&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/hashedcow,_typeid(0x500553490db35971e3f123ef374119b4).html"><code>Hashed&lt;Cow, Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_(bevy_picking::pointer::location,_bevy_platform::time::instant,_bevy_picking::backend::hitdata).html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
+<tr><td><a href="././types/str.html"><code>Str</code></a></td><td>A string slice</td></tr>
 </tbody>
 </table>
 </div>
@@ -1010,7 +1033,7 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../core_bindings/functions/unpack_args.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../core_bindings/functions/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -1024,7 +1047,7 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../core_bindings/functions/unpack_args.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../core_bindings/functions/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 

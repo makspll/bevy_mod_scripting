@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-80a14201.js";
+            window.path_to_searchindex_js = "../../searchindex-5b064c54.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-d81fe5b8.js"></script>
+        <script src="../../toc-91241b30.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -242,6 +242,7 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
 <tr><td><a href="./rot2/angle_to.html">angle_to</a></td><td>Returns the angle in radians needed to make `self` and `other` coincide.</td></tr>
 <tr><td><a href="./rot2/is_normalized.html">is_normalized</a></td><td>Returns whether `self` has a length of `1.0` or not.  Uses a precision threshold of approximately `1e-4`...</td></tr>
 <tr><td><a href="./rot2/radians.html">radians</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in radians.  A negative argument corresponds to a clockwise rotation.  # Note  Angles larger than or equal to 2π (in either direction) loop around to smaller rotations, since a full rotation returns an object to its starting orientation.  # Example  ```  # use bevy_math::Rot2;  # use approx::assert_relative_eq;  # use std::f32::consts::{FRAC_PI_2, PI};  let rot1 = Rot2::radians(3.0 * FRAC_PI_2);  let rot2 = Rot2::radians(-FRAC_PI_2);  #[cfg(feature = “approx”)]...</td></tr>
+<tr><td><a href="./rot2/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
 </div>
