@@ -537,7 +537,8 @@ impl Xtasks {
                 kind: CheckKind::All | CheckKind::Codegen,
                 ..
             } => &[InitTool::CodegenToolchain],
-            Xtasks::Docs { .. } => &[InitTool::Mdbook],
+            // the preprocessor tests build a book with `mdbook`
+            Xtasks::Docs { .. } | Xtasks::Test { .. } => &[InitTool::Mdbook],
             Xtasks::Bencher { .. } | Xtasks::Bench { .. } => &[InitTool::Bencher],
             _ => &[],
         };
