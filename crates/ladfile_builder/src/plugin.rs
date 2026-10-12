@@ -1,6 +1,6 @@
 //! Plugins for bevy which allow generating ladfiles at startup
 
-use std::{ops::Deref, path::PathBuf, sync::Arc};
+use std::{any::TypeId, ops::Deref, path::PathBuf, sync::Arc};
 
 use ::{
     bevy_app::{App, Plugin, Startup},
@@ -8,11 +8,12 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry, IntoNamespace,
+    DummyScriptFunctionRegistry, EnumVariantRef, FunctionInfo, IntoNamespace, StaticTypeRef,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
     into_through_type_info,
 };
+use bevy_reflect::TypeInfo;
 use ladfile::{LadFieldOrVariableKind, LadFilePlugin, default_importance};
 
 use crate::LadFileBuilder;
@@ -169,6 +170,44 @@ pub fn generate_lad_file(
         {
             builder.add_function_info(&function.info);
         }
+
+        // functions on the static type reference are available on every type's own static reference,
+        // bound to the type, unless the type has a function of its own with the same name.
+        // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_type_function`
+        if type_info.type_id() != TypeId::of::<StaticTypeRef>() {
+            let namespace = Namespace::OnType(type_info.type_id());
+            for (key, function) in
+                function_registry.iter_namespace(Namespace::OnType(TypeId::of::<StaticTypeRef>()))
+            {
+                if function_registry.contains(namespace, key.name.clone()) {
+                    continue;
+                }
+                builder.add_function_info(&function.info.bind_to_type(type_info));
+            }
+        }
+
+        // functions on enum variants whose signatures depend on the variant, i.e. its constructor, are bound to each variant
+        if let TypeInfo::Enum(enum_info) = type_info {
+            for (_, function) in
+                function_registry.iter_namespace(Namespace::OnType(TypeId::of::<EnumVariantRef>()))
+            {
+                if !function.info.has_placeholders() {
+                    continue;
+                }
+                // the documentation is the same for every variant, and stays on the function on `EnumVariantRef`.
+                // Copying it would multiply it by the number of variants of all enums, a large part of the file
+                let undocumented = FunctionInfo {
+                    docs: None,
+                    ..(*function.info).clone()
+                };
+                for variant in enum_info.iter() {
+                    let bound = undocumented
+                        .clone()
+                        .bind_placeholders(type_info, Some(variant.name()));
+                    builder.add_variant_function_info(&bound, type_info.type_id(), variant.name());
+                }
+            }
+        }
     }
 
     // find functions on the global namespace
@@ -252,5 +291,266 @@ impl Plugin for ScriptingFilesGenerationPlugin {
             app.insert_resource(self.0.clone());
             app.add_systems(Startup, generate_lad_file_system);
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use bevy_app::App;
+    use bevy_mod_scripting_bindings::{
+        EnumVariantRef,
+        function::{
+            bound::{BoundFields, BoundValue},
+            from::V,
+            namespace::NamespaceBuilder,
+        },
+    };
+    use bevy_reflect::{Reflect, std_traits::ReflectDefault};
+    use ladfile::{LadFile, LadFunctionNamespace, ReflectionPrimitiveKind};
+    use std::{error::Error, path::Path, sync::Mutex};
+
+    #[derive(Reflect)]
+    enum TestEnum {
+        A,
+    }
+
+    #[derive(Reflect)]
+    struct TestStruct;
+
+    #[derive(Reflect, Default)]
+    #[reflect(Default)]
+    enum DefaultEnum {
+        A(TestStruct),
+        #[default]
+        B,
+    }
+
+    #[derive(Reflect)]
+    struct MixedFields {
+        defaulted: usize,
+        required: TestStruct,
+    }
+
+    struct Capture(Arc<Mutex<Option<LadFile>>>);
+
+    impl LadFilePlugin for Capture {
+        fn name(&self) -> &'static str {
+            "capture"
+        }
+
+        fn run(&self, ladfile: &LadFile, _: &Path) -> Result<(), Box<dyn Error>> {
+            *self.0.lock().unwrap() = Some(ladfile.clone());
+            Ok(())
+        }
+    }
+
+    /// Registers a constructor like the one from `ConstructorsPlugin`, which lives in a crate we don't depend on
+    fn generate(constructor_name: &'static str) -> LadFile {
+        let mut app = App::new();
+        NamespaceBuilder::<StaticTypeRef>::new(app.world_mut()).register_documented(
+            constructor_name,
+            |_: V<StaticTypeRef>, _: BoundFields| -> BoundValue { unreachable!() },
+            "",
+            &["type", "payload"],
+        );
+        NamespaceBuilder::<EnumVariantRef>::new(app.world_mut()).register_documented(
+            constructor_name,
+            |_: V<EnumVariantRef>, _: BoundFields| -> BoundValue { unreachable!() },
+            "",
+            &["variant", "payload"],
+        );
+        NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
+            .register("describe", |_: V<StaticTypeRef>| -> BoundValue {
+                unreachable!()
+            });
+        NamespaceBuilder::<TestStruct>::new(app.world_mut()).register("describe", || 1usize);
+        app.register_type::<TestEnum>()
+            .register_type::<TestStruct>()
+            .register_type::<DefaultEnum>()
+            .register_type::<MixedFields>()
+            .register_type::<usize>();
+
+        let captured = Arc::new(Mutex::new(None));
+        let settings = LadFileSettings {
+            processors: vec![Box::new(Capture(captured.clone()))],
+            ..Default::default()
+        };
+        let world = app.world_mut();
+        generate_lad_file(
+            &world.get_resource_or_init::<AppTypeRegistry>().clone(),
+            &world
+                .get_resource_or_init::<AppScriptFunctionRegistry>()
+                .clone(),
+            &world
+                .get_resource_or_init::<DummyScriptFunctionRegistry>()
+                .clone(),
+            &world
+                .get_resource_or_init::<AppScriptGlobalsRegistry>()
+                .clone(),
+            &settings,
+        );
+        captured
+            .lock()
+            .unwrap()
+            .take()
+            .expect("no ladfile generated")
+    }
+
+    /// The function with the given name on the type with the given identifier
+    fn function<'a>(
+        file: &'a LadFile,
+        type_name: &str,
+        function: &str,
+    ) -> Option<&'a ladfile::LadFunction> {
+        let (type_id, _) = file.types.iter().find(|(_, t)| t.identifier == type_name)?;
+        file.functions.values().find(|f| {
+            f.identifier == function
+                && matches!(&f.namespace, ladfile::LadFunctionNamespace::Type(id) if id == type_id)
+        })
+    }
+
+    fn type_id(file: &LadFile, type_name: &str) -> ladfile::LadTypeId {
+        file.types
+            .iter()
+            .find(|(_, t)| t.identifier == type_name)
+            .map(|(id, _)| id.clone())
+            .unwrap()
+    }
+
+    #[test]
+    fn static_type_functions_are_bound_to_every_type() {
+        let file = generate("new");
+
+        for type_name in ["TestEnum", "TestStruct"] {
+            let new = function(&file, type_name, "new")
+                .unwrap_or_else(|| panic!("`new` missing on {type_name}"));
+            let type_id = type_id(&file, type_name);
+
+            // the type is bound, so it is not an argument, and the placeholders are filled in
+            assert_eq!(new.arguments.len(), 1, "{:?}", new.arguments);
+            assert_eq!(new.arguments[0].name.as_deref(), Some("payload"));
+            assert_eq!(
+                new.arguments[0].kind,
+                LadFieldOrVariableKind::Fields {
+                    type_id: type_id.clone(),
+                    variant: None
+                }
+            );
+            assert_eq!(new.return_type.kind, LadFieldOrVariableKind::Val(type_id));
+        }
+
+        // the original keeps its receiver, and is documented as it is at runtime
+        let generic_fields = LadFieldOrVariableKind::HashMap(
+            Box::new(LadFieldOrVariableKind::Primitive(
+                ReflectionPrimitiveKind::String,
+            )),
+            Box::new(LadFieldOrVariableKind::Primitive(
+                ReflectionPrimitiveKind::ScriptValue,
+            )),
+        );
+        let generic_value =
+            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::ReflectReference);
+        let new = function(&file, "StaticTypeRef", "new").expect("`new` missing on StaticTypeRef");
+        assert_eq!(new.arguments[0].name.as_deref(), Some("type"));
+        assert_eq!(new.arguments[1].kind, generic_fields);
+        let new =
+            function(&file, "EnumVariantRef", "new").expect("`new` missing on EnumVariantRef");
+        assert_eq!(new.arguments[0].name.as_deref(), Some("variant"));
+        assert_eq!(new.return_type.kind, generic_value);
+    }
+
+    #[test]
+    fn variant_functions_are_bound_to_every_variant() {
+        let file = generate("new");
+        let enum_id = type_id(&file, "DefaultEnum");
+
+        for variant in ["A", "B"] {
+            let new = file
+                .functions
+                .values()
+                .find(|f| {
+                    f.identifier == "new"
+                        && f.namespace
+                            == LadFunctionNamespace::Variant {
+                                type_id: enum_id.clone(),
+                                variant: variant.into(),
+                            }
+                })
+                .unwrap_or_else(|| panic!("`new` missing on variant {variant}"));
+
+            // the receiver is the variant, which is not bound
+            assert_eq!(new.arguments[0].name.as_deref(), Some("variant"));
+            assert_eq!(
+                new.arguments[1].kind,
+                LadFieldOrVariableKind::Fields {
+                    type_id: enum_id.clone(),
+                    variant: Some(variant.into())
+                }
+            );
+            assert_eq!(
+                new.return_type.kind,
+                LadFieldOrVariableKind::Val(enum_id.clone())
+            );
+        }
+
+        // variants are not types, so their functions are not associated with the enum
+        assert!(file.types[&enum_id].associated_functions.iter().all(|id| {
+            !matches!(
+                file.functions[id].namespace,
+                LadFunctionNamespace::Variant { .. }
+            )
+        }));
+    }
+
+    #[test]
+    fn functions_on_the_type_take_priority() {
+        let file = generate("new");
+
+        // `TestStruct` has its own `describe`, `TestEnum` gets the shared one
+        let own = function(&file, "TestStruct", "describe").unwrap();
+        assert_eq!(
+            own.return_type.kind,
+            LadFieldOrVariableKind::Primitive(ladfile::ReflectionPrimitiveKind::Usize)
+        );
+        let shared = function(&file, "TestEnum", "describe").unwrap();
+        assert_eq!(
+            shared.return_type.kind,
+            LadFieldOrVariableKind::Val(type_id(&file, "TestEnum"))
+        );
+    }
+
+    #[test]
+    fn constructor_name_is_configurable() {
+        let file = generate("create");
+        assert!(function(&file, "TestStruct", "create").is_some());
+        assert!(function(&file, "TestStruct", "new").is_none());
+    }
+
+    #[test]
+    fn defaults_are_recorded() {
+        let file = generate("new");
+        let definition = |name: &str| &file.types[&type_id(&file, name)];
+
+        // enums record which variant their default is in
+        assert_eq!(
+            definition("DefaultEnum").metadata.default,
+            Some(ladfile::LadDefault {
+                variant: Some("B".into())
+            })
+        );
+        assert_eq!(definition("MixedFields").metadata.default, None);
+
+        // fields record whether their type has a default
+        let ladfile::LadTypeLayout::MonoVariant(ladfile::LadVariant::Struct { fields, .. }) =
+            &definition("MixedFields").layout
+        else {
+            panic!("expected a struct layout");
+        };
+        let has_default = fields
+            .iter()
+            .map(|f| (f.name.as_str(), f.has_default))
+            .collect::<Vec<_>>();
+        assert_eq!(has_default, [("defaulted", true), ("required", false)]);
     }
 }

@@ -173,6 +173,9 @@ impl App {
             Xtasks::Example { example } => {
                 cmd.arg("example").arg(example);
             }
+            Xtasks::Docgen => {
+                cmd.arg("docgen");
+            }
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
             }
@@ -365,6 +368,9 @@ enum Xtasks {
         /// The example to run
         example: String,
     },
+    /// Generate the ladfile and Lua language server files into `assets/definitions`,
+    /// including the functions available to script tests
+    Docgen,
     /// Installs a binary produced by the workspace
     Install {
         /// The binary to install
@@ -478,6 +484,7 @@ impl Xtasks {
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init { dont_update_ide } => Self::init(app_settings, dont_update_ide),
             Xtasks::Example { example } => Self::example(app_settings, example),
+            Xtasks::Docgen => Self::docgen(app_settings),
             Xtasks::Macros { macro_name } => match macro_name {
                 Macro::ScriptTests => {
                     let mut settings = app_settings.clone();
@@ -1629,7 +1636,25 @@ impl Xtasks {
         }
     }
 
+    /// Generates the ladfile and Lua language server files, including the functions available to script tests
+    fn docgen(mut app_settings: GlobalArgs) -> Result<()> {
+        app_settings
+            .features
+            .0
+            .insert(Feature::LuaLanguageServerFiles);
+        Self::example_with_args(app_settings, "docgen", &["testlib"])
+    }
+
     fn example(app_settings: GlobalArgs, example: String) -> std::result::Result<(), Error> {
+        Self::example_with_args(app_settings, &example, &[])
+    }
+
+    /// Runs the example, passing it the given arguments
+    fn example_with_args(
+        app_settings: GlobalArgs,
+        example: &str,
+        example_args: &[&str],
+    ) -> std::result::Result<(), Error> {
         // find the required features for the example named this in the cargo.toml of the main workspace
         // the keys look like
         // [[example]]
@@ -1642,11 +1667,16 @@ impl Xtasks {
         // println!("{metadata:#?}");
 
         // run the example
+        let mut args = vec!["--example", example];
+        if !example_args.is_empty() {
+            args.push("--");
+            args.extend(example_args);
+        }
         run_workspace_command(
             &app_settings,
             "run",
             "Failed to run example",
-            vec!["--example", example.as_str()],
+            args,
             None,
             false,
         )?;

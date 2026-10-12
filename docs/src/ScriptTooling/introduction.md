@@ -46,6 +46,10 @@ Script writers can then use this generated file by pointing their `.luarc.json` 
     ],
     "runtime.version": "Lua 5.4",
     "hint.enable": false,
+    "workspace.preloadFileSize": 10000
 }
 ```
+
+The generated definitions file is large (over a megabyte with the default bindings), and the language server skips Lua files bigger than `workspace.preloadFileSize` (in KB, 500 by default).
+If completions for BMS types are missing, i.e. `Vec3.` suggests nothing, raise this limit above the size of the generated file and restart the language server.
 

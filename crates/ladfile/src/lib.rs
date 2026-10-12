@@ -240,6 +240,16 @@ pub enum LadFunctionNamespace {
     Type(LadTypeId),
     /// A global function
     Global,
+    /// A function on a variant of an enum, i.e. `MyEnum.Variant:new{...}`.
+    ///
+    /// These are the functions on `EnumVariantRef` whose signatures depend on the variant, bound to it.
+    Variant {
+        /// The enum
+        #[serde(rename = "type")]
+        type_id: LadTypeId,
+        /// The name of the variant
+        variant: Cow<'static, str>,
+    },
 }
 
 impl LadFunctionNamespace {
@@ -306,6 +316,17 @@ pub enum LadFieldOrVariableKind {
     ///
     /// This will be the variant used for external primitives as well.
     Unknown(LadTypeId),
+    /// A table of the fields of a type, keyed by field name or index, i.e. the payload of a constructor.
+    ///
+    /// The fields themselves are described by the type's layout.
+    Fields {
+        /// The type the fields belong to
+        #[serde(rename = "type")]
+        type_id: LadTypeId,
+        /// For enums, the variant the fields belong to
+        #[serde(skip_serializing_if = "Option::is_none", default)]
+        variant: Option<Cow<'static, str>>,
+    },
 }
 
 /// Utility for dispatching visitors on dyn traits
@@ -421,6 +442,11 @@ pub trait ArgumentVisitor {
         self.visit_unknown(type_id);
     }
 
+    /// traverse a table of fields of a type, by default visits the type id
+    fn walk_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
+        self.visit_lad_type_id(type_id);
+    }
+
     /// Visit an argument kind, by default calls the appropriate walk method on each enum variant.
     ///
     /// Each walk variant will walk over nested kinds, and visit the leaf types.
@@ -444,6 +470,9 @@ pub trait ArgumentVisitor {
             LadFieldOrVariableKind::Union(inner) => self.walk_union(inner),
             LadFieldOrVariableKind::Unknown(type_id) => self.walk_unknown(type_id),
             LadFieldOrVariableKind::UntypedTuple => self.visit_untyped_tuple(),
+            LadFieldOrVariableKind::Fields { type_id, variant } => {
+                self.walk_fields(type_id, variant.as_deref())
+            }
         }
     }
 }
@@ -586,9 +615,25 @@ pub struct LadTypeMetadata {
     /// Set to a primitive kind if this type is mapped to a primitive
     pub mapped_to_primitive_kind: Option<ReflectionPrimitiveKind>,
 
+    /// Set if the type has a registered `Default` implementation.
+    ///
+    /// Constructors use it to fill in fields missing from their payload.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub default: Option<LadDefault>,
+
     /// Extra metadata sections that plugins can use to serialize other information
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     pub misc: HashMap<String, String>,
+}
+
+/// Describes the registered `Default` implementation of a type.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadDefault {
+    /// For enums, the variant the default value is in.
+    ///
+    /// The default only provides fields when constructing this variant.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub variant: Option<Cow<'static, str>>,
 }
 
 /// The default importance value for a type.
@@ -682,6 +727,9 @@ pub struct LadField {
     /// The type of the field.
     #[serde(rename = "type")]
     pub type_: LadFieldOrVariableKind,
+    /// True if the type of the field has a registered `Default` implementation.
+    #[serde(skip_serializing_if = "is_false", default)]
+    pub has_default: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -692,6 +740,28 @@ pub struct LadNamedField {
     #[serde(rename = "type")]
     /// The type of the field.
     pub type_: LadFieldOrVariableKind,
+    /// True if the type of the field has a registered `Default` implementation.
+    #[serde(skip_serializing_if = "is_false", default)]
+    pub has_default: bool,
+}
+
+fn is_false(value: &bool) -> bool {
+    !value
+}
+
+impl LadTypeDefinition {
+    /// Whether a constructor can leave out the given field of the given variant, i.e. a default fills it in.
+    ///
+    /// This is the case if the field's type has a default, or if the type has a default in the same variant.
+    /// `variant` is `None` for types which are not enums.
+    pub fn field_has_default(&self, variant: Option<&str>, field_has_default: bool) -> bool {
+        field_has_default
+            || self
+                .metadata
+                .default
+                .as_ref()
+                .is_some_and(|default| default.variant.as_deref() == variant)
+    }
 }
 
 /// A generic type definition used in a LAD file.

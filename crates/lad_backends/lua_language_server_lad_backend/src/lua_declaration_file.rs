@@ -375,6 +375,8 @@ pub struct LuaModule {
     pub functions: Vec<FunctionSignature>,
     pub documentation: Option<String>,
     pub is_meta: bool,
+    /// If set, the class only describes a shape, i.e. a table argument, and no global table is declared for it
+    pub type_only: bool,
 }
 
 /// Represents a Lua definition file
