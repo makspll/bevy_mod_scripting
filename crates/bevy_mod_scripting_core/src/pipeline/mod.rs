@@ -9,8 +9,8 @@ use bevy_ecs::{
     observer::On,
     resource::Resource,
     schedule::{IntoScheduleConfigs, Schedule, ScheduleLabel, SystemSet},
-    system::{Command, IntoSystem, Local, Res, ResMut, SystemParam},
-    world::World,
+    system::{Command, Commands, IntoSystem, Local, Res, ResMut, SystemParam},
+    world::{World, WorldId},
 };
 use bevy_log::debug;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
@@ -26,9 +26,9 @@ use crate::{
         ScriptErrorEvent,
     },
     pipeline::hooks::{
-        clear_machine_data, on_script_loaded_pipeline_handler, on_script_reloaded_pipeline_handler,
-        on_script_unloaded_for_reload_pipeline_handler,
+        clear_machine_data, on_script_unloaded_for_reload_pipeline_handler,
         on_script_unloaded_for_unload_pipeline_handler, process_machine_failure,
+        queue_on_script_loaded, queue_on_script_reloaded,
     },
     script::ScriptContexts,
 };
@@ -203,19 +203,26 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
 
         app.init_resource::<ActiveMachinesData>();
 
-        // bevy considers the ordering on observers watching the same event to be arbitrary, this order
-        // flipped in bevy 0.19,
-        // now the first observer registered is the last/
-        // we probably shouldn't rely on that, but it's convenient for separation of concerns
-
-        // reloaded observer goes last
-        if self.on_script_reloaded_callback {
-            app.add_observer(on_script_reloaded_pipeline_handler::<P>);
-        }
-
-        // load observer goes first
-        if self.on_script_loaded_callback {
-            app.add_observer(on_script_loaded_pipeline_handler::<P>);
+        // bevy does not guarantee the order of observers watching the same event (it depends on their entity ids),
+        // so a single observer runs `on_script_loaded` and then `on_script_reloaded`, as documented
+        let (loaded, reloaded) = (
+            self.on_script_loaded_callback,
+            self.on_script_reloaded_callback,
+        );
+        if loaded || reloaded {
+            app.add_observer(
+                move |trigger: On<ContextAssigned<P>>,
+                      mut commands: Commands,
+                      world_id: WorldId,
+                      datas: Res<ActiveMachinesData>| {
+                    if loaded {
+                        queue_on_script_loaded(trigger.event(), &mut commands, world_id);
+                    }
+                    if reloaded {
+                        queue_on_script_reloaded(trigger.event(), &mut commands, world_id, &datas);
+                    }
+                },
+            );
         }
 
         // these are the only triggers on their events

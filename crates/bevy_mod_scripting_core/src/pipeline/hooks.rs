@@ -29,12 +29,12 @@ pub(crate) fn process_machine_failure<P: IntoScriptPluginParams>(
     let _ = script_contexts.mark_active_if_not_loading(&attachment);
 }
 
-pub fn on_script_loaded_pipeline_handler<P: IntoScriptPluginParams>(
-    trigger: On<ContextAssigned<P>>,
-    mut commands: Commands,
+/// Queues the `on_script_loaded` callback for a script whose context was just assigned.
+pub(crate) fn queue_on_script_loaded<P: IntoScriptPluginParams>(
+    event: &ContextAssigned<P>,
+    commands: &mut Commands,
     world_id: WorldId,
 ) {
-    let event = trigger.event();
     let emit_responses = P::readonly_configuration(world_id).emit_responses;
     bevy_log::debug!(
         "Running on_script_loaded hook for script: {}",
@@ -47,7 +47,7 @@ pub fn on_script_loaded_pipeline_handler<P: IntoScriptPluginParams>(
             vec![],
             emit_responses,
         )
-        .with_context_override(trigger.context.clone()),
+        .with_context_override(event.context.clone()),
     );
 }
 
@@ -123,14 +123,13 @@ pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>
     );
 }
 
-pub fn on_script_reloaded_pipeline_handler<P: IntoScriptPluginParams>(
-    trigger: On<ContextAssigned<P>>,
-    mut commands: Commands,
+/// Queues the `on_script_reloaded` callback, if the script's context was just re-assigned after a reload.
+pub(crate) fn queue_on_script_reloaded<P: IntoScriptPluginParams>(
+    event: &ContextAssigned<P>,
+    commands: &mut Commands,
     world_id: WorldId,
-    datas: Res<ActiveMachinesData>,
+    datas: &ActiveMachinesData,
 ) {
-    let event = trigger.event();
-
     let emit_responses = P::readonly_configuration(world_id).emit_responses;
 
     if event.is_new_context {
@@ -157,6 +156,6 @@ pub fn on_script_reloaded_pipeline_handler<P: IntoScriptPluginParams>(
             vec![unload_state],
             emit_responses,
         )
-        .with_context_override(trigger.context.clone()),
+        .with_context_override(event.context.clone()),
     )
 }
