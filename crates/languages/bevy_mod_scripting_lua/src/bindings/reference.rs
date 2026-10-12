@@ -53,15 +53,11 @@ impl UserData for LuaReflectReference {
 
                 let key: ScriptValue = key.into();
                 let key = match key.as_string() {
-                    Ok(string) => {
-                        match world
-                            .lookup_function([type_id, TypeId::of::<ReflectReference>()], string)
-                        {
-                            Ok(func) => return Ok(LuaScriptValue(ScriptValue::Function(func))),
+                    Ok(string) => match world.lookup_instance_function(type_id, string) {
+                        Ok(func) => return Ok(LuaScriptValue(ScriptValue::Function(func))),
 
-                            Err(e) => ScriptValue::String(e),
-                        }
-                    }
+                        Err(e) => ScriptValue::String(e),
+                    },
                     Err(key) => key,
                 };
 
@@ -370,17 +366,10 @@ impl UserData for LuaReflectReference {
                 .world;
 
             let iter_func = world
-                .lookup_function(
-                    [TypeId::of::<ReflectReference>()],
+                .lookup_reserved_function(
                     ScriptOperatorNames::Iteration.script_function_name(),
+                    LUA_CALLER_CONTEXT,
                 )
-                .map_err(|f| {
-                    InteropError::missing_function(
-                        f,
-                        TypeId::of::<ReflectReference>().into(),
-                        Some(LUA_CALLER_CONTEXT),
-                    )
-                })
                 .map_err(IntoMluaError::to_lua_error)?;
 
             Ok(LuaScriptValue::from(
@@ -399,17 +388,10 @@ impl UserData for LuaReflectReference {
             let reflect_reference: ReflectReference = self_.into();
 
             let func = world
-                .lookup_function(
-                    [TypeId::of::<ReflectReference>()],
+                .lookup_reserved_function(
                     ScriptOperatorNames::DisplayPrint.script_function_name(),
+                    LUA_CALLER_CONTEXT,
                 )
-                .map_err(|f| {
-                    InteropError::missing_function(
-                        f,
-                        TypeId::of::<ReflectReference>().into(),
-                        Some(LUA_CALLER_CONTEXT),
-                    )
-                })
                 .map_err(IntoMluaError::to_lua_error)?;
             let out = func
                 .call(

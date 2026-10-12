@@ -4,7 +4,11 @@ use bevy_ecs::{ptr::OwningPtr, query::QueryBuilder};
 use bevy_mod_scripting_world::WorldGuard;
 
 use super::{DynamicComponent, ReflectReference};
-use crate::{WorldExtensions, error::InteropError};
+use crate::{
+    WorldExtensions,
+    error::InteropError,
+    function::from::{Union, V},
+};
 use ::{
     bevy_ecs::{
         component::ComponentId,
@@ -50,6 +54,38 @@ pub struct ScriptResourceRegistration {
     pub registration: ScriptTypeRegistration,
     /// the component id of the resource
     pub resource_id: ComponentId,
+}
+
+/// Any of the kinds of type registration, as returned by type lookups.
+///
+/// The kind decides what can be done with the type, i.e. only components can be added to entities.
+pub type AnyTypeRegistration =
+    Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>;
+
+/// [`AnyTypeRegistration`] as it appears in script function signatures, i.e. as scripts receive and pass types around.
+pub type AnyTypeRegistrationV = Union<
+    V<ScriptTypeRegistration>,
+    Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
+>;
+
+impl AnyTypeRegistration {
+    /// Convert to the form used in script function signatures.
+    pub fn into_script(self) -> AnyTypeRegistrationV {
+        self.map_both(V, |other| other.map_both(V, V))
+    }
+}
+
+impl AnyTypeRegistrationV {
+    /// Convert to a generic [`ScriptTypeRegistration`] ditching any component or resource information.
+    pub fn into_type_registration(self) -> ScriptTypeRegistration {
+        match self.into_left() {
+            Ok(registration) => registration.into_inner(),
+            Err(other) => match other.into_left() {
+                Ok(component) => component.into_inner().into_type_registration(),
+                Err(resource) => resource.into_inner().into_type_registration(),
+            },
+        }
+    }
 }
 
 #[profiling::all_functions]
