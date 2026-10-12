@@ -332,7 +332,7 @@ impl<'w> WorldAccessGuard<'w> {
         let guard = WorldAccessGuard::new_exclusive(world, cached_slots);
         // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
         let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
-        ThreadWorldContainer.set_context(ThreadScriptContext {
+        let _restore = ThreadWorldContainer::replace_context(ThreadScriptContext {
             world: static_guard.clone(),
         });
         let o = f(static_guard.clone());
@@ -350,7 +350,7 @@ impl<'w> WorldAccessGuard<'w> {
         // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends, from the static guard
         // i.e. even if somebody squirells it away, it will be useless.
         let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard.scope()) };
-        ThreadWorldContainer.set_context(ThreadScriptContext {
+        let _restore = ThreadWorldContainer::replace_context(ThreadScriptContext {
             world: static_guard.clone(),
         });
         let o = f(static_guard.clone());
@@ -520,6 +520,11 @@ impl WorldAccessGuard<'_> {
     /// If a registry has been initialized in this world guard, downcasts it to its original type and returns
     /// a reference to it
     pub fn set_cached_registry<T: CachedRegistry>(&self, registry: T) {
+        self.replace_cached_registry(registry);
+    }
+
+    /// Replaces the registry cached in this world guard with the given one, returning the previous value.
+    pub fn replace_cached_registry<T: CachedRegistry>(&self, registry: T) -> T {
         let idx = T::SLOT;
         let mut mutt = RefCell::borrow_mut(&self.inner.cached_slots[idx]);
 
@@ -528,7 +533,7 @@ impl WorldAccessGuard<'_> {
             reason = "internal domain boundary, enforced at creation of the guard"
         )]
         let mutt = mutt.downcast_mut().unwrap();
-        *mutt = registry;
+        std::mem::replace(mutt, registry)
     }
 }
 
@@ -544,6 +549,18 @@ pub struct ThreadScriptContext<'l> {
     // pub attachment: ScriptAttachment,
 }
 
+/// Restores the previous [`ThreadWorldContainer`] context when dropped, see [`ThreadWorldContainer::replace_context`].
+pub struct RestoreThreadContext(Option<ThreadScriptContext<'static>>);
+
+impl Drop for RestoreThreadContext {
+    fn drop(&mut self) {
+        let previous = self.0.take();
+        WORLD_CALLBACK_ACCESS.with(|w| {
+            w.replace(previous);
+        });
+    }
+}
+
 thread_local! {
     static WORLD_CALLBACK_ACCESS: RefCell<Option<ThreadScriptContext<'static>>> = const { RefCell::new(None) };
 }
@@ -554,6 +571,14 @@ impl ThreadWorldContainer {
         WORLD_CALLBACK_ACCESS.with(|w| {
             w.replace(Some(world));
         });
+    }
+
+    /// Sets the thread context to the given value until the returned guard is dropped, at which point the previous context is restored.
+    ///
+    /// This keeps nested static guards (e.g. a callback running another callback) from leaving the outer callback with an invalidated world.
+    #[must_use = "the previous context is restored as soon as the guard is dropped"]
+    pub fn replace_context(world: ThreadScriptContext<'static>) -> RestoreThreadContext {
+        RestoreThreadContext(WORLD_CALLBACK_ACCESS.with(|w| w.replace(Some(world))))
     }
 
     /// Tries to get the world from the container
@@ -625,6 +650,32 @@ mod test {
             Some(false),
             "scoped world was not invalidated"
         );
+    }
+
+    #[test]
+    fn nested_static_guard_restores_outer_thread_context() {
+        let mut world = World::new();
+        let world = WorldAccessGuard::new_exclusive(
+            &mut world,
+            array::from_fn(|_| Rc::new(RefCell::new(TestRegistry)) as Rc<RefCell<dyn Any>>),
+        );
+
+        let thread_world_is_valid = || {
+            ThreadWorldContainer
+                .try_get_context()
+                .map(|c| c.world.is_valid())
+                .unwrap_or(false)
+        };
+
+        WorldAccessGuard::with_existing_static_guard(world.clone(), |outer| {
+            WorldAccessGuard::with_existing_static_guard(outer.clone(), |_| {
+                assert!(thread_world_is_valid());
+            });
+            assert!(
+                thread_world_is_valid(),
+                "outer thread context was left pointing at the invalidated inner guard"
+            );
+        });
     }
 
     #[test]

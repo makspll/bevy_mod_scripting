@@ -122,12 +122,11 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         ctxt: Arc<Mutex<P::C>>,
         script_callbacks: ScriptCallbacks<P>,
     ) -> Result<ScriptValue, ScriptError> {
-        let mut ctxt_guard = ctxt.lock();
         let result = P::handle(
             std::mem::take(&mut self.args),
             &self.attachment,
             &self.callback,
-            &mut ctxt_guard,
+            &ctxt,
             script_callbacks,
             guard.clone(),
         );
@@ -139,8 +138,6 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
             err.with_context(format!("in callback: {}", self.callback))
                 .with_language(P::LANGUAGE)
         });
-
-        drop(ctxt_guard);
 
         if self.trigger_response {
             trace!(
