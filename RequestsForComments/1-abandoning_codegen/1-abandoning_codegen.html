@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-86387311.js";
+            window.path_to_searchindex_js = "../../searchindex-80a14201.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-f41caeaf.js"></script>
+        <script src="../../toc-d81fe5b8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -213,6 +213,7 @@
 <li>Automatically generated bindings are okay at best, with many functions missing and docs mentioning rust constructs explicitly (since they come directly from docstrings)</li>
 <li>Most of them are unused</li>
 <li>The lack of functionality for generating bindings for 3rd party libraries means the codegen is not as useful as it could be</li>
+<li>Bevy’s API is stabilizing, and upcoming work on enums and constructors will make many bindings unnecessary anyway</li>
 </ul>
 <h2 id="proposal"><a class="header" href="#proposal">Proposal</a></h2>
 <p>Based on the above, I propose the following:</p>
@@ -221,12 +222,20 @@
 <li>Empowering the community to build their own bindings crates for their favourite libraries</li>
 </ul>
 <p>In this new world we would focus on writing the most critical pieces of integration with bevy. Instead of putting in effort to maintain a bespoke rustc compiler plugin, we could provide github action templates to let people build out bindings quickly.</p>
+<h2 id="migration"><a class="header" href="#migration">Migration</a></h2>
+<p>The codegen runs on our side, not on the consumer’s machine, and its output is committed. So no feature flag or default-on/off transition is needed:</p>
+<ol>
+<li>Remove the <code>codegen</code> project, keeping whatever it last generated as plain source.</li>
+<li>Iterate on and clean up those bindings, deleting ones that are no longer needed as the enum and constructor work lands.</li>
+</ol>
+<p>This starts from a non-breaking state, and I’d like to begin as early as the 0.20 cycle rather than waiting for the editor.</p>
+<p>Bindings for 3rd party libraries (e.g. <code>bevy_hanabi</code>, UI, physics) would not live in core, which would only keep Bevy-native bindings. Instead we’d make it easy to set up small community bindings crates that sync to the main test suite and publish easily.</p>
 <h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
 <p>We could also of course make our current codegen better, more flexible and generally stronger, however some of its core problems will always remain (like bad documentation at best, and long compilation times).</p>
 <h2 id="benefits"><a class="header" href="#benefits">Benefits</a></h2>
 <ul>
-<li>Clean compilation times have potential to go down by as much as 10 minutes (on my machine)</li>
-<li>Bevy bindings quality increases</li>
+<li>Clean compilation times have potential to go down by as much as 10 minutes (on my machine), which also makes clean CI builds cheaper</li>
+<li>Bevy bindings quality increases, and a smaller API surface is easier for beginners</li>
 <li>Intermediate file sizes decrease (i.e. LAD files, LUA declaration files)</li>
 </ul>
 <h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
