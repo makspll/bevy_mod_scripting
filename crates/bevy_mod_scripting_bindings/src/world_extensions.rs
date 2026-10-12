@@ -2,8 +2,8 @@
 //! Implementations of [`WorldExtensions`] trait on the world guard.
 
 use super::{
-    AppReflectAllocator, AppScriptComponentRegistry, ReflectBase, ReflectBaseType,
-    ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
+    AnyTypeRegistration, AppReflectAllocator, AppScriptComponentRegistry, ReflectBase,
+    ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
     ScriptTypeRegistration, Union,
     function::{
         namespace::Namespace,
@@ -267,6 +267,29 @@ pub trait WorldExtensions {
         name: impl Into<Cow<'static, str>>,
     ) -> Result<DynamicScriptFunction, Cow<'static, str>>;
 
+    /// Looks up a function callable on an instance of the given type, i.e. `value:name(..)` in a script.
+    ///
+    /// Resolution order:
+    /// 1. functions registered on the type itself
+    /// 2. functions registered on [`ReflectReference`], which apply to all instances
+    ///
+    /// Returns the name back if nothing was found.
+    fn lookup_instance_function(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'static, str>>;
+
+    /// Looks up a reserved function (see the "Reserved Functions" section of the book) on the `ReflectReference` namespace,
+    /// ignoring functions registered on the types themselves.
+    ///
+    /// Used for functions languages rely on and which types cannot override, such as `display` and `iter`.
+    fn lookup_reserved_function(
+        &self,
+        name: impl Into<Cow<'static, str>>,
+        context: FunctionCallContext,
+    ) -> Result<DynamicScriptFunction, InteropError>;
+
     /// Resolves a type registration by name.
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration>;
 
@@ -274,27 +297,13 @@ pub trait WorldExtensions {
     fn get_type_registration(
         &self,
         registration: ScriptTypeRegistration,
-    ) -> Result<
-        Union<
-            ScriptTypeRegistration,
-            Union<ScriptComponentRegistration, ScriptResourceRegistration>,
-        >,
-        InteropError,
-    >;
+    ) -> Result<AnyTypeRegistration, InteropError>;
 
     /// Resolves a type registration by name with component/resource detection.
     fn get_type_registration_by_name(
         &self,
         type_name: String,
-    ) -> Result<
-        Option<
-            Union<
-                ScriptTypeRegistration,
-                Union<ScriptComponentRegistration, ScriptResourceRegistration>,
-            >,
-        >,
-        InteropError,
-    >;
+    ) -> Result<Option<AnyTypeRegistration>, InteropError>;
 
     /// Attempts to interpret a type as a resource type.
     fn get_resource_type(
@@ -1070,6 +1079,29 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         Err(name)
     }
 
+    fn lookup_instance_function(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'static, str>> {
+        self.lookup_function([type_id, TypeId::of::<ReflectReference>()], name)
+    }
+
+    fn lookup_reserved_function(
+        &self,
+        name: impl Into<Cow<'static, str>>,
+        context: FunctionCallContext,
+    ) -> Result<DynamicScriptFunction, InteropError> {
+        self.lookup_function([TypeId::of::<ReflectReference>()], name)
+            .map_err(|name| {
+                InteropError::missing_function(
+                    name,
+                    Namespace::OnType(TypeId::of::<ReflectReference>()),
+                    Some(context),
+                )
+            })
+    }
+
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
         let type_registry = self.type_registry();
         let type_registry = type_registry.read();
@@ -1082,13 +1114,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     fn get_type_registration(
         &self,
         registration: ScriptTypeRegistration,
-    ) -> Result<
-        Union<
-            ScriptTypeRegistration,
-            Union<ScriptComponentRegistration, ScriptResourceRegistration>,
-        >,
-        InteropError,
-    > {
+    ) -> Result<AnyTypeRegistration, InteropError> {
         let registration = match self.get_resource_type(registration)? {
             Ok(res) => {
                 return Ok(Union::new_right(Union::new_right(res)));
@@ -1109,15 +1135,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     fn get_type_registration_by_name(
         &self,
         type_name: String,
-    ) -> Result<
-        Option<
-            Union<
-                ScriptTypeRegistration,
-                Union<ScriptComponentRegistration, ScriptResourceRegistration>,
-            >,
-        >,
-        InteropError,
-    > {
+    ) -> Result<Option<AnyTypeRegistration>, InteropError> {
         let val = self.get_type_by_name(&type_name);
         Ok(match val {
             Some(registration) => Some(self.get_type_registration(registration)?),
