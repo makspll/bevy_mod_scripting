@@ -2,8 +2,8 @@
 //! Implementations of [`WorldExtensions`] trait on the world guard.
 
 use super::{
-    AnyTypeRegistration, AppReflectAllocator, AppScriptComponentRegistry, EnumVariantRef,
-    ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration,
+    AnyTypeRegistration, AppReflectAllocator, AppScriptCallbackRunners, AppScriptComponentRegistry,
+    EnumVariantRef, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration,
     ScriptResourceRegistration, ScriptTypeRegistration, StaticTypeRef, Union,
     function::{
         namespace::Namespace,
@@ -328,6 +328,9 @@ pub trait WorldExtensions {
     /// Returns the script function registry.
     fn script_function_registry(&'_ self) -> Ref<'_, AppScriptFunctionRegistry>;
 
+    /// Returns the callback runners of all scripting plugins.
+    fn script_callback_runners(&'_ self) -> Ref<'_, AppScriptCallbackRunners>;
+
     /// Returns the allocator used for reflection.
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator>;
 
@@ -359,6 +362,7 @@ pub trait WorldExtensions {
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
+        callback_runners: AppScriptCallbackRunners,
     ) -> RegistryCache;
 }
 
@@ -1061,6 +1065,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
+    fn script_callback_runners(&'_ self) -> Ref<'_, AppScriptCallbackRunners> {
+        #[allow(
+            clippy::unwrap_used,
+            reason = "internal domain boundary, enforced at creation of the guard"
+        )]
+        self.get_cached_registry().unwrap()
+    }
+
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator> {
         #[allow(
             clippy::unwrap_used,
@@ -1157,12 +1169,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
+        callback_runners: AppScriptCallbackRunners,
     ) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
         debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
+        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
 
         [
             Rc::new(RefCell::new(allocator)),
@@ -1170,6 +1184,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(schedule_registry)),
             Rc::new(RefCell::new(component_registry)),
             Rc::new(RefCell::new(attachment)),
+            Rc::new(RefCell::new(callback_runners)),
         ]
     }
 
@@ -1179,6 +1194,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
+        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
 
         [
             Rc::new(RefCell::new(
@@ -1206,6 +1222,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                     .unwrap_or_default(),
             )),
             Rc::new(RefCell::new(attachment)),
+            Rc::new(RefCell::new(
+                world
+                    .get_resource::<AppScriptCallbackRunners>()
+                    .cloned()
+                    .unwrap_or_default(),
+            )),
         ]
     }
 
@@ -1259,6 +1281,9 @@ impl CachedRegistry for AppScriptComponentRegistry {
 pub struct CurrentScriptAttachment(pub Option<ScriptAttachment>);
 impl CachedRegistry for CurrentScriptAttachment {
     const SLOT: usize = 4;
+}
+impl CachedRegistry for AppScriptCallbackRunners {
+    const SLOT: usize = 5;
 }
 
 #[cfg(test)]
@@ -1763,6 +1788,7 @@ mod test {
                 .get_resource::<AppScriptComponentRegistry>()
                 .cloned()
                 .unwrap_or_default(),
+            AppScriptCallbackRunners::default(),
         );
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         assert!(guard.spawn().is_ok());

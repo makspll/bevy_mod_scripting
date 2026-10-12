@@ -6,7 +6,7 @@ use bevy_ecs::{
     world::WorldId,
 };
 use bevy_mod_scripting_bindings::{
-    CurrentScriptAttachment, InteropError, ScriptValue, WorldExtensions,
+    CurrentScriptAttachment, InteropError, ScriptCallbackResults, ScriptValue, WorldExtensions,
 };
 use bevy_mod_scripting_display::{DisplayProxy, WithTypeInfo};
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -17,7 +17,7 @@ use crate::{
     callbacks::ScriptCallbacks,
     error::ScriptError,
     event::{
-        CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
+        CallbackLabel, GetRecipients, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
         ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
     script::ScriptContexts,
@@ -99,6 +99,49 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
             result
         })
     }
+}
+
+/// Immediately runs the callback on every loaded script of plugin `P` among the given recipients.
+///
+/// This is the [`ScriptCallbackRunner`](bevy_mod_scripting_bindings::ScriptCallbackRunner) each [`crate::ScriptingPlugin`] registers.
+/// Like the event handler, broadcast recipients skip scripts which are currently loading or unloading,
+/// while a specific script which is not loaded is reported as an error for that script.
+pub fn run_callback_on_recipients<P: IntoScriptPluginParams>(
+    script_contexts: &ScriptContexts<P>,
+    script_callbacks: &ScriptCallbacks<P>,
+    world: WorldGuard,
+    recipients: &Recipients,
+    label: &str,
+    args: Vec<ScriptValue>,
+) -> Result<ScriptCallbackResults, InteropError> {
+    let label = CallbackLabel::new(label)
+        .ok_or_else(|| InteropError::string(format!("`{label}` is not a valid callback name")))?;
+    let specific = matches!(
+        recipients,
+        Recipients::ScriptEntity(_, _) | Recipients::StaticScript(_)
+    );
+
+    Ok(recipients
+        .get_recipients(script_contexts.clone())
+        .into_iter()
+        .filter_map(|(attachment, context)| {
+            let result = match context.as_loaded() {
+                Some(context) => P::handle(
+                    args.clone(),
+                    &attachment,
+                    &label,
+                    context,
+                    script_callbacks.clone(),
+                    world.clone(),
+                ),
+                None if specific => Err(InteropError::string(format!(
+                    "Cannot run callback `{label}` on script {attachment}: the script is not loaded, its context is: {context}"
+                ))),
+                None => return None,
+            };
+            Some((attachment, result))
+        })
+        .collect())
 }
 
 /// The maximum number of callbacks which can run nested inside each other on one thread,
@@ -412,7 +455,10 @@ mod test {
     use uuid::Uuid;
 
     use super::*;
-    use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
+    use crate::{
+        config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
+        script::{Context, ContextPolicy},
+    };
 
     make_test_plugin!(crate);
 
@@ -444,6 +490,13 @@ mod test {
         );
     }
 
+    /// Runs `f` with an exclusive world guard, like the handler systems have
+    fn with_guard<O>(f: impl FnOnce(WorldGuard) -> O) -> O {
+        let mut world = World::new();
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        f(WorldAccessGuard::new_exclusive(&mut world, cache))
+    }
+
     /// Runs the callback the same way the handler systems do
     fn run(
         context: &Arc<Mutex<TestContext>>,
@@ -451,17 +504,16 @@ mod test {
         label: &str,
         callbacks: &ScriptCallbacks<TestPlugin>,
     ) -> Result<ScriptValue, InteropError> {
-        let mut world = World::new();
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-        let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
-        TestPlugin::handle(
-            vec![],
-            attachment,
-            &label.into(),
-            context,
-            callbacks.clone(),
-            guard,
-        )
+        with_guard(|guard| {
+            TestPlugin::handle(
+                vec![],
+                attachment,
+                &label.into(),
+                context,
+                callbacks.clone(),
+                guard,
+            )
+        })
     }
 
     fn no_contexts_executing() -> bool {
@@ -633,5 +685,111 @@ mod test {
         let err = result.expect_err("unbounded recursion should hit the depth limit");
         assert!(err.to_string().contains("nested more than"), "{err}");
         assert!(no_contexts_executing());
+    }
+
+    /// Per script contexts with scripts 1 and 2 loaded and script 3 still loading.
+    /// Each script answers `ping` with its own number.
+    fn make_contexts() -> (ScriptContexts<TestPlugin>, ScriptCallbacks<TestPlugin>) {
+        let contexts = ScriptContexts::<TestPlugin>::new(ContextPolicy::per_script());
+        {
+            let mut contexts = contexts.write();
+            contexts.insert(script(1), new_context().into()).unwrap();
+            contexts.insert(script(2), new_context().into()).unwrap();
+            contexts.insert(script(3), Context::Loading).unwrap();
+        }
+        let callbacks = ScriptCallbacks::<TestPlugin>::default();
+        for n in 1..=3 {
+            register(&callbacks, &script(n), "ping", move || {
+                Ok(ScriptValue::Integer(n as i64))
+            });
+        }
+        (contexts, callbacks)
+    }
+
+    fn run_on_recipients(
+        recipients: Recipients,
+        label: &str,
+    ) -> Result<ScriptCallbackResults, InteropError> {
+        let (contexts, callbacks) = make_contexts();
+        with_guard(|guard| {
+            run_callback_on_recipients(&contexts, &callbacks, guard, &recipients, label, vec![])
+        })
+    }
+
+    #[test]
+    fn broadcast_runs_loaded_scripts_and_skips_loading_ones() {
+        let results = run_on_recipients(Recipients::AllScripts, "ping").unwrap();
+        let mut values = results
+            .into_iter()
+            .map(|(_, result)| match result {
+                Ok(ScriptValue::Integer(n)) => n,
+                other => panic!("unexpected result: {other:?}"),
+            })
+            .collect::<Vec<_>>();
+        values.sort();
+        assert_eq!(values, vec![1, 2]);
+    }
+
+    #[test]
+    fn specific_script_which_is_not_loaded_errors() {
+        let results =
+            run_on_recipients(Recipients::StaticScript(script(3).script()), "ping").unwrap();
+        assert_eq!(results.len(), 1);
+        let (attachment, result) = &results[0];
+        assert_eq!(attachment, &script(3));
+        let err = result.as_ref().expect_err("script 3 is still loading");
+        assert!(err.to_string().contains("not loaded"), "{err}");
+    }
+
+    #[test]
+    fn specific_script_of_another_plugin_is_skipped() {
+        let results =
+            run_on_recipients(Recipients::StaticScript(script(99).script()), "ping").unwrap();
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn invalid_callback_label_errors() {
+        let err = run_on_recipients(Recipients::AllScripts, "not a label")
+            .expect_err("label with spaces is invalid");
+        assert!(
+            err.to_string().contains("not a valid callback name"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn plugin_registers_runner_reachable_from_world_guard() {
+        let mut app = App::default();
+        app.add_plugins((bevy_asset::AssetPlugin::default(), TestPlugin::default()));
+        app.finish();
+
+        let world = app.world_mut();
+        let context = new_context();
+        world
+            .resource::<ScriptContexts<TestPlugin>>()
+            .write()
+            .insert(script(1), context.into())
+            .unwrap();
+        register(
+            world.resource::<ScriptCallbacks<TestPlugin>>(),
+            &script(1),
+            "ping",
+            || Ok(ScriptValue::Integer(1)),
+        );
+
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
+        let guard = WorldAccessGuard::new_exclusive(world, cache);
+        let runners = guard.script_callback_runners().clone();
+        let results = runners
+            .run(
+                guard,
+                &Recipients::StaticScript(script(1).script()),
+                "ping",
+                vec![],
+            )
+            .unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(matches!(results[0].1, Ok(ScriptValue::Integer(1))));
     }
 }

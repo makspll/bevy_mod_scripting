@@ -22,8 +22,8 @@ use crate::{
     context::ScriptingLoader,
     error::ScriptError,
     event::{
-        Recipients, ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptDetachedEvent,
-        ScriptErrorEvent,
+        GetRecipients, Recipients, ScriptAssetModifiedEvent, ScriptAttachedEvent,
+        ScriptDetachedEvent, ScriptErrorEvent,
     },
     pipeline::hooks::{
         clear_machine_data, on_script_unloaded_for_reload_pipeline_handler,

@@ -10,7 +10,7 @@ use bevy_mod_scripting_script::ScriptAttachment;
 use crate::{
     IntoScriptPluginParams,
     error::ScriptError,
-    script::{Context, ScriptContexts, ScriptId},
+    script::{Context, ScriptContexts},
 };
 
 /// An error coming from a script
@@ -151,26 +151,19 @@ impl std::fmt::Display for CallbackLabel {
     }
 }
 
-/// Describes the designated recipients of a script event
-#[derive(Clone, Debug, Reflect)]
-pub enum Recipients {
-    /// The event needs to be handled by all scripts, if multiple scripts share a context, the event will be sent once per script in the context.
-    /// Scripts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
-    AllScripts,
-    /// The event is to be handled by all unique contexts, i.e. if two scripts share the same context, the event will be sent only once per the context.
-    /// Contexts currently loading or unloading will NOT receive this event after/before they are loaded/unloaded.
-    AllContexts,
-    /// The event is to be handled by a specific script-entity pair
-    /// If the target context is in the process of loading, the callback will be re-queued untill the script is loaded, if the entity has been despawned the callback will not be executed
-    ScriptEntity(ScriptId, Entity),
-    /// the event is to be handled by a specific static script
-    /// If the target context is in the process of loading, the callback will be re-queued untill the script is loaded.
-    StaticScript(ScriptId),
+pub use bevy_mod_scripting_script::Recipients;
+
+/// Resolves [`Recipients`] against the scripts of a scripting plugin.
+pub trait GetRecipients {
+    /// Retrieves all the recipients of the event based on existing scripts
+    fn get_recipients<P: IntoScriptPluginParams>(
+        &self,
+        script_context: ScriptContexts<P>,
+    ) -> Vec<(ScriptAttachment, Context<P>)>;
 }
 
-impl Recipients {
-    /// Retrieves all the recipients of the event based on existing scripts
-    pub fn get_recipients<P: IntoScriptPluginParams>(
+impl GetRecipients for Recipients {
+    fn get_recipients<P: IntoScriptPluginParams>(
         &self,
         script_context: ScriptContexts<P>,
     ) -> Vec<(ScriptAttachment, Context<P>)> {
