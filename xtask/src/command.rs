@@ -76,13 +76,7 @@ pub fn run_workspace_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
     dir: Option<&Path>,
     capture_streams_in_output: bool,
 ) -> Result<Output> {
-    let coverage_mode = if app_settings.coverage {
-        "with coverage"
-    } else {
-        Default::default()
-    };
-
-    info!("Running workspace command {coverage_mode}: {command}");
+    info!("Running workspace command: {command}");
 
     let mut args = vec![];
 
@@ -98,18 +92,8 @@ pub fn run_workspace_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
             args.push("--workspace".to_owned());
 
             if let Some(profile) = app_settings.profile.as_ref() {
-                let use_profile = if profile == "ephemeral-build" && app_settings.coverage {
-                    // use special profile for coverage as it needs debug information
-                    // but also don't want it too slow
-                    "ephemeral-coverage"
-                } else {
-                    profile
-                };
-
-                if !app_settings.coverage {
-                    args.push("--profile".to_owned());
-                    args.push(use_profile.to_owned());
-                }
+                args.push("--profile".to_owned());
+                args.push(profile.to_owned());
 
                 if let Some(jobs) = app_settings.jobs {
                     args.push("--jobs".to_owned());

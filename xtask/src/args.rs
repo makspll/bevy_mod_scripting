@@ -8,14 +8,6 @@ pub struct GlobalArgs {
     #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value=Features::default().to_string(),required = false)]
     pub features: Features,
 
-    #[clap(
-        long,
-        global = true,
-        default_value = "false",
-        help = "Enable coverage collection for cargo commands"
-    )]
-    pub coverage: bool,
-
     #[clap(skip)]
     pub override_workspace_dir: Option<PathBuf>,
 
@@ -44,20 +36,6 @@ impl GlobalArgs {
     pub fn with_max_jobs(self, jobs: usize) -> Self {
         Self {
             jobs: Some(jobs),
-            ..self
-        }
-    }
-
-    pub fn with_coverage(self) -> Self {
-        Self {
-            coverage: true,
-            ..self
-        }
-    }
-
-    pub fn without_coverage(self) -> Self {
-        Self {
-            coverage: false,
             ..self
         }
     }
