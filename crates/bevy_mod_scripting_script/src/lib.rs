@@ -86,3 +86,15 @@ pub enum Recipients {
     /// If the target context is in the process of loading, the callback will be re-queued untill the script is loaded.
     StaticScript(Handle<ScriptAsset>),
 }
+
+impl From<ScriptAttachment> for Recipients {
+    /// The recipients targeting exactly the given attachment
+    fn from(attachment: ScriptAttachment) -> Self {
+        match attachment {
+            ScriptAttachment::EntityScript(entity, script) => {
+                Recipients::ScriptEntity(script, entity)
+            }
+            ScriptAttachment::StaticScript(script) => Recipients::StaticScript(script),
+        }
+    }
+}
