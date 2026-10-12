@@ -149,7 +149,7 @@ pub enum ScenarioStepSerialized {
         /// the entity to despawn
         entity: String,
     },
-    /// Emits a ScriptCallbackEvent
+    /// Emits a ScriptCallbackMessage
     EmitScriptCallbackEvent {
         /// the label to fire the callback for
         label: ScenarioLabel,

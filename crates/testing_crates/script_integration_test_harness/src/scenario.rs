@@ -22,7 +22,7 @@ use bevy_mod_scripting_core::{
     ConfigureScriptPlugin, IntoScriptPluginParams, callback_labels,
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
-        Recipients, ScriptAttachedEvent, ScriptCallbackEvent, ScriptCallbackResponseEvent,
+        Recipients, ScriptAttachedEvent, ScriptCallbackMessage, ScriptCallbackResponseEvent,
         ScriptDetachedEvent,
     },
     handler::event_handler,
@@ -260,7 +260,7 @@ impl Scenario {
                 let payload = string_value
                     .map(|s| vec![ScriptValue::String(s.into())])
                     .unwrap_or(vec![]);
-                let mut event = ScriptCallbackEvent::new(label, payload, recipients, language);
+                let mut event = ScriptCallbackMessage::new(label, payload, recipients, language);
                 if emit_response {
                     event = event.with_response();
                 }
@@ -546,9 +546,9 @@ pub enum ScenarioStep {
         script: Handle<ScriptAsset>,
     },
 
-    /// Emits a ScriptCallbackEvent
+    /// Emits a ScriptCallbackMessage
     EmitScriptCallbackEvent {
-        event: ScriptCallbackEvent,
+        event: ScriptCallbackMessage,
     },
 
     /// Run the app update loop once

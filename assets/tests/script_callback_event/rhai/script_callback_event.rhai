@@ -1,8 +1,8 @@
 fn on_test() {
     let label = CallbackLabel.new_.call(["callback_a"]);
     let recipients = Recipients.AllScripts.new_.call(#{});
-    let event_type = types.ScriptCallbackEvent;
-    let event = ScriptCallbackEvent.new_.call(#{
+    let event_type = types.ScriptCallbackMessage;
+    let event = ScriptCallbackMessage.new_.call(#{
         label: label,
         recipients: recipients,
         args: [],

@@ -15,7 +15,7 @@ use crate::{
     callbacks::ScriptCallbacks,
     error::ScriptError,
     event::{
-        CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
+        CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackMessage,
         ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
     script::ScriptContexts,
@@ -87,7 +87,7 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
 #[allow(deprecated)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
-    state: &mut SystemState<Local<MessageCursor<ScriptCallbackEvent>>>,
+    state: &mut SystemState<Local<MessageCursor<ScriptCallbackMessage>>>,
 ) -> bevy_ecs::error::Result {
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
@@ -111,14 +111,14 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut event_cursor: Local<MessageCursor<ScriptCallbackEvent>>,
+    mut event_cursor: Local<MessageCursor<ScriptCallbackMessage>>,
     script_context: ScriptContexts<P>,
     script_callbacks: ScriptCallbacks<P>,
     guard: WorldAccessGuard,
 ) {
     let mut errors = Vec::default();
-    let events: Result<Vec<ScriptCallbackEvent>, InteropError> =
-        guard.with_resource(|events: &Messages<ScriptCallbackEvent>| {
+    let events: Result<Vec<ScriptCallbackMessage>, InteropError> =
+        guard.with_resource(|events: &Messages<ScriptCallbackMessage>| {
             event_cursor
                 .read(events)
                 .filter(|e| e.label == callback_label)
@@ -200,7 +200,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         }
     }
 
-    if let Err(err) = guard.with_resource_mut(|mut writer: Mut<Messages<ScriptCallbackEvent>>| {
+    if let Err(err) = guard.with_resource_mut(|mut writer: Mut<Messages<ScriptCallbackMessage>>| {
         writer.write_batch(events_to_requeue);
     }) {
         errors.push(err.into());

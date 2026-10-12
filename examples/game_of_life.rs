@@ -264,14 +264,14 @@ callback_labels!(
 );
 
 /// Sends events allowing scripts to drive update logic
-pub fn send_on_update(mut events: MessageWriter<ScriptCallbackEvent>) {
-    events.write(ScriptCallbackEvent::new_for_all_scripts(OnUpdate, vec![]));
+pub fn send_on_update(mut events: MessageWriter<ScriptCallbackMessage>) {
+    events.write(ScriptCallbackMessage::new_for_all_scripts(OnUpdate, vec![]));
 }
 
 pub fn send_on_click(
     buttons: Res<ButtonInput<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
-    mut events: MessageWriter<ScriptCallbackEvent>,
+    mut events: MessageWriter<ScriptCallbackMessage>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         let window = q_windows.single();
@@ -279,7 +279,7 @@ pub fn send_on_click(
         let x = pos.x as u32;
         let y = pos.y as u32;
 
-        events.write(ScriptCallbackEvent::new_for_all_scripts(
+        events.write(ScriptCallbackMessage::new_for_all_scripts(
             OnClick,
             vec![
                 ScriptValue::Integer(x as i64),

@@ -198,11 +198,11 @@ impl Recipients {
     }
 }
 
-/// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
+/// A callback message meant to trigger a callback in a subset/set of scripts in the world with the given arguments
 #[derive(Clone, Message, Debug, Reflect)]
 #[reflect(Message)]
 #[non_exhaustive]
-pub struct ScriptCallbackEvent {
+pub struct ScriptCallbackMessage {
     /// The label of the callback
     pub label: CallbackLabel,
     /// The recipients of the callback
@@ -217,7 +217,11 @@ pub struct ScriptCallbackEvent {
     pub iteration: usize,
 }
 
-impl ScriptCallbackEvent {
+/// The old name of [`ScriptCallbackMessage`], renamed to match Bevy's event/message split.
+#[deprecated(since = "0.22.0", note = "renamed to `ScriptCallbackMessage`")]
+pub type ScriptCallbackEvent = ScriptCallbackMessage;
+
+impl ScriptCallbackMessage {
     /// Creates a new callback event with the given label, arguments and recipients
     pub fn new<L: Into<CallbackLabel>>(
         label: L,

@@ -14,7 +14,7 @@ function on_script_loaded()
 end
 ```
 
-this callback is refered to by "name", and on the rust side can be invoked either via `RunScriptCallback` command, or by setting up an event handler system which passes on `ScriptCallbackEvent`'s to scripts.
+this callback is refered to by "name", and on the rust side can be invoked either via `RunScriptCallback` command, or by setting up an event handler system which passes on `ScriptCallbackMessage`'s to scripts.
 
 The key thing to note about this type of callback, is that if the script is ever reloaded, and the contents of this callback change, the logic inside it will also be hot-reloaded.
 

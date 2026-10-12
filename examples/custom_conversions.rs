@@ -114,7 +114,7 @@ pub fn main() {
             Startup,
             move |mut commands: Commands,
                   mut script_assets: ResMut<Assets<ScriptAsset>>,
-                  mut callbacks: MessageWriter<ScriptCallbackEvent>,
+                  mut callbacks: MessageWriter<ScriptCallbackMessage>,
                   allocator: ResMut<AppReflectAllocator>| {
                 let content = r#"
                     function on_example(my_funky_argument_payload)
@@ -134,7 +134,7 @@ pub fn main() {
 
                 commands.queue(AttachScript::<LuaScriptingPlugin>::new(attachment.clone()));
                 callbacks.write(
-                    ScriptCallbackEvent::new_for_static_script(
+                    ScriptCallbackMessage::new_for_static_script(
                         OnExample,
                         vec![reference_payload.into()],
                         handle,
