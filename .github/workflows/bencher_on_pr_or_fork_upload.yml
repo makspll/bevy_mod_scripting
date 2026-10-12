@@ -15,17 +15,30 @@ jobs:
       BENCHMARK_RESULTS: benchmark_results.txt
       PR_EVENT: event.json
     steps:
+      # the benchmark workflow succeeds without producing anything when it decided not to run
+      - name: Check benchmarks ran
+        id: ran
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+              ...context.repo, run_id: context.payload.workflow_run.id,
+            });
+            core.setOutput('ran', data.artifacts.some(a => a.name === 'benchmark_results.txt') ? 'true' : 'false');
       - name: Download Benchmark Results
+        if: steps.ran.outputs.ran == 'true'
         uses: dawidd6/action-download-artifact@v6
         with:
           name: ${{ env.BENCHMARK_RESULTS }}
           run_id: ${{ github.event.workflow_run.id }}
       - name: Download PR Event
+        if: steps.ran.outputs.ran == 'true'
         uses: dawidd6/action-download-artifact@v6
         with:
           name: ${{ env.PR_EVENT }}
           run_id: ${{ github.event.workflow_run.id }}
       - name: Export PR Event Data
+        if: steps.ran.outputs.ran == 'true'
         uses: actions/github-script@v6
         with:
           script: |
@@ -36,7 +49,9 @@ jobs:
             core.exportVariable("PR_BASE_SHA", prEvent.pull_request.base.sha);
             core.exportVariable("PR_NUMBER", prEvent.number);
       - uses: bencherdev/bencher@main
+        if: steps.ran.outputs.ran == 'true'
       - name: Track Benchmarks with Bencher
+        if: steps.ran.outputs.ran == 'true'
         run: |
           bencher run \
           --project bms \

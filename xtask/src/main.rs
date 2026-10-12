@@ -134,13 +134,20 @@ impl App {
                 }
                 cmd.arg("--kind").arg(kind.as_ref());
             }
-            Xtasks::Docs { open, no_rust_docs } => {
+            Xtasks::Docs {
+                open,
+                no_rust_docs,
+                exclude_generated_bindings,
+            } => {
                 cmd.arg("docs");
                 if open {
                     cmd.arg("--open");
                 }
                 if no_rust_docs {
                     cmd.arg("--no-rust-docs");
+                }
+                if exclude_generated_bindings {
+                    cmd.arg("--exclude-generated-bindings");
                 }
             }
             Xtasks::Test { name, package } => {
@@ -155,8 +162,11 @@ impl App {
             Xtasks::CiCheck => {
                 cmd.arg("ci-check");
             }
-            Xtasks::CiMatrix => {
+            Xtasks::CiMatrix { full } => {
                 cmd.arg("ci-matrix");
+                if full {
+                    cmd.arg("--full");
+                }
             }
             Xtasks::Codegen {
                 output_dir,
@@ -247,6 +257,7 @@ impl App {
             ),
             os: os.to_string(),
             init_args: self.subcmd.ci_init_args(),
+            cache_key: format!("{}-{os}", self.subcmd.as_ref().to_lowercase()),
             run_on_forks: !matches!(self.subcmd, Xtasks::Bencher { .. } | Xtasks::Bench { .. }),
             requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
         }
@@ -426,6 +437,11 @@ enum Xtasks {
         /// Skip building rust docs
         #[clap(long)]
         no_rust_docs: bool,
+
+        /// Skip the generated `bms_bindings` crates when building rust docs, there are many of them and
+        /// they are slow to document
+        #[clap(long)]
+        exclude_generated_bindings: bool,
     },
     /// Run code generation
     Codegen {
@@ -466,7 +482,12 @@ enum Xtasks {
     ///    }
     /// ]
     ///
-    CiMatrix,
+    CiMatrix {
+        /// Emit the full matrix (every OS, every feature combination, benchmarks) instead of the reduced
+        /// one used for pull requests
+        #[clap(long)]
+        full: bool,
+    },
     /// Runs bencher in dry mode by default if not on the main branch
     /// To publish main branch defaults set publish mode to true
     Bencher {
@@ -500,6 +521,8 @@ struct CiMatrixRow {
     os: String,
     /// The arguments to pass to `cargo xtask init`, so only the tools this job needs get installed
     init_args: String,
+    /// Identifies the cargo cache this job restores from and saves to, jobs doing the same kind of work share one
+    cache_key: String,
     /// If this step requires a gpu
     requires_gpu: bool,
     /// if it should run on fork PR's
@@ -530,7 +553,11 @@ impl Xtasks {
         match self {
             Xtasks::Build { timings } => Self::build(timings, app_settings),
             Xtasks::Check { ide_mode, kind } => Self::check(app_settings, ide_mode, kind),
-            Xtasks::Docs { open, no_rust_docs } => Self::docs(app_settings, open, no_rust_docs),
+            Xtasks::Docs {
+                open,
+                no_rust_docs,
+                exclude_generated_bindings,
+            } => Self::docs(app_settings, open, no_rust_docs, exclude_generated_bindings),
             Xtasks::Test { name, package } => Self::test(app_settings, package, name),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init {
@@ -546,16 +573,25 @@ impl Xtasks {
                     Self::test(settings, Some("script_test".to_owned()), None)
                 }
             },
-            Xtasks::CiMatrix => {
-                let mut output = Self::ci_matrix(app_settings)?;
+            Xtasks::CiMatrix { full } => {
+                let mut output = Self::ci_matrix(app_settings, full)?;
                 output.sort_by(|e1, e2| e1.subcmd.cmp(&e2.subcmd));
                 let mut rows = Vec::default();
                 for os in <CiOs as strum::VariantArray>::VARIANTS {
                     for row in output.iter() {
-                        let step_should_run_on_main_os =
-                            matches!(row.subcmd, Xtasks::Build { .. } | Xtasks::Docs { .. });
+                        // these only need to run on one OS, the others are covered by the OS specific
+                        // checks and tests
+                        let step_should_run_on_main_os = matches!(
+                            row.subcmd,
+                            Xtasks::Build { .. } | Xtasks::Docs { .. } | Xtasks::Bencher { .. }
+                        );
 
                         if !os.is_main_os() && step_should_run_on_main_os {
+                            continue;
+                        }
+
+                        // pull requests only run on the main OS, the full matrix runs on main and staging
+                        if !full && !os.is_main_os() {
                             continue;
                         }
 
@@ -883,7 +919,12 @@ impl Xtasks {
         Ok(())
     }
 
-    fn docs(mut app_settings: GlobalArgs, open: bool, no_rust_docs: bool) -> Result<()> {
+    fn docs(
+        mut app_settings: GlobalArgs,
+        open: bool,
+        no_rust_docs: bool,
+        exclude_generated_bindings: bool,
+    ) -> Result<()> {
         // find [package.metadata."docs.rs"] key in Cargo.toml
         info!("installing mdbook ladfile preprocessor binary");
         Self::install(app_settings.clone(), Binary::MdbookPreprocessor)?;
@@ -942,9 +983,26 @@ impl Xtasks {
             app_settings.features = features;
 
             let mut args = Vec::default();
-            args.push("--all");
+            args.push("--all".to_owned());
             if open {
-                args.push("--open");
+                // dependencies are only worth documenting if someone is going to browse them
+                args.push("--open".to_owned());
+            } else {
+                args.push("--no-deps".to_owned());
+            }
+
+            if exclude_generated_bindings {
+                for package in metadata.workspace_packages() {
+                    if package
+                        .manifest_path
+                        .components()
+                        .any(|c| c.as_str() == "bindings")
+                        && package.name.as_str().ends_with("_bms_bindings")
+                    {
+                        args.push("--exclude".to_owned());
+                        args.push(package.name.to_string());
+                    }
+                }
             }
             run_workspace_command(
                 &app_settings,
@@ -1313,7 +1371,7 @@ impl Xtasks {
         Ok(())
     }
 
-    fn ci_matrix(app_settings: GlobalArgs) -> Result<Vec<App>> {
+    fn ci_matrix(app_settings: GlobalArgs, full: bool) -> Result<Vec<App>> {
         // split up the tests we want to run into different jobs
         // everything that can be parallelised should be
         // each row in the output will correspond to a separate job in the matrix.
@@ -1340,6 +1398,12 @@ impl Xtasks {
 
         // start with longest to compile all first
         powersets.reverse();
+
+        if !full {
+            // the powerset is a lot of runner time, which pull requests have to share. The all-features build
+            // is covered by the tests, so only check the smallest feature set (catches missing feature gates)
+            powersets = powersets.pop().into_iter().collect();
+        }
         info!("Powerset: {powersets:?}");
 
         let default_args = app_settings
@@ -1392,16 +1456,22 @@ impl Xtasks {
             subcmd: Xtasks::Docs {
                 open: false,
                 no_rust_docs: false,
+                // the generated crates are documented on docs.rs, no need to wait on them here
+                exclude_generated_bindings: true,
             },
         });
 
-        // also run a benchmark
-        // on non-main branches this will just dry run
-        output.push(App {
-            // benchmarks need to be representative, so they keep cargo's own bench profile
-            global_args: default_args.clone().with_profile(app_settings.profile.clone()),
-            subcmd: Xtasks::Bencher { publish: true },
-        });
+        // benchmarks publish to bencher, so they only run for the full matrix. Pull requests run them on demand,
+        // see the `Run benchmarks on PR` workflow
+        if full {
+            output.push(App {
+                // benchmarks need to be representative, so they keep cargo's own bench profile
+                global_args: default_args
+                    .clone()
+                    .with_profile(app_settings.profile.clone()),
+                subcmd: Xtasks::Bencher { publish: true },
+            });
+        }
 
         // and finally run tests
         output.push(App {
@@ -1417,7 +1487,7 @@ impl Xtasks {
 
     fn cicd(app_settings: GlobalArgs) -> Result<()> {
         // get the ci matrix
-        let matrix = Self::ci_matrix(app_settings.clone())?;
+        let matrix = Self::ci_matrix(app_settings.clone(), true)?;
         let length = matrix.len();
         for (i, app) in matrix.into_iter().enumerate() {
             info!("Running CI job {}/{}. {:?}", i + 1, length, app.subcmd);
@@ -1456,6 +1526,7 @@ impl Xtasks {
         // linux curl --proto '=https' --tlsv1.2 -sSfL https://bencher.dev/download/install-cli.sh | sh
         // windows irm https://bencher.dev/download/install-cli.ps1 | iex
         if wants(InitTool::Bencher) {
+            // no `--force`: with the cargo bin directory cached this is a no-op unless upstream changed
             run_system_command(
                 &app_settings,
                 "cargo",
@@ -1467,7 +1538,6 @@ impl Xtasks {
                     "--branch",
                     "main",
                     "--locked",
-                    "--force",
                     "bencher_cli",
                 ],
                 None,

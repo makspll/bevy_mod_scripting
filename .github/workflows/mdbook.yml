@@ -37,11 +37,15 @@ jobs:
         override: true
 
     - name: Rust Cache
-      uses: Swatinem/rust-cache@v2.7.3
+      uses: Swatinem/rust-cache@v2.7.7
+      with:
+        shared-key: book
+        save-if: ${{ github.ref == 'refs/heads/main' }}
+        cache-bin: true
 
     - name: Setup xtask & GPU drivers
       run: |
-        cargo xtask init --dont-update-ide
+        cargo xtask init --dont-update-ide --tools mdbook
         sudo add-apt-repository ppa:kisak/turtle -y
         sudo apt-get install --no-install-recommends libxkbcommon-x11-0 xvfb libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
 

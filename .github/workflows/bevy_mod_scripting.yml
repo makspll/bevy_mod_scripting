@@ -6,6 +6,7 @@ on:
   pull_request:
     branches:
       - "**"
+  workflow_dispatch:
 
 
 name: CI
@@ -67,13 +68,17 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
+          # we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that
+          shared-key: xtask
           save-if: ${{ github.ref == 'refs/heads/main' }}
           cache-all-crates: true
       - name: Generate matrix
         id: generate-matrix
+        env:
+          # pull requests get a reduced matrix to leave runner capacity for others, everything else runs the lot
+          MATRIX_ARGS: ${{ github.event_name == 'pull_request' && '' || '--full' }}
         run: |
-          cargo xtask ci-matrix > matrix.json
+          cargo xtask ci-matrix $MATRIX_ARGS > matrix.json
           cat matrix.json
           echo "Convert to single line JSON"
           jq -c . matrix.json > matrix-one-line.json
@@ -127,9 +132,16 @@ jobs:
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
+          # jobs doing the same kind of work share a cache (the matrix `cache_key`), jobs of different kinds would
+          # otherwise race to save one cache with whatever they built, and the others would never get a hit.
+          # Only main saves caches: PRs read main's (a PR can't read caches from other PRs or staging anyway),
+          # and PR saves would only push main's caches out of the repository's cache quota.
+          # `~/.cargo/bin` is part of the cache, so tools installed by `xtask init` are not rebuilt on a hit.
+          shared-key: ${{ matrix.run_args.cache_key }}
           save-if: ${{ github.ref == 'refs/heads/main' }}
           cache-all-crates: true
+          cache-bin: true
+          cache-on-failure: true
 
       - name: Setup
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
