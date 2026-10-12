@@ -2,8 +2,8 @@
 //! Implementations of [`WorldExtensions`] trait on the world guard.
 
 use super::{
-    AnyTypeRegistration, AppReflectAllocator, AppScriptComponentRegistry, EnumVariantRef,
-    ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration,
+    AnyTypeRegistration, AppReflectAllocator, AppScriptCallbackRunners, AppScriptComponentRegistry,
+    EnumVariantRef, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration,
     ScriptResourceRegistration, ScriptTypeRegistration, StaticTypeRef, Union,
     function::{
         namespace::Namespace,
@@ -328,6 +328,9 @@ pub trait WorldExtensions {
     /// Returns the script function registry.
     fn script_function_registry(&'_ self) -> Ref<'_, AppScriptFunctionRegistry>;
 
+    /// Returns the callback runners of all scripting plugins.
+    fn script_callback_runners(&'_ self) -> Ref<'_, AppScriptCallbackRunners>;
+
     /// Returns the allocator used for reflection.
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator>;
 
@@ -359,6 +362,7 @@ pub trait WorldExtensions {
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
+        callback_runners: AppScriptCallbackRunners,
     ) -> RegistryCache;
 }
 
@@ -1061,6 +1065,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
+    fn script_callback_runners(&'_ self) -> Ref<'_, AppScriptCallbackRunners> {
+        #[allow(
+            clippy::unwrap_used,
+            reason = "internal domain boundary, enforced at creation of the guard"
+        )]
+        self.get_cached_registry().unwrap()
+    }
+
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator> {
         #[allow(
             clippy::unwrap_used,
@@ -1088,7 +1100,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     fn current_attachment(&self) -> CurrentScriptAttachment {
         self.get_cached_registry::<CurrentScriptAttachment>()
             .map(|r| r.clone())
-            .unwrap_or(CurrentScriptAttachment(None))
+            .unwrap_or_else(CurrentScriptAttachment::empty)
     }
 
     fn set_current_attachment(&self, attachment: ScriptAttachment) {
@@ -1157,12 +1169,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
+        callback_runners: AppScriptCallbackRunners,
     ) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
         debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
+        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
 
         [
             Rc::new(RefCell::new(allocator)),
@@ -1170,6 +1184,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(schedule_registry)),
             Rc::new(RefCell::new(component_registry)),
             Rc::new(RefCell::new(attachment)),
+            Rc::new(RefCell::new(callback_runners)),
         ]
     }
 
@@ -1179,6 +1194,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
+        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
 
         [
             Rc::new(RefCell::new(
@@ -1206,6 +1222,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                     .unwrap_or_default(),
             )),
             Rc::new(RefCell::new(attachment)),
+            Rc::new(RefCell::new(
+                world
+                    .get_resource::<AppScriptCallbackRunners>()
+                    .cloned()
+                    .unwrap_or_default(),
+            )),
         ]
     }
 
@@ -1254,11 +1276,26 @@ impl CachedRegistry for AppScriptComponentRegistry {
     const SLOT: usize = 3;
 }
 
-/// A wrapper around [`ScriptAttachment`] implementing [`CachedRegistry`]
+/// The script whose callback is currently running, cached in each world guard.
+///
+/// [`None`] when no script is running, see [`Self::empty`].
 #[derive(Clone, Default)]
 pub struct CurrentScriptAttachment(pub Option<ScriptAttachment>);
+
+impl CurrentScriptAttachment {
+    /// No script is running.
+    ///
+    /// Use this when creating a guard which is not tied to one script, e.g. in a system running callbacks on many scripts.
+    /// Each callback marks its own script as current for the duration of the call (see `ScriptingHandler::handle` in core).
+    pub fn empty() -> Self {
+        Self(None)
+    }
+}
 impl CachedRegistry for CurrentScriptAttachment {
     const SLOT: usize = 4;
+}
+impl CachedRegistry for AppScriptCallbackRunners {
+    const SLOT: usize = 5;
 }
 
 #[cfg(test)]
@@ -1281,7 +1318,7 @@ mod test {
         NamespaceBuilder::<SimpleStruct>::new_unregistered(&mut world)
             .register("describe", || 2usize);
 
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
 
         // shared functions have the type bound
@@ -1317,7 +1354,7 @@ mod test {
         let mut world = setup_world(|_, _| {});
         NamespaceBuilder::<SimpleEnum>::new_unregistered(&mut world).register("Struct", || 1usize);
 
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
         let enum_id = TypeId::of::<SimpleEnum>();
 
@@ -1342,7 +1379,7 @@ mod test {
         );
     }
     fn make_guard(world: &mut World) -> WorldAccessGuard<'_> {
-        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         WorldAccessGuard::new_exclusive(world, cache)
     }
 
@@ -1746,7 +1783,7 @@ mod test {
     fn setup_cache_raw_produces_functional_guard() {
         let mut world = setup_world(|_, _| {});
         let cache = WorldAccessGuard::setup_cache_raw(
-            CurrentScriptAttachment::default(),
+            CurrentScriptAttachment::empty(),
             world
                 .get_resource::<AppReflectAllocator>()
                 .cloned()
@@ -1763,6 +1800,7 @@ mod test {
                 .get_resource::<AppScriptComponentRegistry>()
                 .cloned()
                 .unwrap_or_default(),
+            AppScriptCallbackRunners::default(),
         );
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         assert!(guard.spawn().is_ok());
@@ -1829,7 +1867,7 @@ mod test {
         #[test]
         fn trigger_event_runs_observers_before_returning() {
             let mut world = setup();
-            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
             {
                 let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
                 let reference = allocate(&guard, TestEvent { value: 7 });
@@ -1847,7 +1885,7 @@ mod test {
         #[test]
         fn write_message_is_readable_by_message_readers() {
             let mut world = setup();
-            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
             {
                 let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
                 let reference = allocate(&guard, TestMessage { value: 3 });
@@ -1864,7 +1902,7 @@ mod test {
         #[test]
         fn missing_type_data_is_an_error() {
             let mut world = setup();
-            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
             let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
             let reference = allocate(&guard, Plain { value: 1 });
             let registration = registration::<Plain>(&guard);
@@ -1882,7 +1920,7 @@ mod test {
         #[test]
         fn value_of_wrong_type_is_rejected() {
             let mut world = setup();
-            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
             let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
             let reference = allocate(&guard, TestMessage { value: 1 });
 
@@ -1895,7 +1933,7 @@ mod test {
         #[test]
         fn cannot_trigger_while_other_access_is_held() {
             let mut world = setup();
-            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+            let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
             let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
             let reference = allocate(&guard, TestEvent { value: 1 });
             let registration = registration::<TestEvent>(&guard);
@@ -1923,8 +1961,7 @@ mod test {
             // deferred work from observers (such as BMS's lifecycle hooks queueing script callbacks)
             // must not run inside the script call that triggered them
             {
-                let cache =
-                    WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+                let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
                 let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
                 let reference = allocate(&guard, TestEvent { value: 1 });
                 guard

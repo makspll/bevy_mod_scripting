@@ -10,7 +10,11 @@ use ::{
     bevy_app::{App, Plugin, PostUpdate, Startup, Update},
     bevy_asset::{AssetPath, AssetServer, LoadState},
     bevy_ecs::{
-        component::Component, resource::Resource, schedule::IntoScheduleConfigs, system::Command,
+        component::Component,
+        message::Messages,
+        resource::Resource,
+        schedule::IntoScheduleConfigs,
+        system::{Command, SystemId},
         world::FromWorld,
     },
     bevy_log::tracing::{self},
@@ -21,8 +25,12 @@ use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::{CoreScriptGlobalsPlugin, WorldExtensions};
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
-    commands::AttachScript,
+    commands::{AttachScript, RunScriptCallback},
     error::ScriptError,
+    event::{
+        IntoCallbackLabel, ScriptCallbackMessage, ScriptCallbackResponseEvent, ScriptErrorEvent,
+    },
+    handler::event_handler,
     pipeline::PipelineRun,
     script::{ScriptComponent, ScriptContexts},
 };
@@ -381,6 +389,137 @@ pub fn run_plugin_script_load_benchmark<
     });
 }
 
+bevy_mod_scripting_core::callback_labels!(
+    OnBenchCallback => "on_bench_callback"
+);
+
+/// Sets up an app with `script_count` static scripts, each in its own context, all defining an `on_bench_callback` callback.
+fn setup_callback_benchmark_app<P: IntoScriptPluginParams + Plugin, F: Fn() -> P>(
+    plugin_maker: F,
+    content: &str,
+    script_count: usize,
+) -> (App, Vec<ScriptAttachment>) {
+    let mut app = setup_integration_test(|_, _| {});
+    install_test_plugin(&mut app, false);
+    app.add_plugins(plugin_maker());
+    app.finish();
+    app.cleanup();
+
+    let world = app.world_mut();
+    let attachments = (0..script_count)
+        .map(|_| {
+            let id = world
+                .get_resource_or_init::<Assets<ScriptAsset>>()
+                .add(ScriptAsset {
+                    content: content.as_bytes().into(),
+                    language: P::LANGUAGE,
+                });
+            let attachment = ScriptAttachment::StaticScript(id);
+            AttachScript::<P>::new(attachment.clone()).apply(world);
+            attachment
+        })
+        .collect();
+    // loading finishes over the course of the next update
+    app.update();
+    (app, attachments)
+}
+
+/// Benchmarks dispatching one [`ScriptCallbackMessage`] through the [`event_handler`] system to `script_count` static scripts, each in its own context.
+///
+/// Measures the per-callback overhead of the handler path, the callback itself is expected to be empty.
+pub fn run_plugin_callback_event_benchmark<
+    P: IntoScriptPluginParams + Plugin,
+    F: Fn() -> P,
+    M: Measurement,
+>(
+    plugin_maker: F,
+    benchmark_id: &str,
+    content: &str,
+    script_count: usize,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+) {
+    let (mut app, _) = setup_callback_benchmark_app(plugin_maker, content, script_count);
+    let world = app.world_mut();
+    let handler: SystemId<(), bevy_ecs::error::Result> =
+        world.register_system(event_handler::<OnBenchCallback, P>);
+
+    // make sure every script actually ran the callback, so we are not benchmarking the error path
+    world.write_message(
+        ScriptCallbackMessage::new_for_all_scripts(OnBenchCallback, vec![]).with_response(),
+    );
+    world
+        .run_system(handler)
+        .expect("handler system failed")
+        .expect("handler system errored");
+    let responses = world.resource::<Messages<ScriptCallbackResponseEvent>>();
+    let ok_responses = responses
+        .iter_current_update_messages()
+        .filter(|r| r.response.is_ok())
+        .count();
+    assert_eq!(
+        ok_responses,
+        script_count,
+        "expected every script to handle the benchmark callback, residents: {}, errors: {:?}",
+        world
+            .resource::<ScriptContexts<P>>()
+            .read()
+            .all_residents_len(),
+        world
+            .resource::<Messages<ScriptErrorEvent>>()
+            .iter_current_update_messages()
+            .collect::<Vec<_>>()
+    );
+
+    let span = tracing::trace_span!("bench_fn");
+    criterion.bench_function(benchmark_id, |b| {
+        b.iter(|| {
+            span.in_scope(|| {
+                world.write_message(ScriptCallbackMessage::new_for_all_scripts(
+                    OnBenchCallback,
+                    vec![],
+                ));
+                let _ = world.run_system(handler);
+                // drop handled messages, so they don't accumulate between iterations
+                world
+                    .resource_mut::<Messages<ScriptCallbackMessage>>()
+                    .update();
+            })
+        });
+    });
+}
+
+/// Benchmarks running a single callback via the [`RunScriptCallback`] command, which sets up a fresh world guard on every call.
+pub fn run_plugin_callback_command_benchmark<
+    P: IntoScriptPluginParams + Plugin,
+    F: Fn() -> P,
+    M: Measurement,
+>(
+    plugin_maker: F,
+    benchmark_id: &str,
+    content: &str,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+) {
+    let (mut app, attachments) = setup_callback_benchmark_app(plugin_maker, content, 1);
+    let world = app.world_mut();
+    let attachment = attachments[0].clone();
+    let label = OnBenchCallback::into_callback_label();
+
+    let make_command =
+        || RunScriptCallback::<P>::new(attachment.clone(), label.clone(), vec![], false);
+    if let Err(err) = make_command().apply(world) {
+        panic!("benchmark callback failed: {err}");
+    }
+
+    let span = tracing::trace_span!("bench_fn");
+    criterion.bench_function(benchmark_id, |b| {
+        b.iter_batched(
+            make_command,
+            |command| span.in_scope(|| command.apply(world)),
+            BatchSize::SmallInput,
+        );
+    });
+}
+
 pub fn perform_benchmark_with_generator<
     M: Measurement,
     I,
@@ -410,7 +549,10 @@ pub fn perform_benchmark_with_generator<
     let f3 = world.register_component::<Fake3>();
     let f4 = world.register_component::<Fake4>();
     let f5 = world.register_component::<Fake5>();
-    let cache = WorldAccessGuard::setup_cache(&world, Default::default());
+    let cache = WorldAccessGuard::setup_cache(
+        &world,
+        bevy_mod_scripting_bindings::CurrentScriptAttachment::empty(),
+    );
     let world_guard = WorldAccessGuard::new_exclusive(&mut world, cache);
     let mut rng_guard = RNG.lock().unwrap();
     *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);

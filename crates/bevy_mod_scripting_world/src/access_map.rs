@@ -403,6 +403,13 @@ impl AccessMap {
             ..Default::default()
         }))
     }
+
+    /// Whether this map covers the whole world, i.e. it was not created as a subset with [`Self::new_subset`].
+    ///
+    /// Subsets are used where other systems can run in parallel, such as non-exclusive script systems.
+    pub fn is_exclusive(&self) -> bool {
+        !self.0.lock().cant_access_global
+    }
 }
 
 #[profiling::all_functions]
@@ -625,6 +632,12 @@ mod test {
         let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1, 2]));
 
         assert!(!subset_access_map.claim_read_access(WorldAccessRange::Global));
+    }
+
+    #[test]
+    fn only_full_access_maps_are_exclusive() {
+        assert!(AccessMap::new().is_exclusive());
+        assert!(!AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1])).is_exclusive());
     }
 
     #[test]

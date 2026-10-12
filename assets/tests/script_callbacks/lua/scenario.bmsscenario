@@ -1,0 +1,20 @@
+// #main_script script_callbacks.lua
+// the same script is attached to two entities, by default each attachment gets its own context
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin nanoseconds_budget=999999999
+SetupHandler OnTest=null, Update=null
+SetupHandler OnTestPostUpdate=null, PostUpdate=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptAssetLoaded name="@this_script"
+SpawnEntityWithScript name="entity_a", script="@this_script"
+SpawnEntityWithScript name="entity_b", script="@this_script"
+RunUpdateOnce
+
+// on_test checks immediate callbacks and queues one, on_test_post_update checks the queued one ran by then
+EmitScriptCallbackEvent emit_response=true, entity="entity_a", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="entity_a", label="OnTestPostUpdate", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_a", label="OnTest", script="@this_script", expect_string_value="ok"
+AssertCallbackSuccess attachment="EntityScript", entity="entity_a", label="OnTestPostUpdate", script="@this_script", expect_string_value="queued!"

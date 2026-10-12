@@ -44,13 +44,13 @@ app.register_type::<MyEvent>()
 ## Things to be aware of
 
 * `trigger_event` needs exclusive access to the world, so it fails with an access error if the script is currently holding a borrowed reference elsewhere in the same call (e.g. inside a query iteration or `with_*` access). Trigger events from regular callbacks.
-* Observers triggered by `trigger_event` run synchronously, but any commands they queue (including script callbacks queued by BMS itself) are deferred until the next world flush, i.e. they never run inside your call. An observer which synchronously calls back into the script context that is currently executing is the one case which cannot work, prefer messages if you only need to notify other systems.
+* Observers triggered by `trigger_event` run synchronously, but any commands they queue are deferred until the next time the world is flushed. That is not necessarily after your callback: other world operations later in the same callback, such as `world.spawn`, can flush them. An observer, or a command it queues, which runs a callback in the script context that is currently executing fails with an error. To run callbacks on other scripts, use `run_script_callback` or `queue_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)).
 
 ## Built-in messages
 
 The following BMS messages are reflected and can be written from scripts:
 
-* `ScriptCallbackMessage`: runs a callback on other scripts (processed by the usual handler systems later in the frame, so it is safe from inside a callback)
+* `ScriptCallbackMessage`: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer `queue_script_callback` to run callbacks from scripts.
 * `ScriptAttachedEvent`, `ScriptDetachedEvent`, `ScriptAssetModifiedEvent`: drive the script loading pipeline
 
 The internal loading pipeline state events (`LoadingCompleted`, `ContextAssigned`, ...) are intentionally not reflected.

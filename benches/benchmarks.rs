@@ -19,8 +19,8 @@ use criterion::{
 use regex::Regex;
 use script_integration_test_harness::{
     make_test_lua_plugin, make_test_rhai_plugin, perform_benchmark_with_generator,
-    run_lua_benchmark, run_plugin_script_load_benchmark, run_rhai_benchmark,
-    test_functions::rand::Rng,
+    run_lua_benchmark, run_plugin_callback_command_benchmark, run_plugin_callback_event_benchmark,
+    run_plugin_script_load_benchmark, run_rhai_benchmark, test_functions::rand::Rng,
 };
 use test_utils::{Test, discover_all_tests};
 
@@ -275,6 +275,33 @@ fn script_load_benchmarks(criterion: &mut Criterion) {
     run_plugin_script_load_benchmark(make_test_rhai_plugin, "empty Rhai", content, &mut group);
 }
 
+/// benchmarks measuring the overhead of dispatching callbacks to scripts, the callbacks themselves are empty
+fn callback_benchmarks(criterion: &mut Criterion) {
+    let mut group = criterion.benchmark_group("callbacks");
+    let lua = include_str!("../assets/macro_benchmarks/callbacks/empty_callback.lua");
+    let rhai = include_str!("../assets/macro_benchmarks/callbacks/empty_callback.rhai");
+
+    for script_count in [1, 100] {
+        run_plugin_callback_event_benchmark(
+            make_test_lua_plugin,
+            &format!("event handler {script_count} scripts Lua"),
+            lua,
+            script_count,
+            &mut group,
+        );
+        run_plugin_callback_event_benchmark(
+            make_test_rhai_plugin,
+            &format!("event handler {script_count} scripts Rhai"),
+            rhai,
+            script_count,
+            &mut group,
+        );
+    }
+
+    run_plugin_callback_command_benchmark(make_test_lua_plugin, "command Lua", lua, &mut group);
+    run_plugin_callback_command_benchmark(make_test_rhai_plugin, "command Rhai", rhai, &mut group);
+}
+
 pub fn benches() {
     maybe_with_profiler(|_profiler| {
         let mut criterion: criterion::Criterion<_> = (criterion::Criterion::default())
@@ -300,6 +327,7 @@ pub fn benches() {
         script_benchmarks(&mut criterion, filter);
         conversion_benchmarks(&mut criterion);
         script_load_benchmarks(&mut criterion);
+        callback_benchmarks(&mut criterion);
     });
 }
 criterion_main!(benches);

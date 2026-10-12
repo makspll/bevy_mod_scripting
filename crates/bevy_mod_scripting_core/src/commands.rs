@@ -122,12 +122,11 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         ctxt: Arc<Mutex<P::C>>,
         script_callbacks: ScriptCallbacks<P>,
     ) -> Result<ScriptValue, ScriptError> {
-        let mut ctxt_guard = ctxt.lock();
         let result = P::handle(
             std::mem::take(&mut self.args),
             &self.attachment,
             &self.callback,
-            &mut ctxt_guard,
+            &ctxt,
             script_callbacks,
             guard.clone(),
         );
@@ -139,8 +138,6 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
             err.with_context(format!("in callback: {}", self.callback))
                 .with_language(P::LANGUAGE)
         });
-
-        drop(ctxt_guard);
 
         if self.trigger_response {
             trace!(
@@ -201,10 +198,8 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     fn run(mut self, world: &mut World) -> Result<ScriptValue, ScriptError> {
         let script_contexts = world.get_resource_or_init::<ScriptContexts<P>>().clone();
         let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
-        let cache = WorldAccessGuard::setup_cache(
-            world,
-            CurrentScriptAttachment(Some(self.attachment.clone())),
-        );
+        // `P::handle` marks the script as current for the duration of the callback
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         let guard = WorldGuard::new_exclusive(world, cache);
 
         let res = if let Some(context_override) = &self.context_override {

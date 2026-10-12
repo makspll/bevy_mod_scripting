@@ -25,7 +25,7 @@ use bevy_ecs::{
 };
 use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
-    AppReflectAllocator, AppScheduleRegistry, AppScriptComponentRegistry,
+    AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, CurrentScriptAttachment, InteropError, IntoScript, ReflectReference,
     ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
 };
@@ -184,6 +184,7 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     function_registry: AppScriptFunctionRegistry,
     schedule_registry: AppScheduleRegistry,
     component_registry: AppScriptComponentRegistry,
+    callback_runners: AppScriptCallbackRunners,
     allocator: AppReflectAllocator,
     subset: AccessByteSet,
     callback_label: CallbackLabel,
@@ -287,6 +288,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             state.function_registry.clone(),
             state.schedule_registry.clone(),
             state.component_registry.clone(),
+            state.callback_runners.clone(),
         );
         let guard = if self.exclusive {
             // safety: we are an exclusive system, therefore the cell allows us to do this
@@ -357,16 +359,14 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 return Ok(());
             };
 
-            let mut context = context.lock();
             let result = P::handle(
                 payload,
                 &self.target_attachment,
                 &state.callback_label,
-                &mut context,
+                context,
                 state.script_callbacks.clone(),
                 guard.clone(),
             );
-            drop(context);
             // TODO: Emit error events via commands, maybe accumulate in state
             // instead and use apply.
             match result {
@@ -472,6 +472,9 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             allocator: world.get_resource_or_init::<AppReflectAllocator>().clone(),
             component_registry: world
                 .get_resource_or_init::<AppScriptComponentRegistry>()
+                .clone(),
+            callback_runners: world
+                .get_resource_or_init::<AppScriptCallbackRunners>()
                 .clone(),
             subset: final_subset,
             callback_label: self.name.to_string().into(),
@@ -678,7 +681,7 @@ mod test {
         );
         builder.before_system(test_system);
         let world_mut = app.world_mut();
-        let cache = WorldAccessGuard::setup_cache(world_mut, CurrentScriptAttachment::default());
+        let cache = WorldAccessGuard::setup_cache(world_mut, CurrentScriptAttachment::empty());
         let _ = builder
             .build::<TestPlugin>(
                 WorldAccessGuard::new_exclusive(world_mut, cache),

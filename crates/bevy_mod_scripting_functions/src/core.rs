@@ -1,7 +1,7 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
 use bevy_mod_scripting_asset::ScriptAsset;
-use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
 use bevy_mod_scripting_world::ThreadWorldContainer;
 use std::{collections::VecDeque, ops::Deref};
 
@@ -10,9 +10,9 @@ use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
-    FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, ReflectReference,
-    ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
-    ScriptTypeRegistration, VariadicTuple, WorldExtensions,
+    FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
+    ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
     function::{
         bound::BoundFields,
@@ -23,7 +23,10 @@ use bevy_mod_scripting_bindings::{
     },
     script_value::ScriptValue,
 };
-use bevy_mod_scripting_core::script_system::{ManageScriptSystems, ScriptSystemBuilder};
+use bevy_mod_scripting_core::{
+    event::CallbackLabel,
+    script_system::{ManageScriptSystems, ScriptSystemBuilder},
+};
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
 use bevy_reflect::PartialReflect;
@@ -1430,6 +1433,51 @@ impl ScriptAttachment {
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "recipients_functions",
+    core
+)]
+impl Recipients {
+    /// Targets every loaded script, once per script even if scripts share a context.
+    ///
+    /// Returns:
+    /// * `recipients`: The recipients.
+    fn all_scripts() -> V<Recipients> {
+        V(Recipients::AllScripts)
+    }
+
+    /// Targets every loaded context once, i.e. scripts sharing a context only run the callback once.
+    ///
+    /// Returns:
+    /// * `recipients`: The recipients.
+    fn all_contexts() -> V<Recipients> {
+        V(Recipients::AllContexts)
+    }
+
+    /// Targets a single static script.
+    ///
+    /// Arguments:
+    /// * `script`: The script asset.
+    /// Returns:
+    /// * `recipients`: The recipients.
+    fn static_script(script: V<Handle<ScriptAsset>>) -> V<Recipients> {
+        V(Recipients::StaticScript(script.into_inner()))
+    }
+
+    /// Targets a single script attached to an entity.
+    ///
+    /// Arguments:
+    /// * `entity`: The entity the script is attached to.
+    /// * `script`: The script asset.
+    /// Returns:
+    /// * `recipients`: The recipients.
+    fn entity_script(entity: V<Entity>, script: V<Handle<ScriptAsset>>) -> V<Recipients> {
+        V(Recipients::ScriptEntity(script.into_inner(), *entity))
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_handle_functions",
     core
 )]
@@ -1543,6 +1591,117 @@ impl GlobalNamespace {
         Ok(ScriptSystemBuilder::new(callback.into(), attachment.into_inner()).into())
     }
 
+    /// Runs a callback on other scripts immediately, and returns what it returned.
+    ///
+    /// For example `run_script_callback("take_damage", ScriptAttachment.new_entity_script(enemy, script), 10)`
+    /// calls `take_damage(10)` in that script before this function returns.
+    ///
+    /// The target is either a single script attachment, returning that callback's value,
+    /// or [`Recipients`], returning a list with the value of each script which ran the callback.
+    /// Errors of the callbacks are raised in the calling script, for recipients only after all of them ran.
+    ///
+    /// Callbacks cannot run immediately in a script whose context is busy, i.e. the calling script itself,
+    /// scripts sharing its context (depending on the context policy), or scripts further up the current chain of callbacks.
+    /// Use `queue_script_callback` for those. It is also unavailable in script systems running in parallel with other systems.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `label`: The name of the callback to run.
+    /// * `target`: The script attachment or recipients to run the callback on.
+    /// * `args`: The arguments to pass to the callback.
+    /// Returns:
+    /// * `result`: The value returned by the callback, or a list of the values returned by each recipient.
+    fn run_script_callback(
+        ctxt: FunctionCallContext,
+        label: String,
+        target: Union<V<ScriptAttachment>, V<Recipients>>,
+        args: VariadicTuple,
+    ) -> Result<ScriptValue, InteropError> {
+        profiling::function_scope!("run_script_callback");
+        let world = ctxt.world()?;
+        if !world.is_exclusive() {
+            return Err(InteropError::string(format!(
+                "Cannot run callback `{label}` immediately from a script system running in parallel with other systems, \
+                as another system might be running the target script at the same time. \
+                Use `queue_script_callback` instead, or make the system exclusive."
+            )));
+        }
+        let runners = world.script_callback_runners().clone();
+        let args = Vec::from(args.0);
+
+        match target.into_left() {
+            Ok(attachment) => {
+                let attachment = attachment.into_inner();
+                let recipients = Recipients::from(attachment.clone());
+                runners
+                    .run(world, &recipients, &label, args)?
+                    .into_iter()
+                    .next()
+                    .map(|(_, result)| result)
+                    .unwrap_or_else(|| {
+                        Err(InteropError::string(format!(
+                            "Cannot run callback `{label}` on script {attachment}: no such script is loaded"
+                        )))
+                    })
+            }
+            Err(recipients) => {
+                let results = runners.run(world, &recipients.into_inner(), &label, args)?;
+                let mut values = VecDeque::with_capacity(results.len());
+                let mut first_error = None;
+                for (_, result) in results {
+                    match result {
+                        Ok(value) => values.push_back(value),
+                        Err(err) => {
+                            first_error.get_or_insert(err);
+                        }
+                    }
+                }
+                match first_error {
+                    Some(err) => Err(err),
+                    None => Ok(ScriptValue::List(values)),
+                }
+            }
+        }
+    }
+
+    /// Queues a callback to run on other scripts as soon as the current callback finishes, in the same frame.
+    ///
+    /// Unlike `run_script_callback`, this works for any script, including the calling script itself and scripts sharing its context.
+    /// Queued callbacks run in the order they were queued, and their errors are reported as script errors instead of being raised here.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `label`: The name of the callback to run.
+    /// * `target`: The script attachment or recipients to run the callback on.
+    /// * `args`: The arguments to pass to the callback.
+    /// Returns:
+    /// * `result`: Nothing if the callback was queued.
+    fn queue_script_callback(
+        ctxt: FunctionCallContext,
+        label: String,
+        target: Union<V<ScriptAttachment>, V<Recipients>>,
+        args: VariadicTuple,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("queue_script_callback");
+        if CallbackLabel::new(&label).is_none() {
+            return Err(InteropError::string(format!(
+                "`{label}` is not a valid callback name"
+            )));
+        }
+        let recipients = match target.into_left() {
+            Ok(attachment) => Recipients::from(attachment.into_inner()),
+            Err(recipients) => recipients.into_inner(),
+        };
+        ctxt.world()?
+            .script_callback_runners()
+            .queue(QueuedScriptCallback {
+                recipients,
+                label,
+                args: Vec::from(args.0),
+            });
+        Ok(())
+    }
+
     /// Unpacks, a list of values, into many separate values.
     ///
     /// Arguments:
@@ -1620,6 +1779,7 @@ pub fn register_core_functions(app: &mut App) {
         register_script_system_builder_functions(world);
 
         register_script_attachment_functions(world);
+        register_recipients_functions(world);
 
         register_script_handle_functions(world);
 
