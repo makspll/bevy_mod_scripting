@@ -1,6 +1,7 @@
 //! Abstractions to help with creating bindings between bevy and scripting languages.
 
 pub mod allocator;
+pub mod callback_runners;
 pub mod construct;
 pub mod conversions;
 pub mod docgen;
@@ -20,6 +21,7 @@ pub mod type_data;
 pub mod world_extensions;
 
 pub use allocator::*;
+pub use callback_runners::*;
 pub use docgen::*;
 pub use enum_variant::*;
 pub use error::*;

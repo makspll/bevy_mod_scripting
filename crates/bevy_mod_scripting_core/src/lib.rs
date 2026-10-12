@@ -2,12 +2,14 @@
 //!
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
+use std::sync::Arc;
+
 use crate::{
-    callbacks::ScriptCallbacksPlugin,
+    callbacks::{ScriptCallbacks, ScriptCallbacksPlugin},
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
-    handler::script_error_logger,
+    handler::{run_callback_on_recipients, script_error_logger},
     pipeline::ScriptLoadingPipeline,
     script::{ScriptComponentsChangeCache, script_component_changed_handler},
 };
@@ -22,7 +24,7 @@ use bevy_log::error;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, ScriptAssetLoader};
 
 use bevy_mod_scripting_bindings::{
-    AppReflectAllocator, AppScheduleRegistry, AppScriptFunctionRegistry,
+    AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptFunctionRegistry,
     DummyScriptFunctionRegistry, DynamicScriptComponentPlugin, MarkAsCore, ReflectReference,
     ScriptTypeRegistration, ScriptValue, garbage_collector,
 };
@@ -171,6 +173,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         P::set_world_local_config(app.world().id(), config);
 
         app.insert_resource(ScriptContexts::<P>::new(self.context_policy.clone()));
+        register_callback_runner::<P>(app);
         app.init_resource::<ScriptComponentsChangeCache>();
         app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
@@ -181,6 +184,28 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
 
         register_types(app);
     }
+}
+
+/// Lets language agnostic code run callbacks in this plugin's scripts, see [`AppScriptCallbackRunners`].
+fn register_callback_runner<P: IntoScriptPluginParams>(app: &mut App) {
+    let world = app.world_mut();
+    let script_contexts = world.get_resource_or_init::<ScriptContexts<P>>().clone();
+    let script_callbacks = world.get_resource_or_init::<ScriptCallbacks<P>>().clone();
+    world
+        .get_resource_or_init::<AppScriptCallbackRunners>()
+        .register(
+            P::LANGUAGE,
+            Arc::new(move |world, recipients, label, args| {
+                run_callback_on_recipients::<P>(
+                    &script_contexts,
+                    &script_callbacks,
+                    world,
+                    recipients,
+                    label,
+                    args,
+                )
+            }),
+        );
 }
 
 impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
