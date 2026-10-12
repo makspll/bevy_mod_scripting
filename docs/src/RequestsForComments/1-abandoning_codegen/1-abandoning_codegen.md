@@ -48,6 +48,7 @@ With the above in mind, I form the following hypotheses:
 - Automatically generated bindings are okay at best, with many functions missing and docs mentioning rust constructs explicitly (since they come directly from docstrings)
 - Most of them are unused
 - The lack of functionality for generating bindings for 3rd party libraries means the codegen is not as useful as it could be
+- Bevy's API is stabilizing, and upcoming work on enums and constructors will make many bindings unnecessary anyway
 
 ## Proposal
 
@@ -57,14 +58,25 @@ Based on the above, I propose the following:
 
 In this new world we would focus on writing the most critical pieces of integration with bevy. Instead of putting in effort to maintain a bespoke rustc compiler plugin, we could provide github action templates to let people build out bindings quickly.
 
+## Migration
+
+The codegen runs on our side, not on the consumer's machine, and its output is committed. So no feature flag or default-on/off transition is needed:
+
+1. Remove the `codegen` project, keeping whatever it last generated as plain source.
+2. Iterate on and clean up those bindings, deleting ones that are no longer needed as the enum and constructor work lands.
+
+This starts from a non-breaking state, and I'd like to begin as early as the 0.20 cycle rather than waiting for the editor.
+
+Bindings for 3rd party libraries (e.g. `bevy_hanabi`, UI, physics) would not live in core, which would only keep Bevy-native bindings. Instead we'd make it easy to set up small community bindings crates that sync to the main test suite and publish easily.
+
 ## Alternatives
 
 We could also of course make our current codegen better, more flexible and generally stronger, however some of its core problems will always remain (like bad documentation at best, and long compilation times).
 
 ## Benefits
 
-- Clean compilation times have potential to go down by as much as 10 minutes (on my machine)
-- Bevy bindings quality increases
+- Clean compilation times have potential to go down by as much as 10 minutes (on my machine), which also makes clean CI builds cheaper
+- Bevy bindings quality increases, and a smaller API surface is easier for beginners
 - Intermediate file sizes decrease (i.e. LAD files, LUA declaration files)
 
 ## Drawbacks
