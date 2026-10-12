@@ -98,10 +98,6 @@ impl App {
             cmd.arg("--profile").arg(profile);
         }
 
-        if self.global_args.coverage {
-            cmd.arg("--coverage");
-        }
-
         if let Some(jobs) = self.global_args.jobs {
             cmd.arg("--jobs").arg(jobs.to_string());
         }
@@ -110,11 +106,19 @@ impl App {
             Xtasks::Macros { macro_name } => {
                 cmd.arg("macros").arg(macro_name.as_ref());
             }
-            Xtasks::Init { dont_update_ide } => {
+            Xtasks::Init {
+                dont_update_ide,
+                tools,
+            } => {
                 let arg = cmd.arg("init");
 
                 if dont_update_ide {
                     arg.arg("--dont-update-ide");
+                }
+
+                if let Some(tools) = tools {
+                    arg.arg("--tools");
+                    arg.arg(tools.iter().map(|t| t.as_ref()).join(","));
                 }
             }
             Xtasks::Build { timings } => {
@@ -242,7 +246,7 @@ impl App {
                 }
             ),
             os: os.to_string(),
-            generates_coverage: self.global_args.coverage,
+            init_args: self.subcmd.ci_init_args(),
             run_on_forks: !matches!(self.subcmd, Xtasks::Bencher { .. } | Xtasks::Bench { .. }),
             requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
         }
@@ -298,6 +302,34 @@ impl Macro {
     }
 }
 
+/// Optional tools which `cargo xtask init` can install, each is only needed by some of the xtasks
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    strum::EnumString,
+    strum::AsRefStr,
+    strum::VariantNames,
+    strum::VariantArray,
+    clap::ValueEnum,
+)]
+#[strum(serialize_all = "snake_case")]
+#[clap(rename_all = "snake_case")]
+enum InitTool {
+    /// `bencher` cli, used by the `bencher` xtask
+    Bencher,
+    /// `mdbook` and `mdbook-mermaid`, used by the `docs` xtask
+    Mdbook,
+    /// `cargo-expand`, used by the `codegen` xtask
+    CargoExpand,
+    /// The nightly toolchain and components used by the codegen crate, needed to check it and run `codegen`
+    CodegenToolchain,
+}
+
 fn fetch_default_bevy_features() -> String {
     let try_dirs = vec![".", "../"];
     let path = "codegen_bevy_features.txt";
@@ -334,6 +366,10 @@ enum Xtasks {
         /// Prevents updating the IDE settings, defaults to false
         #[clap(long, default_value = "false")]
         dont_update_ide: bool,
+        /// Only install the given optional tools, if the flag is omitted all of them are installed.
+        /// Passing the flag with no values installs none of them.
+        #[clap(long, value_enum, value_delimiter = ',', num_args = 0..)]
+        tools: Option<Vec<InitTool>>,
     },
     /// Build the main workspace only
     Build {
@@ -462,8 +498,8 @@ struct CiMatrixRow {
     name: String,
     /// The os to run this on
     os: String,
-    /// If this run produces lcov files
-    generates_coverage: bool,
+    /// The arguments to pass to `cargo xtask init`, so only the tools this job needs get installed
+    init_args: String,
     /// If this step requires a gpu
     requires_gpu: bool,
     /// if it should run on fork PR's
@@ -471,18 +507,36 @@ struct CiMatrixRow {
 }
 
 impl Xtasks {
-    fn run(self, app_settings: GlobalArgs) -> Result<String> {
-        // if app_settings.coverage {
-        //     Self::set_cargo_coverage_settings();
-        // }
+    /// The `cargo xtask init` arguments installing only the optional tools this xtask needs when run in CI
+    fn ci_init_args(&self) -> String {
+        let tools: &[InitTool] = match self {
+            Xtasks::Check {
+                kind: CheckKind::All | CheckKind::Codegen,
+                ..
+            } => &[InitTool::CodegenToolchain],
+            Xtasks::Docs { .. } => &[InitTool::Mdbook],
+            Xtasks::Bencher { .. } | Xtasks::Bench { .. } => &[InitTool::Bencher],
+            _ => &[],
+        };
 
+        // the IDE settings are of no use in CI
+        format!(
+            "--dont-update-ide --tools {}",
+            tools.iter().map(|t| t.as_ref()).join(",")
+        )
+    }
+
+    fn run(self, app_settings: GlobalArgs) -> Result<String> {
         match self {
             Xtasks::Build { timings } => Self::build(timings, app_settings),
             Xtasks::Check { ide_mode, kind } => Self::check(app_settings, ide_mode, kind),
             Xtasks::Docs { open, no_rust_docs } => Self::docs(app_settings, open, no_rust_docs),
             Xtasks::Test { name, package } => Self::test(app_settings, package, name),
             Xtasks::CiCheck => Self::cicd(app_settings),
-            Xtasks::Init { dont_update_ide } => Self::init(app_settings, dont_update_ide),
+            Xtasks::Init {
+                dont_update_ide,
+                tools,
+            } => Self::init(app_settings, dont_update_ide, tools),
             Xtasks::Example { example } => Self::example(app_settings, example),
             Xtasks::Docgen => Self::docgen(app_settings),
             Xtasks::Macros { macro_name } => match macro_name {
@@ -500,25 +554,12 @@ impl Xtasks {
                     for row in output.iter() {
                         let step_should_run_on_main_os =
                             matches!(row.subcmd, Xtasks::Build { .. } | Xtasks::Docs { .. });
-                        let is_coverage_step = row.global_args.coverage;
 
                         if !os.is_main_os() && step_should_run_on_main_os {
                             continue;
                         }
 
-                        // we only need one source of coverage + windows is slow with this setting
-                        let row = if !os.is_main_os() && is_coverage_step {
-                            let new_args = row.global_args.clone().without_coverage();
-                            App {
-                                global_args: new_args,
-                                ..row.clone()
-                            }
-                            .into_ci_row(*os)
-                        } else {
-                            row.clone().into_ci_row(*os)
-                        };
-
-                        rows.push(row);
+                        rows.push(row.clone().into_ci_row(*os));
                     }
                 }
 
@@ -556,14 +597,6 @@ impl Xtasks {
 
         Ok("".into())
     }
-
-    // fn append_rustflags(flag: &str) {
-    //     let rustflags = std::env::var("RUSTFLAGS").unwrap_or_default();
-    //     let mut flags = rustflags.split(' ').collect::<Vec<_>>();
-    //     flags.push(flag);
-    //     let flags = flags.join(" ");
-    //     unsafe { std::env::set_var("RUSTFLAGS", flags) };
-    // }
 
     fn build(timings: bool, app_settings: GlobalArgs) -> Result<()> {
         // build workspace using the given features
@@ -1249,21 +1282,8 @@ impl Xtasks {
         Ok(())
     }
 
-    // fn set_cargo_coverage_settings() {
-    //     // This makes local dev hell
-    //     // std::env::set_var("CARGO_INCREMENTAL", "0");
-    //     Self::append_rustflags("-Cinstrument-coverage");
-
-    //     let target_dir =
-    //         std::env::var("MAIN_CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
-    //     let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
-    //     let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
-
-    //     unsafe { std::env::set_var("LLVM_PROFILE_FILE", coverage_file) };
-    // }
-
     fn test(app_settings: GlobalArgs, package: Option<String>, name: Option<String>) -> Result<()> {
-        // run cargo test with instrumentation
+        // run cargo test
         let mut test_args = vec![];
         if let Some(package) = package {
             test_args.push("--package".to_owned());
@@ -1290,54 +1310,6 @@ impl Xtasks {
             false,
         )?;
 
-        // generate coverage report and lcov file
-        // if app_settings.coverage {
-        // run_system_command(
-        //     &app_settings,
-        //     "grcov",
-        //     "Generating html coverage report",
-        //     vec![
-        //         ".",
-        //         "--binary-path",
-        //         "./target/debug/deps/",
-        //         "-s",
-        //         ".",
-        //         "-t",
-        //         "html",
-        //         "--branch",
-        //         "--ignore-not-existing",
-        //         "--ignore",
-        //         "**/bevy_bindings/**",
-        //         "-o",
-        //         "target/coverage/html",
-        //     ],
-        //     None,
-        //     false,
-        // )?;
-
-        // run_system_command(
-        //     &app_settings,
-        //     "grcov",
-        //     "Failed to generate coverage report",
-        //     vec![
-        //         ".",
-        //         "--binary-path",
-        //         "./target/debug/deps/",
-        //         "-s",
-        //         ".",
-        //         "-t",
-        //         "lcov",
-        //         "--branch",
-        //         "--ignore-not-existing",
-        //         "--ignore",
-        //         "**/bevy_bindings/**",
-        //         "-o",
-        //         "target/coverage/lcov.info",
-        //     ],
-        //     None,
-        //     false,
-        // )?;
-        // }
         Ok(())
     }
 
@@ -1374,7 +1346,10 @@ impl Xtasks {
             .clone()
             .with_features(Features::all_features().without(Feature::ProfileWithTracy))
             .with_profile(
-                app_settings.profile.clone(), // .or(Some("ephemeral-build".to_owned())),
+                app_settings
+                    .profile
+                    .clone()
+                    .or(Some("ephemeral-build".to_owned())),
             );
 
         for feature_set in powersets.iter_mut() {
@@ -1423,17 +1398,14 @@ impl Xtasks {
         // also run a benchmark
         // on non-main branches this will just dry run
         output.push(App {
-            global_args: default_args.clone(),
+            // benchmarks need to be representative, so they keep cargo's own bench profile
+            global_args: default_args.clone().with_profile(app_settings.profile.clone()),
             subcmd: Xtasks::Bencher { publish: true },
         });
 
-        // and finally run tests with coverage
+        // and finally run tests
         output.push(App {
-            global_args: default_args
-                .clone()
-                .with_coverage()
-                // github actions has been throwing a lot of OOM SIGTERM's lately
-                .with_max_jobs(2),
+            global_args: default_args.clone(),
             subcmd: Xtasks::Test {
                 name: None,
                 package: None,
@@ -1455,7 +1427,15 @@ impl Xtasks {
         Ok(())
     }
 
-    fn init(app_settings: GlobalArgs, dont_update_ide: bool) -> Result<()> {
+    fn init(
+        app_settings: GlobalArgs,
+        dont_update_ide: bool,
+        tools: Option<Vec<InitTool>>,
+    ) -> Result<()> {
+        // by default install everything, CI narrows this down to what each job needs
+        let tools = tools.unwrap_or_else(|| <InitTool as strum::VariantArray>::VARIANTS.to_vec());
+        let wants = |tool: InitTool| tools.contains(&tool);
+
         // install alsa et al
         if cfg!(target_os = "linux") {
             let sudo = if !is_root::is_root() { "sudo" } else { "" };
@@ -1475,73 +1455,59 @@ impl Xtasks {
         // install bencher
         // linux curl --proto '=https' --tlsv1.2 -sSfL https://bencher.dev/download/install-cli.sh | sh
         // windows irm https://bencher.dev/download/install-cli.ps1 | iex
-        run_system_command(
-            &app_settings,
-            "cargo",
-            "Failed to install bencher",
-            vec![
-                "install",
-                "--git",
-                "https://github.com/bencherdev/bencher",
-                "--branch",
-                "main",
-                "--locked",
-                "--force",
-                "bencher_cli",
-            ],
-            None,
-            false,
-        )?;
-        // install cargo mdbook
-        run_system_command(
-            &app_settings,
-            "cargo",
-            "Failed to install mdbook",
-            vec!["install", "mdbook"],
-            None,
-            false,
-        )?;
+        if wants(InitTool::Bencher) {
+            run_system_command(
+                &app_settings,
+                "cargo",
+                "Failed to install bencher",
+                vec![
+                    "install",
+                    "--git",
+                    "https://github.com/bencherdev/bencher",
+                    "--branch",
+                    "main",
+                    "--locked",
+                    "--force",
+                    "bencher_cli",
+                ],
+                None,
+                false,
+            )?;
+        }
 
-        // install mdbook-mermaid
-        run_system_command(
-            &app_settings,
-            "cargo",
-            "Failed to install mdbook",
-            vec!["install", "mdbook-mermaid"],
-            None,
-            false,
-        )?;
+        if wants(InitTool::Mdbook) {
+            // install cargo mdbook
+            run_system_command(
+                &app_settings,
+                "cargo",
+                "Failed to install mdbook",
+                vec!["install", "mdbook"],
+                None,
+                false,
+            )?;
 
-        // install grcov
-        run_system_command(
-            &app_settings,
-            "cargo",
-            "Failed to install grcov",
-            vec!["install", "grcov"],
-            None,
-            false,
-        )?;
+            // install mdbook-mermaid
+            run_system_command(
+                &app_settings,
+                "cargo",
+                "Failed to install mdbook-mermaid",
+                vec!["install", "mdbook-mermaid"],
+                None,
+                false,
+            )?;
+        }
 
         // install cargo expand
-        run_system_command(
-            &app_settings,
-            "cargo",
-            "Failed to install cargo expand",
-            vec!["install", "cargo-expand"],
-            None,
-            false,
-        )?;
-
-        // install nightly toolchaing for bevy api gen
-        let toolchain = read_rust_toolchain(&codegen_crate_dir(&app_settings)?);
-        run_system_command(
-            &app_settings,
-            "rustup",
-            "Failed to install nightly toolchain",
-            vec!["toolchain", "install", toolchain.as_str()],
-            None,
-            false,
-        )?;
+        if wants(InitTool::CargoExpand) {
+            run_system_command(
+                &app_settings,
+                "cargo",
+                "Failed to install cargo expand",
+                vec!["install", "cargo-expand"],
+                None,
+                false,
+            )?;
+        }
 
         let rustup_components_args = [
             "component",
@@ -1549,11 +1515,10 @@ impl Xtasks {
             "rust-src",
             "rustc-dev",
             "clippy",
-            "llvm-tools-preview",
             "rustfmt",
         ];
 
-        // install components for the stable and nightly toolchains
+        // install components for the stable toolchain
         run_system_command(
             &app_settings,
             "rustup",
@@ -1563,17 +1528,29 @@ impl Xtasks {
             false,
         )?;
 
-        // add components on nightly toolchain
-        run_system_command(
-            &app_settings,
-            "rustup",
-            "Failed to install nightly components",
-            rustup_components_args
-                .iter()
-                .chain(["--toolchain", toolchain.as_str()].iter()),
-            Some(Path::new(".")),
-            false,
-        )?;
+        // install nightly toolchain for bevy api gen, and its components
+        if wants(InitTool::CodegenToolchain) {
+            let toolchain = read_rust_toolchain(&codegen_crate_dir(&app_settings)?);
+            run_system_command(
+                &app_settings,
+                "rustup",
+                "Failed to install nightly toolchain",
+                vec!["toolchain", "install", toolchain.as_str()],
+                None,
+                false,
+            )?;
+
+            run_system_command(
+                &app_settings,
+                "rustup",
+                "Failed to install nightly components",
+                rustup_components_args
+                    .iter()
+                    .chain(["--toolchain", toolchain.as_str()].iter()),
+                Some(Path::new(".")),
+                false,
+            )?;
+        }
 
         // create .vscode settings
         // read from templates at compile time
@@ -1760,5 +1737,49 @@ fn main() {
     if let Err(e) = try_main() {
         eprintln!("{e:?}");
         std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse_init_tools(args: &[&str]) -> Option<Vec<InitTool>> {
+        let app = App::try_parse_from(["xtask", "init"].iter().chain(args)).unwrap();
+        match app.subcmd {
+            Xtasks::Init { tools, .. } => tools,
+            other => panic!("expected init, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn init_installs_all_tools_by_default() {
+        assert_eq!(parse_init_tools(&[]), None);
+    }
+
+    #[test]
+    fn init_tools_flag_without_values_installs_none() {
+        assert_eq!(parse_init_tools(&["--tools"]), Some(vec![]));
+        assert_eq!(
+            parse_init_tools(&["--dont-update-ide", "--tools"]),
+            Some(vec![])
+        );
+    }
+
+    #[test]
+    fn init_tools_flag_accepts_a_list() {
+        assert_eq!(
+            parse_init_tools(&["--tools", "bencher,mdbook"]),
+            Some(vec![InitTool::Bencher, InitTool::Mdbook])
+        );
+    }
+
+    #[test]
+    fn ci_init_args_round_trip() {
+        for tool in <InitTool as strum::VariantArray>::VARIANTS {
+            let args = format!("--tools {}", tool.as_ref());
+            let args = args.split(' ').collect::<Vec<_>>();
+            assert_eq!(parse_init_tools(&args), Some(vec![*tool]));
+        }
     }
 }
