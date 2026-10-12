@@ -357,16 +357,14 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 return Ok(());
             };
 
-            let mut context = context.lock();
             let result = P::handle(
                 payload,
                 &self.target_attachment,
                 &state.callback_label,
-                &mut context,
+                context,
                 state.script_callbacks.clone(),
                 guard.clone(),
             );
-            drop(context);
             // TODO: Emit error events via commands, maybe accumulate in state
             // instead and use apply.
             match result {
