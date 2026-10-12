@@ -217,10 +217,6 @@ pub struct ScriptCallbackMessage {
     pub iteration: usize,
 }
 
-/// The old name of [`ScriptCallbackMessage`], renamed to match Bevy's event/message split.
-#[deprecated(since = "0.22.0", note = "renamed to `ScriptCallbackMessage`")]
-pub type ScriptCallbackEvent = ScriptCallbackMessage;
-
 impl ScriptCallbackMessage {
     /// Creates a new callback event with the given label, arguments and recipients
     pub fn new<L: Into<CallbackLabel>>(

@@ -27,6 +27,3 @@ pub use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 pub use crate::{BMSPlugin, ScriptFunctionsPlugin};
 
 pub use bevy_mod_scripting_derive::*;
-
-#[allow(deprecated)]
-pub use bevy_mod_scripting_core::event::ScriptCallbackEvent;
