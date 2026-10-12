@@ -422,7 +422,8 @@ mod test {
     #[test]
     fn test_own_messages_can_be_written_via_reflection() {
         use crate::event::{
-            ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptCallbackMessage, ScriptDetachedEvent,
+            ScriptAssetModifiedEvent, ScriptAttachedEvent, ScriptCallbackMessage,
+            ScriptDetachedEvent,
         };
         use bevy_ecs::{
             message::{MessageCursor, Messages},
