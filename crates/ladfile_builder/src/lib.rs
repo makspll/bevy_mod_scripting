@@ -11,7 +11,7 @@ use bevy_mod_scripting_bindings::{
     docgen::{
         TypedThrough,
         info::FunctionInfo,
-        typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+        typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
     },
     function::{
         namespace::Namespace,
@@ -455,7 +455,9 @@ impl<'t> LadFileBuilder<'t> {
             ThroughTypeInfo::TypeInfo(type_info) => {
                 self.add_type_info(type_info);
             }
-            ThroughTypeInfo::Primitive(_) => {}
+            ThroughTypeInfo::Primitive(_)
+            | ThroughTypeInfo::Fields { .. }
+            | ThroughTypeInfo::Bound(_) => {}
         }
 
         self
@@ -985,6 +987,15 @@ impl<'t> LadFileBuilder<'t> {
             }
             ThroughTypeInfo::Primitive(reflection_primitive_kind) => {
                 LadFieldOrVariableKind::Primitive(reflection_primitive_kind.clone())
+            }
+            // documented as what they are at runtime: a reference, and a table of fields
+            ThroughTypeInfo::Bound(BoundPlaceholder::Value) => {
+                self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
+            }
+            ThroughTypeInfo::Bound(BoundPlaceholder::Fields) | ThroughTypeInfo::Fields { .. } => {
+                self.lad_type_kind_from_through_type(
+                    &HashMap::<String, ScriptValue>::through_type_info(),
+                )
             }
         }
     }

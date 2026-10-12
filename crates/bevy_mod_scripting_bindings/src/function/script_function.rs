@@ -1,19 +1,24 @@
 //! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
 
 use super::MagicFunctions;
-use super::{from::FromScript, into::IntoScript, namespace::Namespace};
-use crate::VariadicTuple;
+use super::{
+    from::{FromScript, V},
+    into::IntoScript,
+    namespace::Namespace,
+};
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
 use crate::{ScriptValue, error::InteropError};
+use crate::{StaticTypeRef, VariadicTuple};
 use bevy_ecs::prelude::Resource;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::DisplayWithTypeInfo;
 use bevy_mod_scripting_world::{ThreadWorldContainer, WorldGuard};
 use bevy_platform::collections::HashMap;
-use bevy_reflect::Reflect;
-use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use bevy_reflect::{Reflect, TypeInfo};
+use parking_lot::{Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::any::TypeId;
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use std::hash::Hash;
@@ -231,6 +236,30 @@ impl DynamicScriptFunction {
         &self.info.name
     }
 
+    /// Binds a function shared between all types, i.e. one registered on [`StaticTypeRef`], to the given type.
+    ///
+    /// The returned function is called without the type argument, which is filled in on each call.
+    /// Its signature is that of [`FunctionInfo::bind_to_type`].
+    pub fn bind_to_type(&self, type_info: &'static TypeInfo) -> Self {
+        let inner = self.func.clone();
+        let type_id = type_info.type_id();
+        DynamicScriptFunction {
+            info: Arc::new(self.info.bind_to_type(type_info)),
+            func: Arc::new(move |context, mut args| {
+                let type_ref = context
+                    .world()
+                    .and_then(|world| V(StaticTypeRef::new(type_id)).into_script(world));
+                match type_ref {
+                    Ok(type_ref) => {
+                        args.push_front(type_ref);
+                        inner(context, args)
+                    }
+                    Err(e) => ScriptValue::Error(e),
+                }
+            }),
+        }
+    }
+
     /// Set the meta information about the function
     pub fn with_info(mut self, info: FunctionInfo) -> Self {
         self.info = Arc::new(info);
@@ -374,6 +403,10 @@ pub struct FunctionKey {
 /// A registry of dynamic script functions
 pub struct ScriptFunctionRegistry {
     functions: HashMap<FunctionKey, DynamicScriptFunction>,
+    /// Functions on [`StaticTypeRef`] bound to a type, see [`ScriptFunctionRegistry::get_bound_to_type`].
+    /// Cleared whenever the functions change.
+    #[debug_with_type_info(skip)]
+    bound_to_type: Mutex<HashMap<(TypeId, Cow<'static, str>), DynamicScriptFunction>>,
     /// A registry of magic functions
     pub magic_functions: MagicFunctions,
 }
@@ -461,7 +494,8 @@ impl ScriptFunctionRegistry {
         name: impl Into<Cow<'static, str>>,
     ) -> Option<DynamicScriptFunction> {
         let name = name.into();
-        self.functions.remove(&FunctionKey { name, namespace })
+        self.functions_mut()
+            .remove(&FunctionKey { name, namespace })
     }
 
     /// Remove all overloads of a function with the given name. Returns a vector of the removed functions.
@@ -472,7 +506,7 @@ impl ScriptFunctionRegistry {
     ) -> Result<Vec<DynamicScriptFunction>, Cow<'static, str>> {
         let overloads: Vec<_> = self.iter_overloads(namespace, name)?.cloned().collect();
         for overload in overloads.iter() {
-            self.functions.remove(&FunctionKey {
+            self.functions_mut().remove(&FunctionKey {
                 name: overload.info.name.clone(),
                 namespace,
             });
@@ -507,7 +541,8 @@ impl ScriptFunctionRegistry {
                 None => info,
             };
             let func = func.into_dynamic_script_function().with_info(info);
-            self.functions.insert(FunctionKey { name, namespace }, func);
+            self.functions_mut()
+                .insert(FunctionKey { name, namespace }, func);
             return;
         }
 
@@ -541,6 +576,34 @@ impl ScriptFunctionRegistry {
         } else {
             Err(key.name)
         }
+    }
+
+    /// Gets a function registered on [`StaticTypeRef`], bound to the given type with [`DynamicScriptFunction::bind_to_type`].
+    ///
+    /// Bound functions are cached until the registry changes.
+    pub fn get_bound_to_type(
+        &self,
+        type_info: &'static TypeInfo,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'static, str>> {
+        let key = (type_info.type_id(), name.into());
+        if let Some(func) = self.bound_to_type.lock().get(&key) {
+            return Ok(func.clone());
+        }
+        let func = self
+            .get_function(
+                Namespace::OnType(TypeId::of::<StaticTypeRef>()),
+                key.1.clone(),
+            )?
+            .bind_to_type(type_info);
+        self.bound_to_type.lock().insert(key, func.clone());
+        Ok(func)
+    }
+
+    /// The functions, for changing them, which invalidates the bound functions.
+    fn functions_mut(&mut self) -> &mut HashMap<FunctionKey, DynamicScriptFunction> {
+        self.bound_to_type.get_mut().clear();
+        &mut self.functions
     }
 
     /// Iterate over all overloads for the function with the given name and namespace
@@ -593,7 +656,7 @@ impl ScriptFunctionRegistry {
         name: impl Into<Cow<'static, str>>,
         func: DynamicScriptFunction,
     ) {
-        self.functions.insert(
+        self.functions_mut().insert(
             FunctionKey {
                 name: name.into(),
                 namespace,

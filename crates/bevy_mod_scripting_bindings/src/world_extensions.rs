@@ -2,21 +2,21 @@
 //! Implementations of [`WorldExtensions`] trait on the world guard.
 
 use super::{
-    AnyTypeRegistration, AppReflectAllocator, AppScriptComponentRegistry, ReflectBase,
-    ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
-    ScriptTypeRegistration, Union,
+    AnyTypeRegistration, AppReflectAllocator, AppScriptComponentRegistry, EnumVariantRef,
+    ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration,
+    ScriptResourceRegistration, ScriptTypeRegistration, StaticTypeRef, Union,
     function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
     },
     schedule::AppScheduleRegistry,
     script_value::ScriptValue,
+    static_type::registered_type_info,
 };
 use crate::{
     DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
-    function::{from::FromScript, from_ref::FromScriptRef},
-    reflection_extensions::PartialReflectExt,
+    function::{from::V, from_ref::FromScriptRef, into::IntoScript},
 };
 use ::{
     bevy_asset::{AssetServer, Handle, LoadState},
@@ -26,11 +26,7 @@ use ::{
         reflect::{ReflectEvent, ReflectFromWorld, ReflectMessage, ReflectResource},
         world::World,
     },
-    bevy_reflect::{
-        PartialReflect,
-        enums::{DynamicEnum, DynamicVariant},
-        std_traits::ReflectDefault,
-    },
+    bevy_reflect::{PartialReflect, std_traits::ReflectDefault},
 };
 use bevy_app::AppExit;
 use bevy_asset::AssetPath;
@@ -43,12 +39,8 @@ use bevy_ecs::{
 };
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
-use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
-use bevy_platform::collections::HashMap;
-use bevy_reflect::{
-    GetTypeRegistration, TypeInfo, enums::VariantInfo, structs::DynamicStruct, tuple::DynamicTuple,
-    tuple_struct::DynamicTupleStruct,
-};
+use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard};
+use bevy_reflect::{GetTypeRegistration, TypeInfo};
 use bevy_system_reflection::ReflectSchedule;
 use std::{
     alloc::Layout,
@@ -237,14 +229,6 @@ pub trait WorldExtensions {
         script: Handle<ScriptAsset>,
     ) -> Result<LoadState, InteropError>;
 
-    /// Constructs a reflected value from a type and field payload.
-    fn construct(
-        &self,
-        type_: ScriptTypeRegistration,
-        payload: HashMap<String, ScriptValue>,
-        one_indexed: bool,
-    ) -> Result<Box<dyn PartialReflect>, InteropError>;
-
     /// Attempts to call a function overload matching the provided arguments.
     fn try_call_overloads(
         &self,
@@ -289,6 +273,30 @@ pub trait WorldExtensions {
         name: impl Into<Cow<'static, str>>,
         context: FunctionCallContext,
     ) -> Result<DynamicScriptFunction, InteropError>;
+
+    /// Looks up a function callable on the static reference to a type, i.e. `Type.name(..)` in a script.
+    ///
+    /// Resolution order:
+    /// 1. functions registered on the type itself
+    /// 2. type level functions registered on [`StaticTypeRef`], with the type bound as their first argument
+    ///
+    /// Returns the name back if nothing was found.
+    fn lookup_type_function(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'static, str>>;
+
+    /// Looks up anything accessible as `Type.member` on the static reference to a type in a script.
+    ///
+    /// This is [`WorldExtensions::lookup_type_function`], followed by the variants of the type if it is an enum.
+    ///
+    /// Returns the name back if nothing was found.
+    fn lookup_static_member(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<ScriptValue, Cow<'static, str>>;
 
     /// Resolves a type registration by name.
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration>;
@@ -848,168 +856,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.with_resource(|r: &AssetServer| r.load_state(script.id()))
     }
 
-    fn construct(
-        &self,
-        type_: ScriptTypeRegistration,
-        mut payload: HashMap<String, ScriptValue>,
-        one_indexed: bool,
-    ) -> Result<Box<dyn PartialReflect>, InteropError> {
-        // figure out the kind of type we're building
-        let type_info = type_.registration.type_info();
-        // we just need to a) extract fields, if enum we need a "variant" field specifying the variant
-        // then build the corresponding dynamic structure, whatever it may be
-
-        let dynamic: Box<dyn PartialReflect> = match type_info {
-            TypeInfo::Struct(struct_info) => {
-                let fields_iter = struct_info
-                    .field_names()
-                    .iter()
-                    .map(|f| {
-                        Ok((
-                            *f,
-                            struct_info
-                                .field(f)
-                                .ok_or_else(|| {
-                                    InteropError::invariant(
-                                        "field in field_names should have reflection information",
-                                    )
-                                })?
-                                .type_id(),
-                        ))
-                    })
-                    .collect::<Result<Vec<_>, InteropError>>()?;
-                let mut dynamic = construct_dynamic_struct(self, &mut payload, fields_iter)?;
-                dynamic.set_represented_type(Some(type_info));
-                Box::new(dynamic)
-            }
-            TypeInfo::TupleStruct(tuple_struct_info) => {
-                let fields_iter = (0..tuple_struct_info.field_len())
-                    .map(|f| {
-                        Ok(tuple_struct_info
-                            .field_at(f)
-                            .ok_or_else(|| {
-                                InteropError::invariant(
-                                    "field in field_names should have reflection information",
-                                )
-                            })?
-                            .type_id())
-                    })
-                    .collect::<Result<Vec<_>, InteropError>>()?;
-
-                let mut dynamic =
-                    construct_dynamic_tuple_struct(self, &mut payload, fields_iter, one_indexed)?;
-                dynamic.set_represented_type(Some(type_info));
-                Box::new(dynamic)
-            }
-            TypeInfo::Tuple(tuple_info) => {
-                let fields_iter = (0..tuple_info.field_len())
-                    .map(|f| {
-                        Ok(tuple_info
-                            .field_at(f)
-                            .ok_or_else(|| {
-                                InteropError::invariant(
-                                    "field in field_names should have reflection information",
-                                )
-                            })?
-                            .type_id())
-                    })
-                    .collect::<Result<Vec<_>, InteropError>>()?;
-
-                let mut dynamic =
-                    construct_dynamic_tuple(self, &mut payload, fields_iter, one_indexed)?;
-                dynamic.set_represented_type(Some(type_info));
-                Box::new(dynamic)
-            }
-            TypeInfo::Enum(enum_info) => {
-                // extract variant from "variant"
-                let variant = payload.remove("variant").ok_or_else(|| {
-                    InteropError::function_interop_error(
-                        "construct",
-                        Namespace::OnType(TypeId::of::<World>()),
-                        InteropError::str("missing 'variant' field in enum constructor payload"),
-                        None,
-                    )
-                })?;
-
-                let variant_name = String::from_script(variant, self.clone())?;
-
-                let variant = enum_info.variant(&variant_name).ok_or_else(|| {
-                    InteropError::function_interop_error(
-                        "construct",
-                        Namespace::OnType(TypeId::of::<World>()),
-                        InteropError::string(format!(
-                            "invalid variant name '{}' for enum '{}'",
-                            variant_name,
-                            enum_info.type_path()
-                        )),
-                        None,
-                    )
-                })?;
-
-                let variant = match variant {
-                    VariantInfo::Struct(struct_variant_info) => {
-                        // same as above struct variant
-                        let fields_iter = struct_variant_info
-                            .field_names()
-                            .iter()
-                            .map(|f| {
-                                Ok((
-                                    *f,
-                                    struct_variant_info
-                                        .field(f)
-                                        .ok_or_else(|| {
-                                            InteropError::invariant(
-                                                "field in field_names should have reflection information",
-                                            )
-                                        })?
-                                        .type_id(),
-                                ))
-                            })
-                            .collect::<Result<Vec<_>, InteropError>>()?;
-
-                        let dynamic = construct_dynamic_struct(self, &mut payload, fields_iter)?;
-                        DynamicVariant::Struct(dynamic)
-                    }
-                    VariantInfo::Tuple(tuple_variant_info) => {
-                        // same as tuple variant
-                        let fields_iter = (0..tuple_variant_info.field_len())
-                            .map(|f| {
-                                Ok(tuple_variant_info
-                                .field_at(f)
-                                .ok_or_else(|| {
-                                    InteropError::invariant(
-                                        "field in field_names should have reflection information",
-                                    )
-                                })?
-                                .type_id())
-                            })
-                            .collect::<Result<Vec<_>, InteropError>>()?;
-
-                        let dynamic =
-                            construct_dynamic_tuple(self, &mut payload, fields_iter, one_indexed)?;
-                        DynamicVariant::Tuple(dynamic)
-                    }
-                    VariantInfo::Unit(_) => DynamicVariant::Unit,
-                };
-                let mut dynamic = DynamicEnum::new(variant_name, variant);
-                dynamic.set_represented_type(Some(type_info));
-                Box::new(dynamic)
-            }
-            _ => {
-                return Err(InteropError::unsupported_operation(
-                    Some(type_info.type_id()),
-                    Some(Box::new(payload)),
-                    "Type constructor not supported",
-                ));
-            }
-        };
-
-        // try to construct type from reflect
-        // TODO: it would be nice to have a <dyn PartialReflect>::from_reflect_with_fallback equivalent, that does exactly that
-        // only using this as it's already there and convenient, the clone variant hitting will be confusing to end users
-        <dyn PartialReflect>::from_reflect_or_clone(dynamic.as_ref(), self.clone())
-    }
-
     fn try_call_overloads(
         &self,
         type_id: TypeId,
@@ -1100,6 +946,43 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                     Some(context),
                 )
             })
+    }
+
+    fn lookup_static_member(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<ScriptValue, Cow<'static, str>> {
+        let name = match self.lookup_function([type_id], name) {
+            Ok(func) => return Ok(ScriptValue::Function(func)),
+            Err(name) => name,
+        };
+        let Ok(type_info) = registered_type_info(self, type_id) else {
+            return Err(name);
+        };
+        let name = match lookup_bound_type_function(self, type_info, name) {
+            Ok(func) => return Ok(ScriptValue::Function(func)),
+            Err(name) => name,
+        };
+        match EnumVariantRef::from_name(type_info, &name) {
+            Some(variant) => V(variant).into_script(self.clone()).map_err(|_| name),
+            None => Err(name),
+        }
+    }
+
+    fn lookup_type_function(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'static, str>> {
+        let name = match self.lookup_function([type_id], name) {
+            Ok(func) => return Ok(func),
+            Err(name) => name,
+        };
+        match registered_type_info(self, type_id) {
+            Ok(type_info) => lookup_bound_type_function(self, type_info, name),
+            Err(_) => Err(name),
+        }
     }
 
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
@@ -1343,108 +1226,19 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     // }
 }
 
-fn construct_from_script_value(
-    guard: &WorldGuard,
-    descriptor: impl Into<Cow<'static, str>>,
-    type_id: TypeId,
-    value: Option<ScriptValue>,
-) -> Result<Box<dyn PartialReflect>, InteropError> {
-    // if the value is missing, try to construct a default and return it
-    let value = match value {
-        Some(value) => value,
-        None => {
-            let type_registry = guard.type_registry();
-            let type_registry = type_registry.read();
-            let default_data = type_registry
-                .get_type_data::<ReflectDefault>(type_id)
-                .ok_or_else(|| {
-                    InteropError::function_interop_error(
-                        "construct",
-                        Namespace::OnType(TypeId::of::<World>()),
-                        InteropError::string(format!(
-                            "field missing and no default provided: '{}'",
-                            descriptor.into()
-                        )),
-                        None,
-                    )
-                })?;
-            return Ok(default_data.default().into_partial_reflect());
-        }
-    };
-
-    // otherwise we need to use from_script_ref
-    <Box<dyn PartialReflect>>::from_script_ref(type_id, value, guard.clone())
-}
-
-fn construct_dynamic_struct(
-    guard: &WorldGuard,
-    payload: &mut HashMap<String, ScriptValue>,
-    fields: Vec<(&'static str, TypeId)>,
-) -> Result<DynamicStruct, InteropError> {
-    let mut dynamic = DynamicStruct::default();
-    for (field_name, field_type_id) in fields {
-        let constructed = construct_from_script_value(
-            guard,
-            field_name,
-            field_type_id,
-            payload.remove(field_name),
-        )?;
-
-        dynamic.insert_boxed(field_name, constructed);
+/// A type level function registered on [`StaticTypeRef`], bound to the given type.
+fn lookup_bound_type_function(
+    guard: &WorldAccessGuard,
+    type_info: &'static TypeInfo,
+    name: Cow<'static, str>,
+) -> Result<DynamicScriptFunction, Cow<'static, str>> {
+    // the type level functions of `StaticTypeRef` are already addressed at that type directly
+    if type_info.type_id() == TypeId::of::<StaticTypeRef>() {
+        return Err(name);
     }
-    Ok(dynamic)
-}
-
-fn construct_dynamic_tuple_struct(
-    guard: &WorldGuard,
-    payload: &mut HashMap<String, ScriptValue>,
-    fields: Vec<TypeId>,
-    one_indexed: bool,
-) -> Result<DynamicTupleStruct, InteropError> {
-    let mut dynamic = DynamicTupleStruct::default();
-    for (field_idx, field_type_id) in fields.into_iter().enumerate() {
-        // correct for indexing
-        let script_idx = if one_indexed {
-            field_idx + 1
-        } else {
-            field_idx
-        };
-        let field_string = script_idx.to_string();
-        dynamic.insert_boxed(construct_from_script_value(
-            guard,
-            field_string.clone(),
-            field_type_id,
-            payload.remove(&field_string),
-        )?);
-    }
-    Ok(dynamic)
-}
-
-fn construct_dynamic_tuple(
-    guard: &WorldGuard,
-    payload: &mut HashMap<String, ScriptValue>,
-    fields: Vec<TypeId>,
-    one_indexed: bool,
-) -> Result<DynamicTuple, InteropError> {
-    let mut dynamic = DynamicTuple::default();
-    for (field_idx, field_type_id) in fields.into_iter().enumerate() {
-        // correct for indexing
-        let script_idx = if one_indexed {
-            field_idx + 1
-        } else {
-            field_idx
-        };
-
-        let field_string = script_idx.to_string();
-
-        dynamic.insert_boxed(construct_from_script_value(
-            guard,
-            field_string.clone(),
-            field_type_id,
-            payload.remove(&field_string),
-        )?);
-    }
-    Ok(dynamic)
+    let registry = guard.script_function_registry();
+    let registry = registry.read();
+    registry.get_bound_to_type(type_info, name)
 }
 
 impl CachedRegistry for AppReflectAllocator {
@@ -1470,7 +1264,7 @@ impl CachedRegistry for CurrentScriptAttachment {
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy_reflect::{GetTypeRegistration, Reflect, ReflectFromReflect};
+    use bevy_reflect::Reflect;
     use std::sync::Arc;
     use test_utils::test_data::{
         CompWithDefaultAndComponentData, GetTestEntityId, SimpleEnum, SimpleStruct,
@@ -1478,150 +1272,75 @@ mod test {
     };
 
     #[test]
-    fn test_construct_struct() {
+    fn lookup_type_function_prefers_own_functions_and_binds_shared_ones() {
+        use crate::function::namespace::NamespaceBuilder;
+
         let mut world = setup_world(|_, _| {});
+        NamespaceBuilder::<StaticTypeRef>::new_unregistered(&mut world)
+            .register("describe", |_: V<StaticTypeRef>| 1usize);
+        NamespaceBuilder::<SimpleStruct>::new_unregistered(&mut world)
+            .register("describe", || 2usize);
+
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
 
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry.get(TypeId::of::<SimpleStruct>()).unwrap().clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        let payload = HashMap::from_iter(vec![("foo".to_owned(), ScriptValue::Integer(1))]);
-
-        let result = world.construct(type_registration, payload, false);
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleStruct { foo: 1 }) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
-    #[test]
-    fn test_construct_tuple_struct() {
-        let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
-
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry
-            .get(TypeId::of::<SimpleTupleStruct>())
-            .unwrap()
-            .clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        // zero indexed
-        let payload = HashMap::from_iter(vec![("0".to_owned(), ScriptValue::Integer(1))]);
-
-        let result = world.construct(type_registration.clone(), payload, false);
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleTupleStruct(1)) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-
-        // one indexed
-        let payload = HashMap::from_iter(vec![("1".to_owned(), ScriptValue::Integer(1))]);
-
-        let result = world.construct(type_registration, payload, true);
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleTupleStruct(1)) as Box<dyn PartialReflect>);
-
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
-    #[test]
-    fn test_construct_tuple() {
-        let mut world = setup_world(|_, registry| {
-            registry.register::<(usize, usize)>();
-            // TODO: does this ever get registered on normal types? I don't think so: https://github.com/bevyengine/bevy/issues/17981
-            registry.register_type_data::<(usize, usize), ReflectFromReflect>();
-        });
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-
-        <usize as GetTypeRegistration>::get_type_registration();
-        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
-
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry
-            .get(TypeId::of::<(usize, usize)>())
-            .unwrap()
-            .clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        // zero indexed
-        let payload = HashMap::from_iter(vec![
-            ("0".to_owned(), ScriptValue::Integer(1)),
-            ("1".to_owned(), ScriptValue::Integer(2)),
-        ]);
-
-        let result = world.construct(type_registration.clone(), payload, false);
-        let expected = Ok::<_, InteropError>(Box::new((1, 2)) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-
-        // one indexed
-        let payload = HashMap::from_iter(vec![
-            ("1".to_owned(), ScriptValue::Integer(1)),
-            ("2".to_owned(), ScriptValue::Integer(2)),
-        ]);
-
-        let result = world.construct(type_registration.clone(), payload, true);
-        let expected = Ok::<_, InteropError>(Box::new((1, 2)) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
-    #[test]
-    fn test_construct_enum() {
-        let mut world = setup_world(|_, _| {});
-        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
-        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
-
-        let registry = world.type_registry();
-        let registry = registry.read();
-
-        let registration = registry.get(TypeId::of::<SimpleEnum>()).unwrap().clone();
-        let type_registration = ScriptTypeRegistration::new(Arc::new(registration));
-
-        // struct version
-        let payload = HashMap::from_iter(vec![
-            ("foo".to_owned(), ScriptValue::Integer(1)),
-            ("variant".to_owned(), ScriptValue::String("Struct".into())),
-        ]);
-
-        let result = world.construct(type_registration.clone(), payload, false);
-        let expected = Ok::<_, InteropError>(
-            Box::new(SimpleEnum::Struct { foo: 1 }) as Box<dyn PartialReflect>
+        // shared functions have the type bound
+        let shared = world
+            .lookup_type_function(TypeId::of::<SimpleTupleStruct>(), "describe")
+            .unwrap();
+        assert!(shared.info.arg_info.is_empty());
+        assert_eq!(
+            shared.info.namespace,
+            Namespace::OnType(TypeId::of::<SimpleTupleStruct>())
         );
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
 
-        // tuple struct version
-        let payload = HashMap::from_iter(vec![
-            ("0".to_owned(), ScriptValue::Integer(1)),
-            (
-                "variant".to_owned(),
-                ScriptValue::String("TupleStruct".into()),
-            ),
-        ]);
+        // functions on the type itself take priority
+        let own = world
+            .lookup_type_function(TypeId::of::<SimpleStruct>(), "describe")
+            .unwrap();
+        assert_eq!(
+            own.info.namespace,
+            Namespace::OnType(TypeId::of::<SimpleStruct>())
+        );
 
-        let result = world.construct(type_registration.clone(), payload, false);
-        let expected =
-            Ok::<_, InteropError>(Box::new(SimpleEnum::TupleStruct(1)) as Box<dyn PartialReflect>);
-
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-
-        // unit version
-        let payload = HashMap::from_iter(vec![(
-            "variant".to_owned(),
-            ScriptValue::String("Unit".into()),
-        )]);
-
-        let result = world.construct(type_registration, payload, false);
-        let expected = Ok::<_, InteropError>(Box::new(SimpleEnum::Unit) as Box<dyn PartialReflect>);
-        pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
+        assert!(
+            world
+                .lookup_type_function(TypeId::of::<SimpleStruct>(), "missing")
+                .is_err()
+        );
     }
 
+    #[test]
+    fn lookup_static_member_finds_variants_after_functions() {
+        use crate::function::namespace::NamespaceBuilder;
+
+        let mut world = setup_world(|_, _| {});
+        NamespaceBuilder::<SimpleEnum>::new_unregistered(&mut world).register("Struct", || 1usize);
+
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::default());
+        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
+        let enum_id = TypeId::of::<SimpleEnum>();
+
+        // a variant is a reference to a variant ref value
+        assert!(matches!(
+            world.lookup_static_member(enum_id, "Unit"),
+            Ok(ScriptValue::Reference(_))
+        ));
+
+        // functions take priority
+        assert!(matches!(
+            world.lookup_static_member(enum_id, "Struct"),
+            Ok(ScriptValue::Function(_))
+        ));
+
+        assert!(world.lookup_static_member(enum_id, "Missing").is_err());
+        // not an enum
+        assert!(
+            world
+                .lookup_static_member(TypeId::of::<SimpleStruct>(), "Unit")
+                .is_err()
+        );
+    }
     fn make_guard(world: &mut World) -> WorldAccessGuard<'_> {
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::default());
         WorldAccessGuard::new_exclusive(world, cache)
@@ -2021,42 +1740,6 @@ mod test {
         );
     }
 
-    // ── construct error paths ─────────────────────────────────────────────────
-
-    #[test]
-    fn construct_enum_missing_variant_errors() {
-        let mut world = setup_world(|_, _| {});
-        let guard = make_guard(&mut world);
-        let reg = ScriptTypeRegistration::new(Arc::new(
-            guard
-                .type_registry()
-                .read()
-                .get(TypeId::of::<SimpleEnum>())
-                .unwrap()
-                .clone(),
-        ));
-        assert!(guard.construct(reg, HashMap::new(), false).is_err());
-    }
-
-    #[test]
-    fn construct_enum_invalid_variant_errors() {
-        let mut world = setup_world(|_, _| {});
-        let guard = make_guard(&mut world);
-        let reg = ScriptTypeRegistration::new(Arc::new(
-            guard
-                .type_registry()
-                .read()
-                .get(TypeId::of::<SimpleEnum>())
-                .unwrap()
-                .clone(),
-        ));
-        let payload = HashMap::from_iter(vec![(
-            "variant".to_owned(),
-            ScriptValue::String("Nonexistent".into()),
-        )]);
-        assert!(guard.construct(reg, payload, false).is_err());
-    }
-
     // ── setup_cache_raw ───────────────────────────────────────────────────────
 
     #[test]
@@ -2094,6 +1777,7 @@ mod test {
             reflect::{ReflectEvent, ReflectMessage},
             system::ResMut,
         };
+        use bevy_mod_scripting_world::WorldGuard;
 
         #[derive(Event, Reflect, Clone)]
         #[reflect(Event)]

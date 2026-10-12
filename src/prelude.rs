@@ -11,6 +11,8 @@ pub use bevy_mod_scripting_bindings::{
     script_value::ScriptValue,
 };
 
+pub use bevy_mod_scripting_functions::ConstructorsPlugin;
+
 pub use bevy_mod_scripting_script::*;
 
 pub use bevy_mod_scripting_asset::*;

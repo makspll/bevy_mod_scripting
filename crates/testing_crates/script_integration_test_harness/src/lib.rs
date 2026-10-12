@@ -27,7 +27,7 @@ use bevy_mod_scripting_core::{
     script::{ScriptComponent, ScriptContexts},
 };
 use bevy_mod_scripting_display::DisplayProxy;
-use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
+use bevy_mod_scripting_functions::{ConstructorsPlugin, ScriptFunctionsPlugin};
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 use criterion::{BatchSize, measurement::Measurement};
@@ -46,6 +46,7 @@ pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
     app.add_plugins((
         ScriptFunctionsPlugin,
         CoreScriptGlobalsPlugin::default(),
+        ConstructorsPlugin::default(),
         BMSScriptingInfrastructurePlugin::default(),
     ));
     if include_test_functions {
