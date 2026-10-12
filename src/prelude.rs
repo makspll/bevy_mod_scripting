@@ -1,6 +1,6 @@
 pub use bevy_mod_scripting_core::{
     ConfigureScriptPlugin, IntoScriptPluginParams, callback_labels,
-    event::ScriptCallbackEvent,
+    event::ScriptCallbackMessage,
     handler::event_handler,
     script::{ScriptComponent, ScriptId},
 };

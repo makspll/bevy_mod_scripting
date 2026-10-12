@@ -57,12 +57,12 @@ pub struct MyReflectType;
 callback_labels!(OnEvent => "on_event");
 
 // trigger the event
-fn send_event(mut writer: EventWriter<ScriptCallbackEvent>, mut allocator: ResMut<AppReflectAllocator>) {
+fn send_event(mut writer: EventWriter<ScriptCallbackMessage>, mut allocator: ResMut<AppReflectAllocator>) {
 
     let allocator = allocator.write();
     let my_reflect_payload = ReflectReference::new_allocated(MyReflectType, &mut allocator);
 
-    writer.send(ScriptCallbackEvent::new_for_all_scripts(
+    writer.send(ScriptCallbackMessage::new_for_all_scripts(
         OnEvent,
         vec![my_reflect_payload.into()],
     ));

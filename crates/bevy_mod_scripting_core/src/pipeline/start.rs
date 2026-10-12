@@ -10,19 +10,19 @@ use bevy_mod_scripting_script::ScriptAttachment;
 #[derive(Clone, Debug)]
 pub struct StrongScriptHandle(Handle<ScriptAsset>);
 
-// impl GetScriptHandle for ScriptAssetModifiedEvent {
+// impl GetScriptHandle for ScriptAssetModifiedMessage {
 //     fn get_script_handle(&self) -> Handle<ScriptAsset> {
 //         self.0.clone()
 //     }
 // }
 
-impl GetScriptHandle for ScriptAttachedEvent {
+impl GetScriptHandle for ScriptAttachedMessage {
     fn get_script_handle(&self) -> Handle<ScriptAsset> {
         self.0.script()
     }
 }
 
-impl GetScriptHandle for ScriptDetachedEvent {
+impl GetScriptHandle for ScriptDetachedMessage {
     fn get_script_handle(&self) -> Handle<ScriptAsset> {
         self.0.script()
     }
@@ -72,8 +72,8 @@ pub struct FilterAssetEventsSettings {
 pub fn filter_asset_events<P: IntoScriptPluginParams>(
     args: In<FilterAssetEventsSettings>,
     mut script_modified_events: MessageReader<AssetEvent<ScriptAsset>>,
-    mut script_attached_events: LoadedWithHandles<ScriptAttachedEvent>,
-    mut script_detached_events: MessageReader<ScriptDetachedEvent>,
+    mut script_attached_events: LoadedWithHandles<ScriptAttachedMessage>,
+    mut script_detached_events: MessageReader<ScriptDetachedMessage>,
     mut active_machines: ResMut<ActiveMachines<P>>,
 ) {
     if args.hot_loads {
@@ -83,7 +83,7 @@ pub fn filter_asset_events<P: IntoScriptPluginParams>(
                 && asset.language == P::LANGUAGE
             {
                 Some(ScriptPipelineEvent::ModifiedAsset(
-                    ScriptAssetModifiedEvent(*id),
+                    ScriptAssetModifiedMessage(*id),
                 ))
             } else {
                 None
@@ -120,17 +120,17 @@ pub fn filter_asset_events<P: IntoScriptPluginParams>(
 
 /// A discriminated union of all events that can trigger the script processing pipeline.
 pub enum ScriptPipelineEvent {
-    /// [`ScriptAttachedEvent`]
-    Attached(ScriptAttachedEvent),
-    /// [`ScriptDetachedEvent`]
-    Detached(ScriptDetachedEvent),
-    /// [`ScriptAssetModifiedEvent`]
-    ModifiedAsset(ScriptAssetModifiedEvent),
+    /// [`ScriptAttachedMessage`]
+    Attached(ScriptAttachedMessage),
+    /// [`ScriptDetachedMessage`]
+    Detached(ScriptDetachedMessage),
+    /// [`ScriptAssetModifiedMessage`]
+    ModifiedAsset(ScriptAssetModifiedMessage),
 }
 
 impl ScriptPipelineEvent {
     fn process_attachment<P: IntoScriptPluginParams>(
-        attachment_event: ScriptAttachedEvent,
+        attachment_event: ScriptAttachedMessage,
         assets: &mut Assets<ScriptAsset>,
         contexts: &mut ScriptContexts<P>,
     ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
@@ -195,7 +195,7 @@ impl ScriptPipelineEvent {
     }
 
     fn process_detachment<P: IntoScriptPluginParams>(
-        attachment_event: ScriptDetachedEvent,
+        attachment_event: ScriptDetachedMessage,
         contexts: &ScriptContexts<P>,
     ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
         debug!("received detachment event: {attachment_event:?}");
@@ -224,7 +224,7 @@ impl ScriptPipelineEvent {
     }
 
     fn process_modified_asset<P: IntoScriptPluginParams>(
-        event: ScriptAssetModifiedEvent,
+        event: ScriptAssetModifiedMessage,
         assets: &mut Assets<ScriptAsset>,
         contexts: &ScriptContexts<P>,
     ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {

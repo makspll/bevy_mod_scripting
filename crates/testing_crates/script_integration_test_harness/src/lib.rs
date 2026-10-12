@@ -28,7 +28,7 @@ use bevy_mod_scripting_core::{
     commands::{AttachScript, RunScriptCallback},
     error::ScriptError,
     event::{
-        IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptErrorEvent,
+        IntoCallbackLabel, ScriptCallbackMessage, ScriptCallbackResponseMessage, ScriptErrorMessage,
     },
     handler::event_handler,
     pipeline::PipelineRun,
@@ -424,7 +424,7 @@ fn setup_callback_benchmark_app<P: IntoScriptPluginParams + Plugin, F: Fn() -> P
     (app, attachments)
 }
 
-/// Benchmarks dispatching one [`ScriptCallbackEvent`] through the [`event_handler`] system to `script_count` static scripts, each in its own context.
+/// Benchmarks dispatching one [`ScriptCallbackMessage`] through the [`event_handler`] system to `script_count` static scripts, each in its own context.
 ///
 /// Measures the per-callback overhead of the handler path, the callback itself is expected to be empty.
 pub fn run_plugin_callback_event_benchmark<
@@ -445,13 +445,13 @@ pub fn run_plugin_callback_event_benchmark<
 
     // make sure every script actually ran the callback, so we are not benchmarking the error path
     world.write_message(
-        ScriptCallbackEvent::new_for_all_scripts(OnBenchCallback, vec![]).with_response(),
+        ScriptCallbackMessage::new_for_all_scripts(OnBenchCallback, vec![]).with_response(),
     );
     world
         .run_system(handler)
         .expect("handler system failed")
         .expect("handler system errored");
-    let responses = world.resource::<Messages<ScriptCallbackResponseEvent>>();
+    let responses = world.resource::<Messages<ScriptCallbackResponseMessage>>();
     let ok_responses = responses
         .iter_current_update_messages()
         .filter(|r| r.response.is_ok())
@@ -465,7 +465,7 @@ pub fn run_plugin_callback_event_benchmark<
             .read()
             .all_residents_len(),
         world
-            .resource::<Messages<ScriptErrorEvent>>()
+            .resource::<Messages<ScriptErrorMessage>>()
             .iter_current_update_messages()
             .collect::<Vec<_>>()
     );
@@ -474,14 +474,14 @@ pub fn run_plugin_callback_event_benchmark<
     criterion.bench_function(benchmark_id, |b| {
         b.iter(|| {
             span.in_scope(|| {
-                world.write_message(ScriptCallbackEvent::new_for_all_scripts(
+                world.write_message(ScriptCallbackMessage::new_for_all_scripts(
                     OnBenchCallback,
                     vec![],
                 ));
                 let _ = world.run_system(handler);
                 // drop handled messages, so they don't accumulate between iterations
                 world
-                    .resource_mut::<Messages<ScriptCallbackEvent>>()
+                    .resource_mut::<Messages<ScriptCallbackMessage>>()
                     .update();
             })
         });

@@ -50,7 +50,7 @@ app.register_type::<MyEvent>()
 
 The following BMS messages are reflected and can be written from scripts:
 
-* `ScriptCallbackEvent`: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer `queue_script_callback` to run callbacks from scripts.
-* `ScriptAttachedEvent`, `ScriptDetachedEvent`, `ScriptAssetModifiedEvent`: drive the script loading pipeline
+* `ScriptCallbackMessage`: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer `queue_script_callback` to run callbacks from scripts.
+* `ScriptAttachedMessage`, `ScriptDetachedMessage`, `ScriptAssetModifiedMessage`: drive the script loading pipeline
 
 The internal loading pipeline state events (`LoadingCompleted`, `ContextAssigned`, ...) are intentionally not reflected.

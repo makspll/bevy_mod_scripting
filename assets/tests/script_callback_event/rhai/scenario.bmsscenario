@@ -10,7 +10,7 @@ WaitForScriptAssetLoaded name="@this_script"
 AttachStaticScript script="@this_script"
 RunUpdateOnce
 
-// on_test writes a ScriptCallbackEvent message for callback_a, which is handled later in the same frame
+// on_test writes a ScriptCallbackMessage message for callback_a, which is handled later in the same frame
 EmitScriptCallbackEvent emit_response=true, label="OnTest", language=null, recipients="StaticScript", script="@this_script"
 RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnTest", script="@this_script", expect_string_value="sent"
