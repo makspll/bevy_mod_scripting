@@ -1,12 +1,18 @@
 //! Type erased runners, letting language agnostic code run script callbacks in any scripting language.
 
-use std::sync::Arc;
+use std::{
+    collections::VecDeque,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
+};
 
 use bevy_ecs::resource::Resource;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
 use bevy_mod_scripting_world::WorldGuard;
-use parking_lot::RwLock;
+use parking_lot::{Mutex, RwLock};
 
 use crate::{InteropError, ScriptValue};
 
@@ -27,18 +33,40 @@ pub type ScriptCallbackRunner = dyn Fn(
     + Sync
     + 'static;
 
-/// The [`ScriptCallbackRunner`]s of every scripting plugin, registered by each plugin when it is built.
+/// A callback waiting to run once the callback which queued it finishes, see [`AppScriptCallbackRunners::queue`].
+#[derive(Clone, Debug)]
+pub struct QueuedScriptCallback {
+    /// The scripts to run the callback on
+    pub recipients: Recipients,
+    /// The name of the callback
+    pub label: String,
+    /// The arguments to pass to the callback
+    pub args: Vec<ScriptValue>,
+}
+
+/// The [`ScriptCallbackRunner`]s of every scripting plugin, registered by each plugin when it is built,
+/// and the callbacks queued to run later.
 ///
 /// Available to script functions via the world guard, so they can run callbacks in scripts of any language,
 /// even from script systems without access to the plugins' resources.
 #[derive(Clone, Resource, Default)]
-pub struct AppScriptCallbackRunners(Arc<RwLock<Vec<(Language, Arc<ScriptCallbackRunner>)>>>);
+pub struct AppScriptCallbackRunners {
+    runners: Arc<RwLock<Vec<(Language, Arc<ScriptCallbackRunner>)>>>,
+    queue: Arc<CallbackQueue>,
+}
+
+#[derive(Default)]
+struct CallbackQueue {
+    /// Lets the hot path check for queued callbacks without locking, only changed while holding the lock.
+    not_empty: AtomicBool,
+    callbacks: Mutex<VecDeque<QueuedScriptCallback>>,
+}
 
 #[profiling::all_functions]
 impl AppScriptCallbackRunners {
     /// Registers the runner for the given language, replacing the previous one if there was one.
     pub fn register(&self, language: Language, runner: Arc<ScriptCallbackRunner>) {
-        let mut runners = self.0.write();
+        let mut runners = self.runners.write();
         match runners.iter_mut().find(|(l, _)| *l == language) {
             Some((_, existing)) => *existing = runner,
             None => runners.push((language, runner)),
@@ -55,7 +83,7 @@ impl AppScriptCallbackRunners {
     ) -> Result<ScriptCallbackResults, InteropError> {
         // callbacks can run other callbacks, so the lock must not be held while they run
         let runners = self
-            .0
+            .runners
             .read()
             .iter()
             .map(|(_, runner)| runner.clone())
@@ -66,6 +94,31 @@ impl AppScriptCallbackRunners {
             results.extend(runner(world.clone(), recipients, label, args.clone())?);
         }
         Ok(results)
+    }
+
+    /// Queues a callback to run as soon as the outermost running callback finishes,
+    /// or on the next run of the system running leftover queued callbacks.
+    ///
+    /// Queued callbacks run in the order they were queued, and can queue more callbacks themselves.
+    pub fn queue(&self, callback: QueuedScriptCallback) {
+        let mut callbacks = self.queue.callbacks.lock();
+        callbacks.push_back(callback);
+        self.queue.not_empty.store(true, Ordering::Release);
+    }
+
+    /// Whether any callbacks are queued, cheap enough to call after every callback.
+    pub fn has_queued(&self) -> bool {
+        self.queue.not_empty.load(Ordering::Acquire)
+    }
+
+    /// Takes the next queued callback, in the order they were queued.
+    pub fn pop_queued(&self) -> Option<QueuedScriptCallback> {
+        let mut callbacks = self.queue.callbacks.lock();
+        let next = callbacks.pop_front();
+        self.queue
+            .not_empty
+            .store(!callbacks.is_empty(), Ordering::Release);
+        next
     }
 }
 
@@ -99,6 +152,32 @@ mod test {
                 other => panic!("unexpected result: {other:?}"),
             })
             .collect()
+    }
+
+    #[test]
+    fn queued_callbacks_are_taken_in_order() {
+        let runners = AppScriptCallbackRunners::default();
+        assert!(!runners.has_queued());
+
+        for label in ["first", "second"] {
+            runners.queue(QueuedScriptCallback {
+                recipients: Recipients::AllScripts,
+                label: label.to_owned(),
+                args: vec![],
+            });
+        }
+        assert!(runners.has_queued());
+        assert_eq!(
+            runners.pop_queued().map(|c| c.label).as_deref(),
+            Some("first")
+        );
+        assert!(runners.has_queued());
+        assert_eq!(
+            runners.pop_queued().map(|c| c.label).as_deref(),
+            Some("second")
+        );
+        assert!(!runners.has_queued());
+        assert!(runners.pop_queued().is_none());
     }
 
     #[test]
