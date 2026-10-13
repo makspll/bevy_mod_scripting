@@ -2306,6 +2306,38 @@ mod test {
     }
 
     #[test]
+    fn type_namespaces_default_to_the_crate_and_can_be_overridden() {
+        use crate::{AppScriptTypeCatalogue, ScriptNamespace};
+
+        #[derive(Reflect)]
+        struct DefaultNs;
+        #[derive(Reflect)]
+        struct OverriddenNs;
+
+        let mut world = setup_world(|_, registry| {
+            registry.register::<DefaultNs>();
+            registry.register::<OverriddenNs>();
+            registry.register_type_data_with::<OverriddenNs, ScriptNamespace, _>("custom");
+        });
+        let guard = make_guard(&mut world);
+        let catalogue = AppScriptTypeCatalogue::default()
+            .get(guard.clone())
+            .unwrap();
+
+        // defined in this crate's test module
+        let default = catalogue.get_by_short_name("DefaultNs").unwrap();
+        assert_eq!(&*default.namespace, "bevy_mod_scripting_bindings");
+        let overridden = catalogue.get_by_short_name("OverriddenNs").unwrap();
+        assert_eq!(&*overridden.namespace, "custom");
+
+        assert!(catalogue.namespaces().any(|n| n == "custom"));
+        let in_custom: Vec<_> = catalogue.iter_namespace("custom").collect();
+        assert_eq!(in_custom.len(), 1);
+        assert_eq!(&*in_custom[0].short_name, "OverriddenNs");
+        assert_eq!(catalogue.iter_namespace("does_not_exist").count(), 0);
+    }
+
+    #[test]
     fn type_catalogue_is_shared_and_refreshes_on_new_types() {
         use crate::AppScriptTypeCatalogue;
 

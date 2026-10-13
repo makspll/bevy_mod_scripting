@@ -73,6 +73,8 @@ pub struct CatalogueEntry {
     pub path: Arc<str>,
     /// The short type name, i.e. `Transform`
     pub short_name: Arc<str>,
+    /// The namespace of the type, see [`ScriptTypeRegistration::namespace`]. Empty for the root namespace.
+    pub namespace: Arc<str>,
     /// The registration of the type
     pub registration: CatalogueRegistration,
     /// Where the entry came from
@@ -84,6 +86,7 @@ pub struct CatalogueEntry {
 pub struct ScriptTypeCatalogue {
     entries: Vec<CatalogueEntry>,
     by_short_name: HashMap<Arc<str>, usize>,
+    by_namespace: HashMap<Arc<str>, Vec<usize>>,
     /// duplicate short names encountered while building, first one wins in lookups
     duplicates: Vec<Arc<str>>,
 }
@@ -109,6 +112,23 @@ impl ScriptTypeCatalogue {
         self.by_short_name.get(name).map(|i| &self.entries[*i])
     }
 
+    /// The names of all namespaces with at least one entry, in no particular order
+    pub fn namespaces(&self) -> impl Iterator<Item = &str> {
+        self.by_namespace.keys().map(|n| n.as_ref())
+    }
+
+    /// Iterates over the entries in the given namespace
+    pub fn iter_namespace<'a>(
+        &'a self,
+        namespace: &str,
+    ) -> impl Iterator<Item = &'a CatalogueEntry> + 'a {
+        self.by_namespace
+            .get(namespace)
+            .into_iter()
+            .flatten()
+            .map(|i| &self.entries[*i])
+    }
+
     /// Short names which were claimed by more than one type
     pub fn duplicate_short_names(&self) -> &[Arc<str>] {
         &self.duplicates
@@ -118,6 +138,10 @@ impl ScriptTypeCatalogue {
     /// (the entry is still stored, but short name lookups keep resolving to the first one)
     pub fn insert(&mut self, entry: CatalogueEntry) -> bool {
         let index = self.entries.len();
+        self.by_namespace
+            .entry(entry.namespace.clone())
+            .or_default()
+            .push(index);
         let fresh = match self.by_short_name.entry(entry.short_name.clone()) {
             bevy_platform::collections::hash_map::Entry::Vacant(v) => {
                 v.insert(index);
@@ -145,10 +169,12 @@ impl ScriptTypeCatalogue {
             let path: Arc<str> = path_table.path().into();
             let short_name: Arc<str> = path_table.short_path().into();
             let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
+            let namespace: Arc<str> = registration.namespace().into();
             let registration = guard.clone().get_type_registration(registration)?;
             catalogue.insert(CatalogueEntry {
                 path,
                 short_name,
+                namespace,
                 registration: CatalogueRegistration::from_any(registration),
                 source: CatalogueSource::Native,
             });
@@ -162,6 +188,7 @@ impl ScriptTypeCatalogue {
             catalogue.insert(CatalogueEntry {
                 path: info.name.as_str().into(),
                 short_name: info.name.as_str().into(),
+                namespace: "".into(),
                 registration: CatalogueRegistration::Component(info.registration.clone()),
                 source: CatalogueSource::Script,
             });
@@ -170,6 +197,7 @@ impl ScriptTypeCatalogue {
             catalogue.insert(CatalogueEntry {
                 path: name.as_str().into(),
                 short_name: name.as_str().into(),
+                namespace: "".into(),
                 registration: CatalogueRegistration::Bundle(bundle.clone()),
                 source: CatalogueSource::Script,
             });

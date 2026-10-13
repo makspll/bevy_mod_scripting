@@ -155,6 +155,22 @@ impl ScriptTypeRegistration {
         self.registration.type_info().type_id()
     }
 
+    /// Returns the script namespace of the type.
+    ///
+    /// This is the namespace set with [`ScriptNamespace`](crate::ScriptNamespace) type data if any,
+    /// otherwise the name of the crate defining the type, or the empty string (the root namespace) for types without one, such as primitives.
+    pub fn namespace(&self) -> &str {
+        match self.registration.data::<crate::ScriptNamespace>() {
+            Some(namespace) => namespace.0.as_ref(),
+            None => self
+                .registration
+                .type_info()
+                .type_path_table()
+                .crate_name()
+                .unwrap_or(""),
+        }
+    }
+
     /// Returns the [`TypeRegistration`] for this type.
     pub fn type_registration(&self) -> &TypeRegistration {
         &self.registration
@@ -197,6 +213,16 @@ impl ScriptComponentRegistration {
                 == std::any::TypeId::of::<DynamicComponent>(),
             registration,
             component_id,
+        }
+    }
+
+    /// Returns the script namespace of the component, see [`ScriptTypeRegistration::namespace`].
+    ///
+    /// Components registered by scripts are in the root namespace (the empty string), not in the namespace of the type backing them.
+    pub fn namespace(&self) -> &str {
+        match self.is_dynamic_script_component {
+            true => "",
+            false => self.registration.namespace(),
         }
     }
 
@@ -291,6 +317,16 @@ impl ScriptComponentRegistration {
 
 #[profiling::all_functions]
 impl ScriptBundleRegistration {
+    /// Returns the script namespace of the bundle, see [`ScriptTypeRegistration::namespace`].
+    ///
+    /// Bundles registered by scripts are in the root namespace (the empty string), not in the namespace of the type backing them.
+    pub fn namespace(&self) -> &str {
+        match self.is_dynamic_script_bundle {
+            true => "",
+            false => self.registration.namespace(),
+        }
+    }
+
     /// Creates a new [`ScriptBundleRegistration`] from a [`ScriptTypeRegistration`] and the bundle's members.
     pub fn new(registration: ScriptTypeRegistration, members: Vec<BundleMember>) -> Self {
         Self {

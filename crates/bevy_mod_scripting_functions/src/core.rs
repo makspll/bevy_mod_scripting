@@ -1302,6 +1302,18 @@ impl ScriptTypeRegistration {
         profiling::function_scope!("short_name");
         registration.short_name().to_string()
     }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptTypeRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
+    }
 }
 
 #[script_bindings(
@@ -1332,6 +1344,18 @@ impl ScriptComponentRegistration {
         profiling::function_scope!("short_name");
         registration.type_registration().short_name()
     }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptComponentRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
+    }
 }
 
 #[script_bindings(
@@ -1361,6 +1385,18 @@ impl ScriptResourceRegistration {
     fn short_name(registration: R<ScriptResourceRegistration>) -> &'static str {
         profiling::function_scope!("short_name");
         registration.type_registration().short_name()
+    }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptResourceRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.type_registration().namespace().to_owned()
     }
 }
 
@@ -1408,6 +1444,18 @@ impl ScriptBundleRegistration {
             .iter()
             .map(|m| V(m.registration.clone()))
             .collect()
+    }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptBundleRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
     }
 }
 
