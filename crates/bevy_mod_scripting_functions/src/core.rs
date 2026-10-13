@@ -15,6 +15,7 @@ use bevy_mod_scripting_bindings::{
     ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
     ScriptTypeCatalogue, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
+    function::into::IntoScript,
     function::{
         bound::BoundFields,
         from::{FromScript, R, V},
@@ -22,6 +23,7 @@ use bevy_mod_scripting_bindings::{
         into_ref::IntoScriptRef,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
+    script_path,
     script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
@@ -30,6 +32,7 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::PartialReflect;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
@@ -1940,14 +1943,19 @@ impl GlobalNamespace {
     unregistered
 )]
 impl GlobalNamespace {
-    /// Imports a namespace, returning a table of the types in it by name.
+    /// Imports a namespace, returning a table of the types and exported functions in it by name.
     ///
     /// Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.
     /// The empty string is the root namespace, which holds types without a crate such as primitives.
+    /// Namespaces defined by scripts start with `script.`, and contain the components, bundles and functions
+    /// scripts registered or exported into them.
     ///
     /// ```lua
     /// local bevy_transform = import("bevy_transform")
     /// local transform = bevy_transform.Transform
+    ///
+    /// local game = import("script.game")
+    /// game.spawn_enemy(5)
     /// ```
     ///
     /// Fails with a list of similar namespaces if the namespace does not exist.
@@ -1955,17 +1963,73 @@ impl GlobalNamespace {
     /// Arguments:
     /// * `path`: the name of the namespace to import.
     /// Returns:
-    /// * `namespace`: a table of the types in the namespace keyed by short name.
-    fn import(
-        ctxt: FunctionCallContext,
-        path: String,
-    ) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
+    /// * `namespace`: a table of the types and functions in the namespace keyed by name.
+    fn import(ctxt: FunctionCallContext, path: String) -> Result<ScriptValue, InteropError> {
         profiling::function_scope!("import");
         let world = ctxt.world()?;
         let catalogue = world.type_catalogue().clone().get(world.clone())?;
-        catalogue
-            .namespace_view(&path)
-            .ok_or_else(|| namespace_not_found(&catalogue, &path))
+        let types = catalogue.namespace_view(&path);
+        let exports = world
+            .component_registry()
+            .read()
+            .iter_exports_in(&path)
+            .map(|e| e.name.clone())
+            .collect::<Vec<_>>();
+        if types.is_none() && exports.is_empty() {
+            return Err(namespace_not_found(&catalogue, &world, &path));
+        }
+
+        let mut table = HashMap::default();
+        for (name, registration) in types.into_iter().flatten() {
+            table.insert(name, registration.into_script(world.clone())?);
+        }
+        for name in exports {
+            let function = exported_function(script_path(&path, &name));
+            table.insert(name, ScriptValue::Function(function));
+        }
+        Ok(ScriptValue::Map(table))
+    }
+
+    /// Exports a callback of the calling script as a function in a script namespace, so that any script (in any language) can call it.
+    ///
+    /// The callback is a normal script callback: either a function registered with `register_callback`, or a top level function with that name.
+    /// Calls run in the exporting script, through the same machinery as other callbacks, and return what the callback returns.
+    /// Only functions can be exported, share plain data by returning it from a function.
+    ///
+    /// ```lua
+    /// register_callback("spawn_enemy_impl", function(health)
+    ///     return world.spawn()
+    /// end)
+    /// export("script.game", "spawn_enemy", "spawn_enemy_impl")
+    ///
+    /// -- in another script, once the first one has run
+    /// local entity = import("script.game").spawn_enemy(5)
+    /// ```
+    ///
+    /// Exporting the same name again from the same script replaces the export, as happens when a script runs again.
+    /// A script cannot call its own exports (or those of scripts sharing its context) from inside its own callbacks, as the context is busy,
+    /// that fails with an error.
+    ///
+    /// Arguments:
+    /// * `namespace`: the script namespace to export into, it must start with `script.`.
+    /// * `name`: the name of the function within the namespace.
+    /// * `callback`: the label of the callback of this script to export.
+    /// Returns:
+    /// * `result`: Nothing if the function was exported.
+    fn export(
+        ctxt: FunctionCallContext,
+        namespace: String,
+        name: String,
+        callback: String,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("export");
+        let world = ctxt.world()?;
+        let owner = world.current_attachment().0.ok_or_else(|| {
+            InteropError::string(
+                "Cannot export a function outside of a script callback, as it needs a script to run it in".to_owned(),
+            )
+        })?;
+        world.register_script_export(&namespace, &name, callback, owner)
     }
 
     /// Attempts to construct the given type, given an arbitrary map of values.
@@ -2206,7 +2270,11 @@ pub fn register_core_functions(app: &mut App) {
 }
 
 /// Builds the error for importing a namespace which does not exist.
-fn namespace_not_found(catalogue: &ScriptTypeCatalogue, path: &str) -> InteropError {
+fn namespace_not_found(
+    catalogue: &ScriptTypeCatalogue,
+    world: &WorldGuard,
+    path: &str,
+) -> InteropError {
     let mut message = format!("namespace \"{path}\" does not exist.");
     if path.starts_with("script.") {
         message.push_str(
@@ -2219,9 +2287,31 @@ fn namespace_not_found(catalogue: &ScriptTypeCatalogue, path: &str) -> InteropEr
             and only contain types registered in the type registry: check that the crate's bindings plugin is added and the type is registered.",
         );
     }
-    let similar = catalogue.similar_namespaces(path);
+    let export_namespaces = world
+        .component_registry()
+        .read()
+        .export_namespaces()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    let similar = catalogue.similar_namespaces_with(path, &export_namespaces);
     if !similar.is_empty() {
         message.push_str(&format!(" Did you mean: {}?", similar.join(", ")));
     }
     InteropError::string(message)
+}
+
+/// A function calling the function with the given full path exported by a script, in the script that exported it.
+///
+/// The export is looked up on every call, so it picks up replacements, and fails clearly if the export is gone.
+fn exported_function(path: String) -> DynamicScriptFunction {
+    (move |ctxt: FunctionCallContext, args: VecDeque<ScriptValue>| -> ScriptValue {
+        match ctxt
+            .world()
+            .and_then(|world| world.call_script_export(&path, Vec::from(args)))
+        {
+            Ok(value) => value,
+            Err(error) => ScriptValue::Error(error),
+        }
+    })
+    .into()
 }

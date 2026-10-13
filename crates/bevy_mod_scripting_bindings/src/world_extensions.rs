@@ -222,6 +222,28 @@ pub trait WorldExtensions {
         event: &ReflectReference,
     ) -> Result<(), InteropError>;
 
+    /// Exports the callback `label` of the script `owner` as the function `name` of a script namespace (which must start with `script.`).
+    ///
+    /// The function can then be called by any script through `import(namespace).name`, in any language, see [`Self::call_script_export`].
+    /// Exporting the same name again from the same script replaces it, from a different script it is an error.
+    fn register_script_export(
+        &self,
+        namespace: &str,
+        name: &str,
+        label: String,
+        owner: ScriptAttachment,
+    ) -> Result<(), InteropError>;
+
+    /// Calls the exported function with the given full path (i.e. `script.game.spawn_enemy`) in the script that exported it,
+    /// by running its callback through the callback runners.
+    ///
+    /// Fails if the export does not exist (anymore), if the owning script is not loaded, or if its context is busy running another callback.
+    fn call_script_export(
+        &self,
+        path: &str,
+        args: Vec<ScriptValue>,
+    ) -> Result<ScriptValue, InteropError>;
+
     /// Registers a script event, and returns a handle to it.
     ///
     /// Fails if an event with the same name is already registered, unless `allow_existing` is set,
@@ -955,6 +977,59 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.with_world_mut(|world| world.spawn(observer).id())
     }
 
+    fn register_script_export(
+        &self,
+        namespace: &str,
+        name: &str,
+        label: String,
+        owner: ScriptAttachment,
+    ) -> Result<(), InteropError> {
+        validate_script_namespace_and_name(namespace, name)?;
+        self.component_registry()
+            .write()
+            .register_export(crate::ScriptExport {
+                name: name.to_owned(),
+                namespace: namespace.to_owned(),
+                owner,
+                label,
+            })
+    }
+
+    fn call_script_export(
+        &self,
+        path: &str,
+        args: Vec<ScriptValue>,
+    ) -> Result<ScriptValue, InteropError> {
+        // looked up on every call, so replaced exports are picked up and removed ones fail
+        let export = self
+            .component_registry()
+            .read()
+            .get_export(path)
+            .cloned()
+            .ok_or_else(|| {
+                InteropError::string(format!(
+                    "the exported function `{path}` does not exist (anymore): the script that exported it may have been unloaded"
+                ))
+            })?;
+        let runners = self.script_callback_runners().clone();
+        let recipients = Recipients::from(export.owner.clone());
+        let results = runners.run(self.clone(), &recipients, &export.label, args)?;
+        match results.into_iter().next() {
+            Some((_, Ok(value))) => Ok(value),
+            Some((_, Err(e))) if e.is_context_busy() => Err(InteropError::string(format!(
+                "cannot call the exported function `{path}` right now: the script {} that exports it is currently running. \
+                Exported functions cannot be called by a script from inside a callback of the same script context (including scripts sharing it), \
+                call the function directly instead, or use `queue_script_callback`.",
+                export.owner
+            ))),
+            Some((_, Err(e))) => Err(e),
+            None => Err(InteropError::string(format!(
+                "cannot call the exported function `{path}`: the script {} that exports it is not loaded",
+                export.owner
+            ))),
+        }
+    }
+
     fn register_script_event(
         &self,
         namespace: &str,
@@ -1489,6 +1564,13 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 format!("a script registered bundle named '{path}' already exists"),
             ));
         }
+        if component_registry_read.get_export(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a function named '{path}' is already exported"),
+            ));
+        }
 
         let component_id = self.with_world_mut_access(|w| {
             let descriptor = unsafe {
@@ -1623,6 +1705,13 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 None,
                 None,
                 format!("a script registered component named '{path}' already exists"),
+            ));
+        }
+        if component_registry_read.get_export(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a function named '{path}' is already exported"),
             ));
         }
 
@@ -2659,6 +2748,68 @@ mod test {
         assert_eq!(first.name, again.name);
         // events do not take part in the type catalogue generation
         assert!(guard.trigger_script_event(first, ScriptValue::Unit).is_ok());
+    }
+
+    #[test]
+    fn script_exports_are_unique_per_path_and_owned_by_one_script() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let (a, b) = (guard.spawn().unwrap(), guard.spawn().unwrap());
+        let owner_a = ScriptAttachment::EntityScript(a, Handle::default());
+        let owner_b = ScriptAttachment::EntityScript(b, Handle::default());
+
+        guard
+            .register_script_export("script.game", "spawn", "spawn_impl".into(), owner_a.clone())
+            .unwrap();
+        // the same script exporting again replaces the export
+        guard
+            .register_script_export("script.game", "spawn", "other_impl".into(), owner_a)
+            .unwrap();
+        assert_eq!(
+            guard
+                .component_registry()
+                .read()
+                .get_export("script.game.spawn")
+                .unwrap()
+                .label,
+            "other_impl"
+        );
+
+        // another script can't take it
+        let err = guard
+            .register_script_export("script.game", "spawn", "x".into(), owner_b.clone())
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("already exported by script"), "{err}");
+
+        // namespaces are validated like for components
+        assert!(
+            guard
+                .register_script_export("game", "spawn", "x".into(), owner_b.clone())
+                .is_err()
+        );
+
+        // exports and components cannot share a path, in both directions
+        assert!(
+            guard
+                .register_script_component("script.game", "spawn", false, vec![])
+                .is_err()
+        );
+        guard
+            .register_script_component("script.game", "Enemy", false, vec![])
+            .unwrap();
+        assert!(
+            guard
+                .register_script_export("script.game", "Enemy", "x".into(), owner_b)
+                .is_err()
+        );
+
+        // calling something which is not exported fails clearly
+        let err = guard
+            .call_script_export("script.game.nope", vec![])
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("does not exist"), "{err}");
     }
 
     #[test]

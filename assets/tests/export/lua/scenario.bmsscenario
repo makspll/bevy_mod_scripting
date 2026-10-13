@@ -1,0 +1,23 @@
+// #main_script exports_are_callable_across_scripts.lua
+// the same script is attached to two entities, by default each attachment gets its own context
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin nanoseconds_budget=999999999
+SetupHandler OnTest=null, Update=null
+SetupHandler OnTestPostUpdate=null, PostUpdate=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptAssetLoaded name="@this_script"
+SpawnEntityWithScript name="entity_a", script="@this_script"
+SpawnEntityWithScript name="entity_b", script="@this_script"
+RunUpdateOnce
+
+// entity_a exports a function
+EmitScriptCallbackEvent emit_response=true, entity="entity_a", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_a", label="OnTest", script="@this_script", expect_string_value="exported"
+
+// entity_b calls it
+EmitScriptCallbackEvent emit_response=true, entity="entity_b", label="OnTestPostUpdate", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_b", label="OnTestPostUpdate", script="@this_script", expect_string_value="called"

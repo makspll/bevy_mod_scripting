@@ -90,4 +90,28 @@ world.add_default_component(entity, ai.Enemy)
 * Namespaces defined by scripts must start with `script.`, followed by segments of letters, digits and underscores separated by dots. This keeps them apart from the namespaces of crates, which scripts cannot add to.
 * Names are unique within their namespace, so `script.game.ai.Enemy` and `script.game.ui.Enemy` are different components. Registering the same path twice is an error, unless `allow_existing` is passed.
 * `types.Enemy` finds a script registered type by its name alone, which is ambiguous if several namespaces have one of that name (the one with the alphabetically first path wins). Prefer `import`.
-* A namespace exists as soon as something is registered in it. Importing one before that fails with a hint that the script defining it needs to have run.
+* A namespace exists as soon as something is registered or exported in it. Importing one before that fails with a hint that the script defining it needs to have run.
+
+## Exporting functions
+
+Scripts can export functions into script namespaces, for other scripts to call, in any language:
+
+```lua
+-- script A
+register_callback("spawn_enemy_impl", function(health)
+    return world.spawn()
+end)
+export("script.game", "spawn_enemy", "spawn_enemy_impl")
+
+-- script B, once script A has run
+local game = import("script.game")
+local enemy = game.spawn_enemy(5)
+```
+
+The exported function is a callback of the exporting script, given by its label: either one registered with `register_callback`, or a top level function of that name, exactly as for [observers](./events-and-messages.md). Plain data cannot be exported, only functions (return data from a function to share it).
+
+* Calls run in the exporting script's own context, through the same machinery as `run_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)): arguments are passed in, and the return value is passed back. That is why it works between languages.
+* A script cannot call its own exports (or exports of scripts sharing its context) from inside one of its own callbacks, as its context is busy. That fails with an error saying so. Call the function directly instead.
+* Calls look the export up every time, so a replaced export is picked up, and calling an export which no longer exists fails with a clear error.
+* Exporting an already exported path is an error, unless it is the same script exporting again (which replaces the export, as happens when a script runs again). Exports cannot share a path with a component or bundle.
+* `export` can only be called from a script callback, as the callback belongs to the calling script.

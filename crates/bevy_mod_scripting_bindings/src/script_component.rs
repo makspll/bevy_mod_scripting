@@ -10,6 +10,7 @@ use ::{
     bevy_ecs::component::{Component, Mutable, StorageType},
 };
 use bevy_ecs::resource::Resource;
+use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::std_traits::ReflectDefault;
 use parking_lot::RwLock;
@@ -333,6 +334,28 @@ pub fn validate_script_namespace_and_name(namespace: &str, name: &str) -> Result
     Ok(())
 }
 
+/// A function exported by a script, see [`ScriptComponentRegistry::register_export`].
+///
+/// The function itself stays in the script that exports it: it is a callback of that script, and calls to it run through the callback runners.
+#[derive(Clone, Debug)]
+pub struct ScriptExport {
+    /// The name of the export within its namespace
+    pub name: String,
+    /// The script namespace the function was exported into
+    pub namespace: String,
+    /// The script that exported the function, and which runs it
+    pub owner: ScriptAttachment,
+    /// The label of the callback of the owner that is the exported function
+    pub label: String,
+}
+
+impl ScriptExport {
+    /// The full path of the export, which is unique, i.e. `script.game.spawn_enemy`
+    pub fn path(&self) -> String {
+        script_path(&self.namespace, &self.name)
+    }
+}
+
 /// Some metadata about dynamic script components
 pub struct DynamicComponentInfo {
     /// The name of the component within its namespace
@@ -395,6 +418,7 @@ pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
     bundles: HashMap<String, DynamicBundleInfo>,
     events: HashMap<String, ScriptEventRegistration>,
+    exports: HashMap<String, ScriptExport>,
     generation: u64,
 }
 
@@ -463,6 +487,49 @@ impl ScriptComponentRegistry {
     /// Gets a script event by its full path
     pub fn get_event(&self, name: &str) -> Option<&ScriptEventRegistration> {
         self.events.get(name)
+    }
+
+    /// Registers a function exported by a script.
+    ///
+    /// Exporting the same path again from the same script replaces the export (i.e. when a script runs again),
+    /// exporting a path another script exported, or one used by a component or bundle, is an error.
+    pub fn register_export(&mut self, export: ScriptExport) -> Result<(), InteropError> {
+        let path = export.path();
+        if let Some(existing) = self.exports.get(&path)
+            && existing.owner != export.owner
+        {
+            return Err(InteropError::string(format!(
+                "`{path}` is already exported by script {}, exports have to be unique",
+                existing.owner
+            )));
+        }
+        if self.components.contains_key(&path) || self.bundles.contains_key(&path) {
+            return Err(InteropError::string(format!(
+                "cannot export `{path}`: a script registered component or bundle has that path"
+            )));
+        }
+        self.exports.insert(path, export);
+        Ok(())
+    }
+
+    /// Gets an export by its full path
+    pub fn get_export(&self, path: &str) -> Option<&ScriptExport> {
+        self.exports.get(path)
+    }
+
+    /// Iterates over the exports of the given namespace
+    pub fn iter_exports_in<'a>(
+        &'a self,
+        namespace: &'a str,
+    ) -> impl Iterator<Item = &'a ScriptExport> {
+        self.exports
+            .values()
+            .filter(move |e| e.namespace == namespace)
+    }
+
+    /// The namespaces with at least one export, in no particular order, possibly repeated
+    pub fn export_namespaces(&self) -> impl Iterator<Item = &str> {
+        self.exports.values().map(|e| e.namespace.as_str())
     }
 
     /// Gets a dynamic script bundle by its full path

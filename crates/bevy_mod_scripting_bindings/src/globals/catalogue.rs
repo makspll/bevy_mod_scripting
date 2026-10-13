@@ -144,8 +144,17 @@ impl ScriptTypeCatalogue {
 
     /// Namespaces with names close to `requested`, closest first, for error messages.
     pub fn similar_namespaces(&self, requested: &str) -> Vec<String> {
-        let mut scored = self
+        self.similar_namespaces_with(requested, &[])
+    }
+
+    /// Like [`Self::similar_namespaces`], also considering the `extra` namespaces (i.e. ones which only have exports).
+    pub fn similar_namespaces_with(&self, requested: &str, extra: &[String]) -> Vec<String> {
+        let all = self
             .namespaces()
+            .chain(extra.iter().map(String::as_str))
+            .collect::<std::collections::BTreeSet<_>>();
+        let mut scored = all
+            .into_iter()
             .filter(|n| !n.is_empty())
             .filter_map(|n| {
                 let distance = edit_distance(requested, n);
