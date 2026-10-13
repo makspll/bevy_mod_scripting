@@ -1,0 +1,41 @@
+name: Benchmark command
+
+# Starts the PR benchmarks when someone comments `/bench` on a pull request.
+#
+# Comment workflows run from the default branch with a privileged token, so this one never checks out or runs
+# pull request code: it only dispatches `bencher_on_pr_or_fork.yml`, which runs the benchmarks with no privileges.
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    name: Dispatch benchmarks
+    runs-on: ubuntu-latest
+    # Whoever can comment can make us burn runner time, and unlike pull request runs from first time contributors
+    # there is no approval step in between, so this is limited to people with write access.
+    if: >-
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/bench') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo,
+              workflow_id: 'bencher_on_pr_or_fork.yml',
+              ref: context.payload.repository.default_branch,
+              inputs: { pr_number: String(context.payload.issue.number) },
+            });
+            await github.rest.reactions.createForIssueComment({
+              ...context.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket',
+            });
