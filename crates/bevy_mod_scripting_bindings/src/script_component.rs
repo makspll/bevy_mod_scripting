@@ -1,6 +1,8 @@
 //! Everything necessary to support scripts registering their own components
 
-use super::{ScriptBundleRegistration, ScriptComponentRegistration, ScriptValue};
+use super::{
+    ScriptBundleRegistration, ScriptComponentRegistration, ScriptEventRegistration, ScriptValue,
+};
 use ::{
     bevy_app::{App, Plugin},
     bevy_ecs::component::{Component, Mutable, StorageType},
@@ -91,6 +93,7 @@ impl AppScriptComponentRegistry {
 pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
     bundles: HashMap<String, ScriptBundleRegistration>,
+    events: HashMap<String, ScriptEventRegistration>,
     generation: u64,
 }
 
@@ -128,6 +131,17 @@ impl ScriptComponentRegistry {
     /// Iterates over all registered script bundles by name
     pub fn iter_bundles(&self) -> impl Iterator<Item = (&String, &ScriptBundleRegistration)> {
         self.bundles.iter()
+    }
+
+    /// Registers a script event, possibly overwriting an existing one
+    pub fn register_event(&mut self, registration: ScriptEventRegistration) {
+        self.events
+            .insert(registration.name.to_string(), registration);
+    }
+
+    /// Gets a script event by name
+    pub fn get_event(&self, name: &str) -> Option<&ScriptEventRegistration> {
+        self.events.get(name)
     }
 
     /// Gets a dynamic script bundle by name

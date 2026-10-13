@@ -67,6 +67,22 @@ The component lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `Remov
 * Errors inside the callback are logged, they do not fail the operation that triggered the event.
 * Function pointers from Rhai cannot be converted to callable functions yet, so `add_observer` is currently only usable from Lua.
 
+## Script defined events
+
+Scripts can define their own events, carrying any value as payload:
+
+```lua
+local Damaged = world.register_new_event("Damaged")
+
+world.add_observer(Damaged, {}, function(payload)
+    print("took damage:", payload.amount)
+end)
+
+world.trigger(Damaged, { amount = 5 })
+```
+
+`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the second argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. Observers run right after `trigger`, see the notes above. Events are looked up by name, so they are not part of the `types` global.
+
 ## Built-in messages
 
 The following BMS messages are reflected and can be written from scripts:

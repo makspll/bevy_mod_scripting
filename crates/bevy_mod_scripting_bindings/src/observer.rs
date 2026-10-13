@@ -11,7 +11,8 @@ pub struct ScriptObserverPlugin;
 
 impl Plugin for ScriptObserverPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<AddEvent>()
+        app.register_type::<crate::ScriptEventRegistration>()
+            .register_type::<AddEvent>()
             .register_type_data::<AddEvent, ReflectEvent>()
             .register_type::<InsertEvent>()
             .register_type_data::<InsertEvent, ReflectEvent>()

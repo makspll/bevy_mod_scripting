@@ -11,9 +11,9 @@ use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, wo
 use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
-    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple,
-    WorldExtensions,
+    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
+    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
+    ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
     function::{
         bound::BoundFields,
@@ -293,7 +293,7 @@ impl World {
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `event`: The type of the event to observe.
+    /// * `event`: The type of the event to observe, or an event registered with `register_new_event`. Script events ignore `components` and `entities`, and pass their payload to the callback.
     /// * `components`: The components the observer is interested in, for component lifecycle events.
     /// * `callback`: The function to call, receives the event.
     /// * `entities`: If given, the observer only runs for these entities.
@@ -301,13 +301,21 @@ impl World {
     /// * `observer`: The observer entity, despawn it to remove the observer.
     fn add_observer(
         ctxt: FunctionCallContext,
-        event: V<ScriptTypeRegistration>,
+        event: Union<V<ScriptTypeRegistration>, V<ScriptEventRegistration>>,
         components: Vec<V<ScriptComponentRegistration>>,
         callback: DynamicScriptFunction,
         entities: Option<Vec<V<Entity>>>,
     ) -> Result<V<Entity>, InteropError> {
         profiling::function_scope!("add_observer");
         let world = ctxt.world()?;
+        let event = match event.into_left() {
+            Ok(event) => event,
+            Err(script_event) => {
+                return world
+                    .add_script_event_observer(script_event.into_inner(), callback, ctxt.language())
+                    .map(V);
+            }
+        };
         world
             .add_script_observer(
                 event.into_inner(),
@@ -321,6 +329,46 @@ impl World {
                 ctxt.language(),
             )
             .map(V)
+    }
+
+    /// Registers a new script event.
+    ///
+    /// Script events carry an arbitrary payload, and can be observed with `add_observer` and triggered with `trigger`.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `name`: The name of the event.
+    /// * `allow_existing`: If true, returns the already registered event with this name instead of failing. Defaults to false.
+    /// Returns:
+    /// * `registration`: The handle of the new event.
+    fn register_new_event(
+        ctxt: FunctionCallContext,
+        name: String,
+        allow_existing: Option<bool>,
+    ) -> Result<V<ScriptEventRegistration>, InteropError> {
+        profiling::function_scope!("register_new_event");
+        let world = ctxt.world()?;
+        world
+            .register_script_event(name, allow_existing.unwrap_or(false))
+            .map(V)
+    }
+
+    /// Triggers a script event, observers added with `add_observer` run right after.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `event`: The event registered with `register_new_event`.
+    /// * `payload`: The data to pass to the observers.
+    /// Returns:
+    /// * `result`: Nothing if the event was triggered successfully.
+    fn trigger(
+        ctxt: FunctionCallContext,
+        event: V<ScriptEventRegistration>,
+        payload: Option<ScriptValue>,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("trigger");
+        let world = ctxt.world()?;
+        world.trigger_script_event(event.into_inner(), payload.unwrap_or(ScriptValue::Unit))
     }
 
     /// Triggers an observer-style event. The event type must be registered and have `#[reflect(Event)]`.

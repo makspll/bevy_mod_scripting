@@ -15,8 +15,8 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder,
-    ScriptQueryResult,
+    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, ScriptEvent,
+    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
 };
@@ -38,9 +38,10 @@ use bevy_asset::AssetPath;
 use bevy_ecs::{
     component::{Component, ComponentCloneBehavior, ComponentDescriptor, Mutable},
     hierarchy::{ChildOf, Children},
+    observer::{Observer, On},
     resource::Resource,
     system::Commands,
-    world::{CommandQueue, EntityRef, Mut},
+    world::{CommandQueue, DeferredWorld, EntityRef, Mut},
 };
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -216,6 +217,33 @@ pub trait WorldExtensions {
         &self,
         registration: ScriptTypeRegistration,
         event: &ReflectReference,
+    ) -> Result<(), InteropError>;
+
+    /// Registers a script event, and returns a handle to it.
+    ///
+    /// Fails if an event with the same name is already registered, unless `allow_existing` is set,
+    /// in which case the existing event is returned instead.
+    fn register_script_event(
+        &self,
+        name: String,
+        allow_existing: bool,
+    ) -> Result<ScriptEventRegistration, InteropError>;
+
+    /// Spawns an observer which calls `callback` with the payload whenever the script event is triggered.
+    ///
+    /// Callbacks run when the commands of the triggering operation are applied, see [`Self::add_script_observer`].
+    fn add_script_event_observer(
+        &self,
+        event: ScriptEventRegistration,
+        callback: DynamicScriptFunction,
+        language: Language,
+    ) -> Result<Entity, InteropError>;
+
+    /// Triggers a script event with the given payload, observers run before this returns (or rather, their commands are applied before it returns).
+    fn trigger_script_event(
+        &self,
+        event: ScriptEventRegistration,
+        payload: ScriptValue,
     ) -> Result<(), InteropError>;
 
     /// Spawns an observer which calls `callback` whenever an event of the given type is triggered.
@@ -878,8 +906,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 InteropError::missing_type_data(event.type_id(), "ReflectEvent".to_owned())
             })?
             .clone();
-        let allocator = self.allocator().clone();
-
         let mut observer = reflect_event.create_observer(Box::new(move |event, mut world| {
             let value = match event.reflect_clone() {
                 Ok(value) => value,
@@ -888,22 +914,18 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                     return;
                 }
             };
-            let callback = callback.clone();
-            let allocator = allocator.clone();
-            let language = language.clone();
-            world.commands().queue(move |world: &mut World| {
-                let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
-                WorldGuard::with_static_guard(world, cache, |_guard| {
-                    let reference =
-                        ReflectReference::new_allocated_boxed(value, &mut allocator.write());
-                    if let Err(e) = callback.call(
-                        [ScriptValue::Reference(reference)],
-                        FunctionCallContext::new(language),
-                    ) {
-                        bevy_log::error!("error in script observer callback: {e}");
-                    }
-                })
-            });
+            queue_observer_callback(
+                &mut world,
+                callback.clone(),
+                language.clone(),
+                move |guard| {
+                    let reference = ReflectReference::new_allocated_boxed(
+                        value,
+                        &mut guard.allocator().write(),
+                    );
+                    ScriptValue::Reference(reference)
+                },
+            );
         }));
         for component in components {
             observer = observer.with_component(component.component_id);
@@ -912,6 +934,64 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             observer = observer.with_entities(entities);
         }
         self.with_world_mut(|world| world.spawn(observer).id())
+    }
+
+    fn register_script_event(
+        &self,
+        name: String,
+        allow_existing: bool,
+    ) -> Result<ScriptEventRegistration, InteropError> {
+        let component_registry = self.component_registry();
+        let mut registry = component_registry.write();
+        if let Some(existing) = registry.get_event(&name) {
+            if allow_existing {
+                return Ok(existing.clone());
+            }
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!(
+                    "script registered event '{name}' already exists, pass `allow_existing = true` to get the existing registration instead"
+                ),
+            ));
+        }
+        let registration = ScriptEventRegistration { name: name.into() };
+        registry.register_event(registration.clone());
+        Ok(registration)
+    }
+
+    fn add_script_event_observer(
+        &self,
+        event: ScriptEventRegistration,
+        callback: DynamicScriptFunction,
+        language: Language,
+    ) -> Result<Entity, InteropError> {
+        let name = event.name;
+        let observer = Observer::new(move |event: On<ScriptEvent>, mut world: DeferredWorld| {
+            if event.name != name {
+                return;
+            }
+            let payload = event.payload.clone();
+            queue_observer_callback(&mut world, callback.clone(), language.clone(), move |_| {
+                payload
+            });
+        });
+        self.with_world_mut(|world| world.spawn(observer).id())
+    }
+
+    fn trigger_script_event(
+        &self,
+        event: ScriptEventRegistration,
+        payload: ScriptValue,
+    ) -> Result<(), InteropError> {
+        self.with_world_mut(|world| {
+            world.trigger(ScriptEvent {
+                name: event.name,
+                payload,
+            });
+            // run the callbacks queued by observers
+            world.flush();
+        })
     }
 
     fn write_message(
@@ -1579,6 +1659,26 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     // }
 }
 
+/// Queues a call of a script observer callback, to be run when the commands of the triggering operation are applied.
+///
+/// `make_arg` creates the callback's argument once the callback runs and has world access.
+fn queue_observer_callback(
+    world: &mut DeferredWorld,
+    callback: DynamicScriptFunction,
+    language: Language,
+    make_arg: impl FnOnce(&WorldGuard) -> ScriptValue + Send + 'static,
+) {
+    world.commands().queue(move |world: &mut World| {
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
+        WorldGuard::with_static_guard(world, cache, |guard| {
+            let arg = make_arg(&guard);
+            if let Err(e) = callback.call([arg], FunctionCallContext::new(language)) {
+                bevy_log::error!("error in script observer callback: {e}");
+            }
+        })
+    });
+}
+
 /// A type level function registered on [`StaticTypeRef`], bound to the given type.
 fn lookup_bound_type_function(
     guard: &WorldAccessGuard,
@@ -2204,6 +2304,21 @@ mod test {
         assert_eq!(comp.source, CatalogueSource::Script);
         assert!(built.get_by_short_name("CatalogueBundle").is_some());
         assert!(built.flat_view().contains_key("CatalogueBundle"));
+    }
+
+    #[test]
+    fn register_script_event_duplicates_need_allow_existing() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let first = guard.register_script_event("Ev".to_owned(), false).unwrap();
+        let err = guard
+            .register_script_event("Ev".to_owned(), false)
+            .unwrap_err();
+        assert!(err.to_string().contains("allow_existing"), "{err}");
+        let again = guard.register_script_event("Ev".to_owned(), true).unwrap();
+        assert_eq!(first.name, again.name);
+        // events do not take part in the type catalogue generation
+        assert!(guard.trigger_script_event(first, ScriptValue::Unit).is_ok());
     }
 
     #[test]
