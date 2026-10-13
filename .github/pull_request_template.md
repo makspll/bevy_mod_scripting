@@ -9,6 +9,12 @@
 - These are not necessary, but very welcome
 - I am always happy to receive any PR's, but adding tests makes it easier for me to merge them!
 
+## Benchmarks (Read & Delete Me)
+- Benchmarks do not run on every PR, to keep CI fast for everyone
+- They run automatically if your PR changes `benches/` or `assets/`, or if it has the `performance` label
+- A maintainer can also run them by commenting `/bench` on the PR
+- If your change could affect performance, mention it so we can run them
+
 ## Conventional PR Titles (Read & Delete me)
 - This crate uses `release-plz` to manage our deploys
 - A CI check will verify your PR title to make sure it uses a valid conventional prefix like:

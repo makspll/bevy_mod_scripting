@@ -1,24 +1,103 @@
 name: Run benchmarks on PR
 
+# Benchmarks are slow and share runners with everything else, so on pull requests they only run when:
+#  - the `performance` label is applied to the pull request (and on every push to it after that)
+#  - the pull request changes benchmark code or assets
+#  - someone comments `/bench`, see `bencher_on_pr_command.yml`, which dispatches this workflow
+#
+# This workflow runs pull request code, so it has no access to secrets, a read-only token and never saves caches.
+# Publishing the results needs secrets and is done by `bencher_on_pr_or_fork_upload.yml`, which only handles the
+# artifacts produced here.
 on:
   pull_request:
-    types: [opened, reopened, edited, synchronize]
+    types: [opened, reopened, synchronize, labeled]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: The pull request to benchmark
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # labels other than `performance` can't start benchmarks, so they must not cancel running ones
+  group: ${{ github.workflow }}-${{ (github.event.action == 'labeled' && github.event.label.name != 'performance') && github.run_id || (github.event.pull_request.number || inputs.pr_number) }}
+  cancel-in-progress: true
 
 jobs:
+  decide:
+    name: Decide if benchmarks should run
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+      pr_number: ${{ steps.decide.outputs.pr_number }}
+    steps:
+      - name: Decide
+        id: decide
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dispatched = context.eventName === 'workflow_dispatch';
+            const number = dispatched ? Number(context.payload.inputs.pr_number) : context.payload.pull_request.number;
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
+
+            const labels = pr.labels.map(l => l.name);
+            let reason = null;
+            if (dispatched) {
+              reason = 'requested with a `/bench` comment';
+            } else if (context.payload.action === 'labeled') {
+              // only the performance label is interesting
+              if (context.payload.label.name === 'performance') reason = 'the `performance` label was applied';
+            } else if (labels.includes('performance')) {
+              reason = 'the PR has the `performance` label';
+            } else {
+              const files = await github.paginate(github.rest.pulls.listFiles, { ...context.repo, pull_number: number, per_page: 100 });
+              const interesting = (name) => /^(benches|assets)\//.test(name || '');
+              const touched = files.find(f => interesting(f.filename) || interesting(f.previous_filename));
+              if (touched) reason = `benchmark code or assets changed (${touched.filename})`;
+            }
+
+            core.info(reason ? `Running benchmarks: ${reason}` : 'Not running benchmarks');
+            core.setOutput('run', reason ? 'true' : 'false');
+            core.setOutput('pr_number', number);
+
+            // the upload workflow needs these, written here rather than in the job running PR code so they can't be tampered with
+            require('fs').writeFileSync('event.json', JSON.stringify({
+              number,
+              pull_request: { head: { ref: pr.head.ref }, base: { ref: pr.base.ref, sha: pr.base.sha } },
+            }));
+      - name: Upload GitHub Pull Request Event
+        if: steps.decide.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: event.json
+          path: ./event.json
+
   benchmark_fork_pr_branch:
     name: Run PR Benchmarks
+    needs: decide
+    if: needs.decide.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # the same for pull_request and workflow_dispatch events, and for forks
+          ref: refs/pull/${{ needs.decide.outputs.pr_number }}/merge
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
-          save-if: ${{ github.ref == 'refs/heads/main' }}
+          # shares the cache of the benchmarks job which runs on main
+          shared-key: bencher-ubuntu-latest
+          # dispatched runs execute on the default branch, where saving would let PR code poison main's cache
+          save-if: false
           cache-all-crates: true
       - name: Run `cargo xtask init`
         run: |
-          cargo xtask init
+          cargo xtask init --dont-update-ide --tools
       - name: Run `cargo xtask bench` and save results
         run: |
           cargo xtask bench > benchmark_results.txt
@@ -27,8 +106,3 @@ jobs:
         with:
           name: benchmark_results.txt
           path: ./benchmark_results.txt
-      - name: Upload GitHub Pull Request Event
-        uses: actions/upload-artifact@v4
-        with:
-          name: event.json
-          path: ${{ github.event_path }}
