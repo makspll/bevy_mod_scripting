@@ -15,8 +15,8 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, QueuedScriptCallback,
-    ScriptEvent, ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, ScriptEvent,
+    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
 };
@@ -238,7 +238,6 @@ pub trait WorldExtensions {
         event: ScriptEventRegistration,
         label: String,
         attachment: ScriptAttachment,
-        instant: bool,
     ) -> Result<Entity, InteropError>;
 
     /// Triggers a script event with the given payload, observers of the event queue their callbacks.
@@ -254,13 +253,11 @@ pub trait WorldExtensions {
     /// (i.e. the lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent`, `DespawnEvent`), the observer runs for the given components.
     /// If `entities` is non-empty, it only runs for those entities.
     ///
-    /// The callback receives a clone of the event as its only argument, and is run by the same machinery as every other script callback:
-    /// * by default it is queued (see [`AppScriptCallbackRunners::queue`]), and runs once the callback which triggered the event finishes
-    ///   (or at the latest when the handler systems next run queued callbacks).
-    /// * if `instant` is set it runs right after the operation which triggered the event, and fails (the error is logged) if the script's
-    ///   context is busy running another callback, e.g. the one that triggered the event.
-    ///
-    /// The world is already past the change in either case (i.e. removed component data is no longer readable).
+    /// The callback receives a clone of the event as its only argument, and is run by the same machinery as every other script callback
+    /// (see [`AppScriptCallbackRunners::run_or_queue`]): right after the operation which triggered the event, unless the script's context
+    /// is busy running another callback (e.g. the one that triggered the event), in which case it is queued
+    /// and runs as soon as that finishes. The order in which the observers of one event run is unspecified.
+    /// The world is already past the change (i.e. removed component data is no longer readable).
     ///
     /// Returns the observer entity, despawn it to remove the observer.
     fn add_script_observer(
@@ -270,7 +267,6 @@ pub trait WorldExtensions {
         entities: Vec<Entity>,
         label: String,
         attachment: ScriptAttachment,
-        instant: bool,
     ) -> Result<Entity, InteropError>;
 
     /// Writes a reflected [`bevy_ecs::message::Message`] (buffered) to the world, using the type's [`ReflectMessage`] type data.
@@ -910,7 +906,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         entities: Vec<Entity>,
         label: String,
         attachment: ScriptAttachment,
-        instant: bool,
     ) -> Result<Entity, InteropError> {
         let reflect_event = event
             .type_registration()
@@ -938,7 +933,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 &recipients,
                 &label,
                 ScriptValue::Reference(reference),
-                instant,
             );
         }));
         for component in components {
@@ -979,7 +973,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         event: ScriptEventRegistration,
         label: String,
         attachment: ScriptAttachment,
-        instant: bool,
     ) -> Result<Entity, InteropError> {
         let name = event.name;
         let runners = self.script_callback_runners().clone();
@@ -994,7 +987,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 &recipients,
                 &label,
                 event.payload.clone(),
-                instant,
             );
         });
         self.with_world_mut(|world| world.spawn(observer).id())
@@ -1010,7 +1002,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 name: event.name,
                 payload,
             });
-            // apply the commands of observers, i.e. instant observer callbacks
+            // apply the commands of observers, i.e. the callbacks of script observers
             world.flush();
         })
     }
@@ -1715,36 +1707,27 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
 /// Delivers an event to the callback of a script observer through the callback runners.
 ///
-/// Queues the callback, unless `instant` is set, in which case it runs once the commands of the triggering operation are applied,
-/// and errors (including the script's context being busy) are logged.
+/// Runs once the commands of the triggering operation are applied, see [`AppScriptCallbackRunners::run_or_queue`].
+/// Errors are logged.
 fn run_observer_callback(
     world: &mut DeferredWorld,
     runners: &AppScriptCallbackRunners,
     recipients: &Recipients,
     label: &str,
     arg: ScriptValue,
-    instant: bool,
 ) {
-    if !instant {
-        runners.queue(QueuedScriptCallback {
-            recipients: recipients.clone(),
-            label: label.to_owned(),
-            args: vec![arg],
-        });
-        return;
-    }
     let runners = runners.clone();
     let recipients = recipients.clone();
     let label = label.to_owned();
     world.commands().queue(move |world: &mut World| {
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         WorldGuard::with_static_guard(world, cache, |guard| {
-            match runners.run(guard, &recipients, &label, vec![arg]) {
+            match runners.run_or_queue(guard, &recipients, &label, vec![arg]) {
                 Ok(results) => {
                     for (attachment, result) in results {
                         if let Err(e) = result {
                             bevy_log::error!(
-                                "error in instant observer callback `{label}` of script {attachment}: {e}"
+                                "error in observer callback `{label}` of script {attachment}: {e}"
                             );
                         }
                     }
@@ -2383,38 +2366,48 @@ mod test {
     }
 
     #[test]
-    fn script_event_observers_queue_by_default_and_run_right_away_when_instant() {
+    fn script_event_observers_run_right_away_or_queue_when_context_is_busy() {
         use bevy_mod_scripting_asset::Language;
 
         let mut world = setup_world(|_, _| {});
         let runners = AppScriptCallbackRunners::default();
         let ran = Arc::new(parking_lot::Mutex::new(Vec::<String>::new()));
         let r = ran.clone();
+        let attachment = ScriptAttachment::StaticScript(Handle::default());
+        let a = attachment.clone();
         runners.register(
             Language::Lua,
             Arc::new(move |_, _, label, _| {
                 r.lock().push(label.to_owned());
-                Ok(vec![])
+                // pretend the context is busy for one of the callbacks
+                Ok(vec![(
+                    a.clone(),
+                    if label == "busy_cb" {
+                        Err(InteropError::context_busy("busy".to_owned()))
+                    } else {
+                        Ok(ScriptValue::Unit)
+                    },
+                )])
             }),
         );
         world.insert_resource(runners.clone());
-        let attachment = ScriptAttachment::StaticScript(Handle::default());
 
         let guard = make_guard(&mut world);
         let event = guard.register_script_event("E".to_owned(), false).unwrap();
-        guard
-            .add_script_event_observer(event.clone(), "queued_cb".into(), attachment.clone(), false)
-            .unwrap();
-        guard
-            .add_script_event_observer(event.clone(), "instant_cb".into(), attachment, true)
-            .unwrap();
+        for label in ["free_cb", "busy_cb"] {
+            guard
+                .add_script_event_observer(event.clone(), label.into(), attachment.clone())
+                .unwrap();
+        }
         guard
             .trigger_script_event(event, ScriptValue::Unit)
             .unwrap();
 
-        assert_eq!(*ran.lock(), vec!["instant_cb"]);
-        assert!(runners.has_queued());
-        assert_eq!(runners.pop_queued().unwrap().label, "queued_cb");
+        // both were attempted right away (in unspecified order), only the busy one was queued
+        let mut attempted = ran.lock().clone();
+        attempted.sort();
+        assert_eq!(attempted, vec!["busy_cb", "free_cb"]);
+        assert_eq!(runners.pop_queued().unwrap().label, "busy_cb");
         assert!(!runners.has_queued());
     }
 

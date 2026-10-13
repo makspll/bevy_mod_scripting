@@ -96,6 +96,32 @@ impl AppScriptCallbackRunners {
         Ok(results)
     }
 
+    /// Runs the callback immediately on the given recipients, like [`Self::run`], except for scripts whose context is busy
+    /// running another callback: for those the callback is queued, see [`Self::queue`], and runs as soon as it can.
+    ///
+    /// Returns the results of the callbacks which ran.
+    pub fn run_or_queue(
+        &self,
+        world: WorldGuard,
+        recipients: &Recipients,
+        label: &str,
+        args: Vec<ScriptValue>,
+    ) -> Result<ScriptCallbackResults, InteropError> {
+        let mut results = self.run(world, recipients, label, args.clone())?;
+        results.retain(|(attachment, result)| match result {
+            Err(e) if e.is_context_busy() => {
+                self.queue(QueuedScriptCallback {
+                    recipients: Recipients::from(attachment.clone()),
+                    label: label.to_owned(),
+                    args: args.clone(),
+                });
+                false
+            }
+            _ => true,
+        });
+        Ok(results)
+    }
+
     /// Queues a callback to run as soon as the outermost running callback finishes,
     /// or on the next run of the system running leftover queued callbacks.
     ///

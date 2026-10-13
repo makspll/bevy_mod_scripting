@@ -69,9 +69,8 @@ The component lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `Remov
 
 Observer callbacks run through the same machinery as every other callback (see [Calling Other Scripts](./calling-other-scripts.md)):
 
-* By default they are queued, and run once the callback that triggered the event has finished (or at the latest when the handler systems next run queued callbacks).
-* Pass `true` as the last argument of `add_observer` (`instant`) if the callback has to run right after the operation which triggered the event. Instant callbacks never wait: if the script's context is busy running another callback, e.g. the one that triggered the event (all scripts sharing a context count too), the callback does not run and an error is logged. Use them for observers that are triggered from outside the observing script's callbacks.
-* Observers can never re-enter a running script.
+* They run right after the operation which triggered the event, once the other observers of that operation have been notified. The order in which observers of one event run is unspecified, as in Bevy.
+* If the script's context is busy running another callback, e.g. the one that triggered the event (all scripts sharing a context count too), the callback instead runs as soon as that callback finishes. Observers can therefore never re-enter a running script, and whether a callback ran immediately or later can depend on the context policy, so do not rely on either.
 * The world is already past the change: data of removed components is no longer readable inside `RemoveEvent` callbacks.
 * They get the same setup as other callbacks, such as the script's globals and its current attachment.
 * Errors are reported like those of any other callback, and do not fail the operation that triggered the event.
@@ -93,7 +92,7 @@ world.add_observer(Damaged, {}, "on_damaged")
 world.trigger(Damaged, { amount = 5 })
 ```
 
-`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the second argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. The observers' callbacks run as described above (queued, or right away for `instant` observers). Events are looked up by name, so they are not part of the `types` global.
+`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the second argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. The observers' callbacks run as described above. Events are looked up by name, so they are not part of the `types` global.
 
 ## Built-in messages
 

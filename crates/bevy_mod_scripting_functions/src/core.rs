@@ -283,11 +283,11 @@ impl World {
     /// Adds an observer which runs the callback `callback` of the calling script whenever an event of the given type is triggered.
     ///
     /// The callback is a normal script callback: either a function registered with `register_callback`, or a top level function with that name.
-    /// It receives a copy of the event (or the payload, for script events), and is run by the same machinery as other callbacks.
-    /// By default it is queued, and runs once the callback which triggered the event has finished.
-    /// With `instant` it runs right after the operation which triggered the event instead, and fails (the error is logged) if the script's
-    /// context is busy running another callback, e.g. the one that triggered the event.
-    /// Either way observers never re-enter a script which is currently running, and removed component data is no longer available inside the callback.
+    /// It receives a copy of the event (or the payload, for script events), and is run by the same machinery as other callbacks:
+    /// right after the operation which triggered the event, unless the script's context is busy running another callback
+    /// (e.g. the one that triggered the event), in which case it runs as soon as that callback finishes.
+    /// Observers never re-enter a running script. The order in which the observers of an event run is unspecified.
+    /// Removed component data is no longer available inside the callback.
     ///
     /// The event type must have `#[reflect(Event)]`. The lifecycle events (`types.AddEvent`, `types.InsertEvent`, `types.DiscardEvent`,
     /// `types.RemoveEvent`, `types.DespawnEvent`) are supported out of the box, and run for the given components.
@@ -298,7 +298,6 @@ impl World {
     /// * `components`: The components the observer is interested in, for component lifecycle events.
     /// * `callback`: The label of the callback to run, receives the event.
     /// * `entities`: If given, the observer only runs for these entities.
-    /// * `instant`: If true, the callback runs right after the triggering operation, or fails if it cannot. Defaults to false, i.e. the callback is queued.
     /// Returns:
     /// * `observer`: The observer entity, despawn it to remove the observer.
     fn add_observer(
@@ -307,10 +306,8 @@ impl World {
         components: Vec<V<ScriptComponentRegistration>>,
         callback: String,
         entities: Option<Vec<V<Entity>>>,
-        instant: Option<bool>,
     ) -> Result<V<Entity>, InteropError> {
         profiling::function_scope!("add_observer");
-        let instant = instant.unwrap_or(false);
         let world = ctxt.world()?;
         let attachment = world.current_attachment().0.ok_or_else(|| {
             InteropError::string(
@@ -321,12 +318,7 @@ impl World {
             Ok(event) => event,
             Err(script_event) => {
                 return world
-                    .add_script_event_observer(
-                        script_event.into_inner(),
-                        callback,
-                        attachment,
-                        instant,
-                    )
+                    .add_script_event_observer(script_event.into_inner(), callback, attachment)
                     .map(V);
             }
         };
@@ -341,7 +333,6 @@ impl World {
                     .collect(),
                 callback,
                 attachment,
-                instant,
             )
             .map(V)
     }
