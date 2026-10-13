@@ -12,10 +12,12 @@ Every type known to scripts lives in a namespace. By default the namespace of a 
 Scripts can ask a type for its namespace:
 
 ```lua
-print(types.Transform:namespace()) -- bevy_transform
+print(import("bevy_transform").Transform:namespace()) -- bevy_transform
 ```
 
 Components, bundles and events registered by scripts are in script namespaces, see below.
+
+> **Deprecated:** the flat `types` global is superseded by `import`. It keeps working for now, but is going to be removed in a future release: it cannot tell types of the same name in different namespaces apart. Use `local bevy_transform = import("bevy_transform")` and `bevy_transform.Transform` instead. The Lua language server definitions mark `types` as deprecated.
 
 BMS' own types (`ScriptTypeRegistration`, `ScriptAttachment`, `ReflectReference`, ...) are in the `bms` namespace, instead of the internal crates they happen to be defined in.
 
@@ -89,7 +91,7 @@ world.add_default_component(entity, ai.Enemy)
 
 * Namespaces defined by scripts must start with `script.`, followed by segments of letters, digits and underscores separated by dots. This keeps them apart from the namespaces of crates, which scripts cannot add to.
 * Names are unique within their namespace, so `script.game.ai.Enemy` and `script.game.ui.Enemy` are different components. Registering the same path twice is an error, unless `allow_existing` is passed.
-* `types.Enemy` finds a script registered type by its name alone, which is ambiguous if several namespaces have one of that name (the one with the alphabetically first path wins). Prefer `import`.
+* `types.Enemy` finds a script registered type by its name alone, which is ambiguous if several namespaces have one of that name (the one with the alphabetically first path wins). This is one reason `types` is deprecated, use `import`.
 * A namespace exists as soon as something is registered or exported in it. Importing one before that fails with a hint that the script defining it needs to have run.
 
 ## Exporting functions

@@ -127,6 +127,8 @@ pub fn convert_ladfile_to_lua_declaration_file(
                 name: name.to_string(),
                 definition: class,
                 description: Some(description.into()),
+                // superseded by `import`
+                deprecated: name == "types",
             })
     }
 
@@ -1229,6 +1231,27 @@ mod test {
             let line = format!("---@overload fun(path: \"{name}\"): namespace.{name}");
             assert!(rendered.contains(&line), "missing {line} in {rendered}");
         }
+    }
+
+    #[test]
+    fn types_global_is_deprecated() {
+        let mut file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let plain = type_id(&file, "PlainStructType");
+        for name in ["types", "other"] {
+            file.globals.insert(
+                name.into(),
+                ladfile::LadInstance {
+                    type_kind: LadFieldOrVariableKind::Val(plain.clone()),
+                    is_static: false,
+                },
+            );
+        }
+        let rendered = render(&file);
+        assert!(
+            rendered.contains("---@deprecated use `import` instead\n---@type PlainStructType\n--- An global instance of this type\ntypes = {}"),
+            "{rendered}"
+        );
+        assert!(!rendered.contains("---@deprecated use `import` instead\n---@type PlainStructType\n--- An global instance of this type\nother"));
     }
 
     #[test]
