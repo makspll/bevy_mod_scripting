@@ -51,6 +51,17 @@ Registering a component or bundle under a name that is already taken is an error
 local Mana = world.register_new_component("Mana", true)
 ```
 
+## Required components
+
+`register_new_component` takes the required components as its third argument:
+
+```lua
+local Mana = world.register_new_component("Mana")
+local Caster = world.register_new_component("Caster", false, { Mana })
+```
+
+Whenever `Caster` is added to an entity, `Mana` is added with its default value unless the entity already has it. This is a stopgap built on an observer, since Bevy can not yet register required components for components without a Rust type (see bevyengine/bevy#18420). In particular the required components are added right after the operation which added `Caster` (not as part of it), and are not removed when `Caster` is. Requirements chain, so required components can have their own.
+
 Script registered components and bundles are also added to the `types` global (e.g. `types.Mana`). Contexts which were created before the registration pick them up before their next callback runs.
 
 Values of script bundles are `DynamicBundle`s, whose `data` maps member names to values. Native components are named by their short type name, script components by their registered name. Members without a value are default constructed:
