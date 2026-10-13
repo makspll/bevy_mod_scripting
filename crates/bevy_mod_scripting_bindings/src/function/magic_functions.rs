@@ -1,10 +1,9 @@
 //! All the switchable special functions used by language implementors
 use super::{FromScriptRef, FunctionCallContext, IntoScriptRef};
-use crate::{DynamicComponent, ReferencePart, ReflectReference, ScriptValue, error::InteropError};
+use crate::{ReferencePart, ReflectReference, ScriptValue, error::InteropError};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::OrFakeId;
 use bevy_reflect::PartialReflect;
-use std::any::TypeId;
 
 /// A list of magic methods, these only have one replacable implementation, and apply to all `ReflectReferences`.
 /// It's up to the language implementer to call these in the right order (after any type specific overrides).
@@ -25,26 +24,6 @@ pub struct MagicFunctions {
         ScriptValue,
         ScriptValue,
     ) -> Result<(), InteropError>,
-}
-
-/// Whether `key` on `reference` is a field access on the root of a script registered component, i.e. `component.health`
-/// which refers to the field `health` of the component's `data` map.
-///
-/// Only applies to the component itself (not nested values), and never to `data`, so that it can still be accessed and replaced.
-fn dynamic_component_field<'k>(
-    reference: &ReflectReference,
-    key: &'k ScriptValue,
-) -> Option<&'k str> {
-    match key {
-        ScriptValue::String(name)
-            if name != "data"
-                && reference.reflect_path.is_empty()
-                && reference.base.type_id == TypeId::of::<DynamicComponent>() =>
-        {
-            Some(name)
-        }
-        _ => None,
-    }
 }
 
 impl MagicFunctions {
@@ -87,16 +66,6 @@ impl MagicFunctions {
         key: ScriptValue,
     ) -> Result<ScriptValue, InteropError> {
         let world = ctxt.world()?;
-        if let Some(field) = dynamic_component_field(&reference, &key) {
-            return match Self::default_get(ctxt, reference, "data".into())? {
-                ScriptValue::Map(mut data) => Ok(data.remove(field).unwrap_or(ScriptValue::Unit)),
-                ScriptValue::Unit => Ok(ScriptValue::Unit),
-                other => Err(InteropError::string(format!(
-                    "Cannot get field `{field}` of a script component whose data is not a table, got: {}",
-                    other.type_name()
-                ))),
-            };
-        }
 
         let path: ReferencePart =
             ReferencePart::new_from_script_val(key, ctxt.language(), Some(world.clone())).map_err(
@@ -129,21 +98,6 @@ impl MagicFunctions {
         value: ScriptValue,
     ) -> Result<(), InteropError> {
         let world = ctxt.world()?;
-        if let Some(field) = dynamic_component_field(&reference, &key) {
-            let mut data = match Self::default_get(ctxt.clone(), reference.clone(), "data".into())?
-            {
-                ScriptValue::Map(data) => data,
-                ScriptValue::Unit => Default::default(),
-                other => {
-                    return Err(InteropError::string(format!(
-                        "Cannot set field `{field}` of a script component whose data is not a table, got: {}",
-                        other.type_name()
-                    )));
-                }
-            };
-            data.insert(field.to_owned(), value);
-            return Self::default_set(ctxt, reference, "data".into(), ScriptValue::Map(data));
-        }
         let path: ReferencePart =
             ReferencePart::new_from_script_val(key, ctxt.language(), Some(world.clone())).map_err(
                 |e| InteropError::InvalidIndex {
