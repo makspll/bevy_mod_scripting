@@ -1,5 +1,5 @@
-let first = world.register_new_component.call("ScriptComponentAllowExisting");
-let second = world.register_new_component.call("ScriptComponentAllowExisting", true);
+let first = world.register_new_component.call("script.test", "ScriptComponentAllowExisting");
+let second = world.register_new_component.call("script.test", "ScriptComponentAllowExisting", true);
 
 let entity = world.spawn_.call();
 world.add_default_component.call(entity, first);

@@ -7,7 +7,7 @@ for i = 0, 0 do
     values[name] = construct(types[name], { i })
 end
 
-local bundle = world.register_new_bundle("BenchRustBundle1", members)
+local bundle = world.register_new_bundle("script.test", "BenchRustBundle1", members)
 local value = DynamicBundle.new({ data = values })
 
 function bench()

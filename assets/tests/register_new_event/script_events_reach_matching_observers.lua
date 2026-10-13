@@ -11,10 +11,10 @@ function on_b(payload)
 end
 
 function on_test()
-    EventA = world.register_new_event("TestEventA")
-    EventB = world.register_new_event("TestEventB")
+    EventA = world.register_new_event("script.test", "TestEventA")
+    EventB = world.register_new_event("script.test", "TestEventB")
     -- registering again returns the same event
-    assert(world.register_new_event("TestEventA", true) ~= nil)
+    assert(world.register_new_event("script.test", "TestEventA", true) ~= nil)
 
     observer_a = world.add_observer(EventA, {}, "on_a")
     world.add_observer(EventB, {}, "on_b")

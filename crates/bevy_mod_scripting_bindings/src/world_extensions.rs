@@ -15,10 +15,12 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    AppScriptGlobalsRegistry, AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo,
-    ScriptEvent, ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    AppScriptGlobalsRegistry, AppScriptTypeCatalogue, DynamicBundleInfo, DynamicComponent,
+    DynamicComponentInfo, ScriptEvent, ScriptEventRegistration, ScriptQueryBuilder,
+    ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
+    script_path, validate_script_namespace_and_name,
 };
 use ::{
     bevy_asset::{AssetServer, Handle, LoadState},
@@ -226,7 +228,8 @@ pub trait WorldExtensions {
     /// in which case the existing event is returned instead.
     fn register_script_event(
         &self,
-        name: String,
+        namespace: &str,
+        name: &str,
         allow_existing: bool,
     ) -> Result<ScriptEventRegistration, InteropError>;
 
@@ -457,9 +460,9 @@ pub trait WorldExtensions {
     /// Sets the current attachment for the world guard context.
     fn set_current_attachment(&self, attachment: ScriptAttachment);
 
-    /// Registers a dynamic script component, and returns a reference to its registration
+    /// Registers a dynamic script component in a script namespace (which must start with `script.`), and returns a reference to its registration
     ///
-    /// Fails if a component or bundle with the same name is already registered, unless `allow_existing` is set,
+    /// Fails if a component or bundle with the same namespace and name is already registered, unless `allow_existing` is set,
     /// in which case the existing component's registration is returned instead.
     ///
     /// `required` components are added with their default value to entities the new component is added to,
@@ -468,18 +471,20 @@ pub trait WorldExtensions {
     /// Ignored if an existing registration is returned.
     fn register_script_component(
         &self,
-        component_name: String,
+        namespace: &str,
+        component_name: &str,
         allow_existing: bool,
         required: Vec<ScriptComponentRegistration>,
     ) -> Result<ScriptComponentRegistration, InteropError>;
 
-    /// Registers a dynamic script bundle made up of the given components, and returns a reference to its registration
+    /// Registers a dynamic script bundle in a script namespace (which must start with `script.`) made up of the given components, and returns a reference to its registration
     ///
-    /// Fails if a component or bundle with the same name is already registered, unless `allow_existing` is set,
+    /// Fails if a component or bundle with the same namespace and name is already registered, unless `allow_existing` is set,
     /// in which case the existing bundle's registration is returned instead (the given components are ignored).
     fn register_script_bundle(
         &self,
-        bundle_name: String,
+        namespace: &str,
+        bundle_name: &str,
         components: Vec<ScriptComponentRegistration>,
         allow_existing: bool,
     ) -> Result<ScriptBundleRegistration, InteropError>;
@@ -952,12 +957,15 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
     fn register_script_event(
         &self,
-        name: String,
+        namespace: &str,
+        name: &str,
         allow_existing: bool,
     ) -> Result<ScriptEventRegistration, InteropError> {
+        validate_script_namespace_and_name(namespace, name)?;
+        let path = script_path(namespace, name);
         let component_registry = self.component_registry();
         let mut registry = component_registry.write();
-        if let Some(existing) = registry.get_event(&name) {
+        if let Some(existing) = registry.get_event(&path) {
             if allow_existing {
                 return Ok(existing.clone());
             }
@@ -965,11 +973,11 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 None,
                 None,
                 format!(
-                    "script registered event '{name}' already exists, pass `allow_existing = true` to get the existing registration instead"
+                    "script registered event '{path}' already exists, pass `allow_existing = true` to get the existing registration instead"
                 ),
             ));
         }
-        let registration = ScriptEventRegistration { name: name.into() };
+        let registration = ScriptEventRegistration { name: path.into() };
         registry.register_event(registration.clone());
         Ok(registration)
     }
@@ -1325,12 +1333,15 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 // try the script registered components and bundles
                 let components = self.component_registry();
                 let components = components.read();
+                // by full path (i.e. `script.game.Enemy`), or by name alone
                 components
-                    .get(&type_name)
+                    .find(&type_name)
                     .map(|c| Union::new_right(Union::new_left(c.registration.clone())))
                     .or_else(|| {
-                        components.get_bundle(&type_name).map(|b| {
-                            Union::new_right(Union::new_right(Union::new_right(b.clone())))
+                        components.find_bundle(&type_name).map(|b| {
+                            Union::new_right(Union::new_right(Union::new_right(
+                                b.registration.clone(),
+                            )))
                         })
                     })
             }
@@ -1450,13 +1461,16 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
     fn register_script_component(
         &self,
-        component_name: String,
+        namespace: &str,
+        component_name: &str,
         allow_existing: bool,
         required: Vec<ScriptComponentRegistration>,
     ) -> Result<ScriptComponentRegistration, InteropError> {
+        validate_script_namespace_and_name(namespace, component_name)?;
+        let path = script_path(namespace, component_name);
         let component_registry = self.component_registry();
         let component_registry_read = component_registry.read();
-        if let Some(existing) = component_registry_read.get(&component_name) {
+        if let Some(existing) = component_registry_read.get(&path) {
             if allow_existing {
                 return Ok(existing.registration.clone());
             }
@@ -1464,18 +1478,15 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 None,
                 None,
                 format!(
-                    "script registered component '{component_name}' already exists, pass `allow_existing = true` to get the existing registration instead"
+                    "script registered component '{path}' already exists, pass `allow_existing = true` to get the existing registration instead"
                 ),
             ));
         }
-        if component_registry_read
-            .get_bundle(&component_name)
-            .is_some()
-        {
+        if component_registry_read.get_bundle(&path).is_some() {
             return Err(InteropError::unsupported_operation(
                 None,
                 None,
-                format!("a script registered bundle named '{component_name}' already exists"),
+                format!("a script registered bundle named '{path}' already exists"),
             ));
         }
 
@@ -1485,7 +1496,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 // we know the type in advance
                 // we only use this method to name the component
                 ComponentDescriptor::new_with_layout(
-                    component_name.clone(),
+                    path.clone(),
                     DynamicComponent::STORAGE_TYPE,
                     Layout::new::<DynamicComponent>(),
                     needs_drop::<DynamicComponent>().then_some(|x| x.drop_as::<DynamicComponent>()),
@@ -1500,15 +1511,17 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         drop(component_registry_read);
         let mut component_registry = component_registry.write();
 
-        let registration = ScriptComponentRegistration::new(
+        let mut registration = ScriptComponentRegistration::new(
             ScriptTypeRegistration::new(Arc::new(
                 <DynamicComponent as GetTypeRegistration>::get_type_registration(),
             )),
             component_id,
         );
+        registration.script_namespace = Some(namespace.to_owned());
 
         let component_info = DynamicComponentInfo {
-            name: component_name.clone(),
+            name: component_name.to_owned(),
+            namespace: namespace.to_owned(),
             registration: registration.clone(),
         };
 
@@ -1584,48 +1597,48 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
     fn register_script_bundle(
         &self,
-        bundle_name: String,
+        namespace: &str,
+        bundle_name: &str,
         components: Vec<ScriptComponentRegistration>,
         allow_existing: bool,
     ) -> Result<ScriptBundleRegistration, InteropError> {
+        validate_script_namespace_and_name(namespace, bundle_name)?;
+        let path = script_path(namespace, bundle_name);
         let component_registry = self.component_registry();
         let component_registry_read = component_registry.read();
-        if let Some(existing) = component_registry_read.get_bundle(&bundle_name) {
+        if let Some(existing) = component_registry_read.get_bundle(&path) {
             if allow_existing {
-                return Ok(existing.clone());
+                return Ok(existing.registration.clone());
             }
             return Err(InteropError::unsupported_operation(
                 None,
                 None,
                 format!(
-                    "script registered bundle '{bundle_name}' already exists, pass `allow_existing = true` to get the existing registration instead"
+                    "script registered bundle '{path}' already exists, pass `allow_existing = true` to get the existing registration instead"
                 ),
             ));
         }
-        if component_registry_read.get(&bundle_name).is_some() {
+        if component_registry_read.get(&path).is_some() {
             return Err(InteropError::unsupported_operation(
                 None,
                 None,
-                format!("a script registered component named '{bundle_name}' already exists"),
+                format!("a script registered component named '{path}' already exists"),
             ));
         }
 
         let mut members = Vec::<BundleMember>::with_capacity(components.len());
         for registration in components {
             let name = if registration.is_dynamic_script_component {
-                self.with_world_access(|world| {
-                    world
-                        .components()
-                        .get_info(registration.component_id)
-                        .map(|info| info.name().to_string())
-                })?
-                .ok_or_else(|| {
-                    InteropError::unsupported_operation(
-                        None,
-                        None,
-                        "script component is not registered in this world",
-                    )
-                })?
+                component_registry_read
+                    .name_of(registration.component_id)
+                    .map(str::to_owned)
+                    .ok_or_else(|| {
+                        InteropError::unsupported_operation(
+                            None,
+                            None,
+                            "script component is not registered in this world",
+                        )
+                    })?
             } else {
                 registration.type_registration().short_name().to_owned()
             };
@@ -1643,15 +1656,20 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         }
         drop(component_registry_read);
 
-        let registration = ScriptBundleRegistration::new(
+        let mut registration = ScriptBundleRegistration::new(
             ScriptTypeRegistration::new(Arc::new(
                 <DynamicBundle as GetTypeRegistration>::get_type_registration(),
             )),
             members,
         );
+        registration.script_namespace = Some(namespace.to_owned());
         component_registry
             .write()
-            .register_bundle(bundle_name, registration.clone());
+            .register_bundle(DynamicBundleInfo {
+                name: bundle_name.to_owned(),
+                namespace: namespace.to_owned(),
+                registration: registration.clone(),
+            });
         Ok(registration)
     }
 
@@ -2320,14 +2338,20 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         guard
-            .register_script_component("MyDynComp".to_owned(), false, vec![])
+            .register_script_component("script.test", "MyDynComp", false, vec![])
             .unwrap();
         assert!(
             guard
-                .register_script_component("MyDynComp".to_owned(), false, vec![])
+                .register_script_component("script.test", "MyDynComp", false, vec![])
                 .is_err()
         );
-        assert!(guard.component_registry().read().get("MyDynComp").is_some());
+        assert!(
+            guard
+                .component_registry()
+                .read()
+                .get("script.test.MyDynComp")
+                .is_some()
+        );
     }
 
     #[test]
@@ -2461,18 +2485,18 @@ mod test {
 
         let start = generation();
         let comp = guard
-            .register_script_component("CatalogueComp".to_owned(), false, vec![])
+            .register_script_component("script.test", "CatalogueComp", false, vec![])
             .unwrap();
         assert_eq!(generation(), start + 1);
 
         // returning an existing registration must not look like a change
         guard
-            .register_script_component("CatalogueComp".to_owned(), true, vec![])
+            .register_script_component("script.test", "CatalogueComp", true, vec![])
             .unwrap();
         assert_eq!(generation(), start + 1);
 
         guard
-            .register_script_bundle("CatalogueBundle".to_owned(), vec![comp], false)
+            .register_script_bundle("script.test", "CatalogueBundle", vec![comp], false)
             .unwrap();
         assert_eq!(generation(), start + 2);
 
@@ -2511,7 +2535,9 @@ mod test {
         world.insert_resource(runners.clone());
 
         let guard = make_guard(&mut world);
-        let event = guard.register_script_event("E".to_owned(), false).unwrap();
+        let event = guard
+            .register_script_event("script.test", "E", false)
+            .unwrap();
         for label in ["free_cb", "busy_cb"] {
             guard
                 .add_script_event_observer(event.clone(), label.into(), attachment.clone())
@@ -2530,15 +2556,106 @@ mod test {
     }
 
     #[test]
+    fn script_registrations_need_valid_script_namespaces() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        for bad in [
+            "game",
+            "bevy_transform",
+            "script",
+            "script.",
+            "script..a",
+            "script.a b",
+            "",
+        ] {
+            for result in [
+                guard
+                    .register_script_component(bad, "C", false, vec![])
+                    .map(|_| ()),
+                guard
+                    .register_script_bundle(bad, "B", vec![], false)
+                    .map(|_| ()),
+                guard.register_script_event(bad, "E", false).map(|_| ()),
+            ] {
+                let err = result.unwrap_err().to_string();
+                assert!(err.contains("script"), "{bad}: {err}");
+            }
+        }
+        let err = guard
+            .register_script_component("game", "C", false, vec![])
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("must start with `script.`"), "{err}");
+
+        // names cannot be empty or contain dots
+        assert!(
+            guard
+                .register_script_component("script.a", "", false, vec![])
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_component("script.a", "x.y", false, vec![])
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_component("script.a.b_c", "X", false, vec![])
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn script_registrations_are_unique_by_full_path() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        let a = guard
+            .register_script_component("script.one", "Same", false, vec![])
+            .unwrap();
+        let b = guard
+            .register_script_component("script.two", "Same", false, vec![])
+            .unwrap();
+        assert_ne!(
+            a.component_id, b.component_id,
+            "different namespaces, different components"
+        );
+        assert!(
+            guard
+                .register_script_component("script.one", "Same", false, vec![])
+                .is_err()
+        );
+
+        // lookups work by full path, and by name alone (the alphabetically first path wins)
+        let by_path = guard
+            .get_type_registration_by_name("script.two.Same".to_owned())
+            .unwrap();
+        assert!(by_path.is_some());
+        let registry = guard.component_registry();
+        let registry = registry.read();
+        assert_eq!(registry.find("Same").unwrap().namespace, "script.one");
+        assert_eq!(
+            registry.find("script.two.Same").unwrap().namespace,
+            "script.two"
+        );
+        assert_eq!(registry.name_of(b.component_id), Some("Same"));
+    }
+
+    #[test]
     fn register_script_event_duplicates_need_allow_existing() {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
-        let first = guard.register_script_event("Ev".to_owned(), false).unwrap();
+        let first = guard
+            .register_script_event("script.test", "Ev", false)
+            .unwrap();
         let err = guard
-            .register_script_event("Ev".to_owned(), false)
+            .register_script_event("script.test", "Ev", false)
             .unwrap_err();
         assert!(err.to_string().contains("allow_existing"), "{err}");
-        let again = guard.register_script_event("Ev".to_owned(), true).unwrap();
+        let again = guard
+            .register_script_event("script.test", "Ev", true)
+            .unwrap();
         assert_eq!(first.name, again.name);
         // events do not take part in the type catalogue generation
         assert!(guard.trigger_script_event(first, ScriptValue::Unit).is_ok());
@@ -2549,21 +2666,21 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         let first = guard
-            .register_script_component("MyDynComp".to_owned(), false, vec![])
+            .register_script_component("script.test", "MyDynComp", false, vec![])
             .unwrap();
         let err = guard
-            .register_script_component("MyDynComp".to_owned(), false, vec![])
+            .register_script_component("script.test", "MyDynComp", false, vec![])
             .unwrap_err();
         assert!(err.to_string().contains("allow_existing"), "{err}");
 
         let second = guard
-            .register_script_component("MyDynComp".to_owned(), true, vec![])
+            .register_script_component("script.test", "MyDynComp", true, vec![])
             .unwrap();
         assert_eq!(first.component_id, second.component_id);
 
         // a fresh name is still registered normally with the flag set
         let other = guard
-            .register_script_component("OtherDynComp".to_owned(), true, vec![])
+            .register_script_component("script.test", "OtherDynComp", true, vec![])
             .unwrap();
         assert_ne!(first.component_id, other.component_id);
     }
@@ -2575,7 +2692,7 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         let registration = guard
-            .register_script_component("MyDynComp".to_owned(), false, vec![])
+            .register_script_component("script.test", "MyDynComp", false, vec![])
             .unwrap();
         let entity = guard.spawn().unwrap();
 
@@ -2753,13 +2870,14 @@ mod test {
         let mut world = bundle_world();
         let guard = make_guard(&mut world);
         let script_comp = guard
-            .register_script_component("ScriptComp".to_owned(), false, vec![])
+            .register_script_component("script.test", "ScriptComp", false, vec![])
             .unwrap();
         let native_comp = comp_reg::<CompWithDefaultAndComponentData>(&guard);
         let simple = comp_reg::<SimpleStruct>(&guard);
         let registration = guard
             .register_script_bundle(
-                "ScriptBundle".to_owned(),
+                "script.test",
+                "ScriptBundle",
                 vec![script_comp.clone(), native_comp, simple.clone()],
                 false,
             )
@@ -2843,7 +2961,7 @@ mod test {
         let guard = make_guard(&mut world);
         let simple = comp_reg::<SimpleStruct>(&guard);
         let registration = guard
-            .register_script_bundle("ScriptBundle".to_owned(), vec![simple.clone()], false)
+            .register_script_bundle("script.test", "ScriptBundle", vec![simple.clone()], false)
             .unwrap();
         let entity = guard.spawn().unwrap();
         let value = script_bundle_value(&guard, vec![("Typo", ScriptValue::Unit)]);
@@ -2876,28 +2994,29 @@ mod test {
         assert!(
             guard
                 .register_script_bundle(
-                    "Dup".to_owned(),
+                    "script.test",
+                    "Dup",
                     vec![simple.clone(), simple.clone()],
                     false
                 )
                 .is_err()
         );
         guard
-            .register_script_bundle("ScriptBundle".to_owned(), vec![simple.clone()], false)
+            .register_script_bundle("script.test", "ScriptBundle", vec![simple.clone()], false)
             .unwrap();
         let err = guard
-            .register_script_bundle("ScriptBundle".to_owned(), vec![simple.clone()], false)
+            .register_script_bundle("script.test", "ScriptBundle", vec![simple.clone()], false)
             .unwrap_err();
         assert!(err.to_string().contains("allow_existing"), "{err}");
         guard
-            .register_script_bundle("ScriptBundle".to_owned(), vec![simple], true)
+            .register_script_bundle("script.test", "ScriptBundle", vec![simple], true)
             .unwrap();
         guard
-            .register_script_component("ScriptComp".to_owned(), false, vec![])
+            .register_script_component("script.test", "ScriptComp", false, vec![])
             .unwrap();
         assert!(
             guard
-                .register_script_bundle("ScriptComp".to_owned(), vec![], false)
+                .register_script_bundle("script.test", "ScriptComp", vec![], false)
                 .is_err()
         );
     }

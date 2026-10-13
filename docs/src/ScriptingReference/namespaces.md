@@ -15,7 +15,7 @@ Scripts can ask a type for its namespace:
 print(types.Transform:namespace()) -- bevy_transform
 ```
 
-Components and bundles registered by scripts are in the root namespace for now.
+Components, bundles and events registered by scripts are in script namespaces, see below.
 
 BMS' own types (`ScriptTypeRegistration`, `ScriptAttachment`, `ReflectReference`, ...) are in the `bms` namespace, instead of the internal crates they happen to be defined in.
 
@@ -72,3 +72,22 @@ namespace "bevy_transfrom" does not exist. Native namespaces are the names of th
 Names starting with `script.` are reserved for namespaces defined by scripts and get a hint about loading the script first.
 
 The `types` global is still a flat table of all types by short name.
+
+## Namespaces defined by scripts
+
+Scripts register components, bundles and events into namespaces of their own, which they always pass explicitly (there is no default, as a name derived from the script's path would be fragile):
+
+```lua
+local Enemy = world.register_new_component("script.game.ai", "Enemy")
+local Group = world.register_new_bundle("script.game.ai", "Group", { Enemy })
+local Hit = world.register_new_event("script.game.ai", "Hit")
+
+-- later, anywhere (including other scripts)
+local ai = import("script.game.ai")
+world.add_default_component(entity, ai.Enemy)
+```
+
+* Namespaces defined by scripts must start with `script.`, followed by segments of letters, digits and underscores separated by dots. This keeps them apart from the namespaces of crates, which scripts cannot add to.
+* Names are unique within their namespace, so `script.game.ai.Enemy` and `script.game.ui.Enemy` are different components. Registering the same path twice is an error, unless `allow_existing` is passed.
+* `types.Enemy` finds a script registered type by its name alone, which is ambiguous if several namespaces have one of that name (the one with the alphabetically first path wins). Prefer `import`.
+* A namespace exists as soon as something is registered in it. Importing one before that fails with a hint that the script defining it needs to have run.

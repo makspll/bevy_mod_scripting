@@ -41,14 +41,14 @@ world.spawn_bundle(types.EnemyBundle, EnemyBundle.new({ health = Health.new({ hp
 Scripts can register their own bundles, made up of any components, including script registered components (`world.register_new_component`), and other bundles, which are flattened into their components:
 
 ```lua
-local Mana = world.register_new_component("Mana")
-local Caster = world.register_new_bundle("Caster", { Mana, types.EnemyBundle })
+local Mana = world.register_new_component("script.my_game", "Mana")
+local Caster = world.register_new_bundle("script.my_game", "Caster", { Mana, types.EnemyBundle })
 ```
 
 Registering a component or bundle under a name that is already taken is an error. Both `register_new_component` and `register_new_bundle` take an optional trailing `allow_existing` argument (default `false`); when `true`, the existing registration is returned instead, which is useful when a script may be run more than once (e.g. on reload):
 
 ```lua
-local Mana = world.register_new_component("Mana", true)
+local Mana = world.register_new_component("script.my_game", "Mana", true)
 ```
 
 ## Using script components like native ones
@@ -56,7 +56,7 @@ local Mana = world.register_new_component("Mana", true)
 Values of script components are `DynamicComponent`s, holding their value in `data`. If `data` is a table, its entries can be accessed directly on the component:
 
 ```lua
-local Health = world.register_new_component("Health")
+local Health = world.register_new_component("script.my_game", "Health")
 local entity = world.spawn()
 world.insert_component(entity, Health, DynamicComponent.new({ data = { current = 5 } }))
 
@@ -71,11 +71,11 @@ health.current = health.current - 1 -- same as health.data.current
 
 ## Required components
 
-`register_new_component` takes the required components as its third argument:
+`register_new_component` takes the required components as its fourth argument:
 
 ```lua
-local Mana = world.register_new_component("Mana")
-local Caster = world.register_new_component("Caster", false, { Mana })
+local Mana = world.register_new_component("script.my_game", "Mana")
+local Caster = world.register_new_component("script.my_game", "Caster", false, { Mana })
 ```
 
 Whenever `Caster` is added to an entity, `Mana` is added with its default value unless the entity already has it. This is a stopgap built on an observer, since Bevy can not yet register required components for components without a Rust type (see bevyengine/bevy#18420). In particular the required components are added right after the operation which added `Caster` (not as part of it), and are not removed when `Caster` is. Requirements chain, so required components can have their own.

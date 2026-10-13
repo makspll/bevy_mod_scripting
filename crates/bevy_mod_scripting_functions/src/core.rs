@@ -344,19 +344,21 @@ impl World {
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `name`: The name of the event.
+    /// * `namespace`: The script namespace to register the event in, it must start with `script.`, i.e. `script.my_game`.
+    /// * `name`: The name of the event, unique within the namespace.
     /// * `allow_existing`: If true, returns the already registered event with this name instead of failing. Defaults to false.
     /// Returns:
     /// * `registration`: The handle of the new event.
     fn register_new_event(
         ctxt: FunctionCallContext,
+        namespace: String,
         name: String,
         allow_existing: Option<bool>,
     ) -> Result<V<ScriptEventRegistration>, InteropError> {
         profiling::function_scope!("register_new_event");
         let world = ctxt.world()?;
         world
-            .register_script_event(name, allow_existing.unwrap_or(false))
+            .register_script_event(&namespace, &name, allow_existing.unwrap_or(false))
             .map(V)
     }
 
@@ -784,7 +786,8 @@ impl World {
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `name`: The name of the component type
+    /// * `namespace`: The script namespace to register the component in, it must start with `script.`, i.e. `script.my_game`. Scripts cannot add to other namespaces.
+    /// * `name`: The name of the component type, unique within the namespace. The component can later be found as `import(namespace).name`.
     /// * `allow_existing`: If true, returns the registration of the already registered component with this name instead of failing. Defaults to false.
     /// * `required`: Components which are added with their default value to entities this component is added to, if they do not have them yet.
     ///   Unlike native required components, this is emulated with an observer: they are added right after the operation that added this component,
@@ -793,6 +796,7 @@ impl World {
     /// * `registration`: The registration of the new component type if successful.
     fn register_new_component(
         ctxt: FunctionCallContext,
+        namespace: String,
         name: String,
         allow_existing: Option<bool>,
         required: Option<Vec<V<ScriptComponentRegistration>>>,
@@ -801,7 +805,8 @@ impl World {
         let world = ctxt.world()?;
         world
             .register_script_component(
-                name,
+                &namespace,
+                &name,
                 allow_existing.unwrap_or(false),
                 required
                     .unwrap_or_default()
@@ -821,13 +826,15 @@ impl World {
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `name`: The name of the bundle type
+    /// * `namespace`: The script namespace to register the bundle in, it must start with `script.`, i.e. `script.my_game`.
+    /// * `name`: The name of the bundle type, unique within the namespace.
     /// * `members`: The components and bundles making up the bundle, bundles are flattened into their components
     /// * `allow_existing`: If true, returns the registration of the already registered bundle with this name instead of failing. Defaults to false.
     /// Returns:
     /// * `registration`: The registration of the new bundle type if successful.
     fn register_new_bundle(
         ctxt: FunctionCallContext,
+        namespace: String,
         name: String,
         members: Vec<Union<V<ScriptComponentRegistration>, V<ScriptBundleRegistration>>>,
         allow_existing: Option<bool>,
@@ -847,7 +854,12 @@ impl World {
             })
             .collect();
         world
-            .register_script_bundle(name, components, allow_existing.unwrap_or(false))
+            .register_script_bundle(
+                &namespace,
+                &name,
+                components,
+                allow_existing.unwrap_or(false),
+            )
             .map(V)
     }
 

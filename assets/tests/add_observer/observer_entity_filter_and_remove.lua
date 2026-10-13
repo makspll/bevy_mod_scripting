@@ -10,7 +10,7 @@ register_callback("on_removed", function(event)
 end)
 
 function on_test()
-    local Marker = world.register_new_component("ObserverFilterMarker")
+    local Marker = world.register_new_component("script.test", "ObserverFilterMarker")
     a = world.spawn()
     b = world.spawn()
 

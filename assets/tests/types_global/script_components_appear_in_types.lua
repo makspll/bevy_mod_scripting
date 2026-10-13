@@ -1,7 +1,7 @@
 function on_test()
     assert(types.ScriptTypesEntryComp == nil, "not registered yet")
-    local comp = world.register_new_component("ScriptTypesEntryComp")
-    world.register_new_bundle("ScriptTypesEntryBundle", { comp })
+    local comp = world.register_new_component("script.test", "ScriptTypesEntryComp")
+    world.register_new_bundle("script.test", "ScriptTypesEntryBundle", { comp })
 end
 
 function on_test_post_update()

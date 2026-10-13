@@ -50,6 +50,8 @@ pub struct ScriptComponentRegistration {
     pub component_id: ComponentId,
     /// whether this is a component registered BY a script
     pub is_dynamic_script_component: bool,
+    /// the script namespace the component was registered in, if registered by a script
+    pub script_namespace: Option<String>,
 }
 
 #[derive(Clone, Reflect, Debug)]
@@ -88,6 +90,8 @@ pub struct ScriptBundleRegistration {
     pub members: Arc<[BundleMember]>,
     /// whether this is a bundle registered BY a script
     pub is_dynamic_script_bundle: bool,
+    /// the script namespace the bundle was registered in, if registered by a script
+    pub script_namespace: Option<String>,
 }
 
 /// Any of the kinds of type registration, as returned by type lookups.
@@ -213,16 +217,18 @@ impl ScriptComponentRegistration {
                 == std::any::TypeId::of::<DynamicComponent>(),
             registration,
             component_id,
+            script_namespace: None,
         }
     }
 
     /// Returns the script namespace of the component, see [`ScriptTypeRegistration::namespace`].
     ///
-    /// Components registered by scripts are in the root namespace (the empty string), not in the namespace of the type backing them.
+    /// Components registered by scripts are in the namespace they were registered in, not in the namespace of the type backing them.
     pub fn namespace(&self) -> &str {
-        match self.is_dynamic_script_component {
-            true => "",
-            false => self.registration.namespace(),
+        match (&self.script_namespace, self.is_dynamic_script_component) {
+            (Some(namespace), _) => namespace,
+            (None, true) => "",
+            (None, false) => self.registration.namespace(),
         }
     }
 
@@ -319,11 +325,12 @@ impl ScriptComponentRegistration {
 impl ScriptBundleRegistration {
     /// Returns the script namespace of the bundle, see [`ScriptTypeRegistration::namespace`].
     ///
-    /// Bundles registered by scripts are in the root namespace (the empty string), not in the namespace of the type backing them.
+    /// Bundles registered by scripts are in the namespace they were registered in, not in the namespace of the type backing them.
     pub fn namespace(&self) -> &str {
-        match self.is_dynamic_script_bundle {
-            true => "",
-            false => self.registration.namespace(),
+        match (&self.script_namespace, self.is_dynamic_script_bundle) {
+            (Some(namespace), _) => namespace,
+            (None, true) => "",
+            (None, false) => self.registration.namespace(),
         }
     }
 
@@ -331,6 +338,7 @@ impl ScriptBundleRegistration {
     pub fn new(registration: ScriptTypeRegistration, members: Vec<BundleMember>) -> Self {
         Self {
             is_dynamic_script_bundle: registration.type_id() == TypeId::of::<DynamicBundle>(),
+            script_namespace: None,
             registration,
             members: members.into(),
         }

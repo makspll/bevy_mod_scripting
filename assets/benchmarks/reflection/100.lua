@@ -1,5 +1,5 @@
 -- create a dynamic component with n depth of fields
-local Component = world.register_new_component("DeepComponent");
+local Component = world.register_new_component("script.test", "DeepComponent");
 local new_entity = world.spawn();
 
 reseed()

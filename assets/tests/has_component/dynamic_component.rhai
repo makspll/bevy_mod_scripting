@@ -1,4 +1,4 @@
-let NewComponent = world.register_new_component.call("ScriptComponentA");
+let NewComponent = world.register_new_component.call("script.test", "ScriptComponentA");
 let entity = world.spawn_.call();
 
 assert(world.has_component.call(entity, NewComponent) == false, "Entity should not have component");

@@ -7,7 +7,7 @@ function on_test()
     assert(types.ScriptAttachment:namespace() == "bms")
     assert(types.DynamicComponent:namespace() == "bms")
 
-    -- script components are not in any native namespace
-    local Comp = world.register_new_component("NamespaceTestComp")
-    assert(Comp:namespace() == "", "script components live in the root namespace")
+    -- script components are in the namespace they were registered in
+    local Comp = world.register_new_component("script.test", "NamespaceTestComp")
+    assert(Comp:namespace() == "script.test", "got: " .. Comp:namespace())
 end

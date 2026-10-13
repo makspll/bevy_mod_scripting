@@ -1,5 +1,5 @@
-local first = world.register_new_component("ScriptComponentAllowExisting")
-local second = world.register_new_component("ScriptComponentAllowExisting", true)
+local first = world.register_new_component("script.test", "ScriptComponentAllowExisting")
+local second = world.register_new_component("script.test", "ScriptComponentAllowExisting", true)
 
 local entity = world.spawn()
 world.add_default_component(entity, first)

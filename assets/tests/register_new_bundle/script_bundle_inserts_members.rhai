@@ -1,10 +1,10 @@
-let script_comp_type = world.register_new_component.call("ScriptBundleComp");
+let script_comp_type = world.register_new_component.call("script.test", "ScriptBundleComp");
 let comp_type = world.get_type_by_name.call("CompWithDefaultAndComponentData");
 let simple_type = world.get_type_by_name.call("SimpleStruct");
 let nested_type = world.get_type_by_name.call("TestNestedBundle");
 
 // bundles passed as members are flattened into their components
-let bundle_type = world.register_new_bundle.call("ScriptBundle", [script_comp_type, comp_type, nested_type]);
+let bundle_type = world.register_new_bundle.call("script.test", "ScriptBundle", [script_comp_type, comp_type, nested_type]);
 let components = bundle_type.components.call(bundle_type);
 assert(components.len() == 3, "Expected the nested bundle to be flattened");
 assert(type_of(world.get_type_by_name.call("ScriptBundle")) != "()", "Expected the bundle to be retrievable by name");

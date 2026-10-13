@@ -1,7 +1,7 @@
 function on_test()
-    local Base = world.register_new_component("RequiredBase")
-    local Extra = world.register_new_component("RequiredExtra")
-    local Top = world.register_new_component("RequiredTop", false, { Base, Extra })
+    local Base = world.register_new_component("script.test", "RequiredBase")
+    local Extra = world.register_new_component("script.test", "RequiredExtra")
+    local Top = world.register_new_component("script.test", "RequiredTop", false, { Base, Extra })
 
     local entity = world.spawn()
     world.add_default_component(entity, Top)
@@ -15,9 +15,9 @@ function on_test()
     assert(world.has_component(other, Extra))
 
     -- requirements chain
-    local A = world.register_new_component("RequiredCycleA")
-    local B = world.register_new_component("RequiredCycleB", false, { A })
-    local C = world.register_new_component("RequiredCycleC", false, { B })
+    local A = world.register_new_component("script.test", "RequiredCycleA")
+    local B = world.register_new_component("script.test", "RequiredCycleB", false, { A })
+    local C = world.register_new_component("script.test", "RequiredCycleC", false, { B })
     local cyc = world.spawn()
     world.add_default_component(cyc, C)
     assert(world.has_component(cyc, A) and world.has_component(cyc, B))

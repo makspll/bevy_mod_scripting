@@ -220,19 +220,19 @@ impl ScriptTypeCatalogue {
         let script_registry = script_registry.read();
         for info in script_registry.iter_components() {
             catalogue.insert(CatalogueEntry {
-                path: info.name.as_str().into(),
+                path: info.path().into(),
                 short_name: info.name.as_str().into(),
-                namespace: "".into(),
+                namespace: info.namespace.as_str().into(),
                 registration: CatalogueRegistration::Component(info.registration.clone()),
                 source: CatalogueSource::Script,
             });
         }
-        for (name, bundle) in script_registry.iter_bundles() {
+        for bundle in script_registry.iter_bundles() {
             catalogue.insert(CatalogueEntry {
-                path: name.as_str().into(),
-                short_name: name.as_str().into(),
-                namespace: "".into(),
-                registration: CatalogueRegistration::Bundle(bundle.clone()),
+                path: bundle.path().into(),
+                short_name: bundle.name.as_str().into(),
+                namespace: bundle.namespace.as_str().into(),
+                registration: CatalogueRegistration::Bundle(bundle.registration.clone()),
                 source: CatalogueSource::Script,
             });
         }

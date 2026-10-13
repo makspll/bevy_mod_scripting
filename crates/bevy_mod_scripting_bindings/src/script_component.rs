@@ -1,7 +1,8 @@
 //! Everything necessary to support scripts registering their own components
 
 use super::{
-    ScriptBundleRegistration, ScriptComponentRegistration, ScriptEventRegistration, ScriptValue,
+    InteropError, ScriptBundleRegistration, ScriptComponentRegistration, ScriptEventRegistration,
+    ScriptValue,
 };
 use crate::ScriptNamespaceAppExt;
 use ::{
@@ -296,12 +297,74 @@ impl DynamicBundle {
 
 dynamic_data_reflect!(DynamicBundle);
 
+/// The prefix all namespaces defined by scripts must start with.
+pub const SCRIPT_NAMESPACE_PREFIX: &str = "script.";
+
+/// Joins a script namespace and a name into the full path types are registered under, i.e. `script.game.Enemy`.
+pub fn script_path(namespace: &str, name: &str) -> String {
+    format!("{namespace}.{name}")
+}
+
+/// Checks that a namespace and name given by a script to register something are valid.
+///
+/// Namespaces defined by scripts must start with `script.` followed by at least one segment, segments are separated by dots and
+/// made up of letters, digits and underscores. Names cannot contain dots.
+pub fn validate_script_namespace_and_name(namespace: &str, name: &str) -> Result<(), InteropError> {
+    let invalid_segment = |segment: &str| {
+        segment.is_empty() || !segment.chars().all(|c| c.is_alphanumeric() || c == '_')
+    };
+    let Some(rest) = namespace.strip_prefix(SCRIPT_NAMESPACE_PREFIX) else {
+        return Err(InteropError::string(format!(
+            "script namespaces must start with `{SCRIPT_NAMESPACE_PREFIX}` (i.e. `{SCRIPT_NAMESPACE_PREFIX}my_game`), got `{namespace}`. \
+            Other namespaces are the names of crates, which scripts cannot add to."
+        )));
+    };
+    if rest.split('.').any(invalid_segment) {
+        return Err(InteropError::string(format!(
+            "invalid script namespace `{namespace}`: after `{SCRIPT_NAMESPACE_PREFIX}` it must be made up of non empty segments \
+            of letters, digits and underscores separated by dots"
+        )));
+    }
+    if name.is_empty() || name.contains('.') {
+        return Err(InteropError::string(format!(
+            "invalid name `{name}` for something registered in `{namespace}`: it cannot be empty or contain dots"
+        )));
+    }
+    Ok(())
+}
+
 /// Some metadata about dynamic script components
 pub struct DynamicComponentInfo {
-    /// The name of the component
+    /// The name of the component within its namespace
     pub name: String,
+    /// The script namespace the component was registered in
+    pub namespace: String,
     /// The type registration for the component
     pub registration: ScriptComponentRegistration,
+}
+
+impl DynamicComponentInfo {
+    /// The full path of the component, which is unique, i.e. `script.game.Enemy`
+    pub fn path(&self) -> String {
+        script_path(&self.namespace, &self.name)
+    }
+}
+
+/// Some metadata about dynamic script bundles
+pub struct DynamicBundleInfo {
+    /// The name of the bundle within its namespace
+    pub name: String,
+    /// The script namespace the bundle was registered in
+    pub namespace: String,
+    /// The registration of the bundle
+    pub registration: ScriptBundleRegistration,
+}
+
+impl DynamicBundleInfo {
+    /// The full path of the bundle, which is unique, i.e. `script.game.Enemy`
+    pub fn path(&self) -> String {
+        script_path(&self.namespace, &self.name)
+    }
 }
 
 impl Component for DynamicComponent {
@@ -330,7 +393,7 @@ impl AppScriptComponentRegistry {
 /// A registry of dynamically registered script components and bundles
 pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
-    bundles: HashMap<String, ScriptBundleRegistration>,
+    bundles: HashMap<String, DynamicBundleInfo>,
     events: HashMap<String, ScriptEventRegistration>,
     generation: u64,
 }
@@ -339,18 +402,38 @@ pub struct ScriptComponentRegistry {
 impl ScriptComponentRegistry {
     /// Registers a dynamic script component, possibly overwriting an existing one
     pub fn register(&mut self, info: DynamicComponentInfo) {
-        self.components.insert(info.name.clone(), info);
+        self.components.insert(info.path(), info);
         self.generation += 1;
     }
 
-    /// Gets a dynamic script component by name
-    pub fn get(&self, name: &str) -> Option<&DynamicComponentInfo> {
-        self.components.get(name)
+    /// Gets a dynamic script component by its full path, i.e. `script.game.Enemy`
+    pub fn get(&self, path: &str) -> Option<&DynamicComponentInfo> {
+        self.components.get(path)
+    }
+
+    /// Gets a dynamic script component by its full path, or by its name alone if no component has that path.
+    ///
+    /// If several namespaces have a component with that name, the one with the alphabetically first path is returned.
+    pub fn find(&self, path_or_name: &str) -> Option<&DynamicComponentInfo> {
+        self.components.get(path_or_name).or_else(|| {
+            self.components
+                .values()
+                .filter(|c| c.name == path_or_name)
+                .min_by_key(|c| c.path())
+        })
+    }
+
+    /// The name within its namespace of the script registered component with the given id, if any.
+    pub fn name_of(&self, component_id: bevy_ecs::component::ComponentId) -> Option<&str> {
+        self.components
+            .values()
+            .find(|c| c.registration.component_id == component_id)
+            .map(|c| c.name.as_str())
     }
 
     /// Registers a dynamic script bundle, possibly overwriting an existing one
-    pub fn register_bundle(&mut self, name: String, registration: ScriptBundleRegistration) {
-        self.bundles.insert(name, registration);
+    pub fn register_bundle(&mut self, info: DynamicBundleInfo) {
+        self.bundles.insert(info.path(), info);
         self.generation += 1;
     }
 
@@ -366,9 +449,9 @@ impl ScriptComponentRegistry {
         self.components.values()
     }
 
-    /// Iterates over all registered script bundles by name
-    pub fn iter_bundles(&self) -> impl Iterator<Item = (&String, &ScriptBundleRegistration)> {
-        self.bundles.iter()
+    /// Iterates over all registered script bundles
+    pub fn iter_bundles(&self) -> impl Iterator<Item = &DynamicBundleInfo> {
+        self.bundles.values()
     }
 
     /// Registers a script event, possibly overwriting an existing one
@@ -377,14 +460,24 @@ impl ScriptComponentRegistry {
             .insert(registration.name.to_string(), registration);
     }
 
-    /// Gets a script event by name
+    /// Gets a script event by its full path
     pub fn get_event(&self, name: &str) -> Option<&ScriptEventRegistration> {
         self.events.get(name)
     }
 
-    /// Gets a dynamic script bundle by name
-    pub fn get_bundle(&self, name: &str) -> Option<&ScriptBundleRegistration> {
-        self.bundles.get(name)
+    /// Gets a dynamic script bundle by its full path
+    pub fn get_bundle(&self, path: &str) -> Option<&DynamicBundleInfo> {
+        self.bundles.get(path)
+    }
+
+    /// Gets a dynamic script bundle by its full path, or by its name alone if no bundle has that path, see [`Self::find`]
+    pub fn find_bundle(&self, path_or_name: &str) -> Option<&DynamicBundleInfo> {
+        self.bundles.get(path_or_name).or_else(|| {
+            self.bundles
+                .values()
+                .filter(|b| b.name == path_or_name)
+                .min_by_key(|b| b.path())
+        })
     }
 }
 
@@ -476,16 +569,17 @@ mod test {
             let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
 
             guard
-                .register_script_component("ScriptTest".to_string(), false, vec![])
+                .register_script_component("script.test", "ScriptTest", false, vec![])
                 .unwrap()
         };
 
         let registry = world.get_resource::<AppScriptComponentRegistry>().unwrap();
 
         let registry = registry.read();
-        let info = registry.get("ScriptTest").unwrap();
+        let info = registry.get("script.test.ScriptTest").unwrap();
         assert_eq!(info.registration.component_id, registration.component_id);
         assert_eq!(info.name, "ScriptTest");
+        assert_eq!(info.registration.namespace(), "script.test");
 
         // can get the component through the world
         let component = world
@@ -493,6 +587,6 @@ mod test {
             .get_info(info.registration.component_id)
             .unwrap();
 
-        assert_eq!(component.name(), "ScriptTest".into());
+        assert_eq!(component.name(), "script.test.ScriptTest".into());
     }
 }

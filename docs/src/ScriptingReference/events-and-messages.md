@@ -53,7 +53,7 @@ app.register_type::<MyEvent>()
 The callback is a normal script callback, i.e. a function registered with `register_callback`, or a top level function of that name:
 
 ```lua
-local Mana = world.register_new_component("Mana")
+local Mana = world.register_new_component("script.my_game", "Mana")
 
 register_callback("on_mana_added", function(event)
     print("Mana was added to", event.entity)
@@ -81,7 +81,7 @@ Observer callbacks run through the same machinery as every other callback (see [
 Scripts can define their own events, carrying any value as payload:
 
 ```lua
-local Damaged = world.register_new_event("Damaged")
+local Damaged = world.register_new_event("script.my_game", "Damaged")
 
 register_callback("on_damaged", function(payload)
     print("took damage:", payload.amount)
@@ -92,7 +92,7 @@ world.add_observer(Damaged, {}, "on_damaged")
 world.trigger(Damaged, { amount = 5 })
 ```
 
-`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the second argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. The observers' callbacks run as described above. Events are looked up by name, so they are not part of the `types` global.
+`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the third argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. The observers' callbacks run as described above. Events are not part of the `types` global.
 
 ## Built-in messages
 

@@ -8,7 +8,7 @@ register_callback("on_marker_added", function(event)
 end)
 
 function on_test()
-    Marker = world.register_new_component("ObserverMarker")
+    Marker = world.register_new_component("script.test", "ObserverMarker")
     observer = world.add_observer(types.AddEvent, { Marker }, "on_marker_added")
     assert(observer ~= nil, "observer entity should be returned")
 

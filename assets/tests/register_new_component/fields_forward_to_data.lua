@@ -1,5 +1,5 @@
 function on_test()
-    local Health = world.register_new_component("ForwardedHealth")
+    local Health = world.register_new_component("script.test", "ForwardedHealth")
     local entity = world.spawn()
     world.insert_component(entity, Health, DynamicComponent.new({ data = { current = 5, label = "hp" } }))
 

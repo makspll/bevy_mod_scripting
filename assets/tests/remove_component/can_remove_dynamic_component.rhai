@@ -1,4 +1,4 @@
-let NewComponent = world.register_new_component.call("ScriptComponentA");
+let NewComponent = world.register_new_component.call("script.test", "ScriptComponentA");
 let new_entity = world.spawn_.call();
 world.add_default_component.call(new_entity, NewComponent);
 

@@ -1,5 +1,5 @@
 let entity_a = world.spawn_.call();
-let NewComponent = world.register_new_component.call("NewComponent");
+let NewComponent = world.register_new_component.call("script.test", "NewComponent");
 
 world.add_default_component.call(entity_a, NewComponent);
 

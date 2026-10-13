@@ -1,5 +1,5 @@
 local entity_a = world.spawn()
-local NewComponent = world.register_new_component("NewComponent")
+local NewComponent = world.register_new_component("script.test", "NewComponent")
 
 world.add_default_component(entity_a, NewComponent)
 

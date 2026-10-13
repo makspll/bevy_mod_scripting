@@ -1,10 +1,10 @@
-local ScriptComp = world.register_new_component("ScriptBundleComp")
+local ScriptComp = world.register_new_component("script.test", "ScriptBundleComp")
 local Comp = world.get_type_by_name("CompWithDefaultAndComponentData")
 local Simple = world.get_type_by_name("SimpleStruct")
 local Nested = world.get_type_by_name("TestNestedBundle")
 
 -- bundles passed as members are flattened into their components
-local Bundle = world.register_new_bundle("ScriptBundle", { ScriptComp, Comp, Nested })
+local Bundle = world.register_new_bundle("script.test", "ScriptBundle", { ScriptComp, Comp, Nested })
 assert(Bundle ~= nil, "Failed to register new bundle")
 assert(#Bundle:components() == 3, "Expected the nested bundle to be flattened")
 assert(world.get_type_by_name("ScriptBundle") ~= nil, "Expected the bundle to be retrievable by name")

@@ -1,7 +1,7 @@
 fn on_test() {
     assert(!("ScriptTypesEntryComp" in types), "not registered yet");
-    let comp = world.register_new_component.call("ScriptTypesEntryComp");
-    world.register_new_bundle.call("ScriptTypesEntryBundle", [comp]);
+    let comp = world.register_new_component.call("script.test", "ScriptTypesEntryComp");
+    world.register_new_bundle.call("script.test", "ScriptTypesEntryBundle", [comp]);
 }
 
 fn on_test_post_update() {

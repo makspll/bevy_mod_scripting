@@ -8,7 +8,7 @@ for i in 0..10 {
     values[name] = construct.call(component, [i]);
 }
 
-let bundle = world.register_new_bundle.call("BenchRustBundle10", members);
+let bundle = world.register_new_bundle.call("script.test", "BenchRustBundle10", members);
 let value = DynamicBundle.new_.call(#{ data: values });
 
 fn bench() {
