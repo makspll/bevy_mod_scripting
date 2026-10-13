@@ -686,15 +686,19 @@ impl World {
     /// Arguments:
     /// * `ctxt`: The function call context.
     /// * `name`: The name of the component type
+    /// * `allow_existing`: If true, returns the registration of the already registered component with this name instead of failing. Defaults to false.
     /// Returns:
     /// * `registration`: The registration of the new component type if successful.
     fn register_new_component(
         ctxt: FunctionCallContext,
         name: String,
+        allow_existing: Option<bool>,
     ) -> Result<V<ScriptComponentRegistration>, InteropError> {
         profiling::function_scope!("register_new_component");
         let world = ctxt.world()?;
-        world.register_script_component(name).map(V)
+        world
+            .register_script_component(name, allow_existing.unwrap_or(false))
+            .map(V)
     }
 
     /// Registers a new bundle type with the world, made up of the given components and bundles.
@@ -708,12 +712,14 @@ impl World {
     /// * `ctxt`: The function call context.
     /// * `name`: The name of the bundle type
     /// * `members`: The components and bundles making up the bundle, bundles are flattened into their components
+    /// * `allow_existing`: If true, returns the registration of the already registered bundle with this name instead of failing. Defaults to false.
     /// Returns:
     /// * `registration`: The registration of the new bundle type if successful.
     fn register_new_bundle(
         ctxt: FunctionCallContext,
         name: String,
         members: Vec<Union<V<ScriptComponentRegistration>, V<ScriptBundleRegistration>>>,
+        allow_existing: Option<bool>,
     ) -> Result<V<ScriptBundleRegistration>, InteropError> {
         profiling::function_scope!("register_new_bundle");
         let world = ctxt.world()?;
@@ -729,7 +735,9 @@ impl World {
                     .collect(),
             })
             .collect();
-        world.register_script_bundle(name, components).map(V)
+        world
+            .register_script_bundle(name, components, allow_existing.unwrap_or(false))
+            .map(V)
     }
 
     /// Retrieves an asset by its handle and asset type registration.

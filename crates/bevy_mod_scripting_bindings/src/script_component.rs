@@ -145,7 +145,7 @@ mod test {
             let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
 
             guard
-                .register_script_component("ScriptTest".to_string())
+                .register_script_component("ScriptTest".to_string(), false)
                 .unwrap()
         };
 

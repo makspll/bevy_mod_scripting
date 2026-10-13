@@ -45,6 +45,12 @@ local Mana = world.register_new_component("Mana")
 local Caster = world.register_new_bundle("Caster", { Mana, types.EnemyBundle })
 ```
 
+Registering a component or bundle under a name that is already taken is an error. Both `register_new_component` and `register_new_bundle` take an optional trailing `allow_existing` argument (default `false`); when `true`, the existing registration is returned instead, which is useful when a script may be run more than once (e.g. on reload):
+
+```lua
+local Mana = world.register_new_component("Mana", true)
+```
+
 Values of script bundles are `DynamicBundle`s, whose `data` maps member names to values. Native components are named by their short type name, script components by their registered name. Members without a value are default constructed:
 
 ```lua
