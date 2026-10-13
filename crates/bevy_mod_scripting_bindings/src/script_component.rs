@@ -401,7 +401,7 @@ mod test {
     use crate::{CurrentScriptAttachment, WorldExtensions};
 
     use super::*;
-    use bevy_reflect::{PartialReflect, structs::Struct};
+    use bevy_reflect::structs::Struct;
 
     #[test]
     fn dynamic_data_exposes_table_entries_as_fields() {
