@@ -792,9 +792,6 @@ impl World {
     /// * `namespace`: The script namespace to register the component in, it must start with `script.`, i.e. `script.my_game`. Scripts cannot add to other namespaces.
     /// * `name`: The name of the component type, unique within the namespace. The component can later be found as `import(namespace).name`.
     /// * `allow_existing`: If true, returns the registration of the already registered component with this name instead of failing. Defaults to false.
-    /// * `required`: Components which are added with their default value to entities this component is added to, if they do not have them yet.
-    ///   Unlike native required components, this is emulated with an observer: they are added right after the operation that added this component,
-    ///   and are not removed with it.
     /// Returns:
     /// * `registration`: The registration of the new component type if successful.
     fn register_new_component(
@@ -802,21 +799,11 @@ impl World {
         namespace: String,
         name: String,
         allow_existing: Option<bool>,
-        required: Option<Vec<V<ScriptComponentRegistration>>>,
     ) -> Result<V<ScriptComponentRegistration>, InteropError> {
         profiling::function_scope!("register_new_component");
         let world = ctxt.world()?;
         world
-            .register_script_component(
-                &namespace,
-                &name,
-                allow_existing.unwrap_or(false),
-                required
-                    .unwrap_or_default()
-                    .into_iter()
-                    .map(V::into_inner)
-                    .collect(),
-            )
+            .register_script_component(&namespace, &name, allow_existing.unwrap_or(false))
             .map(V)
     }
 

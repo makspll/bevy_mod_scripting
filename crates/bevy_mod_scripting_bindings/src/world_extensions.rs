@@ -40,7 +40,6 @@ use bevy_asset::AssetPath;
 use bevy_ecs::{
     component::{Component, ComponentCloneBehavior, ComponentDescriptor, Mutable},
     hierarchy::{ChildOf, Children},
-    lifecycle::AddEvent,
     observer::{Observer, On},
     resource::Resource,
     system::Commands,
@@ -486,17 +485,11 @@ pub trait WorldExtensions {
     ///
     /// Fails if a component or bundle with the same namespace and name is already registered, unless `allow_existing` is set,
     /// in which case the existing component's registration is returned instead.
-    ///
-    /// `required` components are added with their default value to entities the new component is added to,
-    /// unless the entity already has them. This is emulated with an observer and not a real required component:
-    /// the required components are added right after the operation which added this component, and are not removed with it.
-    /// Ignored if an existing registration is returned.
     fn register_script_component(
         &self,
         namespace: &str,
         component_name: &str,
         allow_existing: bool,
-        required: Vec<ScriptComponentRegistration>,
     ) -> Result<ScriptComponentRegistration, InteropError>;
 
     /// Registers a dynamic script bundle in a script namespace (which must start with `script.`) made up of the given components, and returns a reference to its registration
@@ -1549,7 +1542,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         namespace: &str,
         component_name: &str,
         allow_existing: bool,
-        required: Vec<ScriptComponentRegistration>,
     ) -> Result<ScriptComponentRegistration, InteropError> {
         validate_script_namespace_and_name(namespace, component_name)?;
         let path = script_path(namespace, component_name);
@@ -1618,38 +1610,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         };
 
         component_registry.register(component_info);
-        drop(component_registry);
-
-        if !required.is_empty() {
-            let component_id = registration.component_id;
-            let observer = Observer::new(move |event: On<AddEvent>, mut world: DeferredWorld| {
-                let entity = event.entity;
-                let required = required.clone();
-                world.commands().queue(move |world: &mut World| {
-                    let cache =
-                        WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
-                    WorldGuard::with_static_guard(world, cache, |guard| {
-                        for required in required {
-                            let missing = guard
-                                .has_component(entity, required.component_id)
-                                .map(|has| !has);
-                            let result = match missing {
-                                Ok(true) => guard.add_default_component(entity, required),
-                                Ok(false) => Ok(()),
-                                Err(e) => Err(e),
-                            };
-                            if let Err(e) = result {
-                                bevy_log::error!("could not add required script component: {e}");
-                            }
-                        }
-                    })
-                });
-            })
-            .with_component(component_id);
-            self.with_world_mut(|world| {
-                world.spawn(observer);
-            })?;
-        }
 
         // TODO: we should probably retrieve this from the registry, but I don't see what people would want to register on this type
         // in addition to the existing registrations.
@@ -2437,11 +2397,11 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         guard
-            .register_script_component("script.test", "MyDynComp", false, vec![])
+            .register_script_component("script.test", "MyDynComp", false)
             .unwrap();
         assert!(
             guard
-                .register_script_component("script.test", "MyDynComp", false, vec![])
+                .register_script_component("script.test", "MyDynComp", false)
                 .is_err()
         );
         assert!(
@@ -2584,13 +2544,13 @@ mod test {
 
         let start = generation();
         let comp = guard
-            .register_script_component("script.test", "CatalogueComp", false, vec![])
+            .register_script_component("script.test", "CatalogueComp", false)
             .unwrap();
         assert_eq!(generation(), start + 1);
 
         // returning an existing registration must not look like a change
         guard
-            .register_script_component("script.test", "CatalogueComp", true, vec![])
+            .register_script_component("script.test", "CatalogueComp", true)
             .unwrap();
         assert_eq!(generation(), start + 1);
 
@@ -2669,9 +2629,7 @@ mod test {
             "",
         ] {
             for result in [
-                guard
-                    .register_script_component(bad, "C", false, vec![])
-                    .map(|_| ()),
+                guard.register_script_component(bad, "C", false).map(|_| ()),
                 guard
                     .register_script_bundle(bad, "B", vec![], false)
                     .map(|_| ()),
@@ -2682,7 +2640,7 @@ mod test {
             }
         }
         let err = guard
-            .register_script_component("game", "C", false, vec![])
+            .register_script_component("game", "C", false)
             .unwrap_err()
             .to_string();
         assert!(err.contains("must start with `script.`"), "{err}");
@@ -2690,17 +2648,17 @@ mod test {
         // names cannot be empty or contain dots
         assert!(
             guard
-                .register_script_component("script.a", "", false, vec![])
+                .register_script_component("script.a", "", false)
                 .is_err()
         );
         assert!(
             guard
-                .register_script_component("script.a", "x.y", false, vec![])
+                .register_script_component("script.a", "x.y", false)
                 .is_err()
         );
         assert!(
             guard
-                .register_script_component("script.a.b_c", "X", false, vec![])
+                .register_script_component("script.a.b_c", "X", false)
                 .is_ok()
         );
     }
@@ -2711,10 +2669,10 @@ mod test {
         let guard = make_guard(&mut world);
 
         let a = guard
-            .register_script_component("script.one", "Same", false, vec![])
+            .register_script_component("script.one", "Same", false)
             .unwrap();
         let b = guard
-            .register_script_component("script.two", "Same", false, vec![])
+            .register_script_component("script.two", "Same", false)
             .unwrap();
         assert_ne!(
             a.component_id, b.component_id,
@@ -2722,7 +2680,7 @@ mod test {
         );
         assert!(
             guard
-                .register_script_component("script.one", "Same", false, vec![])
+                .register_script_component("script.one", "Same", false)
                 .is_err()
         );
 
@@ -2802,11 +2760,11 @@ mod test {
         // exports and components cannot share a path, in both directions
         assert!(
             guard
-                .register_script_component("script.game", "spawn", false, vec![])
+                .register_script_component("script.game", "spawn", false)
                 .is_err()
         );
         guard
-            .register_script_component("script.game", "Enemy", false, vec![])
+            .register_script_component("script.game", "Enemy", false)
             .unwrap();
         assert!(
             guard
@@ -2877,21 +2835,21 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         let first = guard
-            .register_script_component("script.test", "MyDynComp", false, vec![])
+            .register_script_component("script.test", "MyDynComp", false)
             .unwrap();
         let err = guard
-            .register_script_component("script.test", "MyDynComp", false, vec![])
+            .register_script_component("script.test", "MyDynComp", false)
             .unwrap_err();
         assert!(err.to_string().contains("allow_existing"), "{err}");
 
         let second = guard
-            .register_script_component("script.test", "MyDynComp", true, vec![])
+            .register_script_component("script.test", "MyDynComp", true)
             .unwrap();
         assert_eq!(first.component_id, second.component_id);
 
         // a fresh name is still registered normally with the flag set
         let other = guard
-            .register_script_component("script.test", "OtherDynComp", true, vec![])
+            .register_script_component("script.test", "OtherDynComp", true)
             .unwrap();
         assert_ne!(first.component_id, other.component_id);
     }
@@ -2903,7 +2861,7 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         let registration = guard
-            .register_script_component("script.test", "MyDynComp", false, vec![])
+            .register_script_component("script.test", "MyDynComp", false)
             .unwrap();
         let entity = guard.spawn().unwrap();
 
@@ -3081,7 +3039,7 @@ mod test {
         let mut world = bundle_world();
         let guard = make_guard(&mut world);
         let script_comp = guard
-            .register_script_component("script.test", "ScriptComp", false, vec![])
+            .register_script_component("script.test", "ScriptComp", false)
             .unwrap();
         let native_comp = comp_reg::<CompWithDefaultAndComponentData>(&guard);
         let simple = comp_reg::<SimpleStruct>(&guard);
@@ -3223,7 +3181,7 @@ mod test {
             .register_script_bundle("script.test", "ScriptBundle", vec![simple], true)
             .unwrap();
         guard
-            .register_script_component("script.test", "ScriptComp", false, vec![])
+            .register_script_component("script.test", "ScriptComp", false)
             .unwrap();
         assert!(
             guard
