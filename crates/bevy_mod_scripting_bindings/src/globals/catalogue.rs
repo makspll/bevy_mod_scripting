@@ -280,7 +280,9 @@ impl AppScriptTypeCatalogue {
 
     fn stamp(guard: &WorldGuard) -> Result<(usize, usize, u64), InteropError> {
         let types = guard.type_registry().read().iter().count();
-        let components = guard.with_world_access(|w| w.components().len())?;
+        // only reads component metadata, which can't change while systems run in parallel (registering needs exclusive access),
+        // and unlike `with_world_access` doesn't claim access to the whole world, which non exclusive script systems don't have
+        let components = guard.as_unsafe_world_cell()?.components().len();
         let script_generation = guard.component_registry().read().generation();
         Ok((types, components, script_generation))
     }
