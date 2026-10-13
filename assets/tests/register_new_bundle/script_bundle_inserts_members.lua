@@ -13,7 +13,7 @@ assert(world.get_type_by_name("ScriptBundle") ~= nil, "Expected the bundle to be
 local entity = world.spawn_bundle(Bundle, DynamicBundle.new({
     data = {
         ScriptBundleComp = "hello",
-        CompWithDefaultAndComponentData = construct(Comp, { ["1"] = "given" })
+        CompWithDefaultAndComponentData = CompWithDefaultAndComponentData.new({ "given" })
     }
 }))
 

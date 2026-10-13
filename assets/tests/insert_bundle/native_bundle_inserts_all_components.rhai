@@ -5,8 +5,8 @@ let simple_type = world.get_type_by_name.call("SimpleStruct");
 let entity = world.spawn_.call();
 assert(world.has_bundle.call(entity, bundle_type) == false, "Expected entity to not have the bundle before inserting, test invalid");
 
-// unspecified fields, including the nested bundle, are defaulted by construct
-world.insert_bundle.call(entity, bundle_type, construct.call(bundle_type, #{ comp: construct.call(comp_type, #{ "0": "bundled" }) }));
+// unspecified fields, including the nested bundle, are defaulted by the constructor
+world.insert_bundle.call(entity, bundle_type, TestBundle.new_.call(#{ comp: CompWithDefaultAndComponentData.new_.call(["bundled"]) }));
 
 assert(world.has_bundle.call(entity, bundle_type) == true, "Expected entity to have the bundle after inserting");
 assert(world.get_component.call(entity, comp_type)[0] == "bundled", "Expected the bundled component value to be inserted");
@@ -24,5 +24,5 @@ assert(world.get_component.call(entity, comp_type)[0] == "Default", "Expected th
 world.remove_bundle.call(entity, bundle_type);
 assert(world.has_bundle.call(entity, bundle_type) == false, "Expected remove_bundle to remove the components");
 
-let spawned = world.spawn_bundle.call(bundle_type, construct.call(bundle_type, #{}));
+let spawned = world.spawn_bundle.call(bundle_type, TestBundle.new_.call(#{}));
 assert(world.has_bundle.call(spawned, bundle_type) == true, "Expected spawn_bundle to spawn an entity with the bundle");

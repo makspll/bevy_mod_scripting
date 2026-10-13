@@ -13,7 +13,7 @@ assert(type_of(world.get_type_by_name.call("ScriptBundle")) != "()", "Expected t
 let entity = world.spawn_bundle.call(bundle_type, DynamicBundle.new_.call(#{
     data: #{
         ScriptBundleComp: "hello",
-        CompWithDefaultAndComponentData: construct.call(comp_type, #{ "0": "given" })
+        CompWithDefaultAndComponentData: CompWithDefaultAndComponentData.new_.call(["given"])
     }
 }));
 
