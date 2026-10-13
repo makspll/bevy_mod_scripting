@@ -3,8 +3,9 @@
 
 use super::{
     AnyTypeRegistration, AppReflectAllocator, AppScriptCallbackRunners, AppScriptComponentRegistry,
-    EnumVariantRef, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration,
-    ScriptResourceRegistration, ScriptTypeRegistration, StaticTypeRef, Union,
+    BundleMember, DynamicBundle, EnumVariantRef, ReflectBase, ReflectBaseType, ReflectReference,
+    ScriptBundleRegistration, ScriptComponentRegistration, ScriptResourceRegistration,
+    ScriptTypeRegistration, StaticTypeRef, Union,
     function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
@@ -23,7 +24,10 @@ use ::{
     bevy_ecs::{
         component::ComponentId,
         entity::Entity,
-        reflect::{ReflectEvent, ReflectFromWorld, ReflectMessage, ReflectResource},
+        reflect::{
+            ReflectBundle, ReflectComponent, ReflectEvent, ReflectFromWorld, ReflectMessage,
+            ReflectResource,
+        },
         world::World,
     },
     bevy_reflect::{PartialReflect, std_traits::ReflectDefault},
@@ -39,8 +43,8 @@ use bevy_ecs::{
 };
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::ScriptAttachment;
-use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard};
-use bevy_reflect::{GetTypeRegistration, TypeInfo};
+use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
+use bevy_reflect::{GetTypeRegistration, Reflect, TypeInfo, TypeRegistration, TypeRegistry};
 use bevy_system_reflection::ReflectSchedule;
 use std::{
     alloc::Layout,
@@ -112,6 +116,49 @@ pub trait WorldExtensions {
         entity: Entity,
         component_id: ComponentId,
     ) -> Result<bool, InteropError>;
+
+    /// Inserts a bundle value into an entity.
+    fn insert_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+        value: ReflectReference,
+    ) -> Result<(), InteropError>;
+
+    /// Adds a default-constructed bundle to an entity.
+    fn add_default_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<(), InteropError>;
+
+    /// Spawns a new entity with the given bundle value and returns its ID.
+    fn spawn_bundle(
+        &self,
+        registration: ScriptBundleRegistration,
+        value: ReflectReference,
+    ) -> Result<Entity, InteropError>;
+
+    /// Removes the components of a bundle from an entity.
+    fn remove_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<(), InteropError>;
+
+    /// Checks if an entity contains all the components of a bundle.
+    fn has_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<bool, InteropError>;
+
+    /// Removes the components of a bundle from an entity, returning them as a bundle value if all were present.
+    fn take_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<Option<ReflectReference>, InteropError>;
 
     /// Executes a closure with access to a component (if present).
     fn with_component<C: Component, O, F: FnOnce(Option<&C>) -> O>(
@@ -325,6 +372,12 @@ pub trait WorldExtensions {
         registration: ScriptTypeRegistration,
     ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError>;
 
+    /// Attempts to interpret a type as a bundle type, i.e. a type with `ReflectBundle` type data.
+    fn get_bundle_type(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<Result<ScriptBundleRegistration, ScriptTypeRegistration>, InteropError>;
+
     /// Returns the script function registry.
     fn script_function_registry(&'_ self) -> Ref<'_, AppScriptFunctionRegistry>;
 
@@ -351,6 +404,13 @@ pub trait WorldExtensions {
         &self,
         component_name: String,
     ) -> Result<ScriptComponentRegistration, InteropError>;
+
+    /// Registers a dynamic script bundle made up of the given components, and returns a reference to its registration
+    fn register_script_bundle(
+        &self,
+        bundle_name: String,
+        components: Vec<ScriptComponentRegistration>,
+    ) -> Result<ScriptBundleRegistration, InteropError>;
 
     /// Initializes cached registries from the world.
     fn setup_cache(world: &World, attachment: CurrentScriptAttachment) -> RegistryCache;
@@ -483,25 +543,10 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
-        // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
-        let instance = if let Some(default_td) = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectDefault>()
-        {
-            default_td.default()
-        } else if let Some(from_world_td) = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectFromWorld>()
-        {
-            self.with_world_mut(|world| from_world_td.from_world(world))?
-        } else {
-            return Err(InteropError::missing_type_data(
-                registration.registration.type_id(),
-                "ReflectDefault or ReflectFromWorld".to_owned(),
-            ));
-        };
+        let instance = default_instance(
+            self.clone(),
+            registration.type_registration().type_registration(),
+        )?;
 
         registration.insert_into_entity(self.clone(), entity, instance)
     }
@@ -554,6 +599,65 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             .map_err(|_| InteropError::missing_entity(entity))?;
 
         Ok(entity.contains_id(component_id))
+    }
+
+    fn insert_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+        value: ReflectReference,
+    ) -> Result<(), InteropError> {
+        let instance =
+            registration.instance_from_script(self.clone(), ScriptValue::Reference(value))?;
+        registration.insert_into_entity(self.clone(), entity, instance)
+    }
+
+    fn add_default_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<(), InteropError> {
+        let instance = registration.default_instance(self.clone())?;
+        registration.insert_into_entity(self.clone(), entity, instance)
+    }
+
+    fn spawn_bundle(
+        &self,
+        registration: ScriptBundleRegistration,
+        value: ReflectReference,
+    ) -> Result<Entity, InteropError> {
+        let instance =
+            registration.instance_from_script(self.clone(), ScriptValue::Reference(value))?;
+        let entity = self.spawn()?;
+        if let Err(e) = registration.insert_into_entity(self.clone(), entity, instance) {
+            self.despawn(entity)?;
+            return Err(e);
+        }
+        Ok(entity)
+    }
+
+    fn remove_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<(), InteropError> {
+        registration.remove_from_entity(self.clone(), entity)
+    }
+
+    fn has_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<bool, InteropError> {
+        registration.is_in_entity(self.clone(), entity)
+    }
+
+    fn take_bundle(
+        &self,
+        entity: Entity,
+        registration: ScriptBundleRegistration,
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        registration.take_from_entity(self.clone(), entity)
     }
 
     fn with_component<C: Component, O, F: FnOnce(Option<&C>) -> O>(
@@ -1004,7 +1108,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     ) -> Result<AnyTypeRegistration, InteropError> {
         let registration = match self.get_resource_type(registration)? {
             Ok(res) => {
-                return Ok(Union::new_right(Union::new_right(res)));
+                return Ok(Union::new_right(Union::new_right(Union::new_left(res))));
             }
             Err(registration) => registration,
         };
@@ -1012,6 +1116,13 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let registration = match self.get_component_type(registration)? {
             Ok(comp) => {
                 return Ok(Union::new_right(Union::new_left(comp)));
+            }
+            Err(registration) => registration,
+        };
+
+        let registration = match self.get_bundle_type(registration)? {
+            Ok(bundle) => {
+                return Ok(Union::new_right(Union::new_right(Union::new_right(bundle))));
             }
             Err(registration) => registration,
         };
@@ -1027,12 +1138,17 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         Ok(match val {
             Some(registration) => Some(self.get_type_registration(registration)?),
             None => {
-                // try the component registry
+                // try the script registered components and bundles
                 let components = self.component_registry();
                 let components = components.read();
                 components
                     .get(&type_name)
                     .map(|c| Union::new_right(Union::new_left(c.registration.clone())))
+                    .or_else(|| {
+                        components.get_bundle(&type_name).map(|b| {
+                            Union::new_right(Union::new_right(Union::new_right(b.clone())))
+                        })
+                    })
             }
         })
     }
@@ -1055,6 +1171,29 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Some(comp_id) => Ok(ScriptComponentRegistration::new(registration, comp_id)),
             None => Err(registration),
         })
+    }
+
+    fn get_bundle_type(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<Result<ScriptBundleRegistration, ScriptTypeRegistration>, InteropError> {
+        if registration
+            .type_registration()
+            .data::<ReflectBundle>()
+            .is_none()
+        {
+            return Ok(Err(registration));
+        }
+        let type_registry = self.type_registry();
+        let type_registry = type_registry.read();
+        let mut members = Vec::new();
+        native_bundle_members(
+            self,
+            &type_registry,
+            registration.type_registration(),
+            &mut members,
+        )?;
+        Ok(Ok(ScriptBundleRegistration::new(registration, members)))
     }
 
     fn script_function_registry(&'_ self) -> Ref<'_, AppScriptFunctionRegistry> {
@@ -1188,6 +1327,68 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         ]
     }
 
+    fn register_script_bundle(
+        &self,
+        bundle_name: String,
+        components: Vec<ScriptComponentRegistration>,
+    ) -> Result<ScriptBundleRegistration, InteropError> {
+        let component_registry = self.component_registry();
+        let component_registry_read = component_registry.read();
+        if component_registry_read.get_bundle(&bundle_name).is_some()
+            || component_registry_read.get(&bundle_name).is_some()
+        {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                "script registered component or bundle with this name already exists",
+            ));
+        }
+
+        let mut members = Vec::<BundleMember>::with_capacity(components.len());
+        for registration in components {
+            let name = if registration.is_dynamic_script_component {
+                self.with_world_access(|world| {
+                    world
+                        .components()
+                        .get_info(registration.component_id)
+                        .map(|info| info.name().to_string())
+                })?
+                .ok_or_else(|| {
+                    InteropError::unsupported_operation(
+                        None,
+                        None,
+                        "script component is not registered in this world",
+                    )
+                })?
+            } else {
+                registration.type_registration().short_name().to_owned()
+            };
+            if members
+                .iter()
+                .any(|m| m.name == name || m.registration.component_id == registration.component_id)
+            {
+                return Err(InteropError::unsupported_operation(
+                    None,
+                    None,
+                    format!("bundle contains component '{name}' more than once"),
+                ));
+            }
+            members.push(BundleMember { name, registration });
+        }
+        drop(component_registry_read);
+
+        let registration = ScriptBundleRegistration::new(
+            ScriptTypeRegistration::new(Arc::new(
+                <DynamicBundle as GetTypeRegistration>::get_type_registration(),
+            )),
+            members,
+        );
+        component_registry
+            .write()
+            .register_bundle(bundle_name, registration.clone());
+        Ok(registration)
+    }
+
     fn setup_cache(world: &World, attachment: CurrentScriptAttachment) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
@@ -1298,6 +1499,58 @@ impl CachedRegistry for AppScriptCallbackRunners {
     const SLOT: usize = 5;
 }
 
+/// Default constructs an instance of the given type, using its `ReflectDefault` or `ReflectFromWorld` type data.
+pub(crate) fn default_instance(
+    world: WorldGuard,
+    registration: &TypeRegistration,
+) -> Result<Box<dyn Reflect>, InteropError> {
+    if let Some(default_td) = registration.data::<ReflectDefault>() {
+        Ok(default_td.default())
+    } else if let Some(from_world_td) = registration.data::<ReflectFromWorld>() {
+        world.with_world_mut(|world| from_world_td.from_world(world))
+    } else {
+        Err(InteropError::missing_type_data(
+            registration.type_id(),
+            "ReflectDefault or ReflectFromWorld".to_owned(),
+        ))
+    }
+}
+
+/// Collects the components of a native bundle, flattening nested bundles.
+///
+/// Fields which are neither registered components nor bundles are skipped, these are fields ignored by the bundle.
+fn native_bundle_members(
+    world: &WorldAccessGuard,
+    type_registry: &TypeRegistry,
+    registration: &TypeRegistration,
+    members: &mut Vec<BundleMember>,
+) -> Result<(), InteropError> {
+    let field_types: Vec<_> = match registration.type_info() {
+        TypeInfo::Struct(info) => info.iter().map(|f| f.type_id()).collect(),
+        TypeInfo::TupleStruct(info) => info.iter().map(|f| f.type_id()).collect(),
+        TypeInfo::Tuple(info) => info.iter().map(|f| f.type_id()).collect(),
+        _ => Vec::new(),
+    };
+    for field_type in field_types {
+        let Some(field_registration) = type_registry.get(field_type) else {
+            continue;
+        };
+        if field_registration.data::<ReflectComponent>().is_some() {
+            if let Some(component_id) = world.get_component_id(field_type)? {
+                let registration =
+                    ScriptTypeRegistration::new(Arc::new(field_registration.clone()));
+                members.push(BundleMember {
+                    name: registration.short_name().to_owned(),
+                    registration: ScriptComponentRegistration::new(registration, component_id),
+                });
+            }
+        } else if field_registration.data::<ReflectBundle>().is_some() {
+            native_bundle_members(world, type_registry, field_registration, members)?;
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -1305,7 +1558,7 @@ mod test {
     use std::sync::Arc;
     use test_utils::test_data::{
         CompWithDefaultAndComponentData, GetTestEntityId, SimpleEnum, SimpleStruct,
-        SimpleTupleStruct, TestResource, UnitStruct, setup_world,
+        SimpleTupleStruct, TestBundle, TestNestedBundle, TestResource, UnitStruct, setup_world,
     };
 
     #[test]
@@ -1792,6 +2045,297 @@ mod test {
         assert!(matches!(data, Some(ScriptValue::String(s)) if s == "hello"));
 
         guard.despawn(entity).unwrap();
+    }
+
+    // ── bundles ───────────────────────────────────────────────────────────────
+
+    fn bundle_world() -> World {
+        setup_world(|_, registry| {
+            registry.register::<DynamicBundle>();
+            registry.register::<crate::DynamicComponent>();
+        })
+    }
+
+    fn native_bundle_reg(guard: &WorldAccessGuard<'_>) -> ScriptBundleRegistration {
+        guard
+            .get_bundle_type(guard.get_type_by_name("TestBundle").unwrap())
+            .unwrap()
+            .unwrap()
+    }
+
+    fn allocate<T: Reflect>(guard: &WorldAccessGuard<'_>, value: T) -> ReflectReference {
+        let allocator = guard.allocator();
+        let mut allocator = allocator.write();
+        ReflectReference::new_allocated(value, &mut allocator)
+    }
+
+    fn script_bundle_value(
+        guard: &WorldAccessGuard<'_>,
+        values: Vec<(&str, ScriptValue)>,
+    ) -> ReflectReference {
+        let values = values
+            .into_iter()
+            .map(|(k, v)| (k.to_owned(), v))
+            .collect::<bevy_platform::collections::HashMap<_, _>>();
+        allocate(guard, DynamicBundle::new(ScriptValue::Map(values)))
+    }
+
+    fn component_data(
+        guard: &WorldAccessGuard<'_>,
+        entity: Entity,
+        id: ComponentId,
+    ) -> ScriptValue {
+        let reference = ReflectReference {
+            base: ReflectBaseType {
+                type_id: TypeId::of::<crate::DynamicComponent>(),
+                base_id: ReflectBase::Component(entity, id),
+            },
+            reflect_path: Default::default(),
+        };
+        reference
+            .with_reflect(guard.clone(), |r| {
+                r.try_downcast_ref::<crate::DynamicComponent>()
+                    .unwrap()
+                    .data()
+                    .clone()
+            })
+            .unwrap()
+    }
+
+    #[test]
+    fn native_bundle_is_classified_with_flattened_members() {
+        let mut world = bundle_world();
+        let guard = make_guard(&mut world);
+        let registration = guard
+            .get_type_registration(guard.get_type_by_name("TestBundle").unwrap())
+            .unwrap();
+        let bundle = registration
+            .into_right()
+            .unwrap()
+            .into_right()
+            .unwrap()
+            .into_right()
+            .unwrap();
+        assert!(!bundle.is_dynamic_script_bundle);
+        let names = bundle
+            .members()
+            .iter()
+            .map(|m| m.name.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(names, ["CompWithDefaultAndComponentData", "SimpleStruct"]);
+    }
+
+    #[test]
+    fn native_bundle_insert_has_take_remove() {
+        let mut world = bundle_world();
+        let guard = make_guard(&mut world);
+        let registration = native_bundle_reg(&guard);
+        let entity = guard.spawn().unwrap();
+        assert!(!guard.has_bundle(entity, registration.clone()).unwrap());
+        assert!(
+            guard
+                .take_bundle(entity, registration.clone())
+                .unwrap()
+                .is_none()
+        );
+
+        let value = allocate(
+            &guard,
+            TestBundle {
+                comp: CompWithDefaultAndComponentData("bundled".to_owned()),
+                nested: TestNestedBundle::default(),
+            },
+        );
+        guard
+            .insert_bundle(entity, registration.clone(), value)
+            .unwrap();
+        assert!(guard.has_bundle(entity, registration.clone()).unwrap());
+        let comp = guard
+            .with_component::<CompWithDefaultAndComponentData, _, _>(entity, |c| {
+                c.unwrap().0.clone()
+            })
+            .unwrap();
+        assert_eq!(comp, "bundled");
+
+        let taken = guard
+            .take_bundle(entity, registration.clone())
+            .unwrap()
+            .unwrap();
+        assert!(!guard.has_bundle(entity, registration.clone()).unwrap());
+        let taken_comp = taken
+            .with_reflect(guard.clone(), |r| {
+                r.try_downcast_ref::<TestBundle>().unwrap().comp.0.clone()
+            })
+            .unwrap();
+        assert_eq!(taken_comp, "bundled");
+
+        guard
+            .add_default_bundle(entity, registration.clone())
+            .unwrap();
+        assert!(guard.has_bundle(entity, registration.clone()).unwrap());
+        guard.remove_bundle(entity, registration.clone()).unwrap();
+        assert!(
+            !guard
+                .has_component(entity, comp_reg::<SimpleStruct>(&guard).component_id)
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn native_bundle_insert_rejects_other_types() {
+        let mut world = bundle_world();
+        let guard = make_guard(&mut world);
+        let registration = native_bundle_reg(&guard);
+        let entity = guard.spawn().unwrap();
+        let value = allocate(&guard, SimpleStruct::default());
+        assert!(guard.insert_bundle(entity, registration, value).is_err());
+    }
+
+    #[test]
+    fn script_bundle_inserts_values_and_defaults() {
+        let mut world = bundle_world();
+        let guard = make_guard(&mut world);
+        let script_comp = guard
+            .register_script_component("ScriptComp".to_owned())
+            .unwrap();
+        let native_comp = comp_reg::<CompWithDefaultAndComponentData>(&guard);
+        let simple = comp_reg::<SimpleStruct>(&guard);
+        let registration = guard
+            .register_script_bundle(
+                "ScriptBundle".to_owned(),
+                vec![script_comp.clone(), native_comp, simple.clone()],
+            )
+            .unwrap();
+        assert!(registration.is_dynamic_script_bundle);
+
+        let looked_up = guard
+            .get_type_registration_by_name("ScriptBundle".to_owned())
+            .unwrap()
+            .unwrap();
+        assert!(
+            looked_up
+                .into_right()
+                .unwrap()
+                .into_right()
+                .unwrap()
+                .is_right()
+        );
+
+        let entity = guard.spawn().unwrap();
+        let comp_value = allocate(&guard, CompWithDefaultAndComponentData("given".to_owned()));
+        let value = script_bundle_value(
+            &guard,
+            vec![
+                ("ScriptComp", ScriptValue::String("hello".into())),
+                (
+                    "CompWithDefaultAndComponentData",
+                    ScriptValue::Reference(comp_value),
+                ),
+            ],
+        );
+        guard
+            .insert_bundle(entity, registration.clone(), value)
+            .unwrap();
+
+        assert!(guard.has_bundle(entity, registration.clone()).unwrap());
+        assert!(matches!(
+            component_data(&guard, entity, script_comp.component_id),
+            ScriptValue::String(s) if s == "hello"
+        ));
+        let comp = guard
+            .with_component::<CompWithDefaultAndComponentData, _, _>(entity, |c| {
+                c.unwrap().0.clone()
+            })
+            .unwrap();
+        assert_eq!(comp, "given");
+        // missing members are default constructed
+        assert!(guard.has_component(entity, simple.component_id).unwrap());
+
+        let taken = guard
+            .take_bundle(entity, registration.clone())
+            .unwrap()
+            .unwrap();
+        assert!(
+            !guard
+                .has_component(entity, script_comp.component_id)
+                .unwrap()
+        );
+        let taken = taken
+            .with_reflect(guard.clone(), |r| {
+                r.try_downcast_ref::<DynamicBundle>()
+                    .unwrap()
+                    .data()
+                    .clone()
+            })
+            .unwrap();
+        let ScriptValue::Map(taken) = taken else {
+            panic!("expected a map, got {taken:?}")
+        };
+        assert!(matches!(taken.get("ScriptComp"), Some(ScriptValue::String(s)) if s == "hello"));
+        assert!(matches!(
+            taken.get("CompWithDefaultAndComponentData"),
+            Some(ScriptValue::Reference(_))
+        ));
+        assert_eq!(taken.len(), 3);
+    }
+
+    #[test]
+    fn script_bundle_unknown_member_inserts_nothing() {
+        let mut world = bundle_world();
+        let guard = make_guard(&mut world);
+        let simple = comp_reg::<SimpleStruct>(&guard);
+        let registration = guard
+            .register_script_bundle("ScriptBundle".to_owned(), vec![simple.clone()])
+            .unwrap();
+        let entity = guard.spawn().unwrap();
+        let value = script_bundle_value(&guard, vec![("Typo", ScriptValue::Unit)]);
+        assert!(
+            guard
+                .insert_bundle(entity, registration.clone(), value)
+                .is_err()
+        );
+        assert!(!guard.has_component(entity, simple.component_id).unwrap());
+
+        // failed spawns do not leave an entity behind
+        let value = script_bundle_value(&guard, vec![("Typo", ScriptValue::Unit)]);
+        let entity_count = guard
+            .with_world_access(|w| w.entities().count_spawned())
+            .unwrap();
+        assert!(guard.spawn_bundle(registration, value).is_err());
+        assert_eq!(
+            guard
+                .with_world_access(|w| w.entities().count_spawned())
+                .unwrap(),
+            entity_count
+        );
+    }
+
+    #[test]
+    fn script_bundle_registration_errors() {
+        let mut world = bundle_world();
+        let guard = make_guard(&mut world);
+        let simple = comp_reg::<SimpleStruct>(&guard);
+        assert!(
+            guard
+                .register_script_bundle("Dup".to_owned(), vec![simple.clone(), simple.clone()])
+                .is_err()
+        );
+        guard
+            .register_script_bundle("ScriptBundle".to_owned(), vec![simple.clone()])
+            .unwrap();
+        assert!(
+            guard
+                .register_script_bundle("ScriptBundle".to_owned(), vec![simple])
+                .is_err()
+        );
+        guard
+            .register_script_component("ScriptComp".to_owned())
+            .unwrap();
+        assert!(
+            guard
+                .register_script_bundle("ScriptComp".to_owned(), vec![])
+                .is_err()
+        );
     }
 
     // ── query ─────────────────────────────────────────────────────────────────

@@ -3,22 +3,29 @@
 use bevy_ecs::{ptr::OwningPtr, query::QueryBuilder};
 use bevy_mod_scripting_world::WorldGuard;
 
-use super::{DynamicComponent, ReflectReference};
+use super::{DynamicBundle, DynamicComponent, ReflectReference};
 use crate::{
-    WorldExtensions,
+    PartialReflectExt, ReflectBase, ReflectBaseType, ScriptValue, WorldExtensions,
     error::InteropError,
-    function::from::{Union, V},
+    function::{
+        from::{Union, V},
+        from_ref::FromScriptRef,
+    },
+    world_extensions::default_instance,
 };
 use ::{
     bevy_ecs::{
         component::ComponentId,
         entity::Entity,
         query::{QueryData, QueryState},
-        reflect::ReflectComponent,
+        reflect::{ReflectBundle, ReflectComponent, ReflectFromWorld},
         world::World,
     },
-    bevy_reflect::{Reflect, TypeRegistration},
+    bevy_reflect::{
+        PartialReflect, Reflect, ReflectFromReflect, TypeRegistration, std_traits::ReflectDefault,
+    },
 };
+use bevy_platform::collections::HashMap;
 use std::{any::TypeId, sync::Arc};
 
 /// A reference to a type which is not a `Resource` or `Component`.
@@ -56,33 +63,68 @@ pub struct ScriptResourceRegistration {
     pub resource_id: ComponentId,
 }
 
+/// A component which is part of a bundle, see [`ScriptBundleRegistration`].
+#[derive(Clone, Debug)]
+pub struct BundleMember {
+    /// The name of the member, the short type name for native components or the registered name for script components.
+    ///
+    /// This is the key under which the member's value is stored in a [`DynamicBundle`].
+    pub name: String,
+    /// The registration of the member component
+    pub registration: ScriptComponentRegistration,
+}
+
+#[derive(Clone, Reflect, Debug)]
+#[reflect(opaque)]
+/// A reference to a bundle type's reflection registration.
+///
+/// In general think of this as a handle to a type.
+///
+/// Native bundles are types with `ReflectBundle` type data, script registered bundles are backed by [`DynamicBundle`].
+pub struct ScriptBundleRegistration {
+    /// The type registration of the bundle
+    pub registration: ScriptTypeRegistration,
+    /// The components making up the bundle, nested bundles are flattened
+    pub members: Arc<[BundleMember]>,
+    /// whether this is a bundle registered BY a script
+    pub is_dynamic_script_bundle: bool,
+}
+
 /// Any of the kinds of type registration, as returned by type lookups.
 ///
 /// The kind decides what can be done with the type, i.e. only components can be added to entities.
-pub type AnyTypeRegistration =
-    Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>;
+pub type AnyTypeRegistration = Union<
+    ScriptTypeRegistration,
+    Union<ScriptComponentRegistration, Union<ScriptResourceRegistration, ScriptBundleRegistration>>,
+>;
 
 /// [`AnyTypeRegistration`] as it appears in script function signatures, i.e. as scripts receive and pass types around.
 pub type AnyTypeRegistrationV = Union<
     V<ScriptTypeRegistration>,
-    Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
+    Union<
+        V<ScriptComponentRegistration>,
+        Union<V<ScriptResourceRegistration>, V<ScriptBundleRegistration>>,
+    >,
 >;
 
 impl AnyTypeRegistration {
     /// Convert to the form used in script function signatures.
     pub fn into_script(self) -> AnyTypeRegistrationV {
-        self.map_both(V, |other| other.map_both(V, V))
+        self.map_both(V, |other| other.map_both(V, |other| other.map_both(V, V)))
     }
 }
 
 impl AnyTypeRegistrationV {
-    /// Convert to a generic [`ScriptTypeRegistration`] ditching any component or resource information.
+    /// Convert to a generic [`ScriptTypeRegistration`] ditching any component, resource or bundle information.
     pub fn into_type_registration(self) -> ScriptTypeRegistration {
         match self.into_left() {
             Ok(registration) => registration.into_inner(),
             Err(other) => match other.into_left() {
                 Ok(component) => component.into_inner().into_type_registration(),
-                Err(resource) => resource.into_inner().into_type_registration(),
+                Err(other) => match other.into_left() {
+                    Ok(resource) => resource.into_inner().into_type_registration(),
+                    Err(bundle) => bundle.into_inner().into_type_registration(),
+                },
             },
         }
     }
@@ -244,6 +286,300 @@ impl ScriptComponentRegistration {
                 Ok(())
             })?
         }
+    }
+}
+
+#[profiling::all_functions]
+impl ScriptBundleRegistration {
+    /// Creates a new [`ScriptBundleRegistration`] from a [`ScriptTypeRegistration`] and the bundle's members.
+    pub fn new(registration: ScriptTypeRegistration, members: Vec<BundleMember>) -> Self {
+        Self {
+            is_dynamic_script_bundle: registration.type_id() == TypeId::of::<DynamicBundle>(),
+            registration,
+            members: members.into(),
+        }
+    }
+
+    /// Returns the components making up this bundle.
+    pub fn members(&self) -> &[BundleMember] {
+        &self.members
+    }
+
+    /// Returns the [`ScriptTypeRegistration`] for this type.
+    pub fn type_registration(&self) -> &ScriptTypeRegistration {
+        &self.registration
+    }
+
+    /// Convert to a generic [`ScriptTypeRegistration`] ditching the bundle information.
+    pub fn into_type_registration(self) -> ScriptTypeRegistration {
+        self.registration
+    }
+
+    fn reflect_bundle(&self) -> Result<&ReflectBundle, InteropError> {
+        self.registration
+            .type_registration()
+            .data::<ReflectBundle>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(
+                    self.registration.type_id(),
+                    "ReflectBundle".to_owned(),
+                )
+            })
+    }
+
+    /// Converts a script provided value into a value which can be inserted as this bundle.
+    pub fn instance_from_script(
+        &self,
+        world: WorldGuard,
+        value: ScriptValue,
+    ) -> Result<Box<dyn Reflect>, InteropError> {
+        let type_id = self.registration.type_id();
+        let instance = <Box<dyn PartialReflect>>::from_script_ref(type_id, value, world.clone())?;
+        let instance = match instance.try_into_reflect() {
+            Ok(instance) if instance.as_any().type_id() == type_id => instance,
+            Ok(instance) => {
+                <dyn PartialReflect>::from_reflect(instance.as_partial_reflect(), world)?
+            }
+            Err(instance) => <dyn PartialReflect>::from_reflect(instance.as_ref(), world)?,
+        };
+        Ok(instance)
+    }
+
+    /// Default constructs a value which can be inserted as this bundle.
+    pub fn default_instance(&self, world: WorldGuard) -> Result<Box<dyn Reflect>, InteropError> {
+        default_instance(world, self.registration.type_registration())
+    }
+
+    /// Inserts an instance of this bundle into the given entity.
+    ///
+    /// Native bundles are inserted all at once, members of script bundles are inserted one by one,
+    /// members without a value in the [`DynamicBundle`] are default constructed.
+    ///
+    /// Requires whole world access
+    pub fn insert_into_entity(
+        &self,
+        world: WorldGuard,
+        entity: Entity,
+        instance: Box<dyn Reflect>,
+    ) -> Result<(), InteropError> {
+        if self.is_dynamic_script_bundle {
+            let bundle = instance.downcast::<DynamicBundle>().map_err(|v| {
+                InteropError::type_mismatch(TypeId::of::<DynamicBundle>(), Some(v.type_id()))
+            })?;
+            let mut values = match bundle.into_data() {
+                ScriptValue::Map(values) => values,
+                ScriptValue::Unit => Default::default(),
+                other => {
+                    return Err(InteropError::value_mismatch(
+                        TypeId::of::<DynamicBundle>(),
+                        other,
+                    ));
+                }
+            };
+
+            // convert all members before inserting anything, so a bad value does not leave a partial bundle behind
+            let instances = self
+                .members
+                .iter()
+                .map(|member| {
+                    let instance = member.instance(world.clone(), values.remove(&member.name))?;
+                    Ok((member, instance))
+                })
+                .collect::<Result<Vec<_>, InteropError>>()?;
+            if !values.is_empty() {
+                let mut unknown = values.into_keys().collect::<Vec<_>>();
+                unknown.sort_unstable();
+                return Err(InteropError::unsupported_operation(
+                    Some(TypeId::of::<DynamicBundle>()),
+                    None,
+                    format!(
+                        "inserting bundle with values for unknown members: {}",
+                        unknown.join(", ")
+                    ),
+                ));
+            }
+
+            if !world.is_valid_entity(entity)? {
+                return Err(InteropError::missing_entity(entity));
+            }
+            for (member, instance) in instances {
+                member
+                    .registration
+                    .insert_into_entity(world.clone(), entity, instance)?;
+            }
+            Ok(())
+        } else {
+            let reflect_bundle = self.reflect_bundle()?;
+            // `ReflectBundle::insert` panics if it cannot construct the bundle from the value
+            let type_registration = self.registration.type_registration();
+            if instance.as_any().type_id() != self.registration.type_id() {
+                return Err(InteropError::type_mismatch(
+                    self.registration.type_id(),
+                    Some(instance.as_any().type_id()),
+                ));
+            }
+            if type_registration.data::<ReflectFromReflect>().is_none()
+                && type_registration.data::<ReflectDefault>().is_none()
+                && type_registration.data::<ReflectFromWorld>().is_none()
+            {
+                return Err(InteropError::missing_type_data(
+                    self.registration.type_id(),
+                    "ReflectFromReflect, ReflectDefault or ReflectFromWorld".to_owned(),
+                ));
+            }
+
+            let type_registry = world.type_registry();
+            world.with_world_mut(|world| {
+                let mut entity = world
+                    .get_entity_mut(entity)
+                    .map_err(|_| InteropError::missing_entity(entity))?;
+                let registry = type_registry.read();
+                reflect_bundle.insert(&mut entity, instance.as_partial_reflect(), &registry);
+                Ok(())
+            })?
+        }
+    }
+
+    /// Removes the components of this bundle from the given entity, components which are not present are ignored.
+    pub fn remove_from_entity(
+        &self,
+        world: WorldGuard,
+        entity: Entity,
+    ) -> Result<(), InteropError> {
+        let reflect_bundle = if self.is_dynamic_script_bundle {
+            None
+        } else {
+            Some(self.reflect_bundle()?)
+        };
+        world.with_world_mut(|world| {
+            let mut entity = world
+                .get_entity_mut(entity)
+                .map_err(|_| InteropError::missing_entity(entity))?;
+            match reflect_bundle {
+                Some(reflect_bundle) => {
+                    reflect_bundle.remove(&mut entity);
+                }
+                None => {
+                    let ids = self
+                        .members
+                        .iter()
+                        .map(|m| m.registration.component_id)
+                        .collect::<Vec<_>>();
+                    entity.remove_by_ids(&ids);
+                }
+            }
+            Ok(())
+        })?
+    }
+
+    /// Checks if the given entity has all the components of this bundle.
+    pub fn is_in_entity(&self, world: WorldGuard, entity: Entity) -> Result<bool, InteropError> {
+        let cell = world.as_unsafe_world_cell()?;
+        let entity = cell
+            .get_entity(entity)
+            .map_err(|_| InteropError::missing_entity(entity))?;
+        Ok(self
+            .members
+            .iter()
+            .all(|m| entity.contains_id(m.registration.component_id)))
+    }
+
+    /// Removes the components of this bundle from the entity and returns them as an instance of the bundle.
+    ///
+    /// If the entity does not have all of the components, nothing is removed and `None` is returned.
+    pub fn take_from_entity(
+        &self,
+        world: WorldGuard,
+        entity: Entity,
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        if !self.is_dynamic_script_bundle {
+            let reflect_bundle = self.reflect_bundle()?;
+            let taken = world.with_world_mut(|world| {
+                let mut entity = world
+                    .get_entity_mut(entity)
+                    .map_err(|_| InteropError::missing_entity(entity))?;
+                Ok::<_, InteropError>(reflect_bundle.take(&mut entity))
+            })??;
+            return Ok(taken.map(|bundle| <dyn PartialReflect>::allocate(bundle, world)));
+        }
+
+        if !self.is_in_entity(world.clone(), entity)? {
+            return Ok(None);
+        }
+        let mut values = HashMap::default();
+        for member in self.members.iter() {
+            let reference = ReflectReference {
+                base: ReflectBaseType {
+                    type_id: member.registration.type_registration().type_id(),
+                    base_id: ReflectBase::Component(entity, member.registration.component_id),
+                },
+                reflect_path: Default::default(),
+            };
+            let value = if member.registration.is_dynamic_script_component {
+                reference
+                    .with_reflect(world.clone(), |r| {
+                        r.try_downcast_ref::<DynamicComponent>()
+                            .map(|c| c.data().clone())
+                    })?
+                    .ok_or_else(|| {
+                        InteropError::type_mismatch(TypeId::of::<DynamicComponent>(), None)
+                    })?
+            } else {
+                let owned = reference.to_owned_value(world.clone())?;
+                let allocator = world.allocator();
+                let mut allocator = allocator.write();
+                ScriptValue::Reference(ReflectReference::new_allocated_boxed_parial_reflect(
+                    owned,
+                    &mut allocator,
+                )?)
+            };
+            values.insert(member.name.clone(), value);
+        }
+        self.remove_from_entity(world.clone(), entity)?;
+        let bundle = DynamicBundle::new(ScriptValue::Map(values));
+        let allocator = world.allocator();
+        let mut allocator = allocator.write();
+        Ok(Some(ReflectReference::new_allocated(
+            bundle,
+            &mut allocator,
+        )))
+    }
+}
+
+#[profiling::all_functions]
+impl BundleMember {
+    /// Converts a script provided member value, or a default if none is provided, into an instance of the member component.
+    fn instance(
+        &self,
+        world: WorldGuard,
+        value: Option<ScriptValue>,
+    ) -> Result<Box<dyn Reflect>, InteropError> {
+        let registration = self.registration.type_registration();
+        let Some(value) = value else {
+            return default_instance(world, registration.type_registration());
+        };
+
+        if self.registration.is_dynamic_script_component {
+            // script components accept their data directly, or an existing `DynamicComponent`
+            let is_component = match &value {
+                ScriptValue::Reference(r) => {
+                    r.tail_type_id(world.clone())? == Some(TypeId::of::<DynamicComponent>())
+                }
+                _ => false,
+            };
+            if !is_component {
+                return Ok(Box::new(DynamicComponent::new(value)));
+            }
+        }
+
+        let instance =
+            <Box<dyn PartialReflect>>::from_script_ref(registration.type_id(), value, world)?;
+        instance.try_into_reflect().map_err(|v| {
+            InteropError::failed_from_reflect(
+                Some(registration.type_id()),
+                format!("bundle member value is not a full reflect type: {v:?}"),
+            )
+        })
     }
 }
 

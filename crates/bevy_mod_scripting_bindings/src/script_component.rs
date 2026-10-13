@@ -1,6 +1,6 @@
 //! Everything necessary to support scripts registering their own components
 
-use super::{ScriptComponentRegistration, ScriptValue};
+use super::{ScriptBundleRegistration, ScriptComponentRegistration, ScriptValue};
 use ::{
     bevy_app::{App, Plugin},
     bevy_ecs::component::{Component, Mutable, StorageType},
@@ -16,6 +16,44 @@ use std::sync::Arc;
 #[reflect(Default)]
 pub struct DynamicComponent {
     data: ScriptValue,
+}
+
+impl DynamicComponent {
+    /// Creates a new dynamic component holding the given data
+    pub fn new(data: ScriptValue) -> Self {
+        Self { data }
+    }
+
+    /// Returns the data held by this component
+    pub fn data(&self) -> &ScriptValue {
+        &self.data
+    }
+}
+
+/// A dynamic script bundle value.
+///
+/// `data` maps the names of the bundle's members to their values, members without an entry are default constructed.
+#[derive(Reflect, Clone, Default)]
+#[reflect(Default)]
+pub struct DynamicBundle {
+    data: ScriptValue,
+}
+
+impl DynamicBundle {
+    /// Creates a new dynamic bundle holding the given member values
+    pub fn new(data: ScriptValue) -> Self {
+        Self { data }
+    }
+
+    /// Returns the member values held by this bundle
+    pub fn data(&self) -> &ScriptValue {
+        &self.data
+    }
+
+    /// Consumes the bundle returning the member values
+    pub fn into_data(self) -> ScriptValue {
+        self.data
+    }
 }
 
 /// Some metadata about dynamic script components
@@ -49,9 +87,10 @@ impl AppScriptComponentRegistry {
 }
 
 #[derive(Default)]
-/// A registry of dynamically registered script components
+/// A registry of dynamically registered script components and bundles
 pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
+    bundles: HashMap<String, ScriptBundleRegistration>,
 }
 
 #[profiling::all_functions]
@@ -65,6 +104,16 @@ impl ScriptComponentRegistry {
     pub fn get(&self, name: &str) -> Option<&DynamicComponentInfo> {
         self.components.get(name)
     }
+
+    /// Registers a dynamic script bundle, possibly overwriting an existing one
+    pub fn register_bundle(&mut self, name: String, registration: ScriptBundleRegistration) {
+        self.bundles.insert(name, registration);
+    }
+
+    /// Gets a dynamic script bundle by name
+    pub fn get_bundle(&self, name: &str) -> Option<&ScriptBundleRegistration> {
+        self.bundles.get(name)
+    }
 }
 
 /// A plugin to support dynamic script components
@@ -73,7 +122,8 @@ pub struct DynamicScriptComponentPlugin;
 impl Plugin for DynamicScriptComponentPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AppScriptComponentRegistry>()
-            .register_type::<DynamicComponent>();
+            .register_type::<DynamicComponent>()
+            .register_type::<DynamicBundle>();
     }
 }
 

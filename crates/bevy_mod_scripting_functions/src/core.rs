@@ -11,8 +11,9 @@ use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, wo
 use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
-    ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
+    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration, ScriptQueryBuilder,
+    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple,
+    WorldExtensions,
     construct::construct_reference,
     function::{
         bound::BoundFields,
@@ -105,8 +106,8 @@ pub fn register_bevy_bindings(app: &mut App) {
     unregistered
 )]
 impl World {
-    /// Returns either a `ScriptComponentRegistration` or `ScriptResourceRegistration` depending on the type of the type requested.
-    /// If the type is neither returns a `ScriptTypeRegistration`.
+    /// Returns either a `ScriptComponentRegistration`, `ScriptResourceRegistration` or `ScriptBundleRegistration` depending on the type of the type requested.
+    /// If the type is none of these returns a `ScriptTypeRegistration`.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
@@ -364,6 +365,121 @@ impl World {
         world.insert_component(*entity, registration.into_inner(), value)
     }
 
+    /// Inserts the given bundle value into the provided entity.
+    ///
+    /// Bundles registered in rust (with `#[reflect(Bundle)]`) are inserted all at once.
+    /// The members of script registered bundles are inserted one by one, members without a value in the bundle are default constructed.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to insert the bundle into.
+    /// * `registration`: The bundle registration of the bundle to insert.
+    /// * `value`: The value of the bundle to insert. Can be constructed using `construct` or `DynamicBundle.new` for script registered bundles.
+    /// Returns:
+    /// * `result`: Nothing if the bundle was inserted successfully.
+    fn insert_bundle(
+        ctxt: FunctionCallContext,
+        entity: V<Entity>,
+        registration: V<ScriptBundleRegistration>,
+        value: ReflectReference,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("insert_bundle");
+        let world = ctxt.world()?;
+        world.insert_bundle(*entity, registration.into_inner(), value)
+    }
+
+    /// Inserts a default constructed bundle into the provided entity.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to insert the bundle into.
+    /// * `registration`: The bundle registration of the bundle to insert.
+    /// Returns:
+    /// * `result`: Nothing if the bundle was inserted successfully.
+    fn add_default_bundle(
+        ctxt: FunctionCallContext,
+        entity: V<Entity>,
+        registration: V<ScriptBundleRegistration>,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("add_default_bundle");
+        let world = ctxt.world()?;
+        world.add_default_bundle(*entity, registration.into_inner())
+    }
+
+    /// Spawns a new entity with the given bundle value and returns it.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The bundle registration of the bundle to insert.
+    /// * `value`: The value of the bundle to insert.
+    /// Returns:
+    /// * `entity`: The newly spawned entity
+    fn spawn_bundle(
+        ctxt: FunctionCallContext,
+        registration: V<ScriptBundleRegistration>,
+        value: ReflectReference,
+    ) -> Result<V<Entity>, InteropError> {
+        profiling::function_scope!("spawn_bundle");
+        let world = ctxt.world()?;
+        Ok(V(world.spawn_bundle(registration.into_inner(), value)?))
+    }
+
+    /// Removes the components of the given bundle from the entity, components which are not present are ignored.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to remove the bundle from.
+    /// * `registration`: The bundle to remove.
+    /// Returns:
+    /// * `result`: Nothing if the bundle was removed successfully.
+    fn remove_bundle(
+        ctxt: FunctionCallContext,
+        entity: V<Entity>,
+        registration: V<ScriptBundleRegistration>,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("remove_bundle");
+        let world = ctxt.world()?;
+        world.remove_bundle(*entity, registration.into_inner())
+    }
+
+    /// Checks if the given entity has all the components of the given bundle.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to check.
+    /// * `registration`: The bundle to check for.
+    /// Returns:
+    /// * `has_bundle`: Whether the entity has all the components of the bundle.
+    fn has_bundle(
+        ctxt: FunctionCallContext,
+        entity: V<Entity>,
+        registration: V<ScriptBundleRegistration>,
+    ) -> Result<bool, InteropError> {
+        profiling::function_scope!("has_bundle");
+        let world = ctxt.world()?;
+        world.has_bundle(*entity, registration.into_inner())
+    }
+
+    /// Removes the components of the given bundle from the entity and returns them as a bundle value.
+    ///
+    /// If the entity does not have all the components of the bundle, nothing is removed.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to take the bundle from.
+    /// * `registration`: The bundle to take.
+    /// Returns:
+    /// * `bundle`: The bundle value, if the entity had all of its components.
+    fn take_bundle(
+        ctxt: FunctionCallContext,
+        entity: V<Entity>,
+        registration: V<ScriptBundleRegistration>,
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        profiling::function_scope!("take_bundle");
+        let world = ctxt.world()?;
+        world.take_bundle(*entity, registration.into_inner())
+    }
+
     /// Inserts the given children entities into the provided parent entity.
     ///
     /// Arguments:
@@ -579,6 +695,41 @@ impl World {
         profiling::function_scope!("register_new_component");
         let world = ctxt.world()?;
         world.register_script_component(name).map(V)
+    }
+
+    /// Registers a new bundle type with the world, made up of the given components and bundles.
+    ///
+    /// Bundle values are backed by `DynamicBundle`, which contains just one field:
+    /// - `data`, a table from member names to member values
+    ///
+    /// Members are named by the short type name of native components and by the registered name of script components.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `name`: The name of the bundle type
+    /// * `members`: The components and bundles making up the bundle, bundles are flattened into their components
+    /// Returns:
+    /// * `registration`: The registration of the new bundle type if successful.
+    fn register_new_bundle(
+        ctxt: FunctionCallContext,
+        name: String,
+        members: Vec<Union<V<ScriptComponentRegistration>, V<ScriptBundleRegistration>>>,
+    ) -> Result<V<ScriptBundleRegistration>, InteropError> {
+        profiling::function_scope!("register_new_bundle");
+        let world = ctxt.world()?;
+        let components = members
+            .into_iter()
+            .flat_map(|member| match member.into_left() {
+                Ok(component) => vec![component.into_inner()],
+                Err(bundle) => bundle
+                    .into_inner()
+                    .members()
+                    .iter()
+                    .map(|m| m.registration.clone())
+                    .collect(),
+            })
+            .collect();
+        world.register_script_bundle(name, components).map(V)
     }
 
     /// Retrieves an asset by its handle and asset type registration.
@@ -1092,6 +1243,53 @@ impl ScriptResourceRegistration {
     fn short_name(registration: R<ScriptResourceRegistration>) -> &'static str {
         profiling::function_scope!("short_name");
         registration.type_registration().short_name()
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "script_bundle_registration_functions",
+    core
+)]
+impl ScriptBundleRegistration {
+    /// Retrieves the name of the type.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `type_name`: The name of the type.
+    fn type_name(registration: R<ScriptBundleRegistration>) -> &'static str {
+        profiling::function_scope!("type_name");
+        registration.type_registration().type_name()
+    }
+
+    /// Retrieves the short name of the type.
+    /// The short name is a more human-readable version of the type name.
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `short_name`: The short name of the
+    fn short_name(registration: R<ScriptBundleRegistration>) -> &'static str {
+        profiling::function_scope!("short_name");
+        registration.type_registration().short_name()
+    }
+
+    /// Retrieves the components making up the bundle, nested bundles are flattened.
+    ///
+    /// Arguments:
+    /// * `registration`: The bundle registration.
+    /// Returns:
+    /// * `components`: The component registrations of the bundle's members.
+    fn components(
+        registration: R<ScriptBundleRegistration>,
+    ) -> Vec<V<ScriptComponentRegistration>> {
+        profiling::function_scope!("components");
+        registration
+            .members()
+            .iter()
+            .map(|m| V(m.registration.clone()))
+            .collect()
     }
 }
 
@@ -1770,6 +1968,7 @@ pub fn register_core_functions(app: &mut App) {
         register_enum_variant_ref_functions(world);
         register_script_component_registration_functions(world);
         register_script_resource_registration_functions(world);
+        register_script_bundle_registration_functions(world);
 
         register_script_query_builder_functions(world);
         register_script_query_result_functions(world);
