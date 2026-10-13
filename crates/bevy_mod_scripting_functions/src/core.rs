@@ -280,6 +280,49 @@ impl World {
         world.remove_resource(registration.into_inner())
     }
 
+    /// Adds an observer which calls the given function whenever an event of the given type is triggered.
+    ///
+    /// The event type must have `#[reflect(Event)]`. The lifecycle events (`types.AddEvent`, `types.InsertEvent`, `types.DiscardEvent`,
+    /// `types.RemoveEvent`, `types.DespawnEvent`) are supported out of the box, and run for the given components.
+    ///
+    /// The callback receives a copy of the event, and runs right after the operation which triggered it has finished.
+    /// This means data of removed components is no longer available inside the callback.
+    /// Errors inside the callback are logged.
+    ///
+    /// Note: Rhai function pointers cannot yet be converted into callable functions, so this is currently only usable from Lua.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `event`: The type of the event to observe.
+    /// * `components`: The components the observer is interested in, for component lifecycle events.
+    /// * `callback`: The function to call, receives the event.
+    /// * `entities`: If given, the observer only runs for these entities.
+    /// Returns:
+    /// * `observer`: The observer entity, despawn it to remove the observer.
+    fn add_observer(
+        ctxt: FunctionCallContext,
+        event: V<ScriptTypeRegistration>,
+        components: Vec<V<ScriptComponentRegistration>>,
+        callback: DynamicScriptFunction,
+        entities: Option<Vec<V<Entity>>>,
+    ) -> Result<V<Entity>, InteropError> {
+        profiling::function_scope!("add_observer");
+        let world = ctxt.world()?;
+        world
+            .add_script_observer(
+                event.into_inner(),
+                components.into_iter().map(V::into_inner).collect(),
+                entities
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(V::into_inner)
+                    .collect(),
+                callback,
+                ctxt.language(),
+            )
+            .map(V)
+    }
+
     /// Triggers an observer-style event. The event type must be registered and have `#[reflect(Event)]`.
     ///
     /// Observers run immediately, before this function returns.

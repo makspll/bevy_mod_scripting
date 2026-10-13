@@ -26,7 +26,7 @@ use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, Script
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptFunctionRegistry,
     DummyScriptFunctionRegistry, DynamicScriptComponentPlugin, MarkAsCore, ReflectReference,
-    ScriptTypeRegistration, ScriptValue, garbage_collector,
+    ScriptObserverPlugin, ScriptTypeRegistration, ScriptValue, garbage_collector,
 };
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
 use event::{ScriptCallbackMessage, ScriptCallbackResponseMessage};
@@ -400,6 +400,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         }
 
         DynamicScriptComponentPlugin.build(app);
+        ScriptObserverPlugin.build(app);
     }
 
     fn finish(&self, app: &mut App) {

@@ -42,7 +42,7 @@ use bevy_ecs::{
     system::Commands,
     world::{CommandQueue, EntityRef, Mut},
 };
-use bevy_mod_scripting_asset::ScriptAsset;
+use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
 use bevy_reflect::{GetTypeRegistration, Reflect, TypeInfo, TypeRegistration, TypeRegistry};
@@ -217,6 +217,27 @@ pub trait WorldExtensions {
         registration: ScriptTypeRegistration,
         event: &ReflectReference,
     ) -> Result<(), InteropError>;
+
+    /// Spawns an observer which calls `callback` whenever an event of the given type is triggered.
+    ///
+    /// The event type must have [`ReflectEvent`] type data. For events which are triggered for components
+    /// (i.e. the lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent`, `DespawnEvent`), the observer runs for the given components.
+    /// If `entities` is non-empty, it only runs for those entities.
+    ///
+    /// The callback receives a clone of the event as its only argument.
+    /// It runs as soon as the commands queued by the triggering operation are applied, which is right after the operation finishes,
+    /// meaning the world is already past the change (i.e. removed component data is no longer readable).
+    /// Errors in the callback are logged.
+    ///
+    /// Returns the observer entity, despawn it to remove the observer.
+    fn add_script_observer(
+        &self,
+        event: ScriptTypeRegistration,
+        components: Vec<ScriptComponentRegistration>,
+        entities: Vec<Entity>,
+        callback: DynamicScriptFunction,
+        language: Language,
+    ) -> Result<Entity, InteropError>;
 
     /// Writes a reflected [`bevy_ecs::message::Message`] (buffered) to the world, using the type's [`ReflectMessage`] type data.
     fn write_message(
@@ -840,6 +861,57 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             let registry = registry.read();
             reflect_event.trigger(world, value.as_ref(), &registry);
         })
+    }
+
+    fn add_script_observer(
+        &self,
+        event: ScriptTypeRegistration,
+        components: Vec<ScriptComponentRegistration>,
+        entities: Vec<Entity>,
+        callback: DynamicScriptFunction,
+        language: Language,
+    ) -> Result<Entity, InteropError> {
+        let reflect_event = event
+            .type_registration()
+            .data::<ReflectEvent>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(event.type_id(), "ReflectEvent".to_owned())
+            })?
+            .clone();
+        let allocator = self.allocator().clone();
+
+        let mut observer = reflect_event.create_observer(Box::new(move |event, mut world| {
+            let value = match event.reflect_clone() {
+                Ok(value) => value,
+                Err(e) => {
+                    bevy_log::error!("script observer could not clone its event: {e}");
+                    return;
+                }
+            };
+            let callback = callback.clone();
+            let allocator = allocator.clone();
+            let language = language.clone();
+            world.commands().queue(move |world: &mut World| {
+                let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
+                WorldGuard::with_static_guard(world, cache, |_guard| {
+                    let reference =
+                        ReflectReference::new_allocated_boxed(value, &mut allocator.write());
+                    if let Err(e) = callback.call(
+                        [ScriptValue::Reference(reference)],
+                        FunctionCallContext::new(language),
+                    ) {
+                        bevy_log::error!("error in script observer callback: {e}");
+                    }
+                })
+            });
+        }));
+        for component in components {
+            observer = observer.with_component(component.component_id);
+        }
+        if !entities.is_empty() {
+            observer = observer.with_entities(entities);
+        }
+        self.with_world_mut(|world| world.spawn(observer).id())
     }
 
     fn write_message(

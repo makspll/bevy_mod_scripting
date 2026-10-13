@@ -46,6 +46,27 @@ app.register_type::<MyEvent>()
 * `trigger_event` needs exclusive access to the world, so it fails with an access error if the script is currently holding a borrowed reference elsewhere in the same call (e.g. inside a query iteration or `with_*` access). Trigger events from regular callbacks.
 * Observers triggered by `trigger_event` run synchronously, but any commands they queue are deferred until the next time the world is flushed. That is not necessarily after your callback: other world operations later in the same callback, such as `world.spawn`, can flush them. An observer, or a command it queues, which runs a callback in the script context that is currently executing fails with an error. To run callbacks on other scripts, use `run_script_callback` or `queue_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)).
 
+## Observing events from scripts
+
+`world.add_observer(event, components, callback, entities?)` spawns an observer which calls `callback` with a copy of the event whenever an event of the given type is triggered, and returns the observer entity. Despawn that entity to remove the observer.
+
+```lua
+local Mana = world.register_new_component("Mana")
+
+local observer = world.add_observer(types.AddEvent, { Mana }, function(event)
+    print("Mana was added to", event.entity)
+end)
+
+-- later
+world.despawn(observer)
+```
+
+The component lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent` and `DespawnEvent` are observable out of the box, for any native or script registered component. As in Bevy, a list of components is an `OR` filter. Pass a list of entities as the last argument to only observe those entities. Custom events need `#[reflect(Event)]`, see above.
+
+* The callback runs as soon as the commands of the triggering operation are applied, i.e. right after the operation, not in the middle of it. Data of removed components is therefore no longer readable inside `RemoveEvent` callbacks.
+* Errors inside the callback are logged, they do not fail the operation that triggered the event.
+* Function pointers from Rhai cannot be converted to callable functions yet, so `add_observer` is currently only usable from Lua.
+
 ## Built-in messages
 
 The following BMS messages are reflected and can be written from scripts:
