@@ -8,8 +8,8 @@ use ladfile::{
 use crate::{
     keywords::ForbiddenKeywords,
     lua_declaration_file::{
-        ClassField, FunctionParam, FunctionSignature, LuaClass, LuaDefinitionFile, LuaModule,
-        LuaOperator, LuaOperatorKind, LuaPrimitiveType, LuaType,
+        ClassField, FieldScope, FunctionParam, FunctionSignature, LuaClass, LuaDefinitionFile,
+        LuaModule, LuaOperator, LuaOperatorKind, LuaPrimitiveType, LuaType,
     },
 };
 
@@ -147,6 +147,36 @@ pub fn convert_ladfile_to_lua_declaration_file(
         };
         globals_module.functions.push(converted)
     }
+
+    // `import("namespace")` returns a table of the types in the namespace
+    let namespaces = namespace_modules(ladfile, &lua_classes);
+    if let Some(import) = globals_module
+        .functions
+        .iter_mut()
+        .find(|f| f.name == "import")
+    {
+        import.overloads = namespaces
+            .iter()
+            .filter_map(|module| {
+                let class = module.class.as_ref()?;
+                Some(FunctionSignature {
+                    name: import.name.clone(),
+                    params: vec![FunctionParam::new(
+                        "path".to_string(),
+                        LuaType::Literal(format!(
+                            "\"{}\"",
+                            class.name.strip_prefix(NAMESPACE_CLASS_PREFIX)?
+                        )),
+                        false,
+                        None,
+                    )],
+                    returns: vec![LuaType::Alias(class.name.clone())],
+                    ..Default::default()
+                })
+            })
+            .collect();
+    }
+    definition_file.modules.extend(namespaces);
     definition_file.modules.push(globals_module);
 
     Ok(definition_file)
@@ -819,6 +849,67 @@ fn no_fields_module() -> LuaModule {
     }
 }
 
+/// The classes of the tables `import` returns, named `namespace.<name>`.
+const NAMESPACE_CLASS_PREFIX: &str = "namespace.";
+
+/// A class per native namespace, with a field for each type in it.
+///
+/// The root namespace (types without a crate, such as primitives) is left out, as are
+/// script namespaces: they only exist at runtime so there is nothing to describe.
+fn namespace_modules(
+    ladfile: &ladfile::LadFile,
+    lua_classes: &IndexMap<LadTypeId, (LuaClass, Vec<FunctionSignature>)>,
+) -> Vec<LuaModule> {
+    let mut namespaces: IndexMap<&str, Vec<ClassField>> = IndexMap::new();
+    for (type_id, lad_type) in ladfile.types.iter() {
+        let Some((class, _)) = lua_classes.get(type_id) else {
+            continue;
+        };
+        let name = lad_type.identifier.as_str();
+        if lad_type.namespace.is_empty()
+            || !lad_type.metadata.is_reflect
+            || !lad_type.generics.is_empty()
+            || ForbiddenKeywords::is_forbidden_err(name).is_err()
+            || !name.chars().all(|c| c.is_alphanumeric() || c == '_')
+        {
+            continue;
+        }
+        namespaces
+            .entry(lad_type.namespace.as_str())
+            .or_default()
+            .push(ClassField {
+                name: name.to_string(),
+                ty: LuaType::Alias(class.name.clone()),
+                scope: FieldScope::Public,
+                optional: false,
+                description: None,
+            });
+    }
+
+    namespaces
+        .into_iter()
+        .map(|(namespace, fields)| {
+            let name = format!("{NAMESPACE_CLASS_PREFIX}{namespace}");
+            LuaModule {
+                name: name.clone(),
+                class: Some(LuaClass {
+                    name,
+                    parents: vec![],
+                    fields,
+                    generics: vec![],
+                    documentation: Some(format!(
+                        "The types in the `{namespace}` namespace, as returned by `import(\"{namespace}\")`."
+                    )),
+                    exact: true,
+                    operators: vec![],
+                }),
+                type_only: true,
+                ..Default::default()
+            }
+        })
+        .collect()
+}
+
 /// The fields a constructor of the type takes, or of the variant for enums.
 ///
 /// `None` if the fields cannot be described, i.e. for opaque types, or enums without a variant given.
@@ -1092,6 +1183,52 @@ mod test {
                 && fields.contains("---@field  [any] 'never'"),
             "{fields}"
         );
+    }
+
+    #[test]
+    fn import_returns_the_types_of_the_namespace() {
+        let mut file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let unit = type_id(&file, "UnitType");
+        file.types[&unit].namespace = "other_crate".into();
+
+        let import = LadFunctionId::new_string_id("import".into());
+        file.functions.insert(
+            import,
+            LadFunction {
+                namespace: LadFunctionNamespace::Global,
+                identifier: "import".into(),
+                overload_index: None,
+                arguments: vec![arg(
+                    "path",
+                    LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::String),
+                )],
+                return_type: LadArgument {
+                    kind: LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::ScriptValue),
+                    documentation: None,
+                    name: None,
+                },
+                documentation: None,
+                metadata: LadFunctionMetadata {
+                    is_operator: false,
+                    misc: Default::default(),
+                },
+            },
+        );
+        let rendered = render(&file);
+
+        let namespace = block(&rendered, "---@class (exact) namespace.ladfile_builder");
+        assert!(namespace.contains("---@field  PlainStructType PlainStructType"));
+        assert!(!namespace.contains("UnitType"), "{namespace}");
+        let other = block(&rendered, "---@class (exact) namespace.other_crate");
+        assert!(other.contains("---@field  UnitType UnitType"), "{other}");
+
+        // the root namespace has no class
+        assert!(!rendered.contains("namespace.\n"), "{rendered}");
+
+        for name in ["ladfile_builder", "other_crate"] {
+            let line = format!("---@overload fun(path: \"{name}\"): namespace.{name}");
+            assert!(rendered.contains(&line), "missing {line} in {rendered}");
+        }
     }
 
     #[test]

@@ -123,3 +123,14 @@ When a script is unloaded, or about to be reloaded, its exports and its observer
 A reloaded script exports again when it runs again, so put `export` calls in a callback that runs on load (such as `on_script_loaded`). Because lookups happen on every call, functions imported before the reload keep working once the reloaded script exported the same name.
 
 Components, bundles and events registered by scripts stay registered when their script unloads, as Bevy can not unregister components. Scripts which run again register them with `allow_existing` to get the existing registrations.
+
+### Editor support
+
+The generated LAD files record the namespace of every type (`namespace` on the type definition), and the Lua language server definitions declare a class per native namespace, `namespace.<name>`, with a field per type in it. `import("bevy_transform")` is overloaded to return the matching class, so completions and hover work on the imported table:
+
+```lua
+local bevy_transform = import("bevy_transform")
+local t = bevy_transform.Transform.new { translation = Vec3.new(0, 1, 0) } -- Transform is known here
+```
+
+Script namespaces (`script.*`) only exist at runtime, so there are no definitions for them: `import("script.game")` is untyped.

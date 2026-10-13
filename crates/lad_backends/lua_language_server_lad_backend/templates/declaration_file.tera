@@ -43,6 +43,9 @@
 {%- for param in function.params -%}
 {{- self::function_param(arg=param) -}}
 {%- endfor -%}
+{%- for overload in function.overloads -%}
+---@overload fun({% for param in overload.params %}{{ param.name }}: {{ self::lua_type(ty=param.ty) }}{% if not loop.last %}, {% endif %}{% endfor %}): {{ self::lua_type(ty=overload.returns | first) }}
+{% endfor -%}
 {%- for return in function.returns -%}
 ---@return {{ self::lua_type(ty=return, return_position=true) }}
 function {% if module.class -%}{{module.class.name}}.{%- endif -%} {{ function.name }}(
