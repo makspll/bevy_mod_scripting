@@ -51,6 +51,23 @@ Registering a component or bundle under a name that is already taken is an error
 local Mana = world.register_new_component("Mana", true)
 ```
 
+## Using script components like native ones
+
+Values of script components are `DynamicComponent`s, holding their value in `data`. If `data` is a table, its entries can be accessed directly on the component:
+
+```lua
+local Health = world.register_new_component("Health")
+local entity = world.spawn()
+world.insert_component(entity, Health, DynamicComponent.new({ data = { current = 5 } }))
+
+local health = world.get_component(entity, Health)
+health.current = health.current - 1 -- same as health.data.current
+```
+
+* `data` itself is not forwarded: it can still be read and replaced as a whole.
+* Methods of `DynamicComponent` (e.g. `clone`) take precedence over entries of the same name.
+* Like for `data`, nested tables are copies: write `health.stats = { ... }` to change a nested value, `health.stats.hp = 1` does not write through.
+
 ## Required components
 
 `register_new_component` takes the required components as its third argument:
