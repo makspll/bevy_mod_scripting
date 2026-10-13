@@ -76,8 +76,13 @@ macro_rules! dynamic_data_reflect {
                 }
                 match &mut self.data {
                     ScriptValue::Map(entries) => {
-                        Some(entries.entry(name.to_owned()).or_insert(ScriptValue::Unit)
-                            as &mut dyn ::bevy_reflect::PartialReflect)
+                        // only allocate the key for new entries
+                        if !entries.contains_key(name) {
+                            entries.insert(name.to_owned(), ScriptValue::Unit);
+                        }
+                        entries
+                            .get_mut(name)
+                            .map(|value| value as &mut dyn ::bevy_reflect::PartialReflect)
                     }
                     _ => None,
                 }
