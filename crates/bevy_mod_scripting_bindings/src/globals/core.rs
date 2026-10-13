@@ -56,7 +56,7 @@ impl Plugin for CoreScriptGlobalsPlugin {
 
         register_core_globals(app.world_mut());
 
-        // script registered components and bundles show up in `types` after contexts were created
+        // script registered components show up in `types` after contexts were created
         let registry = app.world().resource::<AppScriptGlobalsRegistry>().clone();
         if let Some(types) = registry.write().get_mut("types") {
             types.resync = Some(ScriptGlobalResync {
@@ -129,7 +129,7 @@ impl CoreGlobals {
     ///
     /// You can use this to avoid having to store type references.
     ///
-    /// Components and bundles registered by scripts via `register_new_component` and `register_new_bundle` are included,
+    /// Components registered by scripts via `register_new_component` are included,
     /// and are added to live contexts before their next callback runs.
     fn types(guard: WorldGuard) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
         let catalogue = guard.type_catalogue().clone();

@@ -9,7 +9,6 @@ function on_test()
     local err = error_of(world.register_new_component, "game", "Enemy")
     assert(err:find("must start with `script.`", 1, true), err)
     assert(error_of(world.register_new_component, "bevy_transform", "Enemy"):find("script.", 1, true))
-    assert(error_of(world.register_new_bundle, "game", "Group", {}):find("script.", 1, true))
     assert(error_of(world.register_new_event, "game", "Hit"):find("script.", 1, true))
 
     -- the same name can be used in different namespaces
@@ -30,10 +29,7 @@ function on_test()
     assert(world.has_component(entity, ai_enemy))
     assert(not world.has_component(entity, ui_enemy))
 
-    -- bundles and events are namespaced too
-    local bundle = world.register_new_bundle("script.game.ai", "Group", { ai_enemy })
-    assert(bundle:namespace() == "script.game.ai")
-    assert(import("script.game.ai").Group ~= nil)
+    -- events are namespaced too
     world.register_new_event("script.game.ai", "Hit")
     world.register_new_event("script.game.ui", "Hit")
 end

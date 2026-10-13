@@ -236,15 +236,6 @@ impl ScriptTypeCatalogue {
                 source: CatalogueSource::Script,
             });
         }
-        for bundle in script_registry.iter_bundles() {
-            catalogue.insert(CatalogueEntry {
-                path: bundle.path().into(),
-                short_name: bundle.name.as_str().into(),
-                namespace: bundle.namespace.as_str().into(),
-                registration: CatalogueRegistration::Bundle(bundle.registration.clone()),
-                source: CatalogueSource::Script,
-            });
-        }
         Ok(catalogue)
     }
 

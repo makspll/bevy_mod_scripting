@@ -15,7 +15,7 @@ Scripts can ask a type for its namespace:
 print(import("bevy_transform").Transform:namespace()) -- bevy_transform
 ```
 
-Components, bundles and events registered by scripts are in script namespaces, see below.
+Components and events registered by scripts are in script namespaces, see below.
 
 > **Deprecated:** the flat `types` global is superseded by `import`. It keeps working for now, but is going to be removed in a future release: it cannot tell types of the same name in different namespaces apart. Use `local bevy_transform = import("bevy_transform")` and `bevy_transform.Transform` instead. The Lua language server definitions mark `types` as deprecated.
 
@@ -77,11 +77,10 @@ The `types` global is still a flat table of all types by short name.
 
 ## Namespaces defined by scripts
 
-Scripts register components, bundles and events into namespaces of their own, which they always pass explicitly (there is no default, as a name derived from the script's path would be fragile):
+Scripts register components and events into namespaces of their own, which they always pass explicitly (there is no default, as a name derived from the script's path would be fragile):
 
 ```lua
 local Enemy = world.register_new_component("script.game.ai", "Enemy")
-local Group = world.register_new_bundle("script.game.ai", "Group", { Enemy })
 local Hit = world.register_new_event("script.game.ai", "Hit")
 
 -- later, anywhere (including other scripts)
@@ -115,7 +114,7 @@ The exported function is a callback of the exporting script, given by its label:
 * Calls run in the exporting script's own context, through the same machinery as `run_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)): arguments are passed in, and the return value is passed back. That is why it works between languages.
 * A script cannot call its own exports (or exports of scripts sharing its context) from inside one of its own callbacks, as its context is busy. That fails with an error saying so. Call the function directly instead.
 * Calls look the export up every time, so a replaced export is picked up, and calling an export which no longer exists fails with a clear error.
-* Exporting an already exported path is an error, unless it is the same script exporting again (which replaces the export, as happens when a script runs again). Exports cannot share a path with a component or bundle.
+* Exporting an already exported path is an error, unless it is the same script exporting again (which replaces the export, as happens when a script runs again). Exports cannot share a path with a component.
 * `export` can only be called from a script callback, as the callback belongs to the calling script.
 
 ### Reloading and unloading
@@ -124,7 +123,7 @@ When a script is unloaded, or about to be reloaded, its exports and its observer
 
 A reloaded script exports again when it runs again, so put `export` calls in a callback that runs on load (such as `on_script_loaded`). Because lookups happen on every call, functions imported before the reload keep working once the reloaded script exported the same name.
 
-Components, bundles and events registered by scripts stay registered when their script unloads, as Bevy can not unregister components. Scripts which run again register them with `allow_existing` to get the existing registrations.
+Components and events registered by scripts stay registered when their script unloads, as Bevy can not unregister components. Scripts which run again register them with `allow_existing` to get the existing registrations.
 
 ### Editor support
 

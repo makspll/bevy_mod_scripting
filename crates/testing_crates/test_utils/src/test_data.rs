@@ -292,37 +292,6 @@ pub struct TestNestedBundle {
     pub simple: SimpleStruct,
 }
 
-/// Declares simple components used by benchmarks which need many distinct component types
-macro_rules! bench_components {
-    ($($name:ident),* $(,)?) => {
-        $(
-            #[derive(Component, Reflect, Default)]
-            #[reflect(Component, Default)]
-            pub struct $name(pub u32);
-        )*
-
-        fn init_bench_components(world: &mut World, registry: &mut TypeRegistry) {
-            $(
-                world.register_component::<$name>();
-                registry.register::<$name>();
-            )*
-        }
-    };
-}
-
-bench_components!(
-    BenchComponent0,
-    BenchComponent1,
-    BenchComponent2,
-    BenchComponent3,
-    BenchComponent4,
-    BenchComponent5,
-    BenchComponent6,
-    BenchComponent7,
-    BenchComponent8,
-    BenchComponent9
-);
-
 pub trait EnumerateTestComponents {
     fn enumerate_test_components() -> Vec<(&'static str, ComponentId, Option<Entity>)>;
 }
@@ -449,7 +418,6 @@ fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init:
     init_all_components(world, &mut type_registry_guard);
     type_registry_guard.register::<TestBundle>();
     type_registry_guard.register::<TestNestedBundle>();
-    init_bench_components(world, &mut type_registry_guard);
     init(world, &mut type_registry_guard);
 }
 

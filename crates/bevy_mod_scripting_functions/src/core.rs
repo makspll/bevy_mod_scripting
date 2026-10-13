@@ -468,16 +468,15 @@ impl World {
         world.insert_component(*entity, registration.into_inner(), value)
     }
 
-    /// Inserts the given bundle value into the provided entity.
+    /// Inserts the given bundle value into the provided entity, all of its components at once.
     ///
-    /// Bundles registered in rust (with `#[reflect(Bundle)]`) are inserted all at once.
-    /// The members of script registered bundles are inserted one by one, members without a value in the bundle are default constructed.
+    /// The bundle type must be registered in rust with `#[reflect(Bundle)]`.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
     /// * `entity`: The entity to insert the bundle into.
     /// * `registration`: The bundle registration of the bundle to insert.
-    /// * `value`: The value of the bundle to insert. Can be constructed using `construct` or `DynamicBundle.new` for script registered bundles.
+    /// * `value`: The value of the bundle to insert. Can be constructed like any other value, i.e. using `construct` or the type's `new` function.
     /// Returns:
     /// * `result`: Nothing if the bundle was inserted successfully.
     fn insert_bundle(
@@ -489,24 +488,6 @@ impl World {
         profiling::function_scope!("insert_bundle");
         let world = ctxt.world()?;
         world.insert_bundle(*entity, registration.into_inner(), value)
-    }
-
-    /// Inserts a default constructed bundle into the provided entity.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `entity`: The entity to insert the bundle into.
-    /// * `registration`: The bundle registration of the bundle to insert.
-    /// Returns:
-    /// * `result`: Nothing if the bundle was inserted successfully.
-    fn add_default_bundle(
-        ctxt: FunctionCallContext,
-        entity: V<Entity>,
-        registration: V<ScriptBundleRegistration>,
-    ) -> Result<(), InteropError> {
-        profiling::function_scope!("add_default_bundle");
-        let world = ctxt.world()?;
-        world.add_default_bundle(*entity, registration.into_inner())
     }
 
     /// Spawns a new entity with the given bundle value and returns it.
@@ -525,62 +506,6 @@ impl World {
         profiling::function_scope!("spawn_bundle");
         let world = ctxt.world()?;
         Ok(V(world.spawn_bundle(registration.into_inner(), value)?))
-    }
-
-    /// Removes the components of the given bundle from the entity, components which are not present are ignored.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `entity`: The entity to remove the bundle from.
-    /// * `registration`: The bundle to remove.
-    /// Returns:
-    /// * `result`: Nothing if the bundle was removed successfully.
-    fn remove_bundle(
-        ctxt: FunctionCallContext,
-        entity: V<Entity>,
-        registration: V<ScriptBundleRegistration>,
-    ) -> Result<(), InteropError> {
-        profiling::function_scope!("remove_bundle");
-        let world = ctxt.world()?;
-        world.remove_bundle(*entity, registration.into_inner())
-    }
-
-    /// Checks if the given entity has all the components of the given bundle.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `entity`: The entity to check.
-    /// * `registration`: The bundle to check for.
-    /// Returns:
-    /// * `has_bundle`: Whether the entity has all the components of the bundle.
-    fn has_bundle(
-        ctxt: FunctionCallContext,
-        entity: V<Entity>,
-        registration: V<ScriptBundleRegistration>,
-    ) -> Result<bool, InteropError> {
-        profiling::function_scope!("has_bundle");
-        let world = ctxt.world()?;
-        world.has_bundle(*entity, registration.into_inner())
-    }
-
-    /// Removes the components of the given bundle from the entity and returns them as a bundle value.
-    ///
-    /// If the entity does not have all the components of the bundle, nothing is removed.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `entity`: The entity to take the bundle from.
-    /// * `registration`: The bundle to take.
-    /// Returns:
-    /// * `bundle`: The bundle value, if the entity had all of its components.
-    fn take_bundle(
-        ctxt: FunctionCallContext,
-        entity: V<Entity>,
-        registration: V<ScriptBundleRegistration>,
-    ) -> Result<Option<ReflectReference>, InteropError> {
-        profiling::function_scope!("take_bundle");
-        let world = ctxt.world()?;
-        world.take_bundle(*entity, registration.into_inner())
     }
 
     /// Inserts the given children entities into the provided parent entity.
@@ -803,52 +728,6 @@ impl World {
         let world = ctxt.world()?;
         world
             .register_script_component(&namespace, &name, allow_existing.unwrap_or(false))
-            .map(V)
-    }
-
-    /// Registers a new bundle type with the world, made up of the given components and bundles.
-    ///
-    /// Bundle values are backed by `DynamicBundle`, which contains just one field:
-    /// - `data`, a table from member names to member values
-    ///
-    /// Members are named by the short type name of native components and by the registered name of script components.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `namespace`: The script namespace to register the bundle in, it must start with `script.`, i.e. `script.my_game`.
-    /// * `name`: The name of the bundle type, unique within the namespace.
-    /// * `members`: The components and bundles making up the bundle, bundles are flattened into their components
-    /// * `allow_existing`: If true, returns the registration of the already registered bundle with this name instead of failing. Defaults to false.
-    /// Returns:
-    /// * `registration`: The registration of the new bundle type if successful.
-    fn register_new_bundle(
-        ctxt: FunctionCallContext,
-        namespace: String,
-        name: String,
-        members: Vec<Union<V<ScriptComponentRegistration>, V<ScriptBundleRegistration>>>,
-        allow_existing: Option<bool>,
-    ) -> Result<V<ScriptBundleRegistration>, InteropError> {
-        profiling::function_scope!("register_new_bundle");
-        let world = ctxt.world()?;
-        let components = members
-            .into_iter()
-            .flat_map(|member| match member.into_left() {
-                Ok(component) => vec![component.into_inner()],
-                Err(bundle) => bundle
-                    .into_inner()
-                    .members()
-                    .iter()
-                    .map(|m| m.registration.clone())
-                    .collect(),
-            })
-            .collect();
-        world
-            .register_script_bundle(
-                &namespace,
-                &name,
-                components,
-                allow_existing.unwrap_or(false),
-            )
             .map(V)
     }
 
@@ -1435,23 +1314,6 @@ impl ScriptBundleRegistration {
     fn short_name(registration: R<ScriptBundleRegistration>) -> &'static str {
         profiling::function_scope!("short_name");
         registration.type_registration().short_name()
-    }
-
-    /// Retrieves the components making up the bundle, nested bundles are flattened.
-    ///
-    /// Arguments:
-    /// * `registration`: The bundle registration.
-    /// Returns:
-    /// * `components`: The component registrations of the bundle's members.
-    fn components(
-        registration: R<ScriptBundleRegistration>,
-    ) -> Vec<V<ScriptComponentRegistration>> {
-        profiling::function_scope!("components");
-        registration
-            .members()
-            .iter()
-            .map(|m| V(m.registration.clone()))
-            .collect()
     }
 
     /// Retrieves the script namespace of the type, by default the name of the crate defining it.

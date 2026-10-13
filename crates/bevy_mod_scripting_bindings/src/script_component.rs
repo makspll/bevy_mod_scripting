@@ -1,9 +1,6 @@
 //! Everything necessary to support scripts registering their own components
 
-use super::{
-    InteropError, ScriptBundleRegistration, ScriptComponentRegistration, ScriptEventRegistration,
-    ScriptValue,
-};
+use super::{InteropError, ScriptComponentRegistration, ScriptEventRegistration, ScriptValue};
 use crate::ScriptNamespaceAppExt;
 use ::{
     bevy_app::{App, Plugin},
@@ -32,32 +29,6 @@ impl DynamicComponent {
     /// Returns the data held by this component
     pub fn data(&self) -> &ScriptValue {
         &self.data
-    }
-}
-
-/// A dynamic script bundle value.
-///
-/// `data` maps the names of the bundle's members to their values, members without an entry are default constructed.
-#[derive(Reflect, Clone, Default, Debug)]
-#[reflect(Default)]
-pub struct DynamicBundle {
-    data: ScriptValue,
-}
-
-impl DynamicBundle {
-    /// Creates a new dynamic bundle holding the given member values
-    pub fn new(data: ScriptValue) -> Self {
-        Self { data }
-    }
-
-    /// Returns the member values held by this bundle
-    pub fn data(&self) -> &ScriptValue {
-        &self.data
-    }
-
-    /// Consumes the bundle returning the member values
-    pub fn into_data(self) -> ScriptValue {
-        self.data
     }
 }
 
@@ -160,23 +131,6 @@ impl DynamicComponentInfo {
     }
 }
 
-/// Some metadata about dynamic script bundles
-pub struct DynamicBundleInfo {
-    /// The name of the bundle within its namespace
-    pub name: String,
-    /// The script namespace the bundle was registered in
-    pub namespace: String,
-    /// The registration of the bundle
-    pub registration: ScriptBundleRegistration,
-}
-
-impl DynamicBundleInfo {
-    /// The full path of the bundle, which is unique, i.e. `script.game.Enemy`
-    pub fn path(&self) -> String {
-        script_path(&self.namespace, &self.name)
-    }
-}
-
 impl Component for DynamicComponent {
     const STORAGE_TYPE: StorageType = StorageType::Table;
     type Mutability = Mutable;
@@ -200,10 +154,9 @@ impl AppScriptComponentRegistry {
 }
 
 #[derive(Default)]
-/// A registry of dynamically registered script components and bundles
+/// A registry of dynamically registered script components, events and exports
 pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
-    bundles: HashMap<String, DynamicBundleInfo>,
     events: HashMap<String, ScriptEventRegistration>,
     exports: HashMap<String, ScriptExport>,
     generation: u64,
@@ -234,21 +187,7 @@ impl ScriptComponentRegistry {
         })
     }
 
-    /// The name within its namespace of the script registered component with the given id, if any.
-    pub fn name_of(&self, component_id: bevy_ecs::component::ComponentId) -> Option<&str> {
-        self.components
-            .values()
-            .find(|c| c.registration.component_id == component_id)
-            .map(|c| c.name.as_str())
-    }
-
-    /// Registers a dynamic script bundle, possibly overwriting an existing one
-    pub fn register_bundle(&mut self, info: DynamicBundleInfo) {
-        self.bundles.insert(info.path(), info);
-        self.generation += 1;
-    }
-
-    /// A counter which changes whenever a component or bundle is registered.
+    /// A counter which changes whenever a component is registered.
     ///
     /// Lookups of existing registrations do not change it.
     pub fn generation(&self) -> u64 {
@@ -258,11 +197,6 @@ impl ScriptComponentRegistry {
     /// Iterates over all registered script components
     pub fn iter_components(&self) -> impl Iterator<Item = &DynamicComponentInfo> {
         self.components.values()
-    }
-
-    /// Iterates over all registered script bundles
-    pub fn iter_bundles(&self) -> impl Iterator<Item = &DynamicBundleInfo> {
-        self.bundles.values()
     }
 
     /// Registers a script event, possibly overwriting an existing one
@@ -279,7 +213,7 @@ impl ScriptComponentRegistry {
     /// Registers a function exported by a script.
     ///
     /// Exporting the same path again from the same script replaces the export (i.e. when a script runs again),
-    /// exporting a path another script exported, or one used by a component or bundle, is an error.
+    /// exporting a path another script exported, or one used by a component, is an error.
     pub fn register_export(&mut self, export: ScriptExport) -> Result<(), InteropError> {
         let path = export.path();
         if let Some(existing) = self.exports.get(&path)
@@ -290,9 +224,9 @@ impl ScriptComponentRegistry {
                 existing.owner
             )));
         }
-        if self.components.contains_key(&path) || self.bundles.contains_key(&path) {
+        if self.components.contains_key(&path) {
             return Err(InteropError::string(format!(
-                "cannot export `{path}`: a script registered component or bundle has that path"
+                "cannot export `{path}`: a script registered component has that path"
             )));
         }
         self.exports.insert(path, export);
@@ -325,21 +259,6 @@ impl ScriptComponentRegistry {
     pub fn export_namespaces(&self) -> impl Iterator<Item = &str> {
         self.exports.values().map(|e| e.namespace.as_str())
     }
-
-    /// Gets a dynamic script bundle by its full path
-    pub fn get_bundle(&self, path: &str) -> Option<&DynamicBundleInfo> {
-        self.bundles.get(path)
-    }
-
-    /// Gets a dynamic script bundle by its full path, or by its name alone if no bundle has that path, see [`Self::find`]
-    pub fn find_bundle(&self, path_or_name: &str) -> Option<&DynamicBundleInfo> {
-        self.bundles.get(path_or_name).or_else(|| {
-            self.bundles
-                .values()
-                .filter(|b| b.name == path_or_name)
-                .min_by_key(|b| b.path())
-        })
-    }
 }
 
 /// A plugin to support dynamic script components
@@ -349,9 +268,7 @@ impl Plugin for DynamicScriptComponentPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AppScriptComponentRegistry>()
             .register_type::<DynamicComponent>()
-            .register_type::<DynamicBundle>()
-            .set_script_namespace::<DynamicComponent>("bms")
-            .set_script_namespace::<DynamicBundle>("bms");
+            .set_script_namespace::<DynamicComponent>("bms");
     }
 }
 
