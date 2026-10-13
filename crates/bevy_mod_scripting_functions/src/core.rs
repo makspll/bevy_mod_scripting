@@ -785,7 +785,6 @@ impl World {
     /// - `data`
     ///
     /// This field can be set to any value and modified freely.
-    /// If it holds a table, its entries can also be accessed directly on the component: `component.health` is `component.data.health`.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.

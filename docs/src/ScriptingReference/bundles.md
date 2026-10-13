@@ -53,7 +53,7 @@ local Mana = world.register_new_component("script.my_game", "Mana", true)
 
 ## Using script components like native ones
 
-Values of script components are `DynamicComponent`s, holding their value in `data`. If `data` is a table, its entries can be accessed directly on the component:
+Values of script components are `DynamicComponent`s, holding their value in `data`:
 
 ```lua
 local Health = world.register_new_component("script.my_game", "Health")
@@ -61,13 +61,10 @@ local entity = world.spawn()
 world.insert_component(entity, Health, DynamicComponent.new({ data = { current = 5 } }))
 
 local health = world.get_component(entity, Health)
-health.current = health.current - 1 -- same as health.data.current
+health.data = { current = health.data.current - 1 }
 ```
 
-* This is part of the reflection implementation of `DynamicComponent` (and `DynamicBundle`, for the member values of bundles), so it works everywhere references to them do. Reading a missing entry gives `nil`, writing one creates it. `data` itself stays a field: it can still be read and replaced as a whole.
-* If `data` is not a table (and not `nil`), its entries cannot be accessed.
-* Methods of `DynamicComponent` (e.g. `clone`) take precedence over entries of the same name.
-* Like for `data`, nested tables are copies: write `health.stats = { ... }` to change a nested value, `health.stats.hp = 1` does not write through.
+Tables read from `data` are copies: assign a new table to `data` (or to the nested value's parent) to change it, `health.data.current = 1` does not write through.
 
 Script registered components and bundles are also added to the `types` global (e.g. `types.Mana`). Contexts which were created before the registration pick them up before their next callback runs.
 
