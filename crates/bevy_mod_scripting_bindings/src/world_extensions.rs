@@ -896,6 +896,8 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.with_world_mut(|world| {
             let registry = registry.read();
             reflect_event.trigger(world, value.as_ref(), &registry);
+            // apply the commands of observers, i.e. the callbacks of script observers
+            world.flush();
         })
     }
 
@@ -2831,6 +2833,159 @@ mod test {
         );
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         assert!(guard.spawn().is_ok());
+    }
+
+    /// Script observers deliver their callbacks through queued commands, so every operation
+    /// which can trigger observers has to flush before it returns.
+    mod observer_flushing {
+        use super::*;
+        use bevy_ecs::{
+            component::Component,
+            event::Event,
+            lifecycle::{AddEvent, DespawnEvent, InsertEvent, RemoveEvent},
+            reflect::{ReflectComponent, ReflectEvent},
+        };
+        use bevy_mod_scripting_asset::Language;
+        use bevy_reflect::prelude::ReflectDefault;
+
+        #[derive(Component, Reflect, Default)]
+        #[reflect(Component, Default)]
+        struct ObsComp;
+
+        #[derive(Event, Reflect, Clone)]
+        #[reflect(Event)]
+        struct ObsEvent;
+
+        struct Fixture {
+            world: World,
+            counts: Arc<parking_lot::Mutex<std::collections::HashMap<String, usize>>>,
+            runners: AppScriptCallbackRunners,
+        }
+
+        fn fixture() -> Fixture {
+            let mut world = setup_world(|world, registry| {
+                world.register_component::<ObsComp>();
+                registry.register::<ObsComp>();
+                registry.register::<ObsEvent>();
+                registry.register::<AddEvent>();
+                registry.register_type_data::<AddEvent, ReflectEvent>();
+                registry.register::<InsertEvent>();
+                registry.register_type_data::<InsertEvent, ReflectEvent>();
+                registry.register::<RemoveEvent>();
+                registry.register_type_data::<RemoveEvent, ReflectEvent>();
+                registry.register::<DespawnEvent>();
+                registry.register_type_data::<DespawnEvent, ReflectEvent>();
+            });
+            let runners = AppScriptCallbackRunners::default();
+            let counts = Arc::new(parking_lot::Mutex::new(std::collections::HashMap::<
+                String,
+                usize,
+            >::new()));
+            let (c, attachment) = (
+                counts.clone(),
+                ScriptAttachment::StaticScript(Handle::default()),
+            );
+            runners.register(
+                Language::Lua,
+                Arc::new(move |_, _, label, _| {
+                    *c.lock().entry(label.to_owned()).or_insert(0) += 1;
+                    Ok(vec![(attachment.clone(), Ok(ScriptValue::Unit))])
+                }),
+            );
+            world.insert_resource(runners.clone());
+            Fixture {
+                world,
+                counts,
+                runners,
+            }
+        }
+
+        impl Fixture {
+            fn count(&self, label: &str) -> usize {
+                self.counts.lock().get(label).copied().unwrap_or(0)
+            }
+        }
+
+        fn observe<T: 'static>(
+            guard: &WorldGuard,
+            label: &str,
+            comp: &ScriptComponentRegistration,
+        ) {
+            let registry = guard.type_registry();
+            let registration = ScriptTypeRegistration::new(Arc::new(
+                registry.read().get(TypeId::of::<T>()).unwrap().clone(),
+            ));
+            guard
+                .add_script_observer(
+                    registration,
+                    vec![comp.clone()],
+                    vec![],
+                    label.to_owned(),
+                    ScriptAttachment::StaticScript(Handle::default()),
+                )
+                .unwrap();
+        }
+
+        #[test]
+        fn operations_flush_script_observer_callbacks() {
+            let mut f = fixture();
+            let counts = f.counts.clone();
+            let count = move |l: &str| counts.lock().get(l).copied().unwrap_or(0);
+            let guard = make_guard(&mut f.world);
+            let comp = comp_reg::<ObsComp>(&guard);
+            observe::<AddEvent>(&guard, "add", &comp);
+            observe::<InsertEvent>(&guard, "insert", &comp);
+            observe::<RemoveEvent>(&guard, "remove", &comp);
+            observe::<DespawnEvent>(&guard, "despawn", &comp);
+
+            let entity = guard.spawn().unwrap();
+            guard.add_default_component(entity, comp.clone()).unwrap();
+            assert_eq!(count("add"), 1, "add_default_component");
+            assert_eq!(count("insert"), 1, "add_default_component insert");
+
+            guard.remove_component(entity, comp.clone()).unwrap();
+            assert_eq!(count("remove"), 1, "remove_component");
+
+            guard.add_default_component(entity, comp.clone()).unwrap();
+            guard.despawn(entity).unwrap();
+            assert_eq!(count("despawn"), 1, "despawn");
+
+            let parent = guard.spawn().unwrap();
+            let child = guard.spawn().unwrap();
+            guard.add_default_component(child, comp.clone()).unwrap();
+            guard.insert_children(parent, 0, &[child]).unwrap();
+            guard.despawn_recursive(parent).unwrap();
+            assert_eq!(count("despawn"), 2, "despawn_recursive");
+            assert!(!f.runners.has_queued());
+        }
+
+        #[test]
+        fn trigger_event_flushes_script_observer_callbacks() {
+            let mut f = fixture();
+            let guard = make_guard(&mut f.world);
+            let registry = guard.type_registry();
+            let registration = ScriptTypeRegistration::new(Arc::new(
+                registry
+                    .read()
+                    .get(TypeId::of::<ObsEvent>())
+                    .unwrap()
+                    .clone(),
+            ));
+            guard
+                .add_script_observer(
+                    registration.clone(),
+                    vec![],
+                    vec![],
+                    "event".to_owned(),
+                    ScriptAttachment::StaticScript(Handle::default()),
+                )
+                .unwrap();
+            let reference =
+                ReflectReference::new_allocated(ObsEvent, &mut guard.allocator().write());
+            guard.trigger_event(registration, &reference).unwrap();
+            drop(guard);
+            assert_eq!(f.count("event"), 1, "trigger_event");
+        }
     }
 
     mod reflected_dispatch {
