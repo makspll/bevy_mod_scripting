@@ -19,7 +19,7 @@ use ::{
     },
     bevy_reflect::{Reflect, TypeRegistration},
 };
-use std::{any::TypeId, ptr::NonNull, sync::Arc};
+use std::{any::TypeId, sync::Arc};
 
 /// A reference to a type which is not a `Resource` or `Component`.
 ///
@@ -209,21 +209,14 @@ impl ScriptComponentRegistration {
                 let cast = instance.downcast::<DynamicComponent>().map_err(|v| {
                     InteropError::type_mismatch(TypeId::of::<DynamicComponent>(), Some(v.type_id()))
                 })?;
-                // the reason we leak the box, is because we don't want to double drop the owning ptr
-
-                let ptr = (Box::leak(cast) as *mut DynamicComponent).cast();
-                // Safety: cannot be null as we just created it from a valid reference
-                let non_null_ptr = unsafe { NonNull::new_unchecked(ptr) };
-                // Safety:
-                // - we know the type is ScriptComponent, as we just created the pointer
-                // - the box will stay valid for the life of this function, and we do not return the ptr
-                // - pointer is alligned correctly
-                // - nothing else will call drop on this
-                let owning_ptr = unsafe { OwningPtr::new(non_null_ptr) };
-                // Safety:
-                // - Owning Ptr is valid as we just created it
-                // - TODO: do we need to check if ComponentId is from this world? How?
-                unsafe { entity.insert_by_id(self.component_id, owning_ptr) };
+                // move the value out of the box so its allocation is freed, `OwningPtr::make` ensures
+                // the value itself is not dropped here, as ownership passes to the world
+                OwningPtr::make(*cast, |owning_ptr| {
+                    // Safety:
+                    // - the pointer points to a valid `DynamicComponent`, the type backing all script components
+                    // - TODO: do we need to check if ComponentId is from this world? How?
+                    unsafe { entity.insert_by_id(self.component_id, owning_ptr) };
+                });
                 Ok(())
             })?
         } else {
