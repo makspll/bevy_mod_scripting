@@ -1,23 +1,30 @@
 local got_a = {}
 local got_b = {}
+local EventA, EventB, observer_a
+
+register_callback("on_a", function(payload)
+    table.insert(got_a, payload)
+end)
+-- a freestanding global function works as a callback too
+function on_b(payload)
+    table.insert(got_b, payload)
+end
 
 function on_test()
-    local EventA = world.register_new_event("TestEventA")
-    local EventB = world.register_new_event("TestEventB")
+    EventA = world.register_new_event("TestEventA")
+    EventB = world.register_new_event("TestEventB")
     -- registering again returns the same event
     assert(world.register_new_event("TestEventA", true) ~= nil)
 
-    local observer_a = world.add_observer(EventA, {}, function(payload)
-        table.insert(got_a, payload)
-    end)
-    world.add_observer(EventB, {}, function(payload)
-        table.insert(got_b, payload)
-    end)
+    observer_a = world.add_observer(EventA, {}, "on_a")
+    world.add_observer(EventB, {}, "on_b")
 
     world.trigger(EventA, { value = 1 })
     world.trigger(EventB, "hello")
     world.trigger(EventA, 3)
+end
 
+function on_test_post_update()
     assert(#got_a == 2, "A observers should see both A triggers, saw " .. #got_a)
     assert(got_a[1].value == 1, "table payload should arrive")
     assert(got_a[2] == 3, "number payload should arrive")
@@ -25,5 +32,8 @@ function on_test()
 
     world.despawn(observer_a)
     world.trigger(EventA, 5)
+end
+
+function on_test_last()
     assert(#got_a == 2, "despawned observer must not run")
 end

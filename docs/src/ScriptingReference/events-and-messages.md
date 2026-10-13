@@ -48,14 +48,18 @@ app.register_type::<MyEvent>()
 
 ## Observing events from scripts
 
-`world.add_observer(event, components, callback, entities?)` spawns an observer which calls `callback` with a copy of the event whenever an event of the given type is triggered, and returns the observer entity. Despawn that entity to remove the observer.
+`world.add_observer(event, components, callback, entities?)` spawns an observer which runs the callback named `callback` on the calling script, with a copy of the event as argument, whenever an event of the given type is triggered. It returns the observer entity, despawn it to remove the observer.
+
+The callback is a normal script callback, i.e. a function registered with `register_callback`, or a top level function of that name:
 
 ```lua
 local Mana = world.register_new_component("Mana")
 
-local observer = world.add_observer(types.AddEvent, { Mana }, function(event)
+register_callback("on_mana_added", function(event)
     print("Mana was added to", event.entity)
 end)
+
+local observer = world.add_observer(types.AddEvent, { Mana }, "on_mana_added")
 
 -- later
 world.despawn(observer)
@@ -63,9 +67,15 @@ world.despawn(observer)
 
 The component lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent` and `DespawnEvent` are observable out of the box, for any native or script registered component. As in Bevy, a list of components is an `OR` filter. Pass a list of entities as the last argument to only observe those entities. Custom events need `#[reflect(Event)]`, see above.
 
-* The callback runs as soon as the commands of the triggering operation are applied, i.e. right after the operation, not in the middle of it. Data of removed components is therefore no longer readable inside `RemoveEvent` callbacks.
-* Errors inside the callback are logged, they do not fail the operation that triggered the event.
-* Function pointers from Rhai cannot be converted to callable functions yet, so `add_observer` is currently only usable from Lua.
+Observer callbacks run through the same machinery as every other callback (see [Calling Other Scripts](./calling-other-scripts.md)):
+
+* By default they are queued, and run once the callback that triggered the event has finished (or at the latest when the handler systems next run queued callbacks).
+* Pass `true` as the last argument of `add_observer` (`instant`) if the callback has to run right after the operation which triggered the event. Instant callbacks never wait: if the script's context is busy running another callback, e.g. the one that triggered the event (all scripts sharing a context count too), the callback does not run and an error is logged. Use them for observers that are triggered from outside the observing script's callbacks.
+* Observers can never re-enter a running script.
+* The world is already past the change: data of removed components is no longer readable inside `RemoveEvent` callbacks.
+* They get the same setup as other callbacks, such as the script's globals and its current attachment.
+* Errors are reported like those of any other callback, and do not fail the operation that triggered the event.
+* `add_observer` can only be called from a script callback.
 
 ## Script defined events
 
@@ -74,14 +84,16 @@ Scripts can define their own events, carrying any value as payload:
 ```lua
 local Damaged = world.register_new_event("Damaged")
 
-world.add_observer(Damaged, {}, function(payload)
+register_callback("on_damaged", function(payload)
     print("took damage:", payload.amount)
 end)
+
+world.add_observer(Damaged, {}, "on_damaged")
 
 world.trigger(Damaged, { amount = 5 })
 ```
 
-`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the second argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. Observers run right after `trigger`, see the notes above. Events are looked up by name, so they are not part of the `types` global.
+`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the second argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. The observers' callbacks run as described above (queued, or right away for `instant` observers). Events are looked up by name, so they are not part of the `types` global.
 
 ## Built-in messages
 

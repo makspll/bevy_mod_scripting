@@ -345,7 +345,11 @@ impl CannotEnter {
                 further up the current chain of callbacks, i.e. the chain would loop back into it. {QUEUE_HINT}\n{SHARED_CONTEXT_NOTE}"
             ),
         };
-        InteropError::string(message)
+        match self {
+            // waiting would not help, the chain is too deep either way
+            CannotEnter::TooDeep => InteropError::string(message),
+            _ => InteropError::context_busy(message),
+        }
     }
 }
 
@@ -640,6 +644,37 @@ mod test {
 
     fn no_contexts_executing() -> bool {
         EXECUTING_CONTEXTS.with_borrow(|executing| executing.is_empty())
+    }
+
+    #[test]
+    fn running_into_a_busy_context_is_reported_as_busy_and_too_deep_is_not() {
+        let callbacks = ScriptCallbacks::<TestPlugin>::default();
+        let script = script(1);
+        let context = new_context();
+
+        let observed = Arc::new(Mutex::new(Vec::new()));
+        let (inner_callbacks, inner_context, inner_script, o) = (
+            callbacks.clone(),
+            context.clone(),
+            script.clone(),
+            observed.clone(),
+        );
+        register(&callbacks, &script, "outer", move || {
+            let err = TestPlugin::handle(
+                vec![],
+                &inner_script,
+                &"outer".into(),
+                &inner_context,
+                inner_callbacks.clone(),
+                thread_world(),
+            )
+            .unwrap_err();
+            o.lock().push(err.is_context_busy());
+            Ok(ScriptValue::Unit)
+        });
+
+        run(&context, &script, "outer", &callbacks).unwrap();
+        assert_eq!(*observed.lock(), vec![true]);
     }
 
     #[test]

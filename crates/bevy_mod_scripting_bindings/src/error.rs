@@ -193,6 +193,8 @@ pub enum InteropError {
     },
     /// An invariant was broken
     Invariant(Box<String>),
+    /// A callback could not run immediately because its script context is busy running another callback
+    ContextBusy(Box<String>),
     /// An unregistered component or resource type was used
     UnregisteredComponentOrResourceType {
         /// The typeId
@@ -404,6 +406,16 @@ impl InteropError {
         }
     }
 
+    /// Creates a new error for a callback which could not run immediately because its script context is busy.
+    pub fn context_busy(reason: String) -> Self {
+        Self::ContextBusy(Box::new(reason))
+    }
+
+    /// Whether this is a [`Self::ContextBusy`] error, i.e. whether the callback would work if run later.
+    pub fn is_context_busy(&self) -> bool {
+        matches!(self, Self::ContextBusy(_))
+    }
+
     /// Creates a new unsupported operation error.
     pub fn unsupported_operation(
         base: Option<TypeId>,
@@ -590,6 +602,7 @@ impl DisplayWithTypeInfo for InteropError {
                     context
                 )
             }
+            InteropError::ContextBusy(reason) => write!(f, "{reason}"),
             InteropError::Invariant(i) => {
                 write!(f, "Invariant broken: {i}")
             }

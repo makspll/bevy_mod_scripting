@@ -15,8 +15,8 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, ScriptEvent,
-    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, QueuedScriptCallback,
+    ScriptEvent, ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
 };
@@ -44,8 +44,8 @@ use bevy_ecs::{
     system::Commands,
     world::{CommandQueue, DeferredWorld, EntityRef, Mut},
 };
-use bevy_mod_scripting_asset::{Language, ScriptAsset};
-use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_asset::ScriptAsset;
+use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
 use bevy_reflect::{GetTypeRegistration, Reflect, TypeInfo, TypeRegistration, TypeRegistry};
 use bevy_system_reflection::ReflectSchedule;
@@ -230,33 +230,37 @@ pub trait WorldExtensions {
         allow_existing: bool,
     ) -> Result<ScriptEventRegistration, InteropError>;
 
-    /// Spawns an observer which calls `callback` with the payload whenever the script event is triggered.
+    /// Spawns an observer which queues the callback `label` on the script `attachment`, with the payload as argument, whenever the script event is triggered.
     ///
-    /// Callbacks run when the commands of the triggering operation are applied, see [`Self::add_script_observer`].
+    /// See [`Self::add_script_observer`] for when callbacks run.
     fn add_script_event_observer(
         &self,
         event: ScriptEventRegistration,
-        callback: DynamicScriptFunction,
-        language: Language,
+        label: String,
+        attachment: ScriptAttachment,
+        instant: bool,
     ) -> Result<Entity, InteropError>;
 
-    /// Triggers a script event with the given payload, observers run before this returns (or rather, their commands are applied before it returns).
+    /// Triggers a script event with the given payload, observers of the event queue their callbacks.
     fn trigger_script_event(
         &self,
         event: ScriptEventRegistration,
         payload: ScriptValue,
     ) -> Result<(), InteropError>;
 
-    /// Spawns an observer which calls `callback` whenever an event of the given type is triggered.
+    /// Spawns an observer which queues the callback `label` on the script `attachment` whenever an event of the given type is triggered.
     ///
     /// The event type must have [`ReflectEvent`] type data. For events which are triggered for components
     /// (i.e. the lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent`, `DespawnEvent`), the observer runs for the given components.
     /// If `entities` is non-empty, it only runs for those entities.
     ///
-    /// The callback receives a clone of the event as its only argument.
-    /// It runs as soon as the commands queued by the triggering operation are applied, which is right after the operation finishes,
-    /// meaning the world is already past the change (i.e. removed component data is no longer readable).
-    /// Errors in the callback are logged.
+    /// The callback receives a clone of the event as its only argument, and is run by the same machinery as every other script callback:
+    /// * by default it is queued (see [`AppScriptCallbackRunners::queue`]), and runs once the callback which triggered the event finishes
+    ///   (or at the latest when the handler systems next run queued callbacks).
+    /// * if `instant` is set it runs right after the operation which triggered the event, and fails (the error is logged) if the script's
+    ///   context is busy running another callback, e.g. the one that triggered the event.
+    ///
+    /// The world is already past the change in either case (i.e. removed component data is no longer readable).
     ///
     /// Returns the observer entity, despawn it to remove the observer.
     fn add_script_observer(
@@ -264,8 +268,9 @@ pub trait WorldExtensions {
         event: ScriptTypeRegistration,
         components: Vec<ScriptComponentRegistration>,
         entities: Vec<Entity>,
-        callback: DynamicScriptFunction,
-        language: Language,
+        label: String,
+        attachment: ScriptAttachment,
+        instant: bool,
     ) -> Result<Entity, InteropError>;
 
     /// Writes a reflected [`bevy_ecs::message::Message`] (buffered) to the world, using the type's [`ReflectMessage`] type data.
@@ -903,8 +908,9 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         event: ScriptTypeRegistration,
         components: Vec<ScriptComponentRegistration>,
         entities: Vec<Entity>,
-        callback: DynamicScriptFunction,
-        language: Language,
+        label: String,
+        attachment: ScriptAttachment,
+        instant: bool,
     ) -> Result<Entity, InteropError> {
         let reflect_event = event
             .type_registration()
@@ -913,6 +919,10 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 InteropError::missing_type_data(event.type_id(), "ReflectEvent".to_owned())
             })?
             .clone();
+        let allocator = self.allocator().clone();
+        let runners = self.script_callback_runners().clone();
+        let recipients = Recipients::from(attachment);
+
         let mut observer = reflect_event.create_observer(Box::new(move |event, mut world| {
             let value = match event.reflect_clone() {
                 Ok(value) => value,
@@ -921,17 +931,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                     return;
                 }
             };
-            queue_observer_callback(
+            let reference = ReflectReference::new_allocated_boxed(value, &mut allocator.write());
+            run_observer_callback(
                 &mut world,
-                callback.clone(),
-                language.clone(),
-                move |guard| {
-                    let reference = ReflectReference::new_allocated_boxed(
-                        value,
-                        &mut guard.allocator().write(),
-                    );
-                    ScriptValue::Reference(reference)
-                },
+                &runners,
+                &recipients,
+                &label,
+                ScriptValue::Reference(reference),
+                instant,
             );
         }));
         for component in components {
@@ -970,18 +977,25 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     fn add_script_event_observer(
         &self,
         event: ScriptEventRegistration,
-        callback: DynamicScriptFunction,
-        language: Language,
+        label: String,
+        attachment: ScriptAttachment,
+        instant: bool,
     ) -> Result<Entity, InteropError> {
         let name = event.name;
+        let runners = self.script_callback_runners().clone();
+        let recipients = Recipients::from(attachment);
         let observer = Observer::new(move |event: On<ScriptEvent>, mut world: DeferredWorld| {
             if event.name != name {
                 return;
             }
-            let payload = event.payload.clone();
-            queue_observer_callback(&mut world, callback.clone(), language.clone(), move |_| {
-                payload
-            });
+            run_observer_callback(
+                &mut world,
+                &runners,
+                &recipients,
+                &label,
+                event.payload.clone(),
+                instant,
+            );
         });
         self.with_world_mut(|world| world.spawn(observer).id())
     }
@@ -996,7 +1010,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 name: event.name,
                 payload,
             });
-            // run the callbacks queued by observers
+            // apply the commands of observers, i.e. instant observer callbacks
             world.flush();
         })
     }
@@ -1699,21 +1713,43 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     // }
 }
 
-/// Queues a call of a script observer callback, to be run when the commands of the triggering operation are applied.
+/// Delivers an event to the callback of a script observer through the callback runners.
 ///
-/// `make_arg` creates the callback's argument once the callback runs and has world access.
-fn queue_observer_callback(
+/// Queues the callback, unless `instant` is set, in which case it runs once the commands of the triggering operation are applied,
+/// and errors (including the script's context being busy) are logged.
+fn run_observer_callback(
     world: &mut DeferredWorld,
-    callback: DynamicScriptFunction,
-    language: Language,
-    make_arg: impl FnOnce(&WorldGuard) -> ScriptValue + Send + 'static,
+    runners: &AppScriptCallbackRunners,
+    recipients: &Recipients,
+    label: &str,
+    arg: ScriptValue,
+    instant: bool,
 ) {
+    if !instant {
+        runners.queue(QueuedScriptCallback {
+            recipients: recipients.clone(),
+            label: label.to_owned(),
+            args: vec![arg],
+        });
+        return;
+    }
+    let runners = runners.clone();
+    let recipients = recipients.clone();
+    let label = label.to_owned();
     world.commands().queue(move |world: &mut World| {
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         WorldGuard::with_static_guard(world, cache, |guard| {
-            let arg = make_arg(&guard);
-            if let Err(e) = callback.call([arg], FunctionCallContext::new(language)) {
-                bevy_log::error!("error in script observer callback: {e}");
+            match runners.run(guard, &recipients, &label, vec![arg]) {
+                Ok(results) => {
+                    for (attachment, result) in results {
+                        if let Err(e) = result {
+                            bevy_log::error!(
+                                "error in instant observer callback `{label}` of script {attachment}: {e}"
+                            );
+                        }
+                    }
+                }
+                Err(e) => bevy_log::error!("could not run observer callback `{label}`: {e}"),
             }
         })
     });
@@ -2344,6 +2380,42 @@ mod test {
         assert_eq!(comp.source, CatalogueSource::Script);
         assert!(built.get_by_short_name("CatalogueBundle").is_some());
         assert!(built.flat_view().contains_key("CatalogueBundle"));
+    }
+
+    #[test]
+    fn script_event_observers_queue_by_default_and_run_right_away_when_instant() {
+        use bevy_mod_scripting_asset::Language;
+
+        let mut world = setup_world(|_, _| {});
+        let runners = AppScriptCallbackRunners::default();
+        let ran = Arc::new(parking_lot::Mutex::new(Vec::<String>::new()));
+        let r = ran.clone();
+        runners.register(
+            Language::Lua,
+            Arc::new(move |_, _, label, _| {
+                r.lock().push(label.to_owned());
+                Ok(vec![])
+            }),
+        );
+        world.insert_resource(runners.clone());
+        let attachment = ScriptAttachment::StaticScript(Handle::default());
+
+        let guard = make_guard(&mut world);
+        let event = guard.register_script_event("E".to_owned(), false).unwrap();
+        guard
+            .add_script_event_observer(event.clone(), "queued_cb".into(), attachment.clone(), false)
+            .unwrap();
+        guard
+            .add_script_event_observer(event.clone(), "instant_cb".into(), attachment, true)
+            .unwrap();
+        guard
+            .trigger_script_event(event, ScriptValue::Unit)
+            .unwrap();
+
+        assert_eq!(*ran.lock(), vec!["instant_cb"]);
+        assert!(runners.has_queued());
+        assert_eq!(runners.pop_queued().unwrap().label, "queued_cb");
+        assert!(!runners.has_queued());
     }
 
     #[test]
