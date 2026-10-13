@@ -13,12 +13,13 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
-          save-if: ${{ github.ref == 'refs/heads/main' }}
+          # shares the cache of the benchmarks job which runs on main
+          shared-key: bencher-ubuntu-latest
+          save-if: false
           cache-all-crates: true
       - name: Run `cargo xtask init`
         run: |
-          cargo xtask init
+          cargo xtask init --dont-update-ide --tools
       - name: Run `cargo xtask bench` and save results
         run: |
           cargo xtask bench > benchmark_results.txt
