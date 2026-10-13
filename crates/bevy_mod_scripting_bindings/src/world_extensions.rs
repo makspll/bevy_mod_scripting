@@ -2338,6 +2338,30 @@ mod test {
     }
 
     #[test]
+    fn first_script_namespace_wins() {
+        use crate::{ScriptNamespace, set_script_namespace_if_unset};
+
+        #[derive(Reflect)]
+        struct Contested;
+
+        let mut world = setup_world(|_, registry| {
+            registry.register::<Contested>();
+            set_script_namespace_if_unset::<Contested>(registry, "first");
+            set_script_namespace_if_unset::<Contested>(registry, "second");
+            // the same namespace again is fine
+            set_script_namespace_if_unset::<Contested>(registry, "first");
+        });
+        let guard = make_guard(&mut world);
+        let registry = guard.type_registry();
+        let registry = registry.read();
+        let namespace = registry
+            .get(TypeId::of::<Contested>())
+            .and_then(|r| r.data::<ScriptNamespace>())
+            .unwrap();
+        assert_eq!(namespace.0, "first");
+    }
+
+    #[test]
     fn type_catalogue_is_shared_and_refreshes_on_new_types() {
         use crate::AppScriptTypeCatalogue;
 

@@ -888,7 +888,8 @@ impl World {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "reflect_reference_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ReflectReference {
     /// If this is an enum, returns a reference to the variant it is currently in.
@@ -1236,7 +1237,8 @@ impl ReflectReference {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "enum_variant_ref_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl EnumVariantRef {
     /// Retrieves the name of the variant.
@@ -1278,7 +1280,8 @@ impl EnumVariantRef {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_type_registration_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptTypeRegistration {
     /// Retrieves the name of the type.
@@ -1320,7 +1323,8 @@ impl ScriptTypeRegistration {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_component_registration_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptComponentRegistration {
     /// Retrieves the name of the type.
@@ -1362,7 +1366,8 @@ impl ScriptComponentRegistration {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_resource_registration_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptResourceRegistration {
     /// Retrieves the name of the type.
@@ -1404,7 +1409,8 @@ impl ScriptResourceRegistration {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_bundle_registration_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptBundleRegistration {
     /// Retrieves the name of the type.
@@ -1463,7 +1469,8 @@ impl ScriptBundleRegistration {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_builder_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptQueryBuilder {
     /// Adds a component to be retrieved by the query
@@ -1541,7 +1548,8 @@ impl ScriptQueryBuilder {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_result_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptQueryResult {
     /// Retrieves the entity from the query result.
@@ -1673,7 +1681,8 @@ impl ReflectSystem {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_system_builder_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptSystemBuilder {
     /// Adds a query to the system builder.
@@ -1759,7 +1768,8 @@ impl ScriptSystemBuilder {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_attachment_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl ScriptAttachment {
     /// Creates a new script attachment descriptor from a script asset.
@@ -1798,7 +1808,8 @@ impl ScriptAttachment {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "recipients_functions",
-    core
+    core,
+    namespace = "bevy_mod_scripting"
 )]
 impl Recipients {
     /// Targets every loaded script, once per script even if scripts share a context.

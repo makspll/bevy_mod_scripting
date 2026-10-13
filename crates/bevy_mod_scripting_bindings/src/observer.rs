@@ -1,5 +1,6 @@
 //! Support for scripts observing events.
 
+use crate::ScriptNamespaceAppExt;
 use bevy_app::{App, Plugin};
 use bevy_ecs::{
     lifecycle::{AddEvent, DespawnEvent, DiscardEvent, InsertEvent, RemoveEvent},
@@ -11,7 +12,7 @@ pub struct ScriptObserverPlugin;
 
 impl Plugin for ScriptObserverPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<crate::ScriptEventRegistration>()
+        app.set_script_namespace::<crate::ScriptEventRegistration>("bevy_mod_scripting")
             .register_type::<AddEvent>()
             .register_type_data::<AddEvent, ReflectEvent>()
             .register_type::<InsertEvent>()

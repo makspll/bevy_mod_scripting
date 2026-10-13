@@ -57,9 +57,11 @@ pub fn script_bindings(
     let mark_as_generated = if args.generated {
         quote_spanned! {impl_span=>
 
-            let registry = world.get_resource_or_init::<AppTypeRegistry>();
-            let mut registry = registry.write();
-            registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsGenerated>();
+            {
+                let registry = world.get_resource_or_init::<AppTypeRegistry>();
+                let mut registry = registry.write();
+                registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsGenerated>();
+            }
         }
     } else {
         Default::default()
@@ -67,9 +69,11 @@ pub fn script_bindings(
 
     let mark_as_core = if bms_bindings_path.is_ident("crate") || args.core {
         quote_spanned! {impl_span=>
-            let registry = world.get_resource_or_init::<AppTypeRegistry>();
-            let mut registry = registry.write();
-            registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsCore>();
+            {
+                let registry = world.get_resource_or_init::<AppTypeRegistry>();
+                let mut registry = registry.write();
+                registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsCore>();
+            }
         }
     } else {
         Default::default()
@@ -77,12 +81,25 @@ pub fn script_bindings(
 
     let mark_as_significant = if args.significant {
         quote_spanned! {impl_span=>
-            let registry = world.get_resource_or_init::<AppTypeRegistry>();
-            let mut registry = registry.write();
-            registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsSignificant>();
+            {
+                let registry = world.get_resource_or_init::<AppTypeRegistry>();
+                let mut registry = registry.write();
+                registry.register_type_data::<#type_ident_with_generics, #bms_bindings_path::MarkAsSignificant>();
+            }
         }
     } else {
         Default::default()
+    };
+
+    let set_namespace = match &args.namespace {
+        Some(namespace) => quote_spanned! {impl_span=>
+            {
+                let registry = world.get_resource_or_init::<AppTypeRegistry>();
+                let mut registry = registry.write();
+                #bms_bindings_path::set_script_namespace_if_unset::<#type_ident_with_generics>(&mut registry, #namespace);
+            }
+        },
+        None => Default::default(),
     };
 
     let use_dummy = if args.use_dummy_registry {
@@ -102,6 +119,7 @@ pub fn script_bindings(
             #mark_as_generated
             #mark_as_core
             #mark_as_significant
+            #set_namespace
         }
 
         #impl_block
@@ -126,6 +144,8 @@ struct Args {
     /// If true will register into the [`DummyScriptFunctionRegistry`] instead of the full one.
     /// This is useful for documenting functions without actually making them available, if you're exposing them another way.
     pub use_dummy_registry: bool,
+    /// If set, puts the type in the given script namespace (if it is not in one already), instead of the one named after its crate
+    pub namespace: Option<syn::LitStr>,
 
     pub shared_args: SharedArgs,
 }
@@ -140,6 +160,7 @@ impl Default for Args {
             core: Default::default(),
             significant: Default::default(),
             use_dummy_registry: Default::default(),
+            namespace: Default::default(),
             shared_args: Default::default(),
         }
     }
@@ -176,6 +197,11 @@ impl Args {
 
         if meta.path.is_ident("significant") {
             self.significant = true;
+            return Ok(());
+        }
+
+        if meta.path.is_ident("namespace") {
+            self.namespace = Some(meta.value()?.parse()?);
             return Ok(());
         }
 

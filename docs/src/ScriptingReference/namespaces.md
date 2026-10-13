@@ -17,7 +17,20 @@ print(types.Transform:namespace()) -- bevy_transform
 
 Components and bundles registered by scripts are in the root namespace for now.
 
+BMS' own types (`ScriptTypeRegistration`, `ScriptAttachment`, `ReflectReference`, ...) are in the `bevy_mod_scripting` namespace, instead of the internal crates they happen to be defined in.
+
 ## Overriding the namespace of a type
+
+For types with script bindings, the simplest way is the `namespace` argument of `script_bindings`:
+
+```rust,ignore
+#[script_bindings(namespace = "my_namespace")]
+impl MyType { /* ... */ }
+```
+
+If the type is already in a different namespace when this runs, a warning is logged and the first namespace wins.
+
+Otherwise:
 
 Rust types can pick a different namespace than their crate, for example when a type is defined in a crate other than the one users think of it as belonging to:
 

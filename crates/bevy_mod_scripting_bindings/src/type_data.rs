@@ -65,6 +65,30 @@ impl<T> CreateTypeData<T, String> for ScriptNamespace {
     }
 }
 
+/// Puts `T` in the given script namespace, unless it was already put in a namespace.
+///
+/// If `T` is already in a different namespace a warning is logged, and the first namespace wins.
+/// `T` must be registered. This is what the `namespace` argument of `script_bindings` uses.
+pub fn set_script_namespace_if_unset<T: bevy_reflect::Reflect + bevy_reflect::TypePath>(
+    registry: &mut bevy_reflect::TypeRegistry,
+    namespace: &'static str,
+) {
+    if let Some(existing) = registry
+        .get(std::any::TypeId::of::<T>())
+        .and_then(|r| r.data::<ScriptNamespace>())
+    {
+        if existing.0 != namespace {
+            bevy_log::warn!(
+                "type `{}` is already in the script namespace `{}`, ignoring attempt to put it in `{namespace}`",
+                T::type_path(),
+                existing.0
+            );
+        }
+        return;
+    }
+    registry.register_type_data_with::<T, ScriptNamespace, _>(namespace);
+}
+
 /// Extension for setting the script namespace of types.
 pub trait ScriptNamespaceAppExt {
     /// Registers `T` if it is not registered yet, and puts it in the given script namespace.
