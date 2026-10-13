@@ -396,8 +396,8 @@ impl Plugin for DynamicScriptComponentPlugin {
         app.init_resource::<AppScriptComponentRegistry>()
             .register_type::<DynamicComponent>()
             .register_type::<DynamicBundle>()
-            .set_script_namespace::<DynamicComponent>("bevy_mod_scripting")
-            .set_script_namespace::<DynamicBundle>("bevy_mod_scripting");
+            .set_script_namespace::<DynamicComponent>("bms")
+            .set_script_namespace::<DynamicBundle>("bms");
     }
 }
 

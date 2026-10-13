@@ -12,7 +12,7 @@ pub struct ScriptObserverPlugin;
 
 impl Plugin for ScriptObserverPlugin {
     fn build(&self, app: &mut App) {
-        app.set_script_namespace::<crate::ScriptEventRegistration>("bevy_mod_scripting")
+        app.set_script_namespace::<crate::ScriptEventRegistration>("bms")
             .register_type::<AddEvent>()
             .register_type_data::<AddEvent, ReflectEvent>()
             .register_type::<InsertEvent>()

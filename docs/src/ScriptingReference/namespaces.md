@@ -17,7 +17,7 @@ print(types.Transform:namespace()) -- bevy_transform
 
 Components and bundles registered by scripts are in the root namespace for now.
 
-BMS' own types (`ScriptTypeRegistration`, `ScriptAttachment`, `ReflectReference`, ...) are in the `bevy_mod_scripting` namespace, instead of the internal crates they happen to be defined in.
+BMS' own types (`ScriptTypeRegistration`, `ScriptAttachment`, `ReflectReference`, ...) are in the `bms` namespace, instead of the internal crates they happen to be defined in.
 
 ## Overriding the namespace of a type
 
