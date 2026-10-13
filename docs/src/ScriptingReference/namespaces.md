@@ -115,3 +115,11 @@ The exported function is a callback of the exporting script, given by its label:
 * Calls look the export up every time, so a replaced export is picked up, and calling an export which no longer exists fails with a clear error.
 * Exporting an already exported path is an error, unless it is the same script exporting again (which replaces the export, as happens when a script runs again). Exports cannot share a path with a component or bundle.
 * `export` can only be called from a script callback, as the callback belongs to the calling script.
+
+### Reloading and unloading
+
+When a script is unloaded, or about to be reloaded, its exports and its observers (see [Events and Messages](./events-and-messages.md)) are removed, right after its `on_script_unloaded` callback ran. Calling an export that was removed fails with an error saying it does not exist anymore, and a namespace with nothing left in it does not exist anymore either.
+
+A reloaded script exports again when it runs again, so put `export` calls in a callback that runs on load (such as `on_script_loaded`). Because lookups happen on every call, functions imported before the reload keep working once the reloaded script exported the same name.
+
+Components, bundles and events registered by scripts stay registered when their script unloads, as Bevy can not unregister components. Scripts which run again register them with `allow_existing` to get the existing registrations.

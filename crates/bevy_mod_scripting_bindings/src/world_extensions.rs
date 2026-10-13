@@ -949,7 +949,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             .clone();
         let allocator = self.allocator().clone();
         let runners = self.script_callback_runners().clone();
-        let recipients = Recipients::from(attachment);
+        let recipients = Recipients::from(attachment.clone());
 
         let mut observer = reflect_event.create_observer(Box::new(move |event, mut world| {
             let value = match event.reflect_clone() {
@@ -974,7 +974,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         if !entities.is_empty() {
             observer = observer.with_entities(entities);
         }
-        self.with_world_mut(|world| world.spawn(observer).id())
+        // removed again when the script is unloaded
+        self.with_world_mut(|world| {
+            world
+                .spawn((observer, crate::ScriptObserverOwner(attachment)))
+                .id()
+        })
     }
 
     fn register_script_export(
@@ -1065,7 +1070,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     ) -> Result<Entity, InteropError> {
         let name = event.name;
         let runners = self.script_callback_runners().clone();
-        let recipients = Recipients::from(attachment);
+        let recipients = Recipients::from(attachment.clone());
         let observer = Observer::new(move |event: On<ScriptEvent>, mut world: DeferredWorld| {
             if event.name != name {
                 return;
@@ -1078,7 +1083,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 event.payload.clone(),
             );
         });
-        self.with_world_mut(|world| world.spawn(observer).id())
+        // removed again when the script is unloaded
+        self.with_world_mut(|world| {
+            world
+                .spawn((observer, crate::ScriptObserverOwner(attachment)))
+                .id()
+        })
     }
 
     fn trigger_script_event(
@@ -2810,6 +2820,56 @@ mod test {
             .unwrap_err()
             .to_string();
         assert!(err.contains("does not exist"), "{err}");
+    }
+
+    #[test]
+    fn unloading_a_script_removes_its_exports_and_observers_only() {
+        let mut world = setup_world(|_, _| {});
+        world.insert_resource(AppScriptComponentRegistry::default());
+        let (a, b, observers) = {
+            let guard = make_guard(&mut world);
+            let (a, b) = (guard.spawn().unwrap(), guard.spawn().unwrap());
+            let owner_a = ScriptAttachment::EntityScript(a, Handle::default());
+            let owner_b = ScriptAttachment::EntityScript(b, Handle::default());
+
+            guard
+                .register_script_export("script.game", "one", "f".into(), owner_a.clone())
+                .unwrap();
+            guard
+                .register_script_export("script.game", "two", "f".into(), owner_b.clone())
+                .unwrap();
+            let event = guard
+                .register_script_event("script.game", "Ev", false)
+                .unwrap();
+            let observers = [
+                guard
+                    .add_script_event_observer(event.clone(), "f".into(), owner_a)
+                    .unwrap(),
+                guard
+                    .add_script_event_observer(event, "f".into(), owner_b)
+                    .unwrap(),
+            ];
+            (a, b, observers)
+        };
+
+        crate::remove_script_registrations(
+            &mut world,
+            &ScriptAttachment::EntityScript(a, Handle::default()),
+        );
+
+        let registry = world.resource::<AppScriptComponentRegistry>().read();
+        assert!(registry.get_export("script.game.one").is_none());
+        assert!(registry.get_export("script.game.two").is_some());
+        drop(registry);
+        assert!(
+            world.get_entity(observers[0]).is_err(),
+            "the observer of the unloaded script is removed"
+        );
+        assert!(
+            world.get_entity(observers[1]).is_ok(),
+            "other scripts' observers stay"
+        );
+        let _ = b;
     }
 
     #[test]

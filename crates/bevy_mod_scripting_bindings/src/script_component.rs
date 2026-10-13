@@ -9,7 +9,7 @@ use ::{
     bevy_app::{App, Plugin},
     bevy_ecs::component::{Component, Mutable, StorageType},
 };
-use bevy_ecs::resource::Resource;
+use bevy_ecs::{entity::Entity, resource::Resource, world::World};
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::std_traits::ReflectDefault;
@@ -356,6 +356,30 @@ impl ScriptExport {
     }
 }
 
+/// Marks the entity of an observer added by a script, which is removed when the script is unloaded.
+#[derive(Component, Clone, Debug)]
+pub struct ScriptObserverOwner(pub ScriptAttachment);
+
+/// Removes everything a script registered which is tied to the script running: its exports and its observers.
+///
+/// Called when the script is unloaded (also when it is about to be reloaded, the script registers them again when it runs).
+/// Components, bundles and events stay registered, as Bevy can not unregister components, scripts re-registering them
+/// on reload use `allow_existing`.
+pub fn remove_script_registrations(world: &mut World, attachment: &ScriptAttachment) {
+    if let Some(registry) = world.get_resource::<AppScriptComponentRegistry>() {
+        registry.write().remove_exports_of(attachment);
+    }
+    let observers = world
+        .query::<(Entity, &ScriptObserverOwner)>()
+        .iter(world)
+        .filter(|(_, owner)| owner.0 == *attachment)
+        .map(|(entity, _)| entity)
+        .collect::<Vec<_>>();
+    for observer in observers {
+        world.despawn(observer);
+    }
+}
+
 /// Some metadata about dynamic script components
 pub struct DynamicComponentInfo {
     /// The name of the component within its namespace
@@ -510,6 +534,13 @@ impl ScriptComponentRegistry {
         }
         self.exports.insert(path, export);
         Ok(())
+    }
+
+    /// Removes all exports of the given script, returns how many there were
+    pub fn remove_exports_of(&mut self, owner: &ScriptAttachment) -> usize {
+        let before = self.exports.len();
+        self.exports.retain(|_, export| export.owner != *owner);
+        before - self.exports.len()
     }
 
     /// Gets an export by its full path
