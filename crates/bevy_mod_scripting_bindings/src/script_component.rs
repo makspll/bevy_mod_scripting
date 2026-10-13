@@ -91,6 +91,7 @@ impl AppScriptComponentRegistry {
 pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
     bundles: HashMap<String, ScriptBundleRegistration>,
+    generation: u64,
 }
 
 #[profiling::all_functions]
@@ -98,6 +99,7 @@ impl ScriptComponentRegistry {
     /// Registers a dynamic script component, possibly overwriting an existing one
     pub fn register(&mut self, info: DynamicComponentInfo) {
         self.components.insert(info.name.clone(), info);
+        self.generation += 1;
     }
 
     /// Gets a dynamic script component by name
@@ -108,6 +110,24 @@ impl ScriptComponentRegistry {
     /// Registers a dynamic script bundle, possibly overwriting an existing one
     pub fn register_bundle(&mut self, name: String, registration: ScriptBundleRegistration) {
         self.bundles.insert(name, registration);
+        self.generation += 1;
+    }
+
+    /// A counter which changes whenever a component or bundle is registered.
+    ///
+    /// Lookups of existing registrations do not change it.
+    pub fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    /// Iterates over all registered script components
+    pub fn iter_components(&self) -> impl Iterator<Item = &DynamicComponentInfo> {
+        self.components.values()
+    }
+
+    /// Iterates over all registered script bundles by name
+    pub fn iter_bundles(&self) -> impl Iterator<Item = (&String, &ScriptBundleRegistration)> {
+        self.bundles.iter()
     }
 
     /// Gets a dynamic script bundle by name

@@ -57,6 +57,15 @@ impl CatalogueRegistration {
     }
 }
 
+/// Where a catalogue entry came from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CatalogueSource {
+    /// Registered through the type registry
+    Native,
+    /// Registered at runtime by a script
+    Script,
+}
+
 /// A single type known to the catalogue.
 #[derive(Clone)]
 pub struct CatalogueEntry {
@@ -66,6 +75,8 @@ pub struct CatalogueEntry {
     pub short_name: Arc<str>,
     /// The registration of the type
     pub registration: CatalogueRegistration,
+    /// Where the entry came from
+    pub source: CatalogueSource,
 }
 
 /// An index of types available to scripts.
@@ -139,6 +150,28 @@ impl ScriptTypeCatalogue {
                 path,
                 short_name,
                 registration: CatalogueRegistration::from_any(registration),
+                source: CatalogueSource::Native,
+            });
+        }
+        drop(type_registry);
+
+        // script registered entries go last so native types win short name clashes
+        let script_registry = guard.component_registry();
+        let script_registry = script_registry.read();
+        for info in script_registry.iter_components() {
+            catalogue.insert(CatalogueEntry {
+                path: info.name.as_str().into(),
+                short_name: info.name.as_str().into(),
+                registration: CatalogueRegistration::Component(info.registration.clone()),
+                source: CatalogueSource::Script,
+            });
+        }
+        for (name, bundle) in script_registry.iter_bundles() {
+            catalogue.insert(CatalogueEntry {
+                path: name.as_str().into(),
+                short_name: name.as_str().into(),
+                registration: CatalogueRegistration::Bundle(bundle.clone()),
+                source: CatalogueSource::Script,
             });
         }
         Ok(catalogue)
@@ -156,8 +189,8 @@ impl ScriptTypeCatalogue {
 }
 
 struct Cached {
-    /// (number of registered types, number of registered components) at build time
-    stamp: (usize, usize),
+    /// (registered types, registered components, script registry generation) at build time
+    stamp: (usize, usize, u64),
     catalogue: Arc<ScriptTypeCatalogue>,
 }
 
@@ -183,10 +216,11 @@ impl AppScriptTypeCatalogue {
         }
     }
 
-    fn stamp(guard: &WorldGuard) -> Result<(usize, usize), InteropError> {
+    fn stamp(guard: &WorldGuard) -> Result<(usize, usize, u64), InteropError> {
         let types = guard.type_registry().read().iter().count();
         let components = guard.with_world_access(|w| w.components().len())?;
-        Ok((types, components))
+        let script_generation = guard.component_registry().read().generation();
+        Ok((types, components, script_generation))
     }
 
     /// Returns an up to date catalogue, rebuilding it if types or components were registered since the last call.

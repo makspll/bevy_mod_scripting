@@ -12,11 +12,12 @@ use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_derive::script_globals;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
+use std::sync::Arc;
 
 use crate::{AnyTypeRegistrationV, WorldExtensions, function::from::V};
 use crate::{docgen::into_through_type_info, error::InteropError};
 
-use super::{AppScriptGlobalsRegistry, AppScriptTypeCatalogue};
+use super::{AppScriptGlobalsRegistry, AppScriptTypeCatalogue, ScriptGlobalResync};
 
 /// A plugin introducing core globals for the BMS framework.
 ///
@@ -54,6 +55,15 @@ impl Plugin for CoreScriptGlobalsPlugin {
         }
 
         register_core_globals(app.world_mut());
+
+        // script registered components and bundles show up in `types` after contexts were created
+        let registry = app.world().resource::<AppScriptGlobalsRegistry>().clone();
+        if let Some(types) = registry.write().get_mut("types") {
+            types.resync = Some(ScriptGlobalResync {
+                generation_key: "__bms_types_generation".into(),
+                generation: Arc::new(|guard| Ok(guard.component_registry().read().generation())),
+            });
+        }
     }
 }
 const MSG_DUPLICATE_GLOBAL: &str = "This can cause confusing issues for script users, use `CoreScriptGlobalsPlugin.filter` to filter out uneeded duplicate types.";
@@ -119,7 +129,8 @@ impl CoreGlobals {
     ///
     /// You can use this to avoid having to store type references.
     ///
-    /// Note that this cache will NOT contain types manually registered by scripts via `register_new_component`.
+    /// Components and bundles registered by scripts via `register_new_component` and `register_new_bundle` are included,
+    /// and are added to live contexts before their next callback runs.
     fn types(guard: WorldGuard) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
         let catalogue = guard.with_resource(|c: &AppScriptTypeCatalogue| c.clone())?;
         let catalogue = catalogue.get(guard)?;

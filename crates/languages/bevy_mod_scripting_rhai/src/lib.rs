@@ -15,7 +15,7 @@ use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
     AppScriptGlobalsRegistry, InteropError, Namespace, PartialReflectExt, ScriptValue,
-    WorldExtensions,
+    WorldExtensions, initial_generation, resync_globals,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
@@ -208,7 +208,13 @@ impl Default for RhaiScriptingPlugin {
                         for (key, global) in globals_registry.iter() {
                             match &global.maker {
                                 Some(maker) => {
+                                    let generation = initial_generation(&world, global)?;
                                     let global = (maker)(world.clone())?;
+                                    if let Some((key, generation)) = generation {
+                                        context
+                                            .scope
+                                            .set_or_push(key.to_string(), generation as i64);
+                                    }
                                     context.scope.set_or_push(
                                         key.to_string(),
                                         global
@@ -262,6 +268,23 @@ impl Default for RhaiScriptingPlugin {
                 ],
                 context_pre_handling_initializers: vec![|context_key, context| {
                     let world = ThreadWorldContainer.try_get_context()?.world;
+
+                    // bring resyncable globals (i.e. `types`) up to date
+                    resync_globals(
+                        &world,
+                        &world.script_globals_registry().read(),
+                        |name, key, current, make| {
+                            if context.scope.get_value::<i64>(key) == Some(current as i64) {
+                                return Ok(());
+                            }
+                            let value = make()?
+                                .into_dynamic()
+                                .map_err(IntoInteropError::into_bms_error)?;
+                            context.scope.set_or_push(name.to_owned(), value);
+                            context.scope.set_or_push(key.to_owned(), current as i64);
+                            Ok(())
+                        },
+                    )?;
 
                     if let Some(entity) = context_key.entity() {
                         context.scope.set_or_push(

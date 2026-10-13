@@ -51,6 +51,63 @@ pub struct ScriptGlobal {
     pub type_id: TypeId,
     /// Rich type information the global variable.
     pub type_information: ThroughTypeInfo,
+    /// If set, languages re-create this global in live contexts whenever its generation changes.
+    pub resync: Option<ScriptGlobalResync>,
+}
+
+/// Describes how a global is kept up to date in contexts which outlive changes to its contents.
+///
+/// Before callbacks run, languages compare [`Self::generation`] with the generation the context last saw
+/// (stored by the language under [`Self::generation_key`]), and if they differ call the global's maker again.
+#[derive(Clone)]
+pub struct ScriptGlobalResync {
+    /// The name of the hidden value in which a context remembers the generation it last saw
+    pub generation_key: Cow<'static, str>,
+    /// Returns the current generation of the global's contents, must be cheap
+    pub generation: Arc<dyn Fn(&WorldGuard) -> Result<u64, InteropError> + Send + Sync>,
+}
+
+/// Visits the resyncable globals of a registry so a context can re-create the out of date ones.
+///
+/// `sync` is given the global's name, its generation key, its current generation and a function which creates the new value.
+/// It should compare the generation with the one stored in the context under the key,
+/// and if they differ set both the new value and the new generation in the context.
+pub fn resync_globals(
+    world: &WorldGuard,
+    registry: &ScriptGlobalsRegistry,
+    mut sync: impl FnMut(
+        &str,
+        &str,
+        u64,
+        &dyn Fn() -> Result<ScriptValue, InteropError>,
+    ) -> Result<(), InteropError>,
+) -> Result<(), InteropError> {
+    for (name, global) in registry.iter() {
+        let (Some(resync), Some(maker)) = (&global.resync, &global.maker) else {
+            continue;
+        };
+        let current = (resync.generation)(world)?;
+        sync(name, &resync.generation_key, current, &|| {
+            (maker)(world.clone())
+        })?;
+    }
+    Ok(())
+}
+
+/// Reads the generation of a resyncable global to store alongside its value on context creation.
+///
+/// Must be called before running the global's maker so that concurrent registrations are picked up by the next resync.
+pub fn initial_generation(
+    world: &WorldGuard,
+    global: &ScriptGlobal,
+) -> Result<Option<(Cow<'static, str>, u64)>, InteropError> {
+    match &global.resync {
+        Some(resync) => Ok(Some((
+            resync.generation_key.clone(),
+            (resync.generation)(world)?,
+        ))),
+        None => Ok(None),
+    }
 }
 
 /// A dummy global variable that documents globals set via alternative ways.
@@ -130,6 +187,7 @@ impl ScriptGlobalsRegistry {
         self.globals.insert(
             name.into(),
             ScriptGlobal {
+                resync: None,
                 maker: Some(Self::type_erase_maker(maker)),
                 documentation: None,
                 type_id: TypeId::of::<T>(),
@@ -192,6 +250,7 @@ impl ScriptGlobalsRegistry {
         self.globals.insert(
             name.into(),
             ScriptGlobal {
+                resync: None,
                 maker: Some(Self::type_erase_maker(maker)),
                 documentation: Some(documentation.into()),
                 type_id: TypeId::of::<T>(),
@@ -209,6 +268,7 @@ impl ScriptGlobalsRegistry {
         self.globals.insert(
             name,
             ScriptGlobal {
+                resync: None,
                 maker: None,
                 documentation: None,
                 type_id: TypeId::of::<T>(),
@@ -229,6 +289,7 @@ impl ScriptGlobalsRegistry {
         self.globals.insert(
             name,
             ScriptGlobal {
+                resync: None,
                 maker: None,
                 documentation: Some(documentation),
                 type_id: TypeId::of::<T>(),
@@ -251,6 +312,7 @@ impl ScriptGlobalsRegistry {
         self.globals.insert(
             name,
             ScriptGlobal {
+                resync: None,
                 maker: None,
                 documentation: Some(documentation),
                 type_id,

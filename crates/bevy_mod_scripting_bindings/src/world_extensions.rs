@@ -15,7 +15,8 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder, ScriptQueryResult,
+    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder,
+    ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
 };
@@ -384,6 +385,9 @@ pub trait WorldExtensions {
     /// Returns the callback runners of all scripting plugins.
     fn script_callback_runners(&'_ self) -> Ref<'_, AppScriptCallbackRunners>;
 
+    /// Returns the registry of script globals.
+    fn script_globals_registry(&'_ self) -> Ref<'_, AppScriptGlobalsRegistry>;
+
     /// Returns the allocator used for reflection.
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator>;
 
@@ -431,6 +435,7 @@ pub trait WorldExtensions {
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
         callback_runners: AppScriptCallbackRunners,
+        globals_registry: AppScriptGlobalsRegistry,
     ) -> RegistryCache;
 }
 
@@ -1220,6 +1225,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
+    fn script_globals_registry(&'_ self) -> Ref<'_, AppScriptGlobalsRegistry> {
+        #[allow(
+            clippy::unwrap_used,
+            reason = "internal domain boundary, enforced at creation of the guard"
+        )]
+        self.get_cached_registry().unwrap()
+    }
+
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator> {
         #[allow(
             clippy::unwrap_used,
@@ -1333,6 +1346,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
         callback_runners: AppScriptCallbackRunners,
+        globals_registry: AppScriptGlobalsRegistry,
     ) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
@@ -1340,6 +1354,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
         debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
+        debug_assert_eq!(AppScriptGlobalsRegistry::SLOT, 6);
 
         [
             Rc::new(RefCell::new(allocator)),
@@ -1348,6 +1363,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(component_registry)),
             Rc::new(RefCell::new(attachment)),
             Rc::new(RefCell::new(callback_runners)),
+            Rc::new(RefCell::new(globals_registry)),
         ]
     }
 
@@ -1431,6 +1447,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
         debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
+        debug_assert_eq!(AppScriptGlobalsRegistry::SLOT, 6);
 
         [
             Rc::new(RefCell::new(
@@ -1461,6 +1478,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(
                 world
                     .get_resource::<AppScriptCallbackRunners>()
+                    .cloned()
+                    .unwrap_or_default(),
+            )),
+            Rc::new(RefCell::new(
+                world
+                    .get_resource::<AppScriptGlobalsRegistry>()
                     .cloned()
                     .unwrap_or_default(),
             )),
@@ -1532,6 +1555,9 @@ impl CachedRegistry for CurrentScriptAttachment {
 }
 impl CachedRegistry for AppScriptCallbackRunners {
     const SLOT: usize = 5;
+}
+impl CachedRegistry for AppScriptGlobalsRegistry {
+    const SLOT: usize = 6;
 }
 
 /// Default constructs an instance of the given type, using its `ReflectDefault` or `ReflectFromWorld` type data.
@@ -2076,6 +2102,39 @@ mod test {
     }
 
     #[test]
+    fn script_registrations_enter_catalogue_and_bump_generation_once() {
+        use crate::{AppScriptTypeCatalogue, CatalogueSource};
+
+        let mut world = setup_world(|_, _| {});
+        let catalogue = AppScriptTypeCatalogue::default();
+        let guard = make_guard(&mut world);
+        let generation = || guard.component_registry().read().generation();
+
+        let start = generation();
+        let comp = guard
+            .register_script_component("CatalogueComp".to_owned(), false)
+            .unwrap();
+        assert_eq!(generation(), start + 1);
+
+        // returning an existing registration must not look like a change
+        guard
+            .register_script_component("CatalogueComp".to_owned(), true)
+            .unwrap();
+        assert_eq!(generation(), start + 1);
+
+        guard
+            .register_script_bundle("CatalogueBundle".to_owned(), vec![comp], false)
+            .unwrap();
+        assert_eq!(generation(), start + 2);
+
+        let built = catalogue.get(guard.clone()).unwrap();
+        let comp = built.get_by_short_name("CatalogueComp").unwrap();
+        assert_eq!(comp.source, CatalogueSource::Script);
+        assert!(built.get_by_short_name("CatalogueBundle").is_some());
+        assert!(built.flat_view().contains_key("CatalogueBundle"));
+    }
+
+    #[test]
     fn register_script_component_allow_existing_returns_existing() {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
@@ -2476,6 +2535,7 @@ mod test {
                 .cloned()
                 .unwrap_or_default(),
             AppScriptCallbackRunners::default(),
+            AppScriptGlobalsRegistry::default(),
         );
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         assert!(guard.spawn().is_ok());

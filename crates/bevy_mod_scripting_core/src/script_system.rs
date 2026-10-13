@@ -26,8 +26,9 @@ use bevy_ecs::{
 use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
-    AppScriptFunctionRegistry, CurrentScriptAttachment, InteropError, IntoScript, ReflectReference,
-    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
+    AppScriptFunctionRegistry, AppScriptGlobalsRegistry, CurrentScriptAttachment, InteropError,
+    IntoScript, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{AccessByteSet, WorldAccessGuard, WorldGuard};
@@ -185,6 +186,7 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     schedule_registry: AppScheduleRegistry,
     component_registry: AppScriptComponentRegistry,
     callback_runners: AppScriptCallbackRunners,
+    globals_registry: AppScriptGlobalsRegistry,
     allocator: AppReflectAllocator,
     subset: AccessByteSet,
     callback_label: CallbackLabel,
@@ -289,6 +291,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             state.schedule_registry.clone(),
             state.component_registry.clone(),
             state.callback_runners.clone(),
+            state.globals_registry.clone(),
         );
         let guard = if self.exclusive {
             // safety: we are an exclusive system, therefore the cell allows us to do this
@@ -475,6 +478,9 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 .clone(),
             callback_runners: world
                 .get_resource_or_init::<AppScriptCallbackRunners>()
+                .clone(),
+            globals_registry: world
+                .get_resource_or_init::<AppScriptGlobalsRegistry>()
                 .clone(),
             subset: final_subset,
             callback_label: self.name.to_string().into(),

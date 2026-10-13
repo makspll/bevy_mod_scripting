@@ -51,6 +51,8 @@ Registering a component or bundle under a name that is already taken is an error
 local Mana = world.register_new_component("Mana", true)
 ```
 
+Script registered components and bundles are also added to the `types` global (e.g. `types.Mana`). Contexts which were created before the registration pick them up before their next callback runs.
+
 Values of script bundles are `DynamicBundle`s, whose `data` maps member names to values. Native components are named by their short type name, script components by their registered name. Members without a value are default constructed:
 
 ```lua
