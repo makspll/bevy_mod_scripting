@@ -191,7 +191,7 @@ pub trait WorldExtensions {
 
     /// Exports the callback `label` of the script `owner` as the function `name` of a script namespace (which must start with `script.`).
     ///
-    /// The function can then be called by any script through `import(namespace).name`, in any language, see [`Self::call_script_export`].
+    /// The function can then be called by any script through `import_namespace(namespace).name`, in any language, see [`Self::call_script_export`].
     /// Exporting the same name again from the same script replaces it, from a different script it is an error.
     fn register_script_export(
         &self,

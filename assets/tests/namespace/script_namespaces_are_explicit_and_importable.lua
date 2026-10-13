@@ -22,7 +22,7 @@ function on_test()
     assert(dup:find("script.game.ai.Enemy", 1, true) and dup:find("allow_existing", 1, true), dup)
 
     -- they can be imported
-    local ai = import("script.game.ai")
+    local ai = import_namespace("script.game.ai")
     assert(ai.Enemy ~= nil, "registered components are importable")
     local entity = world.spawn()
     world.add_default_component(entity, ai.Enemy)

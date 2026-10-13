@@ -60,7 +60,7 @@ function {% if module.class -%}{{module.class.name}}.{%- endif -%} {{ function.n
 {# newline #}
 {%- for global in module.globals -%}
 {%- if global.deprecated -%}
----@deprecated use `import` instead
+---@deprecated use `import_namespace` instead
 {% endif -%}
 ---@type {{self::lua_type(ty=global.definition)}}
 {{ self::multiline_description(description=global.description) -}}

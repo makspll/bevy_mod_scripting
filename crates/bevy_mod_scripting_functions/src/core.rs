@@ -714,7 +714,7 @@ impl World {
     /// Arguments:
     /// * `ctxt`: The function call context.
     /// * `namespace`: The script namespace to register the component in, it must start with `script.`, i.e. `script.my_game`. Scripts cannot add to other namespaces.
-    /// * `name`: The name of the component type, unique within the namespace. The component can later be found as `import(namespace).name`.
+    /// * `name`: The name of the component type, unique within the namespace. The component can later be found as `import_namespace(namespace).name`.
     /// * `allow_existing`: If true, returns the registration of the already registered component with this name instead of failing. Defaults to false.
     /// Returns:
     /// * `registration`: The registration of the new component type if successful.
@@ -1799,10 +1799,10 @@ impl GlobalNamespace {
     /// scripts registered or exported into them.
     ///
     /// ```lua
-    /// local bevy_transform = import("bevy_transform")
+    /// local bevy_transform = import_namespace("bevy_transform")
     /// local transform = bevy_transform.Transform
     ///
-    /// local game = import("script.game")
+    /// local game = import_namespace("script.game")
     /// game.spawn_enemy(5)
     /// ```
     ///
@@ -1812,8 +1812,11 @@ impl GlobalNamespace {
     /// * `path`: the name of the namespace to import.
     /// Returns:
     /// * `namespace`: a table of the types and functions in the namespace keyed by name.
-    fn import(ctxt: FunctionCallContext, path: String) -> Result<ScriptValue, InteropError> {
-        profiling::function_scope!("import");
+    fn import_namespace(
+        ctxt: FunctionCallContext,
+        path: String,
+    ) -> Result<ScriptValue, InteropError> {
+        profiling::function_scope!("import_namespace");
         let world = ctxt.world()?;
         let catalogue = world.type_catalogue().clone().get(world.clone())?;
         let types = catalogue.namespace_view(&path);
@@ -1848,10 +1851,10 @@ impl GlobalNamespace {
     /// register_callback("spawn_enemy_impl", function(health)
     ///     return world.spawn()
     /// end)
-    /// export("script.game", "spawn_enemy", "spawn_enemy_impl")
+    /// export_namespace("script.game", "spawn_enemy", "spawn_enemy_impl")
     ///
     /// -- in another script, once the first one has run
-    /// local entity = import("script.game").spawn_enemy(5)
+    /// local entity = import_namespace("script.game").spawn_enemy(5)
     /// ```
     ///
     /// Exporting the same name again from the same script replaces the export, as happens when a script runs again.
@@ -1864,13 +1867,13 @@ impl GlobalNamespace {
     /// * `callback`: the label of the callback of this script to export.
     /// Returns:
     /// * `result`: Nothing if the function was exported.
-    fn export(
+    fn export_namespace(
         ctxt: FunctionCallContext,
         namespace: String,
         name: String,
         callback: String,
     ) -> Result<(), InteropError> {
-        profiling::function_scope!("export");
+        profiling::function_scope!("export_namespace");
         let world = ctxt.world()?;
         let owner = world.current_attachment().0.ok_or_else(|| {
             InteropError::string(

@@ -565,7 +565,7 @@ pub struct LadTypeDefinition {
     /// The full path of the type
     pub path: String,
 
-    /// The script namespace the type lives in, i.e. what scripts pass to `import` to get at the type.
+    /// The script namespace the type lives in, i.e. what scripts pass to `import_namespace` to get at the type.
     ///
     /// This is the crate defining the type unless overridden. Empty for the root namespace, which holds types without a crate such as primitives.
     #[serde(skip_serializing_if = "String::is_empty", default)]

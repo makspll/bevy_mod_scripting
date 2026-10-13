@@ -127,7 +127,7 @@ pub fn convert_ladfile_to_lua_declaration_file(
                 name: name.to_string(),
                 definition: class,
                 description: Some(description.into()),
-                // superseded by `import`
+                // superseded by `import_namespace`
                 deprecated: name == "types",
             })
     }
@@ -150,12 +150,12 @@ pub fn convert_ladfile_to_lua_declaration_file(
         globals_module.functions.push(converted)
     }
 
-    // `import("namespace")` returns a table of the types in the namespace
+    // `import_namespace("namespace")` returns a table of the types in the namespace
     let namespaces = namespace_modules(ladfile, &lua_classes);
     if let Some(import) = globals_module
         .functions
         .iter_mut()
-        .find(|f| f.name == "import")
+        .find(|f| f.name == "import_namespace")
     {
         import.overloads = namespaces
             .iter()
@@ -851,7 +851,7 @@ fn no_fields_module() -> LuaModule {
     }
 }
 
-/// The classes of the tables `import` returns, named `namespace.<name>`.
+/// The classes of the tables `import_namespace` returns, named `namespace.<name>`.
 const NAMESPACE_CLASS_PREFIX: &str = "namespace.";
 
 /// A class per native namespace, with a field for each type in it.
@@ -900,7 +900,7 @@ fn namespace_modules(
                     fields,
                     generics: vec![],
                     documentation: Some(format!(
-                        "The types in the `{namespace}` namespace, as returned by `import(\"{namespace}\")`."
+                        "The types in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
                     )),
                     exact: true,
                     operators: vec![],
@@ -1193,12 +1193,12 @@ mod test {
         let unit = type_id(&file, "UnitType");
         file.types[&unit].namespace = "other_crate".into();
 
-        let import = LadFunctionId::new_string_id("import".into());
+        let import_namespace = LadFunctionId::new_string_id("import_namespace".into());
         file.functions.insert(
-            import,
+            import_namespace,
             LadFunction {
                 namespace: LadFunctionNamespace::Global,
-                identifier: "import".into(),
+                identifier: "import_namespace".into(),
                 overload_index: None,
                 arguments: vec![arg(
                     "path",
@@ -1248,10 +1248,10 @@ mod test {
         }
         let rendered = render(&file);
         assert!(
-            rendered.contains("---@deprecated use `import` instead\n---@type PlainStructType\n--- An global instance of this type\ntypes = {}"),
+            rendered.contains("---@deprecated use `import_namespace` instead\n---@type PlainStructType\n--- An global instance of this type\ntypes = {}"),
             "{rendered}"
         );
-        assert!(!rendered.contains("---@deprecated use `import` instead\n---@type PlainStructType\n--- An global instance of this type\nother"));
+        assert!(!rendered.contains("---@deprecated use `import_namespace` instead\n---@type PlainStructType\n--- An global instance of this type\nother"));
     }
 
     #[test]

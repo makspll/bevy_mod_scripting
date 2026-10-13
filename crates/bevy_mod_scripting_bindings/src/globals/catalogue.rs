@@ -129,7 +129,7 @@ impl ScriptTypeCatalogue {
             .map(|i| &self.entries[*i])
     }
 
-    /// The entries of the given namespace keyed by short name, as returned by `import`, or `None` if the namespace has no entries.
+    /// The entries of the given namespace keyed by short name, as returned by `import_namespace`, or `None` if the namespace has no entries.
     ///
     /// Types sharing a short name within the namespace resolve to the first one registered.
     pub fn namespace_view(&self, namespace: &str) -> Option<HashMap<String, AnyTypeRegistrationV>> {

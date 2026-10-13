@@ -12,15 +12,15 @@ function on_test()
     return true
 end
 
--- a non-exclusive system can only access what it declared, `import` must not need anything else
+-- a non-exclusive system can only access what it declared, `import_namespace` must not need anything else
 function my_importing_system()
     runs[#runs + 1] = "my_importing_system"
 
-    local bevy_transform = import("bevy_transform")
+    local bevy_transform = import_namespace("bevy_transform")
     assert(bevy_transform.Transform ~= nil, "Transform should be importable from a system")
-    assert(import("bms").ScriptAttachment ~= nil)
+    assert(import_namespace("bms").ScriptAttachment ~= nil)
 
-    local ok, err = pcall(import, "not_a_namespace")
+    local ok, err = pcall(import_namespace, "not_a_namespace")
     assert(not ok and tostring(err):find("does not exist", 1, true), tostring(err))
 
     -- errors inside systems are only logged, so record that we got to the end

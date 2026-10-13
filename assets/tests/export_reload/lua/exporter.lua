@@ -3,6 +3,6 @@ register_callback("double_impl", function(x)
 end)
 
 function on_test()
-    export("script.reload", "double", "double_impl")
+    export_namespace("script.reload", "double", "double_impl")
     return "exported"
 end

@@ -7,7 +7,7 @@ Scripts can insert [bundles](https://docs.rs/bevy/latest/bevy/ecs/bundle/trait.B
 | `world.insert_bundle(entity, type, value)` | Inserts the bundle's components into the entity. |
 | `world.spawn_bundle(type, value)` | Spawns a new entity with the bundle and returns it. |
 
-Bundle types are found with `world.get_type_by_name` or `import`, like components.
+Bundle types are found with `world.get_type_by_name` or `import_namespace`, like components.
 
 Bundles need to be registered with the `ReflectBundle` type data:
 
