@@ -44,7 +44,7 @@ app.register_type::<MyEvent>()
 ## Things to be aware of
 
 * `trigger_event` needs exclusive access to the world, so it fails with an access error if the script is currently holding a borrowed reference elsewhere in the same call (e.g. inside a query iteration or `with_*` access). Trigger events from regular callbacks.
-* Observers triggered by `trigger_event` run synchronously, but any commands they queue are deferred until the next time the world is flushed. That is not necessarily after your callback: other world operations later in the same callback, such as `world.spawn`, can flush them. An observer, or a command it queues, which runs a callback in the script context that is currently executing fails with an error. To run callbacks on other scripts, use `run_script_callback` or `queue_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)).
+* Observers triggered by `trigger_event` run synchronously, and the commands they queue are applied before `trigger_event` returns, like for other operations such as spawning or inserting components. This is also how callbacks of script observers (see below) are delivered. An observer, or a command it queues, which runs a callback in the script context that is currently executing does not fail: the callback instead runs as soon as the executing callback finishes. To run callbacks on other scripts yourself, use `run_script_callback` or `queue_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)).
 
 ## Observing events from scripts
 

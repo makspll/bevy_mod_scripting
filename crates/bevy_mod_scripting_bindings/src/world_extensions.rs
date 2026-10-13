@@ -3130,7 +3130,7 @@ mod test {
         }
 
         #[test]
-        fn commands_queued_by_observers_are_deferred_until_the_world_flushes() {
+        fn commands_queued_by_observers_are_applied_before_trigger_event_returns() {
             let mut world = setup();
             world.add_observer(
                 |e: On<TestEvent>, mut commands: bevy_ecs::system::Commands| {
@@ -3140,8 +3140,8 @@ mod test {
                     });
                 },
             );
-            // deferred work from observers (such as BMS's lifecycle hooks queueing script callbacks)
-            // must not run inside the script call that triggered them
+            // like the structural operations (which flush as bevy does for them), triggering flushes,
+            // so that script observers (which deliver their callbacks via commands) run before it returns
             {
                 let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
                 let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
@@ -3150,8 +3150,6 @@ mod test {
                     .trigger_event(registration::<TestEvent>(&guard), &reference)
                     .unwrap();
             }
-            assert_eq!(world.resource::<Seen>().0, vec![1]);
-            world.flush();
             assert_eq!(world.resource::<Seen>().0, vec![1, 101]);
         }
 
