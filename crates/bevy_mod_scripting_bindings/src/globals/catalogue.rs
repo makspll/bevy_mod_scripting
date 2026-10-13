@@ -1,0 +1,207 @@
+//! The type catalogue: a shared, language-agnostic index of the types available to scripts.
+//!
+//! The catalogue is built once from the type registry and shared by every script context,
+//! instead of each context re-resolving every registered type on creation.
+//! It is rebuilt lazily whenever the set of registered types or components changes.
+
+use std::sync::Arc;
+
+use bevy_ecs::resource::Resource;
+use bevy_platform::collections::HashMap;
+use bevy_reflect::TypeRegistration;
+use parking_lot::RwLock;
+
+use crate::{
+    AnyTypeRegistration, AnyTypeRegistrationV, ScriptBundleRegistration,
+    ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
+    WorldExtensions, error::InteropError, function::from::V,
+};
+use bevy_mod_scripting_world::WorldGuard;
+
+/// The registration of a catalogue entry, resolved to the most specific kind of type it is.
+#[derive(Clone)]
+pub enum CatalogueRegistration {
+    /// A plain type
+    Type(ScriptTypeRegistration),
+    /// A component type
+    Component(ScriptComponentRegistration),
+    /// A resource type
+    Resource(ScriptResourceRegistration),
+    /// A bundle type
+    Bundle(ScriptBundleRegistration),
+}
+
+impl CatalogueRegistration {
+    fn from_any(any: AnyTypeRegistration) -> Self {
+        match any.into_left() {
+            Ok(r) => Self::Type(r),
+            Err(other) => match other.into_left() {
+                Ok(c) => Self::Component(c),
+                Err(other) => match other.into_left() {
+                    Ok(r) => Self::Resource(r),
+                    Err(b) => Self::Bundle(b),
+                },
+            },
+        }
+    }
+
+    /// Converts to the form scripts receive, cloning the registration.
+    pub fn to_script(&self) -> AnyTypeRegistrationV {
+        use crate::function::from::Union;
+        match self.clone() {
+            Self::Type(r) => Union::new_left(V(r)),
+            Self::Component(c) => Union::new_right(Union::new_left(V(c))),
+            Self::Resource(r) => Union::new_right(Union::new_right(Union::new_left(V(r)))),
+            Self::Bundle(b) => Union::new_right(Union::new_right(Union::new_right(V(b)))),
+        }
+    }
+}
+
+/// A single type known to the catalogue.
+#[derive(Clone)]
+pub struct CatalogueEntry {
+    /// The full type path, i.e. `bevy_transform::components::transform::Transform`
+    pub path: Arc<str>,
+    /// The short type name, i.e. `Transform`
+    pub short_name: Arc<str>,
+    /// The registration of the type
+    pub registration: CatalogueRegistration,
+}
+
+/// An index of types available to scripts.
+#[derive(Clone, Default)]
+pub struct ScriptTypeCatalogue {
+    entries: Vec<CatalogueEntry>,
+    by_short_name: HashMap<Arc<str>, usize>,
+    /// duplicate short names encountered while building, first one wins in lookups
+    duplicates: Vec<Arc<str>>,
+}
+
+impl ScriptTypeCatalogue {
+    /// Iterates over all entries
+    pub fn iter(&self) -> impl Iterator<Item = &CatalogueEntry> {
+        self.entries.iter()
+    }
+
+    /// The number of entries in the catalogue
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    /// Whether the catalogue is empty
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
+    /// Looks up an entry by short name
+    pub fn get_by_short_name(&self, name: &str) -> Option<&CatalogueEntry> {
+        self.by_short_name.get(name).map(|i| &self.entries[*i])
+    }
+
+    /// Short names which were claimed by more than one type
+    pub fn duplicate_short_names(&self) -> &[Arc<str>] {
+        &self.duplicates
+    }
+
+    /// Adds an entry, returns false if the short name was already taken
+    /// (the entry is still stored, but short name lookups keep resolving to the first one)
+    pub fn insert(&mut self, entry: CatalogueEntry) -> bool {
+        let index = self.entries.len();
+        let fresh = match self.by_short_name.entry(entry.short_name.clone()) {
+            bevy_platform::collections::hash_map::Entry::Vacant(v) => {
+                v.insert(index);
+                true
+            }
+            bevy_platform::collections::hash_map::Entry::Occupied(_) => {
+                self.duplicates.push(entry.short_name.clone());
+                false
+            }
+        };
+        self.entries.push(entry);
+        fresh
+    }
+
+    /// Builds the catalogue from the type registry of the world.
+    pub fn build(
+        guard: WorldGuard,
+        filter: fn(&TypeRegistration) -> bool,
+    ) -> Result<Self, InteropError> {
+        let type_registry = guard.type_registry();
+        let type_registry = type_registry.read();
+        let mut catalogue = Self::default();
+        for registration in type_registry.iter().filter(|r| filter(r)) {
+            let path_table = registration.type_info().type_path_table();
+            let path: Arc<str> = path_table.path().into();
+            let short_name: Arc<str> = path_table.short_path().into();
+            let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
+            let registration = guard.clone().get_type_registration(registration)?;
+            catalogue.insert(CatalogueEntry {
+                path,
+                short_name,
+                registration: CatalogueRegistration::from_any(registration),
+            });
+        }
+        Ok(catalogue)
+    }
+
+    /// The flat view of the catalogue keyed by short name, as exposed by the `types` global.
+    ///
+    /// Types sharing a short name resolve to the first one registered.
+    pub fn flat_view(&self) -> HashMap<String, AnyTypeRegistrationV> {
+        self.by_short_name
+            .iter()
+            .map(|(name, i)| (name.to_string(), self.entries[*i].registration.to_script()))
+            .collect()
+    }
+}
+
+struct Cached {
+    /// (number of registered types, number of registered components) at build time
+    stamp: (usize, usize),
+    catalogue: Arc<ScriptTypeCatalogue>,
+}
+
+/// The shared, lazily refreshed [`ScriptTypeCatalogue`] of the app.
+#[derive(Resource, Clone)]
+pub struct AppScriptTypeCatalogue {
+    filter: fn(&TypeRegistration) -> bool,
+    cached: Arc<RwLock<Option<Cached>>>,
+}
+
+impl Default for AppScriptTypeCatalogue {
+    fn default() -> Self {
+        Self::new(|_| true)
+    }
+}
+
+impl AppScriptTypeCatalogue {
+    /// Creates a catalogue which only includes types accepted by the filter.
+    pub fn new(filter: fn(&TypeRegistration) -> bool) -> Self {
+        Self {
+            filter,
+            cached: Default::default(),
+        }
+    }
+
+    fn stamp(guard: &WorldGuard) -> Result<(usize, usize), InteropError> {
+        let types = guard.type_registry().read().iter().count();
+        let components = guard.with_world_access(|w| w.components().len())?;
+        Ok((types, components))
+    }
+
+    /// Returns an up to date catalogue, rebuilding it if types or components were registered since the last call.
+    pub fn get(&self, guard: WorldGuard) -> Result<Arc<ScriptTypeCatalogue>, InteropError> {
+        let stamp = Self::stamp(&guard)?;
+        if let Some(cached) = self.cached.read().as_ref()
+            && cached.stamp == stamp
+        {
+            return Ok(cached.catalogue.clone());
+        }
+        let catalogue = Arc::new(ScriptTypeCatalogue::build(guard, self.filter)?);
+        *self.cached.write() = Some(Cached {
+            stamp,
+            catalogue: catalogue.clone(),
+        });
+        Ok(catalogue)
+    }
+}

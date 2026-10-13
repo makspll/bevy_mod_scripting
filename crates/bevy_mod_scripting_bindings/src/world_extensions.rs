@@ -2047,6 +2047,35 @@ mod test {
     }
 
     #[test]
+    fn type_catalogue_is_shared_and_refreshes_on_new_types() {
+        use crate::AppScriptTypeCatalogue;
+
+        #[derive(Reflect)]
+        struct LateType;
+
+        let mut world = setup_world(|_, _| {});
+        let registry = world
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        let catalogue = AppScriptTypeCatalogue::default();
+        let guard = make_guard(&mut world);
+
+        let first = catalogue.get(guard.clone()).unwrap();
+        let again = catalogue.get(guard.clone()).unwrap();
+        assert!(
+            Arc::ptr_eq(&first, &again),
+            "unchanged world must reuse the catalogue"
+        );
+        assert!(first.get_by_short_name("LateType").is_none());
+
+        registry.write().register::<LateType>();
+        let refreshed = catalogue.get(guard).unwrap();
+        assert!(!Arc::ptr_eq(&first, &refreshed));
+        assert!(refreshed.get_by_short_name("LateType").is_some());
+        assert!(refreshed.flat_view().contains_key("LateType"));
+    }
+
+    #[test]
     fn register_script_component_allow_existing_returns_existing() {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);

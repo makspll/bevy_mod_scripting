@@ -12,12 +12,11 @@ use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_derive::script_globals;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
-use std::{cell::RefCell, sync::Arc};
 
-use crate::{AnyTypeRegistrationV, ScriptTypeRegistration, WorldExtensions, function::from::V};
+use crate::{AnyTypeRegistrationV, WorldExtensions, function::from::V};
 use crate::{docgen::into_through_type_info, error::InteropError};
 
-use super::AppScriptGlobalsRegistry;
+use super::{AppScriptGlobalsRegistry, AppScriptTypeCatalogue};
 
 /// A plugin introducing core globals for the BMS framework.
 ///
@@ -42,13 +41,10 @@ impl Default for CoreScriptGlobalsPlugin {
     }
 }
 
-thread_local! {
-    static GLOBAL_OPTS: RefCell<fn(&TypeRegistration) -> bool> = RefCell::new(|_| true);
-}
-
 impl Plugin for CoreScriptGlobalsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AppScriptGlobalsRegistry>();
+        app.insert_resource(AppScriptTypeCatalogue::new(self.filter));
     }
     fn finish(&self, app: &mut App) {
         // profiling::function_scope!("app finish");
@@ -57,8 +53,6 @@ impl Plugin for CoreScriptGlobalsPlugin {
             register_static_core_globals(app.world_mut(), self.filter);
         }
 
-        // TODO: add ability to make the generated function receive generic payload
-        GLOBAL_OPTS.replace(self.filter);
         register_core_globals(app.world_mut());
     }
 }
@@ -127,28 +121,15 @@ impl CoreGlobals {
     ///
     /// Note that this cache will NOT contain types manually registered by scripts via `register_new_component`.
     fn types(guard: WorldGuard) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
-        // profiling::function_scope!("registering core globals");
-        let type_registry = guard.type_registry();
-        let type_registry = type_registry.read();
-        let mut type_cache = HashMap::<String, _>::default();
-        let filter = GLOBAL_OPTS.with(|opts| *opts.borrow());
-        for registration in type_registry.iter().filter(|r| filter(r)) {
-            let type_path = registration.type_info().type_path_table().short_path();
-            let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
-            let registration = guard.clone().get_type_registration(registration)?;
-            let registration = registration.into_script();
-            if type_cache
-                .insert(type_path.to_owned(), registration)
-                .is_some()
-            {
-                warn_once!(
-                    "duplicate entry inside `types` global for type: {}. {MSG_DUPLICATE_GLOBAL}",
-                    type_path
-                )
-            };
+        let catalogue = guard.with_resource(|c: &AppScriptTypeCatalogue| c.clone())?;
+        let catalogue = catalogue.get(guard)?;
+        for name in catalogue.duplicate_short_names() {
+            warn_once!(
+                "duplicate entry inside `types` global for type: {}. {MSG_DUPLICATE_GLOBAL}",
+                name
+            )
         }
-
-        Ok(type_cache)
+        Ok(catalogue.flat_view())
     }
 }
 
