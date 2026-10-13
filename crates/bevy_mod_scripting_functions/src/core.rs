@@ -13,7 +13,7 @@ use bevy_mod_scripting_bindings::{
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
     ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
     ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
-    ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
+    ScriptTypeCatalogue, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
     function::{
         bound::BoundFields,
@@ -30,6 +30,7 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
+use bevy_platform::collections::HashMap;
 use bevy_reflect::PartialReflect;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 
@@ -1927,6 +1928,34 @@ impl GlobalNamespace {
     unregistered
 )]
 impl GlobalNamespace {
+    /// Imports a namespace, returning a table of the types in it by name.
+    ///
+    /// Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.
+    /// The empty string is the root namespace, which holds types without a crate such as primitives.
+    ///
+    /// ```lua
+    /// local bevy_transform = import("bevy_transform")
+    /// local transform = bevy_transform.Transform
+    /// ```
+    ///
+    /// Fails with a list of similar namespaces if the namespace does not exist.
+    ///
+    /// Arguments:
+    /// * `path`: the name of the namespace to import.
+    /// Returns:
+    /// * `namespace`: a table of the types in the namespace keyed by short name.
+    fn import(
+        ctxt: FunctionCallContext,
+        path: String,
+    ) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
+        profiling::function_scope!("import");
+        let world = ctxt.world()?;
+        let catalogue = world.type_catalogue().clone().get(world.clone())?;
+        catalogue
+            .namespace_view(&path)
+            .ok_or_else(|| namespace_not_found(&catalogue, &path))
+    }
+
     /// Attempts to construct the given type, given an arbitrary map of values.
     ///
     /// Unlike `Type.new`, this works for every type, including ones with a `new` function of their own.
@@ -2162,4 +2191,25 @@ pub fn register_core_functions(app: &mut App) {
         register_global_namespace_functions(world);
         register_global_namespace_dummy_functions(world);
     }
+}
+
+/// Builds the error for importing a namespace which does not exist.
+fn namespace_not_found(catalogue: &ScriptTypeCatalogue, path: &str) -> InteropError {
+    let mut message = format!("namespace \"{path}\" does not exist.");
+    if path.starts_with("script.") {
+        message.push_str(
+            " Script namespaces only exist once a loaded script has registered or exported something into them, \
+            make sure that script has loaded and run before importing it.",
+        );
+    } else {
+        message.push_str(
+            " Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), \
+            and only contain types registered in the type registry: check that the crate's bindings plugin is added and the type is registered.",
+        );
+    }
+    let similar = catalogue.similar_namespaces(path);
+    if !similar.is_empty() {
+        message.push_str(&format!(" Did you mean: {}?", similar.join(", ")));
+    }
+    InteropError::string(message)
 }

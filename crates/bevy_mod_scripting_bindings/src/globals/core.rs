@@ -132,7 +132,7 @@ impl CoreGlobals {
     /// Components and bundles registered by scripts via `register_new_component` and `register_new_bundle` are included,
     /// and are added to live contexts before their next callback runs.
     fn types(guard: WorldGuard) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
-        let catalogue = guard.with_resource(|c: &AppScriptTypeCatalogue| c.clone())?;
+        let catalogue = guard.type_catalogue().clone();
         let catalogue = catalogue.get(guard)?;
         for name in catalogue.duplicate_short_names() {
             warn_once!(

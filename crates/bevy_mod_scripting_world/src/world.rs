@@ -83,7 +83,7 @@ pub trait CachedRegistry: Any {
 }
 
 /// Aliases the type used as the registry cache for the world guard.
-pub type RegistryCache = [Rc<RefCell<dyn Any>>; 7];
+pub type RegistryCache = [Rc<RefCell<dyn Any>>; 8];
 
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {

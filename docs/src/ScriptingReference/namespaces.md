@@ -48,4 +48,27 @@ registry.register_type_data_with::<MyType, ScriptNamespace, _>("my_namespace");
 
 Types from the standard library are split across `core`, `alloc` and `std` by their crate of origin (`Option` is in `core`, `Vec` is in `alloc`); use the override if you want them elsewhere.
 
-The `types` global is still a flat table of all types by short name. Namespaces are used by the upcoming `import` support.
+## Importing a namespace
+
+`import(namespace)` returns a table of the types in a namespace, keyed by short name:
+
+```lua
+local bevy_transform = import("bevy_transform")
+local Transform = bevy_transform.Transform
+
+local bms = import("bms") -- BMS' own types
+```
+
+The table is built from the same shared index as the `types` global, but only contains the one namespace, so it is much cheaper than the full `types` table when you only need a few types. If two types in a namespace share a short name, the first one registered wins.
+
+`import("")` imports the root namespace.
+
+Importing a namespace that does not exist is an error:
+
+```
+namespace "bevy_transfrom" does not exist. Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), and only contain types registered in the type registry: check that the crate's bindings plugin is added and the type is registered. Did you mean: bevy_transform?
+```
+
+Names starting with `script.` are reserved for namespaces defined by scripts and get a hint about loading the script first.
+
+The `types` global is still a flat table of all types by short name.

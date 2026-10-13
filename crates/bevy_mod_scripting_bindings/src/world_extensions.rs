@@ -15,8 +15,8 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    AppScriptGlobalsRegistry, DynamicComponent, DynamicComponentInfo, ScriptEvent,
-    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    AppScriptGlobalsRegistry, AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo,
+    ScriptEvent, ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
 };
@@ -439,6 +439,9 @@ pub trait WorldExtensions {
     /// Returns the registry of script globals.
     fn script_globals_registry(&'_ self) -> Ref<'_, AppScriptGlobalsRegistry>;
 
+    /// Returns the type catalogue.
+    fn type_catalogue(&'_ self) -> Ref<'_, AppScriptTypeCatalogue>;
+
     /// Returns the allocator used for reflection.
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator>;
 
@@ -493,6 +496,7 @@ pub trait WorldExtensions {
         component_registry: AppScriptComponentRegistry,
         callback_runners: AppScriptCallbackRunners,
         globals_registry: AppScriptGlobalsRegistry,
+        type_catalogue: AppScriptTypeCatalogue,
     ) -> RegistryCache;
 }
 
@@ -1392,6 +1396,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
+    fn type_catalogue(&'_ self) -> Ref<'_, AppScriptTypeCatalogue> {
+        #[allow(
+            clippy::unwrap_used,
+            reason = "internal domain boundary, enforced at creation of the guard"
+        )]
+        self.get_cached_registry().unwrap()
+    }
+
     fn script_globals_registry(&'_ self) -> Ref<'_, AppScriptGlobalsRegistry> {
         #[allow(
             clippy::unwrap_used,
@@ -1547,6 +1559,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         component_registry: AppScriptComponentRegistry,
         callback_runners: AppScriptCallbackRunners,
         globals_registry: AppScriptGlobalsRegistry,
+        type_catalogue: AppScriptTypeCatalogue,
     ) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
@@ -1555,6 +1568,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
         debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
         debug_assert_eq!(AppScriptGlobalsRegistry::SLOT, 6);
+        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 7);
 
         [
             Rc::new(RefCell::new(allocator)),
@@ -1564,6 +1578,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(attachment)),
             Rc::new(RefCell::new(callback_runners)),
             Rc::new(RefCell::new(globals_registry)),
+            Rc::new(RefCell::new(type_catalogue)),
         ]
     }
 
@@ -1648,6 +1663,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
         debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
         debug_assert_eq!(AppScriptGlobalsRegistry::SLOT, 6);
+        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 7);
 
         [
             Rc::new(RefCell::new(
@@ -1684,6 +1700,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(
                 world
                     .get_resource::<AppScriptGlobalsRegistry>()
+                    .cloned()
+                    .unwrap_or_default(),
+            )),
+            Rc::new(RefCell::new(
+                world
+                    .get_resource::<AppScriptTypeCatalogue>()
                     .cloned()
                     .unwrap_or_default(),
             )),
@@ -1791,6 +1813,9 @@ impl CachedRegistry for AppScriptCallbackRunners {
 }
 impl CachedRegistry for AppScriptGlobalsRegistry {
     const SLOT: usize = 6;
+}
+impl CachedRegistry for AppScriptTypeCatalogue {
+    const SLOT: usize = 7;
 }
 
 /// Default constructs an instance of the given type, using its `ReflectDefault` or `ReflectFromWorld` type data.
@@ -2335,6 +2360,41 @@ mod test {
         assert_eq!(in_custom.len(), 1);
         assert_eq!(&*in_custom[0].short_name, "OverriddenNs");
         assert_eq!(catalogue.iter_namespace("does_not_exist").count(), 0);
+    }
+
+    #[test]
+    fn namespace_views_and_suggestions() {
+        use crate::{AppScriptTypeCatalogue, ScriptNamespace};
+
+        #[derive(Reflect)]
+        struct InTransform;
+        #[derive(Reflect)]
+        struct InEcs;
+
+        let mut world = setup_world(|_, registry| {
+            registry.register::<InTransform>();
+            registry.register::<InEcs>();
+            registry.register_type_data_with::<InTransform, ScriptNamespace, _>("bevy_transform");
+            registry.register_type_data_with::<InEcs, ScriptNamespace, _>("bevy_ecs");
+        });
+        let guard = make_guard(&mut world);
+        let catalogue = AppScriptTypeCatalogue::default().get(guard).unwrap();
+
+        let view = catalogue.namespace_view("bevy_transform").unwrap();
+        assert!(view.contains_key("InTransform"));
+        assert!(!view.contains_key("InEcs"));
+        assert!(catalogue.namespace_view("nope").is_none());
+
+        assert_eq!(
+            catalogue.similar_namespaces("bevy_transfrom"),
+            vec!["bevy_transform"]
+        );
+        // substrings count as similar
+        assert_eq!(
+            catalogue.similar_namespaces("transform"),
+            vec!["bevy_transform"]
+        );
+        assert!(catalogue.similar_namespaces("zzzzzzzzzzzz").is_empty());
     }
 
     #[test]
@@ -2886,6 +2946,7 @@ mod test {
                 .unwrap_or_default(),
             AppScriptCallbackRunners::default(),
             AppScriptGlobalsRegistry::default(),
+            AppScriptTypeCatalogue::default(),
         );
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         assert!(guard.spawn().is_ok());

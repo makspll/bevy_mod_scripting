@@ -255,6 +255,10 @@ impl Default for RhaiScriptingPlugin {
                             .iter_all()
                             .filter(|(k, _)| k.namespace == Namespace::Global)
                         {
+                            // reserved keywords cannot be used as names, their renamed variants are registered above
+                            if ReservedKeyword::is_reserved_keyword(&key.name) {
+                                continue;
+                            }
                             context.scope.set_or_push(
                                 key.name.clone(),
                                 ScriptValue::Function(function.clone())

@@ -129,6 +129,40 @@ impl ScriptTypeCatalogue {
             .map(|i| &self.entries[*i])
     }
 
+    /// The entries of the given namespace keyed by short name, as returned by `import`, or `None` if the namespace has no entries.
+    ///
+    /// Types sharing a short name within the namespace resolve to the first one registered.
+    pub fn namespace_view(&self, namespace: &str) -> Option<HashMap<String, AnyTypeRegistrationV>> {
+        let indices = self.by_namespace.get(namespace)?;
+        let mut view = HashMap::with_capacity(indices.len());
+        for entry in indices.iter().map(|i| &self.entries[*i]) {
+            view.entry(entry.short_name.to_string())
+                .or_insert_with(|| entry.registration.to_script());
+        }
+        Some(view)
+    }
+
+    /// Namespaces with names close to `requested`, closest first, for error messages.
+    pub fn similar_namespaces(&self, requested: &str) -> Vec<String> {
+        let mut scored = self
+            .namespaces()
+            .filter(|n| !n.is_empty())
+            .filter_map(|n| {
+                let distance = edit_distance(requested, n);
+                // close in spelling, or one contains the other (i.e. `transform` and `bevy_transform`)
+                let related =
+                    !requested.is_empty() && (n.contains(requested) || requested.contains(n));
+                (distance <= 3.max(requested.len() / 3) || related).then_some((distance, n))
+            })
+            .collect::<Vec<_>>();
+        scored.sort();
+        scored
+            .into_iter()
+            .take(3)
+            .map(|(_, n)| n.to_owned())
+            .collect()
+    }
+
     /// Short names which were claimed by more than one type
     pub fn duplicate_short_names(&self) -> &[Arc<str>] {
         &self.duplicates
@@ -266,4 +300,19 @@ impl AppScriptTypeCatalogue {
         });
         Ok(catalogue)
     }
+}
+
+/// The Levenshtein distance between two strings.
+fn edit_distance(a: &str, b: &str) -> usize {
+    let b: Vec<char> = b.chars().collect();
+    let mut previous: Vec<usize> = (0..=b.len()).collect();
+    for (i, ca) in a.chars().enumerate() {
+        let mut current = vec![i + 1];
+        for (j, cb) in b.iter().enumerate() {
+            let substitution = previous[j] + usize::from(ca != *cb);
+            current.push(substitution.min(previous[j + 1] + 1).min(current[j] + 1));
+        }
+        previous = current;
+    }
+    previous[b.len()]
 }
