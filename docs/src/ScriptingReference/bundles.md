@@ -64,7 +64,8 @@ local health = world.get_component(entity, Health)
 health.current = health.current - 1 -- same as health.data.current
 ```
 
-* `data` itself is not forwarded: it can still be read and replaced as a whole.
+* This is part of the reflection implementation of `DynamicComponent` (and `DynamicBundle`, for the member values of bundles), so it works everywhere references to them do. Reading a missing entry gives `nil`, writing one creates it. `data` itself stays a field: it can still be read and replaced as a whole.
+* If `data` is not a table (and not `nil`), its entries cannot be accessed.
 * Methods of `DynamicComponent` (e.g. `clone`) take precedence over entries of the same name.
 * Like for `data`, nested tables are copies: write `health.stats = { ... }` to change a nested value, `health.stats.hp = 1` does not write through.
 
