@@ -303,7 +303,7 @@ members = [
     "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world",
 ]
 resolver = "2"
-exclude = ["codegen", "crates/macro_tests", "xtask"]
+exclude = ["crates/macro_tests", "xtask"]
 
 [profile.dev]
 debug = 1

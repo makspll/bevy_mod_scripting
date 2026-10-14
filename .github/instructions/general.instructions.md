@@ -19,11 +19,10 @@ applyTo: **
 
 ### Binding Crates
 - Multiple **bevy_*_bms_bindings** crates (e.g., transform, asset, pbr, etc.) that provide specific Bevy module bindings
-- These are automatically generated via the `/codegen` tools, per bevy release
+- These started out as generated code, but codegen has been removed and they are now maintained by hand
 
 ### Development Tools
 - **xtask** - Custom task runner for development workflows
-- **codegen** - Code generation tools for generating bindings from Bevy's API
 - **docs** - Documentation built with mdbook
 - **docs/src/ReleaseNotes** - Release notes and migration guides
 
