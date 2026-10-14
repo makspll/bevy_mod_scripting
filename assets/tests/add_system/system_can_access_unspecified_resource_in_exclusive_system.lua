@@ -15,7 +15,7 @@ function my_exclusive_system()
     print("my_exclusive_system")
     runs[#runs + 1] = "my_non_exclusive_system"
 
-    local ResourceType = world.get_type_by_name("TestResource")
+    local ResourceType = world.get_type_by_name("test_utils::test_data::TestResource")
     local res = world.get_resource(ResourceType)
     assert(res ~= nil, "Expected to get resource but got nil")
 end

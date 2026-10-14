@@ -1,4 +1,4 @@
-local type = world.get_type_by_name("SimpleStruct")
+local type = world.get_type_by_name("test_utils::test_data::SimpleStruct")
 local constructed = construct(type, {
     foo = 123
 })

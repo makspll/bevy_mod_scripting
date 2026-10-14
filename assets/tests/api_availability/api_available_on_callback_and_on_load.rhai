@@ -1,10 +1,10 @@
 assert(type_of(world) != "()", "World was not found");
-assert(type_of(world.get_type_by_name.call("TestComponent")) != "()", "Could not find TestComponent type");
+assert(type_of(world.get_type_by_name.call("test_utils::test_data::TestComponent")) != "()", "Could not find TestComponent type");
 let global_invocation = _entity_from_index.call(1);
 
 fn on_test(){
     assert(type_of(world) != "()", "World was not found");
-    assert(type_of(world.get_type_by_name.call("TestComponent")) != "()", "Could not find TestComponent type");
+    assert(type_of(world.get_type_by_name.call("test_utils::test_data::TestComponent")) != "()", "Could not find TestComponent type");
     _entity_from_index.call(1);
 
     // assert global_invocation happened

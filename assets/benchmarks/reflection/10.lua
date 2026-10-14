@@ -35,7 +35,7 @@ function pre_bench()
     -- Build the nested table.
     local instance = make_path(step_keys, 1)
     world.remove_component(new_entity, Component)
-    world.insert_component(new_entity, Component, construct(types.DynamicComponent, {
+    world.insert_component(new_entity, Component, construct(world.get_type_by_name("bevy_mod_scripting_bindings::script_component::DynamicComponent"), {
         data = instance
     }))
     current_reference = world.get_component(new_entity, Component)

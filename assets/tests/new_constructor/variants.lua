@@ -18,7 +18,7 @@ local unit = SimpleEnum.Unit:new({})
 assert(unit:variant() == SimpleEnum.Unit, "expected Unit variant")
 
 -- the escape hatch for names shadowed by functions
-local type = world.get_type_by_name("SimpleEnum")
+local type = world.get_type_by_name("test_utils::test_data::SimpleEnum")
 assert(world.get_enum_variant(type, "Unit") == SimpleEnum.Unit, "expected get_enum_variant to find Unit")
 assert(world.get_enum_variant(type, "Missing") == nil, "expected no such variant")
 

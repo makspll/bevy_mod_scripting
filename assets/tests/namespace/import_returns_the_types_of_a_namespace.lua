@@ -14,8 +14,8 @@ function on_test()
     local bms = import_namespace("bms")
     assert(bms.ScriptAttachment ~= nil)
 
-    -- imported types are the same ones as in `types`
-    assert(bevy_transform.Transform:type_name() == types.Transform:type_name())
+    -- imported types are the same ones as looked up by name
+    assert(bevy_transform.Transform:type_name() == world.get_type_by_name("bevy_transform::components::transform::Transform"):type_name())
 
     -- missing namespaces say so, with hints
     local typo = error_of(import_namespace, "bevy_transfrom")

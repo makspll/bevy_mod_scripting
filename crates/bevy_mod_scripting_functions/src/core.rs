@@ -115,7 +115,7 @@ impl World {
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `type_name`: The name of the type to retrieve.
+    /// * `type_name`: The full path of the type to retrieve, i.e. `bevy_transform::components::transform::Transform` or `script.my_game.Enemy`.
     /// Returns:
     /// * `type`: The registration of the type, if it exists.
     fn get_type_by_name(

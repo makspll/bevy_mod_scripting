@@ -1,4 +1,4 @@
-local res_type = world.get_type_by_name("TestResourceWithVariousFields")
+local res_type = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")
 local res = world.get_resource(res_type)
 
 iterated_vals = {}

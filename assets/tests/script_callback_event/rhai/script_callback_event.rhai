@@ -1,7 +1,7 @@
 fn on_test() {
     let label = CallbackLabel.new_.call(["callback_a"]);
     let recipients = Recipients.AllScripts.new_.call(#{});
-    let event_type = types.ScriptCallbackMessage;
+    let event_type = world.get_type_by_name.call("bevy_mod_scripting_core::event::ScriptCallbackMessage");
     let event = ScriptCallbackMessage.new_.call(#{
         label: label,
         recipients: recipients,

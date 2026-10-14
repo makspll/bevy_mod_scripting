@@ -14,8 +14,8 @@ local positional = SimpleTupleStruct.new({ 9 })
 assert(positional[1] == 9, "expected first field to be 9 but got " .. tostring(positional[1]))
 
 -- `construct` works for every type, the same way
-local struct_type = world.get_type_by_name("SimpleStruct")
+local struct_type = world.get_type_by_name("test_utils::test_data::SimpleStruct")
 local constructed_via_global = construct(struct_type, { foo = 3 })
 assert(constructed_via_global.foo == 3, "expected foo to be 3 but got " .. tostring(constructed_via_global.foo))
-local tuple_type = world.get_type_by_name("SimpleTupleStruct")
+local tuple_type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct")
 assert(construct(tuple_type, { 4 })[1] == 4, "expected construct to accept positional fields")

@@ -7,7 +7,7 @@ function contains(table, element)
     return false
 end
 
-local Resource = world.get_type_by_name("TestResource")
+local Resource = world.get_type_by_name("test_utils::test_data::TestResource")
 local resource = world.get_resource(Resource)
 
 local functions = resource:functions()

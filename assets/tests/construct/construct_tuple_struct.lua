@@ -1,4 +1,4 @@
-local type = world.get_type_by_name("SimpleTupleStruct")
+local type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct")
 local constructed = construct(type, {
     ["1"] = 123
 })

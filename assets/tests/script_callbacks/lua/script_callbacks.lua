@@ -4,7 +4,7 @@ end
 
 -- the other entity running this script
 local function other_entity()
-    for _, result in pairs(world.query():component(types.ScriptComponent):build()) do
+    for _, result in pairs(world.query():component(world.get_type_by_name("bevy_mod_scripting_core::script::ScriptComponent")):build()) do
         local e = result:entity()
         if e:index():index() ~= entity:index():index() then
             return e
@@ -26,7 +26,7 @@ function bounce(back_to)
 end
 
 function record(value)
-    world.insert_component(entity, types.TestComponent, TestComponent.new({ strings = { value } }))
+    world.insert_component(entity, world.get_type_by_name("test_utils::test_data::TestComponent"), TestComponent.new({ strings = { value } }))
 end
 
 function on_test()
@@ -55,10 +55,10 @@ function on_test()
     queue_script_callback("record", attachment_of(entity), "queued!")
     -- flushing the world must not run them early
     world.spawn()
-    assert(not world.has_component(entity, types.TestComponent), "Queued callback ran before the callback queueing it finished")
+    assert(not world.has_component(entity, world.get_type_by_name("test_utils::test_data::TestComponent")), "Queued callback ran before the callback queueing it finished")
     return "ok"
 end
 
 function on_test_post_update()
-    return world.get_component(entity, types.TestComponent).strings[1]
+    return world.get_component(entity, world.get_type_by_name("test_utils::test_data::TestComponent")).strings[1]
 end

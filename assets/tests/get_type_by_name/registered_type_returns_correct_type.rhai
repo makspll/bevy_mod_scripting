@@ -1,4 +1,4 @@
-let type = world.get_type_by_name.call("TestComponent");
+let type = world.get_type_by_name.call("test_utils::test_data::TestComponent");
 
 assert(type_of(type) != "()", "Registered type was not found");
 

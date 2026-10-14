@@ -11,7 +11,7 @@ fn my_non_exclusive_system() {
     print("my_non_exclusive_system");
     runs.push("my_non_exclusive_system");
 
-    let ResourceType = world.get_type_by_name.call("TestResource");
+    let ResourceType = world.get_type_by_name.call("test_utils::test_data::TestResource");
     assert_throws(|| {
         let res = world.get_resource.call(ResourceType);
         let blah = res.blahblah

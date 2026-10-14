@@ -1,5 +1,5 @@
 local entity = world.spawn()
-local _type = world.get_type_by_name('CompWithFromWorldAndComponentData')
+local _type = world.get_type_by_name('test_utils::test_data::CompWithFromWorldAndComponentData')
 world.add_default_component(entity, _type)
 
 local added = world.has_component(entity, _type)

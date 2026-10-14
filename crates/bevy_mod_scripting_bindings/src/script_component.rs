@@ -175,16 +175,9 @@ impl ScriptComponentRegistry {
         self.components.get(path)
     }
 
-    /// Gets a dynamic script component by its full path, or by its name alone if no component has that path.
-    ///
-    /// If several namespaces have a component with that name, the one with the alphabetically first path is returned.
-    pub fn find(&self, path_or_name: &str) -> Option<&DynamicComponentInfo> {
-        self.components.get(path_or_name).or_else(|| {
-            self.components
-                .values()
-                .filter(|c| c.name == path_or_name)
-                .min_by_key(|c| c.path())
-        })
+    /// Gets a dynamic script component by its full path (i.e. `script.game.Enemy`).
+    pub fn find(&self, path: &str) -> Option<&DynamicComponentInfo> {
+        self.components.get(path)
     }
 
     /// A counter which changes whenever a component is registered.

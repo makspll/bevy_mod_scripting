@@ -16,7 +16,7 @@ fn my_exclusive_system() {
     print("my_exclusive_system");
     runs.push("my_non_exclusive_system");
     
-    let ResourceType = world.get_type_by_name.call("TestResource");
+    let ResourceType = world.get_type_by_name.call("test_utils::test_data::TestResource");
     let res = world.get_resource.call(ResourceType);
     assert(type_of(res) != "()", "Expected to get resource but got nil");
 };

@@ -3,10 +3,10 @@ let entity_b = world.spawn_.call();
 let entity_c = world.spawn_.call();
 
 let components = [
-    types.CompWithDefaultAndComponentData,
-    types.CompWithFromWorldAndComponentData,
-    types.SimpleTupleStruct,
-    types.SimpleEnum,
+    world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData"),
+    world.get_type_by_name.call("test_utils::test_data::CompWithFromWorldAndComponentData"),
+    world.get_type_by_name.call("test_utils::test_data::SimpleTupleStruct"),
+    world.get_type_by_name.call("test_utils::test_data::SimpleEnum"),
 ];
 
 reseed.call();
@@ -24,10 +24,10 @@ for i in 1..=10 {
 
 fn bench() {
     for (result, i) in world.query.call()
-        .component.call(types.CompWithFromWorldAndComponentData)
-        .component.call(types.SimpleTupleStruct)
-        .with_.call(types.SimpleEnum)
-        .without.call(types.CompWithDefaultAndComponentData)
+        .component.call(world.get_type_by_name.call("test_utils::test_data::CompWithFromWorldAndComponentData"))
+        .component.call(world.get_type_by_name.call("test_utils::test_data::SimpleTupleStruct"))
+        .with_.call(world.get_type_by_name.call("test_utils::test_data::SimpleEnum"))
+        .without.call(world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData"))
         .build.call() {
     };
 }

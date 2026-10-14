@@ -38,6 +38,7 @@
     - [0.20.0](./ReleaseNotes/0.20.0.md)
     - [0.22-to-0.23](./ReleaseNotes/0.22-to-0.23.md)
     - [0.23.0](./ReleaseNotes/0.23.0.md)
+    - [0.23-to-0.24](./ReleaseNotes/0.23-to-0.24.md)
 
 # Scripting Reference
 

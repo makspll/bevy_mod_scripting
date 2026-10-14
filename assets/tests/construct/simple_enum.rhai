@@ -1,4 +1,4 @@
-let type = world.get_type_by_name.call("SimpleEnum");
+let type = world.get_type_by_name.call("test_utils::test_data::SimpleEnum");
 
 // Struct Variant
 let constructed = construct.call(type, #{ variant: "Struct", foo: 123 });

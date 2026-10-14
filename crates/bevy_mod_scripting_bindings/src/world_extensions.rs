@@ -389,7 +389,7 @@ pub trait WorldExtensions {
         name: impl Into<Cow<'static, str>>,
     ) -> Result<ScriptValue, Cow<'static, str>>;
 
-    /// Resolves a type registration by name.
+    /// Resolves a type registration by its full type path, i.e. `bevy_transform::components::transform::Transform`.
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration>;
 
     /// Resolves a type registration and determines if it's a component or resource.
@@ -1300,8 +1300,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let type_registry = self.type_registry();
         let type_registry = type_registry.read();
         type_registry
-            .get_with_short_type_path(type_name)
-            .or_else(|| type_registry.get_with_type_path(type_name))
+            .get_with_type_path(type_name)
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
     }
 
@@ -1344,7 +1343,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 // try the script registered components
                 let components = self.component_registry();
                 let components = components.read();
-                // by full path (i.e. `script.game.Enemy`), or by name alone
+                // by full path (i.e. `script.game.Enemy`)
                 components
                     .find(&type_name)
                     .map(|c| Union::new_right(Union::new_left(c.registration.clone())))
@@ -1810,17 +1809,15 @@ mod test {
     fn comp_reg<C: Component + Reflect>(
         guard: &WorldAccessGuard<'_>,
     ) -> ScriptComponentRegistration {
-        let short = std::any::type_name::<C>().split("::").last().unwrap();
         guard
-            .get_component_type(guard.get_type_by_name(short).unwrap())
+            .get_component_type(guard.get_type_by_name(std::any::type_name::<C>()).unwrap())
             .unwrap()
             .unwrap()
     }
 
     fn res_reg<R: Resource + Reflect>(guard: &WorldAccessGuard<'_>) -> ScriptResourceRegistration {
-        let short = std::any::type_name::<R>().split("::").last().unwrap();
         guard
-            .get_resource_type(guard.get_type_by_name(short).unwrap())
+            .get_resource_type(guard.get_type_by_name(std::any::type_name::<R>()).unwrap())
             .unwrap()
             .unwrap()
     }
@@ -2122,7 +2119,11 @@ mod test {
     fn get_type_by_name_known_and_unknown() {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
-        assert!(guard.get_type_by_name("SimpleStruct").is_some());
+        assert!(
+            guard
+                .get_type_by_name("test_utils::test_data::SimpleStruct")
+                .is_some()
+        );
         assert!(guard.get_type_by_name("NoSuchType_XYZ").is_none());
     }
 
@@ -2140,7 +2141,7 @@ mod test {
         let comp = guard
             .get_type_registration(
                 guard
-                    .get_type_by_name("CompWithDefaultAndComponentData")
+                    .get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
                     .unwrap(),
             )
             .unwrap();
@@ -2148,7 +2149,11 @@ mod test {
 
         // resource → Right(Right(_))
         let res = guard
-            .get_type_registration(guard.get_type_by_name("TestResource").unwrap())
+            .get_type_registration(
+                guard
+                    .get_type_by_name("test_utils::test_data::TestResource")
+                    .unwrap(),
+            )
             .unwrap();
         assert!(res.into_right().unwrap().is_right());
     }
@@ -2305,7 +2310,6 @@ mod test {
         let refreshed = catalogue.get(guard).unwrap();
         assert!(!Arc::ptr_eq(&first, &refreshed));
         assert!(refreshed.get_by_short_name("LateType").is_some());
-        assert!(refreshed.flat_view().contains_key("LateType"));
     }
 
     #[test]
@@ -2332,7 +2336,6 @@ mod test {
         let built = catalogue.get(guard.clone()).unwrap();
         let comp = built.get_by_short_name("CatalogueComp").unwrap();
         assert_eq!(comp.namespace.as_ref(), "script.test");
-        assert!(built.flat_view().contains_key("CatalogueComp"));
     }
 
     #[test]
@@ -2450,14 +2453,18 @@ mod test {
                 .is_err()
         );
 
-        // lookups work by full path, and by name alone (the alphabetically first path wins)
+        // lookups work by full path only
         let by_path = guard
             .get_type_registration_by_name("script.two.Same".to_owned())
             .unwrap();
         assert!(by_path.is_some());
+        let by_name = guard
+            .get_type_registration_by_name("Same".to_owned())
+            .unwrap();
+        assert!(by_name.is_none());
         let registry = guard.component_registry();
         let registry = registry.read();
-        assert_eq!(registry.find("Same").unwrap().namespace, "script.one");
+        assert!(registry.find("Same").is_none());
         assert_eq!(
             registry.find("script.two.Same").unwrap().namespace,
             "script.two"
@@ -2705,7 +2712,11 @@ mod test {
 
     fn native_bundle_reg(guard: &WorldAccessGuard<'_>) -> ScriptBundleRegistration {
         guard
-            .get_bundle_type(guard.get_type_by_name("TestBundle").unwrap())
+            .get_bundle_type(
+                guard
+                    .get_type_by_name("test_utils::test_data::TestBundle")
+                    .unwrap(),
+            )
             .unwrap()
             .unwrap()
     }
@@ -2721,7 +2732,11 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         let registration = guard
-            .get_type_registration(guard.get_type_by_name("TestBundle").unwrap())
+            .get_type_registration(
+                guard
+                    .get_type_by_name("test_utils::test_data::TestBundle")
+                    .unwrap(),
+            )
             .unwrap();
         assert!(
             registration

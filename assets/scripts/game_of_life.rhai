@@ -2,8 +2,8 @@ info.call("Rhai: the game_of_life.rhai script just got loaded");
 
 
 fn fetch_life_state() {
-    let LifeState = world.get_type_by_name.call("LifeState");
-    let Settings = world.get_type_by_name.call("Settings");
+    let LifeState = world.get_type_by_name.call("game_of_life::LifeState");
+    let Settings = world.get_type_by_name.call("game_of_life::Settings");
     for (v,i) in world.query.call().component.call(LifeState).build.call(){
         return v.components.call()[0]
     }
@@ -11,8 +11,8 @@ fn fetch_life_state() {
 
 
 fn on_script_loaded() {
-    let LifeState = world.get_type_by_name.call("LifeState");
-    let Settings = world.get_type_by_name.call("Settings");
+    let LifeState = world.get_type_by_name.call("game_of_life::LifeState");
+    let Settings = world.get_type_by_name.call("game_of_life::Settings");
 
     info.call("Rhai: Hello! I am initiating the game of life simulation state with randomness!");
     info.call("Rhai: Click on the screen to set cells alive after running the `gol start` command");
@@ -29,8 +29,8 @@ fn on_script_loaded() {
 }
 
 fn on_click(x,y) {
-    let Settings = world.get_type_by_name.call("Settings");
-    let LifeState = world.get_type_by_name.call("LifeState");
+    let Settings = world.get_type_by_name.call("game_of_life::Settings");
+    let LifeState = world.get_type_by_name.call("game_of_life::LifeState");
 
     info.call("Rhai: Clicked at x: "+ x + ", y: " + y );
     let life_state = fetch_life_state!();
@@ -67,8 +67,8 @@ fn on_click(x,y) {
 }
 
 fn on_update() {
-    let LifeState = world.get_type_by_name.call("LifeState");
-    let Settings = world.get_type_by_name.call("Settings");
+    let LifeState = world.get_type_by_name.call("game_of_life::LifeState");
+    let Settings = world.get_type_by_name.call("game_of_life::Settings");
 
     let life_state = fetch_life_state!();
     let cells = life_state.cells;
@@ -118,8 +118,8 @@ fn on_update() {
 }
 
 fn on_script_unloaded() {
-    let LifeState = world.get_type_by_name.call("LifeState");
-    let Settings = world.get_type_by_name.call("Settings");
+    let LifeState = world.get_type_by_name.call("game_of_life::LifeState");
+    let Settings = world.get_type_by_name.call("game_of_life::Settings");
 
     info.call("Rhai: I am being unloaded, goodbye!");
 
