@@ -1,0 +1,27 @@
+[package]
+name = "bevy_mod_scripting_bevy_window_bindings"
+description = "Script bindings for bevy windows"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+test = false
+
+[dependencies]
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_app = { workspace = true }
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
+bevy_reflect = { workspace = true }
+bevy_math = { workspace = true, features = ["bevy_reflect"] }
+bevy_window = { workspace = true }
+
+[lints]
+workspace = true

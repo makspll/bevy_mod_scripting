@@ -38,7 +38,7 @@ pub enum Feature {
     BevyGizmosBindings,
     BevyGltfBindings,
     BevyImageBindings,
-    BevyInputFocusBindings,
+    BevyWindowBindings,
     BevyMeshBindings,
     BevyPbrBindings,
     BevyPickingBindings,
@@ -132,7 +132,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevyGizmosBindings
             | Feature::BevyGltfBindings
             | Feature::BevyImageBindings
-            | Feature::BevyInputFocusBindings
+            | Feature::BevyWindowBindings
             | Feature::BevyMeshBindings
             | Feature::BevyPbrBindings
             | Feature::BevyPickingBindings
@@ -163,6 +163,7 @@ impl Default for Features {
             Feature::BevyTimeBindings,
             Feature::BevyTransformBindings,
             Feature::BevyColorBindings,
+            Feature::BevyWindowBindings,
             Feature::BevyCorePipelineBindings,
             Feature::LuaLanguageServerFiles,
         ])
