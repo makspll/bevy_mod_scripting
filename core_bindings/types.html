@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-99153879.js";
+            window.path_to_searchindex_js = "../searchindex-462945a9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-32f44bfd.js"></script>
+        <script src="../toc-115f6afe.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -191,6 +191,7 @@
 <tbody>
 <tr><td><a href="././types/world.html"><code>World</code></a></td><td>The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bev...</td></tr>
 <tr><td><a href="././types/enumvariantref.html"><code>EnumVariantRef</code></a></td><td>A reference to a variant of an enum, independent of any value of that enum.   This is what scripts ...</td></tr>
+<tr><td><a href="././types/scriptbundleregistration.html"><code>ScriptBundleRegistration</code></a></td><td>A reference to a bundle type’s reflection registration, i.e. a type with `ReflectBundle` type data....</td></tr>
 <tr><td><a href="././types/scriptcomponentregistration.html"><code>ScriptComponentRegistration</code></a></td><td>A reference to a component type’s reflection registration.   In general think of this as a handle t...</td></tr>
 <tr><td><a href="././types/scriptquerybuilder.html"><code>ScriptQueryBuilder</code></a></td><td>The query builder is used to build ECS queries which retrieve spefific components filtered by speci...</td></tr>
 <tr><td><a href="././types/scriptqueryresult.html"><code>ScriptQueryResult</code></a></td><td>A result from a query.</td></tr>
@@ -963,7 +964,9 @@
 <tr><td><a href="././types/simpletuplestruct.html"><code>SimpleTupleStruct</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/simpletype.html"><code>SimpleType</code></a></td><td>Test component with Reflect and ReflectComponent registered</td></tr>
 <tr><td><a href="././types/testasset.html"><code>TestAsset</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/testbundle.html"><code>TestBundle</code></a></td><td>Bundle with Reflect and ReflectBundle registered, containing a nested bundle</td></tr>
 <tr><td><a href="././types/testcomponent.html"><code>TestComponent</code></a></td><td>Test component with Reflect and ReflectComponent registered</td></tr>
+<tr><td><a href="././types/testnestedbundle.html"><code>TestNestedBundle</code></a></td><td>Bundle nested inside [`TestBundle`]</td></tr>
 <tr><td><a href="././types/testresource.html"><code>TestResource</code></a></td><td>Test Resource with Reflect and ReflectResource registered</td></tr>
 <tr><td><a href="././types/testresourcewithvariousfields.html"><code>TestResourceWithVariousFields</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/unitstruct.html"><code>UnitStruct</code></a></td><td>No Documentation 🚧</td></tr>
@@ -998,7 +1001,7 @@
 <tr><td><a href="././types/axisgamepadinput.html"><code>Axis&lt;GamepadInput&gt;</code></a></td><td>Stores the position data of the input devices of type `T`.   The values are stored as `f32`s, using...</td></tr>
 <tr><td><a href="././types/buttoninputgamepadbutton.html"><code>ButtonInput&lt;GamepadButton&gt;</code></a></td><td>A “press-able” input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
 <tr><td><a href="././types/meshextractabledataindices.html"><code>MeshExtractableData&lt;Indices&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/arctypeid(0xc96f48bbec5accd0897ff65ac72fae93).html"><code>Arc&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/arctypeid(0x05eaa4172d6deb19da0a0248f103fbfa).html"><code>Arc&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/arctypeid(0x5f719f77dcea205e9d9831b6323d6f20).html"><code>Arc&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/meshmaterial2dcolormaterial.html"><code>MeshMaterial2d&lt;ColorMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_shape::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
 <tr><td><a href="././types/meshmaterial2dspritemeshmaterial.html"><code>MeshMaterial2d&lt;SpriteMeshMaterial&gt;</code></a></td><td>A [material](Material2d) used for rendering a [`Mesh2d`].   See [`Material2d`] for general information about 2D materials and how to implement your own materials.   # Example   ```  # use bevy_sprite_render::{ColorMaterial, MeshMaterial2d};  # use bevy_ecs::prelude::*;  # use bevy_mesh::{Mesh, Mesh2d};  # use bevy_color::palettes::basic::RED;  # use bevy_asset::Assets;  # use bevy_shape::Circle;  #  // Spawn an entity with a mesh using `ColorMaterial`.  fn setup(      mut commands: Commands,      mut meshes: ResMut&lt;Assets<mesh>&gt;,      mut materials: ResMut&lt;Assets<colormaterial>&gt;,  ) {      commands.spawn((          Mesh2d(meshes.add(Circle::new(50.0))),          MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),      ));  }  ```   [`MeshMaterial2d`]...</colormaterial></mesh></td></tr>
@@ -1022,7 +1025,7 @@
 <tr><td><a href="././types/entityequivalenthashmapentity,_alloc::vec::vecbevy_camera::primitives::frustum.html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_alloc::vec::vecbevy_light::cascade::cascade.html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_entityequivalenthashsetentity.html"><code>EntityEquivalentHashMap&lt;Entity, EntityEquivalentHashSet&lt;Entity&gt;&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
-<tr><td><a href="././types/hashedcow,_typeid(0xf53ba90a58f35d346e1069483e7d8a3d).html"><code>Hashed&lt;Cow, Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/hashedcow,_typeid(0xb60967e62367e60480e6ccb91e9e59ec).html"><code>Hashed&lt;Cow, Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/entityequivalenthashmapentity,_(bevy_picking::pointer::location,_bevy_platform::time::instant,_bevy_picking::backend::hitdata).html"><code>EntityEquivalentHashMap&lt;Entity, Unknown&gt;</code></a></td><td>A [`HashMap`] pre-configured to use [`EntityHash`] hashing.</td></tr>
 <tr><td><a href="././types/str.html"><code>Str</code></a></td><td>A string slice</td></tr>
 </tbody>
