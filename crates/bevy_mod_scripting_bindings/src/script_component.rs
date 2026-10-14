@@ -1,12 +1,12 @@
 //! Everything necessary to support scripts registering their own components
 
-use super::{InteropError, ScriptComponentRegistration, ScriptValue};
+use super::{InteropError, ScriptComponentRegistration, ScriptEventRegistration, ScriptValue};
 use crate::ScriptNamespaceAppExt;
 use ::{
     bevy_app::{App, Plugin},
     bevy_ecs::component::{Component, Mutable, StorageType},
 };
-use bevy_ecs::{resource::Resource, world::World};
+use bevy_ecs::{entity::Entity, resource::Resource, world::World};
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{Reflect, std_traits::ReflectDefault};
@@ -90,14 +90,27 @@ impl ScriptExport {
     }
 }
 
-/// Removes everything a script registered which is tied to the script running: its exports.
+/// Marks the entity of an observer added by a script, which is removed when the script is unloaded.
+#[derive(Component, Clone, Debug)]
+pub struct ScriptObserverOwner(pub ScriptAttachment);
+
+/// Removes everything a script registered which is tied to the script running: its exports and its observers.
 ///
 /// Called when the script is unloaded (also when it is about to be reloaded, the script registers them again when it runs).
-/// Components stay registered, as Bevy can not unregister components, scripts re-registering them
+/// Components, bundles and events stay registered, as Bevy can not unregister components, scripts re-registering them
 /// on reload use `allow_existing`.
 pub fn remove_script_registrations(world: &mut World, attachment: &ScriptAttachment) {
     if let Some(registry) = world.get_resource::<AppScriptComponentRegistry>() {
         registry.write().remove_exports_of(attachment);
+    }
+    let observers = world
+        .query::<(Entity, &ScriptObserverOwner)>()
+        .iter(world)
+        .filter(|(_, owner)| owner.0 == *attachment)
+        .map(|(entity, _)| entity)
+        .collect::<Vec<_>>();
+    for observer in observers {
+        world.despawn(observer);
     }
 }
 
@@ -141,9 +154,10 @@ impl AppScriptComponentRegistry {
 }
 
 #[derive(Default)]
-/// A registry of dynamically registered script components and exports
+/// A registry of dynamically registered script components, events and exports
 pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
+    events: HashMap<String, ScriptEventRegistration>,
     exports: HashMap<String, ScriptExport>,
     generation: u64,
 }
@@ -185,10 +199,21 @@ impl ScriptComponentRegistry {
         self.components.values()
     }
 
+    /// Registers a script event, possibly overwriting an existing one
+    pub fn register_event(&mut self, registration: ScriptEventRegistration) {
+        self.events
+            .insert(registration.name.to_string(), registration);
+    }
+
+    /// Gets a script event by its full path
+    pub fn get_event(&self, name: &str) -> Option<&ScriptEventRegistration> {
+        self.events.get(name)
+    }
+
     /// Registers a function exported by a script.
     ///
     /// Exporting the same path again from the same script replaces the export (i.e. when a script runs again),
-    /// exporting a path another script exported, or one used by a component, is an error.
+    /// exporting a path another script exported, or one used by a component or event, is an error.
     pub fn register_export(&mut self, export: ScriptExport) -> Result<(), InteropError> {
         let path = export.path();
         if let Some(existing) = self.exports.get(&path)
@@ -199,9 +224,9 @@ impl ScriptComponentRegistry {
                 existing.owner
             )));
         }
-        if self.components.contains_key(&path) {
+        if self.components.contains_key(&path) || self.events.contains_key(&path) {
             return Err(InteropError::string(format!(
-                "cannot export `{path}`: a script registered component has that path"
+                "cannot export `{path}`: a script registered component or event has that path"
             )));
         }
         self.exports.insert(path, export);
@@ -230,9 +255,25 @@ impl ScriptComponentRegistry {
             .filter(move |e| e.namespace == namespace)
     }
 
-    /// The namespaces with at least one export, in no particular order, possibly repeated
-    pub fn export_namespaces(&self) -> impl Iterator<Item = &str> {
-        self.exports.values().map(|e| e.namespace.as_str())
+    /// Iterates over the script events of the given namespace, with their names within it
+    pub fn iter_events_in<'a>(
+        &'a self,
+        namespace: &'a str,
+    ) -> impl Iterator<Item = (&'a str, &'a ScriptEventRegistration)> {
+        self.events.iter().filter_map(move |(path, event)| {
+            // names cannot contain dots, so the namespace is everything before the last one
+            let (event_namespace, name) = path.rsplit_once('.')?;
+            (event_namespace == namespace).then_some((name, event))
+        })
+    }
+
+    /// The namespaces with at least one export or event, in no particular order, possibly repeated
+    pub fn export_and_event_namespaces(&self) -> impl Iterator<Item = &str> {
+        self.exports.values().map(|e| e.namespace.as_str()).chain(
+            self.events
+                .keys()
+                .filter_map(|p| Some(p.rsplit_once('.')?.0)),
+        )
     }
 }
 
