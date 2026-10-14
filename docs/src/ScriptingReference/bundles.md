@@ -51,4 +51,4 @@ health.data = { current = health.data.current - 1 }
 
 Tables read from `data` are copies: assign a new table to `data` to change it, `health.data.current = 1` does not write through.
 
-Script registered components are also added to the `types` global (e.g. `types.Mana`). Contexts which were created before the registration pick them up before their next callback runs.
+Script registered components can be imported from their namespace, i.e. `import_namespace("script.my_game").Mana`. The deprecated `types` global is a snapshot taken when a script's context is created, so it only has the script components registered before that.

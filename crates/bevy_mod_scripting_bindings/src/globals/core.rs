@@ -1,5 +1,7 @@
 //! Core globals exposed by the BMS framework
 
+use crate::{AnyTypeRegistrationV, WorldExtensions, function::from::V};
+use crate::{docgen::into_through_type_info, error::InteropError};
 use ::{
     bevy_app::Plugin,
     bevy_asset::Handle,
@@ -12,12 +14,8 @@ use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_derive::script_globals;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
-use std::sync::Arc;
 
-use crate::{AnyTypeRegistrationV, WorldExtensions, function::from::V};
-use crate::{docgen::into_through_type_info, error::InteropError};
-
-use super::{AppScriptGlobalsRegistry, AppScriptTypeCatalogue, ScriptGlobalResync};
+use super::{AppScriptGlobalsRegistry, AppScriptTypeCatalogue};
 
 /// A plugin introducing core globals for the BMS framework.
 ///
@@ -55,15 +53,6 @@ impl Plugin for CoreScriptGlobalsPlugin {
         }
 
         register_core_globals(app.world_mut());
-
-        // script registered components show up in `types` after contexts were created
-        let registry = app.world().resource::<AppScriptGlobalsRegistry>().clone();
-        if let Some(types) = registry.write().get_mut("types") {
-            types.resync = Some(ScriptGlobalResync {
-                generation_key: "__bms_types_generation".into(),
-                generation: Arc::new(|guard| Ok(guard.component_registry().read().generation())),
-            });
-        }
     }
 }
 const MSG_DUPLICATE_GLOBAL: &str = "This can cause confusing issues for script users, use `CoreScriptGlobalsPlugin.filter` to filter out uneeded duplicate types.";
@@ -129,8 +118,10 @@ impl CoreGlobals {
     ///
     /// You can use this to avoid having to store type references.
     ///
-    /// Components registered by scripts via `register_new_component` are included,
-    /// and are added to live contexts before their next callback runs.
+    /// This is a snapshot taken when the script's context is created: components registered by scripts via `register_new_component`
+    /// afterwards are not in it, use `import_namespace` to get at them.
+    ///
+    /// Deprecated in favour of `import_namespace`.
     fn types(guard: WorldGuard) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
         let catalogue = guard.type_catalogue().clone();
         let catalogue = catalogue.get(guard)?;

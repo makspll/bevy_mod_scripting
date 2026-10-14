@@ -90,7 +90,7 @@ world.add_default_component(entity, ai.Enemy)
 
 * Namespaces defined by scripts must start with `script.`, followed by segments of letters, digits and underscores separated by dots. This keeps them apart from the namespaces of crates, which scripts cannot add to.
 * Names are unique within their namespace, so `script.game.ai.Enemy` and `script.game.ui.Enemy` are different components. Registering the same path twice is an error, unless `allow_existing` is passed.
-* `types.Enemy` finds a script registered type by its name alone, which is ambiguous if several namespaces have one of that name (the one with the alphabetically first path wins). This is one reason `types` is deprecated, use `import_namespace`.
+* `types.Enemy` finds a script registered type by its name alone, which is ambiguous if several namespaces have one of that name (the one with the alphabetically first path wins). `types` is also a snapshot taken when the script's context is created, so it misses components registered afterwards. This is one reason `types` is deprecated, use `import_namespace`.
 * A namespace exists as soon as something is registered or exported in it. Importing one before that fails with a hint that the script defining it needs to have run.
 
 ## Exporting functions

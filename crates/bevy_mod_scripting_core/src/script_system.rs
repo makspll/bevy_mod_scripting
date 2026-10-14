@@ -26,9 +26,9 @@ use bevy_ecs::{
 use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
-    AppScriptFunctionRegistry, AppScriptGlobalsRegistry, AppScriptTypeCatalogue,
-    CurrentScriptAttachment, InteropError, IntoScript, ReflectReference, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
+    AppScriptFunctionRegistry, AppScriptTypeCatalogue, CurrentScriptAttachment, InteropError,
+    IntoScript, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{AccessByteSet, WorldAccessGuard, WorldGuard};
@@ -186,7 +186,6 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     schedule_registry: AppScheduleRegistry,
     component_registry: AppScriptComponentRegistry,
     callback_runners: AppScriptCallbackRunners,
-    globals_registry: AppScriptGlobalsRegistry,
     type_catalogue: AppScriptTypeCatalogue,
     allocator: AppReflectAllocator,
     subset: AccessByteSet,
@@ -292,7 +291,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             state.schedule_registry.clone(),
             state.component_registry.clone(),
             state.callback_runners.clone(),
-            state.globals_registry.clone(),
             state.type_catalogue.clone(),
         );
         let guard = if self.exclusive {
@@ -480,9 +478,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 .clone(),
             callback_runners: world
                 .get_resource_or_init::<AppScriptCallbackRunners>()
-                .clone(),
-            globals_registry: world
-                .get_resource_or_init::<AppScriptGlobalsRegistry>()
                 .clone(),
             type_catalogue: world
                 .get_resource_or_init::<AppScriptTypeCatalogue>()

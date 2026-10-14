@@ -15,10 +15,8 @@ use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
-    InteropError, PartialReflectExt, WorldExtensions,
-    function::namespace::Namespace,
-    globals::{AppScriptGlobalsRegistry, initial_generation, resync_globals},
-    script_value::ScriptValue,
+    InteropError, PartialReflectExt, WorldExtensions, function::namespace::Namespace,
+    globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
@@ -176,14 +174,7 @@ impl Default for LuaScriptingPlugin {
                             match &global.maker {
                                 Some(maker) => {
                                     // non-static global
-                                    let generation = initial_generation(&world, global)?;
                                     let global = (maker)(world.clone())?;
-                                    if let Some((key, generation)) = generation {
-                                        context
-                                            .globals()
-                                            .set(key.to_string(), generation)
-                                            .map_err(IntoInteropError::to_bms_error)?;
-                                    }
                                     context
                                         .globals()
                                         .set(key.to_string(), LuaScriptValue::from(global))
@@ -222,23 +213,6 @@ impl Default for LuaScriptingPlugin {
                 context_pre_handling_initializers: vec![|context_key, context| {
                     // TODO: convert these to functions
                     let world = ThreadWorldContainer.try_get_context()?.world;
-
-                    // bring resyncable globals (i.e. `types`) up to date
-                    resync_globals(
-                        &world,
-                        &world.script_globals_registry().read(),
-                        |name, key, current, make| {
-                            let globals = context.globals();
-                            if globals.get::<Option<u64>>(key).ok().flatten() == Some(current) {
-                                return Ok(());
-                            }
-                            globals
-                                .set(name, LuaScriptValue::from(make()?))
-                                .and_then(|_| globals.set(key, current))
-                                .map_err(IntoInteropError::to_bms_error)
-                        },
-                    )?;
-
                     if let Some(entity) = context_key.entity() {
                         context
                             .globals()
