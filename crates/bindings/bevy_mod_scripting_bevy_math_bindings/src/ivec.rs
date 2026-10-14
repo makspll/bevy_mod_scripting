@@ -10,14 +10,16 @@ use bevy_mod_scripting_bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 
 /// Functions shared by all integer vectors.
+// rustfmt keeps indenting the attribute inside the macro further on every run
+#[rustfmt::skip]
 macro_rules! int_vector_functions {
     ($ty:ty, $scalar:ty, $name:literal) => {
         #[script_bindings(
-                                    remote,
-                                    name = $name,
-                                    bms_bindings_path = "bevy_mod_scripting_bindings",
-                                    core
-                                )]
+            remote,
+            name = $name,
+            bms_bindings_path = "bevy_mod_scripting_bindings",
+            core
+        )]
         impl $ty {
             /// A vector with all components set to `v`.
             fn splat(v: $scalar) -> V<$ty> {

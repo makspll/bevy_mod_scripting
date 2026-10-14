@@ -1,4 +1,4 @@
 * text=auto eol=lf
 
-crates/bindings/**/* linguist-generated
-crates/bindings/**/* -diff -merge
+crates/bindings/*_bms_bindings/**/* linguist-generated
+crates/bindings/*_bms_bindings/**/* -diff -merge
