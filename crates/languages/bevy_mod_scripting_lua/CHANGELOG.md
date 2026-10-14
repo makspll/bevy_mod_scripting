@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.22.0...bevy_mod_scripting_lua-v0.23.0) - 2026-10-14
+
+### Added
+
+- shared `new` constructors on every type and enum variant referenced function lookups ([#564](https://github.com/makspll/bevy_mod_scripting/pull/564))
+
+### Fixed
+
+- rare ordering bug in `Vec<T>` iteration from lua ([#558](https://github.com/makspll/bevy_mod_scripting/pull/558))
+
+### Refactored
+
+- name the type registration union and add instance and reserved function lookups ([#563](https://github.com/makspll/bevy_mod_scripting/pull/563))
+
 ## [0.22.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.21.1...bevy_mod_scripting_lua-v0.22.0) - 2026-10-11
 
 ### Added
