@@ -4,7 +4,7 @@ Scripts can send Bevy [events](https://docs.rs/bevy/latest/bevy/ecs/event/trait.
 
 | Function | Rust type data required | Behaviour |
 |---|---|---|
-| `world.trigger_event(type, value)` | `ReflectEvent` | Triggers the event. Observers run **before the call returns**. |
+| `world.trigger_event(type, value)` | `ReflectEvent` | Triggers the event. Observers run, and all pending commands are applied, **before the call returns**. Also triggers [script events](#script-defined-events). |
 | `world.write_message(type, value)` | `ReflectMessage` | Writes the message to its `Messages<T>` buffer, readers see it later in the frame. |
 
 ```lua
@@ -81,7 +81,7 @@ register_callback("on_damaged", function(payload)
 end)
 
 world.add_observer(Damaged, "on_damaged")
-world.trigger(Damaged, { amount = 5 })
+world.trigger_event(Damaged, { amount = 5 })
 ```
 
 * `register_new_event` fails if the name is taken, unless `allow_existing` (third argument) is passed.

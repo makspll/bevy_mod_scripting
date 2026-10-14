@@ -284,7 +284,7 @@ impl Plugin for DynamicScriptComponentPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AppScriptComponentRegistry>()
             .register_type::<DynamicComponent>()
-            .set_script_namespace::<DynamicComponent>("bms");
+            .override_script_namespace::<DynamicComponent>("bms");
     }
 }
 

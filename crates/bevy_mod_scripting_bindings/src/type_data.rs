@@ -49,7 +49,7 @@ impl<T> CreateTypeData<T> for MarkAsCore {
 /// ```rust,ignore
 /// registry.register_type_data_with::<T, ScriptNamespace, _>("my_namespace");
 /// ```
-/// or [`ScriptNamespaceAppExt::set_script_namespace`].
+/// or [`ScriptNamespaceAppExt::override_script_namespace`].
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ScriptNamespace(pub std::borrow::Cow<'static, str>);
 
@@ -92,7 +92,9 @@ pub fn set_script_namespace_if_unset<T: bevy_reflect::Reflect + bevy_reflect::Ty
 /// Extension for setting the script namespace of types.
 pub trait ScriptNamespaceAppExt {
     /// Registers `T` if it is not registered yet, and puts it in the given script namespace.
-    fn set_script_namespace<
+    ///
+    /// This always wins: it replaces any namespace set before, and `script_bindings(namespace = ...)` running afterwards keeps it (with a warning).
+    fn override_script_namespace<
         T: bevy_reflect::GetTypeRegistration + bevy_reflect::Reflect + bevy_reflect::TypePath,
     >(
         &mut self,
@@ -101,7 +103,7 @@ pub trait ScriptNamespaceAppExt {
 }
 
 impl ScriptNamespaceAppExt for bevy_app::App {
-    fn set_script_namespace<
+    fn override_script_namespace<
         T: bevy_reflect::GetTypeRegistration + bevy_reflect::Reflect + bevy_reflect::TypePath,
     >(
         &mut self,

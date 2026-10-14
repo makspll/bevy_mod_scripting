@@ -15,13 +15,15 @@ function on_test()
     EventB = world.register_new_event("script.test", "TestEventB")
     -- registering again returns the same event
     assert(world.register_new_event("script.test", "TestEventA", true) ~= nil)
+    assert(EventA:short_name() == "TestEventA", "got: " .. EventA:short_name())
+    assert(EventA:namespace() == "script.test", "got: " .. EventA:namespace())
 
     observer_a = world.add_observer(EventA, "on_a")
     world.add_observer(EventB, "on_b")
 
-    world.trigger(EventA, { value = 1 })
-    world.trigger(EventB, "hello")
-    world.trigger(EventA, 3)
+    world.trigger_event(EventA, { value = 1 })
+    world.trigger_event(EventB, "hello")
+    world.trigger_event(EventA, 3)
 end
 
 function on_test_post_update()
@@ -31,7 +33,7 @@ function on_test_post_update()
     assert(#got_b == 1 and got_b[1] == "hello", "B observer sees only B")
 
     world.despawn(observer_a)
-    world.trigger(EventA, 5)
+    world.trigger_event(EventA, 5)
 end
 
 function on_test_last()

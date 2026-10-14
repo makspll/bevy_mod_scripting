@@ -347,7 +347,7 @@ impl World {
 
     /// Registers a new script event.
     ///
-    /// Script events carry an arbitrary payload, and can be observed with `add_observer` and triggered with `trigger`.
+    /// Script events carry an arbitrary payload, and can be observed with `add_observer` and triggered with `trigger_event`.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
@@ -369,41 +369,37 @@ impl World {
             .map(V)
     }
 
-    /// Triggers a script event, observers added with `add_observer` run right after.
+    /// Triggers an observer-style event: either a Rust event type with `#[reflect(Event)]`, or an event registered with `register_new_event`.
     ///
+    /// Observers run immediately, and the commands they queue are applied before this function returns.
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `event`: The event registered with `register_new_event`.
-    /// * `payload`: The data to pass to the observers.
-    /// Returns:
-    /// * `result`: Nothing if the event was triggered successfully.
-    fn trigger(
-        ctxt: FunctionCallContext,
-        event: V<ScriptEventRegistration>,
-        payload: Option<ScriptValue>,
-    ) -> Result<(), InteropError> {
-        profiling::function_scope!("trigger");
-        let world = ctxt.world()?;
-        world.trigger_script_event(event.into_inner(), payload.unwrap_or(ScriptValue::Unit))
-    }
-
-    /// Triggers an observer-style event. The event type must be registered and have `#[reflect(Event)]`.
-    ///
-    /// Observers run immediately, before this function returns.
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `registration`: The type of the event.
-    /// * `event`: The event value, e.g. built with `construct`.
+    /// * `event`: The type of the event, or the script event.
+    /// * `value`: The event value, e.g. built with `construct`, for Rust events. Any value (or nothing) for script events, which is passed to the observers.
     /// Returns:
     /// * `result`: Nothing if the event was triggered successfully.
     fn trigger_event(
         ctxt: FunctionCallContext,
-        registration: V<ScriptTypeRegistration>,
-        event: ReflectReference,
+        event: Union<V<ScriptTypeRegistration>, V<ScriptEventRegistration>>,
+        value: Option<ScriptValue>,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("trigger_event");
         let world = ctxt.world()?;
-        world.trigger_event(registration.into_inner(), &event)
+        match event.into_left() {
+            Ok(registration) => match value {
+                Some(ScriptValue::Reference(value)) => {
+                    world.trigger_event(registration.into_inner(), &value)
+                }
+                _ => Err(InteropError::string(format!(
+                    "triggering the event `{}` needs an event value, i.e. built with `construct`",
+                    registration.short_name()
+                ))),
+            },
+            Err(script_event) => world.trigger_script_event(
+                script_event.into_inner(),
+                value.unwrap_or(ScriptValue::Unit),
+            ),
+        }
     }
 
     /// Writes a buffered message. The message type must be registered and have `#[reflect(Message)]`.
@@ -1336,6 +1332,37 @@ impl ScriptBundleRegistration {
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "script_event_registration_functions",
+    core,
+    namespace = "bms"
+)]
+impl ScriptEventRegistration {
+    /// Retrieves the name of the event within its namespace, i.e. `Hit` for `script.game.Hit`.
+    ///
+    /// Arguments:
+    /// * `registration`: The event registration.
+    /// Returns:
+    /// * `short_name`: The name of the event.
+    fn short_name(registration: R<ScriptEventRegistration>) -> String {
+        profiling::function_scope!("short_name");
+        registration.short_name().to_owned()
+    }
+
+    /// Retrieves the script namespace the event was registered in, i.e. `script.game` for `script.game.Hit`.
+    ///
+    /// Arguments:
+    /// * `registration`: The event registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the event.
+    fn namespace(registration: R<ScriptEventRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_builder_functions",
     core,
     namespace = "bms"
@@ -1808,7 +1835,7 @@ impl GlobalNamespace {
     ///
     /// local game = import_namespace("script.game")
     /// game.spawn_enemy(5)
-    /// world.trigger(game.EnemySpawned, {})
+    /// world.trigger_event(game.EnemySpawned, {})
     /// ```
     ///
     /// Fails with a list of similar namespaces if the namespace does not exist.
@@ -2117,6 +2144,7 @@ pub fn register_core_functions(app: &mut App) {
         register_script_component_registration_functions(world);
         register_script_resource_registration_functions(world);
         register_script_bundle_registration_functions(world);
+        register_script_event_registration_functions(world);
 
         register_script_query_builder_functions(world);
         register_script_query_result_functions(world);

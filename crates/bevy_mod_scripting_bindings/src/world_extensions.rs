@@ -2310,7 +2310,7 @@ mod test {
 
     #[test]
     fn script_registrations_enter_catalogue_and_bump_generation_once() {
-        use crate::{AppScriptTypeCatalogue, CatalogueSource};
+        use crate::AppScriptTypeCatalogue;
 
         let mut world = setup_world(|_, _| {});
         let catalogue = AppScriptTypeCatalogue::default();
@@ -2331,7 +2331,7 @@ mod test {
 
         let built = catalogue.get(guard.clone()).unwrap();
         let comp = built.get_by_short_name("CatalogueComp").unwrap();
-        assert_eq!(comp.source, CatalogueSource::Script);
+        assert_eq!(comp.namespace.as_ref(), "script.test");
         assert!(built.flat_view().contains_key("CatalogueComp"));
     }
 

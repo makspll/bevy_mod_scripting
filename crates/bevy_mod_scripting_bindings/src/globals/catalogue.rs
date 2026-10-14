@@ -57,28 +57,15 @@ impl CatalogueRegistration {
     }
 }
 
-/// Where a catalogue entry came from.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum CatalogueSource {
-    /// Registered through the type registry
-    Native,
-    /// Registered at runtime by a script
-    Script,
-}
-
 /// A single type known to the catalogue.
 #[derive(Clone)]
 pub struct CatalogueEntry {
-    /// The full type path, i.e. `bevy_transform::components::transform::Transform`
-    pub path: Arc<str>,
     /// The short type name, i.e. `Transform`
     pub short_name: Arc<str>,
     /// The namespace of the type, see [`ScriptTypeRegistration::namespace`]. Empty for the root namespace.
     pub namespace: Arc<str>,
     /// The registration of the type
     pub registration: CatalogueRegistration,
-    /// Where the entry came from
-    pub source: CatalogueSource,
 }
 
 /// An index of types available to scripts.
@@ -208,18 +195,18 @@ impl ScriptTypeCatalogue {
         let type_registry = type_registry.read();
         let mut catalogue = Self::default();
         for registration in type_registry.iter().filter(|r| filter(r)) {
-            let path_table = registration.type_info().type_path_table();
-            let path: Arc<str> = path_table.path().into();
-            let short_name: Arc<str> = path_table.short_path().into();
+            let short_name: Arc<str> = registration
+                .type_info()
+                .type_path_table()
+                .short_path()
+                .into();
             let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
             let namespace: Arc<str> = registration.namespace().into();
             let registration = guard.clone().get_type_registration(registration)?;
             catalogue.insert(CatalogueEntry {
-                path,
                 short_name,
                 namespace,
                 registration: CatalogueRegistration::from_any(registration),
-                source: CatalogueSource::Native,
             });
         }
         drop(type_registry);
@@ -229,11 +216,9 @@ impl ScriptTypeCatalogue {
         let script_registry = script_registry.read();
         for info in script_registry.iter_components() {
             catalogue.insert(CatalogueEntry {
-                path: info.path().into(),
                 short_name: info.name.as_str().into(),
                 namespace: info.namespace.as_str().into(),
                 registration: CatalogueRegistration::Component(info.registration.clone()),
-                source: CatalogueSource::Script,
             });
         }
         Ok(catalogue)

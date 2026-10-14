@@ -31,12 +31,12 @@ local t = bevy_transform.Transform.new { translation = Vec3.new(0, 1, 0) }
 ## Overriding the namespace of a type
 
 ```rust,ignore
-// on types with script bindings (first namespace wins, with a warning)
+// on types with script bindings: keeps a namespace set before (with a warning)
 #[script_bindings(namespace = "my_namespace")]
 impl MyType { /* ... */ }
 
-// on any registered type
-app.set_script_namespace::<MyType>("my_namespace"); // bevy_mod_scripting::bindings::ScriptNamespaceAppExt
+// on any type: always wins, before or after `script_bindings`
+app.override_script_namespace::<MyType>("my_namespace"); // bevy_mod_scripting::bindings::ScriptNamespaceAppExt
 // or directly
 registry.register_type_data_with::<MyType, ScriptNamespace, _>("my_namespace");
 ```
@@ -52,7 +52,7 @@ local Hit = world.register_new_event("script.game.ai", "Hit")
 -- anywhere, including other scripts
 local ai = import_namespace("script.game.ai")
 world.add_default_component(entity, ai.Enemy)
-world.trigger(ai.Hit, { damage = 3 })
+world.trigger_event(ai.Hit, { damage = 3 })
 ```
 
 * Names are unique within a namespace, across components, events and exports: `script.game.ai.Enemy` and `script.game.ui.Enemy` are different components.

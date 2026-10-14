@@ -27,3 +27,20 @@ pub struct ScriptEventRegistration {
     /// The name the event was registered under
     pub name: Arc<str>,
 }
+
+impl ScriptEventRegistration {
+    /// The script namespace the event was registered in, i.e. `script.game` for `script.game.Hit`.
+    pub fn namespace(&self) -> &str {
+        // names cannot contain dots, so the namespace is everything before the last one
+        self.name
+            .rsplit_once('.')
+            .map_or("", |(namespace, _)| namespace)
+    }
+
+    /// The name of the event within its namespace, i.e. `Hit` for `script.game.Hit`.
+    pub fn short_name(&self) -> &str {
+        self.name
+            .rsplit_once('.')
+            .map_or(&self.name, |(_, name)| name)
+    }
+}
