@@ -89,7 +89,7 @@ pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>
     remove_registrations_when_unloaded(&mut commands, event.attachment.clone());
 }
 
-/// Once the unload callback ran, removes what the script registered which only makes sense while it runs, i.e. its exports.
+/// Once the unload callback ran, removes what the script registered which only makes sense while it runs, i.e. its exports and observers.
 fn remove_registrations_when_unloaded(commands: &mut Commands, attachment: ScriptAttachment) {
     commands.queue(move |world: &mut World| remove_script_registrations(world, &attachment));
 }

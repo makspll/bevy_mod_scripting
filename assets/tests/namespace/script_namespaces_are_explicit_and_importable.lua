@@ -9,6 +9,7 @@ function on_test()
     local err = error_of(world.register_new_component, "game", "Enemy")
     assert(err:find("must start with `script.`", 1, true), err)
     assert(error_of(world.register_new_component, "bevy_transform", "Enemy"):find("script.", 1, true))
+    assert(error_of(world.register_new_event, "game", "Hit"):find("script.", 1, true))
 
     -- the same name can be used in different namespaces
     local ai_enemy = world.register_new_component("script.game.ai", "Enemy")
@@ -27,4 +28,19 @@ function on_test()
     world.add_default_component(entity, ai.Enemy)
     assert(world.has_component(entity, ai_enemy))
     assert(not world.has_component(entity, ui_enemy))
+
+    -- events are namespaced and importable too
+    world.register_new_event("script.game.ai", "Hit")
+    world.register_new_event("script.game.ui", "Hit")
+    assert(import_namespace("script.game.ai").Hit ~= nil, "registered events are importable")
+
+    -- a namespace with only events exists
+    world.register_new_event("script.game.events_only", "Tick")
+    assert(import_namespace("script.game.events_only").Tick ~= nil)
+
+    -- events, components and exports share paths, so they cannot collide
+    local clash = error_of(world.register_new_event, "script.game.ai", "Enemy")
+    assert(clash:find("already exists", 1, true), clash)
+    local clash2 = error_of(world.register_new_component, "script.game.ai", "Hit")
+    assert(clash2:find("already exists", 1, true), clash2)
 end

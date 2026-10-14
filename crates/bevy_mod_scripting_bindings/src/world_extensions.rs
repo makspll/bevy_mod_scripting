@@ -15,8 +15,8 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder,
-    ScriptQueryResult,
+    AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo, ScriptEvent,
+    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
     script_path, validate_script_namespace_and_name,
@@ -36,9 +36,10 @@ use bevy_asset::AssetPath;
 use bevy_ecs::{
     component::{Component, ComponentCloneBehavior, ComponentDescriptor, Mutable},
     hierarchy::{ChildOf, Children},
+    observer::{Observer, On},
     resource::Resource,
     system::Commands,
-    world::{CommandQueue, EntityRef, Mut},
+    world::{CommandQueue, DeferredWorld, EntityRef, Mut},
 };
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
@@ -209,6 +210,56 @@ pub trait WorldExtensions {
         path: &str,
         args: Vec<ScriptValue>,
     ) -> Result<ScriptValue, InteropError>;
+
+    /// Registers a script event, and returns a handle to it.
+    ///
+    /// Fails if an event with the same name is already registered, unless `allow_existing` is set,
+    /// in which case the existing event is returned instead.
+    fn register_script_event(
+        &self,
+        namespace: &str,
+        name: &str,
+        allow_existing: bool,
+    ) -> Result<ScriptEventRegistration, InteropError>;
+
+    /// Spawns an observer which queues the callback `label` on the script `attachment`, with the payload as argument, whenever the script event is triggered.
+    ///
+    /// See [`Self::add_script_observer`] for when callbacks run.
+    fn add_script_event_observer(
+        &self,
+        event: ScriptEventRegistration,
+        label: String,
+        attachment: ScriptAttachment,
+    ) -> Result<Entity, InteropError>;
+
+    /// Triggers a script event with the given payload, observers of the event queue their callbacks.
+    fn trigger_script_event(
+        &self,
+        event: ScriptEventRegistration,
+        payload: ScriptValue,
+    ) -> Result<(), InteropError>;
+
+    /// Spawns an observer which queues the callback `label` on the script `attachment` whenever an event of the given type is triggered.
+    ///
+    /// The event type must have [`ReflectEvent`] type data. For events which are triggered for components
+    /// (i.e. the lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent`, `DespawnEvent`), the observer runs for the given components.
+    /// If `entities` is non-empty, it only runs for those entities.
+    ///
+    /// The callback receives a clone of the event as its only argument, and is run by the same machinery as every other script callback
+    /// (see [`AppScriptCallbackRunners::run_or_queue`]): right after the operation which triggered the event, unless the script's context
+    /// is busy running another callback (e.g. the one that triggered the event), in which case it is queued
+    /// and runs as soon as that finishes. The order in which the observers of one event run is unspecified.
+    /// The world is already past the change (i.e. removed component data is no longer readable).
+    ///
+    /// Returns the observer entity, despawn it to remove the observer.
+    fn add_script_observer(
+        &self,
+        event: ScriptTypeRegistration,
+        components: Vec<ScriptComponentRegistration>,
+        entities: Vec<Entity>,
+        label: String,
+        attachment: ScriptAttachment,
+    ) -> Result<Entity, InteropError>;
 
     /// Writes a reflected [`bevy_ecs::message::Message`] (buffered) to the world, using the type's [`ReflectMessage`] type data.
     fn write_message(
@@ -788,6 +839,58 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.with_world_mut(|world| {
             let registry = registry.read();
             reflect_event.trigger(world, value.as_ref(), &registry);
+            // apply the commands of observers, i.e. the callbacks of script observers
+            world.flush();
+        })
+    }
+
+    fn add_script_observer(
+        &self,
+        event: ScriptTypeRegistration,
+        components: Vec<ScriptComponentRegistration>,
+        entities: Vec<Entity>,
+        label: String,
+        attachment: ScriptAttachment,
+    ) -> Result<Entity, InteropError> {
+        let reflect_event = event
+            .type_registration()
+            .data::<ReflectEvent>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(event.type_id(), "ReflectEvent".to_owned())
+            })?
+            .clone();
+        let allocator = self.allocator().clone();
+        let runners = self.script_callback_runners().clone();
+        let recipients = Recipients::from(attachment.clone());
+
+        let mut observer = reflect_event.create_observer(Box::new(move |event, mut world| {
+            let value = match event.reflect_clone() {
+                Ok(value) => value,
+                Err(e) => {
+                    bevy_log::error!("script observer could not clone its event: {e}");
+                    return;
+                }
+            };
+            let reference = ReflectReference::new_allocated_boxed(value, &mut allocator.write());
+            run_observer_callback(
+                &mut world,
+                &runners,
+                &recipients,
+                &label,
+                ScriptValue::Reference(reference),
+            );
+        }));
+        for component in components {
+            observer = observer.with_component(component.component_id);
+        }
+        if !entities.is_empty() {
+            observer = observer.with_entities(entities);
+        }
+        // removed again when the script is unloaded
+        self.with_world_mut(|world| {
+            world
+                .spawn((observer, crate::ScriptObserverOwner(attachment)))
+                .id()
         })
     }
 
@@ -842,6 +945,91 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 export.owner
             ))),
         }
+    }
+
+    fn register_script_event(
+        &self,
+        namespace: &str,
+        name: &str,
+        allow_existing: bool,
+    ) -> Result<ScriptEventRegistration, InteropError> {
+        validate_script_namespace_and_name(namespace, name)?;
+        let path = script_path(namespace, name);
+        let component_registry = self.component_registry();
+        let mut registry = component_registry.write();
+        if let Some(existing) = registry.get_event(&path) {
+            if allow_existing {
+                return Ok(existing.clone());
+            }
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!(
+                    "script registered event '{path}' already exists, pass `allow_existing = true` to get the existing registration instead"
+                ),
+            ));
+        }
+        if registry.get(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a script registered component named '{path}' already exists"),
+            ));
+        }
+        if registry.get_export(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a function named '{path}' is already exported"),
+            ));
+        }
+        let registration = ScriptEventRegistration { name: path.into() };
+        registry.register_event(registration.clone());
+        Ok(registration)
+    }
+
+    fn add_script_event_observer(
+        &self,
+        event: ScriptEventRegistration,
+        label: String,
+        attachment: ScriptAttachment,
+    ) -> Result<Entity, InteropError> {
+        let name = event.name;
+        let runners = self.script_callback_runners().clone();
+        let recipients = Recipients::from(attachment.clone());
+        let observer = Observer::new(move |event: On<ScriptEvent>, mut world: DeferredWorld| {
+            if event.name != name {
+                return;
+            }
+            run_observer_callback(
+                &mut world,
+                &runners,
+                &recipients,
+                &label,
+                event.payload.clone(),
+            );
+        });
+        // removed again when the script is unloaded
+        self.with_world_mut(|world| {
+            world
+                .spawn((observer, crate::ScriptObserverOwner(attachment)))
+                .id()
+        })
+    }
+
+    fn trigger_script_event(
+        &self,
+        event: ScriptEventRegistration,
+        payload: ScriptValue,
+    ) -> Result<(), InteropError> {
+        self.with_world_mut(|world| {
+            world.trigger(ScriptEvent {
+                name: event.name,
+                payload,
+            });
+            // apply the commands of observers, i.e. the callbacks of script observers
+            world.flush();
+        })
     }
 
     fn write_message(
@@ -1287,6 +1475,13 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 format!("a function named '{path}' is already exported"),
             ));
         }
+        if component_registry_read.get_event(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a script registered event named '{path}' already exists"),
+            ));
+        }
 
         let component_id = self.with_world_mut_access(|w| {
             let descriptor = unsafe {
@@ -1423,6 +1618,38 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
     //     builder.build::<P>(self.clone(), schedule)
     // }
+}
+
+/// Delivers an event to the callback of a script observer through the callback runners.
+///
+/// Runs once the commands of the triggering operation are applied, see [`AppScriptCallbackRunners::run_or_queue`].
+/// Errors are reported through [`AppScriptCallbackRunners::report_error`].
+fn run_observer_callback(
+    world: &mut DeferredWorld,
+    runners: &AppScriptCallbackRunners,
+    recipients: &Recipients,
+    label: &str,
+    arg: ScriptValue,
+) {
+    let runners = runners.clone();
+    let recipients = recipients.clone();
+    let label = label.to_owned();
+    world.commands().queue(move |world: &mut World| {
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
+        WorldGuard::with_static_guard(world, cache, |guard| {
+            let context = || format!("in observer callback: {label}");
+            match runners.run_or_queue(guard.clone(), &recipients, &label, vec![arg]) {
+                Ok(results) => {
+                    for (attachment, result) in results {
+                        if let Err(e) = result {
+                            runners.report_error(guard.clone(), Some(&attachment), context(), e);
+                        }
+                    }
+                }
+                Err(e) => runners.report_error(guard, None, context(), e),
+            }
+        })
+    });
 }
 
 /// A type level function registered on [`StaticTypeRef`], bound to the given type.
@@ -2109,6 +2336,54 @@ mod test {
     }
 
     #[test]
+    fn script_event_observers_run_right_away_or_queue_when_context_is_busy() {
+        use bevy_mod_scripting_asset::Language;
+
+        let mut world = setup_world(|_, _| {});
+        let runners = AppScriptCallbackRunners::default();
+        let ran = Arc::new(parking_lot::Mutex::new(Vec::<String>::new()));
+        let r = ran.clone();
+        let attachment = ScriptAttachment::StaticScript(Handle::default());
+        let a = attachment.clone();
+        runners.register(
+            Language::Lua,
+            Arc::new(move |_, _, label, _| {
+                r.lock().push(label.to_owned());
+                // pretend the context is busy for one of the callbacks
+                Ok(vec![(
+                    a.clone(),
+                    if label == "busy_cb" {
+                        Err(InteropError::context_busy("busy".to_owned()))
+                    } else {
+                        Ok(ScriptValue::Unit)
+                    },
+                )])
+            }),
+        );
+        world.insert_resource(runners.clone());
+
+        let guard = make_guard(&mut world);
+        let event = guard
+            .register_script_event("script.test", "E", false)
+            .unwrap();
+        for label in ["free_cb", "busy_cb"] {
+            guard
+                .add_script_event_observer(event.clone(), label.into(), attachment.clone())
+                .unwrap();
+        }
+        guard
+            .trigger_script_event(event, ScriptValue::Unit)
+            .unwrap();
+
+        // both were attempted right away (in unspecified order), only the busy one was queued
+        let mut attempted = ran.lock().clone();
+        attempted.sort();
+        assert_eq!(attempted, vec!["busy_cb", "free_cb"]);
+        assert_eq!(runners.pop_queued().unwrap().label, "busy_cb");
+        assert!(!runners.has_queued());
+    }
+
+    #[test]
     fn script_registrations_need_valid_script_namespaces() {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
@@ -2122,11 +2397,13 @@ mod test {
             "script.a b",
             "",
         ] {
-            let err = guard
-                .register_script_component(bad, "C", false)
-                .unwrap_err()
-                .to_string();
-            assert!(err.contains("script"), "{bad}: {err}");
+            for result in [
+                guard.register_script_component(bad, "C", false).map(|_| ()),
+                guard.register_script_event(bad, "E", false).map(|_| ()),
+            ] {
+                let err = result.unwrap_err().to_string();
+                assert!(err.contains("script"), "{bad}: {err}");
+            }
         }
         let err = guard
             .register_script_component("game", "C", false)
@@ -2185,6 +2462,71 @@ mod test {
             registry.find("script.two.Same").unwrap().namespace,
             "script.two"
         );
+    }
+
+    #[test]
+    fn script_events_share_paths_with_components_and_exports() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let owner = ScriptAttachment::StaticScript(Handle::default());
+
+        guard
+            .register_script_component("script.game", "Enemy", false)
+            .unwrap();
+        guard
+            .register_script_event("script.game", "Hit", false)
+            .unwrap();
+        guard
+            .register_script_export("script.game", "spawn", "spawn_impl".into(), owner.clone())
+            .unwrap();
+
+        // every kind is rejected on the paths of the other kinds
+        assert!(
+            guard
+                .register_script_event("script.game", "Enemy", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_event("script.game", "spawn", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_component("script.game", "Hit", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_export("script.game", "Hit", "hit_impl".into(), owner)
+                .is_err()
+        );
+
+        let registry = guard.component_registry();
+        let registry = registry.read();
+        let events = registry.iter_events_in("script.game").collect::<Vec<_>>();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].0, "Hit");
+        assert!(registry.iter_events_in("script").next().is_none());
+    }
+
+    #[test]
+    fn register_script_event_duplicates_need_allow_existing() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let first = guard
+            .register_script_event("script.test", "Ev", false)
+            .unwrap();
+        let err = guard
+            .register_script_event("script.test", "Ev", false)
+            .unwrap_err();
+        assert!(err.to_string().contains("allow_existing"), "{err}");
+        let again = guard
+            .register_script_event("script.test", "Ev", true)
+            .unwrap();
+        assert_eq!(first.name, again.name);
+        // events do not take part in the type catalogue generation
+        assert!(guard.trigger_script_event(first, ScriptValue::Unit).is_ok());
     }
 
     #[test]
@@ -2250,22 +2592,33 @@ mod test {
     }
 
     #[test]
-    fn unloading_a_script_removes_its_exports_only() {
+    fn unloading_a_script_removes_its_exports_and_observers_only() {
         let mut world = setup_world(|_, _| {});
         world.insert_resource(AppScriptComponentRegistry::default());
-        let a = {
+        let (a, b, observers) = {
             let guard = make_guard(&mut world);
             let (a, b) = (guard.spawn().unwrap(), guard.spawn().unwrap());
             let owner_a = ScriptAttachment::EntityScript(a, Handle::default());
             let owner_b = ScriptAttachment::EntityScript(b, Handle::default());
 
             guard
-                .register_script_export("script.game", "one", "f".into(), owner_a)
+                .register_script_export("script.game", "one", "f".into(), owner_a.clone())
                 .unwrap();
             guard
-                .register_script_export("script.game", "two", "f".into(), owner_b)
+                .register_script_export("script.game", "two", "f".into(), owner_b.clone())
                 .unwrap();
-            a
+            let event = guard
+                .register_script_event("script.game", "Ev", false)
+                .unwrap();
+            let observers = [
+                guard
+                    .add_script_event_observer(event.clone(), "f".into(), owner_a)
+                    .unwrap(),
+                guard
+                    .add_script_event_observer(event, "f".into(), owner_b)
+                    .unwrap(),
+            ];
+            (a, b, observers)
         };
 
         crate::remove_script_registrations(
@@ -2276,6 +2629,16 @@ mod test {
         let registry = world.resource::<AppScriptComponentRegistry>().read();
         assert!(registry.get_export("script.game.one").is_none());
         assert!(registry.get_export("script.game.two").is_some());
+        drop(registry);
+        assert!(
+            world.get_entity(observers[0]).is_err(),
+            "the observer of the unloaded script is removed"
+        );
+        assert!(
+            world.get_entity(observers[1]).is_ok(),
+            "other scripts' observers stay"
+        );
+        let _ = b;
     }
 
     #[test]
@@ -2461,6 +2824,159 @@ mod test {
         assert!(guard.spawn().is_ok());
     }
 
+    /// Script observers deliver their callbacks through queued commands, so every operation
+    /// which can trigger observers has to flush before it returns.
+    mod observer_flushing {
+        use super::*;
+        use bevy_ecs::{
+            component::Component,
+            event::Event,
+            lifecycle::{AddEvent, DespawnEvent, InsertEvent, RemoveEvent},
+            reflect::{ReflectComponent, ReflectEvent},
+        };
+        use bevy_mod_scripting_asset::Language;
+        use bevy_reflect::prelude::ReflectDefault;
+
+        #[derive(Component, Reflect, Default)]
+        #[reflect(Component, Default)]
+        struct ObsComp;
+
+        #[derive(Event, Reflect, Clone)]
+        #[reflect(Event)]
+        struct ObsEvent;
+
+        struct Fixture {
+            world: World,
+            counts: Arc<parking_lot::Mutex<std::collections::HashMap<String, usize>>>,
+            runners: AppScriptCallbackRunners,
+        }
+
+        fn fixture() -> Fixture {
+            let mut world = setup_world(|world, registry| {
+                world.register_component::<ObsComp>();
+                registry.register::<ObsComp>();
+                registry.register::<ObsEvent>();
+                registry.register::<AddEvent>();
+                registry.register_type_data::<AddEvent, ReflectEvent>();
+                registry.register::<InsertEvent>();
+                registry.register_type_data::<InsertEvent, ReflectEvent>();
+                registry.register::<RemoveEvent>();
+                registry.register_type_data::<RemoveEvent, ReflectEvent>();
+                registry.register::<DespawnEvent>();
+                registry.register_type_data::<DespawnEvent, ReflectEvent>();
+            });
+            let runners = AppScriptCallbackRunners::default();
+            let counts = Arc::new(parking_lot::Mutex::new(std::collections::HashMap::<
+                String,
+                usize,
+            >::new()));
+            let (c, attachment) = (
+                counts.clone(),
+                ScriptAttachment::StaticScript(Handle::default()),
+            );
+            runners.register(
+                Language::Lua,
+                Arc::new(move |_, _, label, _| {
+                    *c.lock().entry(label.to_owned()).or_insert(0) += 1;
+                    Ok(vec![(attachment.clone(), Ok(ScriptValue::Unit))])
+                }),
+            );
+            world.insert_resource(runners.clone());
+            Fixture {
+                world,
+                counts,
+                runners,
+            }
+        }
+
+        impl Fixture {
+            fn count(&self, label: &str) -> usize {
+                self.counts.lock().get(label).copied().unwrap_or(0)
+            }
+        }
+
+        fn observe<T: 'static>(
+            guard: &WorldGuard,
+            label: &str,
+            comp: &ScriptComponentRegistration,
+        ) {
+            let registry = guard.type_registry();
+            let registration = ScriptTypeRegistration::new(Arc::new(
+                registry.read().get(TypeId::of::<T>()).unwrap().clone(),
+            ));
+            guard
+                .add_script_observer(
+                    registration,
+                    vec![comp.clone()],
+                    vec![],
+                    label.to_owned(),
+                    ScriptAttachment::StaticScript(Handle::default()),
+                )
+                .unwrap();
+        }
+
+        #[test]
+        fn operations_flush_script_observer_callbacks() {
+            let mut f = fixture();
+            let counts = f.counts.clone();
+            let count = move |l: &str| counts.lock().get(l).copied().unwrap_or(0);
+            let guard = make_guard(&mut f.world);
+            let comp = comp_reg::<ObsComp>(&guard);
+            observe::<AddEvent>(&guard, "add", &comp);
+            observe::<InsertEvent>(&guard, "insert", &comp);
+            observe::<RemoveEvent>(&guard, "remove", &comp);
+            observe::<DespawnEvent>(&guard, "despawn", &comp);
+
+            let entity = guard.spawn().unwrap();
+            guard.add_default_component(entity, comp.clone()).unwrap();
+            assert_eq!(count("add"), 1, "add_default_component");
+            assert_eq!(count("insert"), 1, "add_default_component insert");
+
+            guard.remove_component(entity, comp.clone()).unwrap();
+            assert_eq!(count("remove"), 1, "remove_component");
+
+            guard.add_default_component(entity, comp.clone()).unwrap();
+            guard.despawn(entity).unwrap();
+            assert_eq!(count("despawn"), 1, "despawn");
+
+            let parent = guard.spawn().unwrap();
+            let child = guard.spawn().unwrap();
+            guard.add_default_component(child, comp.clone()).unwrap();
+            guard.insert_children(parent, 0, &[child]).unwrap();
+            guard.despawn_recursive(parent).unwrap();
+            assert_eq!(count("despawn"), 2, "despawn_recursive");
+            assert!(!f.runners.has_queued());
+        }
+
+        #[test]
+        fn trigger_event_flushes_script_observer_callbacks() {
+            let mut f = fixture();
+            let guard = make_guard(&mut f.world);
+            let registry = guard.type_registry();
+            let registration = ScriptTypeRegistration::new(Arc::new(
+                registry
+                    .read()
+                    .get(TypeId::of::<ObsEvent>())
+                    .unwrap()
+                    .clone(),
+            ));
+            guard
+                .add_script_observer(
+                    registration.clone(),
+                    vec![],
+                    vec![],
+                    "event".to_owned(),
+                    ScriptAttachment::StaticScript(Handle::default()),
+                )
+                .unwrap();
+            let reference =
+                ReflectReference::new_allocated(ObsEvent, &mut guard.allocator().write());
+            guard.trigger_event(registration, &reference).unwrap();
+            drop(guard);
+            assert_eq!(f.count("event"), 1, "trigger_event");
+        }
+    }
+
     mod reflected_dispatch {
         use super::*;
         use bevy_ecs::{
@@ -2600,6 +3116,30 @@ mod test {
             assert!(matches!(nested, Ok(Err(_))));
             // the failed attempt must not leak any claim
             assert!(guard.trigger_event(registration, &reference).is_ok());
+        }
+
+        #[test]
+        fn commands_queued_by_observers_are_applied_before_trigger_event_returns() {
+            let mut world = setup();
+            world.add_observer(
+                |e: On<TestEvent>, mut commands: bevy_ecs::system::Commands| {
+                    let value = e.value;
+                    commands.queue(move |world: &mut World| {
+                        world.resource_mut::<Seen>().0.push(value + 100);
+                    });
+                },
+            );
+            // like the structural operations (which flush as bevy does for them), triggering flushes,
+            // so that script observers (which deliver their callbacks via commands) run before it returns
+            {
+                let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+                let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+                let reference = allocate(&guard, TestEvent { value: 1 });
+                guard
+                    .trigger_event(registration::<TestEvent>(&guard), &reference)
+                    .unwrap();
+            }
+            assert_eq!(world.resource::<Seen>().0, vec![1, 101]);
         }
 
         #[test]

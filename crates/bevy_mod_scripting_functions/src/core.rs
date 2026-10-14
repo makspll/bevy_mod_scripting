@@ -11,9 +11,9 @@ use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, wo
 use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
-    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeCatalogue, ScriptTypeRegistration,
-    Union, VariadicTuple, WorldExtensions,
+    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
+    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
+    ScriptTypeCatalogue, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
     function::into::IntoScript,
     function::{
@@ -284,23 +284,122 @@ impl World {
         world.remove_resource(registration.into_inner())
     }
 
-    /// Triggers an observer-style event. The event type must be registered and have `#[reflect(Event)]`.
+    /// Adds an observer which runs the callback `callback` of the calling script whenever an event of the given type is triggered.
     ///
-    /// Observers run immediately, before this function returns.
+    /// The callback is a normal script callback: either a function registered with `register_callback`, or a top level function with that name.
+    /// It receives a copy of the event (or the payload, for script events), and is run by the same machinery as other callbacks:
+    /// right after the operation which triggered the event, unless the script's context is busy running another callback
+    /// (e.g. the one that triggered the event), in which case it runs as soon as that callback finishes.
+    /// Observers never re-enter a running script. The order in which the observers of an event run is unspecified.
+    /// Removed component data is no longer available inside the callback. Errors of the callback are reported like those of other callbacks.
+    ///
+    /// The event type must have `#[reflect(Event)]`. The lifecycle events (`AddEvent`, `InsertEvent`, `DiscardEvent`,
+    /// `RemoveEvent`, `DespawnEvent`, imported with `import_namespace("bevy_ecs")`) are supported out of the box, and run for the given components.
+    ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `registration`: The type of the event.
-    /// * `event`: The event value, e.g. built with `construct`.
+    /// * `event`: The type of the event to observe, or an event registered with `register_new_event`.
+    /// * `callback`: The label of the callback to run, receives the event.
+    /// * `components`: The components the observer is interested in, for component lifecycle events. Ignored for script events.
+    /// * `entities`: If given, the observer only runs for these entities. Ignored for script events.
+    /// Returns:
+    /// * `observer`: The observer entity, despawn it to remove the observer.
+    fn add_observer(
+        ctxt: FunctionCallContext,
+        event: Union<V<ScriptTypeRegistration>, V<ScriptEventRegistration>>,
+        callback: String,
+        components: Option<Vec<V<ScriptComponentRegistration>>>,
+        entities: Option<Vec<V<Entity>>>,
+    ) -> Result<V<Entity>, InteropError> {
+        profiling::function_scope!("add_observer");
+        let world = ctxt.world()?;
+        let attachment = world.current_attachment().0.ok_or_else(|| {
+            InteropError::string(
+                "Cannot add an observer outside of a script callback, as it needs a script to run its callback on".to_owned(),
+            )
+        })?;
+        let event = match event.into_left() {
+            Ok(event) => event,
+            Err(script_event) => {
+                return world
+                    .add_script_event_observer(script_event.into_inner(), callback, attachment)
+                    .map(V);
+            }
+        };
+        world
+            .add_script_observer(
+                event.into_inner(),
+                components
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(V::into_inner)
+                    .collect(),
+                entities
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(V::into_inner)
+                    .collect(),
+                callback,
+                attachment,
+            )
+            .map(V)
+    }
+
+    /// Registers a new script event.
+    ///
+    /// Script events carry an arbitrary payload, and can be observed with `add_observer` and triggered with `trigger_event`.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `namespace`: The script namespace to register the event in, it must start with `script.`, i.e. `script.my_game`.
+    /// * `name`: The name of the event, unique within the namespace.
+    /// * `allow_existing`: If true, returns the already registered event with this name instead of failing. Defaults to false.
+    /// Returns:
+    /// * `registration`: The handle of the new event.
+    fn register_new_event(
+        ctxt: FunctionCallContext,
+        namespace: String,
+        name: String,
+        allow_existing: Option<bool>,
+    ) -> Result<V<ScriptEventRegistration>, InteropError> {
+        profiling::function_scope!("register_new_event");
+        let world = ctxt.world()?;
+        world
+            .register_script_event(&namespace, &name, allow_existing.unwrap_or(false))
+            .map(V)
+    }
+
+    /// Triggers an observer-style event: either a Rust event type with `#[reflect(Event)]`, or an event registered with `register_new_event`.
+    ///
+    /// Observers run immediately, and the commands they queue are applied before this function returns.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `event`: The type of the event, or the script event.
+    /// * `value`: The event value, e.g. built with `construct`, for Rust events. Any value (or nothing) for script events, which is passed to the observers.
     /// Returns:
     /// * `result`: Nothing if the event was triggered successfully.
     fn trigger_event(
         ctxt: FunctionCallContext,
-        registration: V<ScriptTypeRegistration>,
-        event: ReflectReference,
+        event: Union<V<ScriptTypeRegistration>, V<ScriptEventRegistration>>,
+        value: Option<ScriptValue>,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("trigger_event");
         let world = ctxt.world()?;
-        world.trigger_event(registration.into_inner(), &event)
+        match event.into_left() {
+            Ok(registration) => match value {
+                Some(ScriptValue::Reference(value)) => {
+                    world.trigger_event(registration.into_inner(), &value)
+                }
+                _ => Err(InteropError::string(format!(
+                    "triggering the event `{}` needs an event value, i.e. built with `construct`",
+                    registration.short_name()
+                ))),
+            },
+            Err(script_event) => world.trigger_script_event(
+                script_event.into_inner(),
+                value.unwrap_or(ScriptValue::Unit),
+            ),
+        }
     }
 
     /// Writes a buffered message. The message type must be registered and have `#[reflect(Message)]`.
@@ -1233,6 +1332,37 @@ impl ScriptBundleRegistration {
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "script_event_registration_functions",
+    core,
+    namespace = "bms"
+)]
+impl ScriptEventRegistration {
+    /// Retrieves the name of the event within its namespace, i.e. `Hit` for `script.game.Hit`.
+    ///
+    /// Arguments:
+    /// * `registration`: The event registration.
+    /// Returns:
+    /// * `short_name`: The name of the event.
+    fn short_name(registration: R<ScriptEventRegistration>) -> String {
+        profiling::function_scope!("short_name");
+        registration.short_name().to_owned()
+    }
+
+    /// Retrieves the script namespace the event was registered in, i.e. `script.game` for `script.game.Hit`.
+    ///
+    /// Arguments:
+    /// * `registration`: The event registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the event.
+    fn namespace(registration: R<ScriptEventRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_builder_functions",
     core,
     namespace = "bms"
@@ -1692,11 +1822,11 @@ impl GlobalNamespace {
     unregistered
 )]
 impl GlobalNamespace {
-    /// Imports a namespace, returning a table of the types and exported functions in it by name.
+    /// Imports a namespace, returning a table of the types, events and exported functions in it by name.
     ///
     /// Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.
     /// The empty string is the root namespace, which holds types without a crate such as primitives.
-    /// Namespaces defined by scripts start with `script.`, and contain the components and functions
+    /// Namespaces defined by scripts start with `script.`, and contain the components, events and functions
     /// scripts registered or exported into them.
     ///
     /// ```lua
@@ -1705,6 +1835,7 @@ impl GlobalNamespace {
     ///
     /// local game = import_namespace("script.game")
     /// game.spawn_enemy(5)
+    /// world.trigger_event(game.EnemySpawned, {})
     /// ```
     ///
     /// Fails with a list of similar namespaces if the namespace does not exist.
@@ -1712,7 +1843,7 @@ impl GlobalNamespace {
     /// Arguments:
     /// * `path`: the name of the namespace to import.
     /// Returns:
-    /// * `namespace`: a table of the types and functions in the namespace keyed by name.
+    /// * `namespace`: a table of the types, events and functions in the namespace keyed by name.
     fn import_namespace(
         ctxt: FunctionCallContext,
         path: String,
@@ -1721,19 +1852,29 @@ impl GlobalNamespace {
         let world = ctxt.world()?;
         let catalogue = world.type_catalogue().clone().get(world.clone())?;
         let types = catalogue.namespace_view(&path);
-        let exports = world
-            .component_registry()
-            .read()
-            .iter_exports_in(&path)
-            .map(|e| e.name.clone())
-            .collect::<Vec<_>>();
-        if types.is_none() && exports.is_empty() {
+        let (exports, events) = {
+            let registry = world.component_registry();
+            let registry = registry.read();
+            let exports = registry
+                .iter_exports_in(&path)
+                .map(|e| e.name.clone())
+                .collect::<Vec<_>>();
+            let events = registry
+                .iter_events_in(&path)
+                .map(|(name, event)| (name.to_owned(), event.clone()))
+                .collect::<Vec<_>>();
+            (exports, events)
+        };
+        if types.is_none() && exports.is_empty() && events.is_empty() {
             return Err(namespace_not_found(&catalogue, &world, &path));
         }
 
         let mut table = HashMap::default();
         for (name, registration) in types.into_iter().flatten() {
             table.insert(name, registration.into_script(world.clone())?);
+        }
+        for (name, event) in events {
+            table.insert(name, V(event).into_script(world.clone())?);
         }
         for name in exports {
             let function = exported_function(script_path(&path, &name));
@@ -2003,6 +2144,7 @@ pub fn register_core_functions(app: &mut App) {
         register_script_component_registration_functions(world);
         register_script_resource_registration_functions(world);
         register_script_bundle_registration_functions(world);
+        register_script_event_registration_functions(world);
 
         register_script_query_builder_functions(world);
         register_script_query_result_functions(world);
@@ -2042,7 +2184,7 @@ fn namespace_not_found(
     let export_namespaces = world
         .component_registry()
         .read()
-        .export_namespaces()
+        .export_and_event_namespaces()
         .map(str::to_owned)
         .collect::<Vec<_>>();
     let similar = catalogue.similar_namespaces_with(path, &export_namespaces);
