@@ -28,7 +28,6 @@ pub enum Feature {
     BevyEcsBindings,
     BevyInputBindings,
     BevyMathBindings,
-    BevyReflectBindings,
     BevyTimeBindings,
     BevyTransformBindings,
     BevyColorBindings,
@@ -123,7 +122,6 @@ impl IntoFeatureGroup for Feature {
             Feature::BevyEcsBindings
             | Feature::BevyInputBindings
             | Feature::BevyMathBindings
-            | Feature::BevyReflectBindings
             | Feature::BevyTimeBindings
             | Feature::BevyTransformBindings
             | Feature::BevyColorBindings
@@ -162,7 +160,6 @@ impl Default for Features {
             Feature::BevyEcsBindings,
             Feature::BevyInputBindings,
             Feature::BevyMathBindings,
-            Feature::BevyReflectBindings,
             Feature::BevyTimeBindings,
             Feature::BevyTransformBindings,
             Feature::BevyColorBindings,
