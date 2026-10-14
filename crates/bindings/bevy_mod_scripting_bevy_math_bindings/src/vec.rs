@@ -246,7 +246,7 @@ impl Vec2 {
     ///
     /// ```multi-lang-example,rhai
     /// let v = Vec2.new_.call(3.0, 4.0);
-    /// assert(v.length.call(v) == 5.0);
+    /// assert(v.length.call() == 5.0);
     /// ```
     fn new(x: f32, y: f32) -> V<Vec2> {
         V(Vec2::new(x, y))

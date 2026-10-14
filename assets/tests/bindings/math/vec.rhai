@@ -17,18 +17,18 @@ assert(v - v == Vec3.zero.call(), "sub");
 
 // lengths and products
 let v2 = Vec2.new_.call(3.0, 4.0);
-assert(approx(v2.length.call(v2), 5.0), "length");
-assert(v.dot.call(v, v) == 14.0, "dot");
+assert(approx(v2.length.call(), 5.0), "length");
+assert(v.dot.call(v) == 14.0, "dot");
 let x = Vec3.unit_x.call();
-assert(x.cross.call(x, Vec3.unit_y.call()) == Vec3.unit_z.call(), "cross");
+assert(x.cross.call(Vec3.unit_y.call()) == Vec3.unit_z.call(), "cross");
 
 // normalization
-let n = v.normalize.call(v);
-assert(approx(n.length.call(n), 1.0), "normalize");
+let n = v.normalize.call();
+assert(approx(n.length.call(), 1.0), "normalize");
 let zero = Vec3.zero.call();
-assert(type_of(zero.try_normalize.call(zero)) == "()", "try_normalize");
+assert(type_of(zero.try_normalize.call()) == "()", "try_normalize");
 
 // component wise
-assert(zero.lerp.call(zero, Vec3.splat.call(2.0), 0.5) == Vec3.one.call(), "lerp");
-assert(v.min_element.call(v) == 1.0, "min_element");
-assert(v.truncate.call(v) == Vec2.new_.call(1.0, 2.0), "truncate");
+assert(zero.lerp.call(Vec3.splat.call(2.0), 0.5) == Vec3.one.call(), "lerp");
+assert(v.min_element.call() == 1.0, "min_element");
+assert(v.truncate.call() == Vec2.new_.call(1.0, 2.0), "truncate");
