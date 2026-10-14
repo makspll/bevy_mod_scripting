@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-16904a7e.js";
+            window.path_to_searchindex_js = "../searchindex-70dc9860.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-ba0985a9.js"></script>
+        <script src="../toc-daf8f3fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -198,9 +198,6 @@
 </table>
 </div>
 <p><code>Type:namespace()</code> returns a type’s namespace. Script registered components and events live in <code>script.*</code> namespaces, see below.</p>
-<blockquote>
-<p><strong>Deprecated:</strong> the flat <code>types</code> global. It can’t tell apart types of the same name in different namespaces, and it is a snapshot taken when the script’s context is created. Use <code>import_namespace</code> instead.</p>
-</blockquote>
 <h2 id="importing-a-namespace"><a class="header" href="#importing-a-namespace">Importing a namespace</a></h2>
 <p><code>import_namespace(namespace)</code> returns a table of the namespace’s types (and, for script namespaces, events and exported functions) by short name:</p>
 <pre><code class="language-lua">local bevy_transform = import_namespace("bevy_transform")

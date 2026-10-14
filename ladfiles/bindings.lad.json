@@ -259,40 +259,6 @@
       },
       "is_static": true
     },
-    "types": {
-      "type_kind": {
-        "hashMap": [
-          {
-            "primitive": "string"
-          },
-          {
-            "union": [
-              {
-                "val": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-              },
-              {
-                "union": [
-                  {
-                    "val": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
-                  },
-                  {
-                    "union": [
-                      {
-                        "val": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration"
-                      },
-                      {
-                        "val": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "is_static": false
-    },
     "Affine3A": {
       "type_kind": {
         "val": "glam::Affine3A"
@@ -47698,7 +47664,7 @@
           "kind": {
             "primitive": "string"
           },
-          "documentation": "The name of the type to retrieve.",
+          "documentation": "The full path of the type to retrieve, i.e. `bevy_transform::components::transform::Transform` or `script.my_game.Enemy`.",
           "name": "type_name"
         }
       ],

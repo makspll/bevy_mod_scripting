@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-16904a7e.js";
+            window.path_to_searchindex_js = "searchindex-70dc9860.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-ba0985a9.js"></script>
+        <script src="toc-daf8f3fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1443,6 +1443,24 @@ if event.recipients:variant() == Recipients.AllScripts then ... end
 <li>A nested callback no longer invalidates the world of the callback that called it.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="migrating-from-023-to-024"><a class="header" href="#migrating-from-023-to-024">Migrating from 0.23 to 0.24</a></h1>
+<h2 id="scripts-1"><a class="header" href="#scripts-1">Scripts</a></h2>
+<h3 id="the-types-global-is-removed"><a class="header" href="#the-types-global-is-removed">The <code>types</code> global is removed</a></h3>
+<p>It was deprecated in 0.23. Use <code>import_namespace</code> with the crate that defines the type, or <code>world.get_type_by_name</code>:</p>
+<pre><code class="language-diff">- local Transform = types.Transform
++ local Transform = import_namespace("bevy_transform").Transform
++ -- or
++ local Transform = world.get_type_by_name("bevy_transform::components::transform::Transform")
+</code></pre>
+<h3 id="worldget_type_by_name-takes-a-full-path"><a class="header" href="#worldget_type_by_name-takes-a-full-path"><code>world.get_type_by_name</code> takes a full path</a></h3>
+<p>Short names no longer resolve, neither for Rust types nor for script components. Pass the full type path, i.e. <code>world.get_type_by_name("bevy_transform::components::transform::Transform")</code> or <code>world.get_type_by_name("script.my_game.Enemy")</code>, or use <code>import_namespace</code>, which looks types up by short name within one namespace.</p>
+<h2 id="rust-1"><a class="header" href="#rust-1">Rust</a></h2>
+<ul>
+<li><code>CoreGlobals::types</code>, <code>ScriptTypeCatalogue::flat_view</code> and <code>ScriptTypeCatalogue::duplicate_short_names</code> are removed.</li>
+<li><code>ScriptComponentRegistry::find</code> and <code>WorldExtensions::get_type_by_name</code> only take a full path.</li>
+<li>The Lua language server backend no longer marks globals as deprecated: <code>TypeInstance</code> lost its <code>deprecated</code> field.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
 <p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
@@ -1705,9 +1723,6 @@ world.spawn_bundle(EnemyBundle, EnemyBundle.new({ health = Health.new({ hp = 10 
 </table>
 </div>
 <p><code>Type:namespace()</code> returns a type’s namespace. Script registered components and events live in <code>script.*</code> namespaces, see below.</p>
-<blockquote>
-<p><strong>Deprecated:</strong> the flat <code>types</code> global. It can’t tell apart types of the same name in different namespaces, and it is a snapshot taken when the script’s context is created. Use <code>import_namespace</code> instead.</p>
-</blockquote>
 <h2 id="importing-a-namespace"><a class="header" href="#importing-a-namespace">Importing a namespace</a></h2>
 <p><code>import_namespace(namespace)</code> returns a table of the namespace’s types (and, for script namespaces, events and exported functions) by short name:</p>
 <pre><code class="language-lua">local bevy_transform = import_namespace("bevy_transform")
@@ -1881,7 +1896,6 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <tr><th>Instance</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><code>types</code></td><td>HashMap&lt;<a href="#string">String</a>, <a href="#scripttyperegistration">ScriptTypeRegistration</a> | <a href="#scriptcomponentregistration">ScriptComponentRegistration</a> | <a href="#scriptresourceregistration">ScriptResourceRegistration</a> | <a href="#scriptbundleregistration">ScriptBundleRegistration</a>&gt;</td></tr>
 <tr><td><code>world</code></td><td><a href="#world">World</a></td></tr>
 <tr><td><code>script_asset</code></td><td>Handle&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</td></tr>
 <tr><td><code>entity</code></td><td><a href="#entity-1">Entity</a></td></tr>
@@ -61145,7 +61159,7 @@ If the type is none of these returns a <code>ScriptTypeRegistration</code>.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>type_name</strong></td><td><a href="#string">String</a></td><td>The name of the type to retrieve.</td></tr>
+<tr><td><strong>type_name</strong></td><td><a href="#string">String</a></td><td>The full path of the type to retrieve, i.e. <code>bevy_transform::components::transform::Transform</code> or <code>script.my_game.Enemy</code>.</td></tr>
 </tbody>
 </table>
 </div>
