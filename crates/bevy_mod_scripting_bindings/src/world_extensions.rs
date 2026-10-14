@@ -1178,7 +1178,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let registry = registry.read();
 
         let name = name.into();
-        let overload_iter = match registry.iter_overloads(Namespace::OnType(type_id), name) {
+        // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`
+        let overload_iter = match registry
+            .iter_overloads(Namespace::OnType(type_id), name)
+            .or_else(|name| {
+                registry.iter_overloads(Namespace::OnType(TypeId::of::<ReflectReference>()), name)
+            }) {
             Ok(iter) => iter,
             Err(name) => {
                 return Err(InteropError::missing_function(

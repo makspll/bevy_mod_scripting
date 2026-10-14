@@ -6,7 +6,7 @@ end
 local function other_entity()
     for _, result in pairs(world.query():component(world.get_type_by_name("bevy_mod_scripting_core::script::ScriptComponent")):build()) do
         local e = result:entity()
-        if e:index():index() ~= entity:index():index() then
+        if e:index() ~= entity:index() then
             return e
         end
     end

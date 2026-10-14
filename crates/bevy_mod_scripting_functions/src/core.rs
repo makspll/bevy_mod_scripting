@@ -52,7 +52,7 @@ pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_core_pipeline")]
     app.add_plugins(bevy_core_pipeline_bms_bindings::BevyCorePipelineScriptingPlugin);
     #[cfg(feature = "bevy_ecs")]
-    app.add_plugins(bevy_ecs_bms_bindings::BevyEcsScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_ecs_bindings::BevyEcsBindingsPlugin);
     #[cfg(feature = "bevy_gizmos")]
     app.add_plugins(bevy_gizmos_bms_bindings::BevyGizmosScriptingPlugin);
     #[cfg(feature = "bevy_gltf")]
@@ -769,6 +769,56 @@ impl World {
     namespace = "bms"
 )]
 impl ReflectReference {
+    /// Whether two values are equal, compared through reflection.
+    ///
+    /// This is what `==` uses for types which don't define their own equality.
+    /// Values of different types, and values which can't be compared, are not equal.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The value to compare.
+    /// * `other`: The value to compare with.
+    /// Returns:
+    /// * `equal`: Whether the values are equal.
+    fn eq(
+        ctxt: FunctionCallContext,
+        reference: ReflectReference,
+        other: ScriptValue,
+    ) -> Result<bool, InteropError> {
+        profiling::function_scope!("eq");
+        let world = ctxt.world()?;
+        let ScriptValue::Reference(other) = other else {
+            return Ok(false);
+        };
+        reference.with_reflect(world.clone(), |a| {
+            other.with_reflect(world.clone(), |b| a.reflect_partial_eq(b).unwrap_or(false))
+        })?
+    }
+
+    /// Creates an independent copy of the value, so that changing one doesn't change the other.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The value to copy.
+    /// Returns:
+    /// * `copy`: The copy.
+    fn clone(
+        ctxt: FunctionCallContext,
+        reference: ReflectReference,
+    ) -> Result<ScriptValue, InteropError> {
+        profiling::function_scope!("clone");
+        let world = ctxt.world()?;
+        let copy = reference.with_reflect(world.clone(), |value| {
+            <dyn PartialReflect>::from_reflect_or_clone(value, world.clone())
+        })??;
+        let copy = {
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated_boxed_parial_reflect(copy, &mut allocator)?
+        };
+        ReflectReference::into_script_ref(copy, world)
+    }
+
     /// If this is an enum, returns a reference to the variant it is currently in.
     ///
     /// This can be compared to `MyEnum.Variant` to check which variant a value is in.

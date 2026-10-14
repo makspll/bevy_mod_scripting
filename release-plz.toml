@@ -65,7 +65,7 @@ changelog_include = [
     "bevy_camera_bms_bindings",
     "bevy_color_bms_bindings",
     "bevy_core_pipeline_bms_bindings",
-    "bevy_ecs_bms_bindings",
+    "bevy_mod_scripting_bevy_ecs_bindings",
     "bevy_extract_bms_bindings",
     "bevy_gizmos_bms_bindings",
     "bevy_gltf_bms_bindings",
@@ -159,7 +159,7 @@ name = "bevy_core_pipeline_bms_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_ecs_bms_bindings"
+name = "bevy_mod_scripting_bevy_ecs_bindings"
 version_group = "main"
 
 [[package]]
