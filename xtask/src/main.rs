@@ -1304,7 +1304,18 @@ impl Xtasks {
         // create plot using
         // bencher plot create --x-axis date_time --branches main --testbeds <uuids> --benchmarks <uuids> --measures latency
 
+        // bencher rejects plots with more than this many benchmarks
+        const MAX_BENCHMARKS_PER_PLOT: usize = 8;
+
         for (group, uuids) in group_to_benchmark_map.iter().sorted() {
+            if uuids.len() > MAX_BENCHMARKS_PER_PLOT {
+                log::warn!(
+                    "Skipping plots for benchmark group `{group}`: {} benchmarks, bencher allows at most {MAX_BENCHMARKS_PER_PLOT} per plot",
+                    uuids.len()
+                );
+                continue;
+            }
+
             for (testbed_name, testbed_uuid) in testbeds.iter() {
                 let without_gha = testbed_name.replace("-gha", "");
                 let plot_name = format!("{without_gha} {group}");
