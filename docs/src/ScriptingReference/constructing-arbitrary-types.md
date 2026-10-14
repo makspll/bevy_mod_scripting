@@ -1,7 +1,7 @@
 # Constructing Arbitrary Types
 
 When interfacing with bevy, we do this via reflection.
-While the generated bindings do not cover constructors for every single type that bevy or other libraries provide, reflection allows us to construct some (not all types implement `FromReflect`) types from dynamic structs.
+While the bevy bindings do not cover constructors for every single type that bevy or other libraries provide, reflection allows us to construct some (not all types implement `FromReflect`) types from dynamic structs.
 
 BMS exposes this ability to all script writers via the `new` function available on every type, as well as the more verbose `construct` global function.
 
@@ -57,7 +57,7 @@ The generated Lua language server files mark exactly these fields as optional, s
 ### Naming and priority
 
 `new` is a single function shared by all types, and is made available on every type's static reference.
-A function with the same name registered on the type itself always takes priority, i.e. `Vec3.new(x, y, z)` is the generated `Vec3` constructor, not the shared one.
+A function with the same name registered on the type itself always takes priority, i.e. `Vec3.new(x, y, z)` is the `Vec3` constructor from the math bindings, not the shared one.
 For such types use [`construct`](#construct), which works for every type.
 
 In Rhai `new` is a reserved word, and is available as `new_`, as for all other functions named like a keyword.

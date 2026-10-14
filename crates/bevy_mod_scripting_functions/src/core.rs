@@ -51,8 +51,6 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_color_bms_bindings::BevyColorScriptingPlugin);
     #[cfg(feature = "bevy_core_pipeline")]
     app.add_plugins(bevy_core_pipeline_bms_bindings::BevyCorePipelineScriptingPlugin);
-    #[cfg(feature = "bevy_curve")]
-    app.add_plugins(bevy_curve_bms_bindings::BevyCurveScriptingPlugin);
     #[cfg(feature = "bevy_ecs")]
     app.add_plugins(bevy_ecs_bms_bindings::BevyEcsScriptingPlugin);
     #[cfg(feature = "bevy_gizmos")]
@@ -68,7 +66,7 @@ pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_light")]
     app.add_plugins(bevy_light_bms_bindings::BevyLightScriptingPlugin);
     #[cfg(feature = "bevy_math")]
-    app.add_plugins(bevy_math_bms_bindings::BevyMathScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_math_bindings::BevyMathBindingsPlugin);
     #[cfg(feature = "bevy_mesh")]
     app.add_plugins(bevy_mesh_bms_bindings::BevyMeshScriptingPlugin);
     #[cfg(feature = "bevy_pbr")]
@@ -83,8 +81,6 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_render_bms_bindings::BevyRenderScriptingPlugin);
     #[cfg(feature = "bevy_scene")]
     app.add_plugins(bevy_scene_bms_bindings::BevySceneScriptingPlugin);
-    #[cfg(feature = "bevy_shape")]
-    app.add_plugins(bevy_shape_bms_bindings::BevyShapeScriptingPlugin);
     #[cfg(feature = "bevy_sprite")]
     app.add_plugins(bevy_sprite_bms_bindings::BevySpriteScriptingPlugin);
     #[cfg(feature = "bevy_sprite_render")]

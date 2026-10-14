@@ -1,0 +1,61 @@
+local function approx(a, b)
+    return math.abs(a - b) < 0.0001
+end
+
+-- constructors
+local v = Vec3.new(1, 2, 3)
+assert(v.x == 1 and v.y == 2 and v.z == 3, "new")
+assert(Vec3.splat(2) == Vec3.new(2, 2, 2), "splat")
+assert(Vec3.zero() == Vec3.new(0, 0, 0), "zero")
+assert(Vec3.one() == Vec3.new(1, 1, 1), "one")
+assert(Vec3.unit_y() == Vec3.new(0, 1, 0), "unit_y")
+assert(Vec2.new(1, 2).y == 2, "vec2 new")
+assert(Vec4.new(1, 2, 3, 4).w == 4, "vec4 new")
+
+-- operators, with vectors and numbers
+assert(v + v == Vec3.new(2, 4, 6), "add vector")
+assert(v + 1 == Vec3.new(2, 3, 4), "add number")
+assert(v - 1 == Vec3.new(0, 1, 2), "sub")
+assert(v * 2 == Vec3.new(2, 4, 6), "mul number")
+assert(v * v == Vec3.new(1, 4, 9), "mul vector")
+assert(v / 2 == Vec3.new(0.5, 1, 1.5), "div")
+assert(v % 2 == Vec3.new(1, 0, 1), "rem")
+assert(-v == Vec3.new(-1, -2, -3), "neg")
+assert(v ~= Vec3.zero(), "not eq")
+
+-- lengths and products
+assert(approx(Vec2.new(3, 4):length(), 5), "length")
+assert(Vec2.new(3, 4):length_squared() == 25, "length_squared")
+assert(approx(Vec3.zero():distance(Vec3.new(0, 3, 4)), 5), "distance")
+assert(v:dot(v) == 14, "dot")
+assert(Vec3.unit_x():cross(Vec3.unit_y()) == Vec3.unit_z(), "cross")
+assert(approx(Vec3.unit_x():angle_between(Vec3.unit_y()), math.pi / 2), "angle_between")
+
+-- normalization
+assert(approx(v:normalize():length(), 1), "normalize")
+assert(not pcall(function() return Vec3.zero():normalize() end), "normalize errors on zero")
+assert(Vec3.zero():normalize_or_zero() == Vec3.zero(), "normalize_or_zero")
+assert(Vec3.zero():try_normalize() == nil, "try_normalize")
+
+-- component wise
+assert(Vec3.zero():lerp(Vec3.new(2, 2, 2), 0.5) == Vec3.one(), "lerp")
+assert(Vec3.zero():move_towards(Vec3.new(10, 0, 0), 2) == Vec3.new(2, 0, 0), "move_towards")
+assert((-v):abs() == v, "abs")
+assert(Vec2.new(1.5, -1.5):floor() == Vec2.new(1, -2), "floor")
+assert(Vec2.new(1.5, -1.5):ceil() == Vec2.new(2, -1), "ceil")
+assert(v:min(Vec3.splat(2)) == Vec3.new(1, 2, 2), "min")
+assert(v:max(Vec3.splat(2)) == Vec3.new(2, 2, 3), "max")
+assert(v:clamp(Vec3.splat(2), Vec3.splat(2)) == Vec3.splat(2), "clamp")
+assert(approx(Vec3.new(10, 0, 0):clamp_length_max(2):length(), 2), "clamp_length_max")
+assert(v:min_element() == 1 and v:max_element() == 3, "min/max element")
+local array = v:to_array()
+assert(#array == 3 and array[3] == 3, "to_array")
+
+-- dimension specific
+assert(Vec2.new(1, 2):extend(3) == v, "extend")
+assert(v:truncate() == Vec2.new(1, 2), "truncate")
+assert(Vec2.unit_x():perp() == Vec2.unit_y(), "perp")
+assert(approx(Vec2.from_angle(0):to_angle(), 0), "from_angle/to_angle")
+assert(v:as_ivec3() == IVec3.new(1, 2, 3), "as_ivec3")
+assert(v:to_vec3a():to_vec3() == v, "vec3a round trip")
+assert(DVec3.new(1, 2, 3):as_vec3() == v, "dvec3")

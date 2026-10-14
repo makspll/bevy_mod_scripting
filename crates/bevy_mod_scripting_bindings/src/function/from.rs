@@ -1,7 +1,11 @@
 //! This module contains the [`FromScript`] trait and its implemenations.
 
+use super::bound::BoundFields;
 use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
-use crate::{ReflectReference, ScriptValue, error::InteropError, script_value::VariadicTuple};
+use crate::{
+    EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
+    error::InteropError, script_value::VariadicTuple,
+};
 use bevy_mod_scripting_world::WorldAccessRange;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::{HashMap, HashSet};
@@ -178,6 +182,28 @@ impl FromScript for ReflectReference {
     }
 }
 
+/// If `reference` points to a variant of the enum `T` (i.e. `KeyCode.KeyA`), constructs a value of that variant
+/// with its fields filled in from defaults, so that variants can be passed wherever a value of the enum is expected.
+///
+/// Only called once a conversion has failed, so it costs nothing on the common path.
+fn variant_as_value<T: 'static>(
+    reference: &ReflectReference,
+    world: &WorldGuard,
+) -> Option<ReflectReference> {
+    let variant = reference.downcast::<EnumVariantRef>(world.clone()).ok()?;
+    if variant.type_id != TypeId::of::<T>() {
+        return None;
+    }
+    construct_reference(
+        world,
+        variant.type_info(world).ok()?,
+        Some(variant.variant_name(world).ok()?),
+        BoundFields::Positional(VecDeque::new()),
+        false,
+    )
+    .ok()
+}
+
 /// A wrapper around a value of type `T`.
 ///
 /// This can be used to retrieve a value out of a [`ScriptValue::Reference`] corresponding to the type `T`.
@@ -224,20 +250,28 @@ impl<T: FromReflect> FromScript for V<T> {
     #[profiling::function]
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
         match value {
-            ScriptValue::Reference(reflect_reference) => Ok(V(reflect_reference.with_reflect(
-                world.clone(),
-                |r| {
-                    T::from_reflect(r).ok_or_else(|| {
-                        InteropError::failed_from_reflect(
-                            Some(TypeId::of::<T>()),
-                            format!(
-                                "Expected '{}' but receievd: {r:?}",
-                                std::any::type_name::<T>()
-                            ),
-                        )
-                    })
-                },
-            )??)),
+            ScriptValue::Reference(reflect_reference) => {
+                let from_reflect = |reference: &ReflectReference| {
+                    reference.with_reflect(world.clone(), |r| {
+                        T::from_reflect(r).ok_or_else(|| {
+                            InteropError::failed_from_reflect(
+                                Some(TypeId::of::<T>()),
+                                format!(
+                                    "Expected '{}' but receievd: {r:?}",
+                                    std::any::type_name::<T>()
+                                ),
+                            )
+                        })
+                    })?
+                };
+                match from_reflect(&reflect_reference) {
+                    Ok(value) => Ok(V(value)),
+                    Err(err) => match variant_as_value::<T>(&reflect_reference, &world) {
+                        Some(value) => from_reflect(&value).map(V),
+                        None => Err(err),
+                    },
+                }
+            }
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,
@@ -276,14 +310,18 @@ impl<T: FromReflect> FromScript for R<'_, T> {
                 let raid: WorldAccessRange = (&reflect_reference.base.base_id).into();
                 if world.claim_read_access(raid) {
                     // Safety: we just claimed access
-                    let ref_ = unsafe { reflect_reference.reflect_unsafe_non_empty(world) }?;
-                    let cast = ref_.try_downcast_ref::<T>().ok_or_else(|| {
-                        InteropError::type_mismatch(
-                            std::any::TypeId::of::<T>(),
-                            ref_.get_represented_type_info().map(|i| i.type_id()),
-                        )
-                    })?;
-                    Ok(R(cast))
+                    let ref_ =
+                        unsafe { reflect_reference.reflect_unsafe_non_empty(world.clone()) }?;
+                    match ref_.try_downcast_ref::<T>() {
+                        Some(cast) => Ok(R(cast)),
+                        None => match variant_as_value::<T>(&reflect_reference, &world) {
+                            Some(value) => Self::from_script(ScriptValue::Reference(value), world),
+                            None => Err(InteropError::type_mismatch(
+                                std::any::TypeId::of::<T>(),
+                                ref_.get_represented_type_info().map(|i| i.type_id()),
+                            )),
+                        },
+                    }
                 } else {
                     Err(InteropError::cannot_claim_access(
                         raid,
@@ -624,25 +662,17 @@ impl<T1, T2> Union<T1, T2> {
 }
 
 #[profiling::all_functions]
-impl<T1: FromScript, T2: FromScript> FromScript for Union<T1, T2>
-where
-    for<'a> T1::This<'a>: Into<T1>,
-    for<'a> T2::This<'a>: Into<T2>,
-{
-    type This<'w> = Self;
+impl<T1: FromScript, T2: FromScript> FromScript for Union<T1, T2> {
+    type This<'w> = Union<T1::This<'w>, T2::This<'w>>;
     fn from_script(
         value: ScriptValue,
         world: WorldGuard<'_>,
     ) -> Result<Self::This<'_>, InteropError> {
-        let _ = match T1::from_script(value.clone(), world.clone()) {
-            Ok(v) => return Ok(Union(Ok(v.into()))),
-            Err(e) => e,
-        };
-
-        match T2::from_script(value, world) {
-            Ok(v) => Ok(Union(Err(v.into()))),
-            Err(e) => Err(e),
+        if let Ok(v) = T1::from_script(value.clone(), world.clone()) {
+            return Ok(Union(Ok(v)));
         }
+
+        T2::from_script(value, world).map(|v| Union(Err(v)))
     }
 }
 
