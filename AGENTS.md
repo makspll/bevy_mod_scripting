@@ -20,6 +20,9 @@ Multi-language scripting for Bevy (Lua, Rhai, Rune). Scripts are Bevy assets; th
 * Script lifecycle (load / attach / reload / unload) is a staged pipeline with per-language context management, in `core/src/pipeline`.
 * Functions exposed to scripts are registered in a type-erased registry (`bindings/src/function`), not per-language; languages adapt to it. Operators/primitives live in `bindings_domain`.
 * Functions available on every type's static reference (e.g. the shared `new` constructor) live on the `StaticTypeRef` namespace and are bound to the type at lookup (`lookup_type_function`), so languages only call `lookup_static_member`. Enum variants (`EnumVariantRef`) are resolved the same way, lazily.
+* Every type known to scripts lives in a namespace: the crate defining it, unless overridden with `ScriptNamespace` type data (`script_bindings(namespace = ...)`); BMS' own types are in `bms`. Scripts register components and events only into `script.*` namespaces. `import_namespace(path)` returns a namespace's types (and exported functions), from the shared, lazily rebuilt `AppScriptTypeCatalogue` (`bindings/src/globals/catalogue.rs`). The flat `types` global is deprecated, and a snapshot taken at context creation.
+* `export_namespace` exposes a callback of the calling script as a function in a `script.*` namespace; calls run through the callback runners in the exporting script. A script's exports and observers are removed when it unloads (`remove_script_registrations`).
+* Script observers (`world.add_observer`) run their callbacks from a command through `AppScriptCallbackRunners::run_or_queue`, never re-entering a busy context.
 * Feature flags select language and which Bevy crate bindings are compiled in; exactly one Lua variant must be chosen.
 
 ## Working here
