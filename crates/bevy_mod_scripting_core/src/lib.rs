@@ -8,8 +8,12 @@ use crate::{
     callbacks::{ScriptCallbacks, ScriptCallbacksPlugin},
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
+    error::ScriptError,
     event::ScriptErrorMessage,
-    handler::{run_callback_on_recipients, run_queued_callbacks_system, script_error_logger},
+    handler::{
+        run_callback_on_recipients, run_queued_callbacks_system, script_error_logger,
+        send_script_errors,
+    },
     pipeline::ScriptLoadingPipeline,
     script::{ScriptComponentsChangeCache, script_component_changed_handler},
 };
@@ -22,6 +26,7 @@ use bevy_ecs::{
 };
 use bevy_log::error;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, ScriptAssetLoader};
+use bevy_mod_scripting_display::DisplayProxy;
 
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptFunctionRegistry,
@@ -398,6 +403,17 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         if !self.dont_log_script_event_errors {
             app.add_systems(PostUpdate, script_error_logger);
         }
+
+        // errors of script observer callbacks are reported like those of other callbacks
+        app.world()
+            .resource::<AppScriptCallbackRunners>()
+            .set_error_sink(Arc::new(|world, attachment, context, error| {
+                let mut error = ScriptError::from(error).with_context(context);
+                if let Some(attachment) = attachment {
+                    error = error.with_script(attachment.script().display());
+                }
+                send_script_errors(world, [&error]);
+            }));
 
         DynamicScriptComponentPlugin.build(app);
         ScriptObserverPlugin.build(app);

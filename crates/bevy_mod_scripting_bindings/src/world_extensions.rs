@@ -1602,7 +1602,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 /// Delivers an event to the callback of a script observer through the callback runners.
 ///
 /// Runs once the commands of the triggering operation are applied, see [`AppScriptCallbackRunners::run_or_queue`].
-/// Errors are logged.
+/// Errors are reported through [`AppScriptCallbackRunners::report_error`].
 fn run_observer_callback(
     world: &mut DeferredWorld,
     runners: &AppScriptCallbackRunners,
@@ -1616,17 +1616,16 @@ fn run_observer_callback(
     world.commands().queue(move |world: &mut World| {
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         WorldGuard::with_static_guard(world, cache, |guard| {
-            match runners.run_or_queue(guard, &recipients, &label, vec![arg]) {
+            let context = || format!("in observer callback: {label}");
+            match runners.run_or_queue(guard.clone(), &recipients, &label, vec![arg]) {
                 Ok(results) => {
                     for (attachment, result) in results {
                         if let Err(e) = result {
-                            bevy_log::error!(
-                                "error in observer callback `{label}` of script {attachment}: {e}"
-                            );
+                            runners.report_error(guard.clone(), Some(&attachment), context(), e);
                         }
                     }
                 }
-                Err(e) => bevy_log::error!("could not run observer callback `{label}`: {e}"),
+                Err(e) => runners.report_error(guard, None, context(), e),
             }
         })
     });
