@@ -10,13 +10,14 @@ register_callback("on_removed", function(event)
 end)
 
 function on_test()
+    local bevy_ecs = import_namespace("bevy_ecs")
     local Marker = world.register_new_component("script.test", "ObserverFilterMarker")
     a = world.spawn()
     b = world.spawn()
 
     -- only observes `a`
-    world.add_observer(types.AddEvent, { Marker }, "on_added", { a })
-    world.add_observer(types.RemoveEvent, { Marker }, "on_removed")
+    world.add_observer(bevy_ecs.AddEvent, "on_added", { Marker }, { a })
+    world.add_observer(bevy_ecs.RemoveEvent, "on_removed", { Marker })
 
     world.add_default_component(a, Marker)
     world.add_default_component(b, Marker)

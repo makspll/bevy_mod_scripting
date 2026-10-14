@@ -16,8 +16,8 @@ function on_test()
     -- registering again returns the same event
     assert(world.register_new_event("script.test", "TestEventA", true) ~= nil)
 
-    observer_a = world.add_observer(EventA, {}, "on_a")
-    world.add_observer(EventB, {}, "on_b")
+    observer_a = world.add_observer(EventA, "on_a")
+    world.add_observer(EventB, "on_b")
 
     world.trigger(EventA, { value = 1 })
     world.trigger(EventB, "hello")

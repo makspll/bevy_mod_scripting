@@ -291,24 +291,24 @@ impl World {
     /// right after the operation which triggered the event, unless the script's context is busy running another callback
     /// (e.g. the one that triggered the event), in which case it runs as soon as that callback finishes.
     /// Observers never re-enter a running script. The order in which the observers of an event run is unspecified.
-    /// Removed component data is no longer available inside the callback.
+    /// Removed component data is no longer available inside the callback. Errors of the callback are reported like those of other callbacks.
     ///
-    /// The event type must have `#[reflect(Event)]`. The lifecycle events (`types.AddEvent`, `types.InsertEvent`, `types.DiscardEvent`,
-    /// `types.RemoveEvent`, `types.DespawnEvent`) are supported out of the box, and run for the given components.
+    /// The event type must have `#[reflect(Event)]`. The lifecycle events (`AddEvent`, `InsertEvent`, `DiscardEvent`,
+    /// `RemoveEvent`, `DespawnEvent`, imported with `import_namespace("bevy_ecs")`) are supported out of the box, and run for the given components.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `event`: The type of the event to observe, or an event registered with `register_new_event`. Script events ignore `components` and `entities`.
-    /// * `components`: The components the observer is interested in, for component lifecycle events.
+    /// * `event`: The type of the event to observe, or an event registered with `register_new_event`.
     /// * `callback`: The label of the callback to run, receives the event.
-    /// * `entities`: If given, the observer only runs for these entities.
+    /// * `components`: The components the observer is interested in, for component lifecycle events. Ignored for script events.
+    /// * `entities`: If given, the observer only runs for these entities. Ignored for script events.
     /// Returns:
     /// * `observer`: The observer entity, despawn it to remove the observer.
     fn add_observer(
         ctxt: FunctionCallContext,
         event: Union<V<ScriptTypeRegistration>, V<ScriptEventRegistration>>,
-        components: Vec<V<ScriptComponentRegistration>>,
         callback: String,
+        components: Option<Vec<V<ScriptComponentRegistration>>>,
         entities: Option<Vec<V<Entity>>>,
     ) -> Result<V<Entity>, InteropError> {
         profiling::function_scope!("add_observer");
@@ -329,7 +329,11 @@ impl World {
         world
             .add_script_observer(
                 event.into_inner(),
-                components.into_iter().map(V::into_inner).collect(),
+                components
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(V::into_inner)
+                    .collect(),
                 entities
                     .unwrap_or_default()
                     .into_iter()
