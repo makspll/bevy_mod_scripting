@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-462945a9.js";
+            window.path_to_searchindex_js = "../searchindex-36caf5db.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-115f6afe.js"></script>
+        <script src="../toc-10ad70d3.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -255,22 +255,22 @@ end
 <h3 id="variants-named-like-functions"><a class="header" href="#variants-named-like-functions">Variants named like functions</a></h3>
 <p>Functions on the type take priority over variants, so a variant named like a function cannot be accessed with <code>MyEnum.Name</code>.
 Use <code>world.get_enum_variant</code> to get at it in that case:</p>
-<pre><code class="language-lua">local variant = world.get_enum_variant(types.MyEnum, "Name")
+<pre><code class="language-lua">local variant = world.get_enum_variant(import_namespace("my_game").MyEnum, "Name")
 </code></pre>
 <h2 id="construct"><a class="header" href="#construct"><code>construct</code></a></h2>
 <p>The <code>construct</code> global function constructs types from a registration.
 It works for every type, including those whose own <code>new</code> function shadows the shared one, and is useful if you only have the type as a value:</p>
-<pre><code class="language-lua">local MyStruct = types.MyStruct
-local concrete_my_struct = construct(MyStruct, {
+<pre><code class="language-lua">local my_game = import_namespace("my_game") -- the crate defining the types
+local concrete_my_struct = construct(my_game.MyStruct, {
     my_field = "hello"
 })
 
-local variantA = construct(types.MyEnum, {
+local variantA = construct(my_game.MyEnum, {
     variant = "VariantA",
     field = "hello"
 })
 
-local vec = construct(types.Vec3, { x = 1, y = 2, z = 3 })
+local vec = construct(import_namespace("glam").Vec3, { x = 1, y = 2, z = 3 })
 </code></pre>
 <p>Missing fields are filled in from defaults in the same way as for <code>new</code>.</p>
 <h2 id="editor-support"><a class="header" href="#editor-support">Editor support</a></h2>

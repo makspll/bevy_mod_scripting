@@ -35,10 +35,10 @@
             const path_to_root = "../../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../../searchindex-462945a9.js";
+            window.path_to_searchindex_js = "../../../searchindex-36caf5db.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../../toc-115f6afe.js"></script>
+        <script src="../../../toc-10ad70d3.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -202,7 +202,9 @@ The type that will be instantiated to back this component will be <code>DynamicC
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>name</strong></td><td><a href="../../types/string.html">String</a></td><td>The name of the component type</td></tr>
+<tr><td><strong>namespace</strong></td><td><a href="../../types/string.html">String</a></td><td>The script namespace to register the component in, it must start with <code>script.</code>, i.e. <code>script.my_game</code>. Scripts cannot add to other namespaces.</td></tr>
+<tr><td><strong>name</strong></td><td><a href="../../types/string.html">String</a></td><td>The name of the component type, unique within the namespace. The component can later be found as <code>import_namespace(namespace).name</code>.</td></tr>
+<tr><td><strong>allow_existing</strong></td><td>Optional&lt;<a href="../../types/bool.html">Bool</a>&gt;</td><td>If true, returns the registration of the already registered component with this name instead of failing. Defaults to false.</td></tr>
 </tbody>
 </table>
 </div>

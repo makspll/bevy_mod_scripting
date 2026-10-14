@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-462945a9.js";
+            window.path_to_searchindex_js = "../searchindex-36caf5db.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-115f6afe.js"></script>
+        <script src="../toc-10ad70d3.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -363,7 +363,7 @@ The same placeholders work for functions on <code>EnumVariantRef</code>, which a
 <p>By default, each type registered with the type registry, has the following set:</p>
 <ul>
 <li>a static reference in the global namespace, i.e.: <code>Vec3</code>, <code>Mat3</code></li>
-<li>an entry in the <code>types</code> global type cache, i.e.: <code>types.Vec3</code>, <code>types.Mat3</code></li>
+<li>an entry in the table <code>import_namespace</code> returns for its <a href="../ScriptingReference/namespaces.html">namespace</a>, i.e. <code>import_namespace("glam").Vec3</code></li>
 </ul>
 <p>You can filter the types included by customising the <code>CoreScriptGlobalsPlugin</code></p>
 
