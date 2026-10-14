@@ -1,5 +1,5 @@
 local entity = world.spawn()
-local _type = world.get_type_by_name('CompWithDefault')
+local _type = world.get_type_by_name('test_utils::test_data::CompWithDefault')
 
 assert_throws(function()
     world.add_default_component(entity, _type)

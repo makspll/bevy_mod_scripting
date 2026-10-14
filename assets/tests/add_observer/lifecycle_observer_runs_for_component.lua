@@ -16,7 +16,7 @@ function on_test()
     with = world.spawn()
     local without = world.spawn()
     world.add_default_component(with, Marker)
-    world.add_default_component(without, world.get_type_by_name("Transform"))
+    world.add_default_component(without, world.get_type_by_name("bevy_transform::components::transform::Transform"))
 
     -- observers queue their callbacks, they do not run in the middle of this one
     assert(#seen == 0, "callbacks must wait for the triggering callback to finish")

@@ -1,4 +1,4 @@
-let Resource = world.get_type_by_name.call("TestResourceWithVariousFields");
+let Resource = world.get_type_by_name.call("test_utils::test_data::TestResourceWithVariousFields");
 let resource = world.get_resource.call(Resource);
 
 resource.string = "Hello, World!";

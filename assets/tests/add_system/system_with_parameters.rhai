@@ -1,9 +1,9 @@
 let runs = [];
 
-let ResourceTypeA = world.get_type_by_name.call("TestResource");
-let ResourceTypeB = world.get_type_by_name.call("TestResourceWithVariousFields");
-let ComponentA   = world.get_type_by_name.call("CompWithFromWorldAndComponentData");
-let ComponentB   = world.get_type_by_name.call("CompWithDefaultAndComponentData");
+let ResourceTypeA = world.get_type_by_name.call("test_utils::test_data::TestResource");
+let ResourceTypeB = world.get_type_by_name.call("test_utils::test_data::TestResourceWithVariousFields");
+let ComponentA   = world.get_type_by_name.call("test_utils::test_data::CompWithFromWorldAndComponentData");
+let ComponentB   = world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData");
 
 fn on_test() {
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");

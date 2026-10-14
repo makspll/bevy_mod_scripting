@@ -1,5 +1,5 @@
 let entity = world.spawn_.call();
-let _type = world.get_type_by_name.call("CompWithFromWorldAndComponentData");
+let _type = world.get_type_by_name.call("test_utils::test_data::CompWithFromWorldAndComponentData");
 world.add_default_component.call(entity, _type);
 
 let added = world.has_component.call(entity, _type);

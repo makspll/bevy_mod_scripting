@@ -3,8 +3,8 @@ local entity_b = world.spawn()
 local entity_c = world.spawn()
 local entity_d = world._get_entity_with_test_component("CompWithFromWorldAndComponentData")
 
-local component_with = world.get_type_by_name("CompWithFromWorldAndComponentData")
-local component_without = world.get_type_by_name("CompWithDefaultAndComponentData")
+local component_with = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData")
+local component_without = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
 
 world.add_default_component(entity_a, component_with)
 world.add_default_component(entity_b, component_with)

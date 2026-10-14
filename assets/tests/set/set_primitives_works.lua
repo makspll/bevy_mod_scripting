@@ -1,4 +1,4 @@
-local Resource = world.get_type_by_name("TestResourceWithVariousFields")
+local Resource = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")
 local resource = world.get_resource(Resource)
 
 resource.string = "Hello, World!"

@@ -1,4 +1,4 @@
-let res_type = world.get_type_by_name.call("TestResourceWithVariousFields");
+let res_type = world.get_type_by_name.call("test_utils::test_data::TestResourceWithVariousFields");
 let res = world.get_resource.call(res_type);
 
 res.vec_usize.insert.call(2, 42);

@@ -1,5 +1,5 @@
 
-let Resource = world.get_type_by_name.call("TestResource");
+let Resource = world.get_type_by_name.call("test_utils::test_data::TestResource");
 let resource = world.get_resource.call(Resource);
 
 let functions = resource.functions.call();

@@ -1,4 +1,4 @@
-local resource = world.get_type_by_name("ResourceWithDefault")
+local resource = world.get_type_by_name("test_utils::test_data::ResourceWithDefault")
 
 local retrieved = world.get_resource(resource)
 assert(retrieved ~= nil, "Resource should exist")

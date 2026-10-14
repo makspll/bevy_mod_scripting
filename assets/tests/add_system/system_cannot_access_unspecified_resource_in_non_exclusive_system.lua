@@ -16,7 +16,7 @@ function my_non_exclusive_system()
     print("my_non_exclusive_system")
     runs[#runs + 1] = "my_non_exclusive_system"
 
-    local ResourceType = world.get_type_by_name("TestResource")
+    local ResourceType = world.get_type_by_name("test_utils::test_data::TestResource")
     assert_throws(function()
         local res = world.get_resource(ResourceType)
         local blah = res.blahblah

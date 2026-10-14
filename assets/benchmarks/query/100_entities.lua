@@ -2,10 +2,10 @@ local entity_a = world.spawn()
 local entity_b = world.spawn()
 local entity_c = world.spawn()
 
-local with_default = world.get_type_by_name("CompWithDefaultAndComponentData")
-local with_from_world = world.get_type_by_name("CompWithFromWorldAndComponentData")
-local tuple_struct = world.get_type_by_name("SimpleTupleStruct")
-local simple_enum = world.get_type_by_name("SimpleEnum")
+local with_default = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
+local with_from_world = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData")
+local tuple_struct = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct")
+local simple_enum = world.get_type_by_name("test_utils::test_data::SimpleEnum")
 
 local components = {
     with_default,

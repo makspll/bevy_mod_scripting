@@ -1,8 +1,8 @@
 runs = {}
-local ResourceTypeA = world.get_type_by_name("TestResource")
-local ResourceTypeB = world.get_type_by_name("TestResourceWithVariousFields")
-local ComponentA = world.get_type_by_name("CompWithFromWorldAndComponentData")
-local ComponentB = world.get_type_by_name("CompWithDefaultAndComponentData")
+local ResourceTypeA = world.get_type_by_name("test_utils::test_data::TestResource")
+local ResourceTypeB = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")
+local ComponentA = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData")
+local ComponentB = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
 
 function on_test()
     local post_update_schedule = world.get_schedule_by_name("PostUpdate")

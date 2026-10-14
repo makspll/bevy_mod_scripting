@@ -1,8 +1,8 @@
 local entity_a = world.spawn()
 
-local componentA = world.get_type_by_name("CompWithFromWorldAndComponentData")
-local componentB = world.get_type_by_name("CompWithDefaultAndComponentData")
-local componentC = world.get_type_by_name("TestComponent")
+local componentA = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData")
+local componentB = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
+local componentC = world.get_type_by_name("test_utils::test_data::TestComponent")
 
 world.add_default_component(entity_a, componentA)
 world.add_default_component(entity_a, componentB)

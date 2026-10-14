@@ -1,5 +1,5 @@
 let entity = world.spawn_.call();
-let type = world.get_type_by_name.call("TestComponent");
+let type = world.get_type_by_name.call("test_utils::test_data::TestComponent");
 let entity_with_component = world._get_entity_with_test_component.call("TestComponent");
 let existing_component = world.get_component.call(entity_with_component, type);
 

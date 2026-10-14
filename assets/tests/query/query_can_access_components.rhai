@@ -1,7 +1,7 @@
 let entity_a = world.spawn_.call();
-let componentA = world.get_type_by_name.call("CompWithFromWorldAndComponentData");
-let componentB = world.get_type_by_name.call("CompWithDefaultAndComponentData");
-let componentC = world.get_type_by_name.call("TestComponent");
+let componentA = world.get_type_by_name.call("test_utils::test_data::CompWithFromWorldAndComponentData");
+let componentB = world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData");
+let componentC = world.get_type_by_name.call("test_utils::test_data::TestComponent");
 
 world.add_default_component.call(entity_a, componentA);
 world.add_default_component.call(entity_a, componentB);

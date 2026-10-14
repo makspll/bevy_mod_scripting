@@ -1,7 +1,7 @@
 //! Core globals exposed by the BMS framework
 
-use crate::function::from::V;
 use crate::docgen::into_through_type_info;
+use crate::function::from::V;
 use ::{
     bevy_app::Plugin,
     bevy_asset::Handle,
@@ -106,7 +106,6 @@ fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration)
         warn!("existing `script_asset` global was replaced by the core `script_asset` dummy type.")
     };
 }
-
 
 #[cfg(test)]
 mod test {

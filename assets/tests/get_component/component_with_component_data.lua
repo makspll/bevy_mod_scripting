@@ -1,4 +1,4 @@
-local component = world.get_type_by_name("TestComponent")
+local component = world.get_type_by_name("test_utils::test_data::TestComponent")
 local entity = world._get_entity_with_test_component("TestComponent")
 local retrieved = world.get_component(entity, component)
 

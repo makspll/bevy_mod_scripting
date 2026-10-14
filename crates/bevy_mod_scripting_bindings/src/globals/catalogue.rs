@@ -213,7 +213,6 @@ impl ScriptTypeCatalogue {
         }
         Ok(catalogue)
     }
-
 }
 
 struct Cached {

@@ -1,4 +1,4 @@
-local type = world.get_type_by_name('TestResource')
+local type = world.get_type_by_name('test_utils::test_data::TestResource')
 
 local expected = {
     type_name = 'test_utils::test_data::TestResource',

@@ -1,5 +1,5 @@
 local entity = world.spawn()
-local type = world.get_type_by_name('TestComponent')
+local type = world.get_type_by_name('test_utils::test_data::TestComponent')
 
 assert_throws(function()
     world.add_default_component(entity, type)

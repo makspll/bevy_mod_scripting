@@ -1,7 +1,7 @@
 function on_test()
     local label = CallbackLabel.new({ "callback_a" })
     local recipients = Recipients.AllScripts:new({})
-    local event_type = world.get_type_by_name("ScriptCallbackMessage")
+    local event_type = world.get_type_by_name("bevy_mod_scripting_core::event::ScriptCallbackMessage")
     local event = ScriptCallbackMessage.new({
         label = label,
         recipients = recipients,

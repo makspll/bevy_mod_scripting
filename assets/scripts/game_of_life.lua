@@ -1,5 +1,5 @@
-LifeState = world.get_type_by_name("LifeState")
-Settings = world.get_type_by_name("Settings")
+LifeState = world.get_type_by_name("game_of_life::LifeState")
+Settings = world.get_type_by_name("game_of_life::Settings")
 
 log_warn("Lua: The game_of_life.lua script just got loaded")
 math.randomseed(os.time())

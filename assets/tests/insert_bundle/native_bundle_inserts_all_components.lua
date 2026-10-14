@@ -1,6 +1,6 @@
-local Bundle = world.get_type_by_name("TestBundle")
-local Comp = world.get_type_by_name("CompWithDefaultAndComponentData")
-local Simple = world.get_type_by_name("SimpleStruct")
+local Bundle = world.get_type_by_name("test_utils::test_data::TestBundle")
+local Comp = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
+local Simple = world.get_type_by_name("test_utils::test_data::SimpleStruct")
 
 local entity = world.spawn()
 

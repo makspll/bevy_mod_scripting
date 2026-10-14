@@ -1,6 +1,6 @@
-let bundle_type = world.get_type_by_name.call("TestBundle");
-let comp_type = world.get_type_by_name.call("CompWithDefaultAndComponentData");
-let simple_type = world.get_type_by_name.call("SimpleStruct");
+let bundle_type = world.get_type_by_name.call("test_utils::test_data::TestBundle");
+let comp_type = world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData");
+let simple_type = world.get_type_by_name.call("test_utils::test_data::SimpleStruct");
 
 let entity = world.spawn_.call();
 

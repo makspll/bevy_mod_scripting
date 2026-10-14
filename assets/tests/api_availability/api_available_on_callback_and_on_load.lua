@@ -1,10 +1,10 @@
 assert(world ~= nil, "World was not found")
-assert(world.get_type_by_name("TestComponent") ~= nil, "Could not find TestComponent type")
+assert(world.get_type_by_name("test_utils::test_data::TestComponent") ~= nil, "Could not find TestComponent type")
 local global_invocation = _entity_from_index(1)
 
 function on_test()
     assert(world ~= nil, "World was not found")
-    assert(world.get_type_by_name("TestComponent") ~= nil, "Could not find TestComponent type")
+    assert(world.get_type_by_name("test_utils::test_data::TestComponent") ~= nil, "Could not find TestComponent type")
     _entity_from_index(1)
 
     -- assert global_invocation happened
