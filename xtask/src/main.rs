@@ -581,11 +581,10 @@ impl Xtasks {
                 for os in <CiOs as strum::VariantArray>::VARIANTS {
                     for row in output.iter() {
                         // these only need to run on one OS, the others are covered by the OS specific
-                        // checks and tests
-                        let step_should_run_on_main_os = matches!(
-                            row.subcmd,
-                            Xtasks::Build { .. } | Xtasks::Docs { .. } | Xtasks::Bencher { .. }
-                        );
+                        // checks and tests. Benchmarks are the exception, each OS publishes to its own
+                        // bencher testbed on main
+                        let step_should_run_on_main_os =
+                            matches!(row.subcmd, Xtasks::Build { .. } | Xtasks::Docs { .. });
 
                         if !os.is_main_os() && step_should_run_on_main_os {
                             continue;
