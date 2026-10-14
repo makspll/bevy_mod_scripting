@@ -124,7 +124,7 @@ Functions on the type take priority over variants, so a variant named like a fun
 Use `world.get_enum_variant` to get at it in that case:
 
 ```lua
-local variant = world.get_enum_variant(types.MyEnum, "Name")
+local variant = world.get_enum_variant(import_namespace("my_game").MyEnum, "Name")
 ```
 
 ## `construct`
@@ -133,17 +133,17 @@ The `construct` global function constructs types from a registration.
 It works for every type, including those whose own `new` function shadows the shared one, and is useful if you only have the type as a value:
 
 ```lua
-local MyStruct = types.MyStruct
-local concrete_my_struct = construct(MyStruct, {
+local my_game = import_namespace("my_game") -- the crate defining the types
+local concrete_my_struct = construct(my_game.MyStruct, {
     my_field = "hello"
 })
 
-local variantA = construct(types.MyEnum, {
+local variantA = construct(my_game.MyEnum, {
     variant = "VariantA",
     field = "hello"
 })
 
-local vec = construct(types.Vec3, { x = 1, y = 2, z = 3 })
+local vec = construct(import_namespace("glam").Vec3, { x = 1, y = 2, z = 3 })
 ```
 
 Missing fields are filled in from defaults in the same way as for `new`.

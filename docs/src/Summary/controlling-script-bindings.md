@@ -233,6 +233,6 @@ The enum variants of a type are also available on its static reference, i.e. `My
 
 By default, each type registered with the type registry, has the following set:
 - a static reference in the global namespace, i.e.: `Vec3`, `Mat3`
-- an entry in the `types` global type cache, i.e.: `types.Vec3`, `types.Mat3`
+- an entry in the table `import_namespace` returns for its [namespace](../ScriptingReference/namespaces.md), i.e. `import_namespace("glam").Vec3`
 
 You can filter the types included by customising the `CoreScriptGlobalsPlugin`

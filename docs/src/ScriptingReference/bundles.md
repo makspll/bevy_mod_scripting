@@ -22,6 +22,6 @@ app.register_type::<EnemyBundle>();
 ```
 
 ```lua
-local EnemyBundle = world.get_type_by_name("EnemyBundle")
+local EnemyBundle = import_namespace("my_game").EnemyBundle
 world.spawn_bundle(EnemyBundle, EnemyBundle.new({ health = Health.new({ hp = 10 }) }))
 ```

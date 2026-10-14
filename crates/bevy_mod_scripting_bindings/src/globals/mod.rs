@@ -13,7 +13,9 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 use {bevy_ecs::resource::Resource, bevy_platform::collections::HashMap, bevy_reflect::Typed};
 
+pub mod catalogue;
 pub mod core;
+pub use catalogue::*;
 pub use core::*;
 
 /// A send + sync wrapper around the [`ScriptGlobalsRegistry`].

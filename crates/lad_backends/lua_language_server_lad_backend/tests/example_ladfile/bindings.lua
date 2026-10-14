@@ -204,6 +204,16 @@ UnitType = {}
 
 
 
+---@class (exact) namespace.ladfile_builder
+--- The types in the `ladfile_builder` namespace, as returned by `import_namespace("ladfile_builder")`.
+---@field  PlainStructType PlainStructType
+---@field  EnumType EnumType
+---@field  TupleStructType TupleStructType
+---@field  UnitType UnitType
+
+
+
+
 
 ---@param arg1 integer
 ---@return integer

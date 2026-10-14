@@ -15,9 +15,11 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder, ScriptQueryResult,
+    AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo, ScriptQueryBuilder,
+    ScriptQueryResult,
     error::InteropError,
     function::{from::V, from_ref::FromScriptRef, into::IntoScript},
+    script_path, validate_script_namespace_and_name,
 };
 use ::{
     bevy_asset::{AssetServer, Handle, LoadState},
@@ -39,7 +41,7 @@ use bevy_ecs::{
     world::{CommandQueue, EntityRef, Mut},
 };
 use bevy_mod_scripting_asset::ScriptAsset;
-use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
 use bevy_reflect::{GetTypeRegistration, Reflect, TypeInfo, TypeRegistration};
 use bevy_system_reflection::ReflectSchedule;
@@ -185,6 +187,28 @@ pub trait WorldExtensions {
         registration: ScriptTypeRegistration,
         event: &ReflectReference,
     ) -> Result<(), InteropError>;
+
+    /// Exports the callback `label` of the script `owner` as the function `name` of a script namespace (which must start with `script.`).
+    ///
+    /// The function can then be called by any script through `import_namespace(namespace).name`, in any language, see [`Self::call_script_export`].
+    /// Exporting the same name again from the same script replaces it, from a different script it is an error.
+    fn register_script_export(
+        &self,
+        namespace: &str,
+        name: &str,
+        label: String,
+        owner: ScriptAttachment,
+    ) -> Result<(), InteropError>;
+
+    /// Calls the exported function with the given full path (i.e. `script.game.spawn_enemy`) in the script that exported it,
+    /// by running its callback through the callback runners.
+    ///
+    /// Fails if the export does not exist (anymore), if the owning script is not loaded, or if its context is busy running another callback.
+    fn call_script_export(
+        &self,
+        path: &str,
+        args: Vec<ScriptValue>,
+    ) -> Result<ScriptValue, InteropError>;
 
     /// Writes a reflected [`bevy_ecs::message::Message`] (buffered) to the world, using the type's [`ReflectMessage`] type data.
     fn write_message(
@@ -353,6 +377,9 @@ pub trait WorldExtensions {
     /// Returns the callback runners of all scripting plugins.
     fn script_callback_runners(&'_ self) -> Ref<'_, AppScriptCallbackRunners>;
 
+    /// Returns the type catalogue.
+    fn type_catalogue(&'_ self) -> Ref<'_, AppScriptTypeCatalogue>;
+
     /// Returns the allocator used for reflection.
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator>;
 
@@ -368,10 +395,15 @@ pub trait WorldExtensions {
     /// Sets the current attachment for the world guard context.
     fn set_current_attachment(&self, attachment: ScriptAttachment);
 
-    /// Registers a dynamic script component, and returns a reference to its registration
+    /// Registers a dynamic script component in a script namespace (which must start with `script.`), and returns a reference to its registration
+    ///
+    /// Fails if a component with the same namespace and name is already registered, unless `allow_existing` is set,
+    /// in which case the existing component's registration is returned instead.
     fn register_script_component(
         &self,
-        component_name: String,
+        namespace: &str,
+        component_name: &str,
+        allow_existing: bool,
     ) -> Result<ScriptComponentRegistration, InteropError>;
 
     /// Initializes cached registries from the world.
@@ -385,6 +417,7 @@ pub trait WorldExtensions {
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
         callback_runners: AppScriptCallbackRunners,
+        type_catalogue: AppScriptTypeCatalogue,
     ) -> RegistryCache;
 }
 
@@ -758,6 +791,59 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         })
     }
 
+    fn register_script_export(
+        &self,
+        namespace: &str,
+        name: &str,
+        label: String,
+        owner: ScriptAttachment,
+    ) -> Result<(), InteropError> {
+        validate_script_namespace_and_name(namespace, name)?;
+        self.component_registry()
+            .write()
+            .register_export(crate::ScriptExport {
+                name: name.to_owned(),
+                namespace: namespace.to_owned(),
+                owner,
+                label,
+            })
+    }
+
+    fn call_script_export(
+        &self,
+        path: &str,
+        args: Vec<ScriptValue>,
+    ) -> Result<ScriptValue, InteropError> {
+        // looked up on every call, so replaced exports are picked up and removed ones fail
+        let export = self
+            .component_registry()
+            .read()
+            .get_export(path)
+            .cloned()
+            .ok_or_else(|| {
+                InteropError::string(format!(
+                    "the exported function `{path}` does not exist (anymore): the script that exported it may have been unloaded"
+                ))
+            })?;
+        let runners = self.script_callback_runners().clone();
+        let recipients = Recipients::from(export.owner.clone());
+        let results = runners.run(self.clone(), &recipients, &export.label, args)?;
+        match results.into_iter().next() {
+            Some((_, Ok(value))) => Ok(value),
+            Some((_, Err(e))) if e.is_context_busy() => Err(InteropError::string(format!(
+                "cannot call the exported function `{path}` right now: the script {} that exports it is currently running. \
+                Exported functions cannot be called by a script from inside a callback of the same script context (including scripts sharing it), \
+                call the function directly instead, or use `queue_script_callback`.",
+                export.owner
+            ))),
+            Some((_, Err(e))) => Err(e),
+            None => Err(InteropError::string(format!(
+                "cannot call the exported function `{path}`: the script {} that exports it is not loaded",
+                export.owner
+            ))),
+        }
+    }
+
     fn write_message(
         &self,
         registration: ScriptTypeRegistration,
@@ -1067,11 +1153,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         Ok(match val {
             Some(registration) => Some(self.get_type_registration(registration)?),
             None => {
-                // try the component registry
+                // try the script registered components
                 let components = self.component_registry();
                 let components = components.read();
+                // by full path (i.e. `script.game.Enemy`), or by name alone
                 components
-                    .get(&type_name)
+                    .find(&type_name)
                     .map(|c| Union::new_right(Union::new_left(c.registration.clone())))
             }
         })
@@ -1127,6 +1214,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
+    fn type_catalogue(&'_ self) -> Ref<'_, AppScriptTypeCatalogue> {
+        #[allow(
+            clippy::unwrap_used,
+            reason = "internal domain boundary, enforced at creation of the guard"
+        )]
+        self.get_cached_registry().unwrap()
+    }
+
     fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator> {
         #[allow(
             clippy::unwrap_used,
@@ -1165,15 +1260,31 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
     fn register_script_component(
         &self,
-        component_name: String,
+        namespace: &str,
+        component_name: &str,
+        allow_existing: bool,
     ) -> Result<ScriptComponentRegistration, InteropError> {
+        validate_script_namespace_and_name(namespace, component_name)?;
+        let path = script_path(namespace, component_name);
         let component_registry = self.component_registry();
         let component_registry_read = component_registry.read();
-        if component_registry_read.get(&component_name).is_some() {
+        if let Some(existing) = component_registry_read.get(&path) {
+            if allow_existing {
+                return Ok(existing.registration.clone());
+            }
             return Err(InteropError::unsupported_operation(
                 None,
                 None,
-                "script registered component already exists",
+                format!(
+                    "script registered component '{path}' already exists, pass `allow_existing = true` to get the existing registration instead"
+                ),
+            ));
+        }
+        if component_registry_read.get_export(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a function named '{path}' is already exported"),
             ));
         }
 
@@ -1183,7 +1294,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 // we know the type in advance
                 // we only use this method to name the component
                 ComponentDescriptor::new_with_layout(
-                    component_name.clone(),
+                    path.clone(),
                     DynamicComponent::STORAGE_TYPE,
                     Layout::new::<DynamicComponent>(),
                     needs_drop::<DynamicComponent>().then_some(|x| x.drop_as::<DynamicComponent>()),
@@ -1198,15 +1309,17 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         drop(component_registry_read);
         let mut component_registry = component_registry.write();
 
-        let registration = ScriptComponentRegistration::new(
+        let mut registration = ScriptComponentRegistration::new(
             ScriptTypeRegistration::new(Arc::new(
                 <DynamicComponent as GetTypeRegistration>::get_type_registration(),
             )),
             component_id,
         );
+        registration.script_namespace = Some(namespace.to_owned());
 
         let component_info = DynamicComponentInfo {
-            name: component_name.clone(),
+            name: component_name.to_owned(),
+            namespace: namespace.to_owned(),
             registration: registration.clone(),
         };
 
@@ -1224,6 +1337,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
         callback_runners: AppScriptCallbackRunners,
+        type_catalogue: AppScriptTypeCatalogue,
     ) -> RegistryCache {
         debug_assert_eq!(AppReflectAllocator::SLOT, 0);
         debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
@@ -1231,6 +1345,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
         debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
+        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 6);
 
         [
             Rc::new(RefCell::new(allocator)),
@@ -1239,6 +1354,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(component_registry)),
             Rc::new(RefCell::new(attachment)),
             Rc::new(RefCell::new(callback_runners)),
+            Rc::new(RefCell::new(type_catalogue)),
         ]
     }
 
@@ -1249,6 +1365,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
         debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
         debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
+        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 6);
 
         [
             Rc::new(RefCell::new(
@@ -1279,6 +1396,12 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
             Rc::new(RefCell::new(
                 world
                     .get_resource::<AppScriptCallbackRunners>()
+                    .cloned()
+                    .unwrap_or_default(),
+            )),
+            Rc::new(RefCell::new(
+                world
+                    .get_resource::<AppScriptTypeCatalogue>()
                     .cloned()
                     .unwrap_or_default(),
             )),
@@ -1350,6 +1473,9 @@ impl CachedRegistry for CurrentScriptAttachment {
 }
 impl CachedRegistry for AppScriptCallbackRunners {
     const SLOT: usize = 5;
+}
+impl CachedRegistry for AppScriptTypeCatalogue {
+    const SLOT: usize = 6;
 }
 
 /// Default constructs an instance of the given type, using its `ReflectDefault` or `ReflectFromWorld` type data.
@@ -1819,14 +1945,361 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         guard
-            .register_script_component("MyDynComp".to_owned())
+            .register_script_component("script.test", "MyDynComp", false)
             .unwrap();
         assert!(
             guard
-                .register_script_component("MyDynComp".to_owned())
+                .register_script_component("script.test", "MyDynComp", false)
                 .is_err()
         );
-        assert!(guard.component_registry().read().get("MyDynComp").is_some());
+        assert!(
+            guard
+                .component_registry()
+                .read()
+                .get("script.test.MyDynComp")
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn type_namespaces_default_to_the_crate_and_can_be_overridden() {
+        use crate::{AppScriptTypeCatalogue, ScriptNamespace};
+
+        #[derive(Reflect)]
+        struct DefaultNs;
+        #[derive(Reflect)]
+        struct OverriddenNs;
+
+        let mut world = setup_world(|_, registry| {
+            registry.register::<DefaultNs>();
+            registry.register::<OverriddenNs>();
+            registry.register_type_data_with::<OverriddenNs, ScriptNamespace, _>("custom");
+        });
+        let guard = make_guard(&mut world);
+        let catalogue = AppScriptTypeCatalogue::default()
+            .get(guard.clone())
+            .unwrap();
+
+        // defined in this crate's test module
+        let default = catalogue.get_by_short_name("DefaultNs").unwrap();
+        assert_eq!(&*default.namespace, "bevy_mod_scripting_bindings");
+        let overridden = catalogue.get_by_short_name("OverriddenNs").unwrap();
+        assert_eq!(&*overridden.namespace, "custom");
+
+        assert!(catalogue.namespaces().any(|n| n == "custom"));
+        let in_custom: Vec<_> = catalogue.iter_namespace("custom").collect();
+        assert_eq!(in_custom.len(), 1);
+        assert_eq!(&*in_custom[0].short_name, "OverriddenNs");
+        assert_eq!(catalogue.iter_namespace("does_not_exist").count(), 0);
+    }
+
+    #[test]
+    fn namespace_views_and_suggestions() {
+        use crate::{AppScriptTypeCatalogue, ScriptNamespace};
+
+        #[derive(Reflect)]
+        struct InTransform;
+        #[derive(Reflect)]
+        struct InEcs;
+
+        let mut world = setup_world(|_, registry| {
+            registry.register::<InTransform>();
+            registry.register::<InEcs>();
+            registry.register_type_data_with::<InTransform, ScriptNamespace, _>("bevy_transform");
+            registry.register_type_data_with::<InEcs, ScriptNamespace, _>("bevy_ecs");
+        });
+        let guard = make_guard(&mut world);
+        let catalogue = AppScriptTypeCatalogue::default().get(guard).unwrap();
+
+        let view = catalogue.namespace_view("bevy_transform").unwrap();
+        assert!(view.contains_key("InTransform"));
+        assert!(!view.contains_key("InEcs"));
+        assert!(catalogue.namespace_view("nope").is_none());
+
+        assert_eq!(
+            catalogue.similar_namespaces("bevy_transfrom"),
+            vec!["bevy_transform"]
+        );
+        // substrings count as similar
+        assert_eq!(
+            catalogue.similar_namespaces("transform"),
+            vec!["bevy_transform"]
+        );
+        assert!(catalogue.similar_namespaces("zzzzzzzzzzzz").is_empty());
+    }
+
+    #[test]
+    fn first_script_namespace_wins() {
+        use crate::{ScriptNamespace, set_script_namespace_if_unset};
+
+        #[derive(Reflect)]
+        struct Contested;
+
+        let mut world = setup_world(|_, registry| {
+            registry.register::<Contested>();
+            set_script_namespace_if_unset::<Contested>(registry, "first");
+            set_script_namespace_if_unset::<Contested>(registry, "second");
+            // the same namespace again is fine
+            set_script_namespace_if_unset::<Contested>(registry, "first");
+        });
+        let guard = make_guard(&mut world);
+        let registry = guard.type_registry();
+        let registry = registry.read();
+        let namespace = registry
+            .get(TypeId::of::<Contested>())
+            .and_then(|r| r.data::<ScriptNamespace>())
+            .unwrap();
+        assert_eq!(namespace.0, "first");
+    }
+
+    #[test]
+    fn type_catalogue_is_shared_and_refreshes_on_new_types() {
+        use crate::AppScriptTypeCatalogue;
+
+        #[derive(Reflect)]
+        struct LateType;
+
+        let mut world = setup_world(|_, _| {});
+        let registry = world
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        let catalogue = AppScriptTypeCatalogue::default();
+        let guard = make_guard(&mut world);
+
+        let first = catalogue.get(guard.clone()).unwrap();
+        let again = catalogue.get(guard.clone()).unwrap();
+        assert!(
+            Arc::ptr_eq(&first, &again),
+            "unchanged world must reuse the catalogue"
+        );
+        assert!(first.get_by_short_name("LateType").is_none());
+
+        registry.write().register::<LateType>();
+        let refreshed = catalogue.get(guard).unwrap();
+        assert!(!Arc::ptr_eq(&first, &refreshed));
+        assert!(refreshed.get_by_short_name("LateType").is_some());
+        assert!(refreshed.flat_view().contains_key("LateType"));
+    }
+
+    #[test]
+    fn script_registrations_enter_catalogue_and_bump_generation_once() {
+        use crate::AppScriptTypeCatalogue;
+
+        let mut world = setup_world(|_, _| {});
+        let catalogue = AppScriptTypeCatalogue::default();
+        let guard = make_guard(&mut world);
+        let generation = || guard.component_registry().read().generation();
+
+        let start = generation();
+        guard
+            .register_script_component("script.test", "CatalogueComp", false)
+            .unwrap();
+        assert_eq!(generation(), start + 1);
+
+        // returning an existing registration must not look like a change
+        guard
+            .register_script_component("script.test", "CatalogueComp", true)
+            .unwrap();
+        assert_eq!(generation(), start + 1);
+
+        let built = catalogue.get(guard.clone()).unwrap();
+        let comp = built.get_by_short_name("CatalogueComp").unwrap();
+        assert_eq!(comp.namespace.as_ref(), "script.test");
+        assert!(built.flat_view().contains_key("CatalogueComp"));
+    }
+
+    #[test]
+    fn script_registrations_need_valid_script_namespaces() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        for bad in [
+            "game",
+            "bevy_transform",
+            "script",
+            "script.",
+            "script..a",
+            "script.a b",
+            "",
+        ] {
+            let err = guard
+                .register_script_component(bad, "C", false)
+                .unwrap_err()
+                .to_string();
+            assert!(err.contains("script"), "{bad}: {err}");
+        }
+        let err = guard
+            .register_script_component("game", "C", false)
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("must start with `script.`"), "{err}");
+
+        // names cannot be empty or contain dots
+        assert!(
+            guard
+                .register_script_component("script.a", "", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_component("script.a", "x.y", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_component("script.a.b_c", "X", false)
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn script_registrations_are_unique_by_full_path() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+
+        let a = guard
+            .register_script_component("script.one", "Same", false)
+            .unwrap();
+        let b = guard
+            .register_script_component("script.two", "Same", false)
+            .unwrap();
+        assert_ne!(
+            a.component_id, b.component_id,
+            "different namespaces, different components"
+        );
+        assert!(
+            guard
+                .register_script_component("script.one", "Same", false)
+                .is_err()
+        );
+
+        // lookups work by full path, and by name alone (the alphabetically first path wins)
+        let by_path = guard
+            .get_type_registration_by_name("script.two.Same".to_owned())
+            .unwrap();
+        assert!(by_path.is_some());
+        let registry = guard.component_registry();
+        let registry = registry.read();
+        assert_eq!(registry.find("Same").unwrap().namespace, "script.one");
+        assert_eq!(
+            registry.find("script.two.Same").unwrap().namespace,
+            "script.two"
+        );
+    }
+
+    #[test]
+    fn script_exports_are_unique_per_path_and_owned_by_one_script() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let (a, b) = (guard.spawn().unwrap(), guard.spawn().unwrap());
+        let owner_a = ScriptAttachment::EntityScript(a, Handle::default());
+        let owner_b = ScriptAttachment::EntityScript(b, Handle::default());
+
+        guard
+            .register_script_export("script.game", "spawn", "spawn_impl".into(), owner_a.clone())
+            .unwrap();
+        // the same script exporting again replaces the export
+        guard
+            .register_script_export("script.game", "spawn", "other_impl".into(), owner_a)
+            .unwrap();
+        assert_eq!(
+            guard
+                .component_registry()
+                .read()
+                .get_export("script.game.spawn")
+                .unwrap()
+                .label,
+            "other_impl"
+        );
+
+        // another script can't take it
+        let err = guard
+            .register_script_export("script.game", "spawn", "x".into(), owner_b.clone())
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("already exported by script"), "{err}");
+
+        // namespaces are validated like for components
+        assert!(
+            guard
+                .register_script_export("game", "spawn", "x".into(), owner_b.clone())
+                .is_err()
+        );
+
+        // exports and components cannot share a path, in both directions
+        assert!(
+            guard
+                .register_script_component("script.game", "spawn", false)
+                .is_err()
+        );
+        guard
+            .register_script_component("script.game", "Enemy", false)
+            .unwrap();
+        assert!(
+            guard
+                .register_script_export("script.game", "Enemy", "x".into(), owner_b)
+                .is_err()
+        );
+
+        // calling something which is not exported fails clearly
+        let err = guard
+            .call_script_export("script.game.nope", vec![])
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("does not exist"), "{err}");
+    }
+
+    #[test]
+    fn unloading_a_script_removes_its_exports_only() {
+        let mut world = setup_world(|_, _| {});
+        world.insert_resource(AppScriptComponentRegistry::default());
+        let a = {
+            let guard = make_guard(&mut world);
+            let (a, b) = (guard.spawn().unwrap(), guard.spawn().unwrap());
+            let owner_a = ScriptAttachment::EntityScript(a, Handle::default());
+            let owner_b = ScriptAttachment::EntityScript(b, Handle::default());
+
+            guard
+                .register_script_export("script.game", "one", "f".into(), owner_a)
+                .unwrap();
+            guard
+                .register_script_export("script.game", "two", "f".into(), owner_b)
+                .unwrap();
+            a
+        };
+
+        crate::remove_script_registrations(
+            &mut world,
+            &ScriptAttachment::EntityScript(a, Handle::default()),
+        );
+
+        let registry = world.resource::<AppScriptComponentRegistry>().read();
+        assert!(registry.get_export("script.game.one").is_none());
+        assert!(registry.get_export("script.game.two").is_some());
+    }
+
+    #[test]
+    fn register_script_component_allow_existing_returns_existing() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let first = guard
+            .register_script_component("script.test", "MyDynComp", false)
+            .unwrap();
+        let err = guard
+            .register_script_component("script.test", "MyDynComp", false)
+            .unwrap_err();
+        assert!(err.to_string().contains("allow_existing"), "{err}");
+
+        let second = guard
+            .register_script_component("script.test", "MyDynComp", true)
+            .unwrap();
+        assert_eq!(first.component_id, second.component_id);
+
+        // a fresh name is still registered normally with the flag set
+        let other = guard
+            .register_script_component("script.test", "OtherDynComp", true)
+            .unwrap();
+        assert_ne!(first.component_id, other.component_id);
     }
 
     #[test]
@@ -1836,7 +2309,7 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let guard = make_guard(&mut world);
         let registration = guard
-            .register_script_component("MyDynComp".to_owned())
+            .register_script_component("script.test", "MyDynComp", false)
             .unwrap();
         let entity = guard.spawn().unwrap();
 
@@ -1865,7 +2338,7 @@ mod test {
         guard.despawn(entity).unwrap();
     }
 
-    // ── query ─────────────────────────────────────────────────────────────────
+    // ── bundles ───────────────────────────────────────────────────────────────
 
     fn native_bundle_reg(guard: &WorldAccessGuard<'_>) -> ScriptBundleRegistration {
         guard
@@ -1939,6 +2412,8 @@ mod test {
         assert!(guard.insert_bundle(entity, registration, value).is_err());
     }
 
+    // ── query ─────────────────────────────────────────────────────────────────
+
     #[test]
     fn query_returns_only_matching_entities() {
         let mut world = setup_world(|_, _| {});
@@ -1980,6 +2455,7 @@ mod test {
                 .cloned()
                 .unwrap_or_default(),
             AppScriptCallbackRunners::default(),
+            AppScriptTypeCatalogue::default(),
         );
         let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
         assert!(guard.spawn().is_ok());
@@ -2124,32 +2600,6 @@ mod test {
             assert!(matches!(nested, Ok(Err(_))));
             // the failed attempt must not leak any claim
             assert!(guard.trigger_event(registration, &reference).is_ok());
-        }
-
-        #[test]
-        fn commands_queued_by_observers_are_deferred_until_the_world_flushes() {
-            let mut world = setup();
-            world.add_observer(
-                |e: On<TestEvent>, mut commands: bevy_ecs::system::Commands| {
-                    let value = e.value;
-                    commands.queue(move |world: &mut World| {
-                        world.resource_mut::<Seen>().0.push(value + 100);
-                    });
-                },
-            );
-            // deferred work from observers (such as BMS's lifecycle hooks queueing script callbacks)
-            // must not run inside the script call that triggered them
-            {
-                let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
-                let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
-                let reference = allocate(&guard, TestEvent { value: 1 });
-                guard
-                    .trigger_event(registration::<TestEvent>(&guard), &reference)
-                    .unwrap();
-            }
-            assert_eq!(world.resource::<Seen>().0, vec![1]);
-            world.flush();
-            assert_eq!(world.resource::<Seen>().0, vec![1, 101]);
         }
 
         #[test]

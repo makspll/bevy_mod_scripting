@@ -1,0 +1,39 @@
+// #main_script exporter.lua
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin nanoseconds_budget=999999999
+SetupHandler OnTest=null, Update=null
+SetupHandler OnTestPostUpdate=null, PostUpdate=null
+SetupHandler OnTestLast=null, Last=null
+FinalizeApp
+
+LoadScriptAs as_name="exporter", path="exporter.lua"
+LoadScriptAs as_name="caller", path="caller.lua"
+WaitForScriptAssetLoaded name="exporter"
+WaitForScriptAssetLoaded name="caller"
+SpawnEntityWithScript name="entity_a", script="exporter"
+SpawnEntityWithScript name="entity_b", script="caller"
+RunUpdateOnce
+
+// the exporter exports, the caller calls
+EmitScriptCallbackEvent emit_response=true, entity="entity_a", label="OnTest", language=null, recipients="EntityScript", script="exporter"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_a", label="OnTest", script="exporter", expect_string_value="exported"
+EmitScriptCallbackEvent emit_response=true, entity="entity_b", label="OnTest", language=null, recipients="EntityScript", script="caller"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_b", label="OnTest", script="caller", expect_string_value="called"
+
+// reloading the exporter removes its exports, calling the old handle fails clearly
+ReloadScriptFrom script="exporter", path="exporter.lua"
+RunUpdateOnce
+RunUpdateOnce
+EmitScriptCallbackEvent emit_response=true, entity="entity_b", label="OnTestPostUpdate", language=null, recipients="EntityScript", script="caller"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_b", label="OnTestPostUpdate", script="caller", expect_string_value="gone"
+
+// the reloaded script exports again when it runs
+EmitScriptCallbackEvent emit_response=true, entity="entity_a", label="OnTest", language=null, recipients="EntityScript", script="exporter"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_a", label="OnTest", script="exporter", expect_string_value="exported"
+EmitScriptCallbackEvent emit_response=true, entity="entity_b", label="OnTestLast", language=null, recipients="EntityScript", script="caller"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="entity_b", label="OnTestLast", script="caller", expect_string_value="called again"

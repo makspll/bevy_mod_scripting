@@ -1,8 +1,9 @@
 use bevy_ecs::{
     observer::On,
     system::{Commands, In},
-    world::WorldId,
+    world::{World, WorldId},
 };
+use bevy_mod_scripting_bindings::remove_script_registrations;
 use bevy_mod_scripting_script::ScriptAttachment;
 
 use crate::{
@@ -85,6 +86,12 @@ pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>
             }
         }),
     );
+    remove_registrations_when_unloaded(&mut commands, event.attachment.clone());
+}
+
+/// Once the unload callback ran, removes what the script registered which only makes sense while it runs, i.e. its exports.
+fn remove_registrations_when_unloaded(commands: &mut Commands, attachment: ScriptAttachment) {
+    commands.queue(move |world: &mut World| remove_script_registrations(world, &attachment));
 }
 // todo unify the two, they just need a context extractor trait
 pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>(
@@ -121,6 +128,7 @@ pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>
             }
         }),
     );
+    remove_registrations_when_unloaded(&mut commands, event.attachment.clone());
 }
 
 /// Queues the `on_script_reloaded` callback, if the script's context was just re-assigned after a reload.
