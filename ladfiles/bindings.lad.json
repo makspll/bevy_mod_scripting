@@ -1,5 +1,5 @@
 {
-  "version": "0.22.0",
+  "version": "0.23.0",
   "globals": {
     "DiscardEvent": {
       "type_kind": {
@@ -157,9 +157,9 @@
       },
       "is_static": true
     },
-    "ScriptBundleRegistration": {
+    "Rect": {
       "type_kind": {
-        "val": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration"
+        "val": "bevy_math::rects::rect::Rect"
       },
       "is_static": true
     },
@@ -169,9 +169,9 @@
       },
       "is_static": true
     },
-    "Rect": {
+    "ScriptBundleRegistration": {
       "type_kind": {
-        "val": "bevy_math::rects::rect::Rect"
+        "val": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration"
       },
       "is_static": true
     },
@@ -629,6 +629,12 @@
       },
       "is_static": true
     },
+    "StaticTypeRef": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_bindings::static_type::StaticTypeRef"
+      },
+      "is_static": true
+    },
     "Xyza": {
       "type_kind": {
         "val": "bevy_color::xyza::Xyza"
@@ -638,12 +644,6 @@
     "TransformGizmoSpace": {
       "type_kind": {
         "val": "bevy_gizmos::transform_gizmo::TransformGizmoSpace"
-      },
-      "is_static": true
-    },
-    "StaticTypeRef": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_bindings::static_type::StaticTypeRef"
       },
       "is_static": true
     },
@@ -767,9 +767,9 @@
       },
       "is_static": true
     },
-    "UVec2": {
+    "Edge": {
       "type_kind": {
-        "val": "glam::UVec2"
+        "val": "bevy_system_reflection::Edge"
       },
       "is_static": true
     },
@@ -785,9 +785,9 @@
       },
       "is_static": true
     },
-    "Edge": {
+    "UVec2": {
       "type_kind": {
-        "val": "bevy_system_reflection::Edge"
+        "val": "glam::UVec2"
       },
       "is_static": true
     },
@@ -845,12 +845,6 @@
       },
       "is_static": true
     },
-    "ScriptQueryResult": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_bindings::query::ScriptQueryResult"
-      },
-      "is_static": true
-    },
     "AccumulatedMouseMotion": {
       "type_kind": {
         "val": "bevy_input::mouse::AccumulatedMouseMotion"
@@ -866,6 +860,12 @@
     "SkinnedMeshBounds": {
       "type_kind": {
         "val": "bevy_mesh::skinning::SkinnedMeshBounds"
+      },
+      "is_static": true
+    },
+    "ScriptQueryResult": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_bindings::query::ScriptQueryResult"
       },
       "is_static": true
     },
@@ -983,12 +983,6 @@
       },
       "is_static": true
     },
-    "Fake4": {
-      "type_kind": {
-        "val": "script_integration_test_harness::Fake4"
-      },
-      "is_static": true
-    },
     "Access": {
       "type_kind": {
         "val": "bevy_reflect::path::access::Access"
@@ -998,6 +992,12 @@
     "ScriptResourceRegistration": {
       "type_kind": {
         "val": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration"
+      },
+      "is_static": true
+    },
+    "Fake4": {
+      "type_kind": {
+        "val": "script_integration_test_harness::Fake4"
       },
       "is_static": true
     },
@@ -1229,9 +1229,9 @@
       },
       "is_static": true
     },
-    "PointerPress": {
+    "FunctionArgInfo": {
       "type_kind": {
-        "val": "bevy_picking::events::PointerPress"
+        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo"
       },
       "is_static": true
     },
@@ -1241,9 +1241,9 @@
       },
       "is_static": true
     },
-    "FunctionArgInfo": {
+    "PointerPress": {
       "type_kind": {
-        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo"
+        "val": "bevy_picking::events::PointerPress"
       },
       "is_static": true
     },
@@ -1469,15 +1469,15 @@
       },
       "is_static": true
     },
-    "Language": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_asset::language::Language"
-      },
-      "is_static": true
-    },
     "WindowResizeConstraints": {
       "type_kind": {
         "val": "bevy_window::window::WindowResizeConstraints"
+      },
+      "is_static": true
+    },
+    "Language": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_asset::language::Language"
       },
       "is_static": true
     },
@@ -1691,15 +1691,15 @@
       },
       "is_static": true
     },
-    "CallbackLabel": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::event::CallbackLabel"
-      },
-      "is_static": true
-    },
     "Tonemapping": {
       "type_kind": {
         "val": "bevy_render::view::Tonemapping"
+      },
+      "is_static": true
+    },
+    "CallbackLabel": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::event::CallbackLabel"
       },
       "is_static": true
     },
@@ -1721,6 +1721,12 @@
       },
       "is_static": true
     },
+    "ScriptComponentRegistration": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
+      },
+      "is_static": true
+    },
     "WindowLevel": {
       "type_kind": {
         "val": "bevy_window::window::WindowLevel"
@@ -1736,12 +1742,6 @@
     "RayCast3d": {
       "type_kind": {
         "val": "bevy_shape::bounding::raycast3d::RayCast3d"
-      },
-      "is_static": true
-    },
-    "ScriptComponentRegistration": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
       },
       "is_static": true
     },
@@ -2117,15 +2117,15 @@
       },
       "is_static": true
     },
-    "Fake2": {
-      "type_kind": {
-        "val": "script_integration_test_harness::Fake2"
-      },
-      "is_static": true
-    },
     "SliceScaleMode": {
       "type_kind": {
         "val": "bevy_sprite::texture_slice::slicer::SliceScaleMode"
+      },
+      "is_static": true
+    },
+    "Fake2": {
+      "type_kind": {
+        "val": "script_integration_test_harness::Fake2"
       },
       "is_static": true
     },
@@ -2207,6 +2207,12 @@
       },
       "is_static": true
     },
+    "CursorIcon": {
+      "type_kind": {
+        "val": "bevy_window::cursor::CursorIcon"
+      },
+      "is_static": true
+    },
     "CustomCursor": {
       "type_kind": {
         "val": "bevy_window::cursor::custom_cursor::CustomCursor"
@@ -2237,21 +2243,15 @@
       },
       "is_static": true
     },
-    "ImageCompareFunction": {
-      "type_kind": {
-        "val": "bevy_image::image::ImageCompareFunction"
-      },
-      "is_static": true
-    },
     "SimpleType": {
       "type_kind": {
         "val": "test_utils::test_data::SimpleType"
       },
       "is_static": true
     },
-    "CursorIcon": {
+    "ImageCompareFunction": {
       "type_kind": {
-        "val": "bevy_window::cursor::CursorIcon"
+        "val": "bevy_image::image::ImageCompareFunction"
       },
       "is_static": true
     },
@@ -2267,15 +2267,9 @@
       },
       "is_static": true
     },
-    "TransformGizmoSettings": {
+    "ReflectableScheduleLabel": {
       "type_kind": {
-        "val": "bevy_gizmos::transform_gizmo::TransformGizmoSettings"
-      },
-      "is_static": true
-    },
-    "Tetrahedron": {
-      "type_kind": {
-        "val": "bevy_shape::dim3::Tetrahedron"
+        "val": "bevy_system_reflection::ReflectableScheduleLabel"
       },
       "is_static": true
     },
@@ -2285,9 +2279,15 @@
       },
       "is_static": true
     },
-    "EaseFunction": {
+    "Tetrahedron": {
       "type_kind": {
-        "val": "bevy_curve::easing::EaseFunction"
+        "val": "bevy_shape::dim3::Tetrahedron"
+      },
+      "is_static": true
+    },
+    "TransformGizmoSettings": {
+      "type_kind": {
+        "val": "bevy_gizmos::transform_gizmo::TransformGizmoSettings"
       },
       "is_static": true
     },
@@ -2303,15 +2303,15 @@
       },
       "is_static": true
     },
-    "PanGesture": {
+    "EaseFunction": {
       "type_kind": {
-        "val": "bevy_input::gestures::PanGesture"
+        "val": "bevy_curve::easing::EaseFunction"
       },
       "is_static": true
     },
-    "ReflectableScheduleLabel": {
+    "PanGesture": {
       "type_kind": {
-        "val": "bevy_system_reflection::ReflectableScheduleLabel"
+        "val": "bevy_input::gestures::PanGesture"
       },
       "is_static": true
     },
@@ -2447,15 +2447,15 @@
       },
       "is_static": true
     },
-    "ScriptAttachedMessage": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::event::ScriptAttachedMessage"
-      },
-      "is_static": true
-    },
     "Strikethrough": {
       "type_kind": {
         "val": "bevy_text::text::Strikethrough"
+      },
+      "is_static": true
+    },
+    "ScriptAttachedMessage": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::event::ScriptAttachedMessage"
       },
       "is_static": true
     },
@@ -2717,6 +2717,12 @@
       },
       "is_static": true
     },
+    "Dummy": {
+      "type_kind": {
+        "val": "script_integration_test_harness::test_functions::Dummy"
+      },
+      "is_static": true
+    },
     "Instant": {
       "type_kind": {
         "val": "bevy_platform::time::Instant"
@@ -2729,21 +2735,15 @@
       },
       "is_static": true
     },
-    "DepthPrepass": {
-      "type_kind": {
-        "val": "bevy_core_pipeline::prepass::DepthPrepass"
-      },
-      "is_static": true
-    },
     "TextViewport": {
       "type_kind": {
         "val": "bevy_text::scroll::TextViewport"
       },
       "is_static": true
     },
-    "Dummy": {
+    "DepthPrepass": {
       "type_kind": {
-        "val": "script_integration_test_harness::test_functions::Dummy"
+        "val": "bevy_core_pipeline::prepass::DepthPrepass"
       },
       "is_static": true
     },
@@ -2849,15 +2849,15 @@
       },
       "is_static": true
     },
-    "VariadicTuple": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_bindings::script_value::VariadicTuple"
-      },
-      "is_static": true
-    },
     "SpotLight": {
       "type_kind": {
         "val": "bevy_light::spot_light::SpotLight"
+      },
+      "is_static": true
+    },
+    "VariadicTuple": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_bindings::script_value::VariadicTuple"
       },
       "is_static": true
     },
@@ -2915,9 +2915,9 @@
       },
       "is_static": true
     },
-    "RootNonCameraView": {
+    "ReflectSystemSet": {
       "type_kind": {
-        "val": "bevy_core_pipeline::schedule::RootNonCameraView"
+        "val": "bevy_system_reflection::ReflectSystemSet"
       },
       "is_static": true
     },
@@ -2939,9 +2939,9 @@
       },
       "is_static": true
     },
-    "ReflectSystemSet": {
+    "RootNonCameraView": {
       "type_kind": {
-        "val": "bevy_system_reflection::ReflectSystemSet"
+        "val": "bevy_core_pipeline::schedule::RootNonCameraView"
       },
       "is_static": true
     },
@@ -3047,15 +3047,15 @@
       },
       "is_static": true
     },
-    "DragEntry": {
-      "type_kind": {
-        "val": "bevy_picking::events::DragEntry"
-      },
-      "is_static": true
-    },
     "Fake1": {
       "type_kind": {
         "val": "script_integration_test_harness::Fake1"
+      },
+      "is_static": true
+    },
+    "DragEntry": {
+      "type_kind": {
+        "val": "bevy_picking::events::DragEntry"
       },
       "is_static": true
     },
@@ -3227,15 +3227,15 @@
       },
       "is_static": true
     },
-    "ScriptComponent": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::script::ScriptComponent"
-      },
-      "is_static": true
-    },
     "WindowThemeChanged": {
       "type_kind": {
         "val": "bevy_window::event::WindowThemeChanged"
+      },
+      "is_static": true
+    },
+    "ScriptComponent": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::script::ScriptComponent"
       },
       "is_static": true
     },
@@ -3287,15 +3287,15 @@
       },
       "is_static": true
     },
-    "ReflectSystemGraph": {
-      "type_kind": {
-        "val": "bevy_system_reflection::ReflectSystemGraph"
-      },
-      "is_static": true
-    },
     "AssetIndex": {
       "type_kind": {
         "val": "bevy_asset::assets::AssetIndex"
+      },
+      "is_static": true
+    },
+    "FunctionInfo": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
       },
       "is_static": true
     },
@@ -3317,9 +3317,9 @@
       },
       "is_static": true
     },
-    "FunctionInfo": {
+    "ReflectSystemGraph": {
       "type_kind": {
-        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
+        "val": "bevy_system_reflection::ReflectSystemGraph"
       },
       "is_static": true
     },
@@ -4433,15 +4433,15 @@
       },
       "is_static": true
     },
-    "FunctionReturnInfo": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo"
-      },
-      "is_static": true
-    },
     "SpotLightTexture": {
       "type_kind": {
         "val": "bevy_light::spot_light::SpotLightTexture"
+      },
+      "is_static": true
+    },
+    "TransformGizmoCamera": {
+      "type_kind": {
+        "val": "bevy_gizmos::transform_gizmo::TransformGizmoCamera"
       },
       "is_static": true
     },
@@ -4475,9 +4475,9 @@
       },
       "is_static": true
     },
-    "TransformGizmoCamera": {
+    "InteractionDisabled": {
       "type_kind": {
-        "val": "bevy_gizmos::transform_gizmo::TransformGizmoCamera"
+        "val": "bevy_ui::interaction_states::InteractionDisabled"
       },
       "is_static": true
     },
@@ -4523,9 +4523,9 @@
       },
       "is_static": true
     },
-    "InteractionDisabled": {
+    "FunctionReturnInfo": {
       "type_kind": {
-        "val": "bevy_ui::interaction_states::InteractionDisabled"
+        "val": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo"
       },
       "is_static": true
     },
@@ -4758,9 +4758,9 @@
       "namespace": "bms",
       "documentation": " A reference to a bundle type's reflection registration, i.e. a type with `ReflectBundle` type data.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::namespace",
+        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::new"
       ],
       "layout": null,
@@ -4780,9 +4780,9 @@
       "namespace": "bms",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::new"
       ],
       "layout": {
@@ -4834,9 +4834,9 @@
       "namespace": "bms",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::new"
       ],
@@ -4857,8 +4857,8 @@
       "namespace": "bms",
       "documentation": " A result from a query.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryResult::entity",
         "bevy_mod_scripting_bindings::query::ScriptQueryResult::components",
+        "bevy_mod_scripting_bindings::query::ScriptQueryResult::entity",
         "bevy_mod_scripting_bindings::query::ScriptQueryResult::new"
       ],
       "layout": null,
@@ -4878,9 +4878,9 @@
       "namespace": "bms",
       "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::new"
       ],
       "layout": {
@@ -4917,9 +4917,9 @@
       "namespace": "bms",
       "documentation": " A reference to a type which is not a `Resource` or `Component`.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace",
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::new"
       ],
       "layout": null,
@@ -4960,10 +4960,10 @@
       "namespace": "bms",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::new"
       ],
@@ -4984,10 +4984,10 @@
       "namespace": "bms",
       "documentation": " Describes the designated recipients of a script event",
       "associated_functions": [
-        "bevy_mod_scripting_script::Recipients::entity_script",
-        "bevy_mod_scripting_script::Recipients::static_script",
-        "bevy_mod_scripting_script::Recipients::all_contexts",
         "bevy_mod_scripting_script::Recipients::all_scripts",
+        "bevy_mod_scripting_script::Recipients::static_script",
+        "bevy_mod_scripting_script::Recipients::entity_script",
+        "bevy_mod_scripting_script::Recipients::all_contexts",
         "bevy_mod_scripting_script::Recipients::new"
       ],
       "layout": [
@@ -5043,8 +5043,8 @@
       "namespace": "bms",
       "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.",
       "associated_functions": [
-        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
         "bevy_mod_scripting_script::ScriptAttachment::new_entity_script",
+        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
         "bevy_mod_scripting_script::ScriptAttachment::new"
       ],
       "layout": [
@@ -5092,9 +5092,9 @@
       "namespace": "bevy_system_reflection",
       "documentation": " A reflectable schedule.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
-        "bevy_system_reflection::ReflectSchedule::render_dot",
         "bevy_system_reflection::ReflectSchedule::systems",
+        "bevy_system_reflection::ReflectSchedule::render_dot",
+        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
         "bevy_system_reflection::ReflectSchedule::new"
       ],
       "layout": {
@@ -5131,8 +5131,8 @@
       "namespace": "bevy_system_reflection",
       "documentation": " A reflectable system.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystem::path",
         "bevy_system_reflection::ReflectSystem::identifier",
+        "bevy_system_reflection::ReflectSystem::path",
         "bevy_system_reflection::ReflectSystem::new"
       ],
       "layout": null,
@@ -5455,19 +5455,19 @@
       "path": "ReflectReference",
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
-        "ReflectReference::map_get",
-        "ReflectReference::iter",
-        "ReflectReference::pop",
-        "ReflectReference::len",
-        "ReflectReference::functions",
-        "ReflectReference::variant_name",
-        "ReflectReference::display",
-        "ReflectReference::push",
-        "ReflectReference::remove",
-        "ReflectReference::debug",
-        "ReflectReference::variant",
-        "ReflectReference::clear",
         "ReflectReference::insert",
+        "ReflectReference::map_get",
+        "ReflectReference::variant_name",
+        "ReflectReference::debug",
+        "ReflectReference::remove",
+        "ReflectReference::len",
+        "ReflectReference::display",
+        "ReflectReference::functions",
+        "ReflectReference::pop",
+        "ReflectReference::variant",
+        "ReflectReference::iter",
+        "ReflectReference::clear",
+        "ReflectReference::push",
         "ReflectReference::new"
       ],
       "layout": null,
