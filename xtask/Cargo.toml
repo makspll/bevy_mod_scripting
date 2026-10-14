@@ -19,12 +19,9 @@ itertools = "0.14"
 cargo_metadata = "0.23"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-glob = "0.3"
-toml = "0.8"
 tera = "1.20"
 json_comments = "0.2"
 is-root = "0.1"
-indexmap = { version = "2", features = ["serde"] }
 regex = "1"
 
 [dev-dependencies]

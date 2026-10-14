@@ -15,7 +15,6 @@ name: CI
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: bevy-mod-scripting
-  CODEGEN_BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }}
   GH_TOKEN: ${{ github.token }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
@@ -53,7 +52,6 @@ jobs:
               - 'assets/**'
               - 'docs/**'
               - 'xtask/**'
-              - 'codegen/**'
               - '.github/workflows/bevy_mod_scripting.yml'
 
 

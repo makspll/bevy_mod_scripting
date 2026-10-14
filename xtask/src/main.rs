@@ -15,9 +15,9 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use strum::{IntoEnumIterator, VariantNames};
 use xtask::{
-    BindingCrate, Feature, FeatureGroup, Features, GlobalArgs, Meta, codegen_crate_dir,
-    main_workspace_cargo_metadata, make_system_command, prepare_codegen, read_rust_toolchain,
-    relative_workspace_dir, run_system_command, run_workspace_command, workspace_dir,
+    Feature, FeatureGroup, Features, GlobalArgs, main_workspace_cargo_metadata,
+    make_system_command, relative_workspace_dir, run_system_command, run_workspace_command,
+    workspace_dir,
 };
 
 /// Enumerates the binaries available in the project and their paths
@@ -168,22 +168,6 @@ impl App {
                     cmd.arg("--full");
                 }
             }
-            Xtasks::Codegen {
-                output_dir,
-                bevy_features,
-                list_only,
-            } => {
-                let cmd = cmd
-                    .arg("codegen")
-                    .arg("--output-dir")
-                    .arg(output_dir)
-                    .arg("--bevy-features")
-                    .arg(bevy_features.join(","));
-
-                if list_only {
-                    cmd.arg("--list-only");
-                }
-            }
             Xtasks::Example { example } => {
                 cmd.arg("example").arg(example);
             }
@@ -281,7 +265,6 @@ enum CheckKind {
     #[default]
     All,
     Main,
-    Codegen,
 }
 
 impl CheckKind {
@@ -335,22 +318,6 @@ enum InitTool {
     Bencher,
     /// `mdbook` and `mdbook-mermaid`, used by the `docs` xtask
     Mdbook,
-    /// The nightly toolchain and components used by the codegen crate, needed to check it and run `codegen`
-    CodegenToolchain,
-}
-
-fn fetch_default_bevy_features() -> String {
-    let try_dirs = vec![".", "../"];
-    let path = "codegen_bevy_features.txt";
-    for dir in &try_dirs {
-        let full_path = Path::new(dir).join(path);
-        if full_path.exists() {
-            return std::fs::read_to_string(&full_path)
-                .with_context(|| format!("Failed to read default bevy features from {full_path:?}"))
-                .unwrap();
-        }
-    }
-    panic!("Failed to find {path} in any of the tried directories: {try_dirs:?}");
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
@@ -441,23 +408,6 @@ enum Xtasks {
         #[clap(long)]
         exclude_generated_bindings: bool,
     },
-    /// Run code generation
-    Codegen {
-        /// output the generated code to the given directory
-        #[clap(long, default_value = "./target/bindings_crates/")]
-        output_dir: PathBuf,
-
-        #[clap(
-            long,
-            default_value = fetch_default_bevy_features(),
-            help = "The features to enable for the bevy crate"
-        )]
-        bevy_features: Vec<String>,
-
-        /// If set will not generate but instead print out type and debug information from the bevy crate
-        #[clap(long)]
-        list_only: bool,
-    },
     /// Build the main workspace, and then run all tests
     Test {
         /// Run tests containing the given name only
@@ -531,10 +481,6 @@ impl Xtasks {
     /// The `cargo xtask init` arguments installing only the optional tools this xtask needs when run in CI
     fn ci_init_args(&self) -> String {
         let tools: &[InitTool] = match self {
-            Xtasks::Check {
-                kind: CheckKind::All | CheckKind::Codegen,
-                ..
-            } => &[InitTool::CodegenToolchain],
             // the preprocessor tests build a book with `mdbook`
             Xtasks::Docs { .. } | Xtasks::Test { .. } => &[InitTool::Mdbook],
             Xtasks::Bencher { .. } | Xtasks::Bench { .. } => &[InitTool::Bencher],
@@ -599,17 +545,6 @@ impl Xtasks {
 
                 let json = serde_json::to_string_pretty(&rows)?;
                 return Ok(json);
-            }
-            Xtasks::Codegen {
-                output_dir,
-                bevy_features,
-                list_only,
-            } => {
-                if list_only {
-                    Self::codegen_list(app_settings, output_dir, bevy_features)
-                } else {
-                    Self::codegen(app_settings, output_dir, bevy_features)
-                }
             }
             Xtasks::Install { binary } => Self::install(app_settings, binary),
             Xtasks::Bencher { publish } => Self::bencher(app_settings, publish),
@@ -690,208 +625,11 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check_codegen_workspace(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
-        let toolchain = read_rust_toolchain(&codegen_crate_dir(&app_settings)?);
-
-        // set the working directory to the codegen crate
-        let app_settings = app_settings
-            .clone()
-            .with_workspace_dir(codegen_crate_dir(&app_settings)?)
-            .with_toolchain(toolchain)
-            .with_features(Features::new(vec![])); // TODO: support features for codegen crate if any
-
-        let mut clippy_args = vec![];
-        if ide_mode {
-            clippy_args.push("--message-format=json");
-        }
-
-        let keep_going = std::env::var(XTASK_KEEP_GOING).is_ok();
-        if !keep_going {
-            clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
-        }
-
-        run_workspace_command(
-            &app_settings,
-            "clippy",
-            "Failed to run clippy on codegen crate",
-            clippy_args,
-            None,
-            false,
-        )?;
-
-        // TODO: for now do nothing, it's difficult to get rust analyzer to accept the nightly version
-
-        Ok(())
-    }
-
-    fn codegen_list(
-        app_settings: GlobalArgs,
-        output_dir: PathBuf,
-        bevy_features: Vec<String>,
-    ) -> Result<()> {
-        let settings = prepare_codegen(app_settings, Some(output_dir), bevy_features)?;
-        run_workspace_command(
-            &settings.bevy_repo_app_settings,
-            "bms-codegen",
-            "Failed to run bms-codegen generate",
-            vec![
-                "list-types",
-                "--bms-bindings-path",
-                settings.bms_bindings_path.to_str().unwrap(),
-                "--output",
-                settings.output_dir.to_str().unwrap(),
-                "--template-args",
-                settings.template_args.as_str(),
-                "--features",
-                settings.bevy_features.join(",").as_str(),
-                "-v",
-            ],
-            Some(&settings.bevy_dir),
-            false,
-        )?;
-        Ok(())
-    }
-
-    fn codegen(
-        app_settings: GlobalArgs,
-        output_dir: PathBuf,
-        bevy_features: Vec<String>,
-    ) -> Result<()> {
-        let settings = prepare_codegen(app_settings, Some(output_dir), bevy_features)?;
-
-        run_workspace_command(
-            &settings.bevy_repo_app_settings,
-            "bms-codegen",
-            "Failed to run bms-codegen generate",
-            vec![
-                "generate",
-                "--bms-bindings-path",
-                settings.bms_bindings_path.to_str().unwrap(),
-                "--output",
-                settings.output_dir.to_str().unwrap(),
-                "--template-args",
-                settings.template_args.as_str(),
-                "--features",
-                settings.bevy_features.join(",").as_str(),
-                "-v",
-            ],
-            Some(&settings.bevy_dir),
-            false,
-        )?;
-
-        // collect
-        run_workspace_command(
-            &settings.bevy_repo_app_settings,
-            "bms-codegen",
-            "Failed to run bms-codegen generate",
-            vec![
-                "collect",
-                "--bms-bindings-path",
-                settings.bms_bindings_path.to_str().unwrap(),
-                "--output",
-                settings.output_dir.to_str().unwrap(),
-                "--template-args",
-                settings.template_args.as_str(),
-                "-v",
-            ],
-            Some(&settings.bevy_dir),
-            false,
-        )?;
-
-        // write each generated file out as a bindings crate, the generated code is left unexpanded
-        let generated_crates =
-            (std::fs::read_dir(&settings.output_dir)?).collect::<Result<Vec<_>, _>>()?;
-        let crate_names = generated_crates
-            .iter()
-            .filter(|s| {
-                s.path().is_file()
-                    && s.path().file_name().is_some_and(|name| {
-                        name != "mod.rs" && name.to_string_lossy().ends_with(".rs")
-                    })
-            })
-            .map(|s| s.path().file_stem().unwrap().to_str().unwrap().to_owned());
-
-        for entry in crate_names {
-            // finally, generate the bindings crate code and move the code in there
-
-            // get the version from the bevy workspace manifest
-            let manifest = main_workspace_cargo_metadata()?;
-            let version = manifest
-                .packages
-                .iter()
-                .find_map(|p| {
-                    if p.name.to_string() == "bevy_mod_scripting" {
-                        Some(p.version.to_string())
-                    } else {
-                        None
-                    }
-                })
-                .expect("Could not find bevy_mod_scripting package in metadata");
-
-            // find features in the corresponding meta file <crate>.json under "features" key
-            let meta_path = settings.output_dir.join(format!("{entry}.json"));
-            let meta: Meta = serde_json::from_reader(
-                std::fs::File::open(&meta_path)
-                    .with_context(|| format!("opening meta file {meta_path:?}"))?,
-            )?;
-
-            let krate = BindingCrate::new(
-                &entry,
-                &version,
-                meta.features,
-                meta.version,
-                meta.dependencies,
-            );
-            let path = relative_workspace_dir(
-                &settings.main_workspace_app_settings,
-                format!("crates/bindings/{entry}_bms_bindings/"),
-            )?;
-            krate.generate_in_dir(&path)?;
-            info!("Wrote bindings crate to {path:?}");
-
-            // copy the generated file to the bindings crate src/lib.rs
-            let dest_path = path.join("src/lib.rs");
-            // make dirs
-            std::fs::create_dir_all(dest_path.parent().unwrap()).with_context(|| {
-                format!(
-                    "creating parent directory for bindings crate lib.rs: {:?}",
-                    dest_path.parent().unwrap()
-                )
-            })?;
-            // not `std::fs::copy`, it also copies permissions which some filesystems reject
-            let generated = std::fs::read(settings.output_dir.join(format!("{entry}.rs")))?;
-            std::fs::write(&dest_path, generated).with_context(|| {
-                format!("writing generated binding file to bindings crate: {dest_path:?}")
-            })?;
-            info!("Wrote generated code to {dest_path:?}");
-        }
-
-        Ok(())
-    }
-
     fn check(app_settings: GlobalArgs, ide_mode: bool, kind: CheckKind) -> Result<()> {
-        if ide_mode && kind == CheckKind::All {
-            bail!(
-                "Ide mode should not be used with 'all' check kind, each workspace needs to have each own individual check, for toolchains to be properly supported"
-            );
-        }
-
         match kind {
-            CheckKind::All => {
-                let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
-                let err_codegen = Self::check_codegen_workspace(app_settings.clone(), ide_mode);
-
-                err_main?;
-                err_codegen?;
-            }
-            CheckKind::Main => {
-                Self::check_main_workspace(app_settings, ide_mode)?;
-            }
-            CheckKind::Codegen => {
-                Self::check_codegen_workspace(app_settings, ide_mode)?;
-            }
+            // the main workspace is the only one left
+            CheckKind::All | CheckKind::Main => Self::check_main_workspace(app_settings, ide_mode),
         }
-        Ok(())
     }
 
     fn docs(
@@ -1572,30 +1310,6 @@ impl Xtasks {
             false,
         )?;
 
-        // install nightly toolchain for bevy api gen, and its components
-        if wants(InitTool::CodegenToolchain) {
-            let toolchain = read_rust_toolchain(&codegen_crate_dir(&app_settings)?);
-            run_system_command(
-                &app_settings,
-                "rustup",
-                "Failed to install nightly toolchain",
-                vec!["toolchain", "install", toolchain.as_str()],
-                None,
-                false,
-            )?;
-
-            run_system_command(
-                &app_settings,
-                "rustup",
-                "Failed to install nightly components",
-                rustup_components_args
-                    .iter()
-                    .chain(["--toolchain", toolchain.as_str()].iter()),
-                Some(Path::new(".")),
-                false,
-            )?;
-        }
-
         // create .vscode settings
         // read from templates at compile time
         if !dont_update_ide {
@@ -1726,7 +1440,6 @@ impl Xtasks {
 /// Set them to MAIN_CARGO_<VARIABLE> so that we can reference them but so they dont get inherited by further cargo commands
 fn pop_cargo_env() -> Result<()> {
     let env = std::env::vars().collect::<Vec<_>>();
-    // RUSTUP TOOLCHAIN exclude is a temporary fix, it might make deving the api codegen crate not work
     let exclude_list = ["CARGO_HOME"];
     let include_list = []; //"LD_LIBRARY_PATH"
 

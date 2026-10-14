@@ -86,7 +86,7 @@ pub fn run_workspace_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
 
     args.push(command.to_owned());
 
-    if command != "fmt" && command != "bms-codegen" && command != "install" {
+    if command != "fmt" && command != "install" {
         // fmt doesn't care about features, workspaces or profiles
         if command != "run" {
             args.push("--workspace".to_owned());
@@ -160,11 +160,6 @@ pub fn workspace_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
     Ok(workspace_root.into())
 }
 
-pub fn codegen_crate_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
-    let workspace_dir = workspace_dir(app_settings)?;
-    Ok(workspace_dir.join("codegen"))
-}
-
 pub fn relative_workspace_dir<P: AsRef<Path>>(
     app_settings: &GlobalArgs,
     dir: P,
@@ -173,27 +168,3 @@ pub fn relative_workspace_dir<P: AsRef<Path>>(
     Ok(workspace_dir.join(dir))
 }
 
-/// reads rust-toolchain.toml file at the given directory and returns the toolchain string
-pub fn read_rust_toolchain(path: &Path) -> String {
-    let rust_toolchain_path = path.join("rust-toolchain.toml");
-
-    let rust_toolchain =
-        std::fs::read_to_string(rust_toolchain_path).expect("Could not read rust_toolchain.toml");
-
-    // parse the toml file
-    let toml: toml::Value =
-        toml::from_str(&rust_toolchain).expect("Could not parse rust_toolchain.toml");
-
-    let toolchain = toml
-        .get("toolchain")
-        .expect("Could not find toolchain in rust_toolchain.toml");
-    let channel = toolchain
-        .get("channel")
-        .expect("Could not find channel in rust_toolchain.toml");
-    let channel = channel
-        .as_str()
-        .expect("Channel in rust_toolchain.toml is not a string");
-
-    // set the toolchain
-    channel.to_string()
-}
