@@ -1,7 +1,7 @@
 //! Core globals exposed by the BMS framework
 
-use crate::{AnyTypeRegistrationV, WorldExtensions, function::from::V};
-use crate::{docgen::into_through_type_info, error::InteropError};
+use crate::function::from::V;
+use crate::docgen::into_through_type_info;
 use ::{
     bevy_app::Plugin,
     bevy_asset::Handle,
@@ -9,11 +9,8 @@ use ::{
     bevy_reflect::TypeRegistration,
 };
 use bevy_app::App;
-use bevy_log::{warn, warn_once};
+use bevy_log::warn;
 use bevy_mod_scripting_asset::ScriptAsset;
-use bevy_mod_scripting_derive::script_globals;
-use bevy_mod_scripting_world::WorldGuard;
-use bevy_platform::collections::HashMap;
 
 use super::{AppScriptGlobalsRegistry, AppScriptTypeCatalogue};
 
@@ -51,8 +48,6 @@ impl Plugin for CoreScriptGlobalsPlugin {
         if self.register_static_references {
             register_static_core_globals(app.world_mut(), self.filter);
         }
-
-        register_core_globals(app.world_mut());
     }
 }
 const MSG_DUPLICATE_GLOBAL: &str = "This can cause confusing issues for script users, use `CoreScriptGlobalsPlugin.filter` to filter out uneeded duplicate types.";
@@ -112,28 +107,6 @@ fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration)
     };
 }
 
-#[script_globals(bms_bindings_path = "crate", name = "core_globals")]
-impl CoreGlobals {
-    /// A cache of types normally available through the `world.get_type_by_name` function.
-    ///
-    /// You can use this to avoid having to store type references.
-    ///
-    /// This is a snapshot taken when the script's context is created: components registered by scripts via `register_new_component`
-    /// afterwards are not in it, use `import_namespace` to get at them.
-    ///
-    /// Deprecated in favour of `import_namespace`.
-    fn types(guard: WorldGuard) -> Result<HashMap<String, AnyTypeRegistrationV>, InteropError> {
-        let catalogue = guard.type_catalogue().clone();
-        let catalogue = catalogue.get(guard)?;
-        for name in catalogue.duplicate_short_names() {
-            warn_once!(
-                "duplicate entry inside `types` global for type: {}. {MSG_DUPLICATE_GLOBAL}",
-                name
-            )
-        }
-        Ok(catalogue.flat_view())
-    }
-}
 
 #[cfg(test)]
 mod test {
@@ -174,7 +147,6 @@ mod test {
             .read();
 
         // check that the type is not registered
-        assert!(globals.len() == 1);
-        assert!(globals.get("types").is_some());
+        assert!(globals.is_empty());
     }
 }

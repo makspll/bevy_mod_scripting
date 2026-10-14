@@ -37,7 +37,7 @@ fn pre_bench() {
     // Build the nested table.
     let instance = make_path(step_keys, 0);
     world.remove_component.call(new_entity, Component);
-    world.insert_component.call(new_entity, Component, construct.call(types.DynamicComponent, #{ "data": instance }));
+    world.insert_component.call(new_entity, Component, construct.call(world.get_type_by_name.call("DynamicComponent"), #{ "data": instance }));
     current_reference = world.get_component.call(new_entity, Component);
 };
 

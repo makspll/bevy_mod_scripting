@@ -36,7 +36,7 @@ do
 end
 
 
-local test_resource = world.get_resource(types.TestResource)
+local test_resource = world.get_resource(world.get_type_by_name("TestResource"))
 
 local expected_test_resource_debug = [[
 ReflectReference {

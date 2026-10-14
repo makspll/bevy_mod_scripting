@@ -1344,7 +1344,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 // try the script registered components
                 let components = self.component_registry();
                 let components = components.read();
-                // by full path (i.e. `script.game.Enemy`), or by name alone
+                // by full path (i.e. `script.game.Enemy`)
                 components
                     .find(&type_name)
                     .map(|c| Union::new_right(Union::new_left(c.registration.clone())))
@@ -2305,7 +2305,6 @@ mod test {
         let refreshed = catalogue.get(guard).unwrap();
         assert!(!Arc::ptr_eq(&first, &refreshed));
         assert!(refreshed.get_by_short_name("LateType").is_some());
-        assert!(refreshed.flat_view().contains_key("LateType"));
     }
 
     #[test]
@@ -2332,7 +2331,6 @@ mod test {
         let built = catalogue.get(guard.clone()).unwrap();
         let comp = built.get_by_short_name("CatalogueComp").unwrap();
         assert_eq!(comp.namespace.as_ref(), "script.test");
-        assert!(built.flat_view().contains_key("CatalogueComp"));
     }
 
     #[test]
@@ -2450,14 +2448,18 @@ mod test {
                 .is_err()
         );
 
-        // lookups work by full path, and by name alone (the alphabetically first path wins)
+        // lookups work by full path only
         let by_path = guard
             .get_type_registration_by_name("script.two.Same".to_owned())
             .unwrap();
         assert!(by_path.is_some());
+        let by_name = guard
+            .get_type_registration_by_name("Same".to_owned())
+            .unwrap();
+        assert!(by_name.is_none());
         let registry = guard.component_registry();
         let registry = registry.read();
-        assert_eq!(registry.find("Same").unwrap().namespace, "script.one");
+        assert!(registry.find("Same").is_none());
         assert_eq!(
             registry.find("script.two.Same").unwrap().namespace,
             "script.two"

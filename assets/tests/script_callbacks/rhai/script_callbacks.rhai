@@ -1,4 +1,4 @@
-// note: `world`, `entity`, `script_asset` and `types` are only visible inside callbacks, not in helper functions
+// note: `world`, `entity`, and `script_asset` are only visible inside callbacks, not in helper functions
 
 fn double(x) {
     return x * 2;
@@ -13,14 +13,14 @@ fn bounce(back_to) {
 }
 
 fn record(value) {
-    world.insert_component.call(entity, types.TestComponent, TestComponent.new_.call(#{ strings: [value] }));
+    world.insert_component.call(entity, world.get_type_by_name.call("TestComponent"), TestComponent.new_.call(#{ strings: [value] }));
 }
 
 fn on_test() {
     // the other entity running this script
     let other = ();
     let found = false;
-    for (result, i) in world.query.call().component.call(types.ScriptComponent).build.call() {
+    for (result, i) in world.query.call().component.call(world.get_type_by_name.call("ScriptComponent")).build.call() {
         let e = result.entity.call();
         if e.index.call().index.call() != entity.index.call().index.call() {
             other = e;
@@ -54,10 +54,10 @@ fn on_test() {
     queue_script_callback.call("record", own_attachment, "queued!");
     // flushing the world must not run them early
     world.spawn_.call();
-    assert(!world.has_component.call(entity, types.TestComponent), "Queued callback ran before the callback queueing it finished");
+    assert(!world.has_component.call(entity, world.get_type_by_name.call("TestComponent")), "Queued callback ran before the callback queueing it finished");
     return "ok";
 }
 
 fn on_test_post_update() {
-    return world.get_component.call(entity, types.TestComponent).strings[0];
+    return world.get_component.call(entity, world.get_type_by_name.call("TestComponent")).strings[0];
 }

@@ -13,7 +13,3 @@ assert(world.has_component(entity, Simple) == true, "Expected the nested bundle'
 local spawned = world.spawn_bundle(Bundle, TestBundle.new({}))
 assert(world.has_component(spawned, Comp) == true, "Expected spawn_bundle to spawn an entity with the bundle")
 assert(world.has_component(spawned, Simple) == true, "Expected spawn_bundle to insert the nested bundle")
-
--- the `types` table holds bundle registrations too
-local other = world.spawn_bundle(types.TestBundle, TestBundle.new({}))
-assert(world.has_component(other, Comp) == true, "Expected types.TestBundle to be a bundle registration")

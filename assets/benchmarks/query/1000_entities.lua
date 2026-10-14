@@ -2,11 +2,16 @@ local entity_a = world.spawn()
 local entity_b = world.spawn()
 local entity_c = world.spawn()
 
+local with_default = world.get_type_by_name("CompWithDefaultAndComponentData")
+local with_from_world = world.get_type_by_name("CompWithFromWorldAndComponentData")
+local tuple_struct = world.get_type_by_name("SimpleTupleStruct")
+local simple_enum = world.get_type_by_name("SimpleEnum")
+
 local components = {
-    types.CompWithDefaultAndComponentData,
-    types.CompWithFromWorldAndComponentData,
-    types.SimpleTupleStruct,
-    types.SimpleEnum,
+    with_default,
+    with_from_world,
+    tuple_struct,
+    simple_enum,
 }
 
 reseed()
@@ -25,10 +30,10 @@ end
 
 function bench() 
     for i,result in pairs(world.query()
-        :component(types.CompWithFromWorldAndComponentData)
-        :component(types.SimpleTupleStruct)
-        :with(types.SimpleEnum)
-        :without(types.CompWithDefaultAndComponentData)
+        :component(with_from_world)
+        :component(tuple_struct)
+        :with(simple_enum)
+        :without(with_default)
         :build()) do 
     
     end 

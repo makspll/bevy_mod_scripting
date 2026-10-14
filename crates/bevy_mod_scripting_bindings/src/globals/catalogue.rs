@@ -74,8 +74,6 @@ pub struct ScriptTypeCatalogue {
     entries: Vec<CatalogueEntry>,
     by_short_name: HashMap<Arc<str>, usize>,
     by_namespace: HashMap<Arc<str>, Vec<usize>>,
-    /// duplicate short names encountered while building, first one wins in lookups
-    duplicates: Vec<Arc<str>>,
 }
 
 impl ScriptTypeCatalogue {
@@ -159,11 +157,6 @@ impl ScriptTypeCatalogue {
             .collect()
     }
 
-    /// Short names which were claimed by more than one type
-    pub fn duplicate_short_names(&self) -> &[Arc<str>] {
-        &self.duplicates
-    }
-
     /// Adds an entry, returns false if the short name was already taken
     /// (the entry is still stored, but short name lookups keep resolving to the first one)
     pub fn insert(&mut self, entry: CatalogueEntry) -> bool {
@@ -177,10 +170,7 @@ impl ScriptTypeCatalogue {
                 v.insert(index);
                 true
             }
-            bevy_platform::collections::hash_map::Entry::Occupied(_) => {
-                self.duplicates.push(entry.short_name.clone());
-                false
-            }
+            bevy_platform::collections::hash_map::Entry::Occupied(_) => false,
         };
         self.entries.push(entry);
         fresh
@@ -224,15 +214,6 @@ impl ScriptTypeCatalogue {
         Ok(catalogue)
     }
 
-    /// The flat view of the catalogue keyed by short name, as exposed by the `types` global.
-    ///
-    /// Types sharing a short name resolve to the first one registered.
-    pub fn flat_view(&self) -> HashMap<String, AnyTypeRegistrationV> {
-        self.by_short_name
-            .iter()
-            .map(|(name, i)| (name.to_string(), self.entries[*i].registration.to_script()))
-            .collect()
-    }
 }
 
 struct Cached {

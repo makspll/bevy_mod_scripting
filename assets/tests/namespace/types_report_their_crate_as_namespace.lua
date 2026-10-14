@@ -1,11 +1,13 @@
 function on_test()
-    assert(types.Transform:namespace() == "bevy_transform", "got: " .. types.Transform:namespace())
-    assert(types.Entity:namespace() == "bevy_ecs", "got: " .. types.Entity:namespace())
+    local transform = world.get_type_by_name("Transform")
+    local entity = world.get_type_by_name("Entity")
+    assert(transform:namespace() == "bevy_transform", "got: " .. transform:namespace())
+    assert(entity:namespace() == "bevy_ecs", "got: " .. entity:namespace())
 
     -- BMS' own types opt in to the `bms` namespace explicitly
-    assert(types.ScriptTypeRegistration:namespace() == "bms")
-    assert(types.ScriptAttachment:namespace() == "bms")
-    assert(types.DynamicComponent:namespace() == "bms")
+    assert(world.get_type_by_name("ScriptTypeRegistration"):namespace() == "bms")
+    assert(world.get_type_by_name("ScriptAttachment"):namespace() == "bms")
+    assert(world.get_type_by_name("DynamicComponent"):namespace() == "bms")
 
     -- script components are in the namespace they were registered in
     local Comp = world.register_new_component("script.test", "NamespaceTestComp")

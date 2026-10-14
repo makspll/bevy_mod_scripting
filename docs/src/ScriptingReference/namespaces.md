@@ -13,8 +13,6 @@ Every type known to scripts lives in a namespace, by default the name of the cra
 
 `Type:namespace()` returns a type's namespace. Script registered components and events live in `script.*` namespaces, see below.
 
-> **Deprecated:** the flat `types` global. It can't tell apart types of the same name in different namespaces, and it is a snapshot taken when the script's context is created. Use `import_namespace` instead.
-
 ## Importing a namespace
 
 `import_namespace(namespace)` returns a table of the namespace's types (and, for script namespaces, events and exported functions) by short name:
