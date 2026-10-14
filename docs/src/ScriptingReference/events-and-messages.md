@@ -86,7 +86,7 @@ world.trigger(Damaged, { amount = 5 })
 
 * `register_new_event` fails if the name is taken, unless `allow_existing` (third argument) is passed.
 * Script events are global: `components` and `entities` are ignored.
-* They are not types, so `import_namespace` doesn't list them: keep the handle `register_new_event` returns.
+* Other scripts get them with `import_namespace`, i.e. `import_namespace("script.my_game").Damaged`.
 
 ## Built-in messages
 

@@ -969,6 +969,20 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 ),
             ));
         }
+        if registry.get(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a script registered component named '{path}' already exists"),
+            ));
+        }
+        if registry.get_export(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a function named '{path}' is already exported"),
+            ));
+        }
         let registration = ScriptEventRegistration { name: path.into() };
         registry.register_event(registration.clone());
         Ok(registration)
@@ -1459,6 +1473,13 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 None,
                 None,
                 format!("a function named '{path}' is already exported"),
+            ));
+        }
+        if component_registry_read.get_event(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a script registered event named '{path}' already exists"),
             ));
         }
 
@@ -2441,6 +2462,52 @@ mod test {
             registry.find("script.two.Same").unwrap().namespace,
             "script.two"
         );
+    }
+
+    #[test]
+    fn script_events_share_paths_with_components_and_exports() {
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let owner = ScriptAttachment::StaticScript(Handle::default());
+
+        guard
+            .register_script_component("script.game", "Enemy", false)
+            .unwrap();
+        guard
+            .register_script_event("script.game", "Hit", false)
+            .unwrap();
+        guard
+            .register_script_export("script.game", "spawn", "spawn_impl".into(), owner.clone())
+            .unwrap();
+
+        // every kind is rejected on the paths of the other kinds
+        assert!(
+            guard
+                .register_script_event("script.game", "Enemy", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_event("script.game", "spawn", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_component("script.game", "Hit", false)
+                .is_err()
+        );
+        assert!(
+            guard
+                .register_script_export("script.game", "Hit", "hit_impl".into(), owner)
+                .is_err()
+        );
+
+        let registry = guard.component_registry();
+        let registry = registry.read();
+        let events = registry.iter_events_in("script.game").collect::<Vec<_>>();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].0, "Hit");
+        assert!(registry.iter_events_in("script").next().is_none());
     }
 
     #[test]

@@ -29,7 +29,18 @@ function on_test()
     assert(world.has_component(entity, ai_enemy))
     assert(not world.has_component(entity, ui_enemy))
 
-    -- events are namespaced too
+    -- events are namespaced and importable too
     world.register_new_event("script.game.ai", "Hit")
     world.register_new_event("script.game.ui", "Hit")
+    assert(import_namespace("script.game.ai").Hit ~= nil, "registered events are importable")
+
+    -- a namespace with only events exists
+    world.register_new_event("script.game.events_only", "Tick")
+    assert(import_namespace("script.game.events_only").Tick ~= nil)
+
+    -- events, components and exports share paths, so they cannot collide
+    local clash = error_of(world.register_new_event, "script.game.ai", "Enemy")
+    assert(clash:find("already exists", 1, true), clash)
+    local clash2 = error_of(world.register_new_component, "script.game.ai", "Hit")
+    assert(clash2:find("already exists", 1, true), clash2)
 end

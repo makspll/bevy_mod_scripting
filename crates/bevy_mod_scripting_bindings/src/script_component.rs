@@ -213,7 +213,7 @@ impl ScriptComponentRegistry {
     /// Registers a function exported by a script.
     ///
     /// Exporting the same path again from the same script replaces the export (i.e. when a script runs again),
-    /// exporting a path another script exported, or one used by a component, is an error.
+    /// exporting a path another script exported, or one used by a component or event, is an error.
     pub fn register_export(&mut self, export: ScriptExport) -> Result<(), InteropError> {
         let path = export.path();
         if let Some(existing) = self.exports.get(&path)
@@ -224,9 +224,9 @@ impl ScriptComponentRegistry {
                 existing.owner
             )));
         }
-        if self.components.contains_key(&path) {
+        if self.components.contains_key(&path) || self.events.contains_key(&path) {
             return Err(InteropError::string(format!(
-                "cannot export `{path}`: a script registered component has that path"
+                "cannot export `{path}`: a script registered component or event has that path"
             )));
         }
         self.exports.insert(path, export);
@@ -255,9 +255,25 @@ impl ScriptComponentRegistry {
             .filter(move |e| e.namespace == namespace)
     }
 
-    /// The namespaces with at least one export, in no particular order, possibly repeated
-    pub fn export_namespaces(&self) -> impl Iterator<Item = &str> {
-        self.exports.values().map(|e| e.namespace.as_str())
+    /// Iterates over the script events of the given namespace, with their names within it
+    pub fn iter_events_in<'a>(
+        &'a self,
+        namespace: &'a str,
+    ) -> impl Iterator<Item = (&'a str, &'a ScriptEventRegistration)> {
+        self.events.iter().filter_map(move |(path, event)| {
+            // names cannot contain dots, so the namespace is everything before the last one
+            let (event_namespace, name) = path.rsplit_once('.')?;
+            (event_namespace == namespace).then_some((name, event))
+        })
+    }
+
+    /// The namespaces with at least one export or event, in no particular order, possibly repeated
+    pub fn export_and_event_namespaces(&self) -> impl Iterator<Item = &str> {
+        self.exports.values().map(|e| e.namespace.as_str()).chain(
+            self.events
+                .keys()
+                .filter_map(|p| Some(p.rsplit_once('.')?.0)),
+        )
     }
 }
 

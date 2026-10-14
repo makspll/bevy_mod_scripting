@@ -1795,11 +1795,11 @@ impl GlobalNamespace {
     unregistered
 )]
 impl GlobalNamespace {
-    /// Imports a namespace, returning a table of the types and exported functions in it by name.
+    /// Imports a namespace, returning a table of the types, events and exported functions in it by name.
     ///
     /// Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.
     /// The empty string is the root namespace, which holds types without a crate such as primitives.
-    /// Namespaces defined by scripts start with `script.`, and contain the components, bundles and functions
+    /// Namespaces defined by scripts start with `script.`, and contain the components, events and functions
     /// scripts registered or exported into them.
     ///
     /// ```lua
@@ -1808,6 +1808,7 @@ impl GlobalNamespace {
     ///
     /// local game = import_namespace("script.game")
     /// game.spawn_enemy(5)
+    /// world.trigger(game.EnemySpawned, {})
     /// ```
     ///
     /// Fails with a list of similar namespaces if the namespace does not exist.
@@ -1815,7 +1816,7 @@ impl GlobalNamespace {
     /// Arguments:
     /// * `path`: the name of the namespace to import.
     /// Returns:
-    /// * `namespace`: a table of the types and functions in the namespace keyed by name.
+    /// * `namespace`: a table of the types, events and functions in the namespace keyed by name.
     fn import_namespace(
         ctxt: FunctionCallContext,
         path: String,
@@ -1824,19 +1825,29 @@ impl GlobalNamespace {
         let world = ctxt.world()?;
         let catalogue = world.type_catalogue().clone().get(world.clone())?;
         let types = catalogue.namespace_view(&path);
-        let exports = world
-            .component_registry()
-            .read()
-            .iter_exports_in(&path)
-            .map(|e| e.name.clone())
-            .collect::<Vec<_>>();
-        if types.is_none() && exports.is_empty() {
+        let (exports, events) = {
+            let registry = world.component_registry();
+            let registry = registry.read();
+            let exports = registry
+                .iter_exports_in(&path)
+                .map(|e| e.name.clone())
+                .collect::<Vec<_>>();
+            let events = registry
+                .iter_events_in(&path)
+                .map(|(name, event)| (name.to_owned(), event.clone()))
+                .collect::<Vec<_>>();
+            (exports, events)
+        };
+        if types.is_none() && exports.is_empty() && events.is_empty() {
             return Err(namespace_not_found(&catalogue, &world, &path));
         }
 
         let mut table = HashMap::default();
         for (name, registration) in types.into_iter().flatten() {
             table.insert(name, registration.into_script(world.clone())?);
+        }
+        for (name, event) in events {
+            table.insert(name, V(event).into_script(world.clone())?);
         }
         for name in exports {
             let function = exported_function(script_path(&path, &name));
@@ -2145,7 +2156,7 @@ fn namespace_not_found(
     let export_namespaces = world
         .component_registry()
         .read()
-        .export_namespaces()
+        .export_and_event_namespaces()
         .map(str::to_owned)
         .collect::<Vec<_>>();
     let similar = catalogue.similar_namespaces_with(path, &export_namespaces);

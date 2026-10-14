@@ -17,7 +17,7 @@ Every type known to scripts lives in a namespace, by default the name of the cra
 
 ## Importing a namespace
 
-`import_namespace(namespace)` returns a table of the namespace's types (and exported functions) by short name:
+`import_namespace(namespace)` returns a table of the namespace's types (and, for script namespaces, events and exported functions) by short name:
 
 ```lua
 local bevy_transform = import_namespace("bevy_transform")
@@ -50,11 +50,13 @@ local Enemy = world.register_new_component("script.game.ai", "Enemy")
 local Hit = world.register_new_event("script.game.ai", "Hit")
 
 -- anywhere, including other scripts
-world.add_default_component(entity, import_namespace("script.game.ai").Enemy)
+local ai = import_namespace("script.game.ai")
+world.add_default_component(entity, ai.Enemy)
+world.trigger(ai.Hit, { damage = 3 })
 ```
 
-* Names are unique within a namespace: `script.game.ai.Enemy` and `script.game.ui.Enemy` are different components.
-* Registering a taken name is an error, unless `allow_existing` is passed (which returns the existing registration, useful for scripts which run again).
+* Names are unique within a namespace, across components, events and exports: `script.game.ai.Enemy` and `script.game.ui.Enemy` are different components.
+* Registering a taken name is an error. `allow_existing` returns the existing registration instead, which is useful for scripts which run again.
 * A script namespace exists once something is registered or exported into it.
 * Components and events stay registered when their script unloads, as Bevy cannot unregister components.
 
