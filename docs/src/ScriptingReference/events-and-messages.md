@@ -44,13 +44,11 @@ app.register_type::<MyEvent>()
 ## Things to be aware of
 
 * `trigger_event` needs exclusive access to the world, so it fails with an access error if the script is currently holding a borrowed reference elsewhere in the same call (e.g. inside a query iteration or `with_*` access). Trigger events from regular callbacks.
-* Observers triggered by `trigger_event` run synchronously, and the commands they queue are applied before `trigger_event` returns, like for other operations such as spawning or inserting components. This is also how callbacks of script observers (see below) are delivered: a script observer whose script context is the one currently executing does not fail, its callback instead runs as soon as the executing callback finishes. This only applies to script observers, a Rust observer or command which runs a callback in the executing context directly still fails with an error. To run callbacks on other scripts yourself, use `run_script_callback` or `queue_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)).
+* Observers run before `trigger_event` returns, and so do the commands they queue (as for other operations such as spawning). A Rust observer or command which runs a callback in the currently executing script context fails with an error. Use `run_script_callback` or `queue_script_callback` instead (see [Calling Other Scripts](./calling-other-scripts.md)).
 
 ## Observing events from scripts
 
-`world.add_observer(event, callback, components?, entities?)` spawns an observer which runs the callback named `callback` on the calling script, with a copy of the event as argument, whenever an event of the given type is triggered. It returns the observer entity, despawn it to remove the observer.
-
-The callback is a normal script callback, i.e. a function registered with `register_callback`, or a top level function of that name:
+`world.add_observer(event, callback, components?, entities?)` runs the calling script's callback `callback` (registered with `register_callback`, or a top level function of that name) with a copy of the event, whenever the event is triggered. It returns the observer entity: despawn it to remove the observer.
 
 ```lua
 local bevy_ecs = import_namespace("bevy_ecs")
@@ -61,25 +59,19 @@ register_callback("on_mana_added", function(event)
 end)
 
 local observer = world.add_observer(bevy_ecs.AddEvent, "on_mana_added", { Mana })
-
--- later
-world.despawn(observer)
+world.despawn(observer) -- later
 ```
 
-The component lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent` and `DespawnEvent` are observable out of the box, for any native or script registered component. They live in the `bevy_ecs` namespace. As in Bevy, a list of components is an `OR` filter. Pass a list of entities as the last argument to only observe those entities. Custom events need `#[reflect(Event)]`, see above.
-
-Observer callbacks run through the same machinery as every other callback (see [Calling Other Scripts](./calling-other-scripts.md)):
-
-* They run right after the operation which triggered the event, once the other observers of that operation have been notified. The order in which observers of one event run is unspecified, as in Bevy.
-* If the script's context is busy running another callback, e.g. the one that triggered the event (all scripts sharing a context count too), the callback instead runs as soon as that callback finishes. Observers can therefore never re-enter a running script, and whether a callback ran immediately or later can depend on the context policy, so do not rely on either.
-* The world is already past the change: data of removed components is no longer readable inside `RemoveEvent` callbacks.
-* They get the same setup as other callbacks, such as the script's globals and its current attachment.
-* Errors are reported like those of any other callback (as `ScriptErrorMessage`s, which are logged by default), and do not fail the operation that triggered the event.
-* `add_observer` can only be called from a script callback.
+* The lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent` and `DespawnEvent` (in `bevy_ecs`) work for any native or script component. Other events need `#[reflect(Event)]`.
+* As in Bevy, `components` is an `OR` filter, and `entities` restricts the observer to those entities.
+* Callbacks run right after the triggering operation, in unspecified order. If the script's context is busy (e.g. it triggered the event), the callback runs as soon as the busy callback finishes, so observers never re-enter a running script.
+* The world is already past the change: removed component data can't be read in `RemoveEvent` callbacks.
+* Errors are reported like those of other callbacks (`ScriptErrorMessage`), and don't fail the triggering operation.
+* `add_observer` only works inside a script callback.
 
 ## Script defined events
 
-Scripts can define their own events, carrying any value as payload:
+Scripts can define events carrying any value:
 
 ```lua
 local Damaged = world.register_new_event("script.my_game", "Damaged")
@@ -89,11 +81,12 @@ register_callback("on_damaged", function(payload)
 end)
 
 world.add_observer(Damaged, "on_damaged")
-
 world.trigger(Damaged, { amount = 5 })
 ```
 
-`register_new_event` fails if the name is taken, unless `allow_existing` is passed as the third argument (this is useful if the script runs more than once). Script events are global: they are not targeted at entities, and ignore the `components` and `entities` arguments of `add_observer`. The observers' callbacks run as described above. Script events are not types, so `import_namespace` does not list them: keep the handle returned by `register_new_event` (or get it again with `allow_existing`).
+* `register_new_event` fails if the name is taken, unless `allow_existing` (third argument) is passed.
+* Script events are global: `components` and `entities` are ignored.
+* They are not types, so `import_namespace` doesn't list them: keep the handle `register_new_event` returns.
 
 ## Built-in messages
 
