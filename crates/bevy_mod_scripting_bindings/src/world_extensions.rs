@@ -1810,22 +1810,14 @@ mod test {
         guard: &WorldAccessGuard<'_>,
     ) -> ScriptComponentRegistration {
         guard
-            .get_component_type(
-                guard
-                    .get_type_by_name(std::any::type_name::<C>())
-                    .unwrap(),
-            )
+            .get_component_type(guard.get_type_by_name(std::any::type_name::<C>()).unwrap())
             .unwrap()
             .unwrap()
     }
 
     fn res_reg<R: Resource + Reflect>(guard: &WorldAccessGuard<'_>) -> ScriptResourceRegistration {
         guard
-            .get_resource_type(
-                guard
-                    .get_type_by_name(std::any::type_name::<R>())
-                    .unwrap(),
-            )
+            .get_resource_type(guard.get_type_by_name(std::any::type_name::<R>()).unwrap())
             .unwrap()
             .unwrap()
     }
