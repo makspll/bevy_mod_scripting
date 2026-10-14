@@ -1758,6 +1758,42 @@ mod test {
         assert!(guard.component_registry().read().get("MyDynComp").is_some());
     }
 
+    #[test]
+    fn script_component_insert_moves_value_into_entity() {
+        use bevy_reflect::structs::Struct;
+
+        let mut world = setup_world(|_, _| {});
+        let guard = make_guard(&mut world);
+        let registration = guard
+            .register_script_component("MyDynComp".to_owned())
+            .unwrap();
+        let entity = guard.spawn().unwrap();
+
+        let mut component = DynamicComponent::default();
+        *component
+            .field_mut("data")
+            .and_then(|f| f.try_downcast_mut::<ScriptValue>())
+            .unwrap() = ScriptValue::String("hello".into());
+        registration
+            .insert_into_entity(guard.clone(), entity, Box::new(component))
+            .unwrap();
+
+        let data = guard
+            .with_world_mut(|world| {
+                let ptr = world.get_by_id(entity, registration.component_id).unwrap();
+                // Safety: script components are always backed by `DynamicComponent`
+                let component = unsafe { ptr.deref::<DynamicComponent>() };
+                component
+                    .field("data")
+                    .and_then(|f| f.try_downcast_ref::<ScriptValue>())
+                    .cloned()
+            })
+            .unwrap();
+        assert!(matches!(data, Some(ScriptValue::String(s)) if s == "hello"));
+
+        guard.despawn(entity).unwrap();
+    }
+
     // ── query ─────────────────────────────────────────────────────────────────
 
     #[test]
