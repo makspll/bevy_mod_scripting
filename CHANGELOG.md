@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.22.0...v0.23.0) - 2026-10-14
+
+### Added
+
+- script observers and script defined events, `<run/queue>_script_callback` added ([#612](https://github.com/makspll/bevy_mod_scripting/pull/612))
+- [**breaking**] script namespaces, a shared type catalogue, import_namespace and export_namespace ([#611](https://github.com/makspll/bevy_mod_scripting/pull/611))
+- insert_bundle and spawn_bundle for reflected Rust bundles ([#609](https://github.com/makspll/bevy_mod_scripting/pull/609))
+- [**breaking**] add `run_script_callback` and `queue_script_callback` bindings, allowing scripts to call each other and return values flexibly ([#575](https://github.com/makspll/bevy_mod_scripting/pull/575))
+- [**breaking**] language agnostic script callback runners ([#572](https://github.com/makspll/bevy_mod_scripting/pull/572))
+- [**breaking**] describe constructors and enum variants in generated script definitions ([#566](https://github.com/makspll/bevy_mod_scripting/pull/566))
+- shared `new` constructors on every type and enum variant referenced function lookups ([#564](https://github.com/makspll/bevy_mod_scripting/pull/564))
+- support triggering `events` and sending `messages` from new script bindings ([#561](https://github.com/makspll/bevy_mod_scripting/pull/561))
+
+### Fixed
+
+- free the box allocation when inserting script components ([#608](https://github.com/makspll/bevy_mod_scripting/pull/608))
+- [**breaking**] make nested script callbacks safe and error on context re-entry ([#569](https://github.com/makspll/bevy_mod_scripting/pull/569))
+- always run `on_script_reloaded` after `on_script_loaded` ([#571](https://github.com/makspll/bevy_mod_scripting/pull/571))
+- [**breaking**] Improve naming and consistency in processing pipeline related functions  ([#560](https://github.com/makspll/bevy_mod_scripting/pull/560))
+- rare ordering bug in `Vec<T>` iteration from lua ([#558](https://github.com/makspll/bevy_mod_scripting/pull/558))
+
+### Refactored
+
+- [**breaking**] rename ScriptCallbackEvent to ScriptCallbackMessage ([#576](https://github.com/makspll/bevy_mod_scripting/pull/576))
+- add `CurrentScriptAttachment::empty` for guards without a running script ([#573](https://github.com/makspll/bevy_mod_scripting/pull/573))
+- name the type registration union and add instance and reserved function lookups ([#563](https://github.com/makspll/bevy_mod_scripting/pull/563))
+
 ## [0.22.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.21.1...v0.22.0) - 2026-10-11
 
 ### Added

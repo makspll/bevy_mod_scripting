@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.22.0...lua_language_server_lad_backend-v0.23.0) - 2026-10-14
+
+### Added
+
+- [**breaking**] script namespaces, a shared type catalogue, import_namespace and export_namespace ([#611](https://github.com/makspll/bevy_mod_scripting/pull/611))
+- [**breaking**] describe constructors and enum variants in generated script definitions ([#566](https://github.com/makspll/bevy_mod_scripting/pull/566))
+
 ## [0.22.0](https://github.com/makspll/bevy_mod_scripting/compare/lua_language_server_lad_backend-v0.21.1...lua_language_server_lad_backend-v0.22.0) - 2026-10-11
 
 ### Added

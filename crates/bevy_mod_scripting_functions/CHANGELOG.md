@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.22.0...bevy_mod_scripting_functions-v0.23.0) - 2026-10-14
+
+### Added
+
+- script observers and script defined events, `<run/queue>_script_callback` added ([#612](https://github.com/makspll/bevy_mod_scripting/pull/612))
+- [**breaking**] script namespaces, a shared type catalogue, import_namespace and export_namespace ([#611](https://github.com/makspll/bevy_mod_scripting/pull/611))
+- insert_bundle and spawn_bundle for reflected Rust bundles ([#609](https://github.com/makspll/bevy_mod_scripting/pull/609))
+- [**breaking**] add `run_script_callback` and `queue_script_callback` bindings, allowing scripts to call each other and return values flexibly ([#575](https://github.com/makspll/bevy_mod_scripting/pull/575))
+- shared `new` constructors on every type and enum variant referenced function lookups ([#564](https://github.com/makspll/bevy_mod_scripting/pull/564))
+- support triggering `events` and sending `messages` from new script bindings ([#561](https://github.com/makspll/bevy_mod_scripting/pull/561))
+
+### Refactored
+
+- name the type registration union and add instance and reserved function lookups ([#563](https://github.com/makspll/bevy_mod_scripting/pull/563))
+
 ## [0.22.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.21.1...bevy_mod_scripting_functions-v0.22.0) - 2026-10-11
 
 ### Added
