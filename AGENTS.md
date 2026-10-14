@@ -6,7 +6,7 @@ Multi-language scripting for Bevy (Lua, Rhai, Rune). Scripts are Bevy assets; th
 * `src/` — facade crate re-exporting the others behind feature flags (language, per-Bevy-crate bindings).
 * `crates/bevy_mod_scripting_{asset,script,core,world,bindings,bindings_domain,functions,display,derive}` — language-agnostic layers: assets/language ids, script lifecycle + callbacks + script systems (`core`), safe dynamic world access (`world`), value/reference/function/conversion machinery (`bindings`), registered global functions (`functions`).
 * `crates/languages/*` — one crate per language backend, implementing the core plugin traits.
-* `crates/bindings/*_bms_bindings` — per-Bevy-crate bindings. They were originally generated, but codegen has been removed (see the "Abandoning Codegen" RFC), so they are plain source now and are edited by hand.
+* `crates/bindings/*_bms_bindings` — per-Bevy-crate bindings. They were originally generated, but codegen has been removed (see the "Abandoning Codegen" RFC), so they are plain source now and are edited by hand. They are being replaced by hand-written `crates/bindings/bevy_mod_scripting_bevy_<category>_bindings` crates, grouped by functionality; conventions (what to bind, docs, `multi-lang-example` blocks, tests under `assets/tests/bindings/<category>/`) are in `docs/src/Development/writing-bindings.md`.
 * `crates/ladfile*`, `crates/lad_backends/*` — LAD (Language Agnostic Declaration) JSON describing exported types/functions, plus backends (Lua language server files, mdbook docs).
 * `crates/testing_crates`, `tests/` — script integration test harness; tests are driven by script files/scenarios.
 * `xtask/` — all CI/dev tasks (build, check, test, docs); also a separate workspace. Prefer it over ad-hoc scripts.

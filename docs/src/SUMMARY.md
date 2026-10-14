@@ -56,6 +56,7 @@
 
 - [Introduction](./Development/introduction.md)
     - [Setup](./Development/setup.md) 
+    - [Writing Bindings](./Development/writing-bindings.md)
 - [New Languages](./Development/AddingLanguages/introduction.md)
     - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
     - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
