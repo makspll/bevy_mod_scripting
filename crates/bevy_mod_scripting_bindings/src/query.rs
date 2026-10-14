@@ -48,6 +48,8 @@ pub struct ScriptComponentRegistration {
     pub component_id: ComponentId,
     /// whether this is a component registered BY a script
     pub is_dynamic_script_component: bool,
+    /// the script namespace the component was registered in, if registered by a script
+    pub script_namespace: Option<String>,
 }
 
 #[derive(Clone, Reflect, Debug)]
@@ -136,6 +138,22 @@ impl ScriptTypeRegistration {
         self.registration.type_info().type_id()
     }
 
+    /// Returns the script namespace of the type.
+    ///
+    /// This is the namespace set with [`ScriptNamespace`](crate::ScriptNamespace) type data if any,
+    /// otherwise the name of the crate defining the type, or the empty string (the root namespace) for types without one, such as primitives.
+    pub fn namespace(&self) -> &str {
+        match self.registration.data::<crate::ScriptNamespace>() {
+            Some(namespace) => namespace.0.as_ref(),
+            None => self
+                .registration
+                .type_info()
+                .type_path_table()
+                .crate_name()
+                .unwrap_or(""),
+        }
+    }
+
     /// Returns the [`TypeRegistration`] for this type.
     pub fn type_registration(&self) -> &TypeRegistration {
         &self.registration
@@ -178,6 +196,18 @@ impl ScriptComponentRegistration {
                 == std::any::TypeId::of::<DynamicComponent>(),
             registration,
             component_id,
+            script_namespace: None,
+        }
+    }
+
+    /// Returns the script namespace of the component, see [`ScriptTypeRegistration::namespace`].
+    ///
+    /// Components registered by scripts are in the namespace they were registered in, not in the namespace of the type backing them.
+    pub fn namespace(&self) -> &str {
+        match (&self.script_namespace, self.is_dynamic_script_component) {
+            (Some(namespace), _) => namespace,
+            (None, true) => "",
+            (None, false) => self.registration.namespace(),
         }
     }
 
@@ -272,6 +302,11 @@ impl ScriptComponentRegistration {
 
 #[profiling::all_functions]
 impl ScriptBundleRegistration {
+    /// Returns the script namespace of the bundle, see [`ScriptTypeRegistration::namespace`].
+    pub fn namespace(&self) -> &str {
+        self.registration.namespace()
+    }
+
     /// Creates a new [`ScriptBundleRegistration`] from a [`ScriptTypeRegistration`].
     pub fn new(registration: ScriptTypeRegistration) -> Self {
         Self { registration }

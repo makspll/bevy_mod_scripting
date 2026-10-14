@@ -31,7 +31,7 @@ Retrieves a loaded asset by its handle and returns a reflected reference to it.
 **Parameters:**
 
 - `handle`: A reflected reference to an asset handle  
-- `asset_type`: The type registration of the asset (e.g., `types.Image`, `types.Mesh`)
+- `asset_type`: The type registration of the asset (e.g., `import_namespace("bevy_image").Image`, `import_namespace("bevy_mesh").Mesh`)
 
 **Returns:**
 

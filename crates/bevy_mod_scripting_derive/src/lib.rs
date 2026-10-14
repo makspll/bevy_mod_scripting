@@ -39,6 +39,7 @@ pub fn from_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// - `unregistered`: If set, will use `new_unregistered` instead of `new` for the namespace builder
 /// - `core`: If set, marks the type as `core` using the `MarkAsCore` type data
 /// - `significant`: If set, marks the type as `significant` using the `MarkAsSignificant` type data
+/// - `namespace`: If set, puts the type in the given script namespace instead of the one named after its crate, using the `ScriptNamespace` type data. If the type is already in another namespace a warning is logged and the first one wins
 /// - `use_dummy_registry`: If true will register into the [`bevy_mod_scripting_bindings::function::DummyScriptFunctionRegistry`] instead of the full one. This is useful for documenting functions without actually making them available, if you're exposing them another way.
 ///
 /// It is encouraged to place `significant` markers on your own types, for the purposes of documentation generation.

@@ -1,4 +1,4 @@
-local NewComponent = world.register_new_component("ScriptComponentA")
+local NewComponent = world.register_new_component("script.test", "ScriptComponentA")
 local entity = world.spawn()
 
 assert(world.has_component(entity, NewComponent) == false, "Entity should not have component")

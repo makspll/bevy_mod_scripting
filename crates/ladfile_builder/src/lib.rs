@@ -7,7 +7,7 @@ use bevy_ecs::{
 };
 use bevy_log::warn;
 use bevy_mod_scripting_bindings::{
-    MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference, ScriptValue,
+    MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference, ScriptNamespace, ScriptValue,
     docgen::{
         TypedThrough,
         info::FunctionInfo,
@@ -209,6 +209,7 @@ impl<'t> LadFileBuilder<'t> {
             LadTypeDefinition {
                 identifier: type_ident.clone(),
                 crate_: None,
+                namespace: String::new(),
                 path: type_ident,
                 generics: vec![],
                 documentation: Some(docs.into().to_string()),
@@ -326,6 +327,8 @@ impl<'t> LadFileBuilder<'t> {
             LadTypeDefinition {
                 identifier,
                 crate_: crate_.map(|s| s.to_owned()),
+                // types which are not reflected cannot be imported by scripts
+                namespace: String::new(),
                 path,
                 generics: vec![],
                 documentation: Some(documentation.trim().to_owned()),
@@ -403,6 +406,16 @@ impl<'t> LadFileBuilder<'t> {
                 .type_path_table()
                 .crate_name()
                 .map(|s| s.to_owned()),
+            namespace: registration
+                .and_then(|r| r.data::<ScriptNamespace>())
+                .map(|n| n.0.to_string())
+                .or_else(|| {
+                    type_info
+                        .type_path_table()
+                        .crate_name()
+                        .map(|s| s.to_owned())
+                })
+                .unwrap_or_default(),
             path: type_info.type_path_table().path().to_owned(),
             layout: self.lad_layout_from_type_info(type_info),
             generated,

@@ -41,6 +41,7 @@
       "identifier": "PlainStructType",
       "crate": "ladfile_builder",
       "path": "ladfile_builder::test::PlainStructType",
+      "namespace": "ladfile_builder",
       "documentation": " I am a simple plain struct type",
       "associated_functions": [
         "ladfile_builder::test::PlainStructType::plain_struct_function"
@@ -71,6 +72,7 @@
       "identifier": "GenericStructType",
       "crate": "ladfile_builder",
       "path": "ladfile_builder::test::GenericStructType<usize>",
+      "namespace": "ladfile_builder",
       "generics": [
         {
           "type_id": "Usize",
@@ -464,6 +466,7 @@
       "identifier": "EnumType",
       "crate": "ladfile_builder",
       "path": "ladfile_builder::test::EnumType",
+      "namespace": "ladfile_builder",
       "layout": [
         {
           "kind": "Unit",
@@ -514,6 +517,7 @@
       "identifier": "TupleStructType",
       "crate": "ladfile_builder",
       "path": "ladfile_builder::test::TupleStructType",
+      "namespace": "ladfile_builder",
       "documentation": " I am a tuple test type",
       "layout": {
         "kind": "TupleStruct",
@@ -546,6 +550,7 @@
       "identifier": "UnitType",
       "crate": "ladfile_builder",
       "path": "ladfile_builder::test::UnitType",
+      "namespace": "ladfile_builder",
       "documentation": " I am a unit test type",
       "layout": {
         "kind": "Struct",

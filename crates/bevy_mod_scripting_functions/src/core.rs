@@ -12,9 +12,10 @@ use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
     ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple,
-    WorldExtensions,
+    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeCatalogue, ScriptTypeRegistration,
+    Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
+    function::into::IntoScript,
     function::{
         bound::BoundFields,
         from::{FromScript, R, V},
@@ -22,6 +23,7 @@ use bevy_mod_scripting_bindings::{
         into_ref::IntoScriptRef,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
+    script_path,
     script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
@@ -30,6 +32,8 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
+use bevy_mod_scripting_world::WorldGuard;
+use bevy_platform::collections::HashMap;
 use bevy_reflect::PartialReflect;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 
@@ -610,16 +614,22 @@ impl World {
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `name`: The name of the component type
+    /// * `namespace`: The script namespace to register the component in, it must start with `script.`, i.e. `script.my_game`. Scripts cannot add to other namespaces.
+    /// * `name`: The name of the component type, unique within the namespace. The component can later be found as `import_namespace(namespace).name`.
+    /// * `allow_existing`: If true, returns the registration of the already registered component with this name instead of failing. Defaults to false.
     /// Returns:
     /// * `registration`: The registration of the new component type if successful.
     fn register_new_component(
         ctxt: FunctionCallContext,
+        namespace: String,
         name: String,
+        allow_existing: Option<bool>,
     ) -> Result<V<ScriptComponentRegistration>, InteropError> {
         profiling::function_scope!("register_new_component");
         let world = ctxt.world()?;
-        world.register_script_component(name).map(V)
+        world
+            .register_script_component(&namespace, &name, allow_existing.unwrap_or(false))
+            .map(V)
     }
 
     /// Retrieves an asset by its handle and asset type registration.
@@ -660,7 +670,8 @@ impl World {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "reflect_reference_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ReflectReference {
     /// If this is an enum, returns a reference to the variant it is currently in.
@@ -1008,7 +1019,8 @@ impl ReflectReference {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "enum_variant_ref_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl EnumVariantRef {
     /// Retrieves the name of the variant.
@@ -1050,7 +1062,8 @@ impl EnumVariantRef {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_type_registration_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptTypeRegistration {
     /// Retrieves the name of the type.
@@ -1074,13 +1087,26 @@ impl ScriptTypeRegistration {
         profiling::function_scope!("short_name");
         registration.short_name().to_string()
     }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptTypeRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
+    }
 }
 
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_component_registration_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptComponentRegistration {
     /// Retrieves the name of the type.
@@ -1104,13 +1130,26 @@ impl ScriptComponentRegistration {
         profiling::function_scope!("short_name");
         registration.type_registration().short_name()
     }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptComponentRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
+    }
 }
 
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_resource_registration_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptResourceRegistration {
     /// Retrieves the name of the type.
@@ -1134,13 +1173,26 @@ impl ScriptResourceRegistration {
         profiling::function_scope!("short_name");
         registration.type_registration().short_name()
     }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptResourceRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.type_registration().namespace().to_owned()
+    }
 }
 
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_bundle_registration_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptBundleRegistration {
     /// Retrieves the name of the type.
@@ -1164,13 +1216,26 @@ impl ScriptBundleRegistration {
         profiling::function_scope!("short_name");
         registration.type_registration().short_name()
     }
+
+    /// Retrieves the script namespace of the type, by default the name of the crate defining it.
+    /// Types in the root namespace have the empty string as namespace.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `namespace`: The namespace of the type.
+    fn namespace(registration: R<ScriptBundleRegistration>) -> String {
+        profiling::function_scope!("namespace");
+        registration.namespace().to_owned()
+    }
 }
 
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_builder_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptQueryBuilder {
     /// Adds a component to be retrieved by the query
@@ -1248,7 +1313,8 @@ impl ScriptQueryBuilder {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_result_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptQueryResult {
     /// Retrieves the entity from the query result.
@@ -1380,7 +1446,8 @@ impl ReflectSystem {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_system_builder_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptSystemBuilder {
     /// Adds a query to the system builder.
@@ -1466,7 +1533,8 @@ impl ScriptSystemBuilder {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_attachment_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl ScriptAttachment {
     /// Creates a new script attachment descriptor from a script asset.
@@ -1505,7 +1573,8 @@ impl ScriptAttachment {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "recipients_functions",
-    core
+    core,
+    namespace = "bms"
 )]
 impl Recipients {
     /// Targets every loaded script, once per script even if scripts share a context.
@@ -1623,6 +1692,98 @@ impl GlobalNamespace {
     unregistered
 )]
 impl GlobalNamespace {
+    /// Imports a namespace, returning a table of the types and exported functions in it by name.
+    ///
+    /// Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.
+    /// The empty string is the root namespace, which holds types without a crate such as primitives.
+    /// Namespaces defined by scripts start with `script.`, and contain the components and functions
+    /// scripts registered or exported into them.
+    ///
+    /// ```lua
+    /// local bevy_transform = import_namespace("bevy_transform")
+    /// local transform = bevy_transform.Transform
+    ///
+    /// local game = import_namespace("script.game")
+    /// game.spawn_enemy(5)
+    /// ```
+    ///
+    /// Fails with a list of similar namespaces if the namespace does not exist.
+    ///
+    /// Arguments:
+    /// * `path`: the name of the namespace to import.
+    /// Returns:
+    /// * `namespace`: a table of the types and functions in the namespace keyed by name.
+    fn import_namespace(
+        ctxt: FunctionCallContext,
+        path: String,
+    ) -> Result<ScriptValue, InteropError> {
+        profiling::function_scope!("import_namespace");
+        let world = ctxt.world()?;
+        let catalogue = world.type_catalogue().clone().get(world.clone())?;
+        let types = catalogue.namespace_view(&path);
+        let exports = world
+            .component_registry()
+            .read()
+            .iter_exports_in(&path)
+            .map(|e| e.name.clone())
+            .collect::<Vec<_>>();
+        if types.is_none() && exports.is_empty() {
+            return Err(namespace_not_found(&catalogue, &world, &path));
+        }
+
+        let mut table = HashMap::default();
+        for (name, registration) in types.into_iter().flatten() {
+            table.insert(name, registration.into_script(world.clone())?);
+        }
+        for name in exports {
+            let function = exported_function(script_path(&path, &name));
+            table.insert(name, ScriptValue::Function(function));
+        }
+        Ok(ScriptValue::Map(table))
+    }
+
+    /// Exports a callback of the calling script as a function in a script namespace, so that any script (in any language) can call it.
+    ///
+    /// The callback is a normal script callback: either a function registered with `register_callback`, or a top level function with that name.
+    /// Calls run in the exporting script, through the same machinery as other callbacks, and return what the callback returns.
+    /// Only functions can be exported, share plain data by returning it from a function.
+    ///
+    /// ```lua
+    /// register_callback("spawn_enemy_impl", function(health)
+    ///     return world.spawn()
+    /// end)
+    /// export_namespace("script.game", "spawn_enemy", "spawn_enemy_impl")
+    ///
+    /// -- in another script, once the first one has run
+    /// local entity = import_namespace("script.game").spawn_enemy(5)
+    /// ```
+    ///
+    /// Exporting the same name again from the same script replaces the export, as happens when a script runs again.
+    /// A script cannot call its own exports (or those of scripts sharing its context) from inside its own callbacks, as the context is busy,
+    /// that fails with an error.
+    ///
+    /// Arguments:
+    /// * `namespace`: the script namespace to export into, it must start with `script.`.
+    /// * `name`: the name of the function within the namespace.
+    /// * `callback`: the label of the callback of this script to export.
+    /// Returns:
+    /// * `result`: Nothing if the function was exported.
+    fn export_namespace(
+        ctxt: FunctionCallContext,
+        namespace: String,
+        name: String,
+        callback: String,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("export_namespace");
+        let world = ctxt.world()?;
+        let owner = world.current_attachment().0.ok_or_else(|| {
+            InteropError::string(
+                "Cannot export a function outside of a script callback, as it needs a script to run it in".to_owned(),
+            )
+        })?;
+        world.register_script_export(&namespace, &name, callback, owner)
+    }
+
     /// Attempts to construct the given type, given an arbitrary map of values.
     ///
     /// Unlike `Type.new`, this works for every type, including ones with a `new` function of their own.
@@ -1858,4 +2019,51 @@ pub fn register_core_functions(app: &mut App) {
         register_global_namespace_functions(world);
         register_global_namespace_dummy_functions(world);
     }
+}
+
+/// Builds the error for importing a namespace which does not exist.
+fn namespace_not_found(
+    catalogue: &ScriptTypeCatalogue,
+    world: &WorldGuard,
+    path: &str,
+) -> InteropError {
+    let mut message = format!("namespace \"{path}\" does not exist.");
+    if path.starts_with("script.") {
+        message.push_str(
+            " Script namespaces only exist once a loaded script has registered or exported something into them, \
+            make sure that script has loaded and run before importing it.",
+        );
+    } else {
+        message.push_str(
+            " Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), \
+            and only contain types registered in the type registry: check that the crate's bindings plugin is added and the type is registered.",
+        );
+    }
+    let export_namespaces = world
+        .component_registry()
+        .read()
+        .export_namespaces()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    let similar = catalogue.similar_namespaces_with(path, &export_namespaces);
+    if !similar.is_empty() {
+        message.push_str(&format!(" Did you mean: {}?", similar.join(", ")));
+    }
+    InteropError::string(message)
+}
+
+/// A function calling the function with the given full path exported by a script, in the script that exported it.
+///
+/// The export is looked up on every call, so it picks up replacements, and fails clearly if the export is gone.
+fn exported_function(path: String) -> DynamicScriptFunction {
+    (move |ctxt: FunctionCallContext, args: VecDeque<ScriptValue>| -> ScriptValue {
+        match ctxt
+            .world()
+            .and_then(|world| world.call_script_export(&path, Vec::from(args)))
+        {
+            Ok(value) => value,
+            Err(error) => ScriptValue::Error(error),
+        }
+    })
+    .into()
 }

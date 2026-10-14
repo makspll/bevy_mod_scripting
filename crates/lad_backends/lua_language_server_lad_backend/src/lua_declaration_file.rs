@@ -346,6 +346,7 @@ pub struct TypeInstance {
     pub name: String,
     pub definition: LuaType,
     pub description: Option<String>,
+    pub deprecated: bool,
 }
 
 // Module and file-level definitions
