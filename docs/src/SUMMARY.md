@@ -42,6 +42,7 @@
 - [Introduction](./ScriptingReference/introduction.md)
 - [Constructing Arbitrary Types](./ScriptingReference/constructing-arbitrary-types.md)
 - [Events and Messages](./ScriptingReference/events-and-messages.md)
+- [Bundles](./ScriptingReference/bundles.md)
 - [Calling Other Scripts](./ScriptingReference/calling-other-scripts.md)
 - [Core Bindings](./ladfiles/bindings.lad.json)
 - [Core Callbacks](./ScriptingReference/core-callbacks.md)
