@@ -5,19 +5,24 @@ use bevy_mod_scripting_world::WorldGuard;
 
 use super::{DynamicComponent, ReflectReference};
 use crate::{
-    WorldExtensions,
+    PartialReflectExt, ScriptValue, WorldExtensions,
     error::InteropError,
-    function::from::{Union, V},
+    function::{
+        from::{Union, V},
+        from_ref::FromScriptRef,
+    },
 };
 use ::{
     bevy_ecs::{
         component::ComponentId,
         entity::Entity,
         query::{QueryData, QueryState},
-        reflect::ReflectComponent,
+        reflect::{ReflectBundle, ReflectComponent, ReflectFromWorld},
         world::World,
     },
-    bevy_reflect::{Reflect, TypeRegistration},
+    bevy_reflect::{
+        PartialReflect, Reflect, ReflectFromReflect, TypeRegistration, std_traits::ReflectDefault,
+    },
 };
 use std::{any::TypeId, sync::Arc};
 
@@ -56,33 +61,51 @@ pub struct ScriptResourceRegistration {
     pub resource_id: ComponentId,
 }
 
+#[derive(Clone, Reflect, Debug)]
+#[reflect(opaque)]
+/// A reference to a bundle type's reflection registration, i.e. a type with `ReflectBundle` type data.
+///
+/// In general think of this as a handle to a type.
+pub struct ScriptBundleRegistration {
+    /// The type registration of the bundle
+    pub registration: ScriptTypeRegistration,
+}
+
 /// Any of the kinds of type registration, as returned by type lookups.
 ///
 /// The kind decides what can be done with the type, i.e. only components can be added to entities.
-pub type AnyTypeRegistration =
-    Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>;
+pub type AnyTypeRegistration = Union<
+    ScriptTypeRegistration,
+    Union<ScriptComponentRegistration, Union<ScriptResourceRegistration, ScriptBundleRegistration>>,
+>;
 
 /// [`AnyTypeRegistration`] as it appears in script function signatures, i.e. as scripts receive and pass types around.
 pub type AnyTypeRegistrationV = Union<
     V<ScriptTypeRegistration>,
-    Union<V<ScriptComponentRegistration>, V<ScriptResourceRegistration>>,
+    Union<
+        V<ScriptComponentRegistration>,
+        Union<V<ScriptResourceRegistration>, V<ScriptBundleRegistration>>,
+    >,
 >;
 
 impl AnyTypeRegistration {
     /// Convert to the form used in script function signatures.
     pub fn into_script(self) -> AnyTypeRegistrationV {
-        self.map_both(V, |other| other.map_both(V, V))
+        self.map_both(V, |other| other.map_both(V, |other| other.map_both(V, V)))
     }
 }
 
 impl AnyTypeRegistrationV {
-    /// Convert to a generic [`ScriptTypeRegistration`] ditching any component or resource information.
+    /// Convert to a generic [`ScriptTypeRegistration`] ditching any component, resource or bundle information.
     pub fn into_type_registration(self) -> ScriptTypeRegistration {
         match self.into_left() {
             Ok(registration) => registration.into_inner(),
             Err(other) => match other.into_left() {
                 Ok(component) => component.into_inner().into_type_registration(),
-                Err(resource) => resource.into_inner().into_type_registration(),
+                Err(other) => match other.into_left() {
+                    Ok(resource) => resource.into_inner().into_type_registration(),
+                    Err(bundle) => bundle.into_inner().into_type_registration(),
+                },
             },
         }
     }
@@ -244,6 +267,93 @@ impl ScriptComponentRegistration {
                 Ok(())
             })?
         }
+    }
+}
+
+#[profiling::all_functions]
+impl ScriptBundleRegistration {
+    /// Creates a new [`ScriptBundleRegistration`] from a [`ScriptTypeRegistration`].
+    pub fn new(registration: ScriptTypeRegistration) -> Self {
+        Self { registration }
+    }
+
+    /// Returns the [`ScriptTypeRegistration`] for this type.
+    pub fn type_registration(&self) -> &ScriptTypeRegistration {
+        &self.registration
+    }
+
+    /// Convert to a generic [`ScriptTypeRegistration`] ditching the bundle information.
+    pub fn into_type_registration(self) -> ScriptTypeRegistration {
+        self.registration
+    }
+
+    fn reflect_bundle(&self) -> Result<&ReflectBundle, InteropError> {
+        self.registration
+            .type_registration()
+            .data::<ReflectBundle>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(
+                    self.registration.type_id(),
+                    "ReflectBundle".to_owned(),
+                )
+            })
+    }
+
+    /// Converts a script provided value into a value which can be inserted as this bundle.
+    pub fn instance_from_script(
+        &self,
+        world: WorldGuard,
+        value: ScriptValue,
+    ) -> Result<Box<dyn Reflect>, InteropError> {
+        let type_id = self.registration.type_id();
+        let instance = <Box<dyn PartialReflect>>::from_script_ref(type_id, value, world.clone())?;
+        let instance = match instance.try_into_reflect() {
+            Ok(instance) if instance.as_any().type_id() == type_id => instance,
+            Ok(instance) => {
+                <dyn PartialReflect>::from_reflect(instance.as_partial_reflect(), world)?
+            }
+            Err(instance) => <dyn PartialReflect>::from_reflect(instance.as_ref(), world)?,
+        };
+        Ok(instance)
+    }
+
+    /// Inserts an instance of this bundle into the given entity, all components at once.
+    ///
+    /// Requires whole world access
+    pub fn insert_into_entity(
+        &self,
+        world: WorldGuard,
+        entity: Entity,
+        instance: Box<dyn Reflect>,
+    ) -> Result<(), InteropError> {
+        let reflect_bundle = self.reflect_bundle()?;
+        // `ReflectBundle::insert` panics if it cannot construct the bundle from the value
+        let type_registration = self.registration.type_registration();
+        if instance.as_any().type_id() != self.registration.type_id() {
+            return Err(InteropError::type_mismatch(
+                self.registration.type_id(),
+                Some(instance.as_any().type_id()),
+            ));
+        }
+        if type_registration.data::<ReflectFromReflect>().is_none()
+            && type_registration.data::<ReflectDefault>().is_none()
+            && type_registration.data::<ReflectFromWorld>().is_none()
+        {
+            return Err(InteropError::missing_type_data(
+                self.registration.type_id(),
+                "ReflectFromReflect, ReflectDefault or ReflectFromWorld".to_owned(),
+            ));
+        }
+
+        let type_registry = world.type_registry();
+        world.with_world_mut(|world| {
+            let mut entity = world
+                .get_entity_mut(entity)
+                .map_err(|_| InteropError::missing_entity(entity))?;
+            let registry = type_registry.read();
+            reflect_bundle.insert(&mut entity, instance.as_partial_reflect(), &registry);
+            Ok(())
+        })?
     }
 }
 

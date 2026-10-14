@@ -11,8 +11,9 @@ use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, wo
 use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
     FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
-    ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
+    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration, ScriptQueryBuilder,
+    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple,
+    WorldExtensions,
     construct::construct_reference,
     function::{
         bound::BoundFields,
@@ -105,8 +106,8 @@ pub fn register_bevy_bindings(app: &mut App) {
     unregistered
 )]
 impl World {
-    /// Returns either a `ScriptComponentRegistration` or `ScriptResourceRegistration` depending on the type of the type requested.
-    /// If the type is neither returns a `ScriptTypeRegistration`.
+    /// Returns either a `ScriptComponentRegistration`, `ScriptResourceRegistration` or `ScriptBundleRegistration` depending on the type of the type requested.
+    /// If the type is none of these returns a `ScriptTypeRegistration`.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
@@ -362,6 +363,46 @@ impl World {
         profiling::function_scope!("insert_component");
         let world = ctxt.world()?;
         world.insert_component(*entity, registration.into_inner(), value)
+    }
+
+    /// Inserts the given bundle value into the provided entity, all of its components at once.
+    ///
+    /// The bundle type must be registered in rust with `#[reflect(Bundle)]`.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to insert the bundle into.
+    /// * `registration`: The bundle registration of the bundle to insert.
+    /// * `value`: The value of the bundle to insert. Can be constructed like any other value, i.e. using `construct` or the type's `new` function.
+    /// Returns:
+    /// * `result`: Nothing if the bundle was inserted successfully.
+    fn insert_bundle(
+        ctxt: FunctionCallContext,
+        entity: V<Entity>,
+        registration: V<ScriptBundleRegistration>,
+        value: ReflectReference,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("insert_bundle");
+        let world = ctxt.world()?;
+        world.insert_bundle(*entity, registration.into_inner(), value)
+    }
+
+    /// Spawns a new entity with the given bundle value and returns it.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The bundle registration of the bundle to insert.
+    /// * `value`: The value of the bundle to insert.
+    /// Returns:
+    /// * `entity`: The newly spawned entity
+    fn spawn_bundle(
+        ctxt: FunctionCallContext,
+        registration: V<ScriptBundleRegistration>,
+        value: ReflectReference,
+    ) -> Result<V<Entity>, InteropError> {
+        profiling::function_scope!("spawn_bundle");
+        let world = ctxt.world()?;
+        Ok(V(world.spawn_bundle(registration.into_inner(), value)?))
     }
 
     /// Inserts the given children entities into the provided parent entity.
@@ -1098,6 +1139,36 @@ impl ScriptResourceRegistration {
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "script_bundle_registration_functions",
+    core
+)]
+impl ScriptBundleRegistration {
+    /// Retrieves the name of the type.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `type_name`: The name of the type.
+    fn type_name(registration: R<ScriptBundleRegistration>) -> &'static str {
+        profiling::function_scope!("type_name");
+        registration.type_registration().type_name()
+    }
+
+    /// Retrieves the short name of the type.
+    /// The short name is a more human-readable version of the type name.
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `short_name`: The short name of the
+    fn short_name(registration: R<ScriptBundleRegistration>) -> &'static str {
+        profiling::function_scope!("short_name");
+        registration.type_registration().short_name()
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_builder_functions",
     core
 )]
@@ -1770,6 +1841,7 @@ pub fn register_core_functions(app: &mut App) {
         register_enum_variant_ref_functions(world);
         register_script_component_registration_functions(world);
         register_script_resource_registration_functions(world);
+        register_script_bundle_registration_functions(world);
 
         register_script_query_builder_functions(world);
         register_script_query_result_functions(world);

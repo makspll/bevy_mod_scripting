@@ -11,7 +11,7 @@ use bevy_time::TimePlugin;
 use ::{
     bevy_asset::{Asset, AssetApp, AssetPlugin},
     bevy_diagnostic::DiagnosticsPlugin,
-    bevy_ecs::{component::*, prelude::*, world::World},
+    bevy_ecs::{component::*, prelude::*, reflect::ReflectBundle, world::World},
     bevy_reflect::{prelude::*, *},
 };
 
@@ -277,6 +277,21 @@ pub trait GetTestEntityId {
     fn test_entity_id() -> Entity;
 }
 
+/// Bundle with Reflect and ReflectBundle registered, containing a nested bundle
+#[derive(Bundle, Reflect, Default)]
+#[reflect(Bundle, Default)]
+pub struct TestBundle {
+    pub comp: CompWithDefaultAndComponentData,
+    pub nested: TestNestedBundle,
+}
+
+/// Bundle nested inside [`TestBundle`]
+#[derive(Bundle, Reflect, Default)]
+#[reflect(Bundle, Default)]
+pub struct TestNestedBundle {
+    pub simple: SimpleStruct,
+}
+
 pub trait EnumerateTestComponents {
     fn enumerate_test_components() -> Vec<(&'static str, ComponentId, Option<Entity>)>;
 }
@@ -401,6 +416,8 @@ fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init:
     }
 
     init_all_components(world, &mut type_registry_guard);
+    type_registry_guard.register::<TestBundle>();
+    type_registry_guard.register::<TestNestedBundle>();
     init(world, &mut type_registry_guard);
 }
 
