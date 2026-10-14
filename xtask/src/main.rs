@@ -335,8 +335,6 @@ enum InitTool {
     Bencher,
     /// `mdbook` and `mdbook-mermaid`, used by the `docs` xtask
     Mdbook,
-    /// `cargo-expand`, used by the `codegen` xtask
-    CargoExpand,
     /// The nightly toolchain and components used by the codegen crate, needed to check it and run `codegen`
     CodegenToolchain,
 }
@@ -800,9 +798,7 @@ impl Xtasks {
             false,
         )?;
 
-        // now expand the macros and replace the files in place
-        // by running cargo expand --features crate_name and capturing the output
-
+        // write each generated file out as a bindings crate, the generated code is left unexpanded
         let generated_crates =
             (std::fs::read_dir(&settings.output_dir)?).collect::<Result<Vec<_>, _>>()?;
         let crate_names = generated_crates
@@ -862,33 +858,12 @@ impl Xtasks {
                     dest_path.parent().unwrap()
                 )
             })?;
-            std::fs::copy(settings.output_dir.join(format!("{entry}.rs")), &dest_path)
-                .with_context(|| {
-                    format!("copying generated binding file to bindings crate: {dest_path:?}")
-                })?;
-
-            // finally expand the macros inside
-
-            let args = vec![String::from("expand")];
-            let expand_cmd = run_system_command(
-                &settings.main_workspace_app_settings,
-                "cargo",
-                "pre-expanding generated code",
-                args,
-                Some(&path),
-                true,
-            )?;
-
-            let output = String::from_utf8(expand_cmd.stdout)?;
-
-            let output = output.replacen("#![feature(prelude_import)]", "", 1);
-            let output = output.replacen("#[prelude_import]", "", 1);
-            let output = output.replacen("use std::prelude::rust_2024::*;", "", 1);
-            let output = output.replacen("#[macro_use]\nextern crate std;", "", 1);
-
-            std::fs::write(&dest_path, output)
-                .with_context(|| format!("writing expanded code to {dest_path:?}"))?;
-            info!("Wrote expanded code to {path:?}");
+            // not `std::fs::copy`, it also copies permissions which some filesystems reject
+            let generated = std::fs::read(settings.output_dir.join(format!("{entry}.rs")))?;
+            std::fs::write(&dest_path, generated).with_context(|| {
+                format!("writing generated binding file to bindings crate: {dest_path:?}")
+            })?;
+            info!("Wrote generated code to {dest_path:?}");
         }
 
         Ok(())
@@ -1573,18 +1548,6 @@ impl Xtasks {
                 "cargo",
                 "Failed to install mdbook-mermaid",
                 vec!["install", "mdbook-mermaid"],
-                None,
-                false,
-            )?;
-        }
-
-        // install cargo expand
-        if wants(InitTool::CargoExpand) {
-            run_system_command(
-                &app_settings,
-                "cargo",
-                "Failed to install cargo expand",
-                vec!["install", "cargo-expand"],
                 None,
                 false,
             )?;
