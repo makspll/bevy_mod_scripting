@@ -1013,6 +1013,12 @@
       },
       "is_static": true
     },
+    "ScriptEventRegistration": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+      },
+      "is_static": true
+    },
     "WindowMoved": {
       "type_kind": {
         "val": "bevy_window::event::WindowMoved"
@@ -4679,6 +4685,7 @@
         "World::spawn_bundle",
         "World::register_new_component",
         "World::query",
+        "World::register_new_event",
         "World::add_default_component",
         "World::despawn_recursive",
         "World::write_message",
@@ -4691,6 +4698,7 @@
         "World::trigger_event",
         "World::get_schedule_by_name",
         "World::remove_resource",
+        "World::add_observer",
         "World::get_parent",
         "World::has_entity"
       ],
@@ -4913,6 +4921,27 @@
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::new"
+      ],
+      "layout": null,
+      "generated": false,
+      "insignificance": 500,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration": {
+      "identifier": "ScriptEventRegistration",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration",
+      "namespace": "bms",
+      "documentation": " A handle to a script registered event type.",
+      "associated_functions": [
+        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace",
+        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::short_name",
+        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::new"
       ],
       "layout": null,
       "generated": false,
@@ -45425,10 +45454,10 @@
             "primitive": "scriptValue"
           }
         },
-        "documentation": "a table of the types and functions in the namespace keyed by name.",
+        "documentation": "a table of the types, events and functions in the namespace keyed by name.",
         "name": "namespace"
       },
-      "documentation": "Imports a namespace, returning a table of the types and exported functions in it by name.\n\nNative namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.\nThe empty string is the root namespace, which holds types without a crate such as primitives.\nNamespaces defined by scripts start with `script.`, and contain the components and functions\nscripts registered or exported into them.\n\n```lua\nlocal bevy_transform = import_namespace(\"bevy_transform\")\nlocal transform = bevy_transform.Transform\n\nlocal game = import_namespace(\"script.game\")\ngame.spawn_enemy(5)\n```\n\nFails with a list of similar namespaces if the namespace does not exist.\n",
+      "documentation": "Imports a namespace, returning a table of the types, events and exported functions in it by name.\n\nNative namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.\nThe empty string is the root namespace, which holds types without a crate such as primitives.\nNamespaces defined by scripts start with `script.`, and contain the components, events and functions\nscripts registered or exported into them.\n\n```lua\nlocal bevy_transform = import_namespace(\"bevy_transform\")\nlocal transform = bevy_transform.Transform\n\nlocal game = import_namespace(\"script.game\")\ngame.spawn_enemy(5)\nworld.trigger_event(game.EnemySpawned, {})\n```\n\nFails with a list of similar namespaces if the namespace does not exist.\n",
       "metadata": {
         "is_operator": false
       }
@@ -47129,6 +47158,76 @@
         "is_operator": false
       }
     },
+    "World::add_observer": {
+      "namespace": "World",
+      "identifier": "add_observer",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "documentation": "The function call context.",
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "union": [
+              {
+                "val": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+              },
+              {
+                "val": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+              }
+            ]
+          },
+          "documentation": "The type of the event to observe, or an event registered with `register_new_event`.",
+          "name": "event"
+        },
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "The label of the callback to run, receives the event.",
+          "name": "callback"
+        },
+        {
+          "kind": {
+            "option": {
+              "vec": {
+                "val": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
+              }
+            }
+          },
+          "documentation": "The components the observer is interested in, for component lifecycle events. Ignored for script events.",
+          "name": "components"
+        },
+        {
+          "kind": {
+            "option": {
+              "vec": {
+                "val": "bevy_ecs::entity::Entity"
+              }
+            }
+          },
+          "documentation": "If given, the observer only runs for these entities. Ignored for script events.",
+          "name": "entities"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_ecs::entity::Entity"
+          }
+        },
+        "documentation": "The observer entity, despawn it to remove the observer.",
+        "name": "observer"
+      },
+      "documentation": "Adds an observer which runs the callback `callback` of the calling script whenever an event of the given type is triggered.\n\nThe callback is a normal script callback: either a function registered with `register_callback`, or a top level function with that name.\nIt receives a copy of the event (or the payload, for script events), and is run by the same machinery as other callbacks:\nright after the operation which triggered the event, unless the script's context is busy running another callback\n(e.g. the one that triggered the event), in which case it runs as soon as that callback finishes.\nObservers never re-enter a running script. The order in which the observers of an event run is unspecified.\nRemoved component data is no longer available inside the callback. Errors of the callback are reported like those of other callbacks.\n\nThe event type must have `#[reflect(Event)]`. The lifecycle events (`AddEvent`, `InsertEvent`, `DiscardEvent`,\n`RemoveEvent`, `DespawnEvent`, imported with `import_namespace(\"bevy_ecs\")`) are supported out of the box, and run for the given components.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
     "World::add_system": {
       "namespace": "World",
       "identifier": "add_system",
@@ -48033,6 +48132,56 @@
         "is_operator": false
       }
     },
+    "World::register_new_event": {
+      "namespace": "World",
+      "identifier": "register_new_event",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "documentation": "The function call context.",
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "The script namespace to register the event in, it must start with `script.`, i.e. `script.my_game`.",
+          "name": "namespace"
+        },
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "The name of the event, unique within the namespace.",
+          "name": "name"
+        },
+        {
+          "kind": {
+            "option": {
+              "primitive": "bool"
+            }
+          },
+          "documentation": "If true, returns the already registered event with this name instead of failing. Defaults to false.",
+          "name": "allow_existing"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+          }
+        },
+        "documentation": "The handle of the new event.",
+        "name": "registration"
+      },
+      "documentation": "Registers a new script event.\n\nScript events carry an arbitrary payload, and can be observed with `add_observer` and triggered with `trigger_event`.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
     "World::remove_component": {
       "namespace": "World",
       "identifier": "remove_component",
@@ -48190,17 +48339,26 @@
         },
         {
           "kind": {
-            "val": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+            "union": [
+              {
+                "val": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+              },
+              {
+                "val": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+              }
+            ]
           },
-          "documentation": "The type of the event.",
-          "name": "registration"
+          "documentation": "The type of the event, or the script event.",
+          "name": "event"
         },
         {
           "kind": {
-            "primitive": "reflectReference"
+            "option": {
+              "primitive": "scriptValue"
+            }
           },
-          "documentation": "The event value, e.g. built with `construct`.",
-          "name": "event"
+          "documentation": "The event value, e.g. built with `construct`, for Rust events. Any value (or nothing) for script events, which is passed to the observers.",
+          "name": "value"
         }
       ],
       "return_type": {
@@ -48212,7 +48370,7 @@
         "documentation": "Nothing if the event was triggered successfully.",
         "name": "result"
       },
-      "documentation": "Triggers an observer-style event. The event type must be registered and have `#[reflect(Event)]`.\n\nObservers run immediately, before this function returns.",
+      "documentation": "Triggers an observer-style event: either a Rust event type with `#[reflect(Event)]`, or an event registered with `register_new_event`.\n\nObservers run immediately, and the commands they queue are applied before this function returns.",
       "metadata": {
         "is_operator": false
       }
@@ -48913,6 +49071,41 @@
         "kind": {
           "interopResult": {
             "val": "alloc::vec::Vec<bevy_mod_scripting_bindings::docgen::info::FunctionInfo>"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>::new": {
+      "namespace": "alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>"
           }
         },
         "documentation": "The constructed value.",
@@ -108544,6 +108737,91 @@
         "is_operator": false
       }
     },
+    "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace": {
+      "namespace": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration",
+      "identifier": "namespace",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "ref": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+          },
+          "documentation": "The event registration.",
+          "name": "registration"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "primitive": "string"
+        },
+        "documentation": "The namespace of the event.",
+        "name": "namespace"
+      },
+      "documentation": "Retrieves the script namespace the event was registered in, i.e. `script.game` for `script.game.Hit`.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::new": {
+      "namespace": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::short_name": {
+      "namespace": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration",
+      "identifier": "short_name",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "ref": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
+          },
+          "documentation": "The event registration.",
+          "name": "registration"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "primitive": "string"
+        },
+        "documentation": "The name of the event.",
+        "name": "short_name"
+      },
+      "documentation": "Retrieves the name of the event within its namespace, i.e. `Hit` for `script.game.Hit`.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
     "bevy_mod_scripting_bindings::script_value::VariadicTuple::new": {
       "namespace": "bevy_mod_scripting_bindings::script_value::VariadicTuple",
       "identifier": "new",
@@ -145199,6 +145477,240 @@
         "is_operator": false
       }
     },
+    "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>::None::new": {
+      "namespace": {
+        "type": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>",
+        "variant": "None"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>",
+              "variant": "None"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>::Some::new": {
+      "namespace": {
+        "type": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>",
+        "variant": "Some"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>",
+              "variant": "Some"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>::new": {
+      "namespace": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::option::Option<alloc::vec::Vec<bevy_ecs::entity::Entity>>"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>::None::new": {
+      "namespace": {
+        "type": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>",
+        "variant": "None"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>",
+              "variant": "None"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>::Some::new": {
+      "namespace": {
+        "type": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>",
+        "variant": "Some"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>",
+              "variant": "Some"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>::new": {
+      "namespace": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::option::Option<alloc::vec::Vec<bevy_mod_scripting_bindings::query::ScriptComponentRegistration>>"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
     "core::option::Option<bevy_asset::handle::Handle<bevy_image::image::Image>>::None::new": {
       "namespace": {
         "type": "core::option::Option<bevy_asset::handle::Handle<bevy_image::image::Image>>",
@@ -152687,6 +153199,123 @@
         "is_operator": false
       }
     },
+    "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>::Err::new": {
+      "namespace": {
+        "type": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>",
+        "variant": "Err"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>",
+              "variant": "Err"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>::Ok::new": {
+      "namespace": {
+        "type": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>",
+        "variant": "Ok"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>",
+              "variant": "Ok"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>::new": {
+      "namespace": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, bevy_mod_scripting_bindings::script_event::ScriptEventRegistration>"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
     "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, core::result::Result<bevy_mod_scripting_bindings::query::ScriptComponentRegistration, core::result::Result<bevy_mod_scripting_bindings::query::ScriptResourceRegistration, bevy_mod_scripting_bindings::query::ScriptBundleRegistration>>>::Err::new": {
       "namespace": {
         "type": "core::result::Result<bevy_mod_scripting_bindings::query::ScriptTypeRegistration, core::result::Result<bevy_mod_scripting_bindings::query::ScriptComponentRegistration, core::result::Result<bevy_mod_scripting_bindings::query::ScriptResourceRegistration, bevy_mod_scripting_bindings::query::ScriptBundleRegistration>>>",
@@ -152911,6 +153540,123 @@
         "kind": {
           "interopResult": {
             "val": "core::result::Result<bevy_mod_scripting_bindings::reference::ReflectReference, bevy_mod_scripting_bindings::error::InteropError>"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>::Err::new": {
+      "namespace": {
+        "type": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>",
+        "variant": "Err"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>",
+              "variant": "Err"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>::Ok::new": {
+      "namespace": {
+        "type": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>",
+        "variant": "Ok"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>",
+              "variant": "Ok"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>"
+          }
+        }
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>::new": {
+      "namespace": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "core::result::Result<bevy_mod_scripting_bindings::script_event::ScriptEventRegistration, bevy_mod_scripting_bindings::error::InteropError>"
           }
         },
         "documentation": "The constructed value.",

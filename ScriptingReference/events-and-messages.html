@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-36caf5db.js";
+            window.path_to_searchindex_js = "../searchindex-82deac30.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-10ad70d3.js"></script>
+        <script src="../toc-eb1c7349.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,7 @@
 <tr><th>Function</th><th>Rust type data required</th><th>Behaviour</th></tr>
 </thead>
 <tbody>
-<tr><td><code>world.trigger_event(type, value)</code></td><td><code>ReflectEvent</code></td><td>Triggers the event. Observers run <strong>before the call returns</strong>.</td></tr>
+<tr><td><code>world.trigger_event(type, value)</code></td><td><code>ReflectEvent</code></td><td>Triggers the event. Observers run, and all pending commands are applied, <strong>before the call returns</strong>. Also triggers <a href="#script-defined-events">script events</a>.</td></tr>
 <tr><td><code>world.write_message(type, value)</code></td><td><code>ReflectMessage</code></td><td>Writes the message to its <code>Messages&lt;T&gt;</code> buffer, readers see it later in the frame.</td></tr>
 </tbody>
 </table>
@@ -221,7 +221,43 @@ app.register_type::&lt;MyEvent&gt;()
 <h2 id="things-to-be-aware-of"><a class="header" href="#things-to-be-aware-of">Things to be aware of</a></h2>
 <ul>
 <li><code>trigger_event</code> needs exclusive access to the world, so it fails with an access error if the script is currently holding a borrowed reference elsewhere in the same call (e.g. inside a query iteration or <code>with_*</code> access). Trigger events from regular callbacks.</li>
-<li>Observers triggered by <code>trigger_event</code> run synchronously, but any commands they queue are deferred until the next time the world is flushed. That is not necessarily after your callback: other world operations later in the same callback, such as <code>world.spawn</code>, can flush them. An observer, or a command it queues, which runs a callback in the script context that is currently executing fails with an error. To run callbacks on other scripts, use <code>run_script_callback</code> or <code>queue_script_callback</code> (see <a href="./calling-other-scripts.html">Calling Other Scripts</a>).</li>
+<li>Observers run before <code>trigger_event</code> returns, and so do the commands they queue (as for other operations such as spawning). A Rust observer or command which runs a callback in the currently executing script context fails with an error. Use <code>run_script_callback</code> or <code>queue_script_callback</code> instead (see <a href="./calling-other-scripts.html">Calling Other Scripts</a>).</li>
+</ul>
+<h2 id="observing-events-from-scripts"><a class="header" href="#observing-events-from-scripts">Observing events from scripts</a></h2>
+<p><code>world.add_observer(event, callback, components?, entities?)</code> runs the calling script’s callback <code>callback</code> (registered with <code>register_callback</code>, or a top level function of that name) with a copy of the event, whenever the event is triggered. It returns the observer entity: despawn it to remove the observer.</p>
+<pre><code class="language-lua">local bevy_ecs = import_namespace("bevy_ecs")
+local Mana = world.register_new_component("script.my_game", "Mana")
+
+register_callback("on_mana_added", function(event)
+    print("Mana was added to", event.entity)
+end)
+
+local observer = world.add_observer(bevy_ecs.AddEvent, "on_mana_added", { Mana })
+world.despawn(observer) -- later
+</code></pre>
+<ul>
+<li>The lifecycle events <code>AddEvent</code>, <code>InsertEvent</code>, <code>DiscardEvent</code>, <code>RemoveEvent</code> and <code>DespawnEvent</code> (in <code>bevy_ecs</code>) work for any native or script component. Other events need <code>#[reflect(Event)]</code>.</li>
+<li>As in Bevy, <code>components</code> is an <code>OR</code> filter, and <code>entities</code> restricts the observer to those entities.</li>
+<li>Callbacks run right after the triggering operation, in unspecified order. If the script’s context is busy (e.g. it triggered the event), the callback runs as soon as the busy callback finishes, so observers never re-enter a running script.</li>
+<li>The world is already past the change: removed component data can’t be read in <code>RemoveEvent</code> callbacks.</li>
+<li>Errors are reported like those of other callbacks (<code>ScriptErrorMessage</code>), and don’t fail the triggering operation.</li>
+<li><code>add_observer</code> only works inside a script callback.</li>
+</ul>
+<h2 id="script-defined-events"><a class="header" href="#script-defined-events">Script defined events</a></h2>
+<p>Scripts can define events carrying any value:</p>
+<pre><code class="language-lua">local Damaged = world.register_new_event("script.my_game", "Damaged")
+
+register_callback("on_damaged", function(payload)
+    print("took damage:", payload.amount)
+end)
+
+world.add_observer(Damaged, "on_damaged")
+world.trigger_event(Damaged, { amount = 5 })
+</code></pre>
+<ul>
+<li><code>register_new_event</code> fails if the name is taken, unless <code>allow_existing</code> (third argument) is passed.</li>
+<li>Script events are global: <code>components</code> and <code>entities</code> are ignored.</li>
+<li>Other scripts get them with <code>import_namespace</code>, i.e. <code>import_namespace("script.my_game").Damaged</code>.</li>
 </ul>
 <h2 id="built-in-messages"><a class="header" href="#built-in-messages">Built-in messages</a></h2>
 <p>The following BMS messages are reflected and can be written from scripts:</p>

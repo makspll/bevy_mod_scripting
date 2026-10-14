@@ -35,10 +35,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-36caf5db.js";
+            window.path_to_searchindex_js = "../../searchindex-82deac30.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-10ad70d3.js"></script>
+        <script src="../../toc-eb1c7349.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -187,16 +187,17 @@
                         </div>
 
 <blockquote>
-<p>Imports a namespace, returning a table of the types and exported functions in it by name.</p>
+<p>Imports a namespace, returning a table of the types, events and exported functions in it by name.</p>
 <p>Native namespaces are the names of the crates defining the types (i.e. <code>bevy_transform</code>), or <code>bms</code> for BMS’ own types.
 The empty string is the root namespace, which holds types without a crate such as primitives.
-Namespaces defined by scripts start with <code>script.</code>, and contain the components and functions
+Namespaces defined by scripts start with <code>script.</code>, and contain the components, events and functions
 scripts registered or exported into them.</p>
 <pre><code class="language-lua">local bevy_transform = import_namespace("bevy_transform")
 local transform = bevy_transform.Transform
 
 local game = import_namespace("script.game")
 game.spawn_enemy(5)
+world.trigger_event(game.EnemySpawned, {})
 </code></pre>
 <p>Fails with a list of similar namespaces if the namespace does not exist.</p>
 </blockquote>
@@ -218,7 +219,7 @@ game.spawn_enemy(5)
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>namespace</strong></td><td><a href="../types/scriptvalue.html">ScriptValue</a></td><td>a table of the types and functions in the namespace keyed by name.</td></tr>
+<tr><td><strong>namespace</strong></td><td><a href="../types/scriptvalue.html">ScriptValue</a></td><td>a table of the types, events and functions in the namespace keyed by name.</td></tr>
 </tbody>
 </table>
 </div>

@@ -35,10 +35,10 @@
             const path_to_root = "../../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../../searchindex-36caf5db.js";
+            window.path_to_searchindex_js = "../../../searchindex-82deac30.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../../toc-10ad70d3.js"></script>
+        <script src="../../../toc-eb1c7349.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -187,8 +187,8 @@
                         </div>
 
 <blockquote>
-<p>Triggers an observer-style event. The event type must be registered and have <code>#[reflect(Event)]</code>.</p>
-<p>Observers run immediately, before this function returns.</p>
+<p>Triggers an observer-style event: either a Rust event type with <code>#[reflect(Event)]</code>, or an event registered with <code>register_new_event</code>.</p>
+<p>Observers run immediately, and the commands they queue are applied before this function returns.</p>
 </blockquote>
 <h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
 <div class="table-wrapper">
@@ -197,8 +197,8 @@
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>registration</strong></td><td><a href="../../types/scripttyperegistration.html">ScriptTypeRegistration</a></td><td>The type of the event.</td></tr>
-<tr><td><strong>event</strong></td><td><a href="../../types/reflectreference.html">ReflectReference</a></td><td>The event value, e.g. built with <code>construct</code>.</td></tr>
+<tr><td><strong>event</strong></td><td><a href="../../types/scripttyperegistration.html">ScriptTypeRegistration</a></td><td><a href="../../types/scripteventregistration.html">ScriptEventRegistration</a></td></tr>
+<tr><td><strong>value</strong></td><td>Optional&lt;<a href="../../types/scriptvalue.html">ScriptValue</a>&gt;</td><td>The event value, e.g. built with <code>construct</code>, for Rust events. Any value (or nothing) for script events, which is passed to the observers.</td></tr>
 </tbody>
 </table>
 </div>

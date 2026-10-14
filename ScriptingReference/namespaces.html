@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-36caf5db.js";
+            window.path_to_searchindex_js = "../searchindex-82deac30.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-10ad70d3.js"></script>
+        <script src="../toc-eb1c7349.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -197,12 +197,12 @@
 </tbody>
 </table>
 </div>
-<p><code>Type:namespace()</code> returns a type’s namespace. Script registered components live in <code>script.*</code> namespaces, see below.</p>
+<p><code>Type:namespace()</code> returns a type’s namespace. Script registered components and events live in <code>script.*</code> namespaces, see below.</p>
 <blockquote>
 <p><strong>Deprecated:</strong> the flat <code>types</code> global. It can’t tell apart types of the same name in different namespaces, and it is a snapshot taken when the script’s context is created. Use <code>import_namespace</code> instead.</p>
 </blockquote>
 <h2 id="importing-a-namespace"><a class="header" href="#importing-a-namespace">Importing a namespace</a></h2>
-<p><code>import_namespace(namespace)</code> returns a table of the namespace’s types (and, for script namespaces, exported functions) by short name:</p>
+<p><code>import_namespace(namespace)</code> returns a table of the namespace’s types (and, for script namespaces, events and exported functions) by short name:</p>
 <pre><code class="language-lua">local bevy_transform = import_namespace("bevy_transform")
 local t = bevy_transform.Transform.new { translation = Vec3.new(0, 1, 0) }
 </code></pre>
@@ -221,18 +221,20 @@ app.override_script_namespace::&lt;MyType&gt;("my_namespace"); // bevy_mod_scrip
 // or directly
 registry.register_type_data_with::&lt;MyType, ScriptNamespace, _&gt;("my_namespace");</code></pre>
 <h2 id="namespaces-defined-by-scripts"><a class="header" href="#namespaces-defined-by-scripts">Namespaces defined by scripts</a></h2>
-<p>Scripts register components into namespaces they pass explicitly. These start with <code>script.</code>, followed by dot-separated segments of letters, digits and underscores:</p>
+<p>Scripts register components and events into namespaces they pass explicitly. These start with <code>script.</code>, followed by dot-separated segments of letters, digits and underscores:</p>
 <pre><code class="language-lua">local Enemy = world.register_new_component("script.game.ai", "Enemy")
+local Hit = world.register_new_event("script.game.ai", "Hit")
 
 -- anywhere, including other scripts
 local ai = import_namespace("script.game.ai")
 world.add_default_component(entity, ai.Enemy)
+world.trigger_event(ai.Hit, { damage = 3 })
 </code></pre>
 <ul>
-<li>Names are unique within a namespace, across components and exports: <code>script.game.ai.Enemy</code> and <code>script.game.ui.Enemy</code> are different components.</li>
+<li>Names are unique within a namespace, across components, events and exports: <code>script.game.ai.Enemy</code> and <code>script.game.ui.Enemy</code> are different components.</li>
 <li>Registering a taken name is an error. <code>allow_existing</code> returns the existing registration instead, which is useful for scripts which run again.</li>
 <li>A script namespace exists once something is registered or exported into it.</li>
-<li>Components stay registered when their script unloads, as Bevy cannot unregister components.</li>
+<li>Components and events stay registered when their script unloads, as Bevy cannot unregister components.</li>
 </ul>
 <p>Values of script components are <code>DynamicComponent</code>s, holding any value in <code>data</code>. Tables read from <code>data</code> are copies: assign a new table to change them.</p>
 <pre><code class="language-lua">world.insert_component(entity, Enemy, DynamicComponent.new({ data = { hp = 5 } }))
@@ -258,7 +260,7 @@ local enemy = import_namespace("script.game").spawn_enemy(5)
 <li>A path can only be exported by one script. Exporting it again from the same script replaces it. Exports can’t share a path with a component.</li>
 <li><code>export_namespace</code> only works inside a script callback.</li>
 </ul>
-<p>When a script unloads or is about to reload, its exports are removed right after its <code>on_script_unloaded</code> callback. Export from a callback which runs on load (e.g. <code>on_script_loaded</code>), so a reloaded script exports again.</p>
+<p>When a script unloads or is about to reload, its exports and observers are removed right after its <code>on_script_unloaded</code> callback. Export from a callback which runs on load (e.g. <code>on_script_loaded</code>), so a reloaded script exports again.</p>
 <h2 id="editor-support"><a class="header" href="#editor-support">Editor support</a></h2>
 <p>LAD files record each type’s namespace. The Lua language server definitions declare a <code>namespace.&lt;name&gt;</code> class per native namespace, and <code>import_namespace("bevy_transform")</code> returns the matching class, so completion works on imported tables. Script namespaces only exist at runtime and are untyped.</p>
 
