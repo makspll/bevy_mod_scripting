@@ -78,14 +78,13 @@ changelog_include = [
     "bevy_pbr_bms_bindings",
     "bevy_picking_bms_bindings",
     "bevy_post_process_bms_bindings",
-    "bevy_reflect_bms_bindings",
     "bevy_render_bms_bindings",
     "bevy_scene_bms_bindings",
     "bevy_sprite_bms_bindings",
     "bevy_sprite_render_bms_bindings",
     "bevy_text_bms_bindings",
-    "bevy_time_bms_bindings",
-    "bevy_transform_bms_bindings",
+    "bevy_mod_scripting_bevy_time_bindings",
+    "bevy_mod_scripting_bevy_transform_bindings",
     "bevy_ui_bms_bindings",
     "bevy_ui_render_bms_bindings",
     "bevy_ui_widgets_bms_bindings",
@@ -199,10 +198,6 @@ name = "bevy_picking_bms_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_reflect_bms_bindings"
-version_group = "main"
-
-[[package]]
 name = "bevy_render_bms_bindings"
 version_group = "main"
 
@@ -219,11 +214,11 @@ name = "bevy_text_bms_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_time_bms_bindings"
+name = "bevy_mod_scripting_bevy_time_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_transform_bms_bindings"
+name = "bevy_mod_scripting_bevy_transform_bindings"
 version_group = "main"
 
 [[package]]

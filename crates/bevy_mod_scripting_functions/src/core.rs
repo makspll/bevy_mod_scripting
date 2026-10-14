@@ -18,7 +18,7 @@ use bevy_mod_scripting_bindings::{
     function::into::IntoScript,
     function::{
         bound::BoundFields,
-        from::{FromScript, R, V},
+        from::{R, V},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         script_function::{FunctionCallContext, ScriptFunctionMut},
@@ -75,8 +75,6 @@ pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(bevy_picking_bms_bindings::BevyPickingScriptingPlugin);
     #[cfg(feature = "bevy_post_process")]
     app.add_plugins(bevy_post_process_bms_bindings::BevyPostProcessScriptingPlugin);
-    #[cfg(feature = "bevy_reflect")]
-    app.add_plugins(bevy_reflect_bms_bindings::BevyReflectScriptingPlugin);
     #[cfg(feature = "bevy_render")]
     app.add_plugins(bevy_render_bms_bindings::BevyRenderScriptingPlugin);
     #[cfg(feature = "bevy_scene")]
@@ -88,9 +86,9 @@ pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_text")]
     app.add_plugins(bevy_text_bms_bindings::BevyTextScriptingPlugin);
     #[cfg(feature = "bevy_time")]
-    app.add_plugins(bevy_time_bms_bindings::BevyTimeScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_time_bindings::BevyTimeBindingsPlugin);
     #[cfg(feature = "bevy_transform")]
-    app.add_plugins(bevy_transform_bms_bindings::BevyTransformScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_transform_bindings::BevyTransformBindingsPlugin);
     #[cfg(feature = "bevy_ui")]
     app.add_plugins(bevy_ui_bms_bindings::BevyUiScriptingPlugin);
     #[cfg(feature = "bevy_ui_render")]
@@ -773,6 +771,7 @@ impl ReflectReference {
     ///
     /// This is what `==` uses for types which don't define their own equality.
     /// Values of different types, and values which can't be compared, are not equal.
+    /// An enum value is equal to an enum variant, i.e. `MyEnum.Variant`, if it is in that variant.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
@@ -790,6 +789,9 @@ impl ReflectReference {
         let ScriptValue::Reference(other) = other else {
             return Ok(false);
         };
+        if let Ok(variant) = other.downcast::<EnumVariantRef>(world.clone()) {
+            return value_is_variant(&world, &reference, variant);
+        }
         reference.with_reflect(world.clone(), |a| {
             other.with_reflect(world.clone(), |b| a.reflect_partial_eq(b).unwrap_or(false))
         })?
@@ -1183,12 +1185,12 @@ impl EnumVariantRef {
         variant.variant_name(&ctxt.world()?).map(str::to_owned)
     }
 
-    /// Checks whether two variants are the same variant of the same enum.
+    /// Checks whether two variants are the same variant of the same enum, or whether a value is in this variant.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
     /// * `variant`: The variant.
-    /// * `other`: The value to compare with.
+    /// * `other`: The variant or value to compare with.
     /// Returns:
     /// * `equal`: Whether the other value is the same variant.
     fn eq(
@@ -1198,8 +1200,13 @@ impl EnumVariantRef {
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("eq");
         let world = ctxt.world()?;
-        Ok(V::<EnumVariantRef>::from_script(other, world)
-            .is_ok_and(|other| other.into_inner() == variant.into_inner()))
+        let ScriptValue::Reference(other) = other else {
+            return Ok(false);
+        };
+        if let Ok(other_variant) = other.downcast::<EnumVariantRef>(world.clone()) {
+            return Ok(other_variant == *variant);
+        }
+        value_is_variant(&world, &other, *variant)
     }
 }
 
@@ -2207,6 +2214,20 @@ pub fn register_core_functions(app: &mut App) {
         register_global_namespace_functions(world);
         register_global_namespace_dummy_functions(world);
     }
+}
+
+/// Whether the value behind `reference` is a value of the variant's enum, in that variant.
+fn value_is_variant(
+    world: &WorldGuard,
+    reference: &ReflectReference,
+    variant: EnumVariantRef,
+) -> Result<bool, InteropError> {
+    reference.with_reflect(world.clone(), |value| {
+        value
+            .get_represented_type_info()
+            .is_some_and(|info| info.type_id() == variant.type_id)
+            && EnumVariantRef::from_value(variant.type_id, value) == Some(variant)
+    })
 }
 
 /// Builds the error for importing a namespace which does not exist.
