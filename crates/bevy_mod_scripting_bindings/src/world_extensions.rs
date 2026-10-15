@@ -320,8 +320,8 @@ pub trait WorldExtensions {
         script: Handle<ScriptAsset>,
     ) -> Result<LoadState, InteropError>;
 
-    /// Attempts to call a function overload matching the provided arguments.
-    fn try_call_overloads(
+    /// Calls the function with the given name registered on the given type, used to dispatch operators.
+    fn call_operator(
         &self,
         type_id: TypeId,
         name: impl Into<Cow<'static, str>>,
@@ -1177,7 +1177,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.with_resource(|r: &AssetServer| r.load_state(script.id()))
     }
 
-    fn try_call_overloads(
+    fn call_operator(
         &self,
         type_id: TypeId,
         name: impl Into<Cow<'static, str>>,
@@ -1187,32 +1187,20 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let registry = self.script_function_registry();
         let registry = registry.read();
 
-        let name = name.into();
         // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`
-        let overload_iter = match registry
-            .iter_overloads(Namespace::OnType(type_id), name)
+        let func = registry
+            .get_function(Namespace::OnType(type_id), name)
             .or_else(|name| {
-                registry.iter_overloads(Namespace::OnType(TypeId::of::<ReflectReference>()), name)
-            }) {
-            Ok(iter) => iter,
-            Err(name) => {
-                return Err(InteropError::missing_function(
-                    name.to_string(),
-                    Namespace::OnType(type_id),
-                    Some(context.clone()),
-                ));
-            }
-        };
-
-        let mut last_error = None;
-        for overload in overload_iter {
-            match overload.call(args.clone(), context.clone()) {
-                Ok(out) => return Ok(out),
-                Err(e) => last_error = Some(e),
-            }
+                registry.get_function(Namespace::OnType(TypeId::of::<ReflectReference>()), name)
+            });
+        match func {
+            Ok(func) => func.call(args, context),
+            Err(name) => Err(InteropError::missing_function(
+                name.to_string(),
+                Namespace::OnType(type_id),
+                Some(context),
+            )),
         }
-
-        Err(last_error.ok_or_else(|| InteropError::invariant("invariant, iterator should always return at least one item, and if the call fails it should return an error"))?)
     }
 
     fn get_functions_on_type(
