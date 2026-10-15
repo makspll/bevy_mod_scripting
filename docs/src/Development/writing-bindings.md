@@ -22,7 +22,7 @@ Every reflected type is already usable from scripts without any bindings:
 So only bind what scripts can't already do, or can't do comfortably:
 - methods with behaviour, i.e. `Vec3:normalize()` or `Transform:look_at(...)`
 - constructors for types which are built often (vectors, colors), or whose fields are private (i.e. `Name`), or whose meaning isn't obvious from their fields (i.e. `Quat.from_rotation_y`)
-- operators, by registering functions named `add`, `sub`, `mul`, `div`, `rem`, `neg`, `pow`, `eq` or `lt`
+- operators, by registering functions named `add`, `sub`, `mul`, `div`, `rem`, `neg`, `pow`, `eq` or `lt`. With a number on the left, i.e. `2 * v`, `add` and `mul` are called with the operands swapped, the others call `rsub`, `rdiv`, `rrem` or `rpow` on the right operand, which you register where they make sense
 
 Do not write getters or setters for public fields.
 
@@ -30,7 +30,7 @@ Do not write getters or setters for public fields.
 
 - Take non primitive arguments as `R<T>` or `M<T>`. These are a downcast of the reference the script holds, while `V<T>` rebuilds the value through reflection. Clone natively if you need ownership.
 - Return a reference with an extended path when returning a part of the receiver; it costs nothing, and writes to it reach the original value. Returning `V<T>` allocates a new value.
-- Register one function per name. Overloads are tried one by one, so for mixed operands accept a `Union`, i.e. `rhs: Union<R<Vec3>, f32>`.
+- There is one function per name: registering a name again replaces the function. For mixed operands accept a `Union`, i.e. `rhs: Union<R<Vec3>, f32>`.
 - Mutate in place by taking `M<Self>`; pure functions return new values.
 
 ## Documentation

@@ -173,6 +173,7 @@ There are a few reserved functions that you can override by registering them on 
 | rem | a remainder function, used for getting the remainder of two values | ✅ | ❌ |
 | neg | a negation function, used for negating a value | ✅ | ❌ |
 | pow | a power function, used for raising a value to a power | ✅ | ❌ | 
+| rsub, rdiv, rrem, rpow | the reflected `sub`, `div`, `rem` and `pow`, called on the right operand when the left one is not a value, i.e. `1 - v` calls `rsub(v, 1)`. `add` and `mul` are called with their operands swapped instead | ✅ | ❌ |
 | eq | an equality function, used for checking if two values are equal | ✅ | ❌ |
 | lt | a less than function, used for checking if a value is less than another | ✅ | ❌ |
 | iter | an iterator function, used for iterating over a value | ❌ | ✅ |

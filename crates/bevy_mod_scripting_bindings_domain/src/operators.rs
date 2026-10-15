@@ -4,6 +4,7 @@
 //! by searching for appropriate functions in the registry.
 
 /// Main operator enum
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ScriptOperatorNames {
     /// a + b
     Addition,
@@ -50,6 +51,23 @@ impl ScriptOperatorNames {
             ScriptOperatorNames::Iteration => "iter",
             ScriptOperatorNames::DisplayPrint => "display",
             ScriptOperatorNames::DebugPrint => "debug",
+        }
+    }
+
+    /// Returns the function name to dispatch a binary operator to when only its right operand is a value, i.e. `2 * v`.
+    ///
+    /// The function is called on the right operand, with the left one as its argument.
+    /// For `+` and `*` this is the same function as for `v * 2`, the others use reflected names, i.e. `2 - v` calls `rsub(v, 2)`.
+    /// Returns `None` for operators which aren't arithmetic.
+    pub const fn reflected_script_function_name(self) -> Option<&'static str> {
+        match self {
+            ScriptOperatorNames::Addition => Some("add"),
+            ScriptOperatorNames::Multiplication => Some("mul"),
+            ScriptOperatorNames::Subtraction => Some("rsub"),
+            ScriptOperatorNames::Division => Some("rdiv"),
+            ScriptOperatorNames::Remainder => Some("rrem"),
+            ScriptOperatorNames::Exponentiation => Some("rpow"),
+            _ => None,
         }
     }
 
