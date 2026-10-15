@@ -8,3 +8,6 @@ assert((a / 2).z == 3.0, "Division did not work")
 assert((a / b).x == 2.0, "Division did not work")
 assert((a / b).y == 2.0, "Division did not work")
 assert((a / b).z == 2.0, "Division did not work")
+
+-- a number on the left calls `rdiv` on the vector
+assert((12 / a) == Vec3.new(6.0, 3.0, 2.0), "Division with a number on the left did not work")

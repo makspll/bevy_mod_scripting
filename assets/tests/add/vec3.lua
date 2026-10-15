@@ -9,3 +9,6 @@ assert((a + b).x == 5.0, "Addition did not work")
 assert((a + b).y == 7.0, "Addition did not work")
 assert((a + b).z == 9.0, "Addition did not work")
 
+-- a number on the left calls `add` on the vector
+assert((1 + a) == a + 1, "Addition with a number on the left did not work")
+
