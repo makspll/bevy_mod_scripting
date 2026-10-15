@@ -236,4 +236,4 @@ The enum variants of a type are also available on the type, i.e. `MyEnum.Variant
 
 Each type registered with the type registry is an entry in the table `import_namespace` returns for its [namespace](../ScriptingReference/namespaces.md), i.e. `import_namespace("math").Vec3`.
 
-Types are not globals by default. Set `CoreScriptGlobalsPlugin::register_static_references` to also make every type a global named after it, i.e. `Vec3`, and use its `filter` to choose which types are included.
+Types are not globals, which keeps types with the same name from shadowing each other. Use the `filter` of `CoreScriptGlobalsPlugin` to choose which types scripts can look up by name.
