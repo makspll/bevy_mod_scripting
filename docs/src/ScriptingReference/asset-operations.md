@@ -1,6 +1,6 @@
 # Asset Operations
 
-BMS provides built-in support for working with Bevy assets from scripts. You can check for asset existence, retrieve assets by handle, and manipulate asset data through the reflection system.
+BMS provides built-in support for working with Bevy assets from scripts. You can load assets, add new ones, and read or change asset data through the reflection system.
 
 ## Prerequisites
 
@@ -8,34 +8,42 @@ To use asset operations in your scripts, you need to ensure that:
 
 1. Your asset type implements `Asset` and `Reflect`
 2. The asset type is registered with `app.register_asset_reflect::<YourAsset>()`
-3. The asset handle type has `ReflectHandle` type data registered
+3. The asset handle type has `ReflectHandle` type data registered (`register_asset_reflect` does this)
 
-## Available Functions
+## Functions on asset types
 
-### `world.has_asset(handle)`
+Every asset type has these functions, which are documented with the type's own handle, i.e. `Handle<Image>` for `Image`:
 
-Checks if an asset exists and is loaded for the given handle.
+### `Type.load(path)`
 
-**Parameters:**
+Starts loading an asset of this type from a path relative to the assets folder, and returns a handle to it right away. The asset is loaded in the background, see `world.is_loaded(handle)`.
 
-- `handle`: A ReflectReference to an existing asset handle
+### `Type.add_asset(value)`
 
-**Returns:**
+Adds a value of this type as a new asset, and returns a strong handle to it.
 
-- `boolean`: `true` if the asset exists and is loaded, `false` otherwise
+### `Type.get_asset(handle)`
 
-### `world.get_asset(handle, asset_type)`
+Returns the asset a handle points to, or `nil` if it isn't loaded or added yet. Changes to the returned value change the asset.
 
-Retrieves a loaded asset by its handle and returns a reflected reference to it.
+```lua
+local ScriptAsset = import_namespace("bms").ScriptAsset
+local handle = ScriptAsset.load("scripts/my_script.lua")
+-- later, once `world.is_loaded(handle)` is true
+local script = ScriptAsset.get_asset(handle)
+```
 
-**Parameters:**
+## Functions on `world`
 
-- `handle`: A reflected reference to an asset handle  
-- `asset_type`: The type registration of the asset (e.g., `import_namespace("bevy_image").Image`, `import_namespace("bevy_mesh").Mesh`)
+The same operations are available on `world`, taking the asset type as an argument, along with functions for any handle:
 
-**Returns:**
-
-- `ReflectReference`: A reference to the asset data, or `nil`/`()` if not loaded
+- `world.load_asset(path, asset_type)`: like `Type.load`
+- `world.add_asset(value)`: like `Type.add_asset`
+- `world.get_asset(handle, asset_type)`: a reference to the asset
+- `world.has_asset(handle)`: whether the handle is a valid asset handle
+- `world.is_loaded(handle)`: whether the asset and all of its dependencies are loaded
+- `world.load_state(handle)`: `"NotLoaded"`, `"Loading"`, `"Loaded"` or `"Failed"`
+- `world.asset_path(handle)`: the path the asset was loaded from, or `nil`
 
 Examples:
-See usage examples in the `assets\tests\asset_operations` directory.
+See usage examples in the `assets/tests/asset_operations` and `assets/tests/bindings/asset` directories.

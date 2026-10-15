@@ -8,7 +8,7 @@ The aim is a small, well documented scripting surface, which reads naturally fro
 ## Namespaces
 
 Scripts reach types through the namespace of their category, i.e. `import_namespace("math").Vec3` (see [Namespaces](../ScriptingReference/namespaces.md)). So each bindings crate:
-- passes `namespace = "<category>"` to every `#[script_bindings]` attribute, except on `impl World` blocks
+- passes `namespace = "<category>"` to every `#[script_bindings]` attribute, except on `impl World` blocks and on functions shared by all types (`impl StaticTypeRef`), which would otherwise move those BMS types into the category
 - calls `set_crate_script_namespaces` from its plugin's `finish`, with the bevy crates it covers, so their types without bindings land in the same namespace
 
 ## What to bind

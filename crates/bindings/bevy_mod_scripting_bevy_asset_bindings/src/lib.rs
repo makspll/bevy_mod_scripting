@@ -1,6 +1,7 @@
 //! Script bindings for bevy assets: loading, handles and adding assets.
 //!
-//! Handles are generic, so these functions take the asset type as a runtime type registration.
+//! Every asset type has `load`, `add_asset` and `get_asset`, i.e. `Image.load(path)`, which are documented with the
+//! type's own handle, i.e. `Handle<Image>`. The same functions exist on `world`, taking the asset type as an argument.
 
 use std::any::TypeId;
 
@@ -9,8 +10,13 @@ use bevy_asset::{AssetServer, LoadState, ReflectAsset, ReflectHandle, UntypedHan
 // `script_bindings` expects these in scope
 use bevy_ecs::world::World;
 use bevy_mod_scripting_bindings::{
-    InteropError, ReflectReference, ScriptTypeRegistration, WorldExtensions, WorldGuard,
-    function::{from::V, script_function::FunctionCallContext},
+    InteropError, ReflectReference, ScriptTypeRegistration, StaticTypeRef, WorldExtensions,
+    WorldGuard,
+    function::{
+        bound::{BoundHandle, BoundValue},
+        from::V,
+        script_function::FunctionCallContext,
+    },
 };
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -34,6 +40,126 @@ impl Plugin for BevyAssetBindingsPlugin {
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         register_world_asset_functions(world);
+        register_asset_type_functions(world);
+    }
+}
+
+/// The [`ReflectAsset`] type data of the asset type, or an error saying how to register it.
+fn reflect_asset(world: &WorldGuard, asset_type_id: TypeId) -> Result<ReflectAsset, InteropError> {
+    let registry = world.type_registry();
+    let registry = registry.read();
+    registry
+        .get_type_data::<ReflectAsset>(asset_type_id)
+        .cloned()
+        .ok_or_else(|| {
+            InteropError::str(
+                "the type is not registered as an asset, use `register_asset_reflect`",
+            )
+        })
+}
+
+/// Starts loading an asset of the given type, returning a reference to its `Handle<T>`.
+fn load(
+    world: &WorldGuard,
+    asset_type_id: TypeId,
+    path: String,
+) -> Result<ReflectReference, InteropError> {
+    let handle = world.with_resource(|asset_server: &AssetServer| {
+        asset_server.load_builder().load_erased(asset_type_id, path)
+    })?;
+    typed_handle_reference(world, asset_type_id, handle)
+}
+
+/// Adds a reflected value as a new asset of its type, returning a reference to its `Handle<T>`.
+fn add(world: &WorldGuard, value: ReflectReference) -> Result<ReflectReference, InteropError> {
+    let asset_type_id = value
+        .tail_type_id(world.clone())?
+        .ok_or_else(|| InteropError::str("cannot determine the type of the asset value"))?;
+    let owned = value.to_owned_value(world.clone())?;
+    let reflect_asset = reflect_asset(world, asset_type_id)?;
+    let handle = world.with_world_mut(|w| reflect_asset.add(w, &*owned))?;
+    typed_handle_reference(world, asset_type_id, handle)
+}
+
+/// A reference to the asset of the given type a handle points to, or `None` if there is no such asset (yet).
+fn get(
+    world: &WorldGuard,
+    asset_type_id: TypeId,
+    handle: ReflectReference,
+) -> Result<Option<ReflectReference>, InteropError> {
+    let handle = handle.try_untyped_asset_handle(world.clone())?;
+    let reflect_asset = reflect_asset(world, asset_type_id)?;
+    if !world.with_world(|w| reflect_asset.get(w, handle.id()).is_some())? {
+        return Ok(None);
+    }
+    ReflectReference::new_asset_ref(handle, asset_type_id, world.clone()).map(Some)
+}
+
+#[script_bindings(
+    remote,
+    name = "asset_type_functions",
+    bms_bindings_path = "bevy_mod_scripting_bindings"
+)]
+impl StaticTypeRef {
+    /// Starts loading an asset of this type from a path, returning a handle to it right away.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `asset_type`: The asset type, filled in automatically.
+    /// * `path`: The asset path, relative to the assets folder.
+    /// Returns:
+    /// * `handle`: A handle to the asset, which is loaded in the background.
+    fn load(
+        ctxt: FunctionCallContext,
+        asset_type: V<StaticTypeRef>,
+        path: String,
+    ) -> Result<BoundHandle, InteropError> {
+        let world = ctxt.world()?;
+        let asset_type_id = asset_type.type_info(&world)?.type_id();
+        load(&world, asset_type_id, path).map(BoundHandle)
+    }
+
+    /// Adds a value of this type as a new asset, returning a strong handle to it.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `asset_type`: The asset type, filled in automatically.
+    /// * `value`: The asset value.
+    /// Returns:
+    /// * `handle`: A handle to the new asset.
+    fn add_asset(
+        ctxt: FunctionCallContext,
+        asset_type: V<StaticTypeRef>,
+        value: BoundValue,
+    ) -> Result<BoundHandle, InteropError> {
+        let world = ctxt.world()?;
+        let asset_type_id = asset_type.type_info(&world)?.type_id();
+        if value.0.tail_type_id(world.clone())? != Some(asset_type_id) {
+            return Err(InteropError::str(
+                "the value is not of the asset type it is added as",
+            ));
+        }
+        add(&world, value.0).map(BoundHandle)
+    }
+
+    /// The asset a handle points to, or nil if it isn't loaded or added yet.
+    ///
+    /// Changes to the returned value change the asset.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `asset_type`: The asset type, filled in automatically.
+    /// * `handle`: The handle to the asset.
+    /// Returns:
+    /// * `asset`: The asset, or nil.
+    fn get_asset(
+        ctxt: FunctionCallContext,
+        asset_type: V<StaticTypeRef>,
+        handle: BoundHandle,
+    ) -> Result<Option<BoundValue>, InteropError> {
+        let world = ctxt.world()?;
+        let asset_type_id = asset_type.type_info(&world)?.type_id();
+        Ok(get(&world, asset_type_id, handle.0)?.map(BoundValue))
     }
 }
 
@@ -87,12 +213,7 @@ impl World {
         path: String,
         asset_type: V<ScriptTypeRegistration>,
     ) -> Result<ReflectReference, InteropError> {
-        let world = ctxt.world()?;
-        let asset_type_id = asset_type.type_id();
-        let handle = world.with_resource(|asset_server: &AssetServer| {
-            asset_server.load_builder().load_erased(asset_type_id, path)
-        })?;
-        typed_handle_reference(&world, asset_type_id, handle)
+        load(&ctxt.world()?, asset_type.type_id(), path)
     }
 
     /// Whether the asset and all of its dependencies are loaded.
@@ -166,24 +287,6 @@ impl World {
         ctxt: FunctionCallContext,
         value: ReflectReference,
     ) -> Result<ReflectReference, InteropError> {
-        let world = ctxt.world()?;
-        let asset_type_id = value
-            .tail_type_id(world.clone())?
-            .ok_or_else(|| InteropError::str("cannot determine the type of the asset value"))?;
-        let owned = value.to_owned_value(world.clone())?;
-        let reflect_asset = {
-            let registry = world.type_registry();
-            let registry = registry.read();
-            registry
-                .get_type_data::<ReflectAsset>(asset_type_id)
-                .cloned()
-        }
-        .ok_or_else(|| {
-            InteropError::str(
-                "the asset type is not registered for asset reflection, use `register_asset_reflect`",
-            )
-        })?;
-        let handle = world.with_world_mut(|w| reflect_asset.add(w, &*owned))?;
-        typed_handle_reference(&world, asset_type_id, handle)
+        add(&ctxt.world()?, value)
     }
 }
