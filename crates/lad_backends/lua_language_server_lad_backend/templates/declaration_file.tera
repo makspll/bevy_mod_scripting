@@ -4,7 +4,7 @@
 {# newline #}
 {%- for module in modules -%} {# module #}
 {%- if module.class -%} {# class #}
----@class {% if module.class.exact %}(exact) {% endif %}{{ module.class.name }} {%- if module.class.parents %} : {% endif -%}{%- for parent in module.class.parents -%}{{parent}}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
+---@class {% if module.class.exact %}(exact) {% endif %}{{ module.class.name }}{% if module.class.generics %}<{{ module.class.generics | join(sep=", ") }}>{% endif %} {%- if module.class.parents %} : {% endif -%}{%- for parent in module.class.parents -%}{{parent}}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
 {{ self::multiline_description(description=module.class.documentation) -}}
 {%- for field in module.class.fields -%}
 {{- self::class_field(field=field) -}}
@@ -13,7 +13,8 @@
 ---@operator {{operator.operation}}{% if operator.param_type %}({{self::lua_type(ty=operator.param_type)}}){% endif %}: {{self::lua_type(ty=operator.return_type)}}
 {% endfor -%}
 {% if not module.type_only -%}
-{{ module.class.name }} = {}
+{# the table is not a global: types are reached through their namespace, only nested names like `Enum.Variant` are fields of another table -#}
+{% if "." in module.class.name %}{{ module.class.name }} = {}{% else %}local {{ module.class.name }} = {}{% endif %}
 {%- endif -%}
 {%- endif -%} {# class #}
 {# newline #}
@@ -113,11 +114,12 @@ function {% if module.class -%}{{module.class.name}}.{%- endif -%} {{ function.n
         {%- endfor -%}
         ): {{ self::lua_type(ty=ty.value.return_type) }}
     {%- elif ty.kind == "Generic" -%}
-        {%- if ty.value.parent is defined and ty.value.parent is not null -%}
-            {{ ty.value.name }}<{{ self::lua_type(ty=ty.value.parent) }}>
-        {%- else -%}
-            {{ ty.value.name }}
-        {%- endif -%}
+        {{ ty.value.name }}<
+        {%- for arg in ty.value.args -%}
+            {{ self::lua_type(ty=arg) }}
+            {%- if not loop.last %}, {% endif -%}
+        {%- endfor -%}
+        >
     {%- else -%}
         ??? {# fallback #}
     {%- endif -%}

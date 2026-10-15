@@ -6,6 +6,7 @@ All registered reflect\-able types which can be constructed and directly manipul
 
 | Type | Summary |
 | --- | --- |
+| [`HoldsOpaqueType`](././types/holdsopaquetype.md) |  I hold an instantiation of a generic type |
 | [`PlainStructType`](././types/plainstructtype.md) |  I am a simple plain struct type |
 | [`GenericStructType<Usize>`](././types/genericstructtypeusize.md) |  I am a struct |
 | [`Bool`](././types/bool.md) | A boolean value |
@@ -36,4 +37,5 @@ All registered reflect\-able types which can be constructed and directly manipul
 | [`EnumType`](././types/enumtype.md) | No Documentation 🚧 |
 | [`TupleStructType`](././types/tuplestructtype.md) |  I am a tuple test type |
 | [`UnitType`](././types/unittype.md) |  I am a unit test type |
+| [`OpaqueGenericType<T>`](././types/opaquegenerictypet.md) | I am the documentation of a generic type\. |
 

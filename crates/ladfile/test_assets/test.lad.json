@@ -37,6 +37,36 @@
     }
   },
   "types": {
+    "ladfile_builder::test::HoldsOpaqueType": {
+      "identifier": "HoldsOpaqueType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::HoldsOpaqueType",
+      "namespace": "ladfile_builder",
+      "documentation": " I hold an instantiation of a generic type",
+      "associated_functions": [
+        "ladfile_builder::test::HoldsOpaqueType::swap_generic"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "HoldsOpaqueType",
+        "fields": [
+          {
+            "name": "generic",
+            "type": {
+              "val": "ladfile_builder::test::OpaqueGenericType<usize>"
+            }
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
+    },
     "ladfile_builder::test::PlainStructType": {
       "identifier": "PlainStructType",
       "crate": "ladfile_builder",
@@ -564,6 +594,44 @@
         "is_reflect": true,
         "mapped_to_primitive_kind": null
       }
+    },
+    "ladfile_builder::test::OpaqueGenericType<usize>": {
+      "identifier": "OpaqueGenericType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::OpaqueGenericType<usize>",
+      "namespace": "ladfile_builder",
+      "generics": [
+        {
+          "type_id": "Usize",
+          "name": "T"
+        }
+      ],
+      "generic_type": "ladfile_builder::test::OpaqueGenericType",
+      "documentation": " I am a generic type, which the builder is told about so only my arguments are known",
+      "layout": {
+        "kind": "Struct",
+        "name": "OpaqueGenericType"
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
+    }
+  },
+  "generic_types": {
+    "ladfile_builder::test::OpaqueGenericType": {
+      "identifier": "OpaqueGenericType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::OpaqueGenericType",
+      "namespace": "ladfile_builder",
+      "params": [
+        "T"
+      ],
+      "documentation": "I am the documentation of a generic type."
     }
   },
   "functions": {
@@ -632,6 +700,31 @@
         },
         "documentation": "I am some docs for the return type, I provide a name for the return value too",
         "name": "return"
+      },
+      "metadata": {
+        "is_operator": false
+      }
+    },
+    "ladfile_builder::test::HoldsOpaqueType::swap_generic": {
+      "namespace": "ladfile_builder::test::HoldsOpaqueType",
+      "identifier": "swap_generic",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "ref": "ladfile_builder::test::HoldsOpaqueType"
+          }
+        },
+        {
+          "kind": {
+            "val": "ladfile_builder::test::OpaqueGenericType<usize>"
+          }
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "val": "ladfile_builder::test::OpaqueGenericType<usize>"
+        }
       },
       "metadata": {
         "is_operator": false

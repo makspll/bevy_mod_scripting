@@ -131,6 +131,16 @@ pub struct LadFileBuilder<'t> {
     type_registry: &'t TypeRegistry,
     sorted: bool,
     exclude_types_involving_unregistered_types: bool,
+    generic_types: Vec<GenericTypeSpec>,
+}
+
+/// A generic type declared with [`LadFileBuilder::add_generic_type`]
+struct GenericTypeSpec {
+    /// The path of the type, without generics
+    path: String,
+    /// The names of the parameters
+    params: Vec<String>,
+    documentation: String,
 }
 
 impl<'t> LadFileBuilder<'t> {
@@ -142,6 +152,7 @@ impl<'t> LadFileBuilder<'t> {
             type_registry,
             sorted: false,
             exclude_types_involving_unregistered_types: false,
+            generic_types: Vec::new(),
         }
     }
 
@@ -213,6 +224,7 @@ impl<'t> LadFileBuilder<'t> {
                 namespace: String::new(),
                 path: type_ident,
                 generics: vec![],
+                generic_type: None,
                 documentation: Some(docs.into().to_string()),
                 associated_functions: vec![],
                 layout: LadTypeLayout::Opaque,
@@ -332,6 +344,7 @@ impl<'t> LadFileBuilder<'t> {
                 namespace: String::new(),
                 path,
                 generics: vec![],
+                generic_type: None,
                 documentation: Some(documentation.trim().to_owned()),
                 associated_functions: vec![],
                 layout: LadTypeLayout::Opaque,
@@ -386,7 +399,18 @@ impl<'t> LadFileBuilder<'t> {
             }
         }
 
+        let crate_ = type_info
+            .type_path_table()
+            .crate_name()
+            .map(|s| s.to_owned());
+        let namespace = registration
+            .and_then(|r| r.data::<ScriptNamespace>())
+            .map(|n| n.0.to_string())
+            .or_else(|| crate_.clone())
+            .unwrap_or_default();
+
         let type_id = self.lad_id_from_type_id(type_info.type_id());
+        let generic_type = self.add_generic_type_of(type_info, &crate_, &namespace);
         let lad_type = LadTypeDefinition {
             identifier: type_info
                 .type_path_table()
@@ -401,22 +425,11 @@ impl<'t> LadFileBuilder<'t> {
                     name: param.name().to_string(),
                 })
                 .collect(),
+            generic_type,
             documentation: type_info.docs().map(|s| s.to_string()),
             associated_functions: Vec::new(),
-            crate_: type_info
-                .type_path_table()
-                .crate_name()
-                .map(|s| s.to_owned()),
-            namespace: registration
-                .and_then(|r| r.data::<ScriptNamespace>())
-                .map(|n| n.0.to_string())
-                .or_else(|| {
-                    type_info
-                        .type_path_table()
-                        .crate_name()
-                        .map(|s| s.to_owned())
-                })
-                .unwrap_or_default(),
+            crate_,
+            namespace,
             path: type_info.type_path_table().path().to_owned(),
             layout: self.lad_layout_from_type_info(type_info),
             generated,
@@ -432,6 +445,71 @@ impl<'t> LadFileBuilder<'t> {
         };
         self.file.types.insert(type_id, lad_type);
         self
+    }
+
+    /// Declares a generic type, so its instantiations are documented as such instead of as unrelated types.
+    ///
+    /// The pattern is the path of the type, followed by the names of its parameters prefixed with `$`,
+    /// i.e. `bevy_asset::handle::Handle<$A>`. It is matched against the instantiations in the type registry, which
+    /// only expose the arguments of a generic type and not its definition, so the layout of the type is not described.
+    ///
+    /// # Panics
+    /// If the pattern is malformed.
+    pub fn add_generic_type(&mut self, pattern: &str, documentation: &str) -> &mut Self {
+        let (path, params) = pattern
+            .trim()
+            .strip_suffix('>')
+            .and_then(|pattern| pattern.split_once('<'))
+            .unwrap_or_else(|| panic!("`{pattern}` is not of the form `path::Type<$A, $B>`"));
+        let params = params
+            .split(',')
+            .map(|param| {
+                param
+                    .trim()
+                    .strip_prefix('$')
+                    .filter(|name| !name.is_empty())
+                    .unwrap_or_else(|| panic!("`{param}` in `{pattern}` is not a `$Name`"))
+                    .to_owned()
+            })
+            .collect();
+        self.generic_types.push(GenericTypeSpec {
+            path: path.to_owned(),
+            params,
+            documentation: documentation.to_owned(),
+        });
+        self
+    }
+
+    /// If the type is an instantiation of a declared generic type, adds the generic type to the file and returns its id.
+    fn add_generic_type_of(
+        &mut self,
+        type_info: &TypeInfo,
+        crate_: &Option<String>,
+        namespace: &str,
+    ) -> Option<LadTypeId> {
+        let path = type_info.type_path_table().path();
+        let generic_path = path.split('<').next().unwrap_or(path);
+        let spec = self.generic_types.iter().find(|spec| {
+            spec.path == generic_path && spec.params.len() == type_info.generics().len()
+        })?;
+
+        let id = LadTypeId::new_string_id(spec.path.clone().into());
+        self.file
+            .generic_types
+            .entry(id.clone())
+            .or_insert_with(|| LadGenericType {
+                identifier: type_info
+                    .type_path_table()
+                    .ident()
+                    .unwrap_or_default()
+                    .to_string(),
+                crate_: crate_.clone(),
+                path: spec.path.clone(),
+                namespace: namespace.to_owned(),
+                params: spec.params.clone(),
+                documentation: Some(spec.documentation.clone()),
+            });
+        Some(id)
     }
 
     /// Adds all nested types within the given `ThroughTypeInfo`.
@@ -665,6 +743,12 @@ impl<'t> LadFileBuilder<'t> {
             match &function.namespace {
                 LadFunctionNamespace::Type(type_id) => {
                     if let Some(t) = file.types.get_mut(type_id) {
+                        if t.generic_type.is_some() {
+                            warn!(
+                                "Function {} is on {}, an instantiation of a generic type which is documented as opaque, so the function is not documented by backends.",
+                                function_id, type_id
+                            );
+                        }
                         t.associated_functions.push(function_id.clone());
                     } else {
                         warn!(
@@ -708,6 +792,7 @@ impl<'t> LadFileBuilder<'t> {
             });
 
             file.functions.sort_keys();
+            file.generic_types.sort_keys();
         }
 
         file
@@ -1363,11 +1448,28 @@ mod test {
             TupleStruct(usize, #[doc = "asd"] String),
         }
 
+        /// I am a generic type, which the builder is told about so only my arguments are known
+        #[derive(Reflect)]
+        #[reflect(no_field_bounds, from_reflect = false)]
+        struct OpaqueGenericType<T> {
+            #[reflect(ignore)]
+            phantom: std::marker::PhantomData<T>,
+        }
+
+        /// I hold an instantiation of a generic type
+        #[derive(Reflect)]
+        #[reflect(from_reflect = false)]
+        struct HoldsOpaqueType {
+            generic: OpaqueGenericType<usize>,
+        }
+
         type_registry.register::<GenericStructType<usize>>();
         type_registry.register::<UnitType>();
         type_registry.register::<TupleStructType>();
         type_registry.register::<EnumType>();
         type_registry.register::<PlainStructType>();
+        type_registry.register::<OpaqueGenericType<usize>>();
+        type_registry.register::<HoldsOpaqueType>();
 
         let plain_struct_function =
             |_: R<PlainStructType>, _: usize| PlainStructType { int_field: 2 };
@@ -1408,9 +1510,29 @@ mod test {
             .get_function_info("hello_world".into(), GlobalNamespace::into_namespace())
             .with_arg_names(&["arg1"]);
 
+        impl TypedThrough for OpaqueGenericType<usize> {
+            fn through_type_info() -> ThroughTypeInfo {
+                ThroughTypeInfo::TypeInfo(Self::type_info())
+            }
+        }
+        let generic_function = |_: R<HoldsOpaqueType>, _: V<OpaqueGenericType<usize>>| {
+            V::new(OpaqueGenericType::<usize> {
+                phantom: std::marker::PhantomData,
+            })
+        };
+        let generic_function_info = generic_function
+            .get_function_info("swap_generic".into(), HoldsOpaqueType::into_namespace());
+
         let mut lad_file = LadFileBuilder::new(&type_registry)
             .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
             .set_sorted(true)
+            .add_generic_type(
+                "ladfile_builder::test::OpaqueGenericType<$T>",
+                "I am the documentation of a generic type.",
+            )
+            .add_function_info(&generic_function_info)
+            .add_type::<OpaqueGenericType<usize>>()
+            .add_type::<HoldsOpaqueType>()
             .add_function_info(&plain_struct_function_info)
             .add_function_info(&function_info)
             .add_function_info(&global_function_info)
@@ -1833,5 +1955,58 @@ mod test {
             missing.is_empty(),
             "kinds which neither the fields nor the arguments tests document: {missing:?}"
         );
+    }
+
+    #[derive(Reflect)]
+    #[reflect(no_field_bounds, from_reflect = false)]
+    struct TwoParams<A, B> {
+        #[reflect(ignore)]
+        phantom: std::marker::PhantomData<(A, B)>,
+    }
+
+    #[test]
+    #[should_panic(expected = "is not of the form")]
+    fn generic_patterns_need_parameters() {
+        LadFileBuilder::new_empty(&TypeRegistry::default()).add_generic_type("a::b::C", "");
+    }
+
+    #[test]
+    #[should_panic(expected = "is not a `$Name`")]
+    fn generic_parameters_are_prefixed_with_a_dollar() {
+        LadFileBuilder::new_empty(&TypeRegistry::default()).add_generic_type("a::b::C<A>", "");
+    }
+
+    #[test]
+    fn generic_types_match_by_path_and_number_of_parameters() {
+        let mut registry = TypeRegistry::default();
+        registry.register::<TwoParams<usize, f32>>();
+
+        for (pattern, matches) in [
+            ("ladfile_builder::test::TwoParams<$First, $Second>", true),
+            // the number of parameters has to match
+            ("ladfile_builder::test::TwoParams<$A>", false),
+            ("ladfile_builder::test::TwoParams<$A, $B, $C>", false),
+            // and the path, which includes the module
+            ("ladfile_builder::test::Other<$A, $B>", false),
+            ("TwoParams<$A, $B>", false),
+        ] {
+            let mut builder = LadFileBuilder::new_empty(&registry);
+            builder
+                .add_generic_type(pattern, "docs")
+                .add_type::<TwoParams<usize, f32>>();
+            let file = builder.build();
+
+            let instantiation = file.types.values().next().unwrap();
+            assert_eq!(instantiation.generic_type.is_some(), matches, "{pattern}");
+            assert_eq!(file.generic_types.len(), matches as usize, "{pattern}");
+
+            if matches {
+                // the parameters are named by the pattern
+                let generic_type = file.generic_types.values().next().unwrap();
+                assert_eq!(generic_type.params, ["First", "Second"]);
+                assert_eq!(generic_type.identifier, "TwoParams");
+                assert_eq!(generic_type.documentation.as_deref(), Some("docs"));
+            }
+        }
     }
 }

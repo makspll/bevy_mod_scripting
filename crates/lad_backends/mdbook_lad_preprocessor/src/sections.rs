@@ -1,8 +1,8 @@
 use std::{borrow::Cow, collections::HashSet, path::PathBuf};
 
 use ladfile::{
-    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadInstance, LadTypeDefinition,
-    LadTypeId, LadTypeLayout, LadVisitable, ReflectionPrimitiveKind,
+    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadGenericType, LadInstance,
+    LadTypeDefinition, LadTypeId, LadTypeLayout, LadVisitable, ReflectionPrimitiveKind,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
@@ -62,6 +62,11 @@ pub(crate) enum SectionData<'a> {
     TypeDetail {
         lad_type_id: &'a LadTypeId,
         lad_type: &'a LadTypeDefinition,
+    },
+    /// A generic type, which is documented once for all its instantiations
+    GenericTypeDetail {
+        generic_type_id: &'a LadTypeId,
+        generic_type: &'a LadGenericType,
     },
     FunctionDetail {
         types_directory: PathBuf,
@@ -154,6 +159,7 @@ impl<'a> Section<'a> {
             SectionData::TypeDetail { lad_type_id, .. } => {
                 print_type(self.ladfile, *lad_type_id, None, None)
             }
+            SectionData::GenericTypeDetail { generic_type, .. } => generic_type.name_with_params(),
             SectionData::FunctionDetail { function, .. } => {
                 function.identifier_with_overload().to_string()
             }
@@ -163,8 +169,18 @@ impl<'a> Section<'a> {
     pub(crate) fn is_code_heading(&self) -> bool {
         matches!(
             self.data,
-            SectionData::TypeDetail { .. } | SectionData::FunctionDetail { .. }
+            SectionData::TypeDetail { .. }
+                | SectionData::GenericTypeDetail { .. }
+                | SectionData::FunctionDetail { .. }
         )
+    }
+
+    /// The types with a page of their own, instantiations of generic types are documented by the page of the generic type
+    fn documented_types(&self) -> impl Iterator<Item = (&'a LadTypeId, &'a LadTypeDefinition)> {
+        self.ladfile
+            .types
+            .iter()
+            .filter(|(_, lad_type)| lad_type.generic_type.is_none())
     }
 
     pub(crate) fn file_name(&self) -> String {
@@ -197,21 +213,32 @@ impl<'a> Section<'a> {
                     ),
                 ]
             }
-            SectionData::TypeSummary => self
-                .ladfile
-                .types
-                .iter()
-                .map(|(lad_type_id, lad_type)| {
-                    Section::new(
-                        child_parent_path.clone(),
-                        self.ladfile,
-                        SectionData::TypeDetail {
-                            lad_type,
-                            lad_type_id,
+            SectionData::TypeSummary => {
+                self.documented_types()
+                    .map(|(lad_type_id, lad_type)| {
+                        Section::new(
+                            child_parent_path.clone(),
+                            self.ladfile,
+                            SectionData::TypeDetail {
+                                lad_type,
+                                lad_type_id,
+                            },
+                        )
+                    })
+                    .chain(self.ladfile.generic_types.iter().map(
+                        |(generic_type_id, generic_type)| {
+                            Section::new(
+                                child_parent_path.clone(),
+                                self.ladfile,
+                                SectionData::GenericTypeDetail {
+                                    generic_type_id,
+                                    generic_type,
+                                },
+                            )
                         },
-                    )
-                })
-                .collect(),
+                    ))
+                    .collect()
+            }
 
             SectionData::FunctionSummary => {
                 let associated_functions = self
@@ -258,7 +285,7 @@ impl<'a> Section<'a> {
                     ))
                 })
                 .collect(),
-            SectionData::FunctionDetail { .. } => vec![],
+            SectionData::GenericTypeDetail { .. } | SectionData::FunctionDetail { .. } => vec![],
         }
     }
 
@@ -321,7 +348,11 @@ impl<'a> Section<'a> {
                 }]
             }
             SectionData::TypeSummary => {
-                let types = self.ladfile.types.keys().collect::<Vec<_>>();
+                let types = self
+                    .documented_types()
+                    .map(|(id, _)| id)
+                    .chain(self.ladfile.generic_types.keys())
+                    .collect::<Vec<_>>();
                 vec![SectionItem::TypesSummary {
                     types,
                     types_directory: PathBuf::from("./types").to_string_lossy().to_string(),
@@ -367,7 +398,9 @@ impl<'a> Section<'a> {
                         ladfile: self.ladfile,
                         types_directory: PathBuf::from("./"),
                     },
-                    SectionItem::Description { lad_type },
+                    SectionItem::Description {
+                        documentation: lad_type.documentation.as_deref(),
+                    },
                     SectionItem::Markdown {
                         markdown: Box::new(|builder| {
                             builder.heading(2, "Associated Functions");
@@ -376,6 +409,33 @@ impl<'a> Section<'a> {
                     SectionItem::FunctionsSummary {
                         functions,
                         functions_directory: linkify_filename(self.title()),
+                    },
+                ]
+            }
+            SectionData::GenericTypeDetail {
+                generic_type_id,
+                generic_type,
+            } => {
+                let instantiations = self
+                    .ladfile
+                    .types
+                    .iter()
+                    .filter(|(_, lad_type)| lad_type.generic_type.as_ref() == Some(generic_type_id))
+                    .map(|(id, _)| id)
+                    .collect();
+                vec![
+                    SectionItem::Markdown {
+                        markdown: Box::new(|builder| {
+                            builder.text("Opaque Type. 🔒");
+                        }),
+                    },
+                    SectionItem::Description {
+                        documentation: generic_type.documentation.as_deref(),
+                    },
+                    SectionItem::Instantiations {
+                        instantiations,
+                        ladfile: self.ladfile,
+                        types_directory: PathBuf::from("./"),
                     },
                 ]
             }
@@ -420,7 +480,13 @@ pub enum SectionItem<'a> {
         types_directory: PathBuf,
     },
     Description {
-        lad_type: &'a LadTypeDefinition,
+        documentation: Option<&'a str>,
+    },
+    /// The instantiations of a generic type
+    Instantiations {
+        instantiations: Vec<&'a LadTypeId>,
+        ladfile: &'a LadFile,
+        types_directory: PathBuf,
     },
     FunctionsSummary {
         functions: Vec<&'a LadFunction>,
@@ -449,6 +515,7 @@ impl std::fmt::Debug for SectionItem<'_> {
             SectionItem::Markdown { .. } => "Markdown",
             SectionItem::Layout { .. } => "Layout",
             SectionItem::Description { .. } => "Description",
+            SectionItem::Instantiations { .. } => "Instantiations",
             SectionItem::FunctionsSummary { .. } => "FunctionsSummary",
             SectionItem::FunctionDetails { .. } => "FunctionDetails",
             SectionItem::TypesSummary { .. } => "TypesSummary",
@@ -516,16 +583,40 @@ impl IntoMarkdown for SectionItem<'_> {
                     builder.text(opaque);
                 }
             }
-            SectionItem::Description {
-                lad_type: description,
-            } => {
+            SectionItem::Description { documentation } => {
                 builder.heading(2, "Description").quote(Markdown::Raw(
-                    description
-                        .documentation
-                        .as_deref()
-                        .unwrap_or(NO_DOCS_STRING)
-                        .to_owned(),
+                    documentation.unwrap_or(NO_DOCS_STRING).to_owned(),
                 ));
+            }
+            SectionItem::Instantiations {
+                instantiations,
+                ladfile,
+                types_directory,
+            } => {
+                builder.heading(2, "Instantiations");
+                builder.text("The arguments this generic type is used with.");
+                builder.list(
+                    false,
+                    instantiations
+                        .iter()
+                        .filter_map(|id| ladfile.types.get(*id))
+                        .map(|instantiation| {
+                            let arguments = instantiation
+                                .generics
+                                .iter()
+                                .map(|argument| {
+                                    print_type(
+                                        ladfile,
+                                        &argument.type_id,
+                                        None,
+                                        Some((types_directory.clone(), true)),
+                                    )
+                                })
+                                .collect::<Vec<_>>();
+                            Markdown::Raw(arguments.join(", "))
+                        })
+                        .collect(),
+                );
             }
             SectionItem::FunctionsSummary {
                 functions,
@@ -709,6 +800,77 @@ impl IntoMarkdown for SectionItem<'_> {
                 });
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn setup_ladfile() -> LadFile {
+        ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap()
+    }
+
+    #[test]
+    fn generic_types_have_a_page_and_their_instantiations_do_not() {
+        let ladfile = setup_ladfile();
+        let summary = Section::new(PathBuf::new(), &ladfile, SectionData::TypeSummary);
+        let titles = summary
+            .children()
+            .iter()
+            .map(|child| child.title())
+            .collect::<Vec<_>>();
+
+        assert!(
+            titles.contains(&"OpaqueGenericType<T>".to_owned()),
+            "{titles:?}"
+        );
+        assert!(
+            !titles
+                .iter()
+                .any(|title| title.starts_with("OpaqueGenericType<U")),
+            "{titles:?}"
+        );
+        // generic types which were not declared are only known by their instantiations
+        assert!(
+            titles.contains(&"GenericStructType<Usize>".to_owned()),
+            "{titles:?}"
+        );
+
+        // and the summary lists the same
+        let items = summary.section_items();
+        let [SectionItem::TypesSummary { types, .. }] = items.as_slice() else {
+            panic!("expected a types summary, got {items:?}");
+        };
+        assert_eq!(types.len(), titles.len());
+    }
+
+    #[test]
+    fn generic_type_pages_describe_the_type_and_what_it_is_used_with() {
+        let ladfile = setup_ladfile();
+        let (generic_type_id, generic_type) = ladfile.generic_types.iter().next().unwrap();
+        let page = Section::new(
+            PathBuf::new(),
+            &ladfile,
+            SectionData::GenericTypeDetail {
+                generic_type_id,
+                generic_type,
+            },
+        );
+        assert_eq!(page.file_name(), "opaquegenerictypet.md");
+
+        let mut builder = MarkdownBuilder::new();
+        page.to_markdown(&mut builder);
+        let markdown = builder.build();
+
+        assert!(markdown.contains("# `OpaqueGenericType<T>`"), "{markdown}");
+        assert!(markdown.contains("Opaque Type"), "{markdown}");
+        assert!(
+            markdown.contains("> I am the documentation of a generic type."),
+            "{markdown}"
+        );
+        // the arguments of the instantiations, linked to their pages
+        assert!(markdown.contains("- [Usize](./usize.md)"), "{markdown}");
     }
 }
 
