@@ -136,10 +136,12 @@ pub fn generate_lad_file(
 
     // reflection only tells us the arguments of a generic type, so the generic types
     // which scripts see have to be declared
-    builder.add_generic_type(
+    if let Err(error) = builder.add_generic_type(
         "bevy_asset::handle::Handle<$A>",
         "A handle to an asset of type `A`.",
-    );
+    ) {
+        error!("Could not declare `Handle` as a generic type: {error}");
+    }
 
     // process world as a special value
     builder.add_nonreflect_type::<World>(

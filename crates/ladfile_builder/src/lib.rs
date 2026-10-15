@@ -453,14 +453,18 @@ impl<'t> LadFileBuilder<'t> {
     /// i.e. `bevy_asset::handle::Handle<$A>`. It is matched against the instantiations in the type registry, which
     /// only expose the arguments of a generic type and not its definition, so the layout of the type is not described.
     ///
-    /// # Panics
+    /// # Errors
     /// If the pattern is malformed.
-    pub fn add_generic_type(&mut self, pattern: &str, documentation: &str) -> &mut Self {
+    pub fn add_generic_type(
+        &mut self,
+        pattern: &str,
+        documentation: &str,
+    ) -> Result<&mut Self, String> {
         let (path, params) = pattern
             .trim()
             .strip_suffix('>')
             .and_then(|pattern| pattern.split_once('<'))
-            .unwrap_or_else(|| panic!("`{pattern}` is not of the form `path::Type<$A, $B>`"));
+            .ok_or_else(|| format!("`{pattern}` is not of the form `path::Type<$A, $B>`"))?;
         let params = params
             .split(',')
             .map(|param| {
@@ -468,16 +472,16 @@ impl<'t> LadFileBuilder<'t> {
                     .trim()
                     .strip_prefix('$')
                     .filter(|name| !name.is_empty())
-                    .unwrap_or_else(|| panic!("`{param}` in `{pattern}` is not a `$Name`"))
-                    .to_owned()
+                    .map(str::to_owned)
+                    .ok_or_else(|| format!("`{param}` in `{pattern}` is not a `$Name`"))
             })
-            .collect();
+            .collect::<Result<Vec<_>, _>>()?;
         self.generic_types.push(GenericTypeSpec {
             path: path.to_owned(),
             params,
             documentation: documentation.to_owned(),
         });
-        self
+        Ok(self)
     }
 
     /// If the type is an instantiation of a declared generic type, adds the generic type to the file and returns its id.
@@ -1530,6 +1534,7 @@ mod test {
                 "ladfile_builder::test::OpaqueGenericType<$T>",
                 "I am the documentation of a generic type.",
             )
+            .unwrap()
             .add_function_info(&generic_function_info)
             .add_type::<OpaqueGenericType<usize>>()
             .add_type::<HoldsOpaqueType>()
@@ -1965,15 +1970,28 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "is not of the form")]
-    fn generic_patterns_need_parameters() {
-        LadFileBuilder::new_empty(&TypeRegistry::default()).add_generic_type("a::b::C", "");
-    }
+    fn malformed_generic_patterns_are_rejected() {
+        let registry = TypeRegistry::default();
+        let mut builder = LadFileBuilder::new_empty(&registry);
 
-    #[test]
-    #[should_panic(expected = "is not a `$Name`")]
-    fn generic_parameters_are_prefixed_with_a_dollar() {
-        LadFileBuilder::new_empty(&TypeRegistry::default()).add_generic_type("a::b::C<A>", "");
+        // parameters are needed
+        let error = builder.add_generic_type("a::b::C", "").err().unwrap();
+        assert!(error.contains("is not of the form"), "{error}");
+        let error = builder.add_generic_type("a::b::C<", "").err().unwrap();
+        assert!(error.contains("is not of the form"), "{error}");
+
+        // and they are prefixed with a dollar
+        let error = builder.add_generic_type("a::b::C<A>", "").err().unwrap();
+        assert!(error.contains("is not a `$Name`"), "{error}");
+        let error = builder
+            .add_generic_type("a::b::C<$A, $>", "")
+            .err()
+            .unwrap();
+        assert!(error.contains("is not a `$Name`"), "{error}");
+
+        // nothing was declared by the failed attempts
+        assert!(builder.add_generic_type("a::b::C<$A, $B>", "").is_ok());
+        assert_eq!(builder.generic_types.len(), 1);
     }
 
     #[test]
@@ -1993,6 +2011,7 @@ mod test {
             let mut builder = LadFileBuilder::new_empty(&registry);
             builder
                 .add_generic_type(pattern, "docs")
+                .unwrap()
                 .add_type::<TwoParams<usize, f32>>();
             let file = builder.build();
 

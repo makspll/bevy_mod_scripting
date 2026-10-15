@@ -803,6 +803,42 @@ impl IntoMarkdown for SectionItem<'_> {
     }
 }
 
+fn build_lad_function_argument_row(
+    idx: usize,
+    arg: &LadArgument,
+    ladfile: &LadFile,
+    types_directory: PathBuf,
+    builder: &mut TableBuilder,
+) {
+    // we exclude function call context as it's not something scripts pass down
+    if matches!(
+        arg.kind,
+        LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
+    ) {
+        return;
+    }
+
+    let types_directory = types_directory.to_owned();
+    let escaped = print_type(ladfile, &arg.kind, None, Some((types_directory, false)));
+
+    let arg_name = arg
+        .name
+        .as_ref()
+        .cloned()
+        .unwrap_or_else(|| Cow::Owned(format!("arg{idx}")));
+
+    builder.row(markdown_vec![
+        Markdown::new_paragraph(arg_name).bold(),
+        Markdown::Raw(escaped),
+        Markdown::Raw(
+            arg.documentation
+                .as_deref()
+                .unwrap_or(NO_DOCS_STRING)
+                .to_owned()
+        )
+    ]);
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -872,40 +908,4 @@ mod test {
         // the arguments of the instantiations, linked to their pages
         assert!(markdown.contains("- [Usize](./usize.md)"), "{markdown}");
     }
-}
-
-fn build_lad_function_argument_row(
-    idx: usize,
-    arg: &LadArgument,
-    ladfile: &LadFile,
-    types_directory: PathBuf,
-    builder: &mut TableBuilder,
-) {
-    // we exclude function call context as it's not something scripts pass down
-    if matches!(
-        arg.kind,
-        LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
-    ) {
-        return;
-    }
-
-    let types_directory = types_directory.to_owned();
-    let escaped = print_type(ladfile, &arg.kind, None, Some((types_directory, false)));
-
-    let arg_name = arg
-        .name
-        .as_ref()
-        .cloned()
-        .unwrap_or_else(|| Cow::Owned(format!("arg{idx}")));
-
-    builder.row(markdown_vec![
-        Markdown::new_paragraph(arg_name).bold(),
-        Markdown::Raw(escaped),
-        Markdown::Raw(
-            arg.documentation
-                .as_deref()
-                .unwrap_or(NO_DOCS_STRING)
-                .to_owned()
-        )
-    ]);
 }
