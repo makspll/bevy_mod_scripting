@@ -223,8 +223,9 @@ The `new` constructor is implemented this way, see [Constructing Arbitrary Types
 
 #### Signatures which depend on the type
 
-A shared function's signature can refer to the type it is bound to, using the placeholder types `BoundValue` (a value of the type) and `BoundFields` (a table of the type's fields).
-Wherever the function is bound to a type, these are replaced with the type, so the documentation and the Lua language server files show, for example, `MyStruct.new(payload: MyStruct.Fields): MyStruct` rather than a generic table and reference.
+A shared function's signature can refer to the type it is bound to, using the placeholder types `BoundValue` (a value of the type), `BoundFields` (a table of the type's fields) and `BoundHandle` (a handle to an asset of the type).
+Wherever the function is bound to a type, these are replaced with the type, so the documentation and the Lua language server files show, for example, `MyStruct.new(payload: MyStruct.Fields): MyStruct` rather than a generic table and reference, or `Image.load(path: string): Handle<Image>`.
+Functions using `BoundHandle` are only documented on asset types, i.e. types registered with `register_asset_reflect`.
 The same placeholders work for functions on `EnumVariantRef`, which are bound to each variant of each enum when the LAD file is built (as functions in the `Variant` namespace). Placeholders left unbound are documented as what they are at runtime, a `ReflectReference` and a table.
 
 The enum variants of a type are also available on its static reference, i.e. `MyEnum.Variant`, after the functions.

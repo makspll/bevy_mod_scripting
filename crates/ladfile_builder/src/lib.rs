@@ -14,6 +14,7 @@ use bevy_mod_scripting_bindings::{
         typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
     },
     function::{
+        bound::asset_handle_type_info,
         namespace::Namespace,
         script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     },
@@ -473,6 +474,14 @@ impl<'t> LadFileBuilder<'t> {
             },
             ThroughTypeInfo::TypeInfo(type_info) | ThroughTypeInfo::Fields { type_info, .. } => {
                 self.add_type_info(type_info);
+            }
+            ThroughTypeInfo::AssetHandle(asset_type_info) => {
+                self.add_type_info(asset_type_info);
+                if let Some(handle_type_info) =
+                    asset_handle_type_info(self.type_registry, asset_type_info.type_id())
+                {
+                    self.add_type_info(handle_type_info);
+                }
             }
             ThroughTypeInfo::Primitive(_) | ThroughTypeInfo::Bound(_) => {}
         }
@@ -1067,6 +1076,19 @@ impl<'t> LadFileBuilder<'t> {
                 .lad_type_kind_from_through_type(
                     &HashMap::<String, ScriptValue>::through_type_info(),
                 ),
+            ThroughTypeInfo::Bound(BoundPlaceholder::Handle) => {
+                self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
+            }
+            ThroughTypeInfo::AssetHandle(asset_type_info) => {
+                match asset_handle_type_info(self.type_registry, asset_type_info.type_id()) {
+                    Some(handle_type_info) => LadFieldOrVariableKind::Val(
+                        self.lad_id_from_type_id(handle_type_info.type_id()),
+                    ),
+                    None => {
+                        self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
+                    }
+                }
+            }
         }
     }
 }
@@ -1456,5 +1478,41 @@ mod test {
             .build();
 
         assert_eq!(lad_file.types.len(), 0);
+    }
+
+    #[test]
+    fn bound_handles_are_documented_as_the_handle_of_the_asset_type() {
+        use bevy_asset::{Asset, Handle, ReflectAsset};
+        use bevy_mod_scripting_bindings::function::bound::BoundHandle;
+
+        #[derive(Asset, Reflect)]
+        struct TestAsset;
+
+        let mut type_registry = TypeRegistry::default();
+        type_registry.register::<TestAsset>();
+        type_registry.register::<Handle<TestAsset>>();
+        type_registry.register_type_data::<TestAsset, ReflectAsset>();
+
+        let load = |_path: String| -> BoundHandle { unreachable!() };
+        let info = load
+            .get_function_info(Cow::Borrowed("load"), Namespace::Global)
+            .bind_placeholders(TestAsset::type_info(), None);
+
+        let lad_file = LadFileBuilder::new_empty(&type_registry)
+            .add_function_info(&info)
+            .build();
+
+        let function = lad_file
+            .functions
+            .values()
+            .next()
+            .expect("the function is added");
+        let LadFieldOrVariableKind::Val(handle) = &function.return_type.kind else {
+            panic!("expected a value, got {:?}", function.return_type.kind);
+        };
+        assert!(
+            handle.to_string().contains("Handle<"),
+            "expected the handle type, got {handle}"
+        );
     }
 }
