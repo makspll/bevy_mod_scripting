@@ -14,8 +14,8 @@ use crate::{
 use crate::{error::InteropError, reflection_extensions::TypeInfoExtensions};
 use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
-use bevy_platform::collections::{HashMap, HashSet};
-use bevy_reflect::{TypeInfo, TypeRegistry, Typed};
+use bevy_platform::collections::HashMap;
+use bevy_reflect::{TypeInfo, Typed};
 
 /// All Through types follow one rule:
 /// - A through type can not contain a nested through type. It must always contain a fully typed inner type.
@@ -190,32 +190,13 @@ impl TypedWrapperKind {
 }
 
 /// A dynamic version of [`TypedThrough`], which can be used to convert a [`TypeInfo`] into a [`ThroughTypeInfo`].
-///
-/// Reflection does not expose the type info of every nested type (i.e. the values of sets are only known by their type id),
-/// use [`into_through_type_info_with_registry`] to resolve those as well.
 pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
-    convert_type_info(type_info, None)
-}
-
-/// Same as [`into_through_type_info`], but looks up the types which reflection only exposes as type ids in the registry.
-pub fn into_through_type_info_with_registry(
-    type_info: &'static TypeInfo,
-    registry: &TypeRegistry,
-) -> ThroughTypeInfo {
-    convert_type_info(type_info, Some(registry))
-}
-
-fn convert_type_info(
-    type_info: &'static TypeInfo,
-    registry: Option<&TypeRegistry>,
-) -> ThroughTypeInfo {
-    let nested = |inner: &'static TypeInfo| Box::new(convert_type_info(inner, registry));
     let option = (|| {
         if let Ok(array) = type_info.as_array() {
             let len = array.capacity();
             let inner = array.item_info()?;
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Array(
-                nested(inner),
+                Box::new(into_through_type_info(inner)),
                 len,
             )));
         } else if let Ok(hash_map) = type_info.as_map() {
@@ -223,19 +204,13 @@ fn convert_type_info(
             let value_type = hash_map.value_info()?;
 
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
-                nested(key_type),
-                nested(value_type),
-            )));
-        } else if let Ok(set) = type_info.as_set() {
-            // sets only expose the type id of their values
-            let inner = registry?.get_type_info(set.value_ty().id())?;
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashSet(
-                nested(inner),
+                Box::new(into_through_type_info(key_type)),
+                Box::new(into_through_type_info(value_type)),
             )));
         } else if let Ok(list) = type_info.as_list() {
             let inner = list.item_info()?;
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(
-                nested(inner),
+                Box::new(into_through_type_info(inner)),
             )));
         } else if type_info.is_option() {
             let enum_ = type_info.as_enum().ok()?;
@@ -244,7 +219,7 @@ fn convert_type_info(
             let inner = inner.field_at(0)?;
             let inner = inner.type_info()?;
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Option(
-                nested(inner),
+                Box::new(into_through_type_info(inner)),
             )));
         } else if type_info.is_result() {
             let enum_ = type_info.as_enum().ok()?;
@@ -256,14 +231,14 @@ fn convert_type_info(
             let inner = inner.field_at(0)?;
             let inner = inner.type_info()?;
             return Some(ThroughTypeInfo::TypedWrapper(
-                TypedWrapperKind::InteropResult(nested(inner)),
+                TypedWrapperKind::InteropResult(Box::new(into_through_type_info(inner))),
             ));
         } else if let Ok(tuple) = type_info.as_tuple() {
             let mut tuple_types = Vec::new();
             for i in 0..tuple.field_len() {
                 let field = tuple.field_at(i)?;
                 let field_type = field.type_info()?;
-                tuple_types.push(*nested(field_type));
+                tuple_types.push(into_through_type_info(field_type));
             }
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(
                 tuple_types,
@@ -408,18 +383,6 @@ impl<K: TypedThrough, V: TypedThrough> TypedThrough for std::collections::HashMa
     }
 }
 
-impl<T: TypedThrough> TypedThrough for HashSet<T> {
-    fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashSet(Box::new(T::through_type_info())))
-    }
-}
-
-impl<T: TypedThrough> TypedThrough for std::collections::HashSet<T> {
-    fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashSet(Box::new(T::through_type_info())))
-    }
-}
-
 impl<T: TypedThrough> TypedThrough for Result<T, InteropError> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::TypedWrapper(TypedWrapperKind::InteropResult(Box::new(
@@ -500,8 +463,6 @@ variadics_please::all_tuples!(impl_through_typed_tuple, 0, 13, T);
 
 #[cfg(test)]
 mod test {
-    use std::collections::BTreeSet;
-
     use super::*;
 
     fn assert_type_info_is_primitive<T: Typed + TypedThrough>(kind: ReflectionPrimitiveKind) {
@@ -618,304 +579,5 @@ mod test {
             into_through_type_info(<(i32, f32)>::type_info()),
             ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(..))
         ));
-    }
-
-    // Every variant of the through type enums is listed exactly once here. The generated name lookups are exhaustive matches,
-    // so adding a variant does not compile until it is listed, and the coverage tests below fail until it is exercised.
-    macro_rules! variant_names {
-        ($ty:ident, $all:ident, $name:ident: $($variant:ident),+) => {
-            const $all: &[&str] = &[$(stringify!($variant)),+];
-
-            fn $name(value: &$ty) -> &'static str {
-                match value {
-                    $($ty::$variant { .. } => stringify!($variant)),+
-                }
-            }
-        };
-    }
-
-    variant_names!(
-        ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
-        UntypedWrapper, TypedWrapper, TypeInfo, Primitive, Fields, Bound, AssetHandle
-    );
-    variant_names!(
-        TypedWrapperKind, ALL_TYPED_WRAPPERS, typed_wrapper_name:
-        Union, Vec, HashMap, HashSet, Array, Option, InteropResult, Tuple, UntypedTuple
-    );
-    variant_names!(UntypedWrapperKind, ALL_UNTYPED_WRAPPERS, untyped_wrapper_name: Ref, Mut, Val);
-    variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields, Handle);
-
-    /// Every variant of every through type enum, i.e. `TypedWrapperKind::Vec`
-    fn all_variants() -> BTreeSet<String> {
-        let prefixed = |prefix: &str, names: &[&str]| {
-            names
-                .iter()
-                .map(|name| format!("{prefix}::{name}"))
-                .collect::<Vec<_>>()
-        };
-        [
-            prefixed("ThroughTypeInfo", ALL_THROUGH_TYPES),
-            prefixed("TypedWrapperKind", ALL_TYPED_WRAPPERS),
-            prefixed("UntypedWrapperKind", ALL_UNTYPED_WRAPPERS),
-            prefixed("BoundPlaceholder", ALL_BOUND_PLACEHOLDERS),
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
-    }
-
-    /// Records every variant found anywhere in the given type info
-    fn collect_variants(info: &ThroughTypeInfo, seen: &mut BTreeSet<String>) {
-        seen.insert(format!("ThroughTypeInfo::{}", through_name(info)));
-        match info {
-            ThroughTypeInfo::UntypedWrapper { wrapper_kind, .. } => {
-                seen.insert(format!(
-                    "UntypedWrapperKind::{}",
-                    untyped_wrapper_name(wrapper_kind)
-                ));
-            }
-            ThroughTypeInfo::TypedWrapper(kind) => {
-                seen.insert(format!("TypedWrapperKind::{}", typed_wrapper_name(kind)));
-                for inner in kind.inner() {
-                    collect_variants(inner, seen);
-                }
-            }
-            ThroughTypeInfo::Bound(placeholder) => {
-                seen.insert(format!(
-                    "BoundPlaceholder::{}",
-                    bound_placeholder_name(placeholder)
-                ));
-            }
-            ThroughTypeInfo::TypeInfo(_)
-            | ThroughTypeInfo::Primitive(_)
-            | ThroughTypeInfo::Fields { .. }
-            | ThroughTypeInfo::AssetHandle(_) => {}
-        }
-    }
-
-    /// The structure of the type info, i.e. `Vec<Val>`, ignoring which types are involved
-    fn shape(info: &ThroughTypeInfo) -> String {
-        match info {
-            ThroughTypeInfo::UntypedWrapper { wrapper_kind, .. } => {
-                untyped_wrapper_name(wrapper_kind).to_owned()
-            }
-            ThroughTypeInfo::TypedWrapper(kind) => format!(
-                "{}<{}>",
-                typed_wrapper_name(kind),
-                kind.inner()
-                    .into_iter()
-                    .map(shape)
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
-            ThroughTypeInfo::Primitive(primitive) => format!("{primitive}"),
-            other => through_name(other).to_owned(),
-        }
-    }
-
-    #[derive(bevy_reflect::Reflect)]
-    struct Value;
-
-    /// The static and the dynamic description of the same type, i.e. `Vec<V<Value>>` and `Vec<Value>`
-    type StaticDynamicPair = (ThroughTypeInfo, &'static TypeInfo);
-
-    fn static_dynamic_pairs() -> Vec<(&'static str, StaticDynamicPair)> {
-        vec![
-            ("primitive", (i32::through_type_info(), i32::type_info())),
-            (
-                "value",
-                (V::<Value>::through_type_info(), Value::type_info()),
-            ),
-            (
-                "vec",
-                (
-                    Vec::<V<Value>>::through_type_info(),
-                    Vec::<Value>::type_info(),
-                ),
-            ),
-            (
-                "hash map",
-                (
-                    HashMap::<String, f32>::through_type_info(),
-                    HashMap::<String, f32>::type_info(),
-                ),
-            ),
-            (
-                "hash set",
-                (
-                    HashSet::<i32>::through_type_info(),
-                    HashSet::<i32>::type_info(),
-                ),
-            ),
-            (
-                "std hash set",
-                (
-                    std::collections::HashSet::<i32>::through_type_info(),
-                    std::collections::HashSet::<i32>::type_info(),
-                ),
-            ),
-            (
-                "array",
-                (<[u8; 4]>::through_type_info(), <[u8; 4]>::type_info()),
-            ),
-            (
-                "option",
-                (
-                    Option::<String>::through_type_info(),
-                    Option::<String>::type_info(),
-                ),
-            ),
-            (
-                "result",
-                (
-                    Result::<i32, InteropError>::through_type_info(),
-                    Result::<i32, InteropError>::type_info(),
-                ),
-            ),
-            (
-                "tuple",
-                (<(i32, f32)>::through_type_info(), <(i32, f32)>::type_info()),
-            ),
-            (
-                "nested",
-                (
-                    Vec::<HashSet<Option<(i32, String)>>>::through_type_info(),
-                    Vec::<HashSet<Option<(i32, String)>>>::type_info(),
-                ),
-            ),
-        ]
-    }
-
-    fn test_registry() -> TypeRegistry {
-        let mut registry = TypeRegistry::default();
-        registry.register::<Value>();
-        registry.register::<HashSet<i32>>();
-        registry.register::<std::collections::HashSet<i32>>();
-        registry.register::<HashSet<Option<(i32, String)>>>();
-        registry
-    }
-
-    /// The variants which are only produced by [`TypedThrough`], as reflection can not express them.
-    const STATIC_ONLY_VARIANTS: &[&str] = &[
-        // how an argument is passed is a property of the function, not of the type
-        "UntypedWrapperKind::Ref",
-        "UntypedWrapperKind::Mut",
-        // reflection has no notion of unions, variadics, or the placeholders of shared functions
-        "TypedWrapperKind::Union",
-        "TypedWrapperKind::UntypedTuple",
-        "ThroughTypeInfo::Fields",
-        "ThroughTypeInfo::Bound",
-        "ThroughTypeInfo::AssetHandle",
-        "BoundPlaceholder::Value",
-        "BoundPlaceholder::Fields",
-        "BoundPlaceholder::Handle",
-        // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses the wrapper instead
-        "ThroughTypeInfo::TypeInfo",
-    ];
-
-    #[test]
-    fn static_conversion_produces_every_variant() {
-        use crate::function::bound::{BoundFields, BoundHandle, BoundValue};
-
-        let mut seen = BTreeSet::new();
-        let mut collect = |info: ThroughTypeInfo| collect_variants(&info, &mut seen);
-
-        collect(R::<Value>::through_type_info());
-        collect(M::<Value>::through_type_info());
-        collect(V::<Value>::through_type_info());
-        collect(i32::through_type_info());
-        collect(Union::<V<Value>, V<Value>>::through_type_info());
-        collect(Vec::<i32>::through_type_info());
-        collect(VecDeque::<i32>::through_type_info());
-        collect(HashMap::<i32, i32>::through_type_info());
-        collect(HashSet::<i32>::through_type_info());
-        collect(<[i32; 2]>::through_type_info());
-        collect(Option::<i32>::through_type_info());
-        collect(Result::<i32, InteropError>::through_type_info());
-        collect(<(i32, i32)>::through_type_info());
-        collect(VariadicTuple::through_type_info());
-        collect(ThroughTypeInfo::TypeInfo(Value::type_info()));
-        // placeholders, and what they turn into when bound
-        for placeholder in [
-            BoundValue::through_type_info(),
-            BoundFields::through_type_info(),
-            BoundHandle::through_type_info(),
-        ] {
-            collect(placeholder.bind_placeholders(Value::type_info(), None));
-            collect(placeholder);
-        }
-
-        let missing: Vec<_> = all_variants().difference(&seen).cloned().collect();
-        assert!(
-            missing.is_empty(),
-            "variants which are never produced by the static conversion: {missing:?}"
-        );
-    }
-
-    #[test]
-    fn dynamic_conversion_produces_every_variant_but_the_static_only_ones() {
-        let registry = test_registry();
-
-        let mut seen = BTreeSet::new();
-        for (_, (_, type_info)) in static_dynamic_pairs() {
-            collect_variants(
-                &into_through_type_info_with_registry(type_info, &registry),
-                &mut seen,
-            );
-        }
-
-        let static_only: BTreeSet<String> = STATIC_ONLY_VARIANTS
-            .iter()
-            .map(|name| name.to_string())
-            .collect();
-        let all = all_variants();
-        assert!(
-            static_only.is_subset(&all),
-            "unknown variants in the static only list: {:?}",
-            static_only.difference(&all)
-        );
-
-        let missing: Vec<_> = all
-            .difference(&static_only)
-            .filter(|variant| !seen.contains(*variant))
-            .collect();
-        assert!(
-            missing.is_empty(),
-            "variants which are never produced by the dynamic conversion, and are not listed as static only: {missing:?}"
-        );
-
-        let wrongly_listed: Vec<_> = static_only.intersection(&seen).collect();
-        assert!(
-            wrongly_listed.is_empty(),
-            "variants listed as static only which the dynamic conversion produces: {wrongly_listed:?}"
-        );
-    }
-
-    #[test]
-    fn dynamic_conversion_describes_types_like_the_static_one() {
-        let registry = test_registry();
-
-        for (name, (static_info, type_info)) in static_dynamic_pairs() {
-            let dynamic_info = into_through_type_info_with_registry(type_info, &registry);
-            assert_eq!(
-                shape(&static_info),
-                shape(&dynamic_info),
-                "the dynamic conversion of the {name} type differs from the static one"
-            );
-        }
-    }
-
-    #[test]
-    fn dynamic_conversion_without_a_registry_falls_back_to_a_value_for_sets() {
-        // sets only expose the type id of their values
-        assert_eq!(
-            shape(&into_through_type_info(HashSet::<i32>::type_info())),
-            "Val"
-        );
-        // while everything else is fully described
-        assert_eq!(
-            shape(&into_through_type_info(Vec::<i32>::type_info())),
-            "Vec<I32>"
-        );
     }
 }
