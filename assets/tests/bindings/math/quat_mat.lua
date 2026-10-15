@@ -43,6 +43,12 @@ assert(m:determinant() == 6, "determinant")
 assert(m:transpose() == m, "transpose")
 assert(m * m:inverse() == Mat3.identity(), "inverse")
 assert(m:col(1) == Vec3.new(0, 2, 0), "col")
+assert(m + m == m * 2, "mat3 + mat3")
+assert(m - m == m * 0, "mat3 - mat3")
+assert(m / 2 == m * 0.5, "mat3 / number")
+assert(Mat4.identity() / 2 == Mat4.identity() * 0.5, "mat4 / number")
+-- a matrix and a vector have different shapes, so adding them is an error rather than a guess
+assert(not pcall(function() return m + Vec3.one() end), "mat3 + vec3 errors")
 
 local t = Mat4.from_translation(Vec3.new(1, 2, 3))
 assert(t:transform_point3(Vec3.zero()) == Vec3.new(1, 2, 3), "transform_point3")
