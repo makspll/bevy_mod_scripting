@@ -15,6 +15,6 @@ end
 
 function bench()
     local mul = matrix * vector
-    local add = matrix + vector
-    local div = vector / matrix
+    local add = matrix + matrix
+    local compose = matrix * matrix
 end

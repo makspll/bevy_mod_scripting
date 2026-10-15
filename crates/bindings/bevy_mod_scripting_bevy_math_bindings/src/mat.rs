@@ -100,6 +100,16 @@ impl Mat3 {
         *_self == *other
     }
 
+    /// Adds two matrices component-wise.
+    fn add(_self: R<Mat3>, other: R<Mat3>) -> V<Mat3> {
+        V(*_self + *other)
+    }
+
+    /// Subtracts two matrices component-wise.
+    fn sub(_self: R<Mat3>, other: R<Mat3>) -> V<Mat3> {
+        V(*_self - *other)
+    }
+
     /// Transforms a [`Vec3`](bevy_math::Vec3) by this matrix.
     fn mul_vec3(_self: R<Mat3>, v: R<Vec3>) -> V<Vec3> {
         V(_self.mul_vec3(*v))
@@ -213,6 +223,16 @@ impl Mat4 {
     /// Whether both matrices have exactly the same components.
     fn eq(_self: R<Mat4>, other: R<Mat4>) -> bool {
         *_self == *other
+    }
+
+    /// Adds two matrices component-wise.
+    fn add(_self: R<Mat4>, other: R<Mat4>) -> V<Mat4> {
+        V(*_self + *other)
+    }
+
+    /// Subtracts two matrices component-wise.
+    fn sub(_self: R<Mat4>, other: R<Mat4>) -> V<Mat4> {
+        V(*_self - *other)
     }
 
     /// Transforms a point in 3D, including translation and the projection divide.
