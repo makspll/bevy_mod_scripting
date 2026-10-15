@@ -72,9 +72,16 @@ let v = Vec3.new_.call(1.0, 2.0, 3.0);
 assert(v.x == 1.0);
 ```
 
-Examples should run as written and check their own results with `assert`, so that they can be run as tests in the future.
-They run in the same app as the [script tests](#tests) (`assets/tests/scenario.bmsscenario`).
+Examples are tests: they must run as written and check their own results with `assert`.
+Every `multi-lang-example` block in the doc comments under `crates/` and in the book is run by the `doc_example_tests` test, with the scenario in `assets/doc_examples/default.bmsscenario` (the same app as the [script tests](#tests)):
+
+```bash
+cargo test --test doc_example_tests --features lua54,rhai,bevy_math_bindings -- math
+```
+
+Examples of a bindings crate whose feature is disabled are ignored.
 If an example needs a different setup, i.e. a window, name a scenario with the `scenario` attribute, i.e. `multi-lang-example,lua,scenario=window`, which refers to `assets/doc_examples/window.bmsscenario`.
+Mark examples which can't run in a test app with `ignore`, i.e. `multi-lang-example,lua,ignore`, and say what they need in the surrounding docs.
 
 ## Tests
 

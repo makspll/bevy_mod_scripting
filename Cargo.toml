@@ -351,3 +351,7 @@ harness = false
 [[test]]
 name = "script_tests"
 harness = false
+
+[[test]]
+name = "doc_example_tests"
+harness = false
