@@ -47,18 +47,19 @@ fn convert(units: Vec<Unit>, include_crates: Vec<String>) -> String {
             continue;
         }
 
-        let frontend = u.sections
+        let frontend = u
+            .sections
             .iter()
             .flat_map(|i| i.iter())
             .find(|(n, _)| n == "frontend")
             .map(|(_, p)| p.end - p.start);
 
-        let codegen = u.sections
+        let codegen = u
+            .sections
             .iter()
             .flat_map(|i| i.iter())
             .find(|(n, _)| n == "codegen")
             .map(|(_, p)| p.end - p.start);
-
 
         let meta_name = format!("{}::blocking_comp", crate_name);
         let codegen_name = format!("{}::codegen", crate_name);

@@ -167,4 +167,3 @@ pub fn relative_workspace_dir<P: AsRef<Path>>(
     let workspace_dir = workspace_dir(app_settings)?;
     Ok(workspace_dir.join(dir))
 }
-

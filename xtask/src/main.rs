@@ -643,7 +643,9 @@ impl Xtasks {
         Self::install(app_settings.clone(), Binary::MdbookPreprocessor)?;
 
         info!("Running docgen example to generate ladfiles");
-        Self::example(app_settings.clone(), "docgen".to_owned())?;
+        let mut docgen_settings = app_settings.clone();
+        docgen_settings.features = docgen_features();
+        Self::example(docgen_settings, "docgen".to_owned())?;
 
         // copy the `<workspace>/assets/bindings.lad.json` file to it's path in the book
         let ladfile_path =
@@ -1373,10 +1375,7 @@ impl Xtasks {
 
     /// Generates the ladfile and Lua language server files, including the functions available to script tests
     fn docgen(mut app_settings: GlobalArgs) -> Result<()> {
-        app_settings
-            .features
-            .0
-            .insert(Feature::LuaLanguageServerFiles);
+        app_settings.features = docgen_features();
         Self::example_with_args(app_settings, "docgen", &["testlib"])
     }
 
@@ -1433,6 +1432,14 @@ impl Xtasks {
 
         Ok(())
     }
+}
+
+/// The features the docgen example runs with.
+///
+/// The example documents whatever bindings are compiled in, so it needs all of them,
+/// the default features only cover a few of the bevy crates.
+fn docgen_features() -> Features {
+    Features::all_features()
 }
 
 /// Because we are likely already runnnig in the context of a cargo invocation,
@@ -1512,6 +1519,22 @@ mod tests {
     #[test]
     fn init_installs_all_tools_by_default() {
         assert_eq!(parse_init_tools(&[]), None);
+    }
+
+    #[test]
+    fn docgen_documents_every_binding() {
+        let features = docgen_features();
+
+        for feature in <Feature as strum::VariantArray>::VARIANTS {
+            if feature.to_string().ends_with("_bindings") {
+                assert!(features.0.contains(feature), "{feature} is not documented");
+            }
+        }
+
+        // these are not part of the default features
+        assert!(features.0.contains(&Feature::BevyAssetBindings));
+        // and the files are only generated with this one
+        assert!(features.0.contains(&Feature::LuaLanguageServerFiles));
     }
 
     #[test]
