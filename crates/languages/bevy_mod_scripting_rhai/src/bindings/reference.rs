@@ -363,7 +363,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "sub", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "sub", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
@@ -383,7 +383,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "add", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "add", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
@@ -403,7 +403,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "mul", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "mul", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
@@ -423,7 +423,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "div", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "div", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
@@ -443,7 +443,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "rem", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "rem", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
@@ -460,7 +460,7 @@ impl CustomType for RhaiReflectReference {
                     .or_fake_id();
                 let args = vec![ScriptValue::Reference(self_)];
                 let out = world
-                    .try_call_overloads(target_type_id, "neg", args, RHAI_CALLER_CONTEXT)
+                    .call_operator(target_type_id, "neg", args, RHAI_CALLER_CONTEXT)
                     .map_err(IntoRhaiError::into_rhai_error)?;
                 out.into_dynamic()
             })
@@ -479,7 +479,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "pow", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "pow", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
@@ -499,7 +499,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "eq", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "eq", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
@@ -519,7 +519,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "eq", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "eq", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     match out {
                         ScriptValue::Bool(b) => ScriptValue::Bool(!b).into_dynamic(),
@@ -545,7 +545,7 @@ impl CustomType for RhaiReflectReference {
                         .or_fake_id();
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world
-                        .try_call_overloads(target_type_id, "lt", args, RHAI_CALLER_CONTEXT)
+                        .call_operator(target_type_id, "lt", args, RHAI_CALLER_CONTEXT)
                         .map_err(IntoRhaiError::into_rhai_error)?;
                     out.into_dynamic()
                 },
