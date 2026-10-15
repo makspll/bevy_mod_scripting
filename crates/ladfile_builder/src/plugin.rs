@@ -14,7 +14,7 @@ use bevy_mod_scripting_bindings::{
         bound::is_asset_type, namespace::Namespace, script_function::AppScriptFunctionRegistry,
     },
     globals::AppScriptGlobalsRegistry,
-    into_through_type_info,
+    into_through_type_info_with_registry,
 };
 use bevy_reflect::TypeInfo;
 use ladfile::{LadFieldOrVariableKind, LadFilePlugin, default_importance};
@@ -171,8 +171,8 @@ pub fn generate_lad_file(
         }
 
         // we don't really care about the Option in Option<T> as that is magically worked around in the entire API
-        // get the "pure" types
-        let through_type_info = into_through_type_info(type_info);
+        // get the "pure" types, sets only tell us the type id of the types they hold so need the registry
+        let through_type_info = into_through_type_info_with_registry(type_info, &type_registry);
         builder.add_through_type_info(&through_type_info);
 
         // find functions on the namespace
@@ -587,6 +587,7 @@ mod test {
         map: bevy_platform::collections::HashMap<String, TestStruct>,
         tuple: (TestStruct, usize),
         array: [TestStruct; 2],
+        set: bevy_platform::collections::HashSet<usize>,
     }
 
     #[derive(Reflect)]
@@ -636,7 +637,7 @@ mod test {
             .types
             .values()
             .filter(|ty| {
-                ["Vec<", "Option<", "HashMap<", "(", "["]
+                ["Vec<", "Option<", "HashMap<", "HashSet<", "(", "["]
                     .iter()
                     .any(|c| ty.path.contains(c))
             })
