@@ -18,7 +18,7 @@ use bevy_mod_scripting_bindings::{
         namespace::Namespace,
         script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     },
-    into_through_type_info,
+    into_through_type_info_with_registry,
 };
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
 use bevy_platform::collections::{HashMap, HashSet};
@@ -946,7 +946,8 @@ impl<'t> LadFileBuilder<'t> {
     /// untyped structures, i.e. are going to be fully reflectable
     fn lad_type_kind_from_type_id(&mut self, type_id: TypeId) -> LadFieldOrVariableKind {
         if let Some(type_info) = self.type_registry.get_type_info(type_id) {
-            let through_type_info = into_through_type_info(type_info);
+            let through_type_info =
+                into_through_type_info_with_registry(type_info, self.type_registry);
             self.lad_type_kind_from_through_type(&through_type_info)
         } else {
             LadFieldOrVariableKind::Unknown(self.lad_id_from_type_id(type_id))
@@ -1513,6 +1514,324 @@ mod test {
         assert!(
             handle.to_string().contains("Handle<"),
             "expected the handle type, got {handle}"
+        );
+    }
+
+    // Every variant of the kind enum is listed exactly once here. The name lookup is an exhaustive match, so adding a variant
+    // does not compile until it is listed, and `every_kind_is_documented_by_fields_or_arguments` fails until it is exercised.
+    macro_rules! variant_names {
+        ($ty:ident, $all:ident, $name:ident: $($variant:ident),+) => {
+            const $all: &[&str] = &[$(stringify!($variant)),+];
+
+            fn $name(value: &$ty) -> &'static str {
+                match value {
+                    $($ty::$variant { .. } => stringify!($variant)),+
+                }
+            }
+        };
+    }
+
+    variant_names!(
+        LadFieldOrVariableKind, ALL_LAD_KINDS, lad_kind_name:
+        Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple, Array,
+        Primitive, Union, Unknown, Fields
+    );
+
+    /// Records every kind found anywhere in the given kind
+    fn collect_kinds(
+        kind: &LadFieldOrVariableKind,
+        seen: &mut std::collections::BTreeSet<&'static str>,
+    ) {
+        seen.insert(lad_kind_name(kind));
+        match kind {
+            LadFieldOrVariableKind::Option(inner)
+            | LadFieldOrVariableKind::Vec(inner)
+            | LadFieldOrVariableKind::HashSet(inner)
+            | LadFieldOrVariableKind::InteropResult(inner)
+            | LadFieldOrVariableKind::Array(inner, _) => collect_kinds(inner, seen),
+            LadFieldOrVariableKind::HashMap(key, value) => {
+                collect_kinds(key, seen);
+                collect_kinds(value, seen);
+            }
+            LadFieldOrVariableKind::Tuple(inner) | LadFieldOrVariableKind::Union(inner) => {
+                inner.iter().for_each(|kind| collect_kinds(kind, seen))
+            }
+            LadFieldOrVariableKind::Ref(_)
+            | LadFieldOrVariableKind::Mut(_)
+            | LadFieldOrVariableKind::Val(_)
+            | LadFieldOrVariableKind::UntypedTuple
+            | LadFieldOrVariableKind::Primitive(_)
+            | LadFieldOrVariableKind::Unknown(_)
+            | LadFieldOrVariableKind::Fields { .. } => {}
+        }
+    }
+
+    #[derive(bevy_asset::Asset, Reflect)]
+    struct FieldAsset;
+
+    #[derive(Reflect)]
+    struct FieldValue;
+
+    #[derive(Reflect)]
+    struct FieldUnregistered;
+
+    /// One field for each way a field can be typed, the registry is expected to know all of them but `FieldUnregistered`.
+    #[derive(Reflect)]
+    struct AllFieldKinds {
+        primitive: f32,
+        value: FieldValue,
+        unknown: FieldUnregistered,
+        vec: Vec<i32>,
+        map: bevy_platform::collections::HashMap<String, f32>,
+        set: bevy_platform::collections::HashSet<i32>,
+        array: [u8; 4],
+        option: Option<String>,
+        result: Result<i32, String>,
+        tuple: (i32, String),
+        handle: bevy_asset::Handle<FieldAsset>,
+        nested: Vec<bevy_platform::collections::HashSet<Option<i32>>>,
+    }
+
+    fn field_test_registry() -> TypeRegistry {
+        use bevy_platform::collections::{HashMap, HashSet};
+
+        let mut registry = TypeRegistry::default();
+        registry.register::<FieldValue>();
+        registry.register::<Vec<i32>>();
+        registry.register::<HashMap<String, f32>>();
+        registry.register::<HashSet<i32>>();
+        registry.register::<[u8; 4]>();
+        registry.register::<Option<String>>();
+        registry.register::<Result<i32, String>>();
+        registry.register::<(i32, String)>();
+        registry.register::<Vec<HashSet<Option<i32>>>>();
+        registry.register::<FieldAsset>();
+        registry.register::<bevy_asset::Handle<FieldAsset>>();
+        registry.register_type_data::<FieldAsset, bevy_asset::ReflectAsset>();
+        registry
+    }
+
+    /// The kinds of all the fields of `AllFieldKinds`, by field name, as documented in the LAD file.
+    fn documented_field_kinds(
+        registry: &TypeRegistry,
+    ) -> (
+        HashMap<String, LadFieldOrVariableKind>,
+        impl FnMut(TypeId) -> LadTypeId + use<'_>,
+    ) {
+        let mut builder = LadFileBuilder::new_empty(registry);
+        builder.add_type::<AllFieldKinds>();
+        let lad_file = builder.build();
+
+        let layout = lad_file
+            .types
+            .values()
+            .find(|ty| ty.identifier == "AllFieldKinds")
+            .map(|ty| ty.layout.clone())
+            .expect("the type is added");
+        let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) = layout else {
+            panic!("expected a struct, got {layout:?}");
+        };
+
+        (
+            fields
+                .into_iter()
+                .map(|field| (field.name, field.type_))
+                .collect(),
+            move |type_id| builder.lad_id_from_type_id(type_id),
+        )
+    }
+
+    #[test]
+    fn fields_are_documented_with_the_kind_of_their_reflected_type() {
+        use LadFieldOrVariableKind as Kind;
+        use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
+
+        let registry = field_test_registry();
+        let (kinds, mut id) = documented_field_kinds(&registry);
+
+        let expected = [
+            ("primitive", Kind::Primitive(Primitive::F32)),
+            ("value", Kind::Val(id(TypeId::of::<FieldValue>()))),
+            // types the registry does not know about can not be described any further
+            (
+                "unknown",
+                Kind::Unknown(id(TypeId::of::<FieldUnregistered>())),
+            ),
+            ("vec", Kind::Vec(Box::new(Kind::Primitive(Primitive::I32)))),
+            (
+                "map",
+                Kind::HashMap(
+                    Box::new(Kind::Primitive(Primitive::String)),
+                    Box::new(Kind::Primitive(Primitive::F32)),
+                ),
+            ),
+            (
+                "set",
+                Kind::HashSet(Box::new(Kind::Primitive(Primitive::I32))),
+            ),
+            (
+                "array",
+                Kind::Array(Box::new(Kind::Primitive(Primitive::U8)), 4),
+            ),
+            (
+                "option",
+                Kind::Option(Box::new(Kind::Primitive(Primitive::String))),
+            ),
+            (
+                "result",
+                Kind::InteropResult(Box::new(Kind::Primitive(Primitive::I32))),
+            ),
+            (
+                "tuple",
+                Kind::Tuple(vec![
+                    Kind::Primitive(Primitive::I32),
+                    Kind::Primitive(Primitive::String),
+                ]),
+            ),
+            // the same as the documentation of a bound handle
+            (
+                "handle",
+                Kind::Val(id(TypeId::of::<bevy_asset::Handle<FieldAsset>>())),
+            ),
+            (
+                "nested",
+                Kind::Vec(Box::new(Kind::HashSet(Box::new(Kind::Option(Box::new(
+                    Kind::Primitive(Primitive::I32),
+                )))))),
+            ),
+        ];
+
+        assert_eq!(
+            kinds.len(),
+            expected.len(),
+            "a field of `AllFieldKinds` has no expectation"
+        );
+        for (field, expected) in expected {
+            pretty_assertions::assert_eq!(
+                kinds.get(field),
+                Some(&expected),
+                "the field `{field}` is documented incorrectly"
+            );
+        }
+    }
+
+    /// The kinds which can only come from the signature of a function, as fields are always plain values
+    fn documented_argument_kinds(
+        registry: &TypeRegistry,
+    ) -> Vec<(&'static str, LadFieldOrVariableKind, LadFieldOrVariableKind)> {
+        use LadFieldOrVariableKind as Kind;
+        use bevy_mod_scripting_bindings::{
+            VariadicTuple,
+            docgen::TypedThrough,
+            function::{
+                bound::{BoundFields, BoundHandle},
+                from::{M, R, Union, V},
+            },
+        };
+        use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
+
+        let mut builder = LadFileBuilder::new_empty(registry);
+        let value = builder.lad_id_from_type_id(TypeId::of::<FieldValue>());
+        let handle = builder.lad_id_from_type_id(TypeId::of::<bevy_asset::Handle<FieldAsset>>());
+
+        let cases = vec![
+            (
+                "ref",
+                R::<FieldValue>::through_type_info(),
+                Kind::Ref(value.clone()),
+            ),
+            (
+                "mut",
+                M::<FieldValue>::through_type_info(),
+                Kind::Mut(value.clone()),
+            ),
+            (
+                "val",
+                V::<FieldValue>::through_type_info(),
+                Kind::Val(value.clone()),
+            ),
+            (
+                "union",
+                Union::<V<FieldValue>, f32>::through_type_info(),
+                Kind::Union(vec![
+                    Kind::Val(value.clone()),
+                    Kind::Primitive(Primitive::F32),
+                ]),
+            ),
+            (
+                "variadic tuple",
+                VariadicTuple::through_type_info(),
+                Kind::UntypedTuple,
+            ),
+            (
+                "fields",
+                BoundFields::through_type_info().bind_placeholders(FieldValue::type_info(), None),
+                Kind::Fields {
+                    type_id: value.clone(),
+                    variant: None,
+                },
+            ),
+            (
+                "fields of a variant",
+                BoundFields::through_type_info()
+                    .bind_placeholders(FieldValue::type_info(), Some("Variant")),
+                Kind::Fields {
+                    type_id: value.clone(),
+                    variant: Some(Cow::Borrowed("Variant")),
+                },
+            ),
+            (
+                "bound handle",
+                BoundHandle::through_type_info().bind_placeholders(FieldAsset::type_info(), None),
+                Kind::Val(handle),
+            ),
+            (
+                "type info",
+                ThroughTypeInfo::TypeInfo(FieldValue::type_info()),
+                Kind::Unknown(value),
+            ),
+        ];
+
+        cases
+            .into_iter()
+            .map(|(name, info, expected)| {
+                (
+                    name,
+                    builder.lad_type_kind_from_through_type(&info),
+                    expected,
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn arguments_are_documented_with_the_kind_of_their_signature() {
+        let registry = field_test_registry();
+        for (case, actual, expected) in documented_argument_kinds(&registry) {
+            pretty_assertions::assert_eq!(actual, expected, "{case} is documented incorrectly");
+        }
+    }
+
+    #[test]
+    fn every_kind_is_documented_by_fields_or_arguments() {
+        let registry = field_test_registry();
+        let mut seen = std::collections::BTreeSet::new();
+
+        let (field_kinds, _) = documented_field_kinds(&registry);
+        for kind in field_kinds.values() {
+            collect_kinds(kind, &mut seen);
+        }
+        for (_, kind, _) in documented_argument_kinds(&registry) {
+            collect_kinds(&kind, &mut seen);
+        }
+
+        let missing: Vec<_> = ALL_LAD_KINDS
+            .iter()
+            .filter(|kind| !seen.contains(*kind))
+            .collect();
+        assert!(
+            missing.is_empty(),
+            "kinds which neither the fields nor the arguments tests document: {missing:?}"
         );
     }
 }
