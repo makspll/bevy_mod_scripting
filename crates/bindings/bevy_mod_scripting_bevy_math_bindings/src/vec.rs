@@ -76,6 +76,16 @@ macro_rules! float_vector_functions {
                 })
             }
 
+            /// Subtracts every component from a number, for `n - v`.
+            fn rsub(_self: R<$ty>, lhs: f32) -> V<$ty> {
+                V(lhs - *_self)
+            }
+
+            /// Divides a number by every component, for `n / v`.
+            fn rdiv(_self: R<$ty>, lhs: f32) -> V<$ty> {
+                V(lhs / *_self)
+            }
+
             /// Negates every component.
             fn neg(_self: R<$ty>) -> V<$ty> {
                 V(-*_self)
