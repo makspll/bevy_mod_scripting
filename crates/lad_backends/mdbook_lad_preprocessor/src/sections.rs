@@ -1,8 +1,9 @@
-use std::{borrow::Cow, collections::HashSet, path::PathBuf};
+use std::{borrow::Cow, path::PathBuf};
 
 use ladfile::{
-    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadGenericType, LadInstance,
-    LadTypeDefinition, LadTypeId, LadTypeLayout, LadVisitable, ReflectionPrimitiveKind,
+    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadFunctionNamespace,
+    LadGenericType, LadInstance, LadTypeDefinition, LadTypeId, LadTypeLayout, LadVisitable,
+    ReflectionPrimitiveKind,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
@@ -71,6 +72,8 @@ pub(crate) enum SectionData<'a> {
     FunctionDetail {
         types_directory: PathBuf,
         function: &'a LadFunction,
+        /// The variant of an enum the function is on, if any
+        variant: Option<&'a str>,
     },
 }
 
@@ -81,6 +84,15 @@ pub(crate) struct Section<'a> {
     pub parent_path: PathBuf,
     pub ladfile: &'a LadFile,
     pub data: SectionData<'a>,
+}
+
+/// The title of a function's page, which includes the variant for functions on variants of enums,
+/// as these all have the same names, i.e. `Variant.new`.
+fn function_title(variant: Option<&str>, function: &LadFunction) -> String {
+    match variant {
+        Some(variant) => format!("{variant}.{}", function.identifier_with_overload()),
+        None => function.identifier_with_overload().to_string(),
+    }
 }
 
 /// Makes a filename safe to put in links, and to create on any platform.
@@ -164,10 +176,47 @@ impl<'a> Section<'a> {
                 print_type(self.ladfile, *lad_type_id, None, None)
             }
             SectionData::GenericTypeDetail { generic_type, .. } => generic_type.name_with_params(),
-            SectionData::FunctionDetail { function, .. } => {
-                function.identifier_with_overload().to_string()
-            }
+            SectionData::FunctionDetail {
+                function, variant, ..
+            } => function_title(*variant, function),
         }
+    }
+
+    /// The functions which are global, as opposed to the ones on types and on variants of enums
+    fn global_functions(&self) -> Vec<&'a LadFunction> {
+        self.ladfile
+            .functions
+            .values()
+            .filter(|function| matches!(function.namespace, LadFunctionNamespace::Global))
+            .collect()
+    }
+
+    /// The functions on the variants of the given enum, with the variant they are on
+    fn variant_functions(&self, enum_id: &LadTypeId) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+        self.ladfile
+            .functions
+            .values()
+            .filter_map(|function| match &function.namespace {
+                LadFunctionNamespace::Variant { type_id, variant } if type_id == enum_id => {
+                    Some((Some(variant.as_ref()), function))
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// The functions with a page below the type's page, the ones on the type and the ones on its variants
+    fn type_functions(
+        &self,
+        lad_type_id: &LadTypeId,
+        lad_type: &'a LadTypeDefinition,
+    ) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+        lad_type
+            .associated_functions
+            .iter()
+            .filter_map(|f| Some((None, self.ladfile.functions.get(f)?)))
+            .chain(self.variant_functions(lad_type_id))
+            .collect()
     }
 
     pub(crate) fn is_code_heading(&self) -> bool {
@@ -244,49 +293,40 @@ impl<'a> Section<'a> {
                     .collect()
             }
 
-            SectionData::FunctionSummary => {
-                let associated_functions = self
-                    .ladfile
-                    .types
-                    .iter()
-                    .flat_map(|t| &t.1.associated_functions)
-                    .collect::<HashSet<_>>();
-
-                let non_associated_functions = self
-                    .ladfile
-                    .functions
-                    .iter()
-                    .filter_map(|f| (!associated_functions.contains(f.0)).then_some(f.1));
-
-                non_associated_functions
-                    .map(|function| {
-                        Section::new(
-                            child_parent_path.clone(),
-                            self.ladfile,
-                            SectionData::FunctionDetail {
-                                function,
-                                types_directory: PathBuf::from("../types"),
-                            },
-                        )
-                    })
-                    .collect()
-            }
+            SectionData::FunctionSummary => self
+                .global_functions()
+                .into_iter()
+                .map(|function| {
+                    Section::new(
+                        child_parent_path.clone(),
+                        self.ladfile,
+                        SectionData::FunctionDetail {
+                            function,
+                            types_directory: PathBuf::from("../types"),
+                            variant: None,
+                        },
+                    )
+                })
+                .collect(),
             SectionData::InstancesSummary { .. } => {
                 vec![]
             }
-            SectionData::TypeDetail { lad_type, .. } => lad_type
-                .associated_functions
-                .iter()
-                .filter_map(|f| {
-                    let function = self.ladfile.functions.get(f)?;
-                    Some(Section::new(
+            SectionData::TypeDetail {
+                lad_type_id,
+                lad_type,
+            } => self
+                .type_functions(lad_type_id, lad_type)
+                .into_iter()
+                .map(|(variant, function)| {
+                    Section::new(
                         child_parent_path.clone(),
                         self.ladfile,
                         SectionData::FunctionDetail {
                             function,
                             types_directory: PathBuf::from("../../types"),
+                            variant,
                         },
-                    ))
+                    )
                 })
                 .collect(),
             SectionData::GenericTypeDetail { .. } | SectionData::FunctionDetail { .. } => vec![],
@@ -364,19 +404,6 @@ impl<'a> Section<'a> {
                 }]
             }
             SectionData::FunctionSummary => {
-                let associated_functions = self
-                    .ladfile
-                    .types
-                    .iter()
-                    .flat_map(|t| &t.1.associated_functions)
-                    .collect::<HashSet<_>>();
-
-                let non_associated_functions = self
-                    .ladfile
-                    .functions
-                    .iter()
-                    .filter_map(|f| (!associated_functions.contains(f.0)).then_some(f.1))
-                    .collect();
                 vec![
                     SectionItem::Markdown {
                         markdown: Box::new(|builder| {
@@ -385,17 +412,20 @@ impl<'a> Section<'a> {
                         }),
                     },
                     SectionItem::FunctionsSummary {
-                        functions: non_associated_functions,
+                        functions: self
+                            .global_functions()
+                            .into_iter()
+                            .map(|function| (None, function))
+                            .collect(),
                         functions_directory: "functions".to_owned(),
                     },
                 ]
             }
-            SectionData::TypeDetail { lad_type, .. } => {
-                let functions = lad_type
-                    .associated_functions
-                    .iter()
-                    .filter_map(|i| self.ladfile.functions.get(i))
-                    .collect::<Vec<_>>();
+            SectionData::TypeDetail {
+                lad_type_id,
+                lad_type,
+            } => {
+                let functions = self.type_functions(lad_type_id, lad_type);
                 vec![
                     SectionItem::Layout {
                         layout: &lad_type.layout,
@@ -446,6 +476,7 @@ impl<'a> Section<'a> {
             SectionData::FunctionDetail {
                 function,
                 ref types_directory,
+                ..
             } => {
                 vec![SectionItem::FunctionDetails {
                     function,
@@ -493,7 +524,8 @@ pub enum SectionItem<'a> {
         types_directory: PathBuf,
     },
     FunctionsSummary {
-        functions: Vec<&'a LadFunction>,
+        /// The functions, with the variant of an enum they are on if any
+        functions: Vec<(Option<&'a str>, &'a LadFunction)>,
         functions_directory: String,
     },
     FunctionDetails {
@@ -631,8 +663,8 @@ impl IntoMarkdown for SectionItem<'_> {
                 // make a table of functions as a quick reference, make them link to function details sub-sections
                 builder.table(|builder| {
                     builder.headers(vec!["Function", "Summary"]);
-                    for function in functions.iter() {
-                        let first_col = function.identifier_with_overload().to_string();
+                    for (variant, function) in functions.iter() {
+                        let first_col = function_title(*variant, function);
 
                         // first line with content from documentation trimmed to 100 chars
                         let second_col = function
@@ -647,7 +679,7 @@ impl IntoMarkdown for SectionItem<'_> {
                                 url: format!(
                                     "./{}/{}.md",
                                     functions_path,
-                                    function.identifier_with_overload()
+                                    linkify_filename(function_title(*variant, function))
                                 ),
                                 anchor: false
                             },
@@ -939,6 +971,87 @@ mod test {
             let stem = file_name.strip_suffix(".md").unwrap();
             assert!(!stem.contains(INVALID_IN_FILENAMES), "{file_name}");
         }
+    }
+
+    /// The example file, with a function with the same name on two variants of an enum, i.e. constructors
+    fn ladfile_with_variant_functions() -> LadFile {
+        let mut ladfile = setup_ladfile();
+        let enum_id = LadTypeId::new_string_id("ladfile_builder::test::EnumType".into());
+        let template = ladfile
+            .functions
+            .values()
+            .find(|function| matches!(function.namespace, LadFunctionNamespace::Global))
+            .unwrap()
+            .clone();
+
+        for variant in ["Unit", "Struct"] {
+            let mut function = template.clone();
+            function.identifier = "new".into();
+            function.namespace = LadFunctionNamespace::Variant {
+                type_id: enum_id.clone(),
+                variant: variant.into(),
+            };
+            ladfile.functions.insert(
+                ladfile::LadFunctionId::new_string_id(format!("EnumType.{variant}.new")),
+                function,
+            );
+        }
+        ladfile
+    }
+
+    #[test]
+    fn functions_on_variants_are_not_global_functions() {
+        let ladfile = ladfile_with_variant_functions();
+        let functions = Section::new(PathBuf::new(), &ladfile, SectionData::FunctionSummary);
+
+        let titles = functions
+            .children()
+            .iter()
+            .map(|page| page.title())
+            .collect::<Vec<_>>();
+        assert!(!titles.contains(&"new".to_owned()), "{titles:?}");
+        assert!(titles.contains(&"hello_world".to_owned()), "{titles:?}");
+
+        let items = functions.section_items();
+        let [_, SectionItem::FunctionsSummary { functions, .. }] = items.as_slice() else {
+            panic!("expected a functions summary, got {items:?}");
+        };
+        assert_eq!(functions.len(), titles.len());
+        assert!(functions.iter().all(|(variant, _)| variant.is_none()));
+    }
+
+    #[test]
+    fn functions_on_variants_are_documented_with_their_enum() {
+        let ladfile = ladfile_with_variant_functions();
+        let types = Section::new(PathBuf::new(), &ladfile, SectionData::TypeSummary);
+        let types = types.children();
+        let enum_page = types
+            .iter()
+            .find(|page| page.title() == "EnumType")
+            .expect("the enum has a page");
+
+        // each gets a page of its own, with a name that is not shared with the same function on other variants
+        let pages = enum_page.children();
+        let titles = pages.iter().map(|page| page.title()).collect::<Vec<_>>();
+        assert_eq!(titles, ["Unit.new", "Struct.new"]);
+        let file_names = pages
+            .iter()
+            .map(|page| page.file_name())
+            .collect::<Vec<_>>();
+        assert_eq!(file_names, ["unitnew.md", "structnew.md"]);
+
+        // and are linked from the page of the enum
+        let mut builder = MarkdownBuilder::new();
+        enum_page.to_markdown(&mut builder);
+        let markdown = builder.build();
+        assert!(
+            markdown.contains(r"[Unit\.new](./enumtype/unitnew.md)"),
+            "{markdown}"
+        );
+        assert!(
+            markdown.contains(r"[Struct\.new](./enumtype/structnew.md)"),
+            "{markdown}"
+        );
     }
 
     #[test]
