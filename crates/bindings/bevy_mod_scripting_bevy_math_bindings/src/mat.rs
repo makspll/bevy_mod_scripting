@@ -110,6 +110,11 @@ impl Mat3 {
         V(*_self - *other)
     }
 
+    /// Divides every component by a number.
+    fn div(_self: R<Mat3>, rhs: f32) -> V<Mat3> {
+        V(*_self / rhs)
+    }
+
     /// Transforms a [`Vec3`](bevy_math::Vec3) by this matrix.
     fn mul_vec3(_self: R<Mat3>, v: R<Vec3>) -> V<Vec3> {
         V(_self.mul_vec3(*v))
@@ -233,6 +238,11 @@ impl Mat4 {
     /// Subtracts two matrices component-wise.
     fn sub(_self: R<Mat4>, other: R<Mat4>) -> V<Mat4> {
         V(*_self - *other)
+    }
+
+    /// Divides every component by a number.
+    fn div(_self: R<Mat4>, rhs: f32) -> V<Mat4> {
+        V(*_self / rhs)
     }
 
     /// Transforms a point in 3D, including translation and the projection divide.
