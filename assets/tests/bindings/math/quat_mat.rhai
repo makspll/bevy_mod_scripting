@@ -23,6 +23,8 @@ assert(approx(rotated_euler.z, -1.0), "from_euler");
 let m = Mat3.from_cols.call(Vec3.new_.call(1.0, 0.0, 0.0), Vec3.new_.call(0.0, 2.0, 0.0), Vec3.new_.call(0.0, 0.0, 3.0));
 assert(m * Vec3.one.call() == Vec3.new_.call(1.0, 2.0, 3.0), "mat3 * vec3");
 assert(m.determinant.call() == 6.0, "determinant");
+assert(m + m == m * 2.0, "mat3 + mat3");
+assert(m / 2.0 == m * 0.5, "mat3 / number");
 
 let t = Mat4.from_translation.call(Vec3.new_.call(1.0, 2.0, 3.0));
 assert(t.transform_point3.call(Vec3.zero.call()) == Vec3.new_.call(1.0, 2.0, 3.0), "transform_point3");
