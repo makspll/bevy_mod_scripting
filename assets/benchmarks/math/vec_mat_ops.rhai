@@ -14,6 +14,6 @@ fn pre_bench(){
 
 fn bench() {
     let mul = matrix * vector;
-    let add = matrix + vector;
-    let div = vector / matrix;
+    let add = matrix + matrix;
+    let compose = matrix * matrix;
 }
