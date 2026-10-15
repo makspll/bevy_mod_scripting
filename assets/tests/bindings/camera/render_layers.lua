@@ -1,0 +1,15 @@
+local layers = RenderLayers.layer(2)
+assert(layers:intersects(RenderLayers.layer(2)), "same layer intersects")
+assert(not layers:intersects(RenderLayers.layer(3)), "other layer does not intersect")
+assert(not RenderLayers.none():intersects(RenderLayers.none()), "no layers intersect nothing")
+
+local both = layers:with(5)
+assert(both:intersects(RenderLayers.layer(5)), "with adds a layer")
+local without_two = both:without(2)
+assert(not without_two:intersects(RenderLayers.layer(2)), "without removes a layer")
+assert(without_two:intersects(RenderLayers.layer(5)), "without keeps other layers")
+
+local listed = both:iter()
+assert(#listed == 2 and listed[1] == 2 and listed[2] == 5, "iter lists the layers in order")
+assert(#RenderLayers.none():iter() == 0, "no layers iter to nothing")
+assert(RenderLayers.layer(100):intersects(RenderLayers.none():with(100)), "layers past one block")

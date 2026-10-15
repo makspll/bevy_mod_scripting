@@ -44,39 +44,25 @@ pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_animation")]
     app.add_plugins(bevy_animation_bms_bindings::BevyAnimationScriptingPlugin);
     #[cfg(feature = "bevy_asset")]
-    app.add_plugins(bevy_asset_bms_bindings::BevyAssetScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_asset_bindings::BevyAssetBindingsPlugin);
     #[cfg(feature = "bevy_camera")]
-    app.add_plugins(bevy_camera_bms_bindings::BevyCameraScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_camera_bindings::BevyCameraBindingsPlugin);
     #[cfg(feature = "bevy_color")]
     app.add_plugins(bevy_mod_scripting_bevy_color_bindings::BevyColorBindingsPlugin);
-    #[cfg(feature = "bevy_core_pipeline")]
-    app.add_plugins(bevy_core_pipeline_bms_bindings::BevyCorePipelineScriptingPlugin);
     #[cfg(feature = "bevy_ecs")]
     app.add_plugins(bevy_mod_scripting_bevy_ecs_bindings::BevyEcsBindingsPlugin);
     #[cfg(feature = "bevy_gizmos")]
     app.add_plugins(bevy_gizmos_bms_bindings::BevyGizmosScriptingPlugin);
-    #[cfg(feature = "bevy_gltf")]
-    app.add_plugins(bevy_gltf_bms_bindings::BevyGltfScriptingPlugin);
-    #[cfg(feature = "bevy_image")]
-    app.add_plugins(bevy_image_bms_bindings::BevyImageScriptingPlugin);
     #[cfg(feature = "bevy_input")]
     app.add_plugins(bevy_mod_scripting_bevy_input_bindings::BevyInputBindingsPlugin);
     #[cfg(feature = "bevy_window")]
     app.add_plugins(bevy_mod_scripting_bevy_window_bindings::BevyWindowBindingsPlugin);
-    #[cfg(feature = "bevy_light")]
-    app.add_plugins(bevy_light_bms_bindings::BevyLightScriptingPlugin);
     #[cfg(feature = "bevy_math")]
     app.add_plugins(bevy_mod_scripting_bevy_math_bindings::BevyMathBindingsPlugin);
-    #[cfg(feature = "bevy_mesh")]
-    app.add_plugins(bevy_mesh_bms_bindings::BevyMeshScriptingPlugin);
-    #[cfg(feature = "bevy_pbr")]
-    app.add_plugins(bevy_pbr_bms_bindings::BevyPbrScriptingPlugin);
     #[cfg(feature = "bevy_picking")]
     app.add_plugins(bevy_picking_bms_bindings::BevyPickingScriptingPlugin);
-    #[cfg(feature = "bevy_post_process")]
-    app.add_plugins(bevy_post_process_bms_bindings::BevyPostProcessScriptingPlugin);
     #[cfg(feature = "bevy_render")]
-    app.add_plugins(bevy_render_bms_bindings::BevyRenderScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_render_bindings::BevyRenderBindingsPlugin);
     #[cfg(feature = "bevy_scene")]
     app.add_plugins(bevy_scene_bms_bindings::BevySceneScriptingPlugin);
     #[cfg(feature = "bevy_sprite")]

@@ -1,0 +1,31 @@
+[package]
+name = "bevy_mod_scripting_bevy_render_bindings"
+description = "Script bindings for bevy rendering: meshes, materials and images"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+test = false
+
+[dependencies]
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_app = { workspace = true }
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
+bevy_reflect = { workspace = true }
+bevy_color = { workspace = true }
+bevy_image = { workspace = true }
+bevy_math = { workspace = true }
+bevy_mesh = { workspace = true }
+bevy_pbr = { workspace = true }
+bevy_shape = { workspace = true }
+
+[lints]
+workspace = true
