@@ -1,3 +1,6 @@
+let CompWithDefaultAndComponentData = import_namespace.call("test_utils").CompWithDefaultAndComponentData;
+let TestBundle = import_namespace.call("test_utils").TestBundle;
+
 let bundle_type = world.get_type_by_name.call("test_utils::test_data::TestBundle");
 let comp_type = world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData");
 let simple_type = world.get_type_by_name.call("test_utils::test_data::SimpleStruct");

@@ -23,6 +23,7 @@ macro_rules! time_functions {
             remote,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
+            namespace = "time",
             core
         )]
         impl $ty {
@@ -73,6 +74,7 @@ time_functions!(Time<Fixed>, "time_fixed_shared_functions");
     remote,
     name = "time_virtual_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "time",
     core
 )]
 impl Time<Virtual> {
@@ -122,6 +124,7 @@ impl Time<Virtual> {
     remote,
     name = "time_fixed_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "time",
     core
 )]
 impl Time<Fixed> {

@@ -23,8 +23,10 @@ pub struct CoreScriptGlobalsPlugin {
     /// When `true` for the given type registration, the type will be registered as a global.
     pub filter: fn(&TypeRegistration) -> bool,
 
-    /// Whether to register static references to types
-    /// By default static type references such as `Vec3` or `Mat3` are accessible directly from the global namespace.
+    /// Whether to also register every type as a global named after it, i.e. `Vec3` or `Mat3`.
+    ///
+    /// Off by default: scripts reach types through their namespace instead, i.e. `import_namespace("math").Vec3`,
+    /// which avoids types with the same name shadowing each other.
     pub register_static_references: bool,
 }
 
@@ -32,7 +34,7 @@ impl Default for CoreScriptGlobalsPlugin {
     fn default() -> Self {
         Self {
             filter: |_| true,
-            register_static_references: true,
+            register_static_references: false,
         }
     }
 }
@@ -45,15 +47,21 @@ impl Plugin for CoreScriptGlobalsPlugin {
     fn finish(&self, app: &mut App) {
         // profiling::function_scope!("app finish");
 
-        if self.register_static_references {
-            register_static_core_globals(app.world_mut(), self.filter);
-        }
+        register_static_core_globals(
+            app.world_mut(),
+            self.filter,
+            self.register_static_references,
+        );
     }
 }
 const MSG_DUPLICATE_GLOBAL: &str = "This can cause confusing issues for script users, use `CoreScriptGlobalsPlugin.filter` to filter out uneeded duplicate types.";
 
 #[profiling::function]
-fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration) -> bool) {
+fn register_static_core_globals(
+    world: &mut World,
+    filter: fn(&TypeRegistration) -> bool,
+    register_static_references: bool,
+) {
     let global_registry = world
         .get_resource_or_init::<AppScriptGlobalsRegistry>()
         .clone();
@@ -62,7 +70,10 @@ fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration)
     let type_registry = type_registry.read();
 
     // find all reflectable types without generics
-    for registration in type_registry.iter().filter(|r| filter(r)) {
+    let static_types = type_registry
+        .iter()
+        .filter(|r| register_static_references && filter(r));
+    for registration in static_types {
         if !registration.type_info().generics().is_empty() {
             continue;
         }
@@ -121,6 +132,23 @@ mod test {
         struct TestType;
         app.register_type::<TestType>();
         let plugin = CoreScriptGlobalsPlugin::default();
+        plugin.build(&mut app);
+        plugin.finish(&mut app);
+        let globals = app
+            .world()
+            .get_resource::<AppScriptGlobalsRegistry>()
+            .unwrap()
+            .read();
+        // types are reached through their namespace by default
+        assert!(globals.get("TestType").is_none());
+
+        // unless static references are turned on
+        let mut app = App::new();
+        app.register_type::<TestType>();
+        let plugin = CoreScriptGlobalsPlugin {
+            register_static_references: true,
+            ..Default::default()
+        };
         plugin.build(&mut app);
         plugin.finish(&mut app);
         let globals = app

@@ -18,6 +18,7 @@ macro_rules! float_vector_functions {
             remote,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
+            namespace = "math",
             core
         )]
         impl $ty {
@@ -234,17 +235,20 @@ float_vector_functions!(Vec4, "vec4_shared_functions");
     remote,
     name = "vec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Vec2 {
     /// Creates a new vector.
     ///
     /// ```multi-lang-example,lua
+    /// local Vec2 = import_namespace("math").Vec2
     /// local v = Vec2.new(3, 4)
     /// assert(v:length() == 5)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Vec2 = import_namespace.call("math").Vec2;
     /// let v = Vec2.new_.call(3.0, 4.0);
     /// assert(v.length.call() == 5.0);
     /// ```
@@ -317,17 +321,20 @@ impl Vec2 {
     remote,
     name = "vec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Vec3 {
     /// Creates a new vector.
     ///
     /// ```multi-lang-example,lua
+    /// local Vec3 = import_namespace("math").Vec3
     /// local v = Vec3.new(1, 2, 3)
     /// assert(v + v == Vec3.new(2, 4, 6))
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Vec3 = import_namespace.call("math").Vec3;
     /// let v = Vec3.new_.call(1.0, 2.0, 3.0);
     /// assert(v + v == Vec3.new_.call(2.0, 4.0, 6.0));
     /// ```
@@ -400,6 +407,7 @@ impl Vec3 {
     remote,
     name = "vec4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Vec4 {
@@ -418,6 +426,7 @@ impl Vec4 {
     remote,
     name = "vec3a_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Vec3A {
@@ -436,6 +445,7 @@ impl Vec3A {
     remote,
     name = "dvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl DVec2 {
@@ -454,6 +464,7 @@ impl DVec2 {
     remote,
     name = "dvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl DVec3 {

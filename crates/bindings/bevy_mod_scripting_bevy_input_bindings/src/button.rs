@@ -23,6 +23,7 @@ macro_rules! button_input_methods {
             remote,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
+            namespace = "input",
             core
         )]
         impl ButtonInput<$ty> {
@@ -66,6 +67,7 @@ macro_rules! button_input_methods {
     remote,
     name = "key_code_input_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "input",
     core
 )]
 impl KeyCode {
@@ -135,6 +137,7 @@ impl KeyCode {
     remote,
     name = "mouse_button_input_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "input",
     core
 )]
 impl MouseButton {

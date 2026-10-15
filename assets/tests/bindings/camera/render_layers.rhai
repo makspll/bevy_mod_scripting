@@ -1,3 +1,4 @@
+let RenderLayers = import_namespace.call("camera").RenderLayers;
 let layers = RenderLayers.layer.call(2);
 assert(layers.intersects.call(RenderLayers.layer.call(2)), "same layer intersects");
 assert(!layers.intersects.call(RenderLayers.layer.call(3)), "other layer does not intersect");

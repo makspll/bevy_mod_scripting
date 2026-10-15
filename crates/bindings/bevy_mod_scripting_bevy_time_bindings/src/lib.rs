@@ -11,6 +11,18 @@ mod timer;
 pub struct BevyTimeBindingsPlugin;
 
 impl Plugin for BevyTimeBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["bevy_time"],
+            "time",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         duration::register(world);

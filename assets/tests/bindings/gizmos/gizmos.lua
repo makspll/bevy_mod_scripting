@@ -1,4 +1,9 @@
 -- the test app may have no gizmo plugin: every function either draws, or fails with the same error
+local Color = import_namespace("color").Color
+local Gizmos = import_namespace("gizmos").Gizmos
+local Transform = import_namespace("transform").Transform
+local Vec2 = import_namespace("math").Vec2
+local Vec3 = import_namespace("math").Vec3
 
 local function draws(f)
     local ok, err = pcall(f)

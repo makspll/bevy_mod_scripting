@@ -11,17 +11,20 @@ use bevy_text::{Font, TextFont};
     remote,
     name = "text_font_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "text",
     core
 )]
 impl TextFont {
     /// Creates a text font with the default font face and the given size in logical pixels.
     ///
     /// ```multi-lang-example,lua
+    /// local TextFont = import_namespace("text").TextFont
     /// local font = TextFont.from_font_size(20.0)
     /// assert(font:with_font_size(30.0) ~= nil)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let TextFont = import_namespace.call("text").TextFont;
     /// let font = TextFont.from_font_size.call(20.0);
     /// assert(font.with_font_size.call(30.0) != ());
     /// ```

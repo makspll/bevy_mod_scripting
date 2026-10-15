@@ -1,4 +1,6 @@
 // the test app has no windows
+let Window = import_namespace.call("window").Window;
+let WindowResolution = import_namespace.call("window").WindowResolution;
 
 assert(Window.primary.call() == (), "primary is nil without windows");
 assert(Window.primary_entity.call() == (), "primary_entity is nil without windows");

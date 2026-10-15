@@ -18,6 +18,18 @@ use bevy_transform::components::GlobalTransform;
 pub struct BevyCameraBindingsPlugin;
 
 impl Plugin for BevyCameraBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["bevy_camera"],
+            "camera",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         register_camera_functions(world);
@@ -33,6 +45,7 @@ impl Plugin for BevyCameraBindingsPlugin {
     remote,
     name = "camera_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "camera",
     core
 )]
 impl Camera {
@@ -92,6 +105,7 @@ impl Camera {
     remote,
     name = "orthographic_projection_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "camera",
     core
 )]
 impl OrthographicProjection {
@@ -110,6 +124,7 @@ impl OrthographicProjection {
     remote,
     name = "visibility_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "camera",
     core
 )]
 impl Visibility {
@@ -128,6 +143,7 @@ impl Visibility {
     remote,
     name = "inherited_visibility_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "camera",
     core
 )]
 impl InheritedVisibility {
@@ -141,6 +157,7 @@ impl InheritedVisibility {
     remote,
     name = "view_visibility_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "camera",
     core
 )]
 impl ViewVisibility {
@@ -154,6 +171,7 @@ impl ViewVisibility {
     remote,
     name = "render_layers_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "camera",
     core
 )]
 impl RenderLayers {

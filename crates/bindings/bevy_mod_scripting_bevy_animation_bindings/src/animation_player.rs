@@ -13,6 +13,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "animation_player_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "animation",
     core
 )]
 impl AnimationPlayer {

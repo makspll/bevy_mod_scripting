@@ -8,7 +8,7 @@ register_callback("on_marker_added", function(event)
 end)
 
 function on_test()
-    local bevy_ecs = import_namespace("bevy_ecs")
+    local bevy_ecs = import_namespace("ecs")
     Marker = world.register_new_component("script.test", "ObserverMarker")
     observer = world.add_observer(bevy_ecs.AddEvent, "on_marker_added", { Marker })
     assert(observer ~= nil, "observer entity should be returned")

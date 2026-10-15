@@ -10,17 +10,20 @@ use bevy_ui::widget::Text;
     remote,
     name = "text_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "text",
     core
 )]
 impl Text {
     /// Creates a new text component holding `text`.
     ///
     /// ```multi-lang-example,lua
+    /// local Text = import_namespace("text").Text
     /// local text = Text.new("hi")
     /// assert(text:as_str() == "hi")
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Text = import_namespace.call("text").Text;
     /// let text = Text.new_.call("hi");
     /// assert(text.as_str.call() == "hi");
     /// ```

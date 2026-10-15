@@ -1855,14 +1855,19 @@ impl GlobalNamespace {
 impl GlobalNamespace {
     /// Imports a namespace, returning a table of the types, events and exported functions in it by name.
     ///
-    /// Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), or `bms` for BMS' own types.
+    /// This is how scripts reach types: the bevy types with bindings live in a namespace per category (`math`, `ecs`, `time`, `transform`,
+    /// `color`, `input`, `window`, `asset`, `camera`, `render`, `sprite`, `text`, `ui`, `gizmos`, `animation`, `audio`, `state`),
+    /// BMS' own types in `bms`, and any other type in the namespace named after the crate defining it.
     /// The empty string is the root namespace, which holds types without a crate such as primitives.
     /// Namespaces defined by scripts start with `script.`, and contain the components, events and functions
     /// scripts registered or exported into them.
     ///
+    /// Each type in the table can be used to call the type's static functions and to access its enum variants,
+    /// and wherever a type is expected, i.e. `world.add_default_component`.
+    ///
     /// ```lua
-    /// local bevy_transform = import_namespace("bevy_transform")
-    /// local transform = bevy_transform.Transform
+    /// local Vec3 = import_namespace("math").Vec3
+    /// local transform = import_namespace("transform").Transform.from_translation(Vec3.new(1, 2, 3))
     ///
     /// local game = import_namespace("script.game")
     /// game.spawn_enemy(5)
@@ -2222,8 +2227,8 @@ fn namespace_not_found(
         );
     } else {
         message.push_str(
-            " Native namespaces are the names of the crates defining the types (i.e. `bevy_transform`), \
-            and only contain types registered in the type registry: check that the crate's bindings plugin is added and the type is registered.",
+            " Bevy types are grouped by category (i.e. `math`, `transform`), BMS' types live in `bms` and other types in the namespace named after their crate. \
+            Namespaces only contain types registered in the type registry: check that the bindings plugin of the category is added and the type is registered.",
         );
     }
     let export_namespaces = world

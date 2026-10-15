@@ -19,6 +19,18 @@ use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyAssetBindingsPlugin;
 
 impl Plugin for BevyAssetBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["bevy_asset", "bevy_scene", "bevy_gltf"],
+            "asset",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         register_world_asset_functions(world);

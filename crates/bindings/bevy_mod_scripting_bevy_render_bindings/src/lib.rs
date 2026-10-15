@@ -27,6 +27,27 @@ use bevy_shape::{
 pub struct BevyRenderBindingsPlugin;
 
 impl Plugin for BevyRenderBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &[
+                "bevy_render",
+                "bevy_light",
+                "bevy_mesh",
+                "bevy_pbr",
+                "bevy_image",
+                "bevy_core_pipeline",
+                "bevy_post_process",
+                "bevy_anti_alias",
+            ],
+            "render",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         register_mesh_functions(world);
@@ -64,6 +85,7 @@ fn mesh_from_shape(value: &dyn PartialReflect) -> Option<Mesh> {
     remote,
     name = "mesh_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "render",
     core
 )]
 impl Mesh {
@@ -88,6 +110,7 @@ impl Mesh {
     remote,
     name = "standard_material_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "render",
     core
 )]
 impl StandardMaterial {
@@ -101,6 +124,7 @@ impl StandardMaterial {
     remote,
     name = "image_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "render",
     core
 )]
 impl Image {

@@ -1,4 +1,5 @@
 // `==` works for every reflected type, even without its own `eq`
+let SimpleStruct = import_namespace.call("test_utils").SimpleStruct;
 let a = SimpleStruct.new_.call(#{ foo: 1 });
 let b = SimpleStruct.new_.call(#{ foo: 1 });
 assert(a == b, "equal values compare equal");

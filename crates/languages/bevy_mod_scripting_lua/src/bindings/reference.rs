@@ -53,9 +53,8 @@ impl UserData for LuaReflectReference {
 
                 let key: ScriptValue = key.into();
                 let key = match key.as_string() {
-                    Ok(string) => match world.lookup_instance_function(type_id, string) {
-                        Ok(func) => return Ok(LuaScriptValue(ScriptValue::Function(func))),
-
+                    Ok(string) => match world.lookup_member(&self_, type_id, string) {
+                        Ok(member) => return Ok(LuaScriptValue(member)),
                         Err(e) => ScriptValue::String(e),
                     },
                     Err(key) => key,

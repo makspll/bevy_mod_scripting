@@ -23,10 +23,16 @@ use bevy_transform::components::Transform;
 /// Needs the gizmo plugin, without it the functions fail with an error.
 ///
 /// ```multi-lang-example,lua
+/// local Color = import_namespace("color").Color
+/// local Gizmos = import_namespace("gizmos").Gizmos
+/// local Vec3 = import_namespace("math").Vec3
 /// Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())
 /// ```
 ///
 /// ```multi-lang-example,rhai
+/// let Color = import_namespace.call("color").Color;
+/// let Gizmos = import_namespace.call("gizmos").Gizmos;
+/// let Vec3 = import_namespace.call("math").Vec3;
 /// Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.call());
 /// ```
 #[derive(Reflect, Default)]
@@ -50,6 +56,7 @@ fn ensure_gizmos_available(ctxt: &FunctionCallContext) -> Result<(), InteropErro
     remote,
     name = "gizmos_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "gizmos",
     core
 )]
 impl Gizmos {
@@ -252,6 +259,18 @@ pub(crate) fn register(world: &mut World) {
 pub struct BevyGizmosBindingsPlugin;
 
 impl Plugin for BevyGizmosBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["bevy_gizmos"],
+            "gizmos",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         // the marker type has no fields, scripts only see it once registered
         app.register_type::<Gizmos>();

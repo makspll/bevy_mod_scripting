@@ -1,4 +1,6 @@
 // presets
+let PlaybackMode = import_namespace.call("audio").PlaybackMode;
+let PlaybackSettings = import_namespace.call("audio").PlaybackSettings;
 let once = PlaybackSettings.once.call();
 assert(once.mode == PlaybackMode.Once, "once mode");
 assert(once.speed == 1.0 && !once.paused && !once.spatial, "once defaults");

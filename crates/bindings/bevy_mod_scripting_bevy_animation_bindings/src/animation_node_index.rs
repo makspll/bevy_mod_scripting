@@ -10,6 +10,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "animation_node_index_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "animation",
     core
 )]
 impl AnimationNodeIndex {
@@ -18,11 +19,13 @@ impl AnimationNodeIndex {
     /// Scripts see this type as `NodeIndex`.
     ///
     /// ```multi-lang-example,lua
+    /// local NodeIndex = import_namespace("animation").NodeIndex
     /// local node = NodeIndex.new(3)
     /// assert(node:index() == 3)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let NodeIndex = import_namespace.call("animation").NodeIndex;
     /// let node = NodeIndex.new_.call(3);
     /// assert(node.index.call() == 3);
     /// ```

@@ -1,3 +1,4 @@
+local ScriptAttachment = import_namespace("bms").ScriptAttachment
 function on_test()
   local post_update_schedule = world.get_schedule_by_name("PostUpdate")
 

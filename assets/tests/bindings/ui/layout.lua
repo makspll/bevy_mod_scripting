@@ -1,4 +1,11 @@
 -- UiRect sides
+local BorderColor = import_namespace("ui").BorderColor
+local BorderRadius = import_namespace("ui").BorderRadius
+local Color = import_namespace("color").Color
+local ComputedNode = import_namespace("ui").ComputedNode
+local Overflow = import_namespace("ui").Overflow
+local UiRect = import_namespace("ui").UiRect
+local Val = import_namespace("ui").Val
 local all = UiRect.all(Val.px(2))
 assert(all.left[1] == 2 and all.right[1] == 2 and all.top[1] == 2 and all.bottom[1] == 2, "all")
 local sides = UiRect.px(1, 2, 3, 4)

@@ -14,6 +14,7 @@ use bevy_shape::{InfinitePlane3d, Plane2d, Ray2d, Ray3d};
     remote,
     name = "ray2d_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Ray2d {
@@ -45,6 +46,7 @@ impl Ray2d {
     remote,
     name = "ray3d_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Ray3d {

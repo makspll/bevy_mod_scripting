@@ -10,6 +10,7 @@ use bevy_text::TextSpan;
     remote,
     name = "text_span_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "text",
     core
 )]
 impl TextSpan {

@@ -18,6 +18,7 @@ macro_rules! int_vector_functions {
             remote,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
+            namespace = "math",
             core
         )]
         impl $ty {
@@ -153,6 +154,7 @@ int_vector_functions!(UVec3, u32, "uvec3_shared_functions");
     remote,
     name = "ivec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl IVec2 {
@@ -191,6 +193,7 @@ impl IVec2 {
     remote,
     name = "ivec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl IVec3 {
@@ -234,6 +237,7 @@ impl IVec3 {
     remote,
     name = "uvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl UVec2 {
@@ -262,6 +266,7 @@ impl UVec2 {
     remote,
     name = "uvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl UVec3 {

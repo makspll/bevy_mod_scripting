@@ -8,6 +8,8 @@ Scripts can run callbacks of other scripts, in any scripting language, using two
 | `queue_script_callback(label, target, ...args)` | As soon as the current callback finishes, in the same frame | Nothing |
 
 ```lua
+local bms = import_namespace("bms")
+local ScriptAttachment, Recipients = bms.ScriptAttachment, bms.Recipients
 local enemy_script = ScriptAttachment.new_entity_script(enemy, script_asset)
 
 -- runs `take_damage(10, "fire")` in the enemy's script right away
@@ -18,6 +20,8 @@ queue_script_callback("on_hit", Recipients.all_scripts())
 ```
 
 ```rhai
+let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
+let Recipients = import_namespace.call("bms").Recipients;
 let enemy_script = ScriptAttachment.new_entity_script.call(enemy, script_asset);
 
 let remaining_health = run_script_callback.call("take_damage", enemy_script, 10, "fire");

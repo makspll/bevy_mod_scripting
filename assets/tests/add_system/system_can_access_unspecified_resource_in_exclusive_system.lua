@@ -1,3 +1,4 @@
+local ScriptAttachment = import_namespace("bms").ScriptAttachment
 runs = {}
 
 function on_test()

@@ -19,6 +19,7 @@ fn to_dir(v: Vec3) -> Result<Dir3, InteropError> {
     remote,
     name = "transform_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "transform",
     core
 )]
 impl Transform {
@@ -30,11 +31,13 @@ impl Transform {
     /// A transform at the position `x`, `y`, `z`.
     ///
     /// ```multi-lang-example,lua
+    /// local Transform = import_namespace("transform").Transform
     /// local t = Transform.from_xyz(1, 2, 3)
     /// assert(t.translation.x == 1)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Transform = import_namespace.call("transform").Transform;
     /// let t = Transform.from_xyz.call(1.0, 2.0, 3.0);
     /// assert(t.translation.x == 1.0);
     /// ```

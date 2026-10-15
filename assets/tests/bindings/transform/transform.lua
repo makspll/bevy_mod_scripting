@@ -1,3 +1,7 @@
+local Mat4 = import_namespace("math").Mat4
+local Quat = import_namespace("math").Quat
+local Transform = import_namespace("transform").Transform
+local Vec3 = import_namespace("math").Vec3
 local function approx(a, b)
     return math.abs(a - b) < 0.0001
 end

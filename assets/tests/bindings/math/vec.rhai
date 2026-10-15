@@ -1,3 +1,6 @@
+let Vec2 = import_namespace.call("math").Vec2;
+let Vec3 = import_namespace.call("math").Vec3;
+
 fn approx(a, b) {
     (a - b).abs() < 0.0001
 }

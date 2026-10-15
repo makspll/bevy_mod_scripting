@@ -1,3 +1,4 @@
+local TestComponent = import_namespace("test_utils").TestComponent
 local entity_a = world.spawn()
 
 local componentA = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData")

@@ -32,6 +32,7 @@ fn primary_window_entity(world: &WorldGuard) -> Result<Option<Entity>, InteropEr
     remote,
     name = "window_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "window",
     core
 )]
 impl Window {

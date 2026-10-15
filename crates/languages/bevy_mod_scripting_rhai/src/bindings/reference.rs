@@ -5,8 +5,12 @@ use std::{
 
 use crate::IntoRhaiError;
 use bevy_mod_scripting_bindings::{
-    ReflectReference, ScriptValue, WorldExtensions, error::InteropError,
-    function::script_function::DynamicScriptFunctionMut,
+    EnumVariantRef, ReflectReference, ScriptValue, WorldExtensions,
+    error::InteropError,
+    function::{
+        namespace::Namespace,
+        script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
+    },
 };
 use bevy_mod_scripting_display::OrFakeId;
 use bevy_mod_scripting_world::ThreadWorldContainer;
@@ -303,11 +307,13 @@ impl CustomType for RhaiReflectReference {
 
                 let key: ScriptValue = ScriptValue::from_dynamic(index)?;
                 let key = match key.as_string() {
-                    Ok(string) => match world.lookup_instance_function(type_id, string) {
-                        Ok(func) => {
+                    Ok(string) => match world.lookup_member(self_, type_id, string) {
+                        // methods get the value as their receiver, static members of registrations don't
+                        Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => {
                             return FunctionWithReceiver::curry(func, self_.clone().into())
                                 .into_dynamic();
                         }
+                        Ok(member) => return member.into_dynamic(),
                         Err(string) => ScriptValue::String(string),
                     },
                     Err(key) => key,
@@ -591,6 +597,13 @@ impl CustomType for RhaiReflectReference {
                 }
             });
     }
+}
+
+/// Whether a function found on a value of the given type is called on that value, i.e. not a static member of a registration.
+fn is_method(func: &DynamicScriptFunction, type_id: TypeId) -> bool {
+    type_id == TypeId::of::<EnumVariantRef>()
+        || matches!(func.info.namespace, Namespace::OnType(on)
+            if on == type_id || on == TypeId::of::<ReflectReference>())
 }
 
 #[derive(Clone, Debug, Copy, PartialEq)]

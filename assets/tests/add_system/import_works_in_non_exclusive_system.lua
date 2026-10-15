@@ -1,3 +1,4 @@
+local ScriptAttachment = import_namespace("bms").ScriptAttachment
 runs = {}
 
 function on_test()
@@ -16,7 +17,7 @@ end
 function my_importing_system()
     runs[#runs + 1] = "my_importing_system"
 
-    local bevy_transform = import_namespace("bevy_transform")
+    local bevy_transform = import_namespace("transform")
     assert(bevy_transform.Transform ~= nil, "Transform should be importable from a system")
     assert(import_namespace("bms").ScriptAttachment ~= nil)
 

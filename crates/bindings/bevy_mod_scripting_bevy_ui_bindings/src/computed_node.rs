@@ -11,6 +11,7 @@ use bevy_ui::ComputedNode;
     remote,
     name = "computed_node_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ui",
     core
 )]
 impl ComputedNode {

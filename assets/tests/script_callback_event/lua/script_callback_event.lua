@@ -1,3 +1,6 @@
+local CallbackLabel = import_namespace("bms").CallbackLabel
+local Recipients = import_namespace("bms").Recipients
+local ScriptCallbackMessage = import_namespace("bms").ScriptCallbackMessage
 function on_test()
     local label = CallbackLabel.new({ "callback_a" })
     local recipients = Recipients.AllScripts:new({})

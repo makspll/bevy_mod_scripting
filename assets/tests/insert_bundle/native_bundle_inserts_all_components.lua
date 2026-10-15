@@ -1,3 +1,6 @@
+local CompWithDefaultAndComponentData = import_namespace("test_utils").CompWithDefaultAndComponentData
+local TestBundle = import_namespace("test_utils").TestBundle
+
 local Bundle = world.get_type_by_name("test_utils::test_data::TestBundle")
 local Comp = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
 local Simple = world.get_type_by_name("test_utils::test_data::SimpleStruct")

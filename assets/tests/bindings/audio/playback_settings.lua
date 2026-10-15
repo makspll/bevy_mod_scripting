@@ -1,4 +1,6 @@
 -- presets
+local PlaybackMode = import_namespace("audio").PlaybackMode
+local PlaybackSettings = import_namespace("audio").PlaybackSettings
 local once = PlaybackSettings.once()
 assert(once.mode == PlaybackMode.Once, "once mode")
 assert(once.speed == 1.0 and not once.paused and not once.spatial, "once defaults")

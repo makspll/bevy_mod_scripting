@@ -1,3 +1,5 @@
+let Entity = import_namespace.call("ecs").Entity;
+let Name = import_namespace.call("ecs").Name;
 let entity = world.spawn_.call();
 let other = world.spawn_.call();
 

@@ -11,6 +11,7 @@ use bevy_ui::{BorderColor, BorderRadius, Val};
     remote,
     name = "border_radius_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ui",
     core
 )]
 impl BorderRadius {
@@ -59,6 +60,7 @@ impl BorderRadius {
     remote,
     name = "border_color_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ui",
     core
 )]
 impl BorderColor {

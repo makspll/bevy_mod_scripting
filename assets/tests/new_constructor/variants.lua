@@ -1,3 +1,6 @@
+local SimpleEnum = import_namespace("test_utils").SimpleEnum
+local SimpleStruct = import_namespace("test_utils").SimpleStruct
+
 local value = SimpleEnum.new({ variant = "Struct", foo = 1 })
 
 -- discriminating variants

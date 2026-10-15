@@ -1,4 +1,6 @@
 // a camera without a render target has no viewport
+let Camera = import_namespace.call("camera").Camera;
+let OrthographicProjection = import_namespace.call("camera").OrthographicProjection;
 let camera = Camera.new_.call(#{});
 assert(type_of(camera.logical_viewport_size.call()) == "()", "logical size is nil without a target");
 assert(type_of(camera.logical_viewport_rect.call()) == "()", "logical rect is nil without a target");

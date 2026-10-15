@@ -1,3 +1,4 @@
+local Vec3 = import_namespace("math").Vec3
 local a = Vec3.new(2.0, -4.0, 6.0)
 
 assert((-a).x == -2.0, "Negation did not work")

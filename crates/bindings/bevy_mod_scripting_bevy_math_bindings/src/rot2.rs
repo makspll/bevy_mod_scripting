@@ -10,6 +10,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "rot2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Rot2 {

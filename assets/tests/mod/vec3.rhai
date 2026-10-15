@@ -1,3 +1,5 @@
+let Vec3 = import_namespace.call("math").Vec3;
+
 let a = Vec3.new_.call(2.0, 5.0, 6.0);
 let b = Vec3.new_.call(1.0, 2.0, 3.0);
 

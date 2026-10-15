@@ -1,4 +1,9 @@
 // UiRect sides
+let BorderRadius = import_namespace.call("ui").BorderRadius;
+let ComputedNode = import_namespace.call("ui").ComputedNode;
+let Overflow = import_namespace.call("ui").Overflow;
+let UiRect = import_namespace.call("ui").UiRect;
+let Val = import_namespace.call("ui").Val;
 let all = UiRect.all.call(Val.px.call(2.0));
 let left = all.left;
 let bottom = all.bottom;

@@ -355,6 +355,24 @@ pub trait WorldExtensions {
         name: impl Into<Cow<'static, str>>,
     ) -> Result<DynamicScriptFunction, Cow<'static, str>>;
 
+    /// Looks up a member accessed by name on a value, i.e. `value.name` in a script, before falling back to field access.
+    ///
+    /// Resolution order:
+    /// 1. [`Self::lookup_instance_function`]
+    /// 2. for an enum variant: the functions of the enum, so `MyEnum.Variant:method()` works
+    ///
+    /// For a type registration, such as the entries of `import_namespace`, the static members of the registered type (see [`Self::lookup_static_member`])
+    /// come right after the functions of the registration itself, before the functions shared by all references,
+    /// so `math.Vec3.new(..)` and `my_namespace.MyEnum.Variant` work.
+    ///
+    /// `type_id` is the type of the value `reference` points to. Returns the name back if nothing was found.
+    fn lookup_member(
+        &self,
+        reference: &ReflectReference,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<ScriptValue, Cow<'static, str>>;
+
     /// Looks up a reserved function (see the "Reserved Functions" section of the book) on the `ReflectReference` namespace,
     /// ignoring functions registered on the types themselves.
     ///
@@ -1259,6 +1277,42 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.lookup_function([type_id, TypeId::of::<ReflectReference>()], name)
     }
 
+    fn lookup_member(
+        &self,
+        reference: &ReflectReference,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<ScriptValue, Cow<'static, str>> {
+        if let Some(registered) = registered_type_id(self, reference, type_id) {
+            // the static members of the type come before the functions shared by all references,
+            // i.e. `PlaybackSettings.remove()` is not the generic `remove`
+            let name = match self.lookup_function([type_id], name) {
+                Ok(func) => return Ok(ScriptValue::Function(func)),
+                Err(name) => name,
+            };
+            let name = match self.lookup_static_member(registered, name) {
+                Ok(member) => return Ok(member),
+                Err(name) => name,
+            };
+            return self
+                .lookup_function([TypeId::of::<ReflectReference>()], name)
+                .map(ScriptValue::Function);
+        }
+        let name = match self.lookup_instance_function(type_id, name) {
+            Ok(func) => return Ok(ScriptValue::Function(func)),
+            Err(name) => name,
+        };
+        if type_id == TypeId::of::<EnumVariantRef>() {
+            return match reference.downcast::<EnumVariantRef>(self.clone()) {
+                Ok(variant) => self
+                    .lookup_function([variant.type_id], name)
+                    .map(ScriptValue::Function),
+                Err(_) => Err(name),
+            };
+        }
+        Err(name)
+    }
+
     fn lookup_reserved_function(
         &self,
         name: impl Into<Cow<'static, str>>,
@@ -1666,6 +1720,41 @@ fn run_observer_callback(
     });
 }
 
+/// The type a type registration points to, if `type_id` (the type of the value behind `reference`) is one of the registration types.
+fn registered_type_id(
+    guard: &WorldAccessGuard,
+    reference: &ReflectReference,
+    type_id: TypeId,
+) -> Option<TypeId> {
+    fn registered<T: Reflect>(
+        guard: &WorldAccessGuard,
+        reference: &ReflectReference,
+        registered: fn(&T) -> TypeId,
+    ) -> Option<TypeId> {
+        reference
+            .with_reflect(guard.clone(), |r| r.try_downcast_ref::<T>().map(registered))
+            .ok()
+            .flatten()
+    }
+    if type_id == TypeId::of::<ScriptTypeRegistration>() {
+        registered(guard, reference, ScriptTypeRegistration::type_id)
+    } else if type_id == TypeId::of::<ScriptComponentRegistration>() {
+        registered(guard, reference, |r: &ScriptComponentRegistration| {
+            r.type_registration().type_id()
+        })
+    } else if type_id == TypeId::of::<ScriptResourceRegistration>() {
+        registered(guard, reference, |r: &ScriptResourceRegistration| {
+            r.type_registration().type_id()
+        })
+    } else if type_id == TypeId::of::<ScriptBundleRegistration>() {
+        registered(guard, reference, |r: &ScriptBundleRegistration| {
+            r.type_registration().type_id()
+        })
+    } else {
+        None
+    }
+}
+
 /// A type level function registered on [`StaticTypeRef`], bound to the given type.
 fn lookup_bound_type_function(
     guard: &WorldAccessGuard,
@@ -1739,6 +1828,7 @@ pub(crate) fn default_instance(
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::function::from::R;
     use bevy_reflect::Reflect;
     use std::sync::Arc;
     use test_utils::test_data::{
@@ -1782,6 +1872,64 @@ mod test {
             world
                 .lookup_type_function(TypeId::of::<SimpleStruct>(), "missing")
                 .is_err()
+        );
+    }
+
+    #[test]
+    fn lookup_member_reaches_static_members_through_registrations_and_enum_functions_through_variants()
+     {
+        use crate::function::namespace::NamespaceBuilder;
+
+        let mut world = setup_world(|_, _| {});
+        NamespaceBuilder::<SimpleStruct>::new_unregistered(&mut world)
+            .register("describe", || 2usize);
+        NamespaceBuilder::<SimpleEnum>::new_unregistered(&mut world)
+            .register("describe", |_: R<SimpleEnum>| 3usize);
+
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        let world = WorldAccessGuard::new_exclusive(&mut world, cache);
+        let registration_of = |type_id: TypeId| {
+            let registration = world.type_registry().read().get(type_id).unwrap().clone();
+            let registration = ScriptTypeRegistration::new(Arc::new(registration));
+            ReflectReference::new_allocated(registration, &mut world.allocator().write())
+        };
+
+        // a registration, i.e. an entry of `import_namespace`, gives access to the static functions of its type
+        let registration = registration_of(TypeId::of::<SimpleStruct>());
+        let registration_type = TypeId::of::<ScriptTypeRegistration>();
+        let Ok(ScriptValue::Function(function)) =
+            world.lookup_member(&registration, registration_type, "describe")
+        else {
+            panic!("expected the static function of the registered type")
+        };
+        assert_eq!(
+            function.info.namespace,
+            Namespace::OnType(TypeId::of::<SimpleStruct>())
+        );
+        // the functions of the registration itself still come first
+        assert!(
+            world
+                .lookup_member(&registration, registration_type, "missing")
+                .is_err()
+        );
+
+        // and to its enum variants
+        let enum_registration = registration_of(TypeId::of::<SimpleEnum>());
+        let Ok(ScriptValue::Reference(variant)) =
+            world.lookup_member(&enum_registration, registration_type, "Unit")
+        else {
+            panic!("expected the variant of the registered enum")
+        };
+
+        // a variant gives access to the functions of its enum
+        let Ok(ScriptValue::Function(function)) =
+            world.lookup_member(&variant, TypeId::of::<EnumVariantRef>(), "describe")
+        else {
+            panic!("expected the function of the enum")
+        };
+        assert_eq!(
+            function.info.namespace,
+            Namespace::OnType(TypeId::of::<SimpleEnum>())
         );
     }
 

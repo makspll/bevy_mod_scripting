@@ -1,3 +1,5 @@
+local Duration = import_namespace("time").Duration
+
 -- the default clock, and the clocks behind it
 local time = world.time()
 assert(time:delta_secs() >= 0.0, "delta_secs")

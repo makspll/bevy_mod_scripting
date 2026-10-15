@@ -1,4 +1,8 @@
 // constructors
+let Duration = import_namespace.call("time").Duration;
+let Stopwatch = import_namespace.call("time").Stopwatch;
+let Timer = import_namespace.call("time").Timer;
+let TimerMode = import_namespace.call("time").TimerMode;
 let timer = Timer.from_seconds.call(2.0, TimerMode.Once);
 assert(timer.duration.call().as_secs.call() == 2.0, "from_seconds sets the duration");
 assert(timer.mode.call() != (), "mode");

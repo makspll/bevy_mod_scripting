@@ -14,6 +14,18 @@ mod val;
 pub struct BevyUiBindingsPlugin;
 
 impl Plugin for BevyUiBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["bevy_ui", "bevy_ui_render", "bevy_ui_widgets"],
+            "ui",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         // types without functions are only available to scripts once registered
         app.register_type::<bevy_ui::Node>()

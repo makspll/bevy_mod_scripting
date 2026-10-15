@@ -1,4 +1,5 @@
 -- `==` works for every reflected type, even without its own `eq`
+local SimpleStruct = import_namespace("test_utils").SimpleStruct
 local a = SimpleStruct.new({ foo = 1 })
 local b = SimpleStruct.new({ foo = 1 })
 assert(a == b, "equal values compare equal")

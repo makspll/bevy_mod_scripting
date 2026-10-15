@@ -14,6 +14,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "duration_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "time",
     core
 )]
 impl Duration {
@@ -106,6 +107,7 @@ impl Duration {
     remote,
     name = "instant_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "time",
     core
 )]
 impl Instant {

@@ -13,6 +13,7 @@ use bevy_ui::widget::ImageNode;
     remote,
     name = "image_node_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ui",
     core
 )]
 impl ImageNode {

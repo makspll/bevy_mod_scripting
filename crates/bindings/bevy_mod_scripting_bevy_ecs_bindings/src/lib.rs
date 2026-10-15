@@ -23,6 +23,18 @@ use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyEcsBindingsPlugin;
 
 impl Plugin for BevyEcsBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["bevy_ecs"],
+            "ecs",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         register_entity_functions(world);
@@ -36,6 +48,7 @@ impl Plugin for BevyEcsBindingsPlugin {
     remote,
     name = "entity_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ecs",
     core
 )]
 impl Entity {
@@ -71,17 +84,20 @@ impl Entity {
     remote,
     name = "name_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ecs",
     core
 )]
 impl Name {
     /// Creates a new [`Name`](bevy_ecs::name::Name) component, used to identify entities.
     ///
     /// ```multi-lang-example,lua
+    /// local Name = import_namespace("ecs").Name
     /// local name = Name.new("player")
     /// assert(name:as_str() == "player")
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Name = import_namespace.call("ecs").Name;
     /// let name = Name.new_.call("player");
     /// assert(name.as_str.call() == "player");
     /// ```
@@ -114,6 +130,7 @@ impl Name {
     remote,
     name = "child_of_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ecs",
     core
 )]
 impl ChildOf {

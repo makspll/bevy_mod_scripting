@@ -1,4 +1,6 @@
 -- Val compares by variant only, so the length is checked through the payload, which is the first field
+local Node = import_namespace("ui").Node
+local Val = import_namespace("ui").Val
 assert(Val.px(5)[1] == 5, "px payload")
 assert(Val.px(5):variant_name() == "Px", "px variant")
 assert(Val.percent(50)[1] == 50 and Val.percent(50):variant_name() == "Percent", "percent")

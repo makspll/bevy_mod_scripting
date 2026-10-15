@@ -10,6 +10,7 @@ use bevy_ui::{UiRect, Val};
     remote,
     name = "ui_rect_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ui",
     core
 )]
 impl UiRect {

@@ -13,17 +13,20 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "srgba_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "color",
     core
 )]
 impl Srgba {
     /// A color from red, green, blue and alpha, each from `0` to `1`.
     ///
     /// ```multi-lang-example,lua
+    /// local Srgba = import_namespace("color").Srgba
     /// local c = Srgba.new(1.0, 0.0, 0.0, 0.5)
     /// assert(c.alpha == 0.5)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Srgba = import_namespace.call("color").Srgba;
     /// let c = Srgba.new_.call(1.0, 0.0, 0.0, 0.5);
     /// assert(c.alpha == 0.5);
     /// ```

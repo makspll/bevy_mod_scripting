@@ -16,7 +16,7 @@ function on_test()
     world.trigger_event(Hit)
 
     -- rust events need a value
-    local AddEvent = import_namespace("bevy_ecs").AddEvent
+    local AddEvent = import_namespace("ecs").AddEvent
     local ok, err = pcall(world.trigger_event, AddEvent)
     assert(not ok and tostring(err):find("needs an event value", 1, true), tostring(err))
 end

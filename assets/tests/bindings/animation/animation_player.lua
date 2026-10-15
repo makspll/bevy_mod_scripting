@@ -1,4 +1,6 @@
 -- AnimationPlayer without any animations playing
+local AnimationPlayer = import_namespace("animation").AnimationPlayer
+local NodeIndex = import_namespace("animation").NodeIndex
 local player = AnimationPlayer.new({})
 local node = NodeIndex.new(0)
 assert(not player:is_playing_animation(node), "nothing is playing in a new player")

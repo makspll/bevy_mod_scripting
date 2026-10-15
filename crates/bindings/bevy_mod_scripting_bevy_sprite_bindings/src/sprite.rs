@@ -14,6 +14,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "sprite_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "sprite",
     core
 )]
 impl Sprite {

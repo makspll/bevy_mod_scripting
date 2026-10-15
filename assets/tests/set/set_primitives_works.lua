@@ -1,3 +1,4 @@
+local SimpleType = import_namespace("test_utils").SimpleType
 local Resource = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")
 local resource = world.get_resource(Resource)
 

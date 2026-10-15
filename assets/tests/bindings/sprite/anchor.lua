@@ -1,4 +1,6 @@
 -- anchors are offsets of a sprite's size from its center
+local Anchor = import_namespace("sprite").Anchor
+local Vec2 = import_namespace("math").Vec2
 assert(Anchor.center():as_vec() == Vec2.new(0, 0), "center")
 assert(Anchor.center_left():as_vec() == Vec2.new(-0.5, 0), "center_left")
 assert(Anchor.center_right():as_vec() == Vec2.new(0.5, 0), "center_right")

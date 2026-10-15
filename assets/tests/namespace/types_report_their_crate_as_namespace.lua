@@ -1,13 +1,18 @@
 function on_test()
+    -- bevy types are grouped by category
     local transform = world.get_type_by_name("bevy_transform::components::transform::Transform")
     local entity = world.get_type_by_name("bevy_ecs::entity::Entity")
-    assert(transform:namespace() == "bevy_transform", "got: " .. transform:namespace())
-    assert(entity:namespace() == "bevy_ecs", "got: " .. entity:namespace())
+    assert(transform:namespace() == "transform", "got: " .. transform:namespace())
+    assert(entity:namespace() == "ecs", "got: " .. entity:namespace())
 
-    -- BMS' own types opt in to the `bms` namespace explicitly
+    -- BMS' own types live in the `bms` namespace
     assert(world.get_type_by_name("bevy_mod_scripting_bindings::query::ScriptTypeRegistration"):namespace() == "bms")
     assert(world.get_type_by_name("bevy_mod_scripting_script::ScriptAttachment"):namespace() == "bms")
     assert(world.get_type_by_name("bevy_mod_scripting_bindings::script_component::DynamicComponent"):namespace() == "bms")
+
+    -- other types are in the namespace of their crate
+    local test_component = world.get_type_by_name("test_utils::test_data::TestComponent")
+    assert(test_component:namespace() == "test_utils", "got: " .. test_component:namespace())
 
     -- script components are in the namespace they were registered in
     local Comp = world.register_new_component("script.test", "NamespaceTestComp")
