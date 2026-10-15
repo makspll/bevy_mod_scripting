@@ -53,6 +53,10 @@ pub enum ThroughTypeInfo {
     ///
     /// See [`ThroughTypeInfo::bind_placeholders`].
     Bound(BoundPlaceholder),
+    /// A handle to an asset of the given type, i.e. `Handle<Image>`.
+    ///
+    /// The handle type is only known to the type registry, see [`crate::function::bound::asset_handle_type_info`].
+    AssetHandle(&'static TypeInfo),
 }
 
 /// The parts of a shared function's signature which depend on the type it is bound to.
@@ -63,6 +67,8 @@ pub enum BoundPlaceholder {
     Value,
     /// A table of the fields of the bound type, see [`ThroughTypeInfo::Fields`]
     Fields,
+    /// A handle to an asset of the bound type, see [`ThroughTypeInfo::AssetHandle`]
+    Handle,
 }
 
 impl ThroughTypeInfo {
@@ -87,6 +93,9 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => {
                 ThroughTypeInfo::Fields { type_info, variant }
             }
+            ThroughTypeInfo::Bound(BoundPlaceholder::Handle) => {
+                ThroughTypeInfo::AssetHandle(type_info)
+            }
             ThroughTypeInfo::TypedWrapper(kind) => ThroughTypeInfo::TypedWrapper(match kind {
                 TypedWrapperKind::Union(inner) => TypedWrapperKind::Union(bind_all(inner)),
                 TypedWrapperKind::Vec(inner) => TypedWrapperKind::Vec(bind(inner)),
@@ -106,11 +115,21 @@ impl ThroughTypeInfo {
 
     /// Whether this contains any [`ThroughTypeInfo::Bound`] placeholders.
     pub fn has_placeholders(&self) -> bool {
+        self.has_placeholder_where(|_| true)
+    }
+
+    /// Whether this contains the given [`ThroughTypeInfo::Bound`] placeholder.
+    pub fn has_placeholder(&self, placeholder: BoundPlaceholder) -> bool {
+        self.has_placeholder_where(|p| p == placeholder)
+    }
+
+    fn has_placeholder_where(&self, matches: impl Fn(BoundPlaceholder) -> bool + Copy) -> bool {
         match self {
-            ThroughTypeInfo::Bound(_) => true,
-            ThroughTypeInfo::TypedWrapper(kind) => {
-                kind.inner().into_iter().any(Self::has_placeholders)
-            }
+            ThroughTypeInfo::Bound(placeholder) => matches(*placeholder),
+            ThroughTypeInfo::TypedWrapper(kind) => kind
+                .inner()
+                .into_iter()
+                .any(|inner| inner.has_placeholder_where(matches)),
             _ => false,
         }
     }

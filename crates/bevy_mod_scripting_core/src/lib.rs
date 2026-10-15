@@ -382,6 +382,8 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
 
         app.register_type::<ScriptAsset>();
         app.register_type::<Handle<ScriptAsset>>();
+        // lets scripts read script assets through their handles, i.e. `ScriptAsset.get_asset(handle)`
+        app.register_asset_reflect::<ScriptAsset>();
         app.register_type::<ReflectReference>();
         app.register_type_data::<Handle<ScriptAsset>, MarkAsCore>();
 
