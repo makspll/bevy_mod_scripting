@@ -43,6 +43,7 @@ impl Plugin for BevyRenderBindingsPlugin {
                 "bevy_core_pipeline",
                 "bevy_post_process",
                 "bevy_anti_alias",
+                "bevy_material",
             ],
             "render",
         );
