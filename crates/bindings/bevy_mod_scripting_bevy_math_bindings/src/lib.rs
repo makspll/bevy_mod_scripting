@@ -25,7 +25,7 @@ impl Plugin for BevyMathBindingsPlugin {
             .clone();
         bevy_mod_scripting_bindings::set_crate_script_namespaces(
             &mut registry.write(),
-            &["glam", "bevy_math"],
+            &["glam", "bevy_math", "bevy_curve", "bevy_shape"],
             "math",
         );
     }
