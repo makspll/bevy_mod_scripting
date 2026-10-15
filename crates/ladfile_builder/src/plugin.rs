@@ -9,7 +9,10 @@ use ::{
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
     DummyScriptFunctionRegistry, EnumVariantRef, FunctionInfo, IntoNamespace, StaticTypeRef,
-    function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
+    docgen::typed_through::BoundPlaceholder,
+    function::{
+        bound::is_asset_type, namespace::Namespace, script_function::AppScriptFunctionRegistry,
+    },
     globals::AppScriptGlobalsRegistry,
     into_through_type_info,
 };
@@ -174,12 +177,17 @@ pub fn generate_lad_file(
         // functions on the static type reference are available on every type's own static reference,
         // bound to the type, unless the type has a function of its own with the same name.
         // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_type_function`
+        // Functions on asset handles are only documented on asset types.
         if type_info.type_id() != TypeId::of::<StaticTypeRef>() {
             let namespace = Namespace::OnType(type_info.type_id());
+            let is_asset = is_asset_type(&type_registry, type_info.type_id());
             for (key, function) in
                 function_registry.iter_namespace(Namespace::OnType(TypeId::of::<StaticTypeRef>()))
             {
                 if function_registry.contains(namespace, key.name.clone()) {
+                    continue;
+                }
+                if !is_asset && function.info.has_placeholder(BoundPlaceholder::Handle) {
                     continue;
                 }
                 builder.add_function_info(&function.info.bind_to_type(type_info));
