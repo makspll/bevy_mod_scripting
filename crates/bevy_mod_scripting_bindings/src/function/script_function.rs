@@ -413,10 +413,9 @@ pub struct ScriptFunctionRegistry {
 
 #[profiling::all_functions]
 impl ScriptFunctionRegistry {
-    /// Register a script function with the given name. If the name already exists,
-    /// the new function will be registered as an overload of the function.
+    /// Register a script function with the given name, replacing any function already registered with that name.
     ///
-    /// If you want to overwrite an existing function, use [`ScriptFunctionRegistry::overwrite`]
+    /// There is one function per name and namespace: for arguments of different types, accept a [`Union`](crate::Union) or a [`ScriptValue`].
     pub fn register<'env, F, M>(
         &mut self,
         namespace: Namespace,
@@ -425,7 +424,7 @@ impl ScriptFunctionRegistry {
     ) where
         F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, false, None::<&'static str>, None);
+        self.insert_function(namespace, name, func, None::<&'static str>, None);
     }
 
     /// Equivalent to [`ScriptFunctionRegistry::register`] but with the ability to provide documentation for the function.
@@ -440,7 +439,7 @@ impl ScriptFunctionRegistry {
     ) where
         F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, false, Some(docs), None);
+        self.insert_function(namespace, name, func, Some(docs), None);
     }
 
     /// Equivalent to [`ScriptFunctionRegistry::register`] but with the ability to provide argument names for the function as well as documentation.
@@ -456,38 +455,10 @@ impl ScriptFunctionRegistry {
     ) where
         F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, false, Some(docs), Some(arg_names));
-    }
-
-    /// Overwrite a function with the given name. If the function does not exist, it will be registered as a new function.
-    pub fn overwrite<'env, F, M>(
-        &mut self,
-        namespace: Namespace,
-        name: impl Into<Cow<'static, str>>,
-        func: F,
-    ) where
-        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
-    {
-        self.register_overload(namespace, name, func, true, None::<&'static str>, None);
-    }
-
-    /// Equivalent to [`ScriptFunctionRegistry::overwrite`] but with the ability to provide documentation for the function.
-    pub fn overwrite_documented<'env, F, M>(
-        &mut self,
-        namespace: Namespace,
-        name: impl Into<Cow<'static, str>>,
-        func: F,
-        docs: &'static str,
-    ) where
-        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
-    {
-        self.register_overload(namespace, name, func, true, Some(docs), None);
+        self.insert_function(namespace, name, func, Some(docs), Some(arg_names));
     }
 
     /// Remove a function from the registry if it exists. Returns the removed function if it was found.
-    ///
-    /// Note if the function is overloaded, you will need to remove each overload individually.
-    /// Use [`ScriptFunctionRegistry::remove_all_overloads`] to remove all overloads at once.
     pub fn remove(
         &mut self,
         namespace: Namespace,
@@ -498,61 +469,30 @@ impl ScriptFunctionRegistry {
             .remove(&FunctionKey { name, namespace })
     }
 
-    /// Remove all overloads of a function with the given name. Returns a vector of the removed functions.
-    pub fn remove_all_overloads(
-        &mut self,
-        namespace: Namespace,
-        name: impl Into<Cow<'static, str>>,
-    ) -> Result<Vec<DynamicScriptFunction>, Cow<'static, str>> {
-        let overloads: Vec<_> = self.iter_overloads(namespace, name)?.cloned().collect();
-        for overload in overloads.iter() {
-            self.functions_mut().remove(&FunctionKey {
-                name: overload.info.name.clone(),
-                namespace,
-            });
-        }
-        Ok(overloads)
-    }
-
-    /// Register a script function with the given name. If the name already exists,
-    /// the new function will be registered as an overload of the function.
-    fn register_overload<'env, F, M>(
+    /// Registers a script function with the given name, replacing any function with the same name.
+    fn insert_function<'env, F, M>(
         &mut self,
         namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
         func: F,
-        overwrite: bool,
         docs: Option<impl Into<Cow<'static, str>>>,
         arg_names: Option<&'static [&'static str]>,
     ) where
         F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        // always start with non-suffixed registration
-        // TODO: we do alot of string work, can we make this all more efficient?
         let name: Cow<'static, str> = name.into();
-        if overwrite || !self.contains(namespace, name.clone()) {
-            let info = func.get_function_info(name.clone(), namespace);
-            let info = match docs {
-                Some(docs) => info.with_docs(docs.into()),
-                None => info,
-            };
-            let info = match arg_names {
-                Some(arg_names) => info.with_arg_names(arg_names),
-                None => info,
-            };
-            let func = func.into_dynamic_script_function().with_info(info);
-            self.functions_mut()
-                .insert(FunctionKey { name, namespace }, func);
-            return;
-        }
-
-        for i in 1.. {
-            let overload = format!("{name}-{i}");
-            if !self.contains(namespace, overload.clone()) {
-                self.register(namespace, overload, func);
-                return;
-            }
-        }
+        let info = func.get_function_info(name.clone(), namespace);
+        let info = match docs {
+            Some(docs) => info.with_docs(docs.into()),
+            None => info,
+        };
+        let info = match arg_names {
+            Some(arg_names) => info.with_arg_names(arg_names),
+            None => info,
+        };
+        let func = func.into_dynamic_script_function().with_info(info);
+        self.functions_mut()
+            .insert(FunctionKey { name, namespace }, func);
     }
 
     /// Check if a function with the given name and namespace exists
@@ -563,7 +503,7 @@ impl ScriptFunctionRegistry {
         })
     }
 
-    /// Get the first overload for the function with the given name and namespace
+    /// Get the function with the given name and namespace
     pub fn get_function(
         &self,
         namespace: Namespace,
@@ -606,34 +546,7 @@ impl ScriptFunctionRegistry {
         &mut self.functions
     }
 
-    /// Iterate over all overloads for the function with the given name and namespace
-    /// If the iterator variant is returned it is guaranteed to contain at least one element
-    pub fn iter_overloads(
-        &self,
-        namespace: Namespace,
-        name: impl Into<Cow<'static, str>>,
-    ) -> Result<impl Iterator<Item = &DynamicScriptFunction>, Cow<'static, str>> {
-        let name: Cow<'static, str> = name.into();
-        let seed = self
-            .get_function(namespace, name.clone())
-            .map(std::iter::once)?;
-
-        let overloads = (1..)
-            .map(move |i| {
-                if i == 0 {
-                    self.get_function(namespace, name.clone())
-                } else {
-                    let name: Cow<'static, str> = format!("{name}-{i}").into();
-                    self.get_function(namespace, name)
-                }
-            })
-            .take_while(|o| o.is_ok())
-            .filter_map(|o| o.ok());
-
-        Ok(seed.chain(overloads))
-    }
-
-    /// Iterates over all functions including overloads
+    /// Iterates over all functions
     pub fn iter_all(&self) -> impl Iterator<Item = (&FunctionKey, &DynamicScriptFunction)> {
         self.functions.iter()
     }
@@ -648,7 +561,7 @@ impl ScriptFunctionRegistry {
             .filter(move |(key, _)| key.namespace == namespace)
     }
 
-    /// Insert a function into the registry with the given key, this will not perform any overloading logic.
+    /// Insert a function into the registry with the given key, keeping its function info as is.
     /// Do not use unless you really need to.
     pub fn raw_insert(
         &mut self,
@@ -901,7 +814,7 @@ mod test {
     }
 
     #[test]
-    fn test_overloaded_script_function() {
+    fn test_registering_a_name_again_replaces_the_function() {
         let mut registry = ScriptFunctionRegistry::default();
         let fn_ = |a: usize, b: usize| a + b;
         let namespace = Namespace::Global;
@@ -909,39 +822,13 @@ mod test {
         let fn_2 = |a: usize, b: i32| a + (b as usize);
         registry.register(namespace, "test", fn_2);
 
-        let first_function = registry
+        let function = registry
             .get_function(namespace, "test")
             .expect("Failed to get function");
 
-        assert_eq!(first_function.info.name, "test");
-        assert_eq!(first_function.info.namespace, namespace);
-
-        let all_functions = registry
-            .iter_overloads(namespace, "test")
-            .expect("Failed to get overloads")
-            .collect::<Vec<_>>();
-
-        assert_eq!(all_functions.len(), 2);
-        assert_eq!(all_functions[0].info.name, "test");
-        assert_eq!(all_functions[1].info.name, "test-1");
-    }
-
-    #[test]
-    fn test_overwrite_script_function() {
-        let mut registry = ScriptFunctionRegistry::default();
-        let fn_ = |a: usize, b: usize| a + b;
-        let namespace = Namespace::Global;
-        registry.register(namespace, "test", fn_);
-        let fn_2 = |a: usize, b: i32| a + (b as usize);
-        registry.overwrite(namespace, "test", fn_2);
-
-        let all_functions = registry
-            .iter_overloads(namespace, "test")
-            .expect("Failed to get overloads")
-            .collect::<Vec<_>>();
-
-        assert_eq!(all_functions.len(), 1);
-        assert_eq!(all_functions[0].info.name, "test");
+        assert_eq!(function.info.name, "test");
+        assert_eq!(function.info.arg_info[1].type_id, TypeId::of::<i32>());
+        assert_eq!(registry.iter_all().count(), 1);
     }
 
     #[test]
@@ -954,21 +841,5 @@ mod test {
         assert!(removed.is_some());
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_none());
-    }
-
-    #[test]
-    fn test_remove_all_overloads() {
-        let mut registry = ScriptFunctionRegistry::default();
-        let fn_ = |a: usize, b: usize| a + b;
-        let namespace = Namespace::Global;
-        registry.register(namespace, "test", fn_);
-        let fn_2 = |a: usize, b: i32| a + (b as usize);
-        registry.register(namespace, "test", fn_2);
-
-        let removed = registry
-            .remove_all_overloads(namespace, "test")
-            .expect("Failed to remove overloads");
-        assert_eq!(removed.len(), 2);
-        assert!(registry.get_function(namespace, "test").is_err());
     }
 }

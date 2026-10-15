@@ -8,3 +8,6 @@ assert((a * 2).z == 6.0, "Multiplication did not work")
 assert((a * b).x == 4.0, "Multiplication did not work")
 assert((a * b).y == 10.0, "Multiplication did not work")
 assert((a * b).z == 18.0, "Multiplication did not work")
+
+-- a number on the left calls `mul` on the vector
+assert((2 * a) == a * 2, "Multiplication with a number on the left did not work")
