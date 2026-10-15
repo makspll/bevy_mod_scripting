@@ -83,13 +83,17 @@ pub(crate) struct Section<'a> {
     pub data: SectionData<'a>,
 }
 
-/// Makes a filename safe to put in links
+/// Makes a filename safe to put in links, and to create on any platform.
+///
+/// Type names can contain anything, i.e. the paths of unregistered types, `::`, `<`, `,`... but windows,
+/// for example, does not allow `:` in filenames. Extensions are added by callers, so `.` is not kept either.
 pub fn linkify_filename(name: impl Into<String>) -> String {
     name.into()
         .to_lowercase()
-        .replace(" ", "_")
-        .replace("<", "")
-        .replace(">", "")
+        .replace(' ', "_")
+        .chars()
+        .filter(|c| c.is_alphanumeric() || matches!(c, '_' | '-'))
+        .collect()
 }
 
 impl<'a> Section<'a> {
@@ -879,6 +883,65 @@ mod test {
             panic!("expected a types summary, got {items:?}");
         };
         assert_eq!(types.len(), titles.len());
+    }
+
+    /// What windows can't have in a filename, and what would be taken for an extension or a path
+    const INVALID_IN_FILENAMES: &[char] = &['<', '>', ':', '"', '/', '\\', '|', '?', '*', '.', ','];
+
+    #[test]
+    fn filenames_can_be_created_on_every_platform() {
+        let name = linkify_filename(
+            r#"MeshExtractableData<alloc::vec::Vec<alloc::string::String>, "a|b?*"> v1.5\x/y"#,
+        );
+        assert!(!name.contains(INVALID_IN_FILENAMES), "{name}");
+        assert_eq!(
+            linkify_filename("MeshExtractableData<alloc::vec::Vec<alloc::string::String>>"),
+            "meshextractabledataallocvecvecallocstringstring"
+        );
+        // names which were fine before are unchanged
+        assert_eq!(
+            linkify_filename("GenericStructType<Usize>"),
+            "genericstructtypeusize"
+        );
+        assert_eq!(linkify_filename("Bindings Summary"), "bindings_summary");
+        assert_eq!(linkify_filename("hello_world-1"), "hello_world-1");
+    }
+
+    #[test]
+    fn pages_of_types_with_unknown_arguments_can_be_created_on_every_platform() {
+        let mut ladfile = setup_ladfile();
+
+        // a generic type which was not declared, with an argument the file doesn't know the type of,
+        // as is the case for containers, which are not types of their own
+        let generic_struct =
+            LadTypeId::new_string_id("ladfile_builder::test::GenericStructType<usize>".into());
+        let mut definition = ladfile.types[&generic_struct].clone();
+        definition.generics[0].type_id =
+            LadTypeId::new_string_id("alloc::vec::Vec<alloc::string::String>".into());
+        ladfile.types.insert(
+            LadTypeId::new_string_id("with_unknown_argument".into()),
+            definition,
+        );
+
+        let summary = Section::new(PathBuf::new(), &ladfile, SectionData::TypeSummary);
+        let pages = summary.children();
+        let unknown = pages
+            .iter()
+            .find(|page| page.title().contains("alloc::vec::Vec"))
+            .expect("the page is there");
+        assert!(
+            !unknown
+                .file_name()
+                .contains(INVALID_IN_FILENAMES[..3].as_ref()),
+            "{}",
+            unknown.file_name()
+        );
+
+        for page in pages {
+            let file_name = page.file_name();
+            let stem = file_name.strip_suffix(".md").unwrap();
+            assert!(!stem.contains(INVALID_IN_FILENAMES), "{file_name}");
+        }
     }
 
     #[test]
