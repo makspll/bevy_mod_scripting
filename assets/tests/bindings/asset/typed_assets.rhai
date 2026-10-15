@@ -1,3 +1,6 @@
+let ScriptAsset = import_namespace.call("bms").ScriptAsset;
+let TestAsset = import_namespace.call("test_utils").TestAsset;
+
 // this script is loaded before it runs, so loading its own path gives back the loaded asset
 let handle = ScriptAsset.load.call("tests/bindings/asset/typed_assets.rhai");
 assert(world.is_loaded.call(handle), "the script asset of this test is loaded");

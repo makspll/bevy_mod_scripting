@@ -27,6 +27,7 @@ Adds a value of this type as a new asset, and returns a strong handle to it.
 Returns the asset a handle points to, or `nil` if it isn't loaded or added yet. Changes to the returned value change the asset.
 
 ```lua
+local ScriptAsset = import_namespace("bms").ScriptAsset
 local handle = ScriptAsset.load("scripts/my_script.lua")
 -- later, once `world.is_loaded(handle)` is true
 local script = ScriptAsset.get_asset(handle)
