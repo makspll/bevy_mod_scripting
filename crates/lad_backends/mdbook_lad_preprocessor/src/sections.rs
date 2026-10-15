@@ -929,12 +929,9 @@ mod test {
             .iter()
             .find(|page| page.title().contains("alloc::vec::Vec"))
             .expect("the page is there");
-        assert!(
-            !unknown
-                .file_name()
-                .contains(INVALID_IN_FILENAMES[..3].as_ref()),
-            "{}",
-            unknown.file_name()
+        assert_eq!(
+            unknown.file_name(),
+            "genericstructtypeallocvecvecallocstringstring.md"
         );
 
         for page in pages {
