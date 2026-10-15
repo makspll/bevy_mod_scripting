@@ -59,7 +59,6 @@ changelog_include = [
 
     ## bindings crates 
 
-    "bevy_a11y_bms_bindings",
     "bevy_animation_bms_bindings",
     "bevy_mod_scripting_bevy_asset_bindings",
     "bevy_mod_scripting_bevy_camera_bindings",
@@ -72,14 +71,11 @@ changelog_include = [
     "bevy_picking_bms_bindings",
     "bevy_mod_scripting_bevy_render_bindings",
     "bevy_scene_bms_bindings",
-    "bevy_sprite_bms_bindings",
-    "bevy_sprite_render_bms_bindings",
-    "bevy_text_bms_bindings",
+    "bevy_mod_scripting_bevy_sprite_bindings",
+    "bevy_mod_scripting_bevy_text_bindings",
     "bevy_mod_scripting_bevy_time_bindings",
     "bevy_mod_scripting_bevy_transform_bindings",
-    "bevy_ui_bms_bindings",
-    "bevy_ui_render_bms_bindings",
-    "bevy_ui_widgets_bms_bindings",
+    "bevy_mod_scripting_bevy_ui_bindings",
 ]
 
 [[package]]
@@ -130,10 +126,6 @@ version_group = "main"
 # bindings crates
 
 [[package]]
-name = "bevy_a11y_bms_bindings"
-version_group = "main"
-
-[[package]]
 name = "bevy_animation_bms_bindings"
 version_group = "main"
 
@@ -178,11 +170,11 @@ name = "bevy_scene_bms_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_sprite_bms_bindings"
+name = "bevy_mod_scripting_bevy_sprite_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_text_bms_bindings"
+name = "bevy_mod_scripting_bevy_text_bindings"
 version_group = "main"
 
 [[package]]
@@ -198,17 +190,6 @@ name = "bevy_mod_scripting_bevy_camera_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_sprite_render_bms_bindings"
+name = "bevy_mod_scripting_bevy_ui_bindings"
 version_group = "main"
 
-[[package]]
-name = "bevy_ui_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_ui_render_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_ui_widgets_bms_bindings"
-version_group = "main"
