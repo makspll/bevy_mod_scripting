@@ -594,13 +594,13 @@ impl<'a> Section<'a> {
         items
     }
 
-    /// The page of the global functions
+    /// The page of the builtin functions
     fn function_summary_items(&self) -> Vec<SectionItem<'a>> {
         vec![
             SectionItem::Markdown {
                 markdown: Box::new(|builder| {
-                    builder.heading(2, "Non-Associated Functions");
-                    builder.text("Global functions that are not associated with any type and callable from anywhere in the script.");
+                    builder.heading(2, "Builtin Functions");
+                    builder.text("The functions every script can call without importing anything. Functions which don't belong to a type live in a namespace instead, see the namespace pages under Types, i.e. `import_namespace(\"bms\").log_info`.");
                 }),
             },
             SectionItem::FunctionsSummary {
