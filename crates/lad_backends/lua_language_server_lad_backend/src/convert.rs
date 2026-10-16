@@ -20,6 +20,29 @@ pub fn convert_ladfile_to_lua_declaration_file(
         diagnostics: vec![],
     };
 
+    let lua_classes = polymorphic_lua_classes(ladfile);
+    definition_file
+        .modules
+        .extend(class_modules(ladfile, &lua_classes));
+    definition_file
+        .modules
+        .extend(generic_type_modules(ladfile));
+    definition_file.modules.extend(fields_modules(ladfile));
+
+    // `import_namespace` needs the namespace classes, so they are built before the globals
+    let namespaces = namespace_modules(ladfile, &lua_classes);
+    let mut globals_module = globals_module(ladfile);
+    link_import_namespace(&mut globals_module, &namespaces);
+    definition_file.modules.extend(namespaces);
+    definition_file.modules.push(globals_module);
+
+    Ok(definition_file)
+}
+
+/// The lua class, and documented functions, of each rust type which is not an instantiation of a generic type.
+fn polymorphic_lua_classes(
+    ladfile: &ladfile::LadFile,
+) -> IndexMap<LadTypeId, (LuaClass, Vec<FunctionSignature>)> {
     // // ignore primitive types
     // let exclude_primitives = true;
     let rust_types = ladfile.polymorphizied_types(false);
@@ -58,13 +81,15 @@ pub fn convert_ladfile_to_lua_declaration_file(
         );
     }
 
-    // the tables of fields constructors take, which get a class each
-    let mut fields_references = FieldsReferences::default();
-    for function in ladfile.functions.values() {
-        fields_references.visit_function(function);
-    }
-    let fields_references = fields_references.0;
+    lua_classes
+}
 
+/// A module per class of a rust type, followed by the modules of its enum variants.
+fn class_modules(
+    ladfile: &ladfile::LadFile,
+    lua_classes: &IndexMap<LadTypeId, (LuaClass, Vec<FunctionSignature>)>,
+) -> Vec<LuaModule> {
+    let mut modules = vec![];
     for (type_id, lad_type) in ladfile.types.iter() {
         let (lua_class, functions) = match lua_classes.get(type_id) {
             Some(val) => val.clone(),
@@ -73,20 +98,24 @@ pub fn convert_ladfile_to_lua_declaration_file(
         // TODO: support all types
         // .get(type_id)
         // .ok_or_else(|| anyhow::anyhow!("Lua class not found for type ID: {}", type_id))?;
-        definition_file.modules.push(LuaModule {
+        modules.push(LuaModule {
             name: lad_type.identifier.to_owned(),
             class: Some(lua_class.clone()),
             functions,
             ..Default::default()
         });
-        definition_file
-            .modules
-            .extend(enum_variant_modules(ladfile, type_id, lad_type));
+        modules.extend(enum_variant_modules(ladfile, type_id, lad_type));
     }
+    modules
+}
 
+/// A class per generic type, with its parameters as generics.
+fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     // generic types are opaque, so a class with the parameters is all there is to them
-    for generic_type in ladfile.generic_types.values() {
-        definition_file.modules.push(LuaModule {
+    ladfile
+        .generic_types
+        .values()
+        .map(|generic_type| LuaModule {
             name: generic_type.identifier.clone(),
             class: Some(LuaClass {
                 name: generic_type.identifier.clone(),
@@ -97,9 +126,20 @@ pub fn convert_ladfile_to_lua_declaration_file(
             }),
             type_only: true,
             ..Default::default()
-        });
-    }
+        })
+        .collect()
+}
 
+/// The fields class of each type or variant constructors take fields for, plus `no_fields` for the rest.
+fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
+    // the tables of fields constructors take, which get a class each
+    let mut fields_references = FieldsReferences::default();
+    for function in ladfile.functions.values() {
+        fields_references.visit_function(function);
+    }
+    let fields_references = fields_references.0;
+
+    let mut modules = vec![];
     let mut no_fields = false;
     for (type_id, variant) in fields_references {
         let variant = variant.as_deref();
@@ -109,7 +149,7 @@ pub fn convert_ladfile_to_lua_declaration_file(
         match lad_fields(ladfile, &type_id, variant) {
             Some(lad_variant) if lad_variant_has_fields(lad_variant) => {
                 match fields_module(ladfile, &type_id, variant, lad_variant) {
-                    Ok(module) => definition_file.modules.push(module),
+                    Ok(module) => modules.push(module),
                     Err(e) => {
                         log::warn!("Error generating the fields of {type_id}: {e}. Ignoring.")
                     }
@@ -119,9 +159,13 @@ pub fn convert_ladfile_to_lua_declaration_file(
         }
     }
     if no_fields {
-        definition_file.modules.push(no_fields_module());
+        modules.push(no_fields_module());
     }
+    modules
+}
 
+/// The `globals` module: the global instances and the global functions.
+fn globals_module(ladfile: &ladfile::LadFile) -> LuaModule {
     let mut globals_module = LuaModule {
         name: "globals".to_string(),
         ..Default::default()
@@ -172,9 +216,13 @@ pub fn convert_ladfile_to_lua_declaration_file(
         };
         globals_module.functions.push(converted)
     }
+    globals_module
+}
 
-    // `import_namespace("namespace")` returns a table of the types in the namespace
-    let namespaces = namespace_modules(ladfile, &lua_classes);
+/// Gives `import_namespace` an overload per namespace, returning the namespace's class.
+///
+/// `import_namespace("namespace")` returns a table of the types in the namespace.
+fn link_import_namespace(globals_module: &mut LuaModule, namespaces: &[LuaModule]) {
     if let Some(import) = globals_module
         .functions
         .iter_mut()
@@ -201,13 +249,7 @@ pub fn convert_ladfile_to_lua_declaration_file(
             })
             .collect();
     }
-    definition_file.modules.extend(namespaces);
-    definition_file.modules.push(globals_module);
-
-    Ok(definition_file)
 }
-
-const GENERIC_PLACEHOLDERS: [&str; 10] = ["T", "U", "V", "W", "X", "Y", "Z", "A", "B", "C"];
 
 // /// Splits the given class into two,
 // /// - The first one containing all of its non-static + static functions
@@ -238,10 +280,8 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
 
     let mut types = Vec::default();
     if let Some(lad_type_id) = monomorphized_types.first() {
-        let generics = GENERIC_PLACEHOLDERS[0..polymorphic_type_key.arity]
-            .iter()
-            .map(ToString::to_string)
-            .collect();
+        // only types of arity 0 get here, so there are no generics to name
+        let generics = vec![];
 
         let documentation = ladfile
             .get_type_documentation(lad_type_id)

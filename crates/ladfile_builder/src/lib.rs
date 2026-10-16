@@ -698,9 +698,11 @@ impl<'t> LadFileBuilder<'t> {
     ///
     /// returning (arg,val) without markup
     fn parse_arg_docstring(line: &str) -> Option<(&str, &str)> {
-        let regex =
-            regex::Regex::new(r#"\s*\*\s*`(?<arg>[^`]+)`\s*[:-]\s*(?<val>.+[^\s]).*$"#).ok()?;
-        let captures = regex.captures(line)?;
+        static ARG_DOCSTRING: std::sync::LazyLock<Option<regex::Regex>> =
+            std::sync::LazyLock::new(|| {
+                regex::Regex::new(r#"\s*\*\s*`(?<arg>[^`]+)`\s*[:-]\s*(?<val>.+[^\s]).*$"#).ok()
+            });
+        let captures = ARG_DOCSTRING.as_ref()?.captures(line)?;
         let arg = captures.name("arg")?;
         let val = captures.name("val")?;
 

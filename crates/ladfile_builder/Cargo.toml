@@ -27,7 +27,8 @@ bevy_mod_scripting_bindings_domain = { workspace = true }
 bevy_reflect = { workspace = true, features = ["reflect_documentation"] }
 lua_language_server_lad_backend = { workspace = true, optional = true }
 ladfile = { workspace = true }
-regex = { workspace = true }
+# `\s` needs `unicode-perl`, without it the docstring patterns don't compile
+regex = { workspace = true, features = ["std", "unicode-perl"] }
 
 [dev-dependencies]
 pretty_assertions = { workspace = true }
