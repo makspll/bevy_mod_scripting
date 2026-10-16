@@ -8,6 +8,8 @@ Every `ScriptValue` variant needs a counterpart in the language, in both directi
 - `ScriptValue::Reference`: a reference to a reflected value, usually a userdata/custom type wrapping `ReflectReference`.
 - `ScriptValue::Type`: a type itself, i.e. what scripts use to reach a type's static members. It carries only a `TypeId` and never allocates.
 
+Every context gets the builtins as globals: `world` (a `ScriptValue::Type` of `World`) and the functions registered in `FunctionScope::Global`, plus the language's own `register_callback`. Nothing else is global.
+
 Script handlers, loaders etc. must be implemented such that the `ThreadWorldContainer` is set for every interaction with script contexts, or anywhere else it might be needed.
 
 ## Dispatching to Rust

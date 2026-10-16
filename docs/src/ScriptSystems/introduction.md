@@ -25,7 +25,7 @@ local system_with_name = update:get_system_by_name("my_system")
 
 ## Inserting Systems
 
-To insert a system you will need to use the `bms.system_builder` function (`import_namespace("bms").system_builder`) like below:
+To insert a system you will need to use `bms.system_builder` like below:
 
 ```lua
 local bms = import_namespace("bms")

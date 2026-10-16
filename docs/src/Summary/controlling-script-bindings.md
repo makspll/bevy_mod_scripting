@@ -239,7 +239,7 @@ The enum variants of a type are also available on the type, i.e. `MyEnum.Variant
 
 Each type registered with the type registry is an entry in the table `import_namespace` returns for its [namespace](../ScriptingReference/namespaces.md), i.e. `import_namespace("math").Vec3`.
 
-Functions which don't belong to a type are members of a namespace, declared on a struct with `NamespaceMembers`:
+Functions which don't belong to a type are members of a namespace, declared on `impl NamespaceMembers`:
 
 ```rust,ignore
 #[script_bindings(namespace = "my_game")]

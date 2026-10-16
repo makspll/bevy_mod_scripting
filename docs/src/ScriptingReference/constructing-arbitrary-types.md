@@ -3,7 +3,7 @@
 When interfacing with bevy, we do this via reflection.
 While the bevy bindings do not cover constructors for every single type that bevy or other libraries provide, reflection allows us to construct some (not all types implement `FromReflect`) types from dynamic structs.
 
-BMS exposes this ability to all script writers via the `new` function available on every type, as well as the more verbose `bms.construct` function (`import_namespace("bms").construct`).
+BMS exposes this ability to all script writers via the `new` function available on every type, as well as the more verbose `bms.construct`.
 
 ## `Type.new`
 
