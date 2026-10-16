@@ -1,0 +1,33 @@
+.multi-lang-example {
+    margin: 1em 0;
+}
+
+.multi-lang-example-tabs {
+    display: flex;
+    gap: 2px;
+}
+
+.multi-lang-example-tabs button {
+    border: 1px solid var(--quote-border);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: var(--quote-bg);
+    color: var(--fg);
+    padding: 2px 10px;
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+.multi-lang-example-tabs button.active {
+    opacity: 1;
+    font-weight: bold;
+}
+
+.multi-lang-example > pre {
+    display: none;
+    margin-top: 0;
+}
+
+.multi-lang-example > pre.active {
+    display: block;
+}

@@ -28,6 +28,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -35,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-70dc9860.js";
+            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-daf8f3fd.js"></script>
+        <script src="../toc-0987a965.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,19 +184,49 @@
                         <h1 id="migrating-from-023-to-024"><a class="header" href="#migrating-from-023-to-024">Migrating from 0.23 to 0.24</a></h1>
 <h2 id="scripts"><a class="header" href="#scripts">Scripts</a></h2>
 <h3 id="the-types-global-is-removed"><a class="header" href="#the-types-global-is-removed">The <code>types</code> global is removed</a></h3>
-<p>It was deprecated in 0.23. Use <code>import_namespace</code> with the crate that defines the type, or <code>world.get_type_by_name</code>:</p>
+<p>It was deprecated in 0.23. Use <code>import_namespace</code>, or <code>world.get_type_by_name</code>:</p>
 <pre><code class="language-diff">- local Transform = types.Transform
-+ local Transform = import_namespace("bevy_transform").Transform
++ local Transform = import_namespace("transform").Transform
 + -- or
 + local Transform = world.get_type_by_name("bevy_transform::components::transform::Transform")
 </code></pre>
+<h3 id="types-are-no-longer-globals"><a class="header" href="#types-are-no-longer-globals">Types are no longer globals</a></h3>
+<p>Globals named after types, like <code>Vec3</code> or <code>Transform</code>, are gone: types sharing a short name used to shadow each other unpredictably. Import types from their namespace instead. Bevy types with bindings are grouped in namespaces by category (<code>math</code>, <code>ecs</code>, <code>time</code>, <code>transform</code>, <code>ui</code>, …), BMS’ types live in <code>bms</code>, see <a href="../ScriptingReference/namespaces.html">Namespaces</a>:</p>
+<pre><code class="language-diff">+ local Vec3 = import_namespace("math").Vec3
++ local Transform = import_namespace("transform").Transform
+  local t = Transform.from_translation(Vec3.new(1, 2, 3))
+</code></pre>
+<p>There is no option to keep them.</p>
 <h3 id="worldget_type_by_name-takes-a-full-path"><a class="header" href="#worldget_type_by_name-takes-a-full-path"><code>world.get_type_by_name</code> takes a full path</a></h3>
 <p>Short names no longer resolve, neither for Rust types nor for script components. Pass the full type path, i.e. <code>world.get_type_by_name("bevy_transform::components::transform::Transform")</code> or <code>world.get_type_by_name("script.my_game.Enemy")</code>, or use <code>import_namespace</code>, which looks types up by short name within one namespace.</p>
+<h3 id="numbers-can-be-on-the-left-of-operators"><a class="header" href="#numbers-can-be-on-the-left-of-operators">Numbers can be on the left of operators</a></h3>
+<p><code>2 * v</code> and <code>1 + v</code> now work like <code>v * 2</code> and <code>v + 1</code>. For the other arithmetic operators the value’s type provides a reflected function, i.e. <code>1 - v</code> calls <code>rsub(v, 1)</code> and <code>1 / v</code> calls <code>rdiv(v, 1)</code>; vectors have both.</p>
+<h2 id="tooling"><a class="header" href="#tooling">Tooling</a></h2>
+<h3 id="lua-language-server-files"><a class="header" href="#lua-language-server-files">Lua language server files</a></h3>
+<ul>
+<li>Types are no longer declared as globals, they are fields of the tables <code>import_namespace</code> returns, so the language server now flags <code>Vec3</code> as an undefined global instead of accepting it.</li>
+<li>Generic types are declared once with their parameters, and used with their arguments, i.e. <code>Handle&lt;Image&gt;</code> for the handle <code>Image.load</code> returns. This needs version 3.17.0 or later of the language server. The functions and fields using handles used to be left out or typed as <code>any</code>.</li>
+<li>Generic types which the LAD file builder was not told about are still typed as <code>any</code>.</li>
+<li>The book lists types by namespace: the types page links to a page per namespace (what <code>import_namespace</code> takes, with <code>root</code> for types without a crate, such as primitives), which lists its types. The pages of the types themselves did not move. Functions on the variants of an enum are documented on the page of the enum as <code>Variant.function</code>, they used to be listed as global functions.</li>
+<li><code>cargo xtask docgen</code> is removed, <code>cargo xtask docs</code> generates the same files in <code>assets/definitions</code>. It runs the docgen example with all the binding features, previously only the default ones were used, so the generated files left out the bindings which are not on by default, such as the asset functions. Pass <code>--test-bindings</code> to also document the functions available to the script tests, which <code>docgen</code> used to do.</li>
+</ul>
 <h2 id="rust"><a class="header" href="#rust">Rust</a></h2>
 <ul>
+<li>Functions are no longer overloaded: registering a name which already exists on a namespace replaces the function, rather than adding an overload tried after it. Overloads were tried one by one, cloning the arguments and building an error for every miss, which made operators slower the more overloads a type had. Accept a <code>Union</code> or a <code>ScriptValue</code> for arguments of different types instead.
+<ul>
+<li><code>ScriptFunctionRegistry::overwrite</code>, <code>overwrite_documented</code>, <code>iter_overloads</code> and <code>remove_all_overloads</code> are removed, use <code>register</code> and <code>remove</code>.</li>
+<li><code>WorldExtensions::try_call_overloads</code> is renamed to <code>call_operator</code>.</li>
+<li>Language implementations should call the operator’s <code>ScriptOperatorNames::reflected_script_function_name</code> on the right operand when only it is a value.</li>
+</ul>
+</li>
 <li><code>CoreGlobals::types</code>, <code>ScriptTypeCatalogue::flat_view</code> and <code>ScriptTypeCatalogue::duplicate_short_names</code> are removed.</li>
 <li><code>ScriptComponentRegistry::find</code> and <code>WorldExtensions::get_type_by_name</code> only take a full path.</li>
 <li>The Lua language server backend no longer marks globals as deprecated: <code>TypeInstance</code> lost its <code>deprecated</code> field.</li>
+<li>LAD files describe generic types: <code>LadFile::generic_types</code> and <code>LadTypeDefinition::generic_type</code> are added (set the latter to <code>None</code> when building types by hand), and <code>LadFileBuilder::add_generic_type</code> declares a generic type by a pattern like <code>bevy_asset::handle::Handle&lt;$A&gt;</code>. Reflection only exposes the arguments of a generic type, so these are documented as opaque.</li>
+<li><code>LuaType::Generic</code> holds the <code>args</code> of the instantiation instead of a <code>parent</code>, and the classes of the Lua declaration files are <code>local</code> tables instead of globals.</li>
+<li>mdbook documents a generic type on a page of its own rather than a page per instantiation.</li>
+<li><code>CoreScriptGlobalsPlugin::register_static_references</code> is removed, types are no longer registered as globals. <code>CoreScriptGlobalsPlugin::filter</code> now only decides which types scripts can look up by name.</li>
+<li>Types with <code>script_bindings</code> from the bevy bindings crates, and all types of the bevy crates they cover, are put in category namespaces (see <code>set_crate_script_namespaces</code>). Use <code>app.override_script_namespace</code> to move a type elsewhere.</li>
 </ul>
 
                     </main>
@@ -249,7 +280,7 @@
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-02be4b76.js"></script>
+        <script src="../multi-code-block-5aaa0d2a.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
         <script src="../mermaid-init-ccf746f1.js"></script>
 

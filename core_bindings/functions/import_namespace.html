@@ -28,6 +28,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -35,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-70dc9860.js";
+            window.path_to_searchindex_js = "../../searchindex-bfd9e1a4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-daf8f3fd.js"></script>
+        <script src="../../toc-0987a965.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,12 +189,16 @@
 
 <blockquote>
 <p>Imports a namespace, returning a table of the types, events and exported functions in it by name.</p>
-<p>Native namespaces are the names of the crates defining the types (i.e. <code>bevy_transform</code>), or <code>bms</code> for BMS’ own types.
+<p>This is how scripts reach types: the bevy types with bindings live in a namespace per category (<code>math</code>, <code>ecs</code>, <code>time</code>, <code>transform</code>,
+<code>color</code>, <code>input</code>, <code>window</code>, <code>asset</code>, <code>camera</code>, <code>render</code>, <code>sprite</code>, <code>text</code>, <code>ui</code>, <code>gizmos</code>, <code>animation</code>, <code>audio</code>, <code>state</code>),
+BMS’ own types in <code>bms</code>, and any other type in the namespace named after the crate defining it.
 The empty string is the root namespace, which holds types without a crate such as primitives.
 Namespaces defined by scripts start with <code>script.</code>, and contain the components, events and functions
 scripts registered or exported into them.</p>
-<pre><code class="language-lua">local bevy_transform = import_namespace("bevy_transform")
-local transform = bevy_transform.Transform
+<p>Each type in the table can be used to call the type’s static functions and to access its enum variants,
+and wherever a type is expected, i.e. <code>world.add_default_component</code>.</p>
+<pre><code class="language-lua">local Vec3 = import_namespace("math").Vec3
+local transform = import_namespace("transform").Transform.from_translation(Vec3.new(1, 2, 3))
 
 local game = import_namespace("script.game")
 game.spawn_enemy(5)
@@ -275,7 +280,7 @@ world.trigger_event(game.EnemySpawned, {})
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-02be4b76.js"></script>
+        <script src="../../multi-code-block-5aaa0d2a.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
         <script src="../../mermaid-init-ccf746f1.js"></script>
 

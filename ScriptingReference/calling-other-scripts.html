@@ -28,6 +28,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -35,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-70dc9860.js";
+            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-daf8f3fd.js"></script>
+        <script src="../toc-0987a965.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -193,7 +194,9 @@
 </tbody>
 </table>
 </div>
-<pre><code class="language-lua">local enemy_script = ScriptAttachment.new_entity_script(enemy, script_asset)
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local ScriptAttachment, Recipients = bms.ScriptAttachment, bms.Recipients
+local enemy_script = ScriptAttachment.new_entity_script(enemy, script_asset)
 
 -- runs `take_damage(10, "fire")` in the enemy's script right away
 local remaining_health = run_script_callback("take_damage", enemy_script, 10, "fire")
@@ -201,7 +204,9 @@ local remaining_health = run_script_callback("take_damage", enemy_script, 10, "f
 -- runs `on_hit()` in every script once this callback is done
 queue_script_callback("on_hit", Recipients.all_scripts())
 </code></pre>
-<pre><code class="language-rhai">let enemy_script = ScriptAttachment.new_entity_script.call(enemy, script_asset);
+<pre><code class="language-rhai">let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
+let Recipients = import_namespace.call("bms").Recipients;
+let enemy_script = ScriptAttachment.new_entity_script.call(enemy, script_asset);
 
 let remaining_health = run_script_callback.call("take_damage", enemy_script, 10, "fire");
 
@@ -314,7 +319,7 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-02be4b76.js"></script>
+        <script src="../multi-code-block-5aaa0d2a.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
         <script src="../mermaid-init-ccf746f1.js"></script>
 

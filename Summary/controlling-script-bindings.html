@@ -28,6 +28,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -35,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-70dc9860.js";
+            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-daf8f3fd.js"></script>
+        <script src="../toc-0987a965.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -313,6 +314,7 @@ You can opt-in to receive this argument in your own function definitions by addi
 <tr><td>rem</td><td>a remainder function, used for getting the remainder of two values</td><td>✅</td><td>❌</td></tr>
 <tr><td>neg</td><td>a negation function, used for negating a value</td><td>✅</td><td>❌</td></tr>
 <tr><td>pow</td><td>a power function, used for raising a value to a power</td><td>✅</td><td>❌</td></tr>
+<tr><td>rsub, rdiv, rrem, rpow</td><td>the reflected <code>sub</code>, <code>div</code>, <code>rem</code> and <code>pow</code>, called on the right operand when the left one is not a value, i.e. <code>1 - v</code> calls <code>rsub(v, 1)</code>. <code>add</code> and <code>mul</code> are called with their operands swapped instead</td><td>✅</td><td>❌</td></tr>
 <tr><td>eq</td><td>an equality function, used for checking if two values are equal</td><td>✅</td><td>❌</td></tr>
 <tr><td>lt</td><td>a less than function, used for checking if a value is less than another</td><td>✅</td><td>❌</td></tr>
 <tr><td>iter</td><td>an iterator function, used for iterating over a value</td><td>❌</td><td>✅</td></tr>
@@ -332,9 +334,9 @@ You can opt-in to receive this argument in your own function definitions by addi
 <tr><th><code>impl</code> target</th><th>Available on</th><th>Receives</th></tr>
 </thead>
 <tbody>
-<tr><td><code>MyType</code></td><td><code>MyType</code> values and the <code>MyType</code> static reference</td><td>whatever you declare</td></tr>
+<tr><td><code>MyType</code></td><td><code>MyType</code> values and the <code>MyType</code> type, as imported from its namespace</td><td>whatever you declare</td></tr>
 <tr><td><code>ReflectReference</code></td><td>every value, after <code>MyType</code>’s own functions</td><td>the value</td></tr>
-<tr><td><code>StaticTypeRef</code></td><td>every type’s static reference, after <code>MyType</code>’s own functions</td><td>the type, filled in automatically</td></tr>
+<tr><td><code>StaticTypeRef</code></td><td>every type, after <code>MyType</code>’s own functions</td><td>the type, filled in automatically</td></tr>
 <tr><td><code>GlobalNamespace</code></td><td>the global scope, i.e. no prefix</td><td>whatever you declare</td></tr>
 </tbody>
 </table>
@@ -342,30 +344,28 @@ You can opt-in to receive this argument in your own function definitions by addi
 <p>When the same name exists in more than one place, the most specific one wins.
 For <code>ReflectReference</code> and <code>StaticTypeRef</code> in a <code>script_bindings</code> block outside of the crate defining them, use the <code>remote</code> attribute.</p>
 <h3 id="functions-available-on-every-type"><a class="header" href="#functions-available-on-every-type">Functions available on every type</a></h3>
-<p>The <code>StaticTypeRef</code> namespace is the equivalent for static references, i.e. <code>Vec3</code> in <code>Vec3.new(..)</code>.
-Functions registered on it are available on every type’s static reference, and receive the type as their first argument, which is filled in automatically:</p>
+<p>The <code>StaticTypeRef</code> namespace is the equivalent for types, i.e. <code>Vec3</code> in <code>Vec3.new(..)</code>.
+Functions registered on it are available on every type, and receive the type as their first argument, which is filled in automatically:</p>
 <pre><code class="language-rust ignore">NamespaceBuilder::&lt;StaticTypeRef&gt;::new(app.world_mut()).register(
     "describe",
     |ctxt: FunctionCallContext, type_ref: V&lt;StaticTypeRef&gt;| -&gt; Result&lt;String, InteropError&gt; {
         Ok(type_ref.type_info(&amp;ctxt.world()?)?.type_path().to_string())
     },
 );</code></pre>
-<pre><code class="language-lua">print(Vec3.describe()) -- "glam::Vec3"
+<pre><code class="language-lua">local Vec3 = import_namespace("math").Vec3
+print(Vec3.describe()) -- "glam::Vec3"
 </code></pre>
 <p>A function registered on the type itself always takes priority over one on <code>StaticTypeRef</code>.
 The <code>new</code> constructor is implemented this way, see <a href="../ScriptingReference/constructing-arbitrary-types.html">Constructing Arbitrary Types</a>.</p>
 <h4 id="signatures-which-depend-on-the-type"><a class="header" href="#signatures-which-depend-on-the-type">Signatures which depend on the type</a></h4>
-<p>A shared function’s signature can refer to the type it is bound to, using the placeholder types <code>BoundValue</code> (a value of the type) and <code>BoundFields</code> (a table of the type’s fields).
-Wherever the function is bound to a type, these are replaced with the type, so the documentation and the Lua language server files show, for example, <code>MyStruct.new(payload: MyStruct.Fields): MyStruct</code> rather than a generic table and reference.
+<p>A shared function’s signature can refer to the type it is bound to, using the placeholder types <code>BoundValue</code> (a value of the type), <code>BoundFields</code> (a table of the type’s fields) and <code>BoundHandle</code> (a handle to an asset of the type).
+Wherever the function is bound to a type, these are replaced with the type, so the documentation and the Lua language server files show, for example, <code>MyStruct.new(payload: MyStruct.Fields): MyStruct</code> rather than a generic table and reference, or <code>Image.load(path: string): Handle&lt;Image&gt;</code>.
+Functions using <code>BoundHandle</code> are only documented on asset types, i.e. types registered with <code>register_asset_reflect</code>.
 The same placeholders work for functions on <code>EnumVariantRef</code>, which are bound to each variant of each enum when the LAD file is built (as functions in the <code>Variant</code> namespace). Placeholders left unbound are documented as what they are at runtime, a <code>ReflectReference</code> and a table.</p>
-<p>The enum variants of a type are also available on its static reference, i.e. <code>MyEnum.Variant</code>, after the functions.</p>
+<p>The enum variants of a type are also available on the type, i.e. <code>MyEnum.Variant</code>, after the functions.</p>
 <h2 id="globals"><a class="header" href="#globals">Globals</a></h2>
-<p>By default, each type registered with the type registry, has the following set:</p>
-<ul>
-<li>a static reference in the global namespace, i.e.: <code>Vec3</code>, <code>Mat3</code></li>
-<li>an entry in the table <code>import_namespace</code> returns for its <a href="../ScriptingReference/namespaces.html">namespace</a>, i.e. <code>import_namespace("glam").Vec3</code></li>
-</ul>
-<p>You can filter the types included by customising the <code>CoreScriptGlobalsPlugin</code></p>
+<p>Each type registered with the type registry is an entry in the table <code>import_namespace</code> returns for its <a href="../ScriptingReference/namespaces.html">namespace</a>, i.e. <code>import_namespace("math").Vec3</code>.</p>
+<p>Types are not globals, which keeps types with the same name from shadowing each other. Use the <code>filter</code> of <code>CoreScriptGlobalsPlugin</code> to choose which types scripts can look up by name.</p>
 
                     </main>
 
@@ -418,7 +418,7 @@ The same placeholders work for functions on <code>EnumVariantRef</code>, which a
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-02be4b76.js"></script>
+        <script src="../multi-code-block-5aaa0d2a.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
         <script src="../mermaid-init-ccf746f1.js"></script>
 

@@ -28,6 +28,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -35,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-70dc9860.js";
+            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-daf8f3fd.js"></script>
+        <script src="../toc-0987a965.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -181,32 +182,36 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="namespaces"><a class="header" href="#namespaces">Namespaces</a></h1>
-<p>Every type known to scripts lives in a namespace, by default the name of the crate defining it:</p>
+<p>Every type known to scripts lives in a namespace, and scripts reach types through their namespace: there are no globals named after types.</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Type</th><th>Namespace</th></tr>
+<tr><th>Types</th><th>Namespace</th></tr>
 </thead>
 <tbody>
-<tr><td><code>Transform</code></td><td><code>bevy_transform</code></td></tr>
-<tr><td><code>Entity</code></td><td><code>bevy_ecs</code></td></tr>
-<tr><td><code>Vec3</code></td><td><code>glam</code></td></tr>
-<tr><td><code>Option</code> / <code>Vec</code></td><td><code>core</code> / <code>alloc</code></td></tr>
-<tr><td>primitives like <code>i32</code></td><td>the root namespace, <code>""</code></td></tr>
+<tr><td>bevy types covered by the bevy bindings, grouped by category</td><td><code>math</code>, <code>ecs</code>, <code>time</code>, <code>transform</code>, <code>color</code>, <code>input</code>, <code>window</code>, <code>asset</code>, <code>camera</code>, <code>render</code>, <code>sprite</code>, <code>text</code>, <code>ui</code>, <code>gizmos</code>, <code>animation</code>, <code>audio</code>, <code>state</code></td></tr>
 <tr><td>BMS’ own types (<code>ScriptAttachment</code>, <code>ReflectReference</code>, …)</td><td><code>bms</code></td></tr>
+<tr><td>any other type</td><td>the name of the crate defining it, i.e. <code>my_game</code></td></tr>
+<tr><td>primitives like <code>i32</code></td><td>the root namespace, <code>""</code></td></tr>
 </tbody>
 </table>
 </div>
+<p>A category namespace holds every type of the bevy crates it covers, i.e. <code>math</code> holds the types of <code>glam</code> and <code>bevy_math</code>, <code>render</code> those of <code>bevy_render</code>, <code>bevy_pbr</code>, <code>bevy_light</code>, <code>bevy_mesh</code> and <code>bevy_image</code>.</p>
 <p><code>Type:namespace()</code> returns a type’s namespace. Script registered components and events live in <code>script.*</code> namespaces, see below.</p>
 <h2 id="importing-a-namespace"><a class="header" href="#importing-a-namespace">Importing a namespace</a></h2>
-<p><code>import_namespace(namespace)</code> returns a table of the namespace’s types (and, for script namespaces, events and exported functions) by short name:</p>
-<pre><code class="language-lua">local bevy_transform = import_namespace("bevy_transform")
-local t = bevy_transform.Transform.new { translation = Vec3.new(0, 1, 0) }
+<p><code>import_namespace(namespace)</code> returns a table of the namespace’s types (and, for script namespaces, events and exported functions) by short name. Each type can be used to call its static functions, to access its enum variants, and wherever a type is expected:</p>
+<pre><code class="language-lua">local Vec3 = import_namespace("math").Vec3
+local transform = import_namespace("transform")
+
+local t = transform.Transform.from_translation(Vec3.new(0, 1, 0))
+world.add_default_component(entity, transform.Transform)
 </code></pre>
+<p>Import once at the top of a script, and keep the types you use in locals. In Lua, don’t name the table of the <code>math</code> namespace <code>math</code>: that would hide Lua’s own <code>math</code> library.</p>
 <ul>
 <li>If two types in a namespace share a short name, the first one registered wins.</li>
 <li>Each call reads the shared type catalogue, so the result is always up to date. A table imported earlier does not pick up later registrations: import again.</li>
-<li>A namespace which does not exist is an error, with suggestions: <code>namespace "bevy_transfrom" does not exist. ... Did you mean: bevy_transform?</code></li>
+<li>A namespace which does not exist is an error, with suggestions: <code>namespace "transfrom" does not exist. ... Did you mean: transform?</code></li>
+<li>To also expose every type as a global named after it (i.e. <code>Vec3</code>), as before 0.24, set <code>CoreScriptGlobalsPlugin::register_static_references</code>. Types sharing a name then shadow each other.</li>
 </ul>
 <h2 id="overriding-the-namespace-of-a-type"><a class="header" href="#overriding-the-namespace-of-a-type">Overriding the namespace of a type</a></h2>
 <pre><code class="language-rust ignore">// on types with script bindings: keeps a namespace set before (with a warning)
@@ -234,7 +239,8 @@ world.trigger_event(ai.Hit, { damage = 3 })
 <li>Components and events stay registered when their script unloads, as Bevy cannot unregister components.</li>
 </ul>
 <p>Values of script components are <code>DynamicComponent</code>s, holding any value in <code>data</code>. Tables read from <code>data</code> are copies: assign a new table to change them.</p>
-<pre><code class="language-lua">world.insert_component(entity, Enemy, DynamicComponent.new({ data = { hp = 5 } }))
+<pre><code class="language-lua">local DynamicComponent = import_namespace("bms").DynamicComponent
+world.insert_component(entity, Enemy, DynamicComponent.new({ data = { hp = 5 } }))
 local enemy = world.get_component(entity, Enemy)
 enemy.data = { hp = enemy.data.hp - 1 } -- `enemy.data.hp = 4` would not write through
 </code></pre>
@@ -259,7 +265,7 @@ local enemy = import_namespace("script.game").spawn_enemy(5)
 </ul>
 <p>When a script unloads or is about to reload, its exports and observers are removed right after its <code>on_script_unloaded</code> callback. Export from a callback which runs on load (e.g. <code>on_script_loaded</code>), so a reloaded script exports again.</p>
 <h2 id="editor-support"><a class="header" href="#editor-support">Editor support</a></h2>
-<p>LAD files record each type’s namespace. The Lua language server definitions declare a <code>namespace.&lt;name&gt;</code> class per native namespace, and <code>import_namespace("bevy_transform")</code> returns the matching class, so completion works on imported tables. Script namespaces only exist at runtime and are untyped.</p>
+<p>LAD files record each type’s namespace. The Lua language server definitions declare a <code>namespace.&lt;name&gt;</code> class per native namespace, and <code>import_namespace("transform")</code> returns the matching class, so completion works on imported tables. Script namespaces only exist at runtime and are untyped.</p>
 
                     </main>
 
@@ -312,7 +318,7 @@ local enemy = import_namespace("script.game").spawn_enemy(5)
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-02be4b76.js"></script>
+        <script src="../multi-code-block-5aaa0d2a.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
         <script src="../mermaid-init-ccf746f1.js"></script>
 
