@@ -1,6 +1,7 @@
 local SimpleStruct = import_namespace("test_utils").SimpleStruct
 local SimpleTupleStruct = import_namespace("test_utils").SimpleTupleStruct
 local bms = import_namespace("bms")
+local world = bms.world
 
 local constructed = SimpleStruct.new({ foo = 123 })
 assert(constructed.foo == 123, "expected foo to be 123 but got " .. tostring(constructed.foo))

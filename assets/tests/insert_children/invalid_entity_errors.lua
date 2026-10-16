@@ -1,5 +1,7 @@
-local fake_entity = _entity_from_index(0)
-local fake_entity_valid = _make_invalid_entity()
+local world = import_namespace("bms").world
+local test_utils = import_namespace("test_utils")
+local fake_entity = test_utils._entity_from_index(0)
+local fake_entity_valid = test_utils._make_invalid_entity()
 
 assert_throws(function()
     world.insert_children(fake_entity_valid, 1, { fake_entity_valid })

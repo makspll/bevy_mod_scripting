@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+
 local function error_of(f, ...)
     local ok, err = pcall(f, ...)
     assert(not ok, "expected an error")

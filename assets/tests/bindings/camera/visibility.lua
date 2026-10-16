@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+
 -- toggles change the value stored on an entity, so store the visibility as a component first
 local Vec3 = import_namespace("math").Vec3
 local Visibility = import_namespace("camera").Visibility

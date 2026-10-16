@@ -1,4 +1,6 @@
-let my_map = make_hashmap.call(#{
+let test_utils = import_namespace.call("test_utils");
+
+let my_map = test_utils.make_hashmap.call(#{
     key1: 2,
     key2: 3,
 });

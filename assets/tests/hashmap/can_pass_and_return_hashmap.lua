@@ -1,4 +1,5 @@
-local map = make_hashmap({
+local test_utils = import_namespace("test_utils")
+local map = test_utils.make_hashmap({
     key1 = 2,
     key2 = 3,
 })

@@ -126,6 +126,7 @@ Functions on the type take priority over variants, so a variant named like a fun
 Use `world.get_enum_variant` to get at it in that case:
 
 ```lua
+local world = import_namespace("bms").world
 local variant = world.get_enum_variant(import_namespace("my_game").MyEnum, "Name")
 ```
 

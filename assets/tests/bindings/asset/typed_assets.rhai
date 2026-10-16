@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let ScriptAsset = import_namespace.call("bms").ScriptAsset;
 let TestAsset = import_namespace.call("test_utils").TestAsset;
 

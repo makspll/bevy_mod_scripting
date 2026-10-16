@@ -1,4 +1,5 @@
 let bms = import_namespace.call("bms");
+let world = bms.world;
 // note: `world`, `entity`, and `script_asset` are only visible inside callbacks, not in helper functions
 
 fn double(x) {

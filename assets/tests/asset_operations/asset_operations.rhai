@@ -1,5 +1,8 @@
+let world = import_namespace.call("bms").world;
+let test_utils = import_namespace.call("test_utils");
+
 fn on_test() {
-    let test_handle = create_test_asset(42, "TestAssetName");
+    let test_handle = test_utils.create_test_asset.call(42, "TestAssetName");
 
     assert(test_handle != (), "Test asset handle should not be nil");
     assert(world.has_asset.call(test_handle) == true, "has_asset should return true");

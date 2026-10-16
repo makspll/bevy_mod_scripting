@@ -1,3 +1,5 @@
+let world = import_namespace.call("bms").world;
+
 fn on_test() { 
     let startup_schedule = world.get_schedule_by_name.call("Startup");
 

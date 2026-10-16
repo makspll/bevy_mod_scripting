@@ -2,6 +2,7 @@ local Recipients = import_namespace("bms").Recipients
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
 local TestComponent = import_namespace("test_utils").TestComponent
 local bms = import_namespace("bms")
+local world = bms.world
 local function attachment_of(e)
     return ScriptAttachment.new_entity_script(e, bms.current_script())
 end

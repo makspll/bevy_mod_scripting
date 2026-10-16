@@ -30,8 +30,8 @@ use bevy_mod_scripting_display::DisplayProxy;
 
 use bevy_mod_scripting_bindings::{
     AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptFunctionRegistry,
-    DummyScriptFunctionRegistry, DynamicScriptComponentPlugin, MarkAsCore, ReflectReference,
-    ScriptObserverPlugin, ScriptTypeRegistration, ScriptValue, garbage_collector,
+    DynamicScriptComponentPlugin, MarkAsCore, ReflectReference, ScriptObserverPlugin,
+    ScriptTypeRegistration, ScriptValue, garbage_collector,
 };
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
 use event::{ScriptCallbackMessage, ScriptCallbackResponseMessage};
@@ -377,7 +377,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
             .init_resource::<AppScriptCallbackRunners>()
-            .init_resource::<DummyScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
 
         app.register_type::<ScriptAsset>();

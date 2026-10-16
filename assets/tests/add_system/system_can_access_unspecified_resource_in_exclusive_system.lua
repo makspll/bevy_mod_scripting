@@ -1,5 +1,6 @@
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
 local bms = import_namespace("bms")
+local world = bms.world
 runs = {}
 
 function on_test()

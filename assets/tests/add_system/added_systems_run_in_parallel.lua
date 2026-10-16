@@ -1,5 +1,7 @@
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
 local bms = import_namespace("bms")
+local world = bms.world
+local test_utils = import_namespace("test_utils")
 function on_test()
   local post_update_schedule = world.get_schedule_by_name("PostUpdate")
 
@@ -13,7 +15,7 @@ function on_test()
     :after(test_system)
   )
 
-  assert_str_eq(system_a:identifier(), "custom_system_a")
+  test_utils.assert_str_eq(system_a:identifier(), "custom_system_a")
 
   local system_b = world.add_system(
     post_update_schedule,
@@ -21,7 +23,7 @@ function on_test()
     :after(test_system)
   )
 
-  assert_str_eq(system_b:identifier(), "custom_system_b")
+  test_utils.assert_str_eq(system_b:identifier(), "custom_system_b")
 
   -- the new systems both run after the existing one, but run in parallel (no ordering between them)
   world._assert_system_runs_before(post_update_schedule, "on_test_post_update", "custom_system_a")

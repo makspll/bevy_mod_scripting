@@ -166,7 +166,8 @@ impl Default for Settings {
 
 pub fn register_script_functions(app: &mut App) -> &mut App {
     let world = app.world_mut();
-    NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
+    // `import_namespace("game_of_life").rand()` in the scripts
+    NamespaceBuilder::<NamespaceMembers>::in_namespace(world, "game_of_life")
         .register("rand", rand::random::<f32>);
     app
 }

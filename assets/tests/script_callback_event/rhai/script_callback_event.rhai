@@ -1,3 +1,5 @@
+let world = import_namespace.call("bms").world;
+
 fn on_test() {
     let CallbackLabel = import_namespace.call("bms").CallbackLabel;
     let Recipients = import_namespace.call("bms").Recipients;

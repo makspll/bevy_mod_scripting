@@ -1,5 +1,6 @@
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
 local bms = import_namespace("bms")
+local world = bms.world
 runs = {}
 local ResourceTypeA = world.get_type_by_name("test_utils::test_data::TestResource")
 local ResourceTypeB = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")

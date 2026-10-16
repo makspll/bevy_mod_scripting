@@ -19,6 +19,7 @@ A category namespace holds every type of the bevy crates it covers, i.e. `math` 
 
 ```lua
 local bms = import_namespace("bms")
+local world = bms.world
 local Vec3 = import_namespace("math").Vec3
 local transform = import_namespace("transform")
 
@@ -52,6 +53,7 @@ Scripts register components and events into namespaces they pass explicitly. The
 
 ```lua
 local bms = import_namespace("bms")
+local world = bms.world
 local Enemy = world.register_new_component("script.game.ai", "Enemy")
 local Hit = world.register_new_event("script.game.ai", "Hit")
 
@@ -70,6 +72,7 @@ Values of script components are `DynamicComponent`s, holding any value in `data`
 
 ```lua
 local bms = import_namespace("bms")
+local world = bms.world
 local DynamicComponent = bms.DynamicComponent
 world.insert_component(bms.current_entity(), Enemy, DynamicComponent.new({ data = { hp = 5 } }))
 local enemy = world.get_component(bms.current_entity(), Enemy)
@@ -82,6 +85,7 @@ enemy.data = { hp = enemy.data.hp - 1 } -- `enemy.data.hp = 4` would not write t
 
 ```lua
 -- script A
+local world = import_namespace("bms").world
 register_callback("spawn_enemy_impl", function(health)
     return world.spawn()
 end)

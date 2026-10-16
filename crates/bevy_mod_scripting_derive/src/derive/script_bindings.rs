@@ -103,14 +103,6 @@ pub fn script_bindings(
         None => Default::default(),
     };
 
-    let use_dummy = if args.use_dummy_registry {
-        quote_spanned! {impl_span=>
-            .with_dummy_registry()
-        }
-    } else {
-        Default::default()
-    };
-
     // functions of `impl NamespaceMembers` are members of the namespace given, not functions on a type
     let is_namespace_members = matches!(
         &*impl_block_self_ty,
@@ -138,7 +130,6 @@ pub fn script_bindings(
         quote_spanned! {impl_span=>
             #visibility fn #function_name(world: &mut World) {
                 #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
-                    #use_dummy
                     #(#function_registrations)*;
 
                 #mark_as_generated
@@ -167,9 +158,6 @@ struct Args {
     pub core: bool,
     /// If true registers a marker type against the type registry to state that the type is significant (if unregistered is not set)
     pub significant: bool,
-    /// If true will register into the [`DummyScriptFunctionRegistry`] instead of the full one.
-    /// This is useful for documenting functions without actually making them available, if you're exposing them another way.
-    pub use_dummy_registry: bool,
     /// If set, puts the type in the given script namespace (if it is not in one already), instead of the one named after its crate
     pub namespace: Option<syn::LitStr>,
 
@@ -185,7 +173,6 @@ impl Default for Args {
             generated: Default::default(),
             core: Default::default(),
             significant: Default::default(),
-            use_dummy_registry: Default::default(),
             namespace: Default::default(),
             shared_args: Default::default(),
         }
@@ -228,11 +215,6 @@ impl Args {
 
         if meta.path.is_ident("namespace") {
             self.namespace = Some(meta.value()?.parse()?);
-            return Ok(());
-        }
-
-        if meta.path.is_ident("use_dummy_registry") {
-            self.use_dummy_registry = true;
             return Ok(());
         }
 

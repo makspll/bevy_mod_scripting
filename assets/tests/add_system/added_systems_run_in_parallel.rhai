@@ -1,4 +1,5 @@
 let bms = import_namespace.call("bms");
+let world = bms.world;
 fn on_test() {
     let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");

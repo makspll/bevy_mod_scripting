@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local NewComponent = world.register_new_component("script.test", "ScriptComponentA")
 assert(NewComponent ~= nil, "Failed to register new component")
 assert(NewComponent:short_name() == "DynamicComponent", "Unexpected component type")

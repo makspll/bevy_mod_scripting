@@ -2,9 +2,7 @@ use bevy::prelude::PluginGroup;
 use bevy::{DefaultPlugins, app::App, ecs::reflect::AppTypeRegistry};
 use bevy_mod_scripting::BMSPlugin;
 use bevy_mod_scripting_bindings::AppScriptNamespaceMembers;
-use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry, function::script_function::AppScriptFunctionRegistry,
-};
+use bevy_mod_scripting_bindings::function::script_function::AppScriptFunctionRegistry;
 use ladfile_builder::plugin::{
     LadFileSettingsArc, ScriptingFilesGenerationPlugin, generate_lad_file,
 };
@@ -55,12 +53,6 @@ fn main() -> std::io::Result<()> {
         .get_resource::<AppScriptFunctionRegistry>()
         .unwrap()
         .clone();
-    let dummy_function_registry = app
-        .world()
-        .get_resource::<DummyScriptFunctionRegistry>()
-        .unwrap()
-        .clone();
-
     let namespace_registry = app
         .world()
         .get_resource::<AppScriptNamespaceMembers>()
@@ -76,7 +68,6 @@ fn main() -> std::io::Result<()> {
     generate_lad_file(
         &type_registry,
         &function_registry,
-        &dummy_function_registry,
         &namespace_registry,
         &settings.0,
     );

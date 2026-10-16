@@ -8,7 +8,13 @@ Every `ScriptValue` variant needs a counterpart in the language, in both directi
 - `ScriptValue::Reference`: a reference to a reflected value, usually a userdata/custom type wrapping `ReflectReference`.
 - `ScriptValue::Type`: a type itself, i.e. what scripts use to reach a type's static members. It carries only a `TypeId` and never allocates.
 
-Every context gets the builtins as globals: `world` (a `ScriptValue::Type` of `World`) and the functions registered in `FunctionScope::Global`, plus the language's own `register_callback`. Nothing else is global.
+Every context gets the builtins as globals, nothing else: `bevy_mod_scripting_bindings::builtins::builtins()` (`import_namespace`, `export_namespace`) plus the language's own `register_callback`:
+
+```rust,ignore
+for (name, function) in builtins() {
+    context.globals().set(name, LuaScriptValue::from(ScriptValue::Function(function)))?;
+}
+```
 
 Script handlers, loaders etc. must be implemented such that the `ThreadWorldContainer` is set for every interaction with script contexts, or anywhere else it might be needed.
 
@@ -42,7 +48,7 @@ All lookup rules live in `bevy_mod_scripting_bindings::dispatch`; a language map
 3. the type's enum variants
 
 Types reach scripts in two forms, which resolve static members the same way:
-- `ScriptValue::Type`, i.e. the `world` global, indexed with `dispatch::static_index`
+- `ScriptValue::Type`, i.e. `world` (`import_namespace("bms").world`), indexed with `dispatch::static_index`
 - type registrations, i.e. the entries of `import_namespace`, which are references and are indexed with `dispatch::index` like any other value
 
 Binding the type is done by BMS, so languages never handle `StaticTypeRef` arguments themselves.

@@ -1,9 +1,11 @@
 -- create a dynamic component with n depth of fields
 local bms = import_namespace("bms")
+local world = bms.world
+local test_utils = import_namespace("test_utils")
 local Component = world.register_new_component("script.test", "DeepComponent");
 local new_entity = world.spawn();
 
-reseed()
+test_utils.reseed()
 
 local keys = {
     "_0",
@@ -29,7 +31,7 @@ function pre_bench()
     current_reference = nil
     -- Choose keys for every step.
     for i = 1, steps do
-        local key = keys[random_int(1, #keys)]
+        local key = keys[test_utils.random_int(1, #keys)]
         step_keys[i] = key
     end
 

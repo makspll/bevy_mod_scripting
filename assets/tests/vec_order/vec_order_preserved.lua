@@ -1,8 +1,9 @@
+local test_utils = import_namespace("test_utils")
 -- regression test for https://github.com/makspll/bevy_mod_scripting/issues/430
 -- lists passed into bindings as `Vec<T>` must keep the order of the lua sequence
 
 local function assert_order(input, label)
-    local out = make_vec_i64(input)
+    local out = test_utils.make_vec_i64(input)
     assert(#out == #input, label .. ": length mismatch, expected " .. #input .. " got " .. #out)
     for i = 1, #input do
         assert(out[i] == input[i], label .. ": index " .. i .. " expected " .. input[i] .. " got " .. tostring(out[i]))
@@ -59,11 +60,11 @@ do
 end
 
 -- strings
-local strs = make_vec_string({ "a", "b", "c", "d" })
+local strs = test_utils.make_vec_string({ "a", "b", "c", "d" })
 assert(strs[1] == "a" and strs[2] == "b" and strs[3] == "c" and strs[4] == "d", "string order should be preserved")
 
 -- empty
-assert(#make_vec_i64({}) == 0, "empty list should stay empty")
+assert(#test_utils.make_vec_i64({}) == 0, "empty list should stay empty")
 
 -- lists returned from a binding (built on the rust side) must keep their order when passed back in
 for n = 1, 12 do
@@ -71,6 +72,6 @@ for n = 1, 12 do
     for i = 1, n do
         input[i] = i * 10
     end
-    local returned = make_vec_i64(input)
-    assert_order(make_vec_i64(returned), "second round trip, n=" .. n)
+    local returned = test_utils.make_vec_i64(input)
+    assert_order(test_utils.make_vec_i64(returned), "second round trip, n=" .. n)
 end

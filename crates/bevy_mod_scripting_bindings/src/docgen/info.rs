@@ -49,7 +49,7 @@ impl FunctionInfo {
     pub fn new() -> Self {
         Self {
             name: Cow::Borrowed(""),
-            namespace: FunctionScope::Global,
+            namespace: FunctionScope::Member,
             arg_info: Vec::new(),
             return_info: FunctionReturnInfo::default(),
             docs: None,
@@ -305,9 +305,9 @@ mod test {
             (a as f64) + (b as f64)
         }
 
-        let info = test_fn.get_function_info(Cow::Borrowed("test_fn"), FunctionScope::Global);
+        let info = test_fn.get_function_info(Cow::Borrowed("test_fn"), FunctionScope::Member);
         assert_eq!(info.name, "test_fn");
-        assert_eq!(info.namespace, FunctionScope::Global);
+        assert_eq!(info.namespace, FunctionScope::Member);
         assert_eq!(info.arg_info.len(), 2);
         assert_eq!(info.return_info.type_id, TypeId::of::<f64>());
 
@@ -333,9 +333,9 @@ mod test {
     fn test_get_function_info_references() {
         let fn_ = |_: R<i32>, _: M<f32>| -> V<f64> { V::new(0.0) };
 
-        let info = fn_.get_function_info(Cow::Borrowed("test_fn"), FunctionScope::Global);
+        let info = fn_.get_function_info(Cow::Borrowed("test_fn"), FunctionScope::Member);
         assert_eq!(info.name, "test_fn");
-        assert_eq!(info.namespace, FunctionScope::Global);
+        assert_eq!(info.namespace, FunctionScope::Member);
         assert_eq!(info.arg_info.len(), 2);
         assert_eq!(info.return_info.type_id, TypeId::of::<V<f64>>());
 

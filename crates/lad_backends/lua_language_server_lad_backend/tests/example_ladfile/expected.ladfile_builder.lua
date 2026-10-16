@@ -97,6 +97,9 @@ local UnitType = {}
 ---@field  PlainStructType ladfile_builder.PlainStructType
 ---@field  TupleStructType ladfile_builder.TupleStructType
 ---@field  UnitType ladfile_builder.UnitType
+---@field  map table<string, string | string>
+---@field  my_non_static_instance ladfile_builder.UnitType[]
+---@field  my_static_instance any
 local namespace_ladfile_builder = {}
 
 

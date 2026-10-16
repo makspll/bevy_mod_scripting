@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+local test_utils = import_namespace("test_utils")
 -- regression test for https://github.com/makspll/bevy_mod_scripting/issues/430
 -- lists of entities passed into bindings (`Vec<Val<Entity>>`) must keep their order
 
@@ -23,7 +25,7 @@ for n = 1, 10 do
     local entities = spawn_n(n)
 
     -- identity round trip
-    assert_same_entities(entities, make_vec_entity(entities), "round trip, n=" .. n)
+    assert_same_entities(entities, test_utils.make_vec_entity(entities), "round trip, n=" .. n)
 
     -- push_children then get_children
     local parent = world.spawn()
@@ -35,7 +37,7 @@ for n = 1, 10 do
     for i = n, 1, -1 do
         reversed[#reversed + 1] = entities[i]
     end
-    assert_same_entities(reversed, make_vec_entity(reversed), "reversed round trip, n=" .. n)
+    assert_same_entities(reversed, test_utils.make_vec_entity(reversed), "reversed round trip, n=" .. n)
 
     -- insert_children in the middle keeps the given order
     local parent2 = world.spawn()
@@ -56,5 +58,5 @@ do
     local parent = world.spawn()
     world.push_children(parent, spawn_n(4))
     local children = world.get_children(parent)
-    assert_same_entities(children, make_vec_entity(children), "binding-returned list round trip")
+    assert_same_entities(children, test_utils.make_vec_entity(children), "binding-returned list round trip")
 end

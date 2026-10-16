@@ -1,4 +1,5 @@
 local bms = import_namespace("bms")
+local world = bms.world
 LifeState = world.get_type_by_name("game_of_life::LifeState")
 Settings = world.get_type_by_name("game_of_life::Settings")
 

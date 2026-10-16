@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let Entity = import_namespace.call("ecs").Entity;
 let Name = import_namespace.call("ecs").Name;
 let entity = world.spawn_.call();

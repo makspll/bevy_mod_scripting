@@ -105,9 +105,7 @@ impl Plugin for ConstructorsPlugin {
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy_mod_scripting_bindings::function::{
-        namespace::FunctionScope, script_function::AppScriptFunctionRegistry,
-    };
+    use bevy_mod_scripting_bindings::function::script_function::AppScriptFunctionRegistry;
     use std::any::TypeId;
 
     #[test]
@@ -125,8 +123,8 @@ mod test {
             TypeId::of::<StaticTypeRef>(),
             TypeId::of::<EnumVariantRef>(),
         ] {
-            assert!(registry.contains(FunctionScope::OnType(type_id), "create"));
-            assert!(!registry.contains(FunctionScope::OnType(type_id), "new"));
+            assert!(registry.contains(type_id, "create"));
+            assert!(!registry.contains(type_id, "new"));
         }
     }
 
@@ -140,7 +138,7 @@ mod test {
             .unwrap()
             .read();
         let func = registry
-            .get_function(FunctionScope::OnType(TypeId::of::<StaticTypeRef>()), "new")
+            .get_function(TypeId::of::<StaticTypeRef>(), "new")
             .unwrap_or_else(|_| panic!("missing constructor"));
         let names = func
             .info

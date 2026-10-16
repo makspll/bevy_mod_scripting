@@ -42,9 +42,6 @@ pub struct LadFile {
     /// The version of the LAD file format used.
     pub version: Cow<'static, str>,
 
-    /// The builtin values every script sees as globals, i.e. `world`. The builtin functions are the [`LadFunctionNamespace::Global`] functions.
-    pub builtins: IndexMap<Cow<'static, str>, LadInstance>,
-
     /// The script namespaces, i.e. what `import_namespace("math")` returns.
     #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
     pub namespaces: IndexMap<Cow<'static, str>, LadNamespace>,
@@ -72,7 +69,6 @@ impl LadFile {
     pub fn new() -> Self {
         Self {
             version: LAD_VERSION.into(),
-            builtins: IndexMap::new(),
             namespaces: IndexMap::new(),
             types: IndexMap::new(),
             generic_types: IndexMap::new(),
@@ -282,7 +278,7 @@ impl LadFunction {
 pub enum LadFunctionNamespace {
     /// A function in a type's namespace
     Type(LadTypeId),
-    /// A builtin, a function every script sees as a global
+    /// A builtin, one of the few functions every script has as a global, i.e. `import_namespace`
     Global,
     /// A function in a script namespace, i.e. `import_namespace("bms").log_info`
     Namespace {

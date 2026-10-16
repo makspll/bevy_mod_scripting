@@ -1,8 +1,10 @@
 let bms = import_namespace.call("bms");
+let world = bms.world;
+let test_utils = import_namespace.call("test_utils");
 let Component = world.register_new_component.call("script.test", "DeepComponent");
 let new_entity = world.spawn_.call();
 
-reseed.call();
+test_utils.reseed.call();
 
 let keys = [
     "_0",
@@ -31,7 +33,7 @@ fn pre_bench() {
 
     // Choose keys for every step.
     for i in 0 .. steps {
-        let key = keys[random_int.call(0, keys.len() - 1)];
+        let key = keys[test_utils.random_int.call(0, keys.len() - 1)];
         step_keys.push(key);
     };
 

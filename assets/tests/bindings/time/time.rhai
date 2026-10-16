@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let Duration = import_namespace.call("time").Duration;
 
 // the default clock, and the clocks behind it

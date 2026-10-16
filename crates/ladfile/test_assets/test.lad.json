@@ -1,41 +1,5 @@
 {
   "version": "{{version}}",
-  "builtins": {
-    "my_static_instance": {
-      "type_kind": {
-        "val": "ladfile_builder::test::GenericStructType<usize>"
-      },
-      "is_static": true
-    },
-    "my_non_static_instance": {
-      "type_kind": {
-        "vec": {
-          "val": "ladfile_builder::test::UnitType"
-        }
-      },
-      "is_static": false
-    },
-    "map": {
-      "type_kind": {
-        "hashMap": [
-          {
-            "primitive": "string"
-          },
-          {
-            "union": [
-              {
-                "primitive": "string"
-              },
-              {
-                "primitive": "string"
-              }
-            ]
-          }
-        ]
-      },
-      "is_static": false
-    }
-  },
   "namespaces": {
     "ladfile_builder": {
       "types": {
@@ -45,6 +9,42 @@
         "PlainStructType": "ladfile_builder::test::PlainStructType",
         "TupleStructType": "ladfile_builder::test::TupleStructType",
         "UnitType": "ladfile_builder::test::UnitType"
+      },
+      "values": {
+        "map": {
+          "type_kind": {
+            "hashMap": [
+              {
+                "primitive": "string"
+              },
+              {
+                "union": [
+                  {
+                    "primitive": "string"
+                  },
+                  {
+                    "primitive": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "is_static": false
+        },
+        "my_non_static_instance": {
+          "type_kind": {
+            "vec": {
+              "val": "ladfile_builder::test::UnitType"
+            }
+          },
+          "is_static": false
+        },
+        "my_static_instance": {
+          "type_kind": {
+            "val": "ladfile_builder::test::GenericStructType<usize>"
+          },
+          "is_static": false
+        }
       }
     }
   },

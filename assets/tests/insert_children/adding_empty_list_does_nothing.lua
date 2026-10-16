@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local entity = world.spawn()
 
 world.insert_children(entity,1 , {})

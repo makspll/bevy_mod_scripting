@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+
 function contains(table, element)
     for _, value in pairs(table) do
         if value == element then

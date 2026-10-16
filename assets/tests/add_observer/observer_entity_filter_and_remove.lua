@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local removed = {}
 local added = {}
 local a, b

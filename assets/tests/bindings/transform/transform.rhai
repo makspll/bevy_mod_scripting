@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let Mat4 = import_namespace.call("math").Mat4;
 let Quat = import_namespace.call("math").Quat;
 let Transform = import_namespace.call("transform").Transform;

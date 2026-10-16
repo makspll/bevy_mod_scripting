@@ -549,6 +549,19 @@ impl<'a> Section<'a> {
                 ladfile: self.ladfile,
             },
         ];
+        let values = self
+            .ladfile
+            .namespaces
+            .get(namespace)
+            .map(|lad_namespace| lad_namespace.values.iter().collect::<Vec<_>>())
+            .unwrap_or_default();
+        if !values.is_empty() {
+            items.push(SectionItem::InstancesSummary {
+                instances: values,
+                ladfile: self.ladfile,
+                types_directory: PathBuf::from("."),
+            });
+        }
         let functions = self.namespace_functions(namespace);
         if !functions.is_empty() {
             items.push(SectionItem::Markdown {
@@ -564,23 +577,13 @@ impl<'a> Section<'a> {
         items
     }
 
-    /// The page of the builtins: the values and functions every script has without importing anything
+    /// The page of the builtins: the functions every script has without importing anything
     fn function_summary_items(&self) -> Vec<SectionItem<'a>> {
         vec![
             SectionItem::Markdown {
                 markdown: Box::new(|builder| {
-                    builder.raw("What every script has without importing anything. Everything else is imported from a namespace, see the namespace pages under Types, i.e. `import_namespace(\"bms\").log_info`.");
+                    builder.raw("The only globals of scripts. Everything else is imported from a namespace, see the namespace pages under Types, i.e. `import_namespace(\"bms\").world`.");
                     builder.append("\n\n");
-                }),
-            },
-            SectionItem::InstancesSummary {
-                instances: self.ladfile.builtins.iter().collect(),
-                ladfile: self.ladfile,
-                types_directory: PathBuf::from("./types"),
-            },
-            SectionItem::Markdown {
-                markdown: Box::new(|builder| {
-                    builder.heading(2, "Functions");
                 }),
             },
             SectionItem::FunctionsSummary {
@@ -961,7 +964,7 @@ fn types_summary_markdown(
     });
 }
 
-/// A table of the builtin values, i.e. `world`
+/// A table of the values in a namespace, i.e. `world` in `bms`
 fn instances_summary_markdown(
     instances: &[(&Cow<'static, str>, &LadInstance)],
     ladfile: &LadFile,
@@ -1091,7 +1094,7 @@ mod test {
         let listed = namespace_pages(&ladfile)
             .iter()
             .map(|namespace| match namespace.section_items().as_slice() {
-                [_, SectionItem::TypesSummary { types, .. }] => types.len(),
+                [_, SectionItem::TypesSummary { types, .. }, ..] => types.len(),
                 items => panic!("expected a types summary, got {items:?}"),
             })
             .sum::<usize>();

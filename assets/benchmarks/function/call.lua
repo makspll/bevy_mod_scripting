@@ -1,3 +1,5 @@
+local test_utils = import_namespace("test_utils")
+
 function bench()
-    noop()
+    test_utils.noop()
 end

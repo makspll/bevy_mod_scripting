@@ -4,12 +4,12 @@ use std::{ops::Deref, str::Utf8Error, sync::Arc};
 
 use crate::bindings::script_value::{FromDynamic, IntoDynamic};
 
-use ::{bevy_app::Plugin, bevy_ecs::world::World};
+use ::bevy_app::Plugin;
 use bevy_app::App;
 use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::Language;
-use bevy_mod_scripting_bindings::{FunctionScope, InteropError, ScriptValue, WorldExtensions};
+use bevy_mod_scripting_bindings::{InteropError, ScriptValue, WorldExtensions, builtins::builtins};
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
     callbacks::ScriptCallbacks,
@@ -21,7 +21,7 @@ use bevy_mod_scripting_core::{
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference};
+use bindings::reference::{ReservedKeyword, RhaiReflectReference, RhaiTypeRef};
 use parking_lot::RwLock;
 pub use rhai;
 
@@ -178,21 +178,25 @@ impl Default for RhaiScriptingPlugin {
                     let mut engine = runtime.write();
                     engine.set_max_expr_depths(999, 999);
                     engine.build_type::<RhaiReflectReference>();
-                    engine.build_type::<RhaiStaticReflectReference>();
+                    engine.build_type::<RhaiTypeRef>();
                     engine.register_iterator_result::<RhaiReflectReference, _>();
                     register_plugin_globals(&mut engine);
                     Ok(())
                 }],
                 context_initializers: vec![
                     |_, context| {
-                        context.scope.set_or_push(
-                            "world",
-                            RhaiStaticReflectReference(std::any::TypeId::of::<World>()),
-                        );
+                        // the builtins are the only globals, everything else is imported from namespaces
+                        for (name, function) in builtins() {
+                            context.scope.set_or_push(
+                                name,
+                                ScriptValue::Function(function)
+                                    .into_dynamic()
+                                    .map_err(IntoInteropError::into_bms_error)?,
+                            );
+                        }
                         Ok(())
                     },
-                    |_, context| {
-                        // the builtins are the functions in the global scope, everything else is imported from namespaces
+                    |_, _context| {
                         let world = ThreadWorldContainer.try_get_context()?.world;
                         let mut script_function_registry = world.script_function_registry().clone();
                         let mut script_function_registry = script_function_registry.write();
@@ -207,27 +211,12 @@ impl Default for RhaiScriptingPlugin {
                                 let new_info =
                                     function.info.deref().clone().with_name(new_name.clone());
                                 new_function.info = new_info.into();
-                                re_insertions.push((key.namespace, new_name, new_function));
+                                re_insertions.push((key.type_id, new_name, new_function));
                             }
                         }
-                        for (namespace, name, func) in re_insertions {
-                            script_function_registry.raw_insert(namespace, name, func);
+                        for (type_id, name, func) in re_insertions {
+                            script_function_registry.raw_insert(type_id, name, func);
                         }
-
-                        // then go through functions in the global namespace and add them to the lua context
-
-                        for (key, function) in script_function_registry
-                            .iter_all()
-                            .filter(|(k, _)| k.namespace == FunctionScope::Global)
-                        {
-                            context.scope.set_or_push(
-                                key.name.clone(),
-                                ScriptValue::Function(function.clone())
-                                    .into_dynamic()
-                                    .map_err(IntoInteropError::into_bms_error)?,
-                            );
-                        }
-
                         Ok(())
                     },
                 ],

@@ -9,7 +9,7 @@ use rhai::{Dynamic, EvalAltResult, FnPtr, Map, NativeCallContext};
 
 use crate::IntoRhaiError;
 
-use super::reference::{RhaiReflectReference, RhaiStaticReflectReference};
+use super::reference::{RhaiReflectReference, RhaiTypeRef};
 
 /// The default function call context for rhai
 pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Rhai);
@@ -54,7 +54,7 @@ impl IntoDynamic for ScriptValue {
             ScriptValue::Reference(reflect_reference) => {
                 Dynamic::from(RhaiReflectReference(reflect_reference))
             }
-            ScriptValue::Type(type_id) => Dynamic::from(RhaiStaticReflectReference(type_id)),
+            ScriptValue::Type(type_id) => Dynamic::from(RhaiTypeRef(type_id)),
             #[allow(deprecated)]
             ScriptValue::FunctionMut(func) => Dynamic::from(FnPtr::from_fn(
                 func.name().to_string(),
@@ -137,8 +137,8 @@ impl FromDynamic for ScriptValue {
             )),
             d => {
                 let type_name = d.type_name();
-                if d.is::<RhaiStaticReflectReference>()
-                    && let Some(v) = d.clone().try_cast::<RhaiStaticReflectReference>()
+                if d.is::<RhaiTypeRef>()
+                    && let Some(v) = d.clone().try_cast::<RhaiTypeRef>()
                 {
                     Ok(ScriptValue::Type(v.0))
                 } else if let Some(v) = d.try_cast::<RhaiReflectReference>() {

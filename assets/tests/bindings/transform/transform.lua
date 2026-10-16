@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local Mat4 = import_namespace("math").Mat4
 local Quat = import_namespace("math").Quat
 local Transform = import_namespace("transform").Transform

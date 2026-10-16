@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 -- reload.lua
 --
 -- An example of the script reload feature. Exercise with this command:

@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local script_asset = world.get_type_by_name("bevy_mod_scripting_asset::script_asset::ScriptAsset")
 assert(script_asset ~= nil, "ScriptAsset is registered")
 

@@ -4,14 +4,14 @@ use std::{
     sync::Arc,
 };
 
-use ::{bevy_app::Plugin, bevy_ecs::world::World};
+use ::bevy_app::Plugin;
 use bevy_app::App;
 use bevy_asset::AssetPath;
 use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
-    InteropError, WorldExtensions, function::namespace::FunctionScope, script_value::ScriptValue,
+    InteropError, WorldExtensions, builtins::builtins, script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
@@ -23,7 +23,7 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use bindings::{reference::LuaStaticReflectReference, script_value::LuaScriptValue};
+use bindings::script_value::LuaScriptValue;
 pub use mlua;
 use mlua::{Function, IntoLua, Lua, MultiValue, Variadic};
 
@@ -139,44 +139,17 @@ impl Default for LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 runtime_initializers: Vec::default(),
                 supported_extensions: vec!["lua", "luau"],
-                context_initializers: vec![
-                    |_script_id, context| {
-                        // set the world global
-                        let globals = context.globals();
-
-                        globals
-                            .set(
-                                "world",
-                                LuaStaticReflectReference(std::any::TypeId::of::<World>()),
-                            )
+                // the builtins are the only globals, everything else is imported from namespaces
+                context_initializers: vec![|_script_id, context| {
+                    for (name, function) in builtins() {
+                        context
+                            .globals()
+                            .set(name, LuaScriptValue::from(ScriptValue::Function(function)))
                             .map_err(IntoInteropError::to_bms_error)?;
-
-                        register_plugin_globals(context).map_err(IntoInteropError::to_bms_error)?;
-
-                        Ok(())
-                    },
-                    |_script_id, context| {
-                        // the builtins are the functions in the global scope, everything else is imported from namespaces
-                        let world = ThreadWorldContainer.try_get_context()?.world;
-                        let script_function_registry = world.script_function_registry();
-                        let script_function_registry = script_function_registry.read();
-
-                        for (key, function) in script_function_registry
-                            .iter_all()
-                            .filter(|(k, _)| k.namespace == FunctionScope::Global)
-                        {
-                            context
-                                .globals()
-                                .set(
-                                    key.name.to_string(),
-                                    LuaScriptValue::from(ScriptValue::Function(function.clone())),
-                                )
-                                .map_err(IntoInteropError::to_bms_error)?;
-                        }
-
-                        Ok(())
-                    },
-                ],
+                    }
+                    register_plugin_globals(context).map_err(IntoInteropError::to_bms_error)?;
+                    Ok(())
+                }],
                 // the running script's entity and handle are looked up when needed, see `bms.current_entity()`
                 context_pre_handling_initializers: vec![],
                 language: Language::Lua,

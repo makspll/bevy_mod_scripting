@@ -1,4 +1,5 @@
 let bms = import_namespace.call("bms");
+let world = bms.world;
 let type = world.get_type_by_name.call("test_utils::test_data::SimpleTupleStruct");
 let constructed = bms.construct.call(type, #{ "0": 123 });
 

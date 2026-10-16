@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local CompWithDefaultAndComponentData = import_namespace("test_utils").CompWithDefaultAndComponentData
 local TestBundle = import_namespace("test_utils").TestBundle
 

@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local Duration = import_namespace("time").Duration
 
 -- the default clock, and the clocks behind it

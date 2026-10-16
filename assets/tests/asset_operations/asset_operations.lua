@@ -1,5 +1,8 @@
+local world = import_namespace("bms").world
+local test_utils = import_namespace("test_utils")
+
 function on_test()
-    local test_handle = create_test_asset(42, "TestAssetName")
+    local test_handle = test_utils.create_test_asset(42, "TestAssetName")
 
     assert(test_handle ~= nil, "Test asset handle should not be nil")
     assert(world.has_asset(test_handle) == true, "has_asset should return true")

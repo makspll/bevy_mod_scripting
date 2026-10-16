@@ -1,4 +1,5 @@
 let bms = import_namespace.call("bms");
+let world = bms.world;
 let runs = [];
 
 let ResourceTypeA = world.get_type_by_name.call("test_utils::test_data::TestResource");

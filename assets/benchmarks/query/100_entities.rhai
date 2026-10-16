@@ -1,3 +1,5 @@
+let world = import_namespace.call("bms").world;
+let test_utils = import_namespace.call("test_utils");
 let entity_a = world.spawn_.call();
 let entity_b = world.spawn_.call();
 let entity_c = world.spawn_.call();
@@ -9,13 +11,13 @@ let components = [
     world.get_type_by_name.call("test_utils::test_data::SimpleEnum"),
 ];
 
-reseed.call();
+test_utils.reseed.call();
 
 for i in 1..=100 {
     let entity = world.spawn_.call();
     let left_to_pick = [0, 1, 2, 3];
     for j in 1..=3 {
-        let index = random_int.call(1, left_to_pick.len()) - 1;
+        let index = test_utils.random_int.call(1, left_to_pick.len()) - 1;
         let component = components[left_to_pick[index]];
         left_to_pick.remove(index);
         world.add_default_component.call(entity, component);

@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let CompWithDefaultAndComponentData = import_namespace.call("test_utils").CompWithDefaultAndComponentData;
 let TestBundle = import_namespace.call("test_utils").TestBundle;
 

@@ -154,40 +154,12 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     modules
 }
 
-/// The `globals` module: the builtin values and functions.
+/// The `globals` module: the builtin functions, the only globals.
 fn globals_module(ladfile: &ladfile::LadFile) -> LuaModule {
     let mut globals_module = LuaModule {
         name: "globals".to_string(),
         ..Default::default()
     };
-    for (name, instance) in ladfile.builtins.iter() {
-        // primitives are plain values, which need no declaration
-        if matches!(instance.type_kind, LadTypeKind::Primitive(..)) {
-            continue;
-        }
-        let class = match lad_instance_to_lua_type(ladfile, &instance.type_kind) {
-            Ok(c) => c,
-            Err(e) => {
-                log::warn!("Error generating global {name}: {e}. Using `any` type");
-                LuaType::Any
-            }
-        };
-
-        let description = if instance.is_static {
-            "A static class allowing calls through the \".\" operator only. "
-        } else {
-            "An global instance of this type"
-        };
-
-        globals_module
-            .globals
-            .push(crate::lua_declaration_file::TypeInstance {
-                name: name.to_string(),
-                definition: class,
-                description: Some(description.into()),
-            })
-    }
-
     for (_, function) in ladfile.builtin_functions() {
         let converted = match lad_function_to_lua_function(ladfile, function) {
             Ok(converted) => converted,
@@ -1330,7 +1302,7 @@ mod test {
 
         let namespace = block(&rendered, "---@class namespace.ladfile_builder");
         assert!(namespace.contains("---@field  PlainStructType ladfile_builder.PlainStructType"));
-        assert!(!namespace.contains("UnitType"), "{namespace}");
+        assert!(!namespace.contains("---@field  UnitType"), "{namespace}");
         let other = block(&rendered, "---@class namespace.other_crate");
         assert!(
             other.contains("---@field  UnitType other_crate.UnitType"),

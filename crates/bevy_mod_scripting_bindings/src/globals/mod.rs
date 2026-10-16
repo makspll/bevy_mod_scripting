@@ -1,6 +1,6 @@
 //! What scripts reach without going through a type: the namespaces they import (see [`catalogue`]), and the functions and values registered into those namespaces from Rust.
 //!
-//! The only globals are the builtins: the functions registered in [`crate::FunctionScope::Global`] (i.e. `import_namespace`), and `world`.
+//! The only globals are the builtins in [`crate::builtins`] (i.e. `import_namespace`), `world` is the `bms.world` namespace value.
 
 use crate::{
     DynamicScriptFunction, docgen::typed_through::ThroughTypeInfo, error::InteropError,

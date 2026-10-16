@@ -164,15 +164,3 @@ local Usize = {}
 function hello_world(arg1) end
 
 
----@type any
---- A static class allowing calls through the "." operator only. 
-my_static_instance = {}
-
----@type ladfile_builder.UnitType[]
---- An global instance of this type
-my_non_static_instance = {}
-
----@type table<string, string | string>
---- An global instance of this type
-map = {}
-

@@ -8,6 +8,7 @@ Scripts can send Bevy [events](https://docs.rs/bevy/latest/bevy/ecs/event/trait.
 | `world.write_message(type, value)` | `ReflectMessage` | Writes the message to its `Messages<T>` buffer, readers see it later in the frame. |
 
 ```lua
+local world = import_namespace("bms").world
 local my_game = import_namespace("my_game") -- the crate defining the types
 world.trigger_event(my_game.MyEvent, my_game.MyEvent.new({ amount = 3 }))
 world.write_message(my_game.MyMessage, my_game.MyMessage.new({ amount = 3 }))
@@ -49,6 +50,7 @@ app.register_type::<MyEvent>()
 `world.add_observer(event, callback, components?, entities?)` runs the calling script's callback `callback` (registered with `register_callback`, or a top level function of that name) with a copy of the event, whenever the event is triggered. It returns the observer entity: despawn it to remove the observer.
 
 ```lua
+local world = import_namespace("bms").world
 local ecs = import_namespace("ecs")
 local Mana = world.register_new_component("script.my_game", "Mana")
 
@@ -72,6 +74,7 @@ world.despawn(observer) -- later
 Scripts can define events carrying any value:
 
 ```lua
+local world = import_namespace("bms").world
 local Damaged = world.register_new_event("script.my_game", "Damaged")
 
 register_callback("on_damaged", function(payload)

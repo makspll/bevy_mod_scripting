@@ -255,6 +255,6 @@ my_game.spawn_enemy(5.0)
 
 Values are registered per namespace with `AppScriptNamespaceMembers::register_value`, and are made each time the namespace is imported.
 
-The only globals are the builtins: `world`, `import_namespace`, `export_namespace` and `register_callback`.
+The only globals are the builtins: `import_namespace`, `export_namespace` and `register_callback`. `world` is in the `bms` namespace: `import_namespace("bms").world`.
 
 Types are not globals, which keeps types with the same name from shadowing each other. Use the `filter` of `CoreScriptGlobalsPlugin` to choose which types scripts can look up by name.

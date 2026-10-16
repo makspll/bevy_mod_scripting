@@ -1,3 +1,4 @@
+let test_utils = import_namespace.call("test_utils");
 fn bench(){
-    noop.call();
+    test_utils.noop.call();
 }

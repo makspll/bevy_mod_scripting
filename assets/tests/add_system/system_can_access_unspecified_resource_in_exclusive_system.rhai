@@ -1,4 +1,5 @@
 let bms = import_namespace.call("bms");
+let world = bms.world;
 let runs = [];
 
 fn on_test() {
