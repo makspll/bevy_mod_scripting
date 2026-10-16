@@ -6,7 +6,7 @@
 //! What stays with the language is how a method gets its receiver: [`index`] returns [`Member::Method`] for functions called on the value,
 //! which Lua passes with its colon syntax (`v:length()`), and Rhai binds with [`DynamicScriptFunction::curry`] (`v.length.call()`).
 
-use std::any::TypeId;
+use std::{any::TypeId, borrow::Cow};
 
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_display::OrFakeId;
@@ -53,18 +53,40 @@ pub fn index(
     key: ScriptValue,
     ctx: FunctionCallContext,
 ) -> Result<Member, InteropError> {
+    match key.as_string() {
+        Ok(name) => index_name(world, reference, name, ctx),
+        Err(key) => magic_get(world, reference, key, ctx),
+    }
+}
+
+/// [`index`] with a string key, which is only copied when it names no member, i.e. for field access.
+pub fn index_name<'n>(
+    world: WorldGuard,
+    reference: ReflectReference,
+    name: impl Into<Cow<'n, str>>,
+    ctx: FunctionCallContext,
+) -> Result<Member, InteropError> {
     profiling::function_scope!("dispatch::index");
     let type_id = reference.tail_type_id(world.clone())?.or_fake_id();
-    let key = match key.as_string() {
-        Ok(name) => match world.lookup_member(&reference, type_id, name) {
-            Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => {
-                return Ok(Member::Method(func));
-            }
-            Ok(member) => return Ok(Member::Static(member)),
-            Err(name) => ScriptValue::String(name),
-        },
-        Err(key) => key,
-    };
+    match world.lookup_member(&reference, type_id, name) {
+        Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => Ok(Member::Method(func)),
+        Ok(member) => Ok(Member::Static(member)),
+        Err(name) => magic_get(
+            world,
+            reference,
+            ScriptValue::String(Cow::Owned(name.into_owned())),
+            ctx,
+        ),
+    }
+}
+
+/// Accesses a field or element with the [`crate::MagicFunctions::get`] function.
+fn magic_get(
+    world: WorldGuard,
+    reference: ReflectReference,
+    key: ScriptValue,
+    ctx: FunctionCallContext,
+) -> Result<Member, InteropError> {
     let registry = world.script_function_registry();
     let registry = registry.read();
     registry

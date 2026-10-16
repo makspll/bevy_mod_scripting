@@ -212,6 +212,7 @@ quote = { version = "1.0", default-features = false }
 syn = { version = "2.0", default-features = false }
 proc-macro2 = { version = "1.0", default-features = false }
 smallvec = { version = "1.11", default-features = false }
+equivalent = { version = "1", default-features = false }
 itertools = { version = "0.14", default-features = false }
 variadics_please = { version = "1.1.0", default-features = false }
 anyhow = { version = "1.0", default-features = false }
