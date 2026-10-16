@@ -356,147 +356,146 @@ pub enum LadTypeKind {
     },
 }
 
-/// Utility for dispatching visitors on dyn traits
+impl LadTypeKind {
+    /// The kinds this one contains, i.e. `T` in `Vec<T>`.
+    pub fn children(&self) -> Vec<&LadTypeKind> {
+        match self {
+            LadTypeKind::Option(inner)
+            | LadTypeKind::Vec(inner)
+            | LadTypeKind::HashSet(inner)
+            | LadTypeKind::InteropResult(inner)
+            | LadTypeKind::Array(inner, _) => vec![&**inner],
+            LadTypeKind::HashMap(key, value) => vec![&**key, &**value],
+            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => inner.iter().collect(),
+            LadTypeKind::Ref(_)
+            | LadTypeKind::Mut(_)
+            | LadTypeKind::Val(_)
+            | LadTypeKind::Unknown(_)
+            | LadTypeKind::Primitive(_)
+            | LadTypeKind::UntypedTuple
+            | LadTypeKind::Fields { .. } => vec![],
+        }
+    }
+
+    /// Calls `f` on this kind and every kind nested in it, outermost first.
+    pub fn for_each(&self, f: &mut impl FnMut(&LadTypeKind)) {
+        f(self);
+        for child in self.children() {
+            child.for_each(f);
+        }
+    }
+}
+
+/// Something an [`ArgumentVisitor`] can visit, i.e. a type kind, or a type id on its own
+#[cfg(feature = "visitor")]
 pub trait LadVisitable {
-    /// Runs the visitor on the given node
-    fn accept(&self, visitor: &mut dyn ArgumentVisitor);
+    /// Runs the visitor on this
+    fn accept<V: ArgumentVisitor>(&self, visitor: &mut V) -> V::Output;
 }
 
+#[cfg(feature = "visitor")]
 impl LadVisitable for LadTypeId {
-    fn accept(&self, visitor: &mut dyn ArgumentVisitor) {
-        visitor.visit_lad_type_id(self);
+    fn accept<V: ArgumentVisitor>(&self, visitor: &mut V) -> V::Output {
+        visitor.visit_type_id(self)
     }
 }
 
+#[cfg(feature = "visitor")]
 impl LadVisitable for LadTypeKind {
-    fn accept(&self, visitor: &mut dyn ArgumentVisitor) {
-        visitor.visit(self);
+    fn accept<V: ArgumentVisitor>(&self, visitor: &mut V) -> V::Output {
+        visitor.visit(self)
     }
 }
-/// A visitor pattern for running arbitrary logic on the hierarchy of arguments.
+
+/// A visitor over the type of an argument, field or return value, i.e. to print it in the syntax of a language.
 ///
-/// Use cases are mostly to do with printing the arguments in a human readable format.
-#[allow(unused_variables)]
+/// [`Self::visit`] dispatches on the [`LadTypeKind`], containers are handed their inner kinds to [`Self::visit`] in turn,
+/// so a visitor can build its output bottom up (i.e. `Output = LuaType`), or write into a buffer (`Output = ()`).
+/// Every container must be handled, so a new kind is a compile error in each visitor rather than a silent default.
+///
+/// To only find the type ids or kinds contained in a type, use [`LadTypeKind::for_each`] instead.
 #[cfg(feature = "visitor")]
 pub trait ArgumentVisitor {
-    /// perform an action on a `LadTypeId`, by default noop
-    fn visit_lad_type_id(&mut self, type_id: &LadTypeId);
+    /// What visiting a type produces
+    type Output;
 
-    /// perform an action on a `LadBMSPrimitiveKind`, by default visits the type id of the primitive kind
-    fn visit_lad_bms_primitive_kind(&mut self, primitive_kind: &ReflectionPrimitiveKind);
+    /// A type by its id. Ids of primitives are visited here too, check [`LadFile::primitive_kind`] to tell them apart.
+    fn visit_type_id(&mut self, type_id: &LadTypeId) -> Self::Output;
 
-    /// perform an action on a `Unknown`, by default visits the type id of the unknown type
-    fn visit_unknown(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A primitive type
+    fn visit_primitive(&mut self, primitive_kind: &ReflectionPrimitiveKind) -> Self::Output;
+
+    /// A reference to a value of the type, by default [`Self::visit_type_id`]
+    fn visit_ref(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// Visits an untyped tuple
-    fn visit_untyped_tuple(&mut self) {}
-
-    /// walks the lad type_id structure, by default simply visits type_id's
-    /// Can be used to dispatch to primitives instead of the type maps to these
-    fn walk_lad_type_id(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A mutable reference to a value of the type, by default [`Self::visit_type_id`]
+    fn visit_mut(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// traverse a `Ref` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_ref(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A value of the type, by default [`Self::visit_type_id`]
+    fn visit_val(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// traverse a `Mut` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_mut(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A type converted in a way the LAD file can't describe, by default [`Self::visit_type_id`]
+    fn visit_unknown(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// traverse a `Val` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_val(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A value which might also be an error, by default the value itself
+    fn visit_interop_result(&mut self, inner: &LadTypeKind) -> Self::Output {
+        self.visit(inner)
     }
 
-    /// traverse an `Option` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_option(&mut self, inner: &LadTypeKind) {
-        self.visit(inner);
-    }
+    /// An optional value
+    fn visit_option(&mut self, inner: &LadTypeKind) -> Self::Output;
 
-    /// traverse a `Vec` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_vec(&mut self, inner: &LadTypeKind) {
-        self.visit(inner);
-    }
+    /// A list
+    fn visit_vec(&mut self, inner: &LadTypeKind) -> Self::Output;
 
-    /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_map(&mut self, key: &LadTypeKind, value: &LadTypeKind) {
-        self.visit(key);
-        self.visit(value);
-    }
+    /// A fixed size array
+    fn visit_array(&mut self, inner: &LadTypeKind, size: usize) -> Self::Output;
 
-    /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_set(&mut self, key: &LadTypeKind) {
-        self.visit(key);
-    }
+    /// A map
+    fn visit_hash_map(&mut self, key: &LadTypeKind, value: &LadTypeKind) -> Self::Output;
 
-    /// traverse an `InteropResult` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_interop_result(&mut self, inner: &LadTypeKind) {
-        self.visit(inner);
-    }
+    /// A set
+    fn visit_hash_set(&mut self, inner: &LadTypeKind) -> Self::Output;
 
-    /// traverse a tuple of arguments, by default calls `visit` on each argument
-    fn walk_tuple(&mut self, inner: &[LadTypeKind]) {
-        for arg in inner {
-            self.visit(arg);
-        }
-    }
+    /// A tuple
+    fn visit_tuple(&mut self, inner: &[LadTypeKind]) -> Self::Output;
 
-    /// traverse an array of arguments, by default calls `visit` on the inner argument
-    fn walk_array(&mut self, inner: &LadTypeKind, size: usize) {
-        self.visit(inner);
-    }
+    /// Any number of values of any type
+    fn visit_untyped_tuple(&mut self) -> Self::Output;
 
-    /// traverse a primitive argument, by default calls `visit` on the primitive kind
-    fn walk_primitive(&mut self, primitive_kind: &ReflectionPrimitiveKind) {
-        self.visit_lad_bms_primitive_kind(primitive_kind);
-    }
+    /// One of many types
+    fn visit_union(&mut self, inner: &[LadTypeKind]) -> Self::Output;
 
-    /// traverse a union of arguments, by default calls `visit` on each argument
-    fn walk_union(&mut self, inner: &[LadTypeKind]) {
-        for arg in inner {
-            self.visit(arg);
-        }
-    }
+    /// A table of the fields of a type, or of a variant of an enum
+    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) -> Self::Output;
 
-    /// traverse an unknown argument, by default calls `visit` on the type id
-    fn walk_unknown(&mut self, type_id: &LadTypeId) {
-        self.visit_unknown(type_id);
-    }
-
-    /// traverse a table of fields of a type, by default visits the type id
-    fn walk_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
-        self.visit_lad_type_id(type_id);
-    }
-
-    /// Visit an argument kind, by default calls the appropriate walk method on each enum variant.
-    ///
-    /// Each walk variant will walk over nested kinds, and visit the leaf types.
-    ///
-    /// If you want to do something with the parent types, you WILL have to override each individual walk method.
-    fn visit(&mut self, kind: &LadTypeKind) {
+    /// Visits a type, dispatching to the method for its kind.
+    fn visit(&mut self, kind: &LadTypeKind) -> Self::Output {
         match kind {
-            LadTypeKind::Ref(type_id) => self.walk_ref(type_id),
-            LadTypeKind::Mut(type_id) => self.walk_mut(type_id),
-            LadTypeKind::Val(type_id) => self.walk_val(type_id),
-            LadTypeKind::Option(inner) => self.walk_option(inner),
-            LadTypeKind::Vec(inner) => self.walk_vec(inner),
-            LadTypeKind::HashMap(key, value) => self.walk_hash_map(key, value),
-            LadTypeKind::HashSet(key) => self.walk_hash_set(key),
-            LadTypeKind::InteropResult(inner) => self.walk_interop_result(inner),
-            LadTypeKind::Tuple(inner) => self.walk_tuple(inner),
-            LadTypeKind::Array(inner, size) => self.walk_array(inner, *size),
-            LadTypeKind::Primitive(primitive_kind) => self.walk_primitive(primitive_kind),
-            LadTypeKind::Union(inner) => self.walk_union(inner),
-            LadTypeKind::Unknown(type_id) => self.walk_unknown(type_id),
+            LadTypeKind::Ref(type_id) => self.visit_ref(type_id),
+            LadTypeKind::Mut(type_id) => self.visit_mut(type_id),
+            LadTypeKind::Val(type_id) => self.visit_val(type_id),
+            LadTypeKind::Unknown(type_id) => self.visit_unknown(type_id),
+            LadTypeKind::Primitive(primitive_kind) => self.visit_primitive(primitive_kind),
+            LadTypeKind::Option(inner) => self.visit_option(inner),
+            LadTypeKind::Vec(inner) => self.visit_vec(inner),
+            LadTypeKind::Array(inner, size) => self.visit_array(inner, *size),
+            LadTypeKind::HashMap(key, value) => self.visit_hash_map(key, value),
+            LadTypeKind::HashSet(inner) => self.visit_hash_set(inner),
+            LadTypeKind::InteropResult(inner) => self.visit_interop_result(inner),
+            LadTypeKind::Tuple(inner) => self.visit_tuple(inner),
             LadTypeKind::UntypedTuple => self.visit_untyped_tuple(),
+            LadTypeKind::Union(inner) => self.visit_union(inner),
             LadTypeKind::Fields { type_id, variant } => {
-                self.walk_fields(type_id, variant.as_deref())
+                self.visit_fields(type_id, variant.as_deref())
             }
         }
     }

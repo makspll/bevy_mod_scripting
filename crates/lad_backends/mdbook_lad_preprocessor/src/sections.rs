@@ -15,7 +15,7 @@ use crate::{
 
 fn print_type(
     ladfile: &LadFile,
-    type_: &dyn LadVisitable,
+    type_: &impl LadVisitable,
     raw_type_id_replacement: Option<&'static str>,
     linkifier_base_path_and_escape_opt: Option<(PathBuf, bool)>,
 ) -> String {

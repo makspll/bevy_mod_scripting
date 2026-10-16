@@ -388,7 +388,6 @@ pub fn lua_function_to_operator(
     operator: ScriptOperatorNames,
     func: &FunctionSignature,
 ) -> Option<Result<LuaOperator, FunctionSignature>> {
-
     // first arg is implied to be `self`
     let (metamethod, second_arg, ret) = match operator {
         ScriptOperatorNames::Addition => (
@@ -504,7 +503,6 @@ pub fn lad_function_to_lua_function(
         })
         .collect::<Result<Vec<_>, anyhow::Error>>()?;
 
-
     let returns = lad_instance_to_lua_type(ladfile, &function.return_type.kind)?;
 
     Ok(FunctionSignature {
@@ -533,78 +531,119 @@ pub fn to_lua_many(
     Ok(lua_types)
 }
 
+/// Converts a LAD type to its Lua type, see [`LuaTypeVisitor`].
 pub fn lad_instance_to_lua_type(
     ladfile: &LadFile,
     lad_type: &ladfile::LadTypeKind,
 ) -> Result<LuaType, anyhow::Error> {
-    Ok(match &lad_type {
-        ladfile::LadTypeKind::Primitive(prim) => lad_primitive_to_lua_type(prim),
-        ladfile::LadTypeKind::Ref(lad_type_id)
-        | ladfile::LadTypeKind::Mut(lad_type_id)
-        | ladfile::LadTypeKind::Val(lad_type_id) => {
-            if let Some((generic_type, args)) = ladfile.get_generic_instance(lad_type_id) {
-                LuaType::Generic {
-                    name: generic_type.identifier.clone(),
-                    args: args
-                        .iter()
-                        .map(|arg| lad_generic_argument_to_lua_type(ladfile, &arg.type_id))
-                        .collect(),
-                }
-            } else if ladfile.get_type_generics(lad_type_id).is_none() {
-                LuaType::Alias(ladfile.get_type_identifier(lad_type_id, None).to_string())
-            } else {
-                return Err(anyhow::anyhow!(
-                    "Generic fields are not supported: {lad_type_id}",
-                ));
-            }
+    LuaTypeVisitor { ladfile }.visit(lad_type)
+}
+
+/// Converts LAD types to Lua types.
+pub struct LuaTypeVisitor<'a> {
+    /// The file the types are from
+    pub ladfile: &'a LadFile,
+}
+
+impl ArgumentVisitor for LuaTypeVisitor<'_> {
+    type Output = Result<LuaType, anyhow::Error>;
+
+    fn visit_type_id(&mut self, lad_type_id: &LadTypeId) -> Self::Output {
+        let ladfile = self.ladfile;
+        if let Some((generic_type, args)) = ladfile.get_generic_instance(lad_type_id) {
+            Ok(LuaType::Generic {
+                name: generic_type.identifier.clone(),
+                args: args
+                    .iter()
+                    .map(|arg| lad_generic_argument_to_lua_type(ladfile, &arg.type_id))
+                    .collect(),
+            })
+        } else if ladfile.get_type_generics(lad_type_id).is_none() {
+            Ok(LuaType::Alias(
+                ladfile.get_type_identifier(lad_type_id, None).to_string(),
+            ))
+        } else {
+            Err(anyhow::anyhow!(
+                "Generic fields are not supported: {lad_type_id}",
+            ))
         }
-        ladfile::LadTypeKind::Option(lad_type_kind) => LuaType::Union(vec![
-            lad_instance_to_lua_type(ladfile, lad_type_kind)?,
+    }
+
+    fn visit_primitive(&mut self, primitive_kind: &ReflectionPrimitiveKind) -> Self::Output {
+        Ok(lad_primitive_to_lua_type(primitive_kind))
+    }
+
+    fn visit_unknown(&mut self, _: &LadTypeId) -> Self::Output {
+        Ok(LuaType::Any)
+    }
+
+    // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
+    fn visit_interop_result(&mut self, inner: &ladfile::LadTypeKind) -> Self::Output {
+        self.visit(inner)
+    }
+
+    fn visit_option(&mut self, inner: &ladfile::LadTypeKind) -> Self::Output {
+        Ok(LuaType::Union(vec![
+            self.visit(inner)?,
             LuaType::Primitive(LuaPrimitiveType::Nil),
-        ]),
-        ladfile::LadTypeKind::Vec(lad_type_kind) => {
-            LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
-        }
-        ladfile::LadTypeKind::HashMap(key, value) => LuaType::Dictionary {
-            key: Box::new(lad_instance_to_lua_type(ladfile, key)?),
-            value: Box::new(lad_instance_to_lua_type(ladfile, value)?),
-        },
-        ladfile::LadTypeKind::HashSet(key) => LuaType::Dictionary {
-            key: Box::new(lad_instance_to_lua_type(ladfile, key)?),
+        ]))
+    }
+
+    fn visit_vec(&mut self, inner: &ladfile::LadTypeKind) -> Self::Output {
+        Ok(LuaType::Array(Box::new(self.visit(inner)?)))
+    }
+
+    fn visit_array(&mut self, inner: &ladfile::LadTypeKind, _size: usize) -> Self::Output {
+        self.visit_vec(inner)
+    }
+
+    fn visit_hash_map(
+        &mut self,
+        key: &ladfile::LadTypeKind,
+        value: &ladfile::LadTypeKind,
+    ) -> Self::Output {
+        Ok(LuaType::Dictionary {
+            key: Box::new(self.visit(key)?),
+            value: Box::new(self.visit(value)?),
+        })
+    }
+
+    fn visit_hash_set(&mut self, inner: &ladfile::LadTypeKind) -> Self::Output {
+        Ok(LuaType::Dictionary {
+            key: Box::new(self.visit(inner)?),
             value: Box::new(LuaType::Primitive(LuaPrimitiveType::Boolean)),
-        },
-        ladfile::LadTypeKind::InteropResult(lad_type_kind) => {
-            lad_instance_to_lua_type(ladfile, lad_type_kind)? // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
-        }
-        ladfile::LadTypeKind::Tuple(lad_type_kinds) => {
-            if lad_type_kinds.is_empty() {
-                LuaType::Primitive(LuaPrimitiveType::Nil)
-            } else {
-                LuaType::Tuple(to_lua_many(ladfile, lad_type_kinds)?)
-            }
-        }
-        ladfile::LadTypeKind::UntypedTuple => LuaType::Variadic(Box::new(
-            lad_primitive_to_lua_type(&ReflectionPrimitiveKind::ScriptValue),
-        )),
-        ladfile::LadTypeKind::Array(lad_type_kind, _) => {
-            LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
-        }
-        ladfile::LadTypeKind::Union(lad_type_kinds) => {
-            LuaType::Union(to_lua_many(ladfile, lad_type_kinds)?)
-        }
-        ladfile::LadTypeKind::Unknown(_) => LuaType::Any,
-        ladfile::LadTypeKind::Fields { type_id, variant } => {
-            let variant = variant.as_deref();
-            if is_enum_payload(ladfile, type_id, variant) {
-                LuaType::Primitive(LuaPrimitiveType::Table)
-            } else if lad_fields(ladfile, type_id, variant).is_some_and(lad_variant_has_fields) {
-                LuaType::Alias(fields_class_name(ladfile, type_id, variant)?)
-            } else {
-                // i.e. unit structs and variants, or opaque types which can only be built from their default
-                LuaType::Alias(NO_FIELDS_CLASS.to_string())
-            }
-        }
-    })
+        })
+    }
+
+    fn visit_tuple(&mut self, inner: &[ladfile::LadTypeKind]) -> Self::Output {
+        Ok(if inner.is_empty() {
+            LuaType::Primitive(LuaPrimitiveType::Nil)
+        } else {
+            LuaType::Tuple(to_lua_many(self.ladfile, inner)?)
+        })
+    }
+
+    fn visit_untyped_tuple(&mut self) -> Self::Output {
+        Ok(LuaType::Variadic(Box::new(lad_primitive_to_lua_type(
+            &ReflectionPrimitiveKind::ScriptValue,
+        ))))
+    }
+
+    fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) -> Self::Output {
+        Ok(LuaType::Union(to_lua_many(self.ladfile, inner)?))
+    }
+
+    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) -> Self::Output {
+        let ladfile = self.ladfile;
+        Ok(if is_enum_payload(ladfile, type_id, variant) {
+            LuaType::Primitive(LuaPrimitiveType::Table)
+        } else if lad_fields(ladfile, type_id, variant).is_some_and(lad_variant_has_fields) {
+            LuaType::Alias(fields_class_name(ladfile, type_id, variant)?)
+        } else {
+            // i.e. unit structs and variants, or opaque types which can only be built from their default
+            LuaType::Alias(NO_FIELDS_CLASS.to_string())
+        })
+    }
 }
 
 /// The argument of a generic type can be any type, including primitives and types the file doesn't know about.
@@ -665,22 +704,18 @@ fn fields_class_name(
 #[derive(Default)]
 struct FieldsReferences(IndexSet<(LadTypeId, Option<String>)>);
 
-impl ArgumentVisitor for FieldsReferences {
-    fn visit_lad_type_id(&mut self, _: &LadTypeId) {}
-
-    fn visit_lad_bms_primitive_kind(&mut self, _: &ReflectionPrimitiveKind) {}
-
-    fn walk_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
-        self.0.insert((type_id.clone(), variant.map(str::to_owned)));
-    }
-}
-
 impl FieldsReferences {
     fn visit_function(&mut self, function: &LadFunction) {
+        let mut collect = |kind: &LadTypeKind| {
+            if let LadTypeKind::Fields { type_id, variant } = kind {
+                self.0
+                    .insert((type_id.clone(), variant.as_deref().map(str::to_owned)));
+            }
+        };
         for arg in &function.arguments {
-            self.visit(&arg.kind);
+            arg.kind.for_each(&mut collect);
         }
-        self.visit(&function.return_type.kind);
+        function.return_type.kind.for_each(&mut collect);
     }
 }
 

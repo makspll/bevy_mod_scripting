@@ -58,26 +58,14 @@ impl<'a> MarkdownArgumentVisitor<'a> {
 }
 
 impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
-    fn walk_lad_type_id(&mut self, type_id: &LadTypeId) {
-        if let Some(prim) = self.ladfile.primitive_kind(type_id) {
-            self.visit_lad_bms_primitive_kind(prim);
-        } else {
-            self.visit_lad_type_id(type_id);
-        }
-    }
+    type Output = ();
 
-    fn visit_lad_bms_primitive_kind(&mut self, primitive_kind: &ladfile::ReflectionPrimitiveKind) {
+    fn visit_primitive(&mut self, primitive_kind: &ladfile::ReflectionPrimitiveKind) {
         let prim_id = primitive_kind.to_string();
-        if let Some(linkifier) = &self.linkifier {
-            let link_value = (linkifier)(prim_id.clone());
-            let link_value = link_value.to_string_lossy().to_string().replace("\\", "/");
-            self.buffer.link(prim_id, link_value);
-        } else {
-            self.buffer.text(prim_id);
-        }
+        self.link_or_text(prim_id.clone(), prim_id);
     }
 
-    fn visit_lad_type_id(&mut self, type_id: &ladfile::LadTypeId) {
+    fn visit_type_id(&mut self, type_id: &ladfile::LadTypeId) {
         // the generic type itself, i.e. Handle<A>
         if let Some(generic_type) = self.ladfile.generic_types.get(type_id) {
             let name = generic_type.name_with_params();
@@ -103,7 +91,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
                 if i > 0 {
                     self.buffer.text(", ");
                 }
-                self.visit_lad_type_id(&generic.type_id);
+                self.visit_type_id(&generic.type_id);
             }
             self.buffer.text('>');
         } else if let Some(linkifier) = &self.linkifier {
@@ -120,22 +108,19 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
     }
 
-    fn walk_option(&mut self, inner: &ladfile::LadTypeKind) {
-        // Write Optional<inner>
+    fn visit_option(&mut self, inner: &ladfile::LadTypeKind) {
         self.buffer.text("Optional<");
         self.visit(inner);
         self.buffer.text(">");
     }
 
-    fn walk_vec(&mut self, inner: &ladfile::LadTypeKind) {
-        // Write Vec<inner>
+    fn visit_vec(&mut self, inner: &ladfile::LadTypeKind) {
         self.buffer.text("Vec<");
         self.visit(inner);
         self.buffer.text(">");
     }
 
-    fn walk_hash_map(&mut self, key: &ladfile::LadTypeKind, value: &ladfile::LadTypeKind) {
-        // Write HashMap<key, value>
+    fn visit_hash_map(&mut self, key: &ladfile::LadTypeKind, value: &ladfile::LadTypeKind) {
         self.buffer.text("HashMap<");
         self.visit(key);
         self.buffer.text(", ");
@@ -143,8 +128,11 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(">");
     }
 
-    fn walk_tuple(&mut self, inner: &[ladfile::LadTypeKind]) {
-        // Write (inner1, inner2, ...)
+    fn visit_hash_set(&mut self, inner: &ladfile::LadTypeKind) {
+        self.visit(inner);
+    }
+
+    fn visit_tuple(&mut self, inner: &[ladfile::LadTypeKind]) {
         self.buffer.text("(");
         for (idx, arg) in inner.iter().enumerate() {
             self.visit(arg);
@@ -155,8 +143,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(")");
     }
 
-    fn walk_union(&mut self, inner: &[ladfile::LadTypeKind]) {
-        // Write `T1 | T2`
+    fn visit_untyped_tuple(&mut self) {}
+
+    fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) {
         for (idx, arg) in inner.iter().enumerate() {
             self.visit(arg);
             if idx < inner.len() - 1 {
@@ -165,8 +154,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
     }
 
-    fn walk_array(&mut self, inner: &ladfile::LadTypeKind, size: usize) {
-        // Write [inner; size]
+    fn visit_array(&mut self, inner: &ladfile::LadTypeKind, size: usize) {
         self.buffer.text("[");
         self.visit(inner);
         self.buffer.text("; ");
@@ -174,10 +162,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text("]");
     }
 
-    fn walk_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
-        // Write Fields<Type> or Fields<Type::Variant>
+    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
         self.buffer.text("Fields<");
-        self.visit_lad_type_id(type_id);
+        self.visit_type_id(type_id);
         if let Some(variant) = variant {
             self.buffer.text("::");
             self.buffer.text(variant);
@@ -215,7 +202,7 @@ mod test {
         });
 
         let second_type_id = &generic_struct_id();
-        visitor.visit_lad_type_id(second_type_id);
+        visitor.visit_type_id(second_type_id);
         assert_eq!(
             visitor.buffer.build(),
             "GenericStructType<[Usize](root/asd/Usize)>"
@@ -229,13 +216,13 @@ mod test {
         let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit_lad_type_id(first_type_id);
+        visitor.visit_type_id(first_type_id);
         assert_eq!(visitor.buffer.build(), "PlainStructType");
 
         visitor.buffer.clear();
 
         let second_type_id = &generic_struct_id();
-        visitor.visit_lad_type_id(second_type_id);
+        visitor.visit_type_id(second_type_id);
         assert_eq!(visitor.buffer.build(), "GenericStructType<Usize>");
     }
 
@@ -251,7 +238,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |str| {
             PathBuf::from("root\\asd").join(str)
         });
-        visitor.visit_lad_type_id(&instantiation);
+        visitor.visit_type_id(&instantiation);
         assert_eq!(
             visitor.buffer.build(),
             "[OpaqueGenericType](root/asd/OpaqueGenericType<T>)<[Usize](root/asd/Usize)>"
@@ -259,14 +246,14 @@ mod test {
 
         // and the generic type is printed with its parameters
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
-        visitor.visit_lad_type_id(&generic_type);
+        visitor.visit_type_id(&generic_type);
         assert_eq!(visitor.buffer.build(), "OpaqueGenericType<T>");
 
         // types which were not declared as generic types are not linked
         let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |str| {
             PathBuf::from("root\\asd").join(str)
         });
-        visitor.visit_lad_type_id(&generic_struct_id());
+        visitor.visit_type_id(&generic_struct_id());
         assert_eq!(
             visitor.buffer.build(),
             "GenericStructType<[Usize](root/asd/Usize)>"
