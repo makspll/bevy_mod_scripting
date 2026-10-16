@@ -1,4 +1,4 @@
-//! Contains the [`FromScriptRef`] trait and its implementations.
+//! Contains the [`FromScriptErased`] trait and its implementations.
 
 use crate::{
     FromScript, ScriptValue, error::InteropError, match_by_type,
@@ -18,9 +18,9 @@ use std::{any::TypeId, ffi::OsString, path::PathBuf};
 /// Converts from a [`ScriptValue`] to a value equivalent to the given [`TypeId`].
 ///
 /// Type Erased version of [`super::from::FromScript`].
-pub trait FromScriptRef {
+pub trait FromScriptErased {
     /// Converts a [`ScriptValue`] to a value equivalent to the given [`TypeId`].
-    fn from_script_ref(
+    fn from_script_erased(
         target: TypeId,
         value: ScriptValue,
         world: WorldGuard,
@@ -29,9 +29,9 @@ pub trait FromScriptRef {
         Self: Sized;
 }
 
-impl FromScriptRef for Box<dyn PartialReflect> {
+impl FromScriptErased for Box<dyn PartialReflect> {
     #[profiling::function]
-    fn from_script_ref(
+    fn from_script_erased(
         target: TypeId,
         value: ScriptValue,
         world: WorldGuard,
@@ -79,7 +79,7 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             let mut dynamic_enum = match value {
                 ScriptValue::Unit => DynamicEnum::new("None", DynamicVariant::Unit),
                 _ => {
-                    let inner = Self::from_script_ref(inner_option_type, value, world.clone())?;
+                    let inner = Self::from_script_erased(inner_option_type, value, world.clone())?;
                     DynamicEnum::new(
                         "Some",
                         DynamicVariant::Tuple(DynamicTuple::from_iter(vec![inner])),
@@ -101,7 +101,7 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             {
                 let mut dynamic_list = DynamicList::default();
                 for item in vec {
-                    let inner = Self::from_script_ref(inner_list_type, item, world.clone())?;
+                    let inner = Self::from_script_erased(inner_list_type, item, world.clone())?;
                     dynamic_list.push_box(inner);
                 }
 
@@ -114,12 +114,12 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             {
                 let mut dynamic_map = DynamicMap::default();
                 for (key, val) in map {
-                    let key = Self::from_script_ref(
+                    let key = Self::from_script_erased(
                         key_type,
                         ScriptValue::String(key.into()),
                         world.clone(),
                     )?;
-                    let val = Self::from_script_ref(val_type, val, world.clone())?;
+                    let val = Self::from_script_erased(val_type, val, world.clone())?;
                     dynamic_map.insert_boxed(key, val);
                 }
                 dynamic_map.set_represented_type(Some(type_info));
@@ -131,7 +131,7 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             {
                 let mut dynamic_set = DynamicSet::default();
                 for val in set {
-                    let key = Self::from_script_ref(val_type, val, world.clone())?;
+                    let key = Self::from_script_erased(val_type, val, world.clone())?;
                     dynamic_set.insert_boxed(key);
                 }
                 dynamic_set.set_represented_type(Some(type_info));

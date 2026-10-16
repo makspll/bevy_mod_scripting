@@ -2,59 +2,17 @@ use std::{collections::VecDeque, str::FromStr};
 
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
-    VariadicTuple,
-    error::InteropError,
-    function::script_function::{DynamicScriptFunction, FunctionCallContext},
+    VariadicTuple, error::InteropError, function::script_function::FunctionCallContext,
     script_value::ScriptValue,
 };
 use rhai::{Dynamic, EvalAltResult, FnPtr, Map, NativeCallContext};
 
 use crate::IntoRhaiError;
 
-use super::reference::RhaiReflectReference;
+use super::reference::{RhaiReflectReference, RhaiStaticReflectReference};
 
 /// The default function call context for rhai
 pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Rhai);
-
-/// A function curried with one argument, i.e. the receiver
-pub struct FunctionWithReceiver {
-    /// The function
-    pub function: DynamicScriptFunction,
-    /// The receiver
-    pub receiver: ScriptValue,
-}
-
-impl FunctionWithReceiver {
-    /// Create a new function with receiver
-    pub fn curry(function: DynamicScriptFunction, receiver: ScriptValue) -> Self {
-        Self { function, receiver }
-    }
-}
-
-impl IntoDynamic for FunctionWithReceiver {
-    fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>> {
-        #[allow(deprecated)]
-        Ok(Dynamic::from(FnPtr::from_fn(
-            self.function.name().to_string(),
-            move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
-                let convert_args = args
-                    .iter_mut()
-                    .map(|arg| ScriptValue::from_dynamic(arg.clone()))
-                    .collect::<Result<Vec<_>, _>>()?;
-
-                let out = self
-                    .function
-                    .call(
-                        std::iter::once(self.receiver.clone()).chain(convert_args),
-                        RHAI_CALLER_CONTEXT,
-                    )
-                    .map_err(IntoRhaiError::into_rhai_error)?;
-
-                out.into_dynamic()
-            },
-        )?))
-    }
-}
 
 /// A trait for converting types into a [`Dynamic`] value
 pub trait IntoDynamic {
@@ -96,6 +54,7 @@ impl IntoDynamic for ScriptValue {
             ScriptValue::Reference(reflect_reference) => {
                 Dynamic::from(RhaiReflectReference(reflect_reference))
             }
+            ScriptValue::Type(type_id) => Dynamic::from(RhaiStaticReflectReference(type_id)),
             #[allow(deprecated)]
             ScriptValue::FunctionMut(func) => Dynamic::from(FnPtr::from_fn(
                 func.name().to_string(),
@@ -178,7 +137,11 @@ impl FromDynamic for ScriptValue {
             )),
             d => {
                 let type_name = d.type_name();
-                if let Some(v) = d.try_cast::<RhaiReflectReference>() {
+                if d.is::<RhaiStaticReflectReference>()
+                    && let Some(v) = d.clone().try_cast::<RhaiStaticReflectReference>()
+                {
+                    Ok(ScriptValue::Type(v.0))
+                } else if let Some(v) = d.try_cast::<RhaiReflectReference>() {
                     Ok(ScriptValue::Reference(v.0))
                 } else {
                     Err(Box::new(EvalAltResult::ErrorSystem(

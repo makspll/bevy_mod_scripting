@@ -19,8 +19,8 @@ use bevy_mod_scripting_bindings::{
     function::{
         bound::BoundFields,
         from::{R, V},
-        from_ref::FromScriptRef,
-        into_ref::IntoScriptRef,
+        from_ref::FromScriptErased,
+        into_ref::IntoScriptErased,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
     script_path,
@@ -796,7 +796,7 @@ impl ReflectReference {
             let mut allocator = allocator.write();
             ReflectReference::new_allocated_boxed_parial_reflect(copy, &mut allocator)?
         };
-        ReflectReference::into_script_ref(copy, world)
+        ReflectReference::into_script_erased(copy, world)
     }
 
     /// If this is an enum, returns a reference to the variant it is currently in.
@@ -887,7 +887,7 @@ impl ReflectReference {
     ) -> Result<Option<ScriptValue>, InteropError> {
         profiling::function_scope!("map_get");
         let world = ctxt.world()?;
-        let key = <Box<dyn PartialReflect>>::from_script_ref(
+        let key = <Box<dyn PartialReflect>>::from_script_erased(
             reference.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
                     reference.tail_type_id(world.clone()).unwrap_or_default(),
@@ -906,7 +906,9 @@ impl ReflectReference {
                     let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
                     ReflectReference::new_allocated_boxed(owned_value, &mut allocator)
                 };
-                Ok(Some(ReflectReference::into_script_ref(reference, world)?))
+                Ok(Some(ReflectReference::into_script_erased(
+                    reference, world,
+                )?))
             }
             None => Ok(None),
         })?
@@ -935,7 +937,7 @@ impl ReflectReference {
             )
         })?;
         let other =
-            <Box<dyn PartialReflect>>::from_script_ref(target_type_id, value, world.clone())?;
+            <Box<dyn PartialReflect>>::from_script_erased(target_type_id, value, world.clone())?;
         reference.with_reflect_mut(world, |s| s.try_push_boxed(other))?
     }
 
@@ -959,7 +961,7 @@ impl ReflectReference {
             ReflectReference::new_allocated_boxed_parial_reflect(o, &mut allocator)?
         };
 
-        ReflectReference::into_script_ref(reference, world)
+        ReflectReference::into_script_erased(reference, world)
     }
 
     /// Inserts the value into the reference at the specified index, if the reference is an appropriate container type.
@@ -987,7 +989,8 @@ impl ReflectReference {
             )
         })?;
 
-        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
+        let mut key =
+            <Box<dyn PartialReflect>>::from_script_erased(key_type_id, key, world.clone())?;
 
         if ctxt.convert_to_0_indexed() {
             key.convert_to_0_indexed_key();
@@ -1002,7 +1005,7 @@ impl ReflectReference {
         })?;
 
         let value =
-            <Box<dyn PartialReflect>>::from_script_ref(value_type_id, value, world.clone())?;
+            <Box<dyn PartialReflect>>::from_script_erased(value_type_id, value, world.clone())?;
 
         reference.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
     }
@@ -1058,7 +1061,8 @@ impl ReflectReference {
             )
         })?;
 
-        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
+        let mut key =
+            <Box<dyn PartialReflect>>::from_script_erased(key_type_id, key, world.clone())?;
 
         if ctxt.convert_to_0_indexed() {
             key.convert_to_0_indexed_key();
@@ -1072,7 +1076,7 @@ impl ReflectReference {
                     let mut allocator = allocator.write();
                     ReflectReference::new_allocated_boxed_parial_reflect(removed, &mut allocator)?
                 };
-                ReflectReference::into_script_ref(reference, world)
+                ReflectReference::into_script_erased(reference, world)
             }
             None => Ok(ScriptValue::Unit),
         }
@@ -1107,7 +1111,7 @@ impl ReflectReference {
 
             let (next_ref, _) = infinite_iter.next_ref();
 
-            let converted = ReflectReference::into_script_ref(next_ref, world);
+            let converted = ReflectReference::into_script_erased(next_ref, world);
             len -= 1;
             // we stop once the reflection path is invalid
             converted

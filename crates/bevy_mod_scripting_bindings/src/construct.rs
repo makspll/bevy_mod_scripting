@@ -6,7 +6,7 @@ use crate::{
     ReflectReference, WorldExtensions,
     error::InteropError,
     function::{
-        bound::BoundFields, from::FromScript, from_ref::FromScriptRef, namespace::Namespace,
+        bound::BoundFields, from::FromScript, from_ref::FromScriptErased, namespace::FunctionScope,
     },
     reflection_extensions::PartialReflectExt,
     script_value::ScriptValue,
@@ -70,7 +70,11 @@ impl FieldSources<'_, '_> {
             FieldKey::Index(idx) => (idx + self.one_indexed as usize).to_string(),
         };
         if let Some(value) = self.payload.remove(&payload_key) {
-            return <Box<dyn PartialReflect>>::from_script_ref(type_id, value, self.guard.clone());
+            return <Box<dyn PartialReflect>>::from_script_erased(
+                type_id,
+                value,
+                self.guard.clone(),
+            );
         }
 
         let base_field = self
@@ -119,7 +123,7 @@ impl FieldSources<'_, '_> {
 fn construct_error(message: impl Into<String>) -> InteropError {
     InteropError::function_interop_error(
         "construct",
-        Namespace::OnType(TypeId::of::<World>()),
+        FunctionScope::OnType(TypeId::of::<World>()),
         InteropError::string(message.into()),
         None,
     )

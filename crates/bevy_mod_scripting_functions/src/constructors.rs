@@ -18,7 +18,7 @@ use bevy_mod_scripting_bindings::{
 /// when accessed through a static type reference, i.e. `Type.new{...}`.
 fn construct_type(
     ctxt: FunctionCallContext,
-    type_ref: V<StaticTypeRef>,
+    type_ref: StaticTypeRef,
     payload: BoundFields,
 ) -> Result<BoundValue, InteropError> {
     let world = ctxt.world()?;
@@ -106,7 +106,7 @@ impl Plugin for ConstructorsPlugin {
 mod test {
     use super::*;
     use bevy_mod_scripting_bindings::function::{
-        namespace::Namespace, script_function::AppScriptFunctionRegistry,
+        namespace::FunctionScope, script_function::AppScriptFunctionRegistry,
     };
     use std::any::TypeId;
 
@@ -125,8 +125,8 @@ mod test {
             TypeId::of::<StaticTypeRef>(),
             TypeId::of::<EnumVariantRef>(),
         ] {
-            assert!(registry.contains(Namespace::OnType(type_id), "create"));
-            assert!(!registry.contains(Namespace::OnType(type_id), "new"));
+            assert!(registry.contains(FunctionScope::OnType(type_id), "create"));
+            assert!(!registry.contains(FunctionScope::OnType(type_id), "new"));
         }
     }
 
@@ -140,7 +140,7 @@ mod test {
             .unwrap()
             .read();
         let func = registry
-            .get_function(Namespace::OnType(TypeId::of::<StaticTypeRef>()), "new")
+            .get_function(FunctionScope::OnType(TypeId::of::<StaticTypeRef>()), "new")
             .unwrap_or_else(|_| panic!("missing constructor"));
         let names = func
             .info

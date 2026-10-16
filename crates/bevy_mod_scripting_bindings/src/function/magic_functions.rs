@@ -1,5 +1,5 @@
 //! All the switchable special functions used by language implementors
-use super::{FromScriptRef, FunctionCallContext, IntoScriptRef};
+use super::{FromScriptErased, FunctionCallContext, IntoScriptErased};
 use crate::{ReferencePart, ReflectReference, ScriptValue, error::InteropError};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::OrFakeId;
@@ -78,7 +78,7 @@ impl MagicFunctions {
             .reflect_path
             .set_is_one_indexed(ctxt.convert_to_0_indexed());
         reference.push_path(path);
-        ReflectReference::into_script_ref(reference, world)
+        ReflectReference::into_script_erased(reference, world)
     }
 
     /// Sets the value under the specified path on the underlying value.
@@ -114,8 +114,11 @@ impl MagicFunctions {
                 .get_represented_type_info()
                 .map(|i| i.type_id())
                 .or_fake_id();
-            let other =
-                <Box<dyn PartialReflect>>::from_script_ref(target_type_id, value, world.clone())?;
+            let other = <Box<dyn PartialReflect>>::from_script_erased(
+                target_type_id,
+                value,
+                world.clone(),
+            )?;
             r.try_apply(other.as_partial_reflect())
                 .map_err(InteropError::reflect_apply_error)?;
             Ok::<_, InteropError>(())

@@ -1,11 +1,7 @@
 //! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
 
 use super::MagicFunctions;
-use super::{
-    from::{FromScript, V},
-    into::IntoScript,
-    namespace::Namespace,
-};
+use super::{from::FromScript, into::IntoScript, namespace::FunctionScope};
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
 use crate::{ScriptValue, error::InteropError};
@@ -241,21 +237,21 @@ impl DynamicScriptFunction {
     /// The returned function is called without the type argument, which is filled in on each call.
     /// Its signature is that of [`FunctionInfo::bind_to_type`].
     pub fn bind_to_type(&self, type_info: &'static TypeInfo) -> Self {
+        let mut bound = self.curry(ScriptValue::Type(type_info.type_id()));
+        bound.info = Arc::new(self.info.bind_to_type(type_info));
+        bound
+    }
+
+    /// Fixes the first argument of the function, i.e. a receiver or a type.
+    ///
+    /// The returned function is called with the remaining arguments. Its info is unchanged.
+    pub fn curry(&self, first: ScriptValue) -> Self {
         let inner = self.func.clone();
-        let type_id = type_info.type_id();
         DynamicScriptFunction {
-            info: Arc::new(self.info.bind_to_type(type_info)),
+            info: self.info.clone(),
             func: Arc::new(move |context, mut args| {
-                let type_ref = context
-                    .world()
-                    .and_then(|world| V(StaticTypeRef::new(type_id)).into_script(world));
-                match type_ref {
-                    Ok(type_ref) => {
-                        args.push_front(type_ref);
-                        inner(context, args)
-                    }
-                    Err(e) => ScriptValue::Error(e),
-                }
+                args.push_front(first.clone());
+                inner(context, args)
             }),
         }
     }
@@ -395,7 +391,7 @@ pub struct FunctionKey {
     /// The name of the function
     pub name: Cow<'static, str>,
     /// The namespace of the function
-    pub namespace: Namespace,
+    pub namespace: FunctionScope,
 }
 
 #[derive(Default, DebugWithTypeInfo)]
@@ -418,7 +414,7 @@ impl ScriptFunctionRegistry {
     /// There is one function per name and namespace: for arguments of different types, accept a [`Union`](crate::Union) or a [`ScriptValue`].
     pub fn register<'env, F, M>(
         &mut self,
-        namespace: Namespace,
+        namespace: FunctionScope,
         name: impl Into<Cow<'static, str>>,
         func: F,
     ) where
@@ -432,7 +428,7 @@ impl ScriptFunctionRegistry {
     /// The docstring will be added to the function's metadata and can be accessed at runtime.
     pub fn register_documented<'env, F, M>(
         &mut self,
-        namespace: Namespace,
+        namespace: FunctionScope,
         name: impl Into<Cow<'static, str>>,
         func: F,
         docs: &'static str,
@@ -447,7 +443,7 @@ impl ScriptFunctionRegistry {
     /// The argument names and docstring will be added to the function's metadata and can be accessed at runtime.
     pub fn register_with_arg_names<'env, F, M>(
         &mut self,
-        namespace: Namespace,
+        namespace: FunctionScope,
         name: impl Into<Cow<'static, str>>,
         func: F,
         docs: &'static str,
@@ -461,7 +457,7 @@ impl ScriptFunctionRegistry {
     /// Remove a function from the registry if it exists. Returns the removed function if it was found.
     pub fn remove(
         &mut self,
-        namespace: Namespace,
+        namespace: FunctionScope,
         name: impl Into<Cow<'static, str>>,
     ) -> Option<DynamicScriptFunction> {
         let name = name.into();
@@ -472,7 +468,7 @@ impl ScriptFunctionRegistry {
     /// Registers a script function with the given name, replacing any function with the same name.
     fn insert_function<'env, F, M>(
         &mut self,
-        namespace: Namespace,
+        namespace: FunctionScope,
         name: impl Into<Cow<'static, str>>,
         func: F,
         docs: Option<impl Into<Cow<'static, str>>>,
@@ -496,7 +492,7 @@ impl ScriptFunctionRegistry {
     }
 
     /// Check if a function with the given name and namespace exists
-    pub fn contains(&self, namespace: Namespace, name: impl Into<Cow<'static, str>>) -> bool {
+    pub fn contains(&self, namespace: FunctionScope, name: impl Into<Cow<'static, str>>) -> bool {
         self.functions.contains_key(&FunctionKey {
             name: name.into(),
             namespace,
@@ -506,7 +502,7 @@ impl ScriptFunctionRegistry {
     /// Get the function with the given name and namespace
     pub fn get_function(
         &self,
-        namespace: Namespace,
+        namespace: FunctionScope,
         name: impl Into<Cow<'static, str>>,
     ) -> Result<&DynamicScriptFunction, Cow<'static, str>> {
         let name = name.into();
@@ -532,7 +528,7 @@ impl ScriptFunctionRegistry {
         }
         let func = self
             .get_function(
-                Namespace::OnType(TypeId::of::<StaticTypeRef>()),
+                FunctionScope::OnType(TypeId::of::<StaticTypeRef>()),
                 key.1.clone(),
             )?
             .bind_to_type(type_info);
@@ -554,7 +550,7 @@ impl ScriptFunctionRegistry {
     /// Iterates over all functions in the given namespace
     pub fn iter_namespace(
         &self,
-        namespace: Namespace,
+        namespace: FunctionScope,
     ) -> impl Iterator<Item = (&FunctionKey, &DynamicScriptFunction)> {
         self.functions
             .iter()
@@ -565,7 +561,7 @@ impl ScriptFunctionRegistry {
     /// Do not use unless you really need to.
     pub fn raw_insert(
         &mut self,
-        namespace: Namespace,
+        namespace: FunctionScope,
         name: impl Into<Cow<'static, str>>,
         func: DynamicScriptFunction,
     ) {
@@ -727,7 +723,7 @@ mod test {
         let mut registry = ScriptFunctionRegistry::default();
         let fn_ = |a: usize, b: usize| a + b;
 
-        let namespace = Namespace::Global;
+        let namespace = FunctionScope::Global;
         registry.register(namespace, "test", fn_);
         let function = registry
             .get_function(namespace, "test")
@@ -769,7 +765,7 @@ mod test {
 
             let gotten = out.unwrap_err();
             let expected_function_name = "<bevy_mod_scripting_bindings::function::script_function::test::test_invalid_amount_of_args_errors_nicely::{{closure}} as bevy_mod_scripting_bindings::function::script_function::ScriptFunction<'_, fn(usize, usize) -> usize>>::into_dynamic_script_function::{{closure}}";
-            let expected_namespace = Namespace::Global;
+            let expected_namespace = FunctionScope::Global;
 
             if let InteropError::FunctionInteropError {
                 function_name,
@@ -817,7 +813,7 @@ mod test {
     fn test_registering_a_name_again_replaces_the_function() {
         let mut registry = ScriptFunctionRegistry::default();
         let fn_ = |a: usize, b: usize| a + b;
-        let namespace = Namespace::Global;
+        let namespace = FunctionScope::Global;
         registry.register(namespace, "test", fn_);
         let fn_2 = |a: usize, b: i32| a + (b as usize);
         registry.register(namespace, "test", fn_2);
@@ -835,7 +831,7 @@ mod test {
     fn test_remove_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
         let fn_ = |a: usize, b: usize| a + b;
-        let namespace = Namespace::Global;
+        let namespace = FunctionScope::Global;
         registry.register(namespace, "test", fn_);
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_some());

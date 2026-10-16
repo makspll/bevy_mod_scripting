@@ -111,7 +111,7 @@ impl StaticTypeRef {
     /// * `handle`: A handle to the asset, which is loaded in the background.
     fn load(
         ctxt: FunctionCallContext,
-        asset_type: V<StaticTypeRef>,
+        asset_type: StaticTypeRef,
         path: String,
     ) -> Result<BoundHandle, InteropError> {
         let world = ctxt.world()?;
@@ -129,7 +129,7 @@ impl StaticTypeRef {
     /// * `handle`: A handle to the new asset.
     fn add_asset(
         ctxt: FunctionCallContext,
-        asset_type: V<StaticTypeRef>,
+        asset_type: StaticTypeRef,
         value: BoundValue,
     ) -> Result<BoundHandle, InteropError> {
         let world = ctxt.world()?;
@@ -154,7 +154,7 @@ impl StaticTypeRef {
     /// * `asset`: The asset, or nil.
     fn get_asset(
         ctxt: FunctionCallContext,
-        asset_type: V<StaticTypeRef>,
+        asset_type: StaticTypeRef,
         handle: BoundHandle,
     ) -> Result<Option<BoundValue>, InteropError> {
         let world = ctxt.world()?;

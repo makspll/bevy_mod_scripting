@@ -5,19 +5,17 @@ use std::{
 
 use crate::IntoRhaiError;
 use bevy_mod_scripting_bindings::{
-    EnumVariantRef, ReflectReference, ScriptValue, WorldExtensions,
+    ReflectReference, ScriptValue, WorldGuard,
+    dispatch::{self, Member},
     error::InteropError,
-    function::{
-        namespace::Namespace,
-        script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
-    },
+    function::script_function::DynamicScriptFunctionMut,
 };
-use bevy_mod_scripting_display::OrFakeId;
+use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
 use rhai::{CustomType, Dynamic, EvalAltResult};
 use strum::VariantNames;
 
-use super::script_value::{FromDynamic, FunctionWithReceiver, IntoDynamic, RHAI_CALLER_CONTEXT};
+use super::script_value::{FromDynamic, IntoDynamic, RHAI_CALLER_CONTEXT};
 
 #[derive(Debug, strum::EnumString, strum::VariantNames, Clone)]
 /// A list of reserved keywords in Rhai
@@ -237,6 +235,27 @@ impl RhaiOperator {
     }
 }
 
+/// Runs a [`dispatch`] function with the world of the running script.
+fn with_world<O>(
+    f: impl FnOnce(WorldGuard<'static>) -> Result<O, InteropError>,
+) -> Result<O, Box<EvalAltResult>> {
+    let world = ThreadWorldContainer
+        .try_get_context()
+        .map_err(IntoRhaiError::into_rhai_error)?
+        .world;
+    f(world).map_err(IntoRhaiError::into_rhai_error)
+}
+
+/// Applies a binary operator, see [`dispatch::binary`].
+fn binary(
+    operator: ScriptOperatorNames,
+    lhs: ScriptValue,
+    rhs: ScriptValue,
+) -> Result<Dynamic, Box<EvalAltResult>> {
+    with_world(|world| dispatch::binary(world, operator, lhs, rhs, RHAI_CALLER_CONTEXT))?
+        .into_dynamic()
+}
+
 /// An iterator over a [`ReflectReference`] that implements [`IntoIterator`] for Rhai.
 pub struct RhaiReflectRefIter {
     next_func: DynamicScriptFunctionMut,
@@ -260,16 +279,10 @@ impl IntoIterator for RhaiReflectReference {
     type IntoIter = RhaiReflectRefIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        let result = (|| {
-            let world = ThreadWorldContainer.try_get_context()?.world;
-
-            let iter_func = world.lookup_reserved_function("iter", RHAI_CALLER_CONTEXT)?;
-
-            iter_func.call(
-                vec![ScriptValue::Reference(self.0.clone())],
-                RHAI_CALLER_CONTEXT,
-            )
-        })();
+        let result = ThreadWorldContainer
+            .try_get_context()
+            .map_err(InteropError::from)
+            .and_then(|ctxt| dispatch::iter(ctxt.world, self.0, RHAI_CALLER_CONTEXT));
 
         match result {
             Ok(ScriptValue::FunctionMut(f)) => RhaiReflectRefIter { next_func: f },
@@ -285,243 +298,71 @@ impl IntoIterator for RhaiReflectReference {
                 next_func: (move |_, _| ScriptValue::Error(error.clone())).into(),
             },
         }
-
-        // manually call
     }
 }
+
+/// The binary operators of references, with the [`ScriptOperatorNames`] they dispatch to.
+const BINARY_OPERATORS: [(RhaiOperator, ScriptOperatorNames); 8] = [
+    (RhaiOperator::Sub, ScriptOperatorNames::Subtraction),
+    (RhaiOperator::Add, ScriptOperatorNames::Addition),
+    (RhaiOperator::Mul, ScriptOperatorNames::Multiplication),
+    (RhaiOperator::Div, ScriptOperatorNames::Division),
+    (RhaiOperator::Mod, ScriptOperatorNames::Remainder),
+    (RhaiOperator::Pow, ScriptOperatorNames::Exponentiation),
+    (RhaiOperator::Eq, ScriptOperatorNames::Equality),
+    (RhaiOperator::Lt, ScriptOperatorNames::LessThanComparison),
+];
 
 impl CustomType for RhaiReflectReference {
     fn build(mut builder: rhai::TypeBuilder<Self>) {
         builder
             .with_name(std::any::type_name::<RhaiReflectReference>())
             .with_indexer_get(|self_: &mut Self, index: Dynamic| {
-                let world = ThreadWorldContainer
-                    .try_get_context()
-                    .map_err(IntoRhaiError::into_rhai_error)?
-                    .world;
-                let self_ = &self_.0;
-                let type_id = self_
-                    .tail_type_id(world.clone())
-                    .map_err(IntoRhaiError::into_rhai_error)?
-                    .or_fake_id();
-
-                let key: ScriptValue = ScriptValue::from_dynamic(index)?;
-                let key = match key.as_string() {
-                    Ok(string) => match world.lookup_member(self_, type_id, string) {
-                        // methods get the value as their receiver, static members of registrations don't
-                        Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => {
-                            return FunctionWithReceiver::curry(func, self_.clone().into())
-                                .into_dynamic();
-                        }
-                        Ok(member) => return member.into_dynamic(),
-                        Err(string) => ScriptValue::String(string),
-                    },
-                    Err(key) => key,
-                };
-
-                // call the default magic getter
-                let registry = world.script_function_registry();
-                let registry = registry.read();
-
-                let out = registry
-                    .magic_functions
-                    .get(RHAI_CALLER_CONTEXT, self_.clone(), key)
-                    .map_err(IntoRhaiError::into_rhai_error)?;
-
-                out.into_dynamic()
+                let receiver = self_.0.clone();
+                let key = ScriptValue::from_dynamic(index)?;
+                // rhai has no method call syntax for function values, so methods get their receiver here
+                match with_world(|world| {
+                    dispatch::index(world, receiver.clone(), key, RHAI_CALLER_CONTEXT)
+                })? {
+                    Member::Method(func) => {
+                        ScriptValue::Function(func.curry(ScriptValue::Reference(receiver)))
+                            .into_dynamic()
+                    }
+                    Member::Static(value) => value.into_dynamic(),
+                }
             })
             .with_indexer_set(|self_: &mut Self, index: Dynamic, value: Dynamic| {
-                let world = ThreadWorldContainer
-                    .try_get_context()
-                    .map_err(IntoRhaiError::into_rhai_error)?
-                    .world;
-                let self_ = self_.0.clone();
                 let key = ScriptValue::from_dynamic(index)?;
                 let value = ScriptValue::from_dynamic(value)?;
-
-                let registry = world.script_function_registry();
-                let registry = registry.read();
-
-                registry
-                    .magic_functions
-                    .set(RHAI_CALLER_CONTEXT, self_, key, value)
-                    .map_err(IntoRhaiError::into_rhai_error)?;
-                Ok(())
+                with_world(|world| {
+                    dispatch::set_index(world, self_.0.clone(), key, value, RHAI_CALLER_CONTEXT)
+                })
             })
-            .with_fn(
-                RhaiOperator::Sub.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "sub", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
-            .with_fn(
-                RhaiOperator::Add.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "add", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
-            .with_fn(
-                RhaiOperator::Mul.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "mul", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
-            .with_fn(
-                RhaiOperator::Div.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "div", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
-            .with_fn(
-                RhaiOperator::Mod.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "rem", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
             .with_fn(RhaiOperator::Unm.function_name(), |self_: Self| {
-                let world = ThreadWorldContainer
-                    .try_get_context()
-                    .map_err(IntoRhaiError::into_rhai_error)?
-                    .world;
-                let self_: ReflectReference = self_.0.clone();
-                let target_type_id = self_
-                    .tail_type_id(world.clone())
-                    .map_err(IntoRhaiError::into_rhai_error)?
-                    .or_fake_id();
-                let args = vec![ScriptValue::Reference(self_)];
-                let out = world
-                    .call_operator(target_type_id, "neg", args, RHAI_CALLER_CONTEXT)
-                    .map_err(IntoRhaiError::into_rhai_error)?;
-                out.into_dynamic()
+                with_world(|world| {
+                    dispatch::unary(
+                        world,
+                        ScriptOperatorNames::Negation,
+                        self_.0,
+                        RHAI_CALLER_CONTEXT,
+                    )
+                })?
+                .into_dynamic()
             })
-            .with_fn(
-                RhaiOperator::Pow.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "pow", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
-            .with_fn(
-                RhaiOperator::Eq.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "eq", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
             .with_fn(
                 RhaiOperator::Ne.function_name(),
                 |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "eq", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    match out {
+                    let other = ScriptValue::from_dynamic(other)?;
+                    let eq = with_world(|world| {
+                        dispatch::binary(
+                            world,
+                            ScriptOperatorNames::Equality,
+                            ScriptValue::Reference(self_.0),
+                            other,
+                            RHAI_CALLER_CONTEXT,
+                        )
+                    })?;
+                    match eq {
                         ScriptValue::Bool(b) => ScriptValue::Bool(!b).into_dynamic(),
                         _ => {
                             Err(InteropError::invariant("eq did not return a bool")
@@ -530,84 +371,48 @@ impl CustomType for RhaiReflectReference {
                     }
                 },
             )
-            .with_fn(
-                RhaiOperator::Lt.function_name(),
-                |self_: Self, other: Dynamic| {
-                    let world = ThreadWorldContainer
-                        .try_get_context()
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .world;
-                    let self_: ReflectReference = self_.0.clone();
-                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
-                    let target_type_id = self_
-                        .tail_type_id(world.clone())
-                        .map_err(IntoRhaiError::into_rhai_error)?
-                        .or_fake_id();
-                    let args = vec![ScriptValue::Reference(self_), other];
-                    let out = world
-                        .call_operator(target_type_id, "lt", args, RHAI_CALLER_CONTEXT)
-                        .map_err(IntoRhaiError::into_rhai_error)?;
-                    out.into_dynamic()
-                },
-            )
             .on_debug(|self_| {
-                let result: Result<_, InteropError> = (|| {
-                    let world = ThreadWorldContainer.try_get_context()?.world;
-                    let reflect_reference = self_.0.clone();
-
-                    let func = world.lookup_reserved_function("debug", RHAI_CALLER_CONTEXT)?;
-
-                    let out = func.call(
-                        vec![ScriptValue::Reference(reflect_reference)],
-                        RHAI_CALLER_CONTEXT,
-                    )?;
-
-                    match out {
-                        ScriptValue::String(s) => Ok(s),
-                        _ => Err(InteropError::invariant("debug failed to return a string")),
-                    }
-                })();
-
-                match result {
-                    Ok(str_) => str_.into(),
-                    Err(error) => error.to_string(),
-                }
+                with_world(|world| dispatch::debug(world, self_.0.clone(), RHAI_CALLER_CONTEXT))
+                    .unwrap_or_else(|error| error.to_string())
             })
             .on_print(|self_| {
-                let result: Result<_, InteropError> = (|| {
-                    let world = ThreadWorldContainer.try_get_context()?.world;
-                    let reflect_reference = self_.0.clone();
-
-                    let func = world.lookup_reserved_function("display", RHAI_CALLER_CONTEXT)?;
-
-                    let out = func.call(
-                        vec![ScriptValue::Reference(reflect_reference)],
-                        RHAI_CALLER_CONTEXT,
-                    )?;
-
-                    match out {
-                        ScriptValue::String(s) => Ok(s),
-                        _ => Err(InteropError::invariant("display failed to return a string")),
-                    }
-                })();
-
-                match result {
-                    Ok(str_) => str_.into(),
-                    Err(error) => error.to_string(),
-                }
+                with_world(|world| dispatch::display(world, self_.0.clone(), RHAI_CALLER_CONTEXT))
+                    .unwrap_or_else(|error| error.to_string())
             });
+
+        for (rhai_operator, operator) in BINARY_OPERATORS {
+            let name = rhai_operator.function_name();
+            builder.with_fn(name, move |self_: Self, other: Dynamic| {
+                binary(
+                    operator,
+                    ScriptValue::Reference(self_.0),
+                    ScriptValue::from_dynamic(other)?,
+                )
+            });
+            // a value on the right of a number, i.e. `2 * v`, dispatches to the operator's reflected function
+            if operator.reflected_script_function_name().is_some() {
+                builder
+                    .with_fn(name, move |lhs: rhai::INT, self_: Self| {
+                        binary(
+                            operator,
+                            ScriptValue::Integer(lhs),
+                            ScriptValue::Reference(self_.0),
+                        )
+                    })
+                    .with_fn(name, move |lhs: rhai::FLOAT, self_: Self| {
+                        binary(
+                            operator,
+                            ScriptValue::Float(lhs),
+                            ScriptValue::Reference(self_.0),
+                        )
+                    });
+            }
+        }
     }
 }
 
-/// Whether a function found on a value of the given type is called on that value, i.e. not a static member of a registration.
-fn is_method(func: &DynamicScriptFunction, type_id: TypeId) -> bool {
-    type_id == TypeId::of::<EnumVariantRef>()
-        || matches!(func.info.namespace, Namespace::OnType(on)
-            if on == type_id || on == TypeId::of::<ReflectReference>())
-}
-
 #[derive(Clone, Debug, Copy, PartialEq)]
-/// A wrapper around a [`TypeId`] that implements [`CustomType`] for Rhai
+/// A type itself, i.e. what [`ScriptValue::Type`] is in Rhai. Indexing it reaches the type's static members.
 pub struct RhaiStaticReflectReference(pub TypeId);
 
 impl CustomType for RhaiStaticReflectReference {
@@ -615,29 +420,11 @@ impl CustomType for RhaiStaticReflectReference {
         builder
             .with_name(std::any::type_name::<RhaiStaticReflectReference>())
             .with_indexer_get(|self_: &mut Self, index: Dynamic| {
-                let world = ThreadWorldContainer
-                    .try_get_context()
-                    .map_err(IntoRhaiError::into_rhai_error)?
-                    .world;
-                let type_id = self_.0;
-                let key: ScriptValue = ScriptValue::from_dynamic(index)?;
-
-                let key = match key.as_string() {
-                    Ok(name) => match world.lookup_static_member(type_id, name) {
-                        Ok(value) => return value.into_dynamic(),
-                        Err(key) => ScriptValue::String(key),
-                    },
-                    Err(key) => key,
-                };
-
-                Err::<_, Box<EvalAltResult>>(
-                    InteropError::missing_function(
-                        format!("{key:#?}"),
-                        type_id.into(),
-                        Some(RHAI_CALLER_CONTEXT),
-                    )
-                    .into_rhai_error(),
-                )
+                let key = ScriptValue::from_dynamic(index)?;
+                with_world(|world| {
+                    dispatch::static_index(world, self_.0, key, RHAI_CALLER_CONTEXT)
+                })?
+                .into_dynamic()
             });
     }
 }

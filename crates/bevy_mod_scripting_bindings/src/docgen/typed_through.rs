@@ -4,7 +4,7 @@
 use std::{any::TypeId, collections::VecDeque, ffi::OsString, path::PathBuf};
 
 use crate::{
-    ReflectReference, VariadicTuple,
+    ReflectReference, StaticTypeRef, VariadicTuple,
     function::{
         from::{M, R, Union, V},
         script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
@@ -331,6 +331,8 @@ pub fn as_reflect_primitive(type_info: &'static TypeInfo) -> Option<ReflectionPr
         ReflectionPrimitiveKind::DynamicFunctionMut
     } else if type_id == TypeId::of::<ReflectReference>() {
         ReflectionPrimitiveKind::ReflectReference
+    } else if type_id == TypeId::of::<StaticTypeRef>() {
+        ReflectionPrimitiveKind::StaticTypeRef
     } else {
         return None;
     })
@@ -461,6 +463,7 @@ macro_rules! impl_through_typed {
 impl_through_typed!(
     FunctionCallContext => FunctionCallContext,
     ReflectReference => ReflectReference,
+    StaticTypeRef => StaticTypeRef,
     DynamicScriptFunctionMut => DynamicFunctionMut,
     DynamicScriptFunction => DynamicFunction,
     ScriptValue => ScriptValue,

@@ -68,8 +68,14 @@ mod tests {
                 })
                 .unwrap();
             let func = world
-                .lookup_function([TypeId::of::<MyThing>()], "test")
-                .unwrap();
+                .script_function_registry()
+                .read()
+                .get_function(
+                    bevy_mod_scripting_bindings::FunctionScope::OnType(TypeId::of::<MyThing>()),
+                    "test",
+                )
+                .unwrap()
+                .clone();
             let allocator = world.allocator();
             let mut allocator = allocator.write();
             let allocated = ReflectReference::new_allocated(MyThing(42), &mut allocator);

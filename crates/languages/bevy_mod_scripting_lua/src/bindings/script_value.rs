@@ -13,7 +13,7 @@ use mlua::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, MultiValue, Value};
 
 use crate::{IntoMluaError, LuaContextAppData};
 
-use super::reference::LuaReflectReference;
+use super::reference::{LuaReflectReference, LuaStaticReflectReference};
 
 /// A wrapper around many [`ScriptValue`]'s, used where the potential to return/receive many values separately arises.
 pub struct MultiLuaScriptValue(pub VecDeque<ScriptValue>);
@@ -163,6 +163,9 @@ impl FromLua for LuaScriptValue {
             }
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
+                if let Ok(type_ref) = ud.borrow::<LuaStaticReflectReference>() {
+                    return Ok(LuaScriptValue(ScriptValue::Type(type_ref.0)));
+                }
                 let ud = ud.borrow::<LuaReflectReference>().map_err(|e| {
                     mlua::Error::FromLuaConversionError {
                         from: "UserData",
@@ -196,6 +199,7 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Float(f) => Value::Number(f),
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
+            ScriptValue::Type(type_id) => LuaStaticReflectReference(type_id).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => lua
                 .create_function(move |lua, args: MultiLuaScriptValue| {

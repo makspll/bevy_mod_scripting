@@ -1,6 +1,6 @@
 //! Error types for the bindings
 use crate::{
-    FunctionCallContext, Namespace, ReflectAllocationId, ReflectBaseType, ReflectReference,
+    FunctionCallContext, FunctionScope, ReflectAllocationId, ReflectBaseType, ReflectReference,
     script_value::ScriptValue,
 };
 use bevy_ecs::{component::ComponentId, entity::Entity};
@@ -229,7 +229,7 @@ pub enum InteropError {
         /// The name of the function
         function_name: Box<String>,
         /// The namespace of the function
-        on: Box<Namespace>,
+        on: Box<FunctionScope>,
         /// The error that occurred
         error: Box<InteropError>,
         /// The context at the time of the call
@@ -450,7 +450,7 @@ impl InteropError {
     /// Creates a new function interop error.
     pub fn function_interop_error(
         function_name: impl Display,
-        on: Namespace,
+        on: FunctionScope,
         error: InteropError,
         context: Option<FunctionCallContext>,
     ) -> Self {
@@ -526,7 +526,7 @@ impl InteropError {
     /// Creates a new missing function error.
     pub fn missing_function(
         function_name: impl Display,
-        on: Namespace,
+        on: FunctionScope,
         context: Option<FunctionCallContext>,
     ) -> Self {
         Self::FunctionInteropError {

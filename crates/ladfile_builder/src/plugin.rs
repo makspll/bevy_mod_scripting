@@ -8,10 +8,10 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry, EnumVariantRef, FunctionInfo, IntoNamespace, StaticTypeRef,
+    DummyScriptFunctionRegistry, EnumVariantRef, FunctionInfo, IntoFunctionScope, StaticTypeRef,
     docgen::typed_through::BoundPlaceholder,
     function::{
-        bound::is_asset_type, namespace::Namespace, script_function::AppScriptFunctionRegistry,
+        bound::is_asset_type, namespace::FunctionScope, script_function::AppScriptFunctionRegistry,
     },
     globals::AppScriptGlobalsRegistry,
     into_through_type_info_with_registry,
@@ -150,8 +150,8 @@ pub fn generate_lad_file(
     );
 
     for (_, function) in function_registry
-        .iter_namespace(World::into_namespace())
-        .chain(dummy_function_registry.iter_namespace(World::into_namespace()))
+        .iter_namespace(World::into_function_scope())
+        .chain(dummy_function_registry.iter_namespace(World::into_function_scope()))
     {
         builder.add_function_info(&function.info);
     }
@@ -177,21 +177,23 @@ pub fn generate_lad_file(
 
         // find functions on the namespace
         for (_, function) in function_registry
-            .iter_namespace(Namespace::OnType(type_info.type_id()))
-            .chain(dummy_function_registry.iter_namespace(Namespace::OnType(type_info.type_id())))
+            .iter_namespace(FunctionScope::OnType(type_info.type_id()))
+            .chain(
+                dummy_function_registry.iter_namespace(FunctionScope::OnType(type_info.type_id())),
+            )
         {
             builder.add_function_info(&function.info);
         }
 
         // functions on the static type reference are available on every type's own static reference,
         // bound to the type, unless the type has a function of its own with the same name.
-        // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_type_function`
+        // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_static_member`
         // Functions on asset handles are only documented on asset types.
         if type_info.type_id() != TypeId::of::<StaticTypeRef>() {
-            let namespace = Namespace::OnType(type_info.type_id());
+            let namespace = FunctionScope::OnType(type_info.type_id());
             let is_asset = is_asset_type(&type_registry, type_info.type_id());
-            for (key, function) in
-                function_registry.iter_namespace(Namespace::OnType(TypeId::of::<StaticTypeRef>()))
+            for (key, function) in function_registry
+                .iter_namespace(FunctionScope::OnType(TypeId::of::<StaticTypeRef>()))
             {
                 if function_registry.contains(namespace, key.name.clone()) {
                     continue;
@@ -205,8 +207,8 @@ pub fn generate_lad_file(
 
         // functions on enum variants whose signatures depend on the variant, i.e. its constructor, are bound to each variant
         if let TypeInfo::Enum(enum_info) = type_info {
-            for (_, function) in
-                function_registry.iter_namespace(Namespace::OnType(TypeId::of::<EnumVariantRef>()))
+            for (_, function) in function_registry
+                .iter_namespace(FunctionScope::OnType(TypeId::of::<EnumVariantRef>()))
             {
                 if !function.info.has_placeholders() {
                     continue;
@@ -229,8 +231,8 @@ pub fn generate_lad_file(
 
     // find functions on the global namespace
     for (_, function) in function_registry
-        .iter_namespace(Namespace::Global)
-        .chain(dummy_function_registry.iter_namespace(Namespace::Global))
+        .iter_namespace(FunctionScope::Global)
+        .chain(dummy_function_registry.iter_namespace(FunctionScope::Global))
     {
         builder.add_function_info(&function.info);
     }
@@ -367,7 +369,7 @@ mod test {
         let mut app = App::new();
         NamespaceBuilder::<StaticTypeRef>::new(app.world_mut()).register_documented(
             constructor_name,
-            |_: V<StaticTypeRef>, _: BoundFields| -> BoundValue { unreachable!() },
+            |_: StaticTypeRef, _: BoundFields| -> BoundValue { unreachable!() },
             "",
             &["type", "payload"],
         );
@@ -378,7 +380,7 @@ mod test {
             &["variant", "payload"],
         );
         NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
-            .register("describe", |_: V<StaticTypeRef>| -> BoundValue {
+            .register("describe", |_: StaticTypeRef| -> BoundValue {
                 unreachable!()
             });
         NamespaceBuilder::<TestStruct>::new(app.world_mut()).register("describe", || 1usize);
