@@ -33,9 +33,67 @@ impl TypedThrough for BoundValue {
     }
 }
 
+impl FromScript for BoundValue {
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+        ReflectReference::from_script(value, world).map(BoundValue)
+    }
+}
+
+impl ArgMeta for BoundValue {}
+
 impl GetTypeDependencies for BoundValue {
     type Underlying = ReflectReference;
     fn register_type_dependencies(_registry: &mut TypeRegistry) {}
+}
+
+/// A handle to an asset of the type a shared function is bound to, i.e. `Handle<Image>` for `Image`.
+pub struct BoundHandle(pub ReflectReference);
+
+impl IntoScript for BoundHandle {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        self.0.into_script(world)
+    }
+}
+
+impl FromScript for BoundHandle {
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+        ReflectReference::from_script(value, world).map(BoundHandle)
+    }
+}
+
+impl ArgMeta for BoundHandle {}
+
+impl TypedThrough for BoundHandle {
+    fn through_type_info() -> ThroughTypeInfo {
+        ThroughTypeInfo::Bound(BoundPlaceholder::Handle)
+    }
+}
+
+impl GetTypeDependencies for BoundHandle {
+    type Underlying = ReflectReference;
+    fn register_type_dependencies(_registry: &mut TypeRegistry) {}
+}
+
+/// Whether the type is registered as an asset, i.e. with `App::register_asset_reflect`.
+pub fn is_asset_type(registry: &TypeRegistry, type_id: TypeId) -> bool {
+    registry
+        .get_type_data::<bevy_asset::ReflectAsset>(type_id)
+        .is_some()
+}
+
+/// The registered `Handle<T>` type for the asset type `T`, if `T` is registered as an asset.
+pub fn asset_handle_type_info(
+    registry: &TypeRegistry,
+    asset_type_id: TypeId,
+) -> Option<&'static bevy_reflect::TypeInfo> {
+    registry
+        .get_type_data::<bevy_asset::ReflectAsset>(asset_type_id)
+        .and_then(|asset| registry.get(asset.handle_type_id()))
+        .map(|registration| registration.type_info())
 }
 
 /// A table of the fields of the type a shared function is bound to.

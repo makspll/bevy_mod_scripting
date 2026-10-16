@@ -61,24 +61,16 @@ changelog_include = [
 
     "bevy_a11y_bms_bindings",
     "bevy_animation_bms_bindings",
-    "bevy_asset_bms_bindings",
-    "bevy_camera_bms_bindings",
+    "bevy_mod_scripting_bevy_asset_bindings",
+    "bevy_mod_scripting_bevy_camera_bindings",
     "bevy_mod_scripting_bevy_color_bindings",
-    "bevy_core_pipeline_bms_bindings",
     "bevy_mod_scripting_bevy_ecs_bindings",
-    "bevy_extract_bms_bindings",
     "bevy_gizmos_bms_bindings",
-    "bevy_gltf_bms_bindings",
-    "bevy_image_bms_bindings",
     "bevy_mod_scripting_bevy_input_bindings",
     "bevy_mod_scripting_bevy_window_bindings",
-    "bevy_light_bms_bindings",
     "bevy_mod_scripting_bevy_math_bindings",
-    "bevy_mesh_bms_bindings",
-    "bevy_pbr_bms_bindings",
     "bevy_picking_bms_bindings",
-    "bevy_post_process_bms_bindings",
-    "bevy_render_bms_bindings",
+    "bevy_mod_scripting_bevy_render_bindings",
     "bevy_scene_bms_bindings",
     "bevy_sprite_bms_bindings",
     "bevy_sprite_render_bms_bindings",
@@ -146,15 +138,11 @@ name = "bevy_animation_bms_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_asset_bms_bindings"
+name = "bevy_mod_scripting_bevy_asset_bindings"
 version_group = "main"
 
 [[package]]
 name = "bevy_mod_scripting_bevy_color_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_core_pipeline_bms_bindings"
 version_group = "main"
 
 [[package]]
@@ -163,14 +151,6 @@ version_group = "main"
 
 [[package]]
 name = "bevy_gizmos_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_gltf_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_image_bms_bindings"
 version_group = "main"
 
 [[package]]
@@ -186,19 +166,11 @@ name = "bevy_mod_scripting_bevy_math_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_mesh_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_pbr_bms_bindings"
-version_group = "main"
-
-[[package]]
 name = "bevy_picking_bms_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_render_bms_bindings"
+name = "bevy_mod_scripting_bevy_render_bindings"
 version_group = "main"
 
 [[package]]
@@ -222,19 +194,7 @@ name = "bevy_mod_scripting_bevy_transform_bindings"
 version_group = "main"
 
 [[package]]
-name = "bevy_camera_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_extract_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_light_bms_bindings"
-version_group = "main"
-
-[[package]]
-name = "bevy_post_process_bms_bindings"
+name = "bevy_mod_scripting_bevy_camera_bindings"
 version_group = "main"
 
 [[package]]

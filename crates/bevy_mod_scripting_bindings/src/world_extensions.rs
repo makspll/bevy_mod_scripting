@@ -567,11 +567,21 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         registration: ScriptComponentRegistration,
         value: ReflectReference,
     ) -> Result<(), InteropError> {
+        let type_id = registration.type_registration().type_id();
+        // allow enum variants, i.e. `Visibility.Hidden`, in place of values
+        let value =
+            crate::function::from::variant_as_value_of(&value, self, type_id).unwrap_or(value);
         let instance = <Box<dyn PartialReflect>>::from_script_ref(
-            registration.type_registration().type_id(),
+            type_id,
             ScriptValue::Reference(value),
             self.clone(),
         )?;
+
+        // inserting a value of another type panics inside bevy
+        let instance_type_id = instance.get_represented_type_info().map(|i| i.type_id());
+        if instance_type_id != Some(type_id) {
+            return Err(InteropError::type_mismatch(type_id, instance_type_id));
+        }
 
         let reflect = instance.try_into_reflect().map_err(|v| {
             InteropError::failed_from_reflect(

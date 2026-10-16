@@ -182,16 +182,21 @@ impl FromScript for ReflectReference {
     }
 }
 
-/// If `reference` points to a variant of the enum `T` (i.e. `KeyCode.KeyA`), constructs a value of that variant
-/// with its fields filled in from defaults, so that variants can be passed wherever a value of the enum is expected.
-///
-/// Only called once a conversion has failed, so it costs nothing on the common path.
 fn variant_as_value<T: 'static>(
     reference: &ReflectReference,
     world: &WorldGuard,
 ) -> Option<ReflectReference> {
+    variant_as_value_of(reference, world, TypeId::of::<T>())
+}
+
+/// [`variant_as_value`] for a type known only by its [`TypeId`].
+pub(crate) fn variant_as_value_of(
+    reference: &ReflectReference,
+    world: &WorldGuard,
+    type_id: TypeId,
+) -> Option<ReflectReference> {
     let variant = reference.downcast::<EnumVariantRef>(world.clone()).ok()?;
-    if variant.type_id != TypeId::of::<T>() {
+    if variant.type_id != type_id {
         return None;
     }
     construct_reference(
