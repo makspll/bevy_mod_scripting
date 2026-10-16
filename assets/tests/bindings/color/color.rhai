@@ -1,3 +1,15 @@
+let Color = import_namespace.call("color").Color;
+let Hsla = import_namespace.call("color").Hsla;
+let Hsva = import_namespace.call("color").Hsva;
+let Hwba = import_namespace.call("color").Hwba;
+let Laba = import_namespace.call("color").Laba;
+let Lcha = import_namespace.call("color").Lcha;
+let LinearRgba = import_namespace.call("color").LinearRgba;
+let Oklaba = import_namespace.call("color").Oklaba;
+let Oklcha = import_namespace.call("color").Oklcha;
+let Srgba = import_namespace.call("color").Srgba;
+let Xyza = import_namespace.call("color").Xyza;
+
 fn approx(a, b) {
     (a - b).abs() < 0.0001
 }

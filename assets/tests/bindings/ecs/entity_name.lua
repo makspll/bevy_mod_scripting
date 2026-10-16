@@ -1,3 +1,5 @@
+local Entity = import_namespace("ecs").Entity
+local Name = import_namespace("ecs").Name
 local entity = world.spawn()
 local other = world.spawn()
 

@@ -1,5 +1,6 @@
 -- add two systems, one before and one after the existing `on_test_post_update` callback, then assert all systems have run
 -- in the `on_test_last` callback
+local ScriptAttachment = import_namespace("bms").ScriptAttachment
 
 local runs = {}
 

@@ -10,17 +10,22 @@ use bevy_ui::Val;
     remote,
     name = "val_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ui",
     core
 )]
 impl Val {
     /// A length in logical pixels, such as `Val.px(100)` for 100 pixels.
     ///
     /// ```multi-lang-example,lua
+    /// local Node = import_namespace("ui").Node
+    /// local Val = import_namespace("ui").Val
     /// local node = Node.new({ width = Val.px(100) })
     /// assert(node.width[1] == 100)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Node = import_namespace.call("ui").Node;
+    /// let Val = import_namespace.call("ui").Val;
     /// let node = Node.new_.call(#{ width: Val.px.call(100.0) });
     /// assert(node.width[0] == 100.0);
     /// ```

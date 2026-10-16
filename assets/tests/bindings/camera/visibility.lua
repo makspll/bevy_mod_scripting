@@ -1,4 +1,6 @@
 -- toggles change the value stored on an entity, so store the visibility as a component first
+local Vec3 = import_namespace("math").Vec3
+local Visibility = import_namespace("camera").Visibility
 local visibility_type = world.get_type_by_name("bevy_camera::visibility::Visibility")
 local function visibility_of(value)
     local entity = world.spawn()

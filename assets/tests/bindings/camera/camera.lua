@@ -1,4 +1,6 @@
 -- a camera without a render target has no viewport
+local Camera = import_namespace("camera").Camera
+local OrthographicProjection = import_namespace("camera").OrthographicProjection
 local camera = Camera.new({})
 assert(camera:logical_viewport_size() == nil, "logical size is nil without a target")
 assert(camera:logical_viewport_rect() == nil, "logical rect is nil without a target")

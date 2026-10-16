@@ -13,6 +13,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "mat3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Mat3 {
@@ -135,6 +136,7 @@ impl Mat3 {
     remote,
     name = "mat4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "math",
     core
 )]
 impl Mat4 {

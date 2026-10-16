@@ -9,14 +9,17 @@ fn add(a, b) {
 }
 
 fn bounce(back_to) {
+    let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
     return run_script_callback.call("double", ScriptAttachment.new_entity_script.call(back_to, script_asset), 1);
 }
 
 fn record(value) {
+    let TestComponent = import_namespace.call("test_utils").TestComponent;
     world.insert_component.call(entity, world.get_type_by_name.call("test_utils::test_data::TestComponent"), TestComponent.new_.call(#{ strings: [value] }));
 }
 
 fn on_test() {
+    let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
     // the other entity running this script
     let other = ();
     let found = false;
@@ -38,6 +41,7 @@ fn on_test() {
     assert(sum == 3, "Expected 3, got: " + sum);
 
     // recipients return a list with one value per script
+    let Recipients = import_namespace.call("bms").Recipients;
     let results = run_script_callback.call("double", Recipients.entity_script.call(other, script_asset), 5);
     assert(results.len == 1, "Expected 1 result, got: " + results.len);
     assert(results[0] == 10, "Expected 10, got: " + results[0]);

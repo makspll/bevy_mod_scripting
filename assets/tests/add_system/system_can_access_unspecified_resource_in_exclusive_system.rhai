@@ -1,6 +1,7 @@
 let runs = [];
 
 fn on_test() {
+    let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");
     let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_asset);
    

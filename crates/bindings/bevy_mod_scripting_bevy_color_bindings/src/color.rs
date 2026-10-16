@@ -159,17 +159,20 @@ css_colors!(
     remote,
     name = "color_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "color",
     core
 )]
 impl Color {
     /// A color from red, green and blue in the sRGB space, each from `0` to `1`, fully opaque.
     ///
     /// ```multi-lang-example,lua
+    /// local Color = import_namespace("color").Color
     /// local red = Color.srgb(1.0, 0.0, 0.0)
     /// assert(red:to_srgba().red == 1.0)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Color = import_namespace.call("color").Color;
     /// let red = Color.srgb.call(1.0, 0.0, 0.0);
     /// assert(red.to_srgba.call().red == 1.0);
     /// ```

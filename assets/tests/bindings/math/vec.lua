@@ -1,3 +1,8 @@
+local DVec3 = import_namespace("math").DVec3
+local IVec3 = import_namespace("math").IVec3
+local Vec2 = import_namespace("math").Vec2
+local Vec3 = import_namespace("math").Vec3
+local Vec4 = import_namespace("math").Vec4
 local function approx(a, b)
     return math.abs(a - b) < 0.0001
 end

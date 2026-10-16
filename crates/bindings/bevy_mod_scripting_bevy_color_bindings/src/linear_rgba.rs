@@ -10,17 +10,20 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "linear_rgba_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "color",
     core
 )]
 impl LinearRgba {
     /// A color from linear red, green, blue and alpha, each from `0` to `1`.
     ///
     /// ```multi-lang-example,lua
+    /// local LinearRgba = import_namespace("color").LinearRgba
     /// local c = LinearRgba.new(1.0, 0.0, 0.0, 1.0)
     /// assert(c.red == 1.0)
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let LinearRgba = import_namespace.call("color").LinearRgba;
     /// let c = LinearRgba.new_.call(1.0, 0.0, 0.0, 1.0);
     /// assert(c.red == 1.0);
     /// ```

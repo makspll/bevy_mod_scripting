@@ -19,6 +19,7 @@ use crate::component_registration;
     remote,
     name = "gamepad_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "input",
     core
 )]
 impl Gamepad {

@@ -10,6 +10,7 @@ use bevy_sprite::Text2d;
     remote,
     name = "text2d_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "text",
     core
 )]
 impl Text2d {

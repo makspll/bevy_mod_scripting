@@ -1,3 +1,4 @@
+local Vec3 = import_namespace("math").Vec3
 local vec = Vec3.new(1, 2, 3)
 
 assert(vec:display() == "Vec3 { x: 1.0, y: 2.0, z: 3.0 }",

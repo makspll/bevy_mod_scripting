@@ -18,6 +18,18 @@ mod vec;
 pub struct BevyMathBindingsPlugin;
 
 impl Plugin for BevyMathBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["glam", "bevy_math", "bevy_curve", "bevy_shape"],
+            "math",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         vec::register(world);

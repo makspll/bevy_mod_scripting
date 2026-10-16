@@ -1,3 +1,4 @@
+local RenderLayers = import_namespace("camera").RenderLayers
 local layers = RenderLayers.layer(2)
 assert(layers:intersects(RenderLayers.layer(2)), "same layer intersects")
 assert(not layers:intersects(RenderLayers.layer(3)), "other layer does not intersect")

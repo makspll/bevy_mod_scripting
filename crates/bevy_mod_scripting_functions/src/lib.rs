@@ -22,4 +22,27 @@ impl Plugin for ScriptFunctionsPlugin {
         world_mut.register_component::<ChildOf>();
         world_mut.register_component::<Children>();
     }
+
+    fn finish(&self, app: &mut App) {
+        // BMS' own types live in the `bms` namespace
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &[
+                "bevy_mod_scripting_asset",
+                "bevy_mod_scripting_bindings",
+                "bevy_mod_scripting_bindings_domain",
+                "bevy_mod_scripting_core",
+                "bevy_mod_scripting_display",
+                "bevy_mod_scripting_functions",
+                "bevy_mod_scripting_script",
+                "bevy_mod_scripting_world",
+                "bevy_system_reflection",
+            ],
+            "bms",
+        );
+    }
 }

@@ -192,9 +192,9 @@ The type in the `impl` block you apply `script_bindings` to (or the one passed t
 
 | `impl` target | Available on | Receives |
 |---------------|--------------|----------|
-| `MyType` | `MyType` values and the `MyType` static reference | whatever you declare |
+| `MyType` | `MyType` values and the `MyType` type, as imported from its namespace | whatever you declare |
 | `ReflectReference` | every value, after `MyType`'s own functions | the value |
-| `StaticTypeRef` | every type's static reference, after `MyType`'s own functions | the type, filled in automatically |
+| `StaticTypeRef` | every type, after `MyType`'s own functions | the type, filled in automatically |
 | `GlobalNamespace` | the global scope, i.e. no prefix | whatever you declare |
 
 When the same name exists in more than one place, the most specific one wins.
@@ -202,8 +202,8 @@ For `ReflectReference` and `StaticTypeRef` in a `script_bindings` block outside 
 
 ### Functions available on every type
 
-The `StaticTypeRef` namespace is the equivalent for static references, i.e. `Vec3` in `Vec3.new(..)`.
-Functions registered on it are available on every type's static reference, and receive the type as their first argument, which is filled in automatically:
+The `StaticTypeRef` namespace is the equivalent for types, i.e. `Vec3` in `Vec3.new(..)`.
+Functions registered on it are available on every type, and receive the type as their first argument, which is filled in automatically:
 
 ```rust,ignore
 NamespaceBuilder::<StaticTypeRef>::new(app.world_mut()).register(
@@ -215,6 +215,7 @@ NamespaceBuilder::<StaticTypeRef>::new(app.world_mut()).register(
 ```
 
 ```lua
+local Vec3 = import_namespace("math").Vec3
 print(Vec3.describe()) -- "glam::Vec3"
 ```
 
@@ -228,13 +229,11 @@ Wherever the function is bound to a type, these are replaced with the type, so t
 Functions using `BoundHandle` are only documented on asset types, i.e. types registered with `register_asset_reflect`.
 The same placeholders work for functions on `EnumVariantRef`, which are bound to each variant of each enum when the LAD file is built (as functions in the `Variant` namespace). Placeholders left unbound are documented as what they are at runtime, a `ReflectReference` and a table.
 
-The enum variants of a type are also available on its static reference, i.e. `MyEnum.Variant`, after the functions.
+The enum variants of a type are also available on the type, i.e. `MyEnum.Variant`, after the functions.
 
 
 ## Globals
 
-By default, each type registered with the type registry, has the following set:
-- a static reference in the global namespace, i.e.: `Vec3`, `Mat3`
-- an entry in the table `import_namespace` returns for its [namespace](../ScriptingReference/namespaces.md), i.e. `import_namespace("glam").Vec3`
+Each type registered with the type registry is an entry in the table `import_namespace` returns for its [namespace](../ScriptingReference/namespaces.md), i.e. `import_namespace("math").Vec3`.
 
-You can filter the types included by customising the `CoreScriptGlobalsPlugin`
+Types are not globals, which keeps types with the same name from shadowing each other. Use the `filter` of `CoreScriptGlobalsPlugin` to choose which types scripts can look up by name.

@@ -10,6 +10,7 @@ use bevy_text::{Justify, TextLayout};
     remote,
     name = "text_layout_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "text",
     core
 )]
 impl TextLayout {

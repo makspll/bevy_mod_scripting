@@ -11,6 +11,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "anchor_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "sprite",
     core
 )]
 impl Anchor {

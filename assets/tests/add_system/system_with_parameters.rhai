@@ -6,6 +6,7 @@ let ComponentA   = world.get_type_by_name.call("test_utils::test_data::CompWithF
 let ComponentB   = world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData");
 
 fn on_test() {
+    let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");
     
     let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_asset);

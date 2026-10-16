@@ -89,6 +89,33 @@ pub fn set_script_namespace_if_unset<T: bevy_reflect::Reflect + bevy_reflect::Ty
     registry.register_type_data_with::<T, ScriptNamespace, _>(namespace);
 }
 
+/// Puts every registered type defined in one of the given crates into the given script namespace, unless it is already in one.
+///
+/// The bevy bindings plugins use this to group the types of the bevy crates they cover by category, i.e. `math` for the types of `glam` and `bevy_math`.
+/// Call it once all the types are registered, i.e. from [`Plugin::finish`](bevy_app::Plugin::finish).
+pub fn set_crate_script_namespaces(
+    registry: &mut bevy_reflect::TypeRegistry,
+    crates: &[&str],
+    namespace: &'static str,
+) {
+    let in_crates = registry
+        .iter()
+        .filter(|r| r.data::<ScriptNamespace>().is_none())
+        .filter(|r| {
+            r.type_info()
+                .type_path_table()
+                .crate_name()
+                .is_some_and(|name| crates.contains(&name))
+        })
+        .map(|r| r.type_id())
+        .collect::<Vec<_>>();
+    for type_id in in_crates {
+        if let Some(registration) = registry.get_mut(type_id) {
+            registration.insert(ScriptNamespace(namespace.into()));
+        }
+    }
+}
+
 /// Extension for setting the script namespace of types.
 pub trait ScriptNamespaceAppExt {
     /// Registers `T` if it is not registered yet, and puts it in the given script namespace.

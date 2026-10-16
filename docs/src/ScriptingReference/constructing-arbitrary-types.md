@@ -56,7 +56,7 @@ The generated Lua language server files mark exactly these fields as optional, s
 
 ### Naming and priority
 
-`new` is a single function shared by all types, and is made available on every type's static reference.
+`new` is a single function shared by all types, and is made available on every type.
 A function with the same name registered on the type itself always takes priority, i.e. `Vec3.new(x, y, z)` is the `Vec3` constructor from the math bindings, not the shared one.
 For such types use [`construct`](#construct), which works for every type.
 
@@ -111,6 +111,7 @@ end
 This is also useful with enums that carry no data, such as keys:
 
 ```lua
+local KeyCode = import_namespace("input").KeyCode
 if event.key_code:variant() == KeyCode.KeyA then
     print("A was pressed")
 end
@@ -143,7 +144,7 @@ local variantA = construct(my_game.MyEnum, {
     field = "hello"
 })
 
-local vec = construct(import_namespace("glam").Vec3, { x = 1, y = 2, z = 3 })
+local vec = construct(import_namespace("math").Vec3, { x = 1, y = 2, z = 3 })
 ```
 
 Missing fields are filled in from defaults in the same way as for `new`.

@@ -1,4 +1,7 @@
 -- Text, Text2d and TextSpan all hold a string
+local Text = import_namespace("text").Text
+local Text2d = import_namespace("text").Text2d
+local TextSpan = import_namespace("text").TextSpan
 local text = Text.new("hi")
 assert(text:as_str() == "hi", "Text new")
 text:set("bye")

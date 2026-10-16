@@ -1,4 +1,7 @@
 // TextFont constructors and builders
+let Justify = import_namespace.call("text").Justify;
+let TextFont = import_namespace.call("text").TextFont;
+let TextLayout = import_namespace.call("text").TextLayout;
 let font = TextFont.from_font_size.call(20.0);
 assert(type_of(font) != "()", "from_font_size");
 assert(type_of(font.with_font_size.call(30.0)) != "()", "with_font_size");

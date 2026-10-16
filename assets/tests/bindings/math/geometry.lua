@@ -1,3 +1,12 @@
+local Cuboid = import_namespace("math").Cuboid
+local Dir3 = import_namespace("math").Dir3
+local EaseFunction = import_namespace("math").EaseFunction
+local Ray3d = import_namespace("math").Ray3d
+local Rect = import_namespace("math").Rect
+local Rectangle = import_namespace("math").Rectangle
+local Rot2 = import_namespace("math").Rot2
+local Vec2 = import_namespace("math").Vec2
+local Vec3 = import_namespace("math").Vec3
 local function approx(a, b)
     return math.abs(a - b) < 0.0001
 end

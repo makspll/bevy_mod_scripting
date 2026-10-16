@@ -1,30 +1,36 @@
 # Namespaces
 
-Every type known to scripts lives in a namespace, by default the name of the crate defining it:
+Every type known to scripts lives in a namespace, and scripts reach types through their namespace: there are no globals named after types.
 
-| Type | Namespace |
+| Types | Namespace |
 |---|---|
-| `Transform` | `bevy_transform` |
-| `Entity` | `bevy_ecs` |
-| `Vec3` | `glam` |
-| `Option` / `Vec` | `core` / `alloc` |
-| primitives like `i32` | the root namespace, `""` |
+| bevy types covered by the bevy bindings, grouped by category | `math`, `ecs`, `time`, `transform`, `color`, `input`, `window`, `asset`, `camera`, `render`, `sprite`, `text`, `ui`, `gizmos`, `animation`, `audio`, `state` |
 | BMS' own types (`ScriptAttachment`, `ReflectReference`, ...) | `bms` |
+| any other type | the name of the crate defining it, i.e. `my_game` |
+| primitives like `i32` | the root namespace, `""` |
+
+A category namespace holds every type of the bevy crates it covers, i.e. `math` holds the types of `glam` and `bevy_math`, `render` those of `bevy_render`, `bevy_pbr`, `bevy_light`, `bevy_mesh` and `bevy_image`.
 
 `Type:namespace()` returns a type's namespace. Script registered components and events live in `script.*` namespaces, see below.
 
 ## Importing a namespace
 
-`import_namespace(namespace)` returns a table of the namespace's types (and, for script namespaces, events and exported functions) by short name:
+`import_namespace(namespace)` returns a table of the namespace's types (and, for script namespaces, events and exported functions) by short name. Each type can be used to call its static functions, to access its enum variants, and wherever a type is expected:
 
 ```lua
-local bevy_transform = import_namespace("bevy_transform")
-local t = bevy_transform.Transform.new { translation = Vec3.new(0, 1, 0) }
+local Vec3 = import_namespace("math").Vec3
+local transform = import_namespace("transform")
+
+local t = transform.Transform.from_translation(Vec3.new(0, 1, 0))
+world.add_default_component(entity, transform.Transform)
 ```
+
+Import once at the top of a script, and keep the types you use in locals. In Lua, don't name the table of the `math` namespace `math`: that would hide Lua's own `math` library.
 
 * If two types in a namespace share a short name, the first one registered wins.
 * Each call reads the shared type catalogue, so the result is always up to date. A table imported earlier does not pick up later registrations: import again.
-* A namespace which does not exist is an error, with suggestions: `namespace "bevy_transfrom" does not exist. ... Did you mean: bevy_transform?`
+* A namespace which does not exist is an error, with suggestions: `namespace "transfrom" does not exist. ... Did you mean: transform?`
+* To also expose every type as a global named after it (i.e. `Vec3`), as before 0.24, set `CoreScriptGlobalsPlugin::register_static_references`. Types sharing a name then shadow each other.
 
 ## Overriding the namespace of a type
 
@@ -61,6 +67,7 @@ world.trigger_event(ai.Hit, { damage = 3 })
 Values of script components are `DynamicComponent`s, holding any value in `data`. Tables read from `data` are copies: assign a new table to change them.
 
 ```lua
+local DynamicComponent = import_namespace("bms").DynamicComponent
 world.insert_component(entity, Enemy, DynamicComponent.new({ data = { hp = 5 } }))
 local enemy = world.get_component(entity, Enemy)
 enemy.data = { hp = enemy.data.hp - 1 } -- `enemy.data.hp = 4` would not write through
@@ -92,4 +99,4 @@ When a script unloads or is about to reload, its exports and observers are remov
 
 ## Editor support
 
-LAD files record each type's namespace. The Lua language server definitions declare a `namespace.<name>` class per native namespace, and `import_namespace("bevy_transform")` returns the matching class, so completion works on imported tables. Script namespaces only exist at runtime and are untyped.
+LAD files record each type's namespace. The Lua language server definitions declare a `namespace.<name>` class per native namespace, and `import_namespace("transform")` returns the matching class, so completion works on imported tables. Script namespaces only exist at runtime and are untyped.

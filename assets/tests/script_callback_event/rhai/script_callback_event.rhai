@@ -1,4 +1,7 @@
 fn on_test() {
+    let CallbackLabel = import_namespace.call("bms").CallbackLabel;
+    let Recipients = import_namespace.call("bms").Recipients;
+    let ScriptCallbackMessage = import_namespace.call("bms").ScriptCallbackMessage;
     let label = CallbackLabel.new_.call(["callback_a"]);
     let recipients = Recipients.AllScripts.new_.call(#{});
     let event_type = world.get_type_by_name.call("bevy_mod_scripting_core::event::ScriptCallbackMessage");

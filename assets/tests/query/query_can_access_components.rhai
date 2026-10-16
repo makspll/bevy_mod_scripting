@@ -1,3 +1,4 @@
+let TestComponent = import_namespace.call("test_utils").TestComponent;
 let entity_a = world.spawn_.call();
 let componentA = world.get_type_by_name.call("test_utils::test_data::CompWithFromWorldAndComponentData");
 let componentB = world.get_type_by_name.call("test_utils::test_data::CompWithDefaultAndComponentData");

@@ -10,6 +10,7 @@ use bevy_ui::Overflow;
     remote,
     name = "overflow_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "ui",
     core
 )]
 impl Overflow {

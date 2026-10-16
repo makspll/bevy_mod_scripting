@@ -11,6 +11,7 @@ use bevy_transform::components::{GlobalTransform, Transform};
     remote,
     name = "global_transform_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "transform",
     core
 )]
 impl GlobalTransform {

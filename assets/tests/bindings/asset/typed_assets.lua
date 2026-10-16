@@ -1,3 +1,6 @@
+local ScriptAsset = import_namespace("bms").ScriptAsset
+local TestAsset = import_namespace("test_utils").TestAsset
+
 -- this script is loaded before it runs, so loading its own path gives back the loaded asset
 local handle = ScriptAsset.load("tests/bindings/asset/typed_assets.lua")
 assert(world.is_loaded(handle), "the script asset of this test is loaded")

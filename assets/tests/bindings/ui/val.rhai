@@ -1,4 +1,6 @@
 // Val compares by variant only, so the length is checked through the payload, which is the first field
+let Node = import_namespace.call("ui").Node;
+let Val = import_namespace.call("ui").Val;
 let px = Val.px.call(5.0);
 assert(px[0] == 5.0, "px payload");
 assert(px.variant_name.call() == "Px", "px variant");

@@ -10,6 +10,18 @@ mod transform;
 pub struct BevyTransformBindingsPlugin;
 
 impl Plugin for BevyTransformBindingsPlugin {
+    fn finish(&self, app: &mut App) {
+        let registry = app
+            .world()
+            .resource::<bevy_ecs::reflect::AppTypeRegistry>()
+            .clone();
+        bevy_mod_scripting_bindings::set_crate_script_namespaces(
+            &mut registry.write(),
+            &["bevy_transform"],
+            "transform",
+        );
+    }
+
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         transform::register(world);

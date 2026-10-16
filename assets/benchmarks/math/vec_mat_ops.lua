@@ -1,3 +1,5 @@
+local Mat3 = import_namespace("math").Mat3
+local Vec3 = import_namespace("math").Vec3
 
 reseed()
 

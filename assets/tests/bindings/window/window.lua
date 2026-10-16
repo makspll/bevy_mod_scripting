@@ -1,4 +1,6 @@
 -- the test app has no windows
+local Window = import_namespace("window").Window
+local WindowResolution = import_namespace("window").WindowResolution
 
 assert(Window.primary() == nil, "primary is nil without windows")
 assert(Window.primary_entity() == nil, "primary_entity is nil without windows")

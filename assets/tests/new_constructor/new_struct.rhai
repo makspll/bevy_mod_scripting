@@ -1,3 +1,6 @@
+let SimpleStruct = import_namespace.call("test_utils").SimpleStruct;
+let SimpleTupleStruct = import_namespace.call("test_utils").SimpleTupleStruct;
+
 let constructed = SimpleStruct.new_.call(#{ foo: 123 });
 assert(constructed.foo == 123, "expected foo to be 123 but got " + constructed.foo);
 

@@ -10,12 +10,14 @@ use bevy_window::WindowResolution;
     remote,
     name = "window_resolution_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "window",
     core
 )]
 impl WindowResolution {
     /// Creates a resolution from a size in physical pixels.
     ///
     /// ```multi-lang-example,lua
+    /// local WindowResolution = import_namespace("window").WindowResolution
     /// local resolution = WindowResolution.new(800, 600)
     /// assert(resolution:physical_width() == 800)
     /// ```

@@ -49,18 +49,18 @@ app.register_type::<MyEvent>()
 `world.add_observer(event, callback, components?, entities?)` runs the calling script's callback `callback` (registered with `register_callback`, or a top level function of that name) with a copy of the event, whenever the event is triggered. It returns the observer entity: despawn it to remove the observer.
 
 ```lua
-local bevy_ecs = import_namespace("bevy_ecs")
+local ecs = import_namespace("ecs")
 local Mana = world.register_new_component("script.my_game", "Mana")
 
 register_callback("on_mana_added", function(event)
     print("Mana was added to", event.entity)
 end)
 
-local observer = world.add_observer(bevy_ecs.AddEvent, "on_mana_added", { Mana })
+local observer = world.add_observer(ecs.AddEvent, "on_mana_added", { Mana })
 world.despawn(observer) -- later
 ```
 
-* The lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent` and `DespawnEvent` (in `bevy_ecs`) work for any native or script component. Other events need `#[reflect(Event)]`.
+* The lifecycle events `AddEvent`, `InsertEvent`, `DiscardEvent`, `RemoveEvent` and `DespawnEvent` (in `ecs`) work for any native or script component. Other events need `#[reflect(Event)]`.
 * As in Bevy, `components` is an `OR` filter, and `entities` restricts the observer to those entities.
 * Callbacks run right after the triggering operation, in unspecified order. If the script's context is busy (e.g. it triggered the event), the callback runs as soon as the busy callback finishes, so observers never re-enter a running script.
 * The world is already past the change: removed component data can't be read in `RemoveEvent` callbacks.

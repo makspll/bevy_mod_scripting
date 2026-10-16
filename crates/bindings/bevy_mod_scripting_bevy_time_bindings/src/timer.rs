@@ -25,12 +25,15 @@ fn tick_delta(delta: Union<f32, R<Duration>>) -> Result<Duration, InteropError> 
     remote,
     name = "timer_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "time",
     core
 )]
 impl Timer {
     /// A timer which runs for `secs` seconds, in `mode`. Errors if `secs` is negative or not finite.
     ///
     /// ```multi-lang-example,lua
+    /// local Timer = import_namespace("time").Timer
+    /// local TimerMode = import_namespace("time").TimerMode
     /// local timer = Timer.from_seconds(2, TimerMode.Repeating)
     /// timer:tick(1)
     /// assert(not timer:finished())
@@ -39,6 +42,8 @@ impl Timer {
     /// ```
     ///
     /// ```multi-lang-example,rhai
+    /// let Timer = import_namespace.call("time").Timer;
+    /// let TimerMode = import_namespace.call("time").TimerMode;
     /// let timer = Timer.from_seconds.call(2.0, TimerMode.Repeating);
     /// timer.tick.call(1.0);
     /// assert(!timer.finished.call());
@@ -163,6 +168,7 @@ impl Timer {
     remote,
     name = "stopwatch_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "time",
     core
 )]
 impl Stopwatch {

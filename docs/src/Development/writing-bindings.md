@@ -5,6 +5,12 @@ They live in `crates/bindings/bevy_mod_scripting_bevy_<category>_bindings`, one 
 
 The aim is a small, well documented scripting surface, which reads naturally from a script and compiles quickly.
 
+## Namespaces
+
+Scripts reach types through the namespace of their category, i.e. `import_namespace("math").Vec3` (see [Namespaces](../ScriptingReference/namespaces.md)). So each bindings crate:
+- passes `namespace = "<category>"` to every `#[script_bindings]` attribute, except on `impl World` blocks and on functions shared by all types (`impl StaticTypeRef`), which would otherwise move those BMS types into the category
+- calls `set_crate_script_namespaces` from its plugin's `finish`, with the bevy crates it covers, so their types without bindings land in the same namespace
+
 ## What to bind
 
 Every reflected type is already usable from scripts without any bindings:
@@ -40,11 +46,13 @@ Keep examples short and only add them where they help. Write one block per langu
 
 ````markdown
 ```multi-lang-example,lua
+local Vec3 = import_namespace("math").Vec3
 local v = Vec3.new(1, 2, 3)
 assert(v.x == 1)
 ```
 
 ```multi-lang-example,rhai
+let Vec3 = import_namespace.call("math").Vec3;
 let v = Vec3.new_.call(1.0, 2.0, 3.0);
 assert(v.x == 1.0);
 ```
@@ -53,11 +61,13 @@ assert(v.x == 1.0);
 which renders as a single block with a tab per language:
 
 ```multi-lang-example,lua
+local Vec3 = import_namespace("math").Vec3
 local v = Vec3.new(1, 2, 3)
 assert(v.x == 1)
 ```
 
 ```multi-lang-example,rhai
+let Vec3 = import_namespace.call("math").Vec3;
 let v = Vec3.new_.call(1.0, 2.0, 3.0);
 assert(v.x == 1.0);
 ```

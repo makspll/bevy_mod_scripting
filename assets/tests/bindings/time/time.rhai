@@ -1,3 +1,5 @@
+let Duration = import_namespace.call("time").Duration;
+
 // the default clock, and the clocks behind it
 let time = world.time.call();
 assert(time.delta_secs.call() >= 0.0, "delta_secs");

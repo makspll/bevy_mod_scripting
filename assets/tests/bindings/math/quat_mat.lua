@@ -1,3 +1,11 @@
+local EulerRot = import_namespace("math").EulerRot
+local IVec2 = import_namespace("math").IVec2
+local Mat3 = import_namespace("math").Mat3
+local Mat4 = import_namespace("math").Mat4
+local Quat = import_namespace("math").Quat
+local UVec3 = import_namespace("math").UVec3
+local Vec2 = import_namespace("math").Vec2
+local Vec3 = import_namespace("math").Vec3
 local function approx(a, b)
     return math.abs(a - b) < 0.0001
 end

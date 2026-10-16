@@ -1,4 +1,8 @@
 -- constructors
+local Duration = import_namespace("time").Duration
+local Stopwatch = import_namespace("time").Stopwatch
+local Timer = import_namespace("time").Timer
+local TimerMode = import_namespace("time").TimerMode
 local timer = Timer.from_seconds(2.0, TimerMode.Once)
 assert(timer:duration():as_secs() == 2.0, "from_seconds sets the duration")
 assert(timer:mode() ~= nil, "mode")

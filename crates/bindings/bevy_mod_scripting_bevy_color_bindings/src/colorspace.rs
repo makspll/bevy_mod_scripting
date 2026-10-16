@@ -16,6 +16,7 @@ macro_rules! colorspace_functions {
                 remote,
                 name = $name,
                 bms_bindings_path = "bevy_mod_scripting_bindings",
+                namespace = "color",
                 core
             )]
             impl $ty {

@@ -1,4 +1,5 @@
 -- constructors
+local Duration = import_namespace("time").Duration
 local d = Duration.from_secs(1.5)
 assert(d:as_secs() == 1.5, "from_secs")
 assert(Duration.from_millis(1500) == d, "from_millis")

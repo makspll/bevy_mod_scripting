@@ -1,3 +1,8 @@
+let Mat4 = import_namespace.call("math").Mat4;
+let Quat = import_namespace.call("math").Quat;
+let Transform = import_namespace.call("transform").Transform;
+let Vec3 = import_namespace.call("math").Vec3;
+
 fn approx(a, b) {
     (a - b).abs() < 0.0001
 }

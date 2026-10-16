@@ -11,6 +11,7 @@ use bevy_mod_scripting_derive::script_bindings;
     remote,
     name = "touches_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "input",
     core
 )]
 impl Touches {
@@ -34,6 +35,7 @@ impl Touches {
     remote,
     name = "touch_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    namespace = "input",
     core
 )]
 impl Touch {

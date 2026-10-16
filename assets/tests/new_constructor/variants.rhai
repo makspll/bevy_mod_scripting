@@ -1,3 +1,5 @@
+let SimpleEnum = import_namespace.call("test_utils").SimpleEnum;
+
 let value = SimpleEnum.new_.call(#{ variant: "Struct", foo: 1 });
 
 assert(value.variant.call() == SimpleEnum.Struct, "expected value to be the Struct variant");

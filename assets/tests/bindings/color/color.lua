@@ -1,3 +1,14 @@
+local Color = import_namespace("color").Color
+local Hsla = import_namespace("color").Hsla
+local Hsva = import_namespace("color").Hsva
+local Hwba = import_namespace("color").Hwba
+local Laba = import_namespace("color").Laba
+local Lcha = import_namespace("color").Lcha
+local LinearRgba = import_namespace("color").LinearRgba
+local Oklaba = import_namespace("color").Oklaba
+local Oklcha = import_namespace("color").Oklcha
+local Srgba = import_namespace("color").Srgba
+local Xyza = import_namespace("color").Xyza
 local function approx(a, b)
     return math.abs(a - b) < 0.0001
 end

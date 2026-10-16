@@ -1,3 +1,10 @@
+let EulerRot = import_namespace.call("math").EulerRot;
+let IVec2 = import_namespace.call("math").IVec2;
+let Mat3 = import_namespace.call("math").Mat3;
+let Mat4 = import_namespace.call("math").Mat4;
+let Quat = import_namespace.call("math").Quat;
+let Vec3 = import_namespace.call("math").Vec3;
+
 fn approx(a, b) {
     (a - b).abs() < 0.0001
 }

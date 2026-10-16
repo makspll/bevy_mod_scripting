@@ -1,4 +1,6 @@
 // AnimationPlayer without any animations playing
+let AnimationPlayer = import_namespace.call("animation").AnimationPlayer;
+let NodeIndex = import_namespace.call("animation").NodeIndex;
 let player = AnimationPlayer.new_.call(#{});
 let node = NodeIndex.new_.call(0);
 assert(!player.is_playing_animation.call(node), "nothing is playing in a new player");

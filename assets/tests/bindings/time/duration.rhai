@@ -1,4 +1,5 @@
 // constructors
+let Duration = import_namespace.call("time").Duration;
 let d = Duration.from_secs.call(1.5);
 assert(d.as_secs.call() == 1.5, "from_secs");
 assert(Duration.from_millis.call(1500) == d, "from_millis");
