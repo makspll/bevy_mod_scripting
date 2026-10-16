@@ -5,8 +5,10 @@ use std::{
 
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
-    LocationContext, VariadicTuple, error::InteropError,
-    function::script_function::FunctionCallContext, script_value::ScriptValue,
+    LocationContext, VariadicTuple,
+    error::InteropError,
+    function::script_function::{DynamicScriptFunction, FunctionCallContext},
+    script_value::ScriptValue,
 };
 use bevy_platform::collections::HashMap;
 use mlua::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, MultiValue, Value};
@@ -213,6 +215,40 @@ fn call_from_lua(
             Err(error.to_lua_error())
         }
     }
+}
+
+/// The Lua functions created for registered functions, so `v:method()` doesn't create one on every access.
+///
+/// Keeps the function alive with its Lua function, so its [`DynamicScriptFunction::identity`] can't be reused.
+#[derive(Default)]
+struct LuaFunctionCache(HashMap<usize, (DynamicScriptFunction, mlua::Function)>);
+
+/// Converts a registered function to a Lua function, reusing the one created the last time.
+///
+/// Only for functions which live in the registry, others would fill the cache.
+pub(crate) fn registered_function_into_lua(
+    lua: &mlua::Lua,
+    function: DynamicScriptFunction,
+) -> mlua::Result<Value> {
+    let key = function.identity();
+    if let Some(cache) = lua.app_data_ref::<LuaFunctionCache>()
+        && let Some((_, lua_function)) = cache.0.get(&key)
+    {
+        return Ok(Value::Function(lua_function.clone()));
+    }
+    let lua_function = lua.create_function({
+        let function = function.clone();
+        move |lua, args: MultiLuaScriptValue| {
+            call_from_lua(lua, |context| function.call(args.0, context))
+        }
+    })?;
+    if lua.app_data_ref::<LuaFunctionCache>().is_none() {
+        lua.set_app_data(LuaFunctionCache::default());
+    }
+    if let Some(mut cache) = lua.app_data_mut::<LuaFunctionCache>() {
+        cache.0.insert(key, (function, lua_function.clone()));
+    }
+    Ok(Value::Function(lua_function))
 }
 #[profiling::all_functions]
 impl IntoLua for LuaScriptValue {

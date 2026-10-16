@@ -237,6 +237,13 @@ impl DynamicScriptFunction {
         &self.info.name
     }
 
+    /// An id shared by the clones of this function, valid while one of them is alive.
+    ///
+    /// Languages can use it to cache their own wrappers of registered functions.
+    pub fn identity(&self) -> usize {
+        Arc::as_ptr(&self.func) as *const () as usize
+    }
+
     /// Binds a function shared between all types, i.e. one registered on [`StaticTypeRef`], to the given type.
     ///
     /// The returned function is called without the type argument, which is filled in on each call.
