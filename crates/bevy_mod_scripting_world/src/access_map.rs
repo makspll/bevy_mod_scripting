@@ -282,10 +282,75 @@ struct AccessMapInner {
     component_access: AccessByteSet,
     world_access: AccessBitField,
     external_accesses: HashMap<usize, AccessBitField>,
+    /// How many [`DynamicSystemMeta::with_scope`] calls are running
+    scope_depth: usize,
+    /// The changes made inside the running scopes, undone when they end
+    undo: Vec<ScopeUndo>,
+}
+
+/// A change to an [`AccessMapInner`], recorded so a scope can roll it back.
+#[derive(Debug, Clone)]
+enum ScopeUndo {
+    /// The state of an access before it changed, `None` for an external access without an entry
+    Access(WorldAccessRange, Option<AccessBitField>),
+    /// All accesses before they were released at once
+    All {
+        component_access: AccessByteSet,
+        world_access: AccessBitField,
+        external_accesses: HashMap<usize, AccessBitField>,
+    },
 }
 
 #[profiling::all_functions]
 impl AccessMapInner {
+    /// Records the current state of an access before it changes, if a scope is running
+    #[inline]
+    fn record(&mut self, key: WorldAccessRange) {
+        if self.scope_depth == 0 {
+            return;
+        }
+        let previous = match key {
+            WorldAccessRange::ComponentOrResource(id) => {
+                Some(*self.component_access.entry_mut(id.index()))
+            }
+            WorldAccessRange::External(idx) => self.external_accesses.get(&idx).copied(),
+            WorldAccessRange::Global => Some(self.world_access),
+        };
+        self.undo.push(ScopeUndo::Access(key, previous));
+    }
+
+    /// Undoes the changes recorded since the undo log had the given length
+    fn rollback(&mut self, mark: usize) {
+        while self.undo.len() > mark {
+            let Some(change) = self.undo.pop() else {
+                break;
+            };
+            match change {
+                ScopeUndo::Access(WorldAccessRange::ComponentOrResource(id), previous) => {
+                    *self.component_access.entry_mut(id.index()) = previous.unwrap_or_default();
+                }
+                ScopeUndo::Access(WorldAccessRange::External(idx), Some(previous)) => {
+                    self.external_accesses.insert(idx, previous);
+                }
+                ScopeUndo::Access(WorldAccessRange::External(idx), None) => {
+                    self.external_accesses.remove(&idx);
+                }
+                ScopeUndo::Access(WorldAccessRange::Global, previous) => {
+                    self.world_access = previous.unwrap_or_default();
+                }
+                ScopeUndo::All {
+                    component_access,
+                    world_access,
+                    external_accesses,
+                } => {
+                    self.component_access = component_access;
+                    self.world_access = world_access;
+                    self.external_accesses = external_accesses;
+                }
+            }
+        }
+    }
+
     pub fn claim_component_if_free(&mut self, id: ComponentId, write: bool) -> bool {
         let idx = id.index();
         let elem = self.component_access.entry_mut(idx);
@@ -295,6 +360,7 @@ impl AccessMapInner {
     }
 
     fn claim_if_free(&mut self, key: WorldAccessRange, write: bool) -> bool {
+        self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
                 if self.world_access.is_write() || self.world_access.access_count() != 0 && write {
@@ -328,6 +394,7 @@ impl AccessMapInner {
     }
     #[inline]
     fn clear_access(&mut self, key: WorldAccessRange) {
+        self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
                 let entry = self.component_access.entry_mut(component_id.index());
@@ -421,18 +488,19 @@ impl DynamicSystemMeta for AccessMap {
     }
 
     fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
-        // Snapshot the current inner state.
-        let backup = {
-            let inner = self.0.lock();
-            inner.clone()
+        // record the changes made inside the scope instead of copying the whole map
+        let mark = {
+            let mut inner = self.0.lock();
+            inner.scope_depth += 1;
+            inner.undo.len()
         };
 
         let result = f();
 
-        // Roll back the inner state.
         {
             let mut inner = self.0.lock();
-            *inner = backup;
+            inner.rollback(mark);
+            inner.scope_depth -= 1;
         }
 
         result
@@ -482,6 +550,14 @@ impl DynamicSystemMeta for AccessMap {
 
     fn release_all_accesses(&self) {
         let mut inner = self.0.lock();
+        if inner.scope_depth > 0 {
+            let snapshot = ScopeUndo::All {
+                component_access: inner.component_access.clone(),
+                world_access: inner.world_access,
+                external_accesses: inner.external_accesses.clone(),
+            };
+            inner.undo.push(snapshot);
+        }
         inner.component_access.clear();
         inner.external_accesses.clear();
         inner.world_access = Default::default();
