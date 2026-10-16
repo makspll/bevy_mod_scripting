@@ -189,6 +189,31 @@ impl FromLua for LuaScriptValue {
 
 /// The context for calling a function from Lua
 pub const LUA_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Lua);
+
+/// Calls a function from Lua, the location of the call is only looked up for errors.
+fn call_from_lua(
+    lua: &mlua::Lua,
+    call: impl FnOnce(FunctionCallContext) -> Result<ScriptValue, InteropError>,
+) -> mlua::Result<MultiLuaScriptValue> {
+    match call(LUA_CALLER_CONTEXT) {
+        Ok(out) => Ok(MultiLuaScriptValue::from_script_value(out)),
+        Err(mut error) => {
+            if let InteropError::FunctionInteropError { context, .. } = &mut error
+                && let Some(context) = &mut **context
+            {
+                profiling::scope!("function call context");
+                context.set_location(lua.inspect_stack(1, |debug| LocationContext {
+                    line: debug.current_line().unwrap_or_default() as u32,
+                    col: None,
+                    script_name: lua
+                        .app_data_ref::<LuaContextAppData>()
+                        .and_then(|v| v.last_loaded_script_name.as_ref().map(|n| n.to_string())),
+                }));
+            }
+            Err(error.to_lua_error())
+        }
+    }
+}
 #[profiling::all_functions]
 impl IntoLua for LuaScriptValue {
     fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<mlua::Value> {
@@ -203,46 +228,12 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => lua
                 .create_function(move |lua, args: MultiLuaScriptValue| {
-                    let loc = {
-                        profiling::scope!("function call context");
-                        lua.inspect_stack(1, |debug| LocationContext {
-                            line: debug.current_line().unwrap_or_default() as u32,
-                            col: None,
-                            script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
-                                v.last_loaded_script_name.as_ref().map(|n| n.to_string())
-                            }),
-                        })
-                    };
-                    let out = function
-                        .call(
-                            args.0,
-                            FunctionCallContext::new_with_location(Language::Lua, loc),
-                        )
-                        .map_err(IntoMluaError::to_lua_error)?;
-
-                    Ok(MultiLuaScriptValue::from_script_value(out))
+                    call_from_lua(lua, |context| function.call(args.0, context))
                 })?
                 .into_lua(lua)?,
             ScriptValue::FunctionMut(function) => lua
                 .create_function(move |lua, args: MultiLuaScriptValue| {
-                    let loc = {
-                        profiling::scope!("function call context");
-                        lua.inspect_stack(1, |debug| LocationContext {
-                            line: debug.current_line().unwrap_or_default() as u32,
-                            col: None,
-                            script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
-                                v.last_loaded_script_name.as_ref().map(|n| n.to_string())
-                            }),
-                        })
-                    };
-                    let out = function
-                        .call(
-                            args.0,
-                            FunctionCallContext::new_with_location(Language::Lua, loc),
-                        )
-                        .map_err(IntoMluaError::to_lua_error)?;
-
-                    Ok(MultiLuaScriptValue::from_script_value(out))
+                    call_from_lua(lua, |context| function.call(args.0, context))
                 })?
                 .into_lua(lua)?,
             // when we encounter a tuple here, we can't convert to many args, so just return a table

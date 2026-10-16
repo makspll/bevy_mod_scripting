@@ -125,6 +125,11 @@ impl FunctionCallContext {
     pub fn location(&self) -> Option<&LocationContext> {
         self.location_context.as_ref()
     }
+
+    /// Sets the call location inside the script, i.e. once an error needs it
+    pub fn set_location(&mut self, location_context: Option<LocationContext>) {
+        self.location_context = location_context;
+    }
 }
 
 #[derive(Reflect, Clone, DebugWithTypeInfo)]
